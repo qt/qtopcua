@@ -1,0 +1,45 @@
+include($QT_INSTALL_DOCS/global/qt-module-defaults.qdocconf)
+
+project = QtOpcUa
+description = An OPC UA module for Qt
+version = $QT_VERSION
+
+sourcedirs += ..
+headerdirs += ..
+exampledirs += ../../../examples/
+imagedirs += images
+
+tagfile = ../../doc/qtopcua/qtopcua.tags
+
+outputdir = doc
+outputformats = HTML
+
+qhp.projects = QtOpcUa
+
+qhp.QtOpcUa.file = qtopcua.qhp
+qhp.QtOpcUa.namespace = org.qt-project.qtopcua.$QT_VERSION_TAG
+qhp.QtOpcUa.virtualFolder = qtopcua
+qhp.QtOpcUa.indexTitle = Qt OPC UA
+qhp.QtOpcUa.indexRoot =
+
+qhp.QtOpcUa.filterAttributes = qtopcua $QT_VERSION qtrefdoc
+qhp.QtOpcUa.customFilters.Qt.name = QtOpcUa $QT_VERSION
+qhp.QtOpcUa.customFilters.Qt.filterAttributes = qtopcua $QT_VERSION
+
+qhp.QtOpcUa.subprojects = classes examples
+
+qhp.QtOpcUa.subprojects.classes.title = C++ Classes
+qhp.QtOpcUa.subprojects.classes.indexTitle = Qt OPC UA C++ Classes
+qhp.QtOpcUa.subprojects.classes.selectors = class function namespace fake:headerfile
+qhp.QtOpcUa.subprojects.classes.sortPages = true
+
+qhp.QtOpcUa.subprojects.examples.title = Examples
+qhp.QtOpcUa.subprojects.examples.indexTitle = Qt OPC UA Examples
+qhp.QtOpcUa.subprojects.examples.selectors = fake:example
+
+examples.fileextensions = "*.cpp"
+
+navigation.landingpage = "Qt OPC UA"
+navigation.cppclassespage = "Qt OPC UA C++ Classes"
+
+examplesinstallpath = opcua

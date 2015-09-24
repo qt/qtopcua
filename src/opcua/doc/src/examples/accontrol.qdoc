@@ -1,0 +1,105 @@
+/****************************************************************************
+**
+** Copyright (C) 2015 basysKom GmbH, info@basyskom.com
+** Contact: http://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example accontrol
+    \ingroup qtopcua-examples
+    \title Using QOpcUaClient in a basic UI application
+
+    \section1 Prerequisites
+    This example expects a server with a certain node structure. The
+    testserver from \l tests/freeopcua-testserver/ can be used. The server
+    has to be started before the client and if it does not listen on the
+    default opc.tcp://localhost:43344, you will have to provide a command
+    line option "-e" to the client to connect to the right place.
+
+    \section1 Used features of QOpcUaClient
+    This example uses QOpcUaClient to connect to an OPC UA server which has
+    a model of an air conditioner.
+    Subscriptions are used to update progress bars with a server side value,
+    data from a slider is written to the server, data and units are read from
+    the server, methods are called and Event messages are written to a label.
+
+    \section1 Implementation
+
+    \quotefromfile accontrol/accontroltest.cpp
+
+    First, the UI is modelled using the Designer. For convenience, all elements
+    are given speaking names to simplify using them from the C++ code.
+    This also creates a C++ class in which we include member variables and
+    methods for the communication with the OPC UA server.
+
+    In the constructor, we create a QOpcUaClient object using the
+    QOpcUaProvider and connect it to the OPC UA server.
+
+    \skipto m_pProvider
+    \printuntil createClient();
+    \codeline
+
+    \skipto bool
+    \printuntil }
+
+    After a successful connect, three data change subscriptions are requested
+    and the valueChanged signal is connected to different slots.
+    Two of them update the progress bars, the third one enables and disables
+    the buttons used to trigger server side actions.
+
+    \skipto QOpcUaACControlTest
+    \printuntil updateTemperature
+
+    The slider is connected to a slot which writes the value to the server
+
+    \skipto ui.horizontalSlider
+    \printuntil ;
+
+    \quotefromfile accontrol/accontroltest.cpp
+    \skipto QOpcUaACControlTest::writeValue
+    \printuntil }
+
+    Slots are created and connected to the clicked signal of the buttons. They
+    implement the OPC UA function calls to trigger the server side actions.
+
+    \quotefromfile accontrol/accontroltest.cpp
+    \skipto ui.stopButton
+    \printuntil ;
+
+    \codeline
+
+    \quotefromfile accontrol/accontroltest.cpp
+    \skipto QOpcUaACControlTest::start
+    \printuntil }
+
+    \section1 Usage
+    Dragging the slider updates the setpoint value on the server and via the
+    subscription, the progress bar is also updated with the current server
+    value.
+
+    Clicking the Start and Stop buttons changes the status on the server which
+    toggles the activity of the two buttons. A message is written to the label
+    each time a button is clicked.
+
+*/

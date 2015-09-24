@@ -1,0 +1,195 @@
+/****************************************************************************
+**
+** Copyright (C) 2015 basysKom GmbH, info@basyskom.com
+** Contact: http://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see http://www.qt.io/terms-conditions. For further
+** information use the contact form at http://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: http://www.gnu.org/copyleft/fdl.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \module QtOpcUa
+    \title Qt OPC UA C++ Classes
+    \ingroup modules
+    \qtvariable opcua
+    \since 5.7
+    \brief List of C++ classes that provide the Qt OPC UA functionality.
+
+    To link against the module, e.g. when writing a new plugin, add this line to your \l qmake \c .pro file:
+
+    \code
+    QT += opcua
+    \endcode
+*/
+
+/*!
+    \page qtopcua-index.html
+    \since 5.7
+    \title Qt OPC UA
+    \brief Implements OPC UA connectivity through a Qt API.
+
+    The Qt \l{Qt OPC UA#A short introduction to OPC UA}{OPC UA} module
+    implements a Qt API to interact with OPC UA on top an external
+    OPC UA stack.
+
+    The stacks are connected via plugins and can be selected/switched at
+    runtime.
+
+    Currently an HMI focused subset of functionality is implemented in
+    QOpcUaClient, which can be used to visualize data present on an OPC UA
+    server.
+
+    \section1 A short introduction to OPC UA
+    OPC UA is a protocol for data modelling and secure exchange of data in
+    industrial applications.
+    The protocol offers built-in transport security based on certificates and
+    established cryptographic algorithms.
+    The data modelling system is object oriented and offers support for
+    pre-made models which can be extended to fit special needs.
+
+    \section1 Implemented features from the OPC UA protocol
+
+    Not all features offered by the wrapper classes can be used with all
+    backends. The following table shows the current status of implementation.
+
+    \table
+    \header
+    \li Feature
+    \li FreeOPCUA
+    \li Others to come...
+    \row
+    \li Reading and writing of values as array/scalar
+    \li X
+    \li ?
+    \row
+    \li Reading of value ranges
+    \li
+    \li ?
+    \row
+    \li Reading of engineering units
+    \li
+    \li ?
+    \row
+    \li Browsing and reading attributes of nodes
+    \li X
+    \li ?
+    \row
+    \li Secure connection
+    \li
+    \li ?
+    \row
+    \li User/password auth
+    \li X
+    \li ?
+    \row
+    \li Data change subscription
+    \li Unstable implementation in FreeOPCUA, unsubscribing is currently not\
+        possible
+    \li ?
+    \row
+    \li Event subscription
+    \li Callback is not called inside FreeOPCUA, so no signal is emitted
+    \li ?
+    \row
+    \li Method calls
+    \li Low performance
+    \li ?
+    \row
+    \li Historical access
+    \li Currently not available in FreeOPCUA
+    \li ?
+    \endtable
+
+    Asynchronous operations, reading and writing of multiple nodes using one
+    method call, filters for subscriptions, aggregates and write access for
+    historical data are not implemented yet.
+
+    \section1 Data types
+    A subset of OPC UA data types are currently supported in QOpcUaClient, most
+    of them are available with all backends. When writing data to the server,
+    the type of the value must be specified using the QOpcUaType enum.
+
+    \table
+    \header
+    \li Data type
+    \li FreeOPCUA
+    \li Others to come...
+    \li Mapping
+    \row
+    \li Int8/16/32
+    \li X
+    \li
+    \li Directly used
+    \row
+    \li UInt8/16/32
+    \li X
+    \li
+    \li Directly used
+    \row
+    \li Double
+    \li X
+    \li
+    \li Directly used
+    \row
+    \li Float
+    \li X
+    \li
+    \li Directly used
+    \row
+    \li Byte String
+    \li X
+    \li
+    \li QByteArray
+    \row
+    \li String
+    \li X
+    \li
+    \li QString
+    \row
+    \li Date Time
+    \li X
+    \li
+    \li QDateTime
+    \row
+    \li Localized Text
+    \li X
+    \li
+    \li QString
+    \row
+    \li Node ID
+    \li X
+    \li
+    \li QString
+    \row
+    \li XML Element
+    \li Not available in FreeOPCUA
+    \li
+    \li QByteArray
+    \endtable
+
+    \section1 Related Information
+
+    \list
+    \li \l{Qt OPC UA C++ Classes}{C++ Classes}
+    \li \l{Qt OPC UA Examples}{Examples}
+    \li \l{https://opcfoundation.org/about/opc-technologies/opc-ua/}{OPC UA at the OPC foundation}
+    \endlist
+*/
