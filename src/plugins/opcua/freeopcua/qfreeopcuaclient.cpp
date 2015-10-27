@@ -47,7 +47,8 @@
 #include <opc/ua/protocol/variant.h>
 #include <opc/ua/services/method.h>
 
-#include <QDebug>
+#include <QtCore/qdebug.h>
+#include <QtNetwork/qhostinfo.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,7 +68,7 @@ bool QFreeOpcUaClient::connectToEndpoint(const QString &url)
         setUrl(url);
 
         QString processedUrl;
-        QString sNodeName("localhost");
+        QString sNodeName = QHostInfo::localHostName();
         SetApplicationURI(QString("urn:%1:%2:%3").arg(
                               sNodeName).arg("qt-project").arg("QOpcUaClient").toStdString());
         SetProductURI("urn:qt-project:QOpcUaClient");

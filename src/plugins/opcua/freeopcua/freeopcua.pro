@@ -1,5 +1,5 @@
 TARGET = freeopcua_backend
-QT = core opcua
+QT = core opcua network
 
 PLUGIN_TYPE = opcua
 PLUGIN_CLASS_NAME = QFreeOpcUaPlugin
