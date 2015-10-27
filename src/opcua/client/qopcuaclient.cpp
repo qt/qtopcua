@@ -108,7 +108,7 @@ bool QOpcUaClient::setConnected(bool connected)
 }
 
 /*!
-    \fn  bool QOpcUaClient::connectToEndpoint(const QString &url)
+    \fn  bool QOpcUaClient::connectToEndpoint(const QUrl &url)
 
     Connects to the OPC UA endpoint given in \a url.
     true is returned in case of success, false is returned when the connection
@@ -122,13 +122,13 @@ bool QOpcUaClient::setConnected(bool connected)
 */
 bool QOpcUaClient::connectToEndpoint()
 {
-    if (m_url.size() > 0)
+    if (!m_url.isEmpty())
         return connectToEndpoint(m_url);
     return false;
 }
 
 /*!
-    \fn bool QOpcUaClient::secureConnectToEndpoint(const QString &url)
+    \fn bool QOpcUaClient::secureConnectToEndpoint(const QUrl &url)
 
     Connects to an endpoint given by \a url using the highest security level
     supported by client and server.
@@ -145,7 +145,7 @@ bool QOpcUaClient::connectToEndpoint()
 */
 bool QOpcUaClient::secureConnectToEndpoint()
 {
-    if (m_url.size() > 0)
+    if (!m_url.isEmpty())
         return secureConnectToEndpoint(m_url);
     return false;
 }
@@ -244,20 +244,18 @@ bool QOpcUaClient::secureConnectToEndpoint()
 
 /*!
     Sets \a url as the URL of the OPC UA server to connect to.
+
+    For a secure connection user name and password has to be set on \a url before.
  */
-void QOpcUaClient::setUrl(const QString &url)
+void QOpcUaClient::setUrl(const QUrl &url)
 {
-    if (m_url != url) {
-        m_url = url;
-        emit urlChanged();
-    }
+    m_url = url;
 }
 
 /*!
-    \property QOpcUaClient::url
-    \brief the URL of the OPC UA server.
+    Returns the URL of the OPC UA server.
 */
-QString QOpcUaClient::url() const
+QUrl QOpcUaClient::url() const
 {
     return m_url;
 }
@@ -269,40 +267,6 @@ QString QOpcUaClient::url() const
 bool QOpcUaClient::isConnected() const
 {
     return m_connected;
-}
-
-
-void QOpcUaClient::setUsername(const QString &username)
-{
-    m_username = username;
-}
-
-/*!
-    \property QOpcUaClient::username
-    \brief the user name for user/pass authentication with an OPC UA server.
-
-    This value must be set before calling any connect method.
-*/
-
-QString QOpcUaClient::username() const
-{
-    return m_username;
-}
-
-void QOpcUaClient::setPassword(const QString &password)
-{
-    m_password = password;
-}
-
-/*!
-    \property QOpcUaClient::password
-    \brief the password for user/pass authentication with an OPC UA server.
-
-    This value must be set before calling any connect method.
-*/
-QString QOpcUaClient::password() const
-{
-    return m_password;
 }
 
 /*!

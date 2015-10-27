@@ -115,6 +115,7 @@ Rectangle {
 
         // endpoint is set by the C++ runner
         client.url = endpoint
+        endpointField.text = endpoint
         if (autoconnect) {
             client.connectToEndpoint();
         }
@@ -162,7 +163,7 @@ Rectangle {
 
         TextField {
             id: endpointField
-            text: client.url
+            text: ""
 
             Layout.fillWidth: true
             onAccepted: {

@@ -40,6 +40,7 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qpluginloader.h>
+#include <QtCore/QUrl>
 #include <QtCore/qvariant.h>
 
 #include <QtOpcUa/qopcuaglobal.h>
@@ -54,10 +55,7 @@ class Q_OPCUA_EXPORT QOpcUaClient : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QString url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(bool connected READ isConnected NOTIFY connectedChanged)
-    Q_PROPERTY(QString password READ password WRITE setPassword)
-    Q_PROPERTY(QString username READ username WRITE setUsername)
 
 public:
     ~QOpcUaClient();
@@ -67,8 +65,8 @@ public:
     Q_INVOKABLE bool secureConnectToEndpoint();
 
     // Overridables
-    Q_INVOKABLE virtual bool connectToEndpoint(const QString &url) = 0;
-    Q_INVOKABLE virtual bool secureConnectToEndpoint(const QString &url) = 0;
+    Q_INVOKABLE virtual bool connectToEndpoint(const QUrl &url) = 0;
+    Q_INVOKABLE virtual bool secureConnectToEndpoint(const QUrl &url) = 0;
     Q_INVOKABLE virtual bool disconnectFromEndpoint() = 0;
 
     Q_INVOKABLE virtual QVariant read(const QString &xmlNodeId) = 0;
@@ -88,17 +86,13 @@ public:
     Q_INVOKABLE virtual QList<QPair<QVariant, QDateTime> > readHistorical(
             const QString &node, int maxCount, const QDateTime &begin, const QDateTime &end) = 0;
 
-    void setUrl(const QString &url);
-    QString url() const;
+    QUrl url() const;
     bool isConnected() const;
 
-    void setUsername(const QString &username);
-    QString username() const;
-    void setPassword(const QString &password);
-    QString password() const;
+public Q_SLOTS:
+    void setUrl(const QUrl &url);
 
 Q_SIGNALS:
-    void urlChanged();
     void connectedChanged(bool connected);
 
 protected:
@@ -112,13 +106,11 @@ protected:
     void cleanupChildren();
 
 private:
-    QString m_url;
+    QUrl m_url;
     QPluginLoader m_loader;
     bool m_connected;
     QString m_bestPlugin;
     QString m_plugin;
-    QString m_username;
-    QString m_password;
 
     QHash<double, QOpcUaSubscription*> m_subscriptions;
 };

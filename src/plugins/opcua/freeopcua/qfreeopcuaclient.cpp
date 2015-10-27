@@ -62,31 +62,21 @@ QFreeOpcUaClient::~QFreeOpcUaClient()
 {
 }
 
-bool QFreeOpcUaClient::connectToEndpoint(const QString &url)
+bool QFreeOpcUaClient::connectToEndpoint(const QUrl &url)
 {
     try {
         setUrl(url);
 
-        QString processedUrl;
         QString sNodeName = QHostInfo::localHostName();
         SetApplicationURI(QString("urn:%1:%2:%3").arg(
                               sNodeName).arg("qt-project").arg("QOpcUaClient").toStdString());
         SetProductURI("urn:qt-project:QOpcUaClient");
         SetSessionName(GetApplicationURI());
 
-        processedUrl = url;
-
-        if (!username().isNull()) {
-            QString authPart = QString("opc.tcp://%1:%2@").arg(username()).arg(password());
-            processedUrl = processedUrl.replace("opc.tcp://", authPart);
-            qDebug() << processedUrl;
-        }
-
-        Connect(url.toStdString());
+        Connect(url.toString().toStdString());
 
         // Check connection status by getting the root node
         GetRootNode();
-        qDebug() << "Client connected to" << url.toStdString().c_str();
     } catch (const std::exception &e) {
         Disconnect();
         qWarning() << "Client could not connect to endpoint" << url;
@@ -96,7 +86,7 @@ bool QFreeOpcUaClient::connectToEndpoint(const QString &url)
     return setConnected(true);
 }
 
-bool QFreeOpcUaClient::secureConnectToEndpoint(const QString &url)
+bool QFreeOpcUaClient::secureConnectToEndpoint(const QUrl &url)
 {
     Q_UNUSED(url);
     return false;

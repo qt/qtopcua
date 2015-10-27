@@ -94,7 +94,7 @@ private slots:
 
     void connectToInvalid()
     {
-        bool isConnected = m_client->connectToEndpoint("opc.tcp:127.0.0.1:1234");
+        bool isConnected = m_client->connectToEndpoint(QUrl("opc.tcp:127.0.0.1:1234"));
         QVERIFY(isConnected == false);
     }
 

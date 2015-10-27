@@ -40,6 +40,7 @@
 #include <QtOpcUa/qopcuaclient.h>
 
 #include <opc/ua/client/client.h>
+#include <QtCore/QUrl>
 
 QT_BEGIN_NAMESPACE
 
@@ -51,8 +52,8 @@ public:
     explicit QFreeOpcUaClient(QObject *parent = 0);
     ~QFreeOpcUaClient() Q_DECL_OVERRIDE;
 
-    bool connectToEndpoint(const QString &url) Q_DECL_OVERRIDE;
-    bool secureConnectToEndpoint(const QString &url) Q_DECL_OVERRIDE;
+    bool connectToEndpoint(const QUrl &url) Q_DECL_OVERRIDE;
+    bool secureConnectToEndpoint(const QUrl &url) Q_DECL_OVERRIDE;
     bool disconnectFromEndpoint() Q_DECL_OVERRIDE;
     QVariant read(const QString &xmlNodeId) Q_DECL_OVERRIDE;
     bool write(const QString &xmlNodeId, const QVariant &value, QOpcUa::Types type) Q_DECL_OVERRIDE;
