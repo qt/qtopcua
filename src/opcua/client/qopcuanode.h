@@ -58,7 +58,7 @@ class Q_OPCUA_EXPORT QOpcUaNode : public QObject
 
 public:
 
-    Q_INVOKABLE QVariant getEncodedValue() const ;
+    Q_INVOKABLE QVariant encodedValue() const ;
 
     virtual QString name() const = 0;
     virtual QString type() const = 0;

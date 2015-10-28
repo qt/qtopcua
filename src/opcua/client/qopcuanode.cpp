@@ -141,7 +141,7 @@ QOpcUaNode::QOpcUaNode(QObject *parent)
     This comes in handy when the value is an image or icon which can be
     displayed in QML applications via \l {http://dataurl.net/#about} {Data URL}.
 */
-QVariant QOpcUaNode::getEncodedValue() const
+QVariant QOpcUaNode::encodedValue() const
 {
     QVariant val = value();
     if (val.type() == QVariant::ByteArray)

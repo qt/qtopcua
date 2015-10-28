@@ -179,7 +179,7 @@ Rectangle {
 
                 function getValue() {
                     if (nodeRoot.node) {
-                        value = nodeRoot.node.getEncodedValue();
+                        value = nodeRoot.node.encodedValue();
                     }
                 }
 
