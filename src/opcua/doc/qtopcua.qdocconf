@@ -42,4 +42,9 @@ examples.fileextensions = "*.cpp"
 navigation.landingpage = "Qt OPC UA"
 navigation.cppclassespage = "Qt OPC UA C++ Classes"
 
-examplesinstallpath = opcua
+examplesinstallpath = qtopcua/opcua
+
+depends += \
+   qtcore \
+   qtqml \
+   qtquick
