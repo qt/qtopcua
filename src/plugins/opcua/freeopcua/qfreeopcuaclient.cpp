@@ -229,16 +229,16 @@ bool QFreeOpcUaClient::call(const QString &xmlObjectNodeId, const QString &xmlMe
 QPair<QString, QString> QFreeOpcUaClient::readEui(const QString &xmlNodeId)
 {
     OPCUA_UNUSED(xmlNodeId);
-    // Dummy return
-    return QPair<QString, QString>(QString::fromUtf8("°C"), "Degree fahrenheit");
+    // Return empty QVariant
+    return QPair<QString, QString>();
 }
 
 // Support for structures in freeopcua seems to be not implemented yet
 QPair<double, double> QFreeOpcUaClient::readEuRange(const QString &xmlNodeId)
 {
     OPCUA_UNUSED(xmlNodeId);
-    // Dummy return
-    return QPair<double, double>(0, 100);
+    // Return empty QVariant
+    return QPair<double, double>();
 }
 
 QOpcUaNode *QFreeOpcUaClient::node(const QString &xmlNodeId)
