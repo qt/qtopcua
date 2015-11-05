@@ -51,10 +51,10 @@ const QString SETPOINT_NODE = QStringLiteral("ns=3;s=ACControl.SetPoint");
 
 QOpcUaACControlTest::QOpcUaACControlTest(QWidget *parent)
     : QMainWindow(parent)
-    , m_pTimeSubscription(0)
-    , m_pSetPointSubscription(0)
-    , m_pTemperatureSubscription(0)
-    , m_pStateSubscription(0)
+    , m_pTimeMonitor(0)
+    , m_pSetPointMonitor(0)
+    , m_pTemperatureMonitor(0)
+    , m_pStateMonitor(0)
 {
     // parse command line here
     QCommandLineParser parser;
@@ -93,23 +93,23 @@ QOpcUaACControlTest::QOpcUaACControlTest(QWidget *parent)
         qFatal("Failed to connect to endpoint: %s\n", qPrintable(parser.value(endpointOption)));
 
     // get current time from server every 1 second and display it
-    m_pTimeSubscription = m_pClient->dataMonitor(1000, QStringLiteral("ns=0;i=2258"));
-    if (m_pTimeSubscription) {
-        connect(m_pTimeSubscription, &QOpcUaMonitoredItem::valueChanged, this,
+    m_pTimeMonitor = m_pClient->dataMonitor(1000, QStringLiteral("ns=0;i=2258"));
+    if (m_pTimeMonitor) {
+        connect(m_pTimeMonitor, &QOpcUaMonitoredItem::valueChanged, this,
                 &QOpcUaACControlTest::updateText);
     }
 
     // subscribe to current set point and temperature
-    m_pSetPointSubscription = m_pClient->dataMonitor(100, SETPOINT_NODE);
-    if (m_pSetPointSubscription) {
-        connect(m_pSetPointSubscription, &QOpcUaMonitoredItem::valueChanged, this,
+    m_pSetPointMonitor = m_pClient->dataMonitor(100, SETPOINT_NODE);
+    if (m_pSetPointMonitor) {
+        connect(m_pSetPointMonitor, &QOpcUaMonitoredItem::valueChanged, this,
                 &QOpcUaACControlTest::updateSetpoint);
     }
     ui.setpointBar->setFormat("%p °C");
 
-    m_pTemperatureSubscription = m_pClient->dataMonitor(100, QStringLiteral("ns=3;s=ACControl.CurrentTemp"));
-    if (m_pTemperatureSubscription) {
-        connect(m_pTemperatureSubscription, &QOpcUaMonitoredItem::valueChanged,
+    m_pTemperatureMonitor = m_pClient->dataMonitor(100, QStringLiteral("ns=3;s=ACControl.CurrentTemp"));
+    if (m_pTemperatureMonitor) {
+        connect(m_pTemperatureMonitor, &QOpcUaMonitoredItem::valueChanged,
                 this, &QOpcUaACControlTest::updateTemperature);
     }
     ui.temperatureBar->setFormat("%p °C");
@@ -121,9 +121,9 @@ QOpcUaACControlTest::QOpcUaACControlTest(QWidget *parent)
     connect(ui.stopButton, &QAbstractButton::clicked, this, &QOpcUaACControlTest::stop);
     connect(ui.startButton, &QAbstractButton::clicked, this, &QOpcUaACControlTest::start);
 
-    m_pStateSubscription = m_pClient->dataMonitor(100, QStringLiteral("ns=3;s=ACControl.IsRunning"));
-    if (m_pStateSubscription) {
-        connect(m_pStateSubscription, &QOpcUaMonitoredItem::valueChanged, this,
+    m_pStateMonitor = m_pClient->dataMonitor(100, QStringLiteral("ns=3;s=ACControl.IsRunning"));
+    if (m_pStateMonitor) {
+        connect(m_pStateMonitor, &QOpcUaMonitoredItem::valueChanged, this,
                 &QOpcUaACControlTest::stateChange);
     }
 }

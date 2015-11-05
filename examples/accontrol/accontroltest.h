@@ -70,10 +70,10 @@ public slots:
 private:
     Ui::QOpcUaACControlTest ui;
 
-    QOpcUaMonitoredItem *m_pTimeSubscription;
-    QOpcUaMonitoredItem *m_pSetPointSubscription;
-    QOpcUaMonitoredItem *m_pTemperatureSubscription;
-    QOpcUaMonitoredItem *m_pStateSubscription;
+    QOpcUaMonitoredItem *m_pTimeMonitor;
+    QOpcUaMonitoredItem *m_pSetPointMonitor;
+    QOpcUaMonitoredItem *m_pTemperatureMonitor;
+    QOpcUaMonitoredItem *m_pStateMonitor;
     QOpcUaClient        *m_pClient;
     QOpcUaProvider      *m_pProvider;
 };
