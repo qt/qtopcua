@@ -306,10 +306,10 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
     }
     case QOpcUa::NodeId:
         qWarning("There is no parse function in FreeOPCUA!");
-        return QVariant();
+        return OpcUa::Variant();
     case QOpcUa::XmlElement:
         qWarning("Type XMLElement is not yet supported in FreeOPCUA");
-        return QVariant();
+        return OpcUa::Variant();
     default:
         return toVariant(variant);
     }
