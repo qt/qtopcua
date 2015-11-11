@@ -75,7 +75,7 @@ private:
 private slots:
     void initTestCase()
     {
-        const QString testServerPath(QDir::currentPath() + "/../freeopcua-testserver/freeopcua-testserver");
+        const QString testServerPath(QDir::currentPath() + "/../../freeopcua-testserver/freeopcua-testserver");
         if (!QFile::exists(testServerPath))
             QSKIP("all auto tests rely on a freeopcua based test-server");
 
