@@ -105,14 +105,12 @@ QOpcUaACControlTest::QOpcUaACControlTest(QWidget *parent)
         connect(m_pSetPointMonitor, &QOpcUaMonitoredItem::valueChanged, this,
                 &QOpcUaACControlTest::updateSetpoint);
     }
-    ui.setpointBar->setFormat("%p °C");
 
     m_pTemperatureMonitor = m_pClient->dataMonitor(100, QStringLiteral("ns=3;s=ACControl.CurrentTemp"));
     if (m_pTemperatureMonitor) {
         connect(m_pTemperatureMonitor, &QOpcUaMonitoredItem::valueChanged,
                 this, &QOpcUaACControlTest::updateTemperature);
     }
-    ui.temperatureBar->setFormat("%p °C");
 
     ui.horizontalSlider->setEnabled(false); // wait for real value from server
     connect(ui.horizontalSlider, &QAbstractSlider::valueChanged, this, &QOpcUaACControlTest::writeValue);
@@ -151,7 +149,7 @@ void QOpcUaACControlTest::updateSetpoint(QVariant val)
 
 void QOpcUaACControlTest::updateTemperature(QVariant val)
 {
-    ui.temperatureBar->setValue(val.toInt());
+    ui.temperatureBar->setValue(val.toDouble()*10);
 }
 
 void QOpcUaACControlTest::start(void)
