@@ -38,11 +38,13 @@
 
 #include <opc/ua/server/server.h>
 
+static double START_TEMP = 16.0;
+static double START_SET = 22.0;
 
 ACControl::ACControl(QObject *parent)
     : QObject(parent)
-    , m_currentTemp(16.0)
-    , m_temperatureSetpoint(22.0)
+    , m_currentTemp(START_TEMP)
+    , m_temperatureSetpoint(START_SET)
 {
     m_timer.setInterval(200);
     m_timer.setSingleShot(false);
@@ -58,8 +60,8 @@ void ACControl::initNodes(OpcUa::UaServer &server)
 
     OpcUa::Node acControl = root.AddFolder("ns=3;s=ACControl", "ACControl");
 
-    m_setPointNode = acControl.AddVariable("ns=3;s=ACControl.SetPoint", "ACSetpoint", OpcUa::Variant(22.0));
-    m_currentTempNode = acControl.AddVariable("ns=3;s=ACControl.CurrentTemp", "ACCurrentTemp", OpcUa::Variant(16.0));
+    m_setPointNode = acControl.AddVariable("ns=3;s=ACControl.SetPoint", "ACSetpoint", OpcUa::Variant(START_SET));
+    m_currentTempNode = acControl.AddVariable("ns=3;s=ACControl.CurrentTemp", "ACCurrentTemp", OpcUa::Variant(START_TEMP));
 
     m_startNode = acControl.AddVariable("ns=3;s=ACControl.Start", "ACStart", OpcUa::Variant(true));
     m_stopNode = acControl.AddVariable("ns=3;s=ACControl.Stop", "ACStop", OpcUa::Variant(false));
