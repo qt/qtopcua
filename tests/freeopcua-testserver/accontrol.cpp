@@ -96,11 +96,11 @@ void ACControl::adjustTemperature()
 {
     const double diff = m_temperatureSetpoint - m_currentTemp;
 
-    if (diff > 0.1) {
-        m_currentTemp += 0.1;
+    if (diff > 0) {
+        m_currentTemp += qMin(diff, 0.1);
         m_currentTempNode.SetValue(OpcUa::Variant(m_currentTemp));
-    } else if (diff < 0.1) {
-        m_currentTemp -= 0.1;
+    } else if (diff < 0) {
+        m_currentTemp -= qMin(qAbs(diff), 0.1);
         m_currentTempNode.SetValue(OpcUa::Variant(m_currentTemp));
     }
 }
