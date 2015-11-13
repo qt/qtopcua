@@ -55,12 +55,19 @@ namespace QFreeOpcUaValueConverter
     OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type);
     QString nodeIdToString(const OpcUa::NodeId &id);
 
-    template <typename T> QVariantList getArray(const std::vector<T> &values)
+    template <typename T> QVariantList getArray(const std::vector<T> &values, QMetaType::Type typeoverride = QMetaType::UnknownType)
     {
         QVariantList ret;
         ret.reserve(values.size());
-        for (typename std::vector<T>::const_iterator it = values.cbegin(); it != values.cend(); ++it)
-            ret << *it;
+        for (typename std::vector<T>::const_iterator it = values.cbegin(); it != values.cend(); ++it) {
+            if (typeoverride == QMetaType::UnknownType) {
+                ret << *it;
+            } else {
+                QVariant var(typeoverride, 0);
+                var.setValue(*it);
+                ret << var;
+            }
+        }
         return ret;
     }
 
