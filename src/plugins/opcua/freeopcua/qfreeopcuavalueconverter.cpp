@@ -60,23 +60,33 @@ QVariant toQVariant(const OpcUa::Variant &variant)
         return getArray<bool>(variant.As<std::vector<bool>>());
 
     case OpcUa::VariantType::SBYTE:
-        if (variant.IsScalar())
-            return QVariant(variant.As<qint8>());
+        if (variant.IsScalar()) {
+            qint8 value = variant.As<qint8>();
+            return QVariant(QMetaType::SChar, &value);
+        }
         return getArray<qint8>(variant.As<std::vector<qint8>>());
 
     case OpcUa::VariantType::BYTE:
-        if (variant.IsScalar())
-            return QVariant(variant.As<quint8>());
+        if (variant.IsScalar()) {
+            quint8 value = variant.As<quint8>();
+            return QVariant(QMetaType::UChar, &value);
+        }
         return getArray<quint8>(variant.As<std::vector<quint8>>());
 
     case OpcUa::VariantType::INT16:
-        if (variant.IsScalar())
-            return QVariant(variant.As<qint16>());
+        if (variant.IsScalar()) {
+            QVariant var(QVariant::Int);
+            var.setValue(variant.As<qint16>());
+            return var;
+        }
         return getArray<qint16>(variant.As<std::vector<qint16>>());
 
     case OpcUa::VariantType::UINT16:
-        if (variant.IsScalar())
-            return QVariant(variant.As<quint16>());
+        if (variant.IsScalar()) {
+            QVariant var(QVariant::UInt);
+            var.setValue(variant.As<quint16>());
+            return var;
+        }
         return getArray<quint16>(variant.As<std::vector<quint16>>());
 
     case OpcUa::VariantType::INT32:
