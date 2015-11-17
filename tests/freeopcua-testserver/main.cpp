@@ -127,8 +127,8 @@ int main(int argc, char** argv)
     //  testFolder.AddVariable("ns=2;s=Demo.Static.Arrays.XmlElement", "XmlElementArrayTest", std::vector<XmlElement>());
 
     testFolder.AddVariable("ns=2;s=Demo.Static.Scalar.Boolean", "BoolScalarTest", true);
-    testFolder.AddVariable("ns=2;s=Demo.Static.Scalar.Byte", "ByteScalarTest", int8_t());
-    testFolder.AddVariable("ns=2;s=Demo.Static.Scalar.SByte", "SByteScalarTest", uint8_t());
+    testFolder.AddVariable("ns=2;s=Demo.Static.Scalar.Byte", "ByteScalarTest", uint8_t());
+    testFolder.AddVariable("ns=2;s=Demo.Static.Scalar.SByte", "SByteScalarTest", int8_t());
     testFolder.AddVariable("ns=2;s=Demo.Static.Scalar.Int16", "Int16ScalarTest", int16_t());
     testFolder.AddVariable("ns=2;s=Demo.Static.Scalar.Int32", "Int32ScalarTest", int32_t());
     testFolder.AddVariable("ns=2;s=Demo.Static.Scalar.Int64", "Int64ScalarTest", int64_t());
