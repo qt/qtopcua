@@ -37,7 +37,6 @@
 #ifndef ACCONTROL_H
 #define ACCONTROL_H
 
-#include <QtCore/qobject.h>
 #include <QtCore/qtimer.h>
 
 #include <opc/ua/node.h>
@@ -54,7 +53,6 @@ class ACControl : public QObject, public OpcUa::SubscriptionHandler
 public:
     explicit ACControl(QObject *parent = 0);
     void initNodes(OpcUa::UaServer &server);
-
 
     void DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr) Q_DECL_OVERRIDE;
 
