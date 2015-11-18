@@ -126,6 +126,12 @@ QOpcUaACControlTest::QOpcUaACControlTest(QWidget *parent)
     }
 }
 
+QOpcUaACControlTest::~QOpcUaACControlTest()
+{
+    delete m_pClient;
+    delete m_pProvider;
+}
+
 void QOpcUaACControlTest::writeValue(int val)
 {
     if (!m_pClient->write(SETPOINT_NODE, QVariant(static_cast<double>(val))))

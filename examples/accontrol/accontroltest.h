@@ -57,6 +57,7 @@ class QOpcUaACControlTest : public QMainWindow
 
 public:
     explicit QOpcUaACControlTest(QWidget *parent = 0);
+    virtual ~QOpcUaACControlTest();
 
 public slots:
     void writeValue(int val);
