@@ -47,14 +47,14 @@ QT_BEGIN_NAMESPACE
 class Q_OPCUA_EXPORT QOpcUaNode : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString name READ name)
-    Q_PROPERTY(QString type READ type)
-    Q_PROPERTY(int id READ nodeId)
-    Q_PROPERTY(QString xmlNodeId READ xmlNodeId)
-    Q_PROPERTY(int childCount READ childCount)
-    Q_PROPERTY(QStringList childIds READ childIds)
-    Q_PROPERTY(QVariant value READ value)
-    Q_PROPERTY(QString nodeClass READ nodeClass)
+    Q_PROPERTY(QString name READ name CONSTANT)
+    Q_PROPERTY(QString type READ type CONSTANT)
+    Q_PROPERTY(int id READ nodeId CONSTANT)
+    Q_PROPERTY(QString xmlNodeId READ xmlNodeId CONSTANT)
+    Q_PROPERTY(int childCount READ childCount CONSTANT)
+    Q_PROPERTY(QStringList childIds READ childIds CONSTANT)
+    Q_PROPERTY(QVariant value READ value CONSTANT)
+    Q_PROPERTY(QString nodeClass READ nodeClass CONSTANT)
 
 public:
 
