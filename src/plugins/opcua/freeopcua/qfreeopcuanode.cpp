@@ -57,7 +57,7 @@ QString QFreeOpcUaNode::name() const
 {
     try {
         return QString::fromStdString(m_node.GetAttribute(
-                                          OpcUa::AttributeId::DisplayName).As<OpcUa::LocalizedText>().Text);
+                                          OpcUa::AttributeId::DisplayName).Value.As<OpcUa::LocalizedText>().Text);
     } catch (const std::exception &ex) {
         qWarning() << "Failed to get BrowseName for node: " << ex.what();
     }
@@ -71,7 +71,7 @@ QString QFreeOpcUaNode::type() const
         OpcUa::NodeId idNode = m_node.GetDataType().As<OpcUa::NodeId>();
         return QString::fromStdString(m_client->GetNode(idNode)
                                       .GetAttribute(OpcUa::AttributeId::DisplayName)
-                                      .As<OpcUa::LocalizedText>()
+                                      .Value.As<OpcUa::LocalizedText>()
                                       .Text);
     } catch (const std::exception &ex) {
         qWarning() << ex.what();
@@ -163,7 +163,7 @@ QString QFreeOpcUaNode::xmlNodeId() const
 QString QFreeOpcUaNode::nodeClass() const
 {
     try {
-        int32_t temp = m_node.GetAttribute(OpcUa::AttributeId::NodeClass).As<int32_t>();
+        int32_t temp = m_node.GetAttribute(OpcUa::AttributeId::NodeClass).Value.As<int32_t>();
         OpcUa::NodeClass nc = static_cast<OpcUa::NodeClass>(temp);
 
         switch (nc) {
