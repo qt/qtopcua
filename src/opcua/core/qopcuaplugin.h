@@ -57,6 +57,7 @@ public:
     virtual QString provider() const = 0;
     virtual QOpcUaClient *createClient() = 0;
 };
+Q_DECLARE_INTERFACE(QOpcUaPlugin, QOpcUaProviderFactory_iid)
 
 QT_END_NAMESPACE
 

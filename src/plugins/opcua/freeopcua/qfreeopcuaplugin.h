@@ -46,6 +46,7 @@ class QFreeOpcUaPlugin : public QOpcUaPlugin
     Q_OBJECT
 
     Q_PLUGIN_METADATA(IID "org.qt-project.qt.opcua.providerfactory/1.0" FILE "freeopcua-metadata.json")
+    Q_INTERFACES(QOpcUaPlugin)
 
 public:
 
