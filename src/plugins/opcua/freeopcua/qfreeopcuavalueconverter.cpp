@@ -200,11 +200,10 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
         if (variant.type() == QVariant::Type::List) {
             QVariantList list = variant.toList();
             std::vector<OpcUa::DateTime> vec;
-            for (int i = 0; i < list.size(); i++) {
+            for (int i = 0; i < list.size(); i++)
                 vec.push_back(OpcUa::DateTime::FromTimeT(list[i].value<QDateTime>().toTime_t()));
-            }
-            var = OpcUa::Variant(vec);
-            return var;
+
+            return OpcUa::Variant(vec);
         }
         dt = OpcUa::DateTime::FromTimeT(variant.value<QDateTime>().toTime_t());
         return OpcUa::Variant(dt);
@@ -242,11 +241,10 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
         if (variant.type() == QVariant::Type::List) {
             QVariantList list = variant.toList();
             std::vector<std::string> vec;
-            for (int i = 0; i < list.size(); i++) {
+            for (int i = 0; i < list.size(); i++)
                 vec.push_back(list[i].value<QString>().toStdString());
-            }
-            var = OpcUa::Variant(vec);
-            return var;
+
+            return OpcUa::Variant(vec);
         }
         return OpcUa::Variant(variant.toString().toStdString());
 
@@ -269,11 +267,10 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
         if (variant.type() == QVariant::Type::List) {
             QVariantList list = variant.toList();
             std::vector<OpcUa::LocalizedText> vec;
-            for (int i = 0; i < list.size(); i++) {
+            for (int i = 0; i < list.size(); i++)
                 vec.push_back(OpcUa::LocalizedText(list[i].toString().toStdString(), std::string("en")));
-            }
-            var = OpcUa::Variant(vec);
-            return var;
+
+            return OpcUa::Variant(vec);
         }
         return OpcUa::Variant(OpcUa::LocalizedText(variant.toString().toStdString(), std::string("en")));
 
