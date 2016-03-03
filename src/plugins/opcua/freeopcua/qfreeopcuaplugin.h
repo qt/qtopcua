@@ -52,7 +52,6 @@ public:
     explicit QFreeOpcUaPlugin(QObject *parent = 0);
     ~QFreeOpcUaPlugin() Q_DECL_OVERRIDE;
 
-    QString provider() const Q_DECL_OVERRIDE;
     QOpcUaClient *createClient() Q_DECL_OVERRIDE;
 };
 

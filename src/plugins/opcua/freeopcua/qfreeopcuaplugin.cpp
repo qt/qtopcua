@@ -49,11 +49,6 @@ QFreeOpcUaPlugin::~QFreeOpcUaPlugin()
 {
 }
 
-QString QFreeOpcUaPlugin::provider() const
-{
-    return QStringLiteral("freeopcua");
-}
-
 QOpcUaClient *QFreeOpcUaPlugin::createClient()
 {
     return new QOpcUaClient(new QFreeOpcUaClient);

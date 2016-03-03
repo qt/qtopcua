@@ -54,7 +54,6 @@ public:
     explicit QOpcUaPlugin(QObject *parent = 0);
     ~QOpcUaPlugin() Q_DECL_OVERRIDE;
 
-    virtual QString provider() const = 0;
     virtual QOpcUaClient *createClient() = 0;
 };
 Q_DECLARE_INTERFACE(QOpcUaPlugin, QOpcUaProviderFactory_iid)
