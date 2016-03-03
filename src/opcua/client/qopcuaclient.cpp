@@ -126,13 +126,13 @@ bool QOpcUaClient::secureConnectToEndpoint(const QUrl &url)
     \fn bool QOpcUaClient::disconnectFromEndpoint()
 
     Disconnects from the server.
-    Returns \c true in case of success, \c false on error.
+    Returns \c true on success; otherwise \c false.
     \sa connectToEndpoint()
 */
 bool QOpcUaClient::disconnectFromEndpoint()
 {
     if (!isConnected())
-       return false;
+       return true;
 
     return d_func()->m_impl->disconnectFromEndpoint();
 }
