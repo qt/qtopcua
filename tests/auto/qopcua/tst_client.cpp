@@ -1034,12 +1034,13 @@ int main(int argc, char *argv[])
     int result = 0;
 
     // run tests for all available backends
-    if (QOpcUaProvider::availableBackends().size() == 0) {
+    QStringList availableBackends = QOpcUaProvider::availableBackends();
+    if (availableBackends.empty()) {
         qDebug("No OPCUA backends found, skipping tests.");
-        return 0;
+        return EXIT_SUCCESS;
     }
 
-    foreach (const QString &backend, QOpcUaProvider::availableBackends()) {
+    for (const QString &backend : availableBackends) {
         qDebug() << "Testing backend:" << backend;
 
         TestQOpcUaClient tc(backend);
