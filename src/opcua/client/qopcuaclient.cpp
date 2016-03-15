@@ -96,7 +96,7 @@ bool QOpcUaClient::connectToEndpoint(const QUrl &url)
     Q_D(QOpcUaClient);
     bool result = d->processUrl(url);
     if (result)
-     return d->m_impl->connectToEndpoint(url);
+        return d->m_impl->connectToEndpoint(url);
     else
         return false;
 }
