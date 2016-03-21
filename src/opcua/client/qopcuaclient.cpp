@@ -61,12 +61,6 @@ QT_BEGIN_NAMESPACE
     The identifier of a node residing in namespace 0 and having the numeric
     identifier 42, the string is \c ns=0;i=42, a node with a string
     identifier can be addressed via \c ns=0;s=myStringIdentifier.
-
-    \section1 Secure connection
-
-    \section2 FreeOPCUA
-    Currently, the only security mechanism implemented in FreeOPCUA is
-    user/password authentication which is done over an unencrypted channel.
 */
 
 /*!
@@ -80,6 +74,9 @@ QOpcUaClient::QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent)
     impl->m_clientPrivate = d_func();
 }
 
+/*!
+    Destroys the \l QOpcUaClient instance.
+ */
 QOpcUaClient::~QOpcUaClient()
 {
 }
@@ -90,6 +87,7 @@ QOpcUaClient::~QOpcUaClient()
     Connects to the OPC UA endpoint given in \a url.
     true is returned in case of success, false is returned when the connection
     fails.
+    \sa disconnectFromEndpoint()
 */
 bool QOpcUaClient::connectToEndpoint(const QUrl &url)
 {
@@ -112,6 +110,7 @@ bool QOpcUaClient::connectToEndpoint(const QUrl &url)
     is called.
 
     \warning Currently not supported by the FreeOPCUA backend.
+    \sa disconnectFromEndpoint()
 */
 bool QOpcUaClient::secureConnectToEndpoint(const QUrl &url)
 {
@@ -127,8 +126,8 @@ bool QOpcUaClient::secureConnectToEndpoint(const QUrl &url)
     \fn bool QOpcUaClient::disconnectFromEndpoint()
 
     Disconnects from the server.
-    true is returned in case of success, false is returned when the disconnect
-    fails.
+    Returns \c true in case of success, \c false on error.
+    \sa connectToEndpoint()
 */
 bool QOpcUaClient::disconnectFromEndpoint()
 {
@@ -138,8 +137,10 @@ bool QOpcUaClient::disconnectFromEndpoint()
     return d_func()->m_impl->disconnectFromEndpoint();
 }
 
-/*!
-    Returns the URL of the OPC UA server.
+/*! \fn QUrl QOpcUaClient::url() const
+
+    Returns the URL of the OPC UA server the client is currently connected to
+    or was last connected to.
 */
 QUrl QOpcUaClient::url() const
 {
@@ -149,10 +150,6 @@ QUrl QOpcUaClient::url() const
 /*!
     \property QOpcUaClient::connected
     \brief the connection status of QOpcUaClient.
-
-    The connection can be either unsecure or secure.
-
-    \sa setConnected()
 */
 bool QOpcUaClient::isConnected() const
 {
@@ -162,8 +159,10 @@ bool QOpcUaClient::isConnected() const
 /*!
     \fn QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 
-    Returns a pointer to a QOpcUaNode object containing the information about
-    the OPC UA node identified by \a nodeId.
+    Returns an QOpcUaNode object containing the information about
+    the OPC UA node identified by \a nodeId. The caller becomes the owner
+    of the node object. For this method to work the client needs to be
+    connected to the server. A null pointer is returned on error.
 */
 QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 {
@@ -173,16 +172,28 @@ QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
     return d_func()->m_impl->node(nodeId);
 }
 
+/*!
+    \fn QString QOpcUaClient::backend() const
+
+    Returns the name of the backend used by this instance of QOpcUaClient,
+    e.g. "freeopcua".
+*/
 QString QOpcUaClient::backend() const
 {
     return d_func()->m_impl->backend();
 }
 
 /*!
- * \fn QString QOpcUaClient::createSubscription()
- * \brief QOpcUaClient::createSubscription
- * \return a new subscription. The caller takes ownership.
- */
+    \fn QString QOpcUaClient::createSubscription(quint32 interval)
+
+    Creates a subscription with \a interval milliseconds publishing period
+    on the server and returns a QOpcUaSubscription object for it. The
+    subscription may be used to monitor nodes for events or value changes.
+    The caller becomes the owner of the newly created subscription object.
+
+    For this method to work the client needs to be connected to the server.
+    A null pointer is returned on error.
+*/
 QOpcUaSubscription *QOpcUaClient::createSubscription(quint32 interval)
 {
     if (!isConnected())
