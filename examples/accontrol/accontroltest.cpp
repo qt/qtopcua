@@ -186,14 +186,16 @@ void QOpcUaACControlTest::updateTemperature(QVariant val)
 
 void QOpcUaACControlTest::start(void)
 {
-    bool res = m_pClient->node(QStringLiteral("ns=3;s=ACControl.Start"))->setValue(true);
+    QScopedPointer<QOpcUaNode> node(m_pClient->node(QStringLiteral("ns=3;s=ACControl.Start")));
+    bool res = node->setValue(true);
     if (!res)
         qDebug("Could not call start method");
 }
 
 void QOpcUaACControlTest::stop(void)
 {
-    bool res = m_pClient->node(QStringLiteral("ns=3;s=ACControl.Stop"))->setValue(true);
+    QScopedPointer<QOpcUaNode> node(m_pClient->node(QStringLiteral("ns=3;s=ACControl.Stop")));
+    bool res = node->setValue(true);
     if (!res)
         qDebug("Could not call stop method");
 }
