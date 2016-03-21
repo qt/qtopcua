@@ -179,7 +179,7 @@ QString QOpcUaNode::nodeClass() const
 }
 
 /*!
-    \brief Returns the value as a base64 encoded string if the type is "ByteArray".
+    \brief Returns the value as a base64 encoded string, if the type is "ByteArray".
     If the value has an other type, the value is returned unencoded.
     This comes in handy when the value is an image or icon which can be
     displayed in QML applications via \l {http://dataurl.net/#about} {Data URL}.
