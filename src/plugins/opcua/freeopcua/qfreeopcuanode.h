@@ -63,8 +63,6 @@ public:
     QString nodeClass() const Q_DECL_OVERRIDE;
 
 private:
-    QString getXmlId_internal(const OpcUa::Node &node);
-
     OpcUa::Node m_node;
     QString m_xmlNodeId;
     QFreeOpcUaClient *m_client;
