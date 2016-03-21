@@ -82,20 +82,28 @@ QOpcUaACControlTest::QOpcUaACControlTest(QWidget *parent)
     // setup UI, the OPC UA connection and some subscriptions
     ui.setupUi(this);
 
+    if (!parser.isSet(pluginOption)) {
+        qWarning() << "You must select a plugin via -p or --plugin, e.g. freeopcua";
+        exit(EXIT_FAILURE);
+    }
+
     m_pProvider = new QOpcUaProvider(this);
     m_pClient = m_pProvider->createClient(parser.value(pluginOption));
 
     if (!m_pClient) {
-        qFatal("Could not initialize QtOpcUa plugin: %s\n",
-               qPrintable(parser.value(pluginOption)));
+        qWarning() << "Could not initialize QtOpcUa plugin: " <<
+               qPrintable(parser.value(pluginOption));
+        exit(EXIT_FAILURE);
     }
 
     // show currently selected plugin in the title bar
     setWindowTitle(windowTitle() + " (backend: " + m_pClient->backend() + ")");
 
     bool res = m_pClient->connectToEndpoint(parser.value(endpointOption));
-    if (!res)
-        qFatal("Failed to connect to endpoint: %s\n", qPrintable(parser.value(endpointOption)));
+    if (!res) {
+        qWarning() << "Failed to connect to endpoint: " << qPrintable(parser.value(endpointOption));
+        exit(EXIT_FAILURE);
+    }
 
     m_oneSecondSubscription = m_pClient->createSubscription(1000);
     // get current time from server every 1 second and display it
