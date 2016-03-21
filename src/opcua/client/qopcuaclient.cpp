@@ -185,6 +185,9 @@ QString QOpcUaClient::backend() const
  */
 QOpcUaSubscription *QOpcUaClient::createSubscription(quint32 interval)
 {
+    if (!isConnected())
+       return Q_NULLPTR;
+
     return d_func()->m_impl->createSubscription(interval);
 }
 
