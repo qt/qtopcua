@@ -226,8 +226,7 @@ QPair<QString, QString> QFreeOpcUaNode::readEui() const
 // Support for structures in freeopcua seems to be not implemented yet
 QPair<double, double> QFreeOpcUaNode::readEuRange() const
 {
-    // Return empty QVariant
-    return QPair<double, double>();
+    return QPair<double, double>(qQNaN(), qQNaN());
 }
 
 QVector<QPair<QVariant, QDateTime> > QFreeOpcUaNode::readHistorical(uint maxCount,

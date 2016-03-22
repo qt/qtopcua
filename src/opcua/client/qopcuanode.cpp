@@ -212,26 +212,29 @@ bool QOpcUaNode::setValue(const QVariant &value, QOpcUa::Types type)
 }
 
 /*!
-    \fn QPair<QString, QString> QOpcUaNode::readEui() const
+    \fn QPair<double, double> QOpcUaNode::readEuRange() const
 
-    Reads Engineering unit information from the OPC UA node and returns it
-    as a pair of strings containing the unit and its description.
+    Reads value range from the OPC UA node and
+    returns it as a pair of doubles containing the lower and upper limit.
+
+    NaN values are returned if the read has failed or if the plugin does not
+    support reading EURanges from the server.
 
     \warning Currently not supported by the FreeOPCUA backend
 */
 QPair<double, double> QOpcUaNode::readEuRange() const
 {
     if (d_func()->m_client.isNull() || !d_func()->m_client->isConnected())
-        return QPair<double, double>();
+        return QPair<double, double>(qQNaN(), qQNaN());
 
     return d_func()->m_impl->readEuRange();
 }
 
 /*!
-    \fn QPair<double, double> QOpcUaNode::readEuRange() const
+    \fn QPair<QString, QString> QOpcUaNode::readEui() const
 
-    Reads value range from the OPC UA node and
-    returns it as a pair of doubles containing the lower and upper limit.
+    Reads Engineering unit information from the OPC UA node and returns it
+    as a pair of strings containing the unit and its description.
 
     \warning Currently not supported by the FreeOPCUA backend
 */
