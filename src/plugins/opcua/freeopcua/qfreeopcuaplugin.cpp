@@ -39,7 +39,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QFreeOpcUaPlugin::QFreeOpcUaPlugin(QObject *parent /* = 0 */)
+QFreeOpcUaPlugin::QFreeOpcUaPlugin(QObject *parent)
     : QOpcUaPlugin(parent)
 {
 }
