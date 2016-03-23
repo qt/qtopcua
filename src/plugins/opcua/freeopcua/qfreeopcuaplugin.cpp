@@ -35,7 +35,6 @@
 ****************************************************************************/
 
 #include "qfreeopcuaplugin.h"
-
 #include "qfreeopcuaclient.h"
 
 QT_BEGIN_NAMESPACE
@@ -44,7 +43,6 @@ QFreeOpcUaPlugin::QFreeOpcUaPlugin(QObject *parent /* = 0 */)
     : QOpcUaPlugin(parent)
 {
 }
-
 
 QFreeOpcUaPlugin::~QFreeOpcUaPlugin()
 {
