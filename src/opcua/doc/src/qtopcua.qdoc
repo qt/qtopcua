@@ -52,8 +52,10 @@
 
     The stacks are connected via plugins and can be selected/switched at
     runtime.
+    Currently, only the LGPL v3 implementation FreeOPCUA is provided.
+    Other SDKs can be wrapped in additional plugins.
 
-    Currently an HMI focused subset of functionality is implemented in
+    An HMI focused subset of functionality is implemented in
     QOpcUaClient, which can be used to visualize data present on an OPC UA
     server.
 
@@ -67,7 +69,7 @@
 
     \section1 Implemented features from the OPC UA protocol
 
-    Not all features offered by the wrapper classes can be used with all
+    Not all features offered by the plugins can be used with all
     backends. The following table shows the current status of implementation.
 
     \table
@@ -101,8 +103,7 @@
     \li ?
     \row
     \li Data change subscription
-    \li Unstable implementation in FreeOPCUA, unsubscribing is currently not\
-        possible
+    \li Unstable implementation in FreeOPCUA
     \li ?
     \row
     \li Event subscription
@@ -114,7 +115,7 @@
     \li ?
     \row
     \li Historical access
-    \li Currently not available in FreeOPCUA
+    \li
     \li ?
     \endtable
 
@@ -184,6 +185,13 @@
     \li
     \li QByteArray
     \endtable
+
+    \section1 Classes and ownership
+    Four important classes are exposed to the user: QOpcUaClient, QOpcUaNode,
+    QOpcUaMonitoredEvent and QOpcUaMonitoredValue.
+
+    Objects of the types QOpcUaNode, QOpcUaMonitoredEvent and QOpcUaMonitoredValue
+    are owned by the user and must be deleted when they are no longer needed.
 
     \section1 Related Information
 

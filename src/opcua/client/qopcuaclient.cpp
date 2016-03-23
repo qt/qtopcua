@@ -48,25 +48,20 @@ QT_BEGIN_NAMESPACE
 
     QOpcUaClient implements basic client capabilities to communicate with
     OPC UA enabled devices and applications.
-    Three classes are exposed to the user: QOpcUaClient, QOpcUaNode and
-    QOpcUaSubscription.
-    The functionality is implemented in plugins. Currently only one utilizing the
-    LGPL v3 implementation FreeOPCUA is provided. Other SDKs can be wrapped in
-    additional plugins.
 
     \section1 Addressing Nodes
 
     For an introduction to nodes, see QOpcUaNode.
 
-    Addressing nodes on the OPC UA server using QOpcUaClient is done via an
-    XML format.
+    Addressing nodes on the OPC UA server using QOpcUaClient is done via a
+    text format.
     A node is identified by its namespace ID and an identifier which can e. g.
     be numeric or a string.
     The identifier of a node residing in namespace 0 and having the numeric
-    identifier 42, the XML string is \c ns=0;i=42, a node with a string
+    identifier 42, the string is \c ns=0;i=42, a node with a string
     identifier can be addressed via \c ns=0;s=myStringIdentifier.
 
-    \section1 Security
+    \section1 Secure connection
 
     \section2 FreeOPCUA
     Currently, the only security mechanism implemented in FreeOPCUA is
@@ -74,9 +69,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    Constructs a QOpcUaClient.
-    Can only be used in derived classes.
-    The \a parent is passed on to the QObject constructor.
+    \internal QOpcUaClientImpl is an opaque type (as seen from the public API).
+    This prevents users of the public API to use this constructor (eventhough
+    it is public).
 */
 QOpcUaClient::QOpcUaClient(QObject *parent)
     : QObject(parent)
@@ -84,11 +79,6 @@ QOpcUaClient::QOpcUaClient(QObject *parent)
 {
 }
 
-/*!
-    Destroys the QOpcUaClient object and all associated objects like
-    subscriptions and nodes and unloads the plugin if it's the last object
-    using it.
-*/
 QOpcUaClient::~QOpcUaClient()
 {
     cleanupChildren();
@@ -156,97 +146,7 @@ bool QOpcUaClient::secureConnectToEndpoint()
     Disconnects from the server.
     true is returned in case of success, false is returned when the disconnect
     fails.
-
-    Must be reimplemented in the concrete plugin implementation.
 */
-
-
-/*!
-    \fn QVariant QOpcUaClient::read(const QString &xmlNodeId)
-
-    Reads the value of the OPC UA node given in \a xmlNodeId.
-
-    Must be reimplemented in the concrete plugin implementation.
-*/
-
-/*!
-    \fn bool QOpcUaClient::write(const QString &xmlNodeId, const QVariant &value, QOpcUa::Types type = QOpcUa::Undefined)
-
-    Writes the value given in \a value to the OPC UA node given in
-    \a xmlNodeId. The data type must be supplied in \a type.
-    true is returned in case of success, false is returned when the
-    write call fails.
-
-    Must be reimplemented in the concrete plugin implementation.
-  */
-
-/*!
-    \fn bool QOpcUaClient::call(const QString &xmlObjectNodeId, const QString &xmlMethodNodeId, QVector<QOpcUaTypedVariant> *args = 0, QVector<QVariant>  *ret = 0)
-
-    Calls the OPC UA method \a xmlMethodNodeId of the object
-    \a xmlObjectNodeId with the parameters given via \a args. The result is
-    returned in \a ret. The success of the service call is returned by the
-    method.
-
-    Must be reimplemented in the concrete plugin implementation.
-*/
-
-/*!
-    \fn QPair<QString, QString> QOpcUaClient::readEui(const QString &xmlNodeId)
-
-    Reads Engineering unit information from the OPC UA node identified by
-    \a xmlNodeId and returned as a pair of strings containing the unit and
-    its description.
-
-    Must be reimplemented in the concrete plugin implementation.
-*/
-
-/*!
-    \fn QPair<double, double> QOpcUaClient::readEuRange(const QString &xmlNodeId)
-
-    Reads value range from the OPC UA node identified by \a xmlNodeId and
-    returned as a pair of doubles containing the lower and upper limit.
-
-    Must be reimplemented in the concrete plugin implementation.
-*/
-
-/*!
-    \fn QOpcUaMonitoredItem *QOpcUaClient::dataMonitor(double interval, const QString &xmlNodeId)
-
-    Returns a \l QOpcUaMonitoredItem for the node identified by the \a xmlNodeId and
-    the requested \a interval.
-*/
-
-/*!
-    \fn QOpcUaMonitoredItem *QOpcUaClient::eventMonitor(const QString &xmlEventNodeId)
-
-    Returns a \l QOpcUaMonitoredItem pointer for the event identified by \a xmlEventNodeId.
-*/
-
-/*!
-    \fn QOpcUaNode *QOpcUaClient::node(const QString &xmlNodeId)
-
-    Returns a pointer to a QOpcUaNode object containing the information about
-    the OPC UA node identified by \a xmlNodeId.
-
-    Must be reimplemented in the concrete plugin implementation.
-*/
-
-/*!
-    \fn QList<QPair<QVariant, QDateTime> > QOpcUaClient::readHistorical(const QString &node, int maxCount, const QDateTime &begin, const QDateTime &end)
-
-    Reads up to \a maxCount points of historical data from the OPC UA server
-    for the node \a node between the two timestamps \a begin and \a end.
-
-    Must be reimplemented in the concrete plugin implementation.
-*/
-
-
-/*!
-    Sets \a url as the URL of the OPC UA server to connect to.
-
-    For a secure connection user name and password has to be set on \a url before.
- */
 void QOpcUaClient::setUrl(const QUrl &url)
 {
     m_url = url;
@@ -282,13 +182,8 @@ void QOpcUaClient::cleanupChildren()
 /*!
   \fn QOpcUaClient::createSubscription(double interval)
 
-  This method must be overridden in derived classes to provide new subscriptions.
-  QOpcUaClient keeps track of existing subscriptions and only asks for a new one
-  if there is not already one with the requested \a interval.
-
-  Returns a new subscription, 0 if the creation failed.
-
-  \sa getSubscription()
+    Returns a pointer to a QOpcUaNode object containing the information about
+    the OPC UA node identified by \a nodeId.
 */
 
 /*!
@@ -311,9 +206,9 @@ QOpcUaSubscription *QOpcUaClient::getSubscription(double interval)
 }
 
 /*!
-    Removes the subscription with the specified \a interval.
-    Returns false if there is no matching subscription, true if it was found
-    and deleted.
+ * \fn QString QOpcUaClient::createSubscription()
+ * \brief QOpcUaClient::createSubscription
+ * \return a new subscription. The caller takes ownership.
  */
 bool QOpcUaClient::removeSubscription(double interval)
 {

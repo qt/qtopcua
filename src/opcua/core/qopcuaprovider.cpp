@@ -50,17 +50,13 @@ QT_BEGIN_NAMESPACE
     \class QOpcUaProvider
     \inmodule QtOpcUa
 
+    \brief QOpcUaProvider creates an instance of QOpcUaClient
+
     QOpcUaProvider allows the user to create an instance of QOpcUaClient by
     loading a QOpcUaPlugin using the Qt plugin system.
 
     For the available plugins and their capabilities please refer to the
     \l QOpcUaClient documentation.
-*/
-
-/*!
-    \property QOpcUaProvider::backend
-    \brief the name of the backend that is going to be used.
-    In the standard configuration the only useful value is "freeopcua".
 */
 
 #ifndef QT_NO_LIBRARY
@@ -136,9 +132,6 @@ QOpcUaProvider::QOpcUaProvider(const QString &backend, QObject* parent)
     setBackend(backend);
 }
 
-/*!
-    Destroys the currently loaded QOpcUaPlugin.
-*/
 QOpcUaProvider::~QOpcUaProvider()
 {
     delete m_pBackend;
@@ -180,9 +173,12 @@ void QOpcUaProvider::setBackend(const QString &name)
 }
 
 /*!
-    Returns a pointer to a QOpcUaClient object by loading the selected plugin
-    and creating a client object.
+    Returns a pointer to a QOpcUaClient object by loading the selected backend
+    as a plugin and creating a client object.
     If the plugin loading fails, 0 is returned instead.
+
+    The user is responsible for deleting the returned \a QOpcUaClient object
+    when it is no longer needed.
 */
 QOpcUaClient *QOpcUaProvider::createClient()
 {
