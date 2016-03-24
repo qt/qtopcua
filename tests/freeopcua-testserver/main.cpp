@@ -141,7 +141,7 @@ int main(int argc, char** argv)
     testFolder.AddVariable("ns=2;s=Demo.Static.Scalar.DateTime", "DateTimeScalarTest", DateTime());
     testFolder.AddVariable("ns=2;s=Demo.Static.Scalar.LocalizedText", "LocalizedTextScalarTest", LocalizedText());
     testFolder.AddVariable("ns=2;s=Demo.Static.Scalar.NodeId", "NodeIdScalarTest", NodeId());
-    //  testFolder.AddVariable("ns=2;s=Demo.Static.Scalar.XmlElement", "XmlElementScalarTest", XmlElement());
+    testFolder.AddVariable("ns=2;s=Demo.Static.Scalar.ByteString", "ByteStringScalarTest", ByteString());
 
     Node demoFolder = objects.AddFolder("ns=3;s=DemoFolder", "DemoFolder");
     Node timeTickerNode = demoFolder.AddVariable("ns=2;s=DemoFolder.TimeTicker", "TimeTicker", DateTime());
