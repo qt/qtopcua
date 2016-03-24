@@ -54,7 +54,6 @@ QFreeOpcUaNode::QFreeOpcUaNode(OpcUa::Node node, QFreeOpcUaClient *client)
 
 QFreeOpcUaNode::~QFreeOpcUaNode()
 {
-
 }
 
 QString QFreeOpcUaNode::name() const
@@ -65,7 +64,6 @@ QString QFreeOpcUaNode::name() const
     } catch (const std::exception &ex) {
         qWarning() << "Failed to get BrowseName for node: " << ex.what();
     }
-
     return QString();
 }
 
@@ -100,7 +98,6 @@ QVariant QFreeOpcUaNode::value() const
 QStringList QFreeOpcUaNode::childIds() const
 {
     QStringList result;
-
     try {
         std::vector<OpcUa::Node> tmp = m_node.GetChildren();
         result.reserve(tmp.size());
