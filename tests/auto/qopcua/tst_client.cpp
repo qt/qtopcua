@@ -989,8 +989,15 @@ private slots:
 
     void disconnect()
     {
+        QVERIFY(m_connected == true);
+
         bool disconnected = m_client->disconnectFromEndpoint();
         QVERIFY(disconnected == true);
+
+        QTRY_VERIFY_WITH_TIMEOUT(m_connected == false, 1250); // Wait 1.25 seconds for state change
+
+        QScopedPointer<QOpcUaNode> node(m_client->node(readWriteNode));
+        QVERIFY(node == 0);
     }
 
     void cleanupTestCase()
