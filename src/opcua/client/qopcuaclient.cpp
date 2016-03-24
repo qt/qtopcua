@@ -34,7 +34,8 @@
 **
 ****************************************************************************/
 
-#include "qopcuaclient.h"
+#include <QtOpcUa/qopcuaclient.h>
+#include <private/qopcuaclient_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -73,28 +74,14 @@ QT_BEGIN_NAMESPACE
     This prevents users of the public API to use this constructor (eventhough
     it is public).
 */
-QOpcUaClient::QOpcUaClient(QObject *parent)
-    : QObject(parent)
-    , m_connected(false)
+QOpcUaClient::QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent)
+    : QObject(*new QOpcUaClientPrivate(impl), parent)
 {
+    impl->m_clientPrivate = d_func();
 }
 
 QOpcUaClient::~QOpcUaClient()
 {
-    cleanupChildren();
-}
-
-
-/*!
-    Derived classes can call this to set the connection state to \a connected.
-    A signal \c connectedChanged() is emitted with the new value.
-    Also the new value is returned.
-*/
-bool QOpcUaClient::setConnected(bool connected)
-{
-    m_connected = connected;
-    emit connectedChanged(m_connected);
-    return m_connected;
 }
 
 /*!
@@ -104,17 +91,14 @@ bool QOpcUaClient::setConnected(bool connected)
     true is returned in case of success, false is returned when the connection
     fails.
 */
-
-/*!
-    Connects to the endpoint given via the property \c url.
-    true is returned in case of success, false is returned when the connection
-    fails.
-*/
-bool QOpcUaClient::connectToEndpoint()
+bool QOpcUaClient::connectToEndpoint(const QUrl &url)
 {
-    if (!m_url.isEmpty())
-        return connectToEndpoint(m_url);
-    return false;
+    Q_D(QOpcUaClient);
+    bool result = d->processUrl(url);
+    if (result)
+     return d->m_impl->connectToEndpoint(url);
+    else
+        return false;
 }
 
 /*!
@@ -124,20 +108,19 @@ bool QOpcUaClient::connectToEndpoint()
     supported by client and server.
     true is returned in case of success, false is returned when the connection
     fails.
-*/
+    User name and password must be set on \a url before connectToEndpoint
+    is called.
 
-
-/*!
-    Connects to an endpoint given via the property \c url using the highest
-    security level supported by client and server.
-    true is returned in case of success, false is returned when the connection
-    fails.
+    \warning Currently not supported by the FreeOPCUA backend.
 */
-bool QOpcUaClient::secureConnectToEndpoint()
+bool QOpcUaClient::secureConnectToEndpoint(const QUrl &url)
 {
-    if (!m_url.isEmpty())
-        return secureConnectToEndpoint(m_url);
-    return false;
+    Q_D(QOpcUaClient);
+    bool result = d->processUrl(url);
+    if (result)
+        return d->m_impl->secureConnectToEndpoint(url);
+    else
+        return false;
 }
 
 /*!
@@ -147,9 +130,12 @@ bool QOpcUaClient::secureConnectToEndpoint()
     true is returned in case of success, false is returned when the disconnect
     fails.
 */
-void QOpcUaClient::setUrl(const QUrl &url)
+bool QOpcUaClient::disconnectFromEndpoint()
 {
-    m_url = url;
+    if (!isConnected())
+       return false;
+
+    return d_func()->m_impl->disconnectFromEndpoint();
 }
 
 /*!
@@ -157,52 +143,39 @@ void QOpcUaClient::setUrl(const QUrl &url)
 */
 QUrl QOpcUaClient::url() const
 {
-    return m_url;
+    return d_func()->m_url;
 }
 
 /*!
     \property QOpcUaClient::connected
     \brief the connection status of QOpcUaClient.
+
+    The connection can be either unsecure or secure.
+
+    \sa setConnected()
 */
 bool QOpcUaClient::isConnected() const
 {
-    return m_connected;
+    return d_func()->m_connected;
 }
 
 /*!
-    \internal
-    Destroys all node objects.
-*/
-void QOpcUaClient::cleanupChildren()
-{
-    QList<QOpcUaNode *> nodes = findChildren<QOpcUaNode *>();
-    qDeleteAll(nodes);
-}
-
-/*!
-  \fn QOpcUaClient::createSubscription(double interval)
+    \fn QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 
     Returns a pointer to a QOpcUaNode object containing the information about
     the OPC UA node identified by \a nodeId.
 */
-
-/*!
-    Returns a pointer to a \l QOpcUaSubscription with the specified \a interval.
-    If such a subscription does not exist yet, it is created.
-
-    \sa createSubscription()
- */
-QOpcUaSubscription *QOpcUaClient::getSubscription(double interval)
+QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 {
-    if (m_subscriptions.contains(interval))
-        return m_subscriptions.value(interval);
+    if (!isConnected())
+       return Q_NULLPTR;
 
-    QOpcUaSubscription *newSubscription = createSubscription(interval);
+    return d_func()->m_impl->node(nodeId);
+}
 
-    if (newSubscription)
-        m_subscriptions.insert(interval, newSubscription);
-
-    return newSubscription;
+QString QOpcUaClient::backend() const
+{
+    return d_func()->m_impl->backend();
 }
 
 /*!
@@ -210,15 +183,9 @@ QOpcUaSubscription *QOpcUaClient::getSubscription(double interval)
  * \brief QOpcUaClient::createSubscription
  * \return a new subscription. The caller takes ownership.
  */
-bool QOpcUaClient::removeSubscription(double interval)
+QOpcUaSubscription *QOpcUaClient::createSubscription(quint32 interval)
 {
-    if (m_subscriptions.contains(interval)) {
-        delete m_subscriptions.value(interval);
-        m_subscriptions.remove(interval);
-        return true;
-    }
-
-    return false;
+    return d_func()->m_impl->createSubscription(interval);
 }
 
 QT_END_NAMESPACE

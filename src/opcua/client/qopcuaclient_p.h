@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
+** Copyright (C) 2016 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,36 +34,39 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAPROVIDER_H
-#define QOPCUAPROVIDER_H
+#ifndef QOPCUACLIENT_P_H
+#define QOPCUACLIENT_P_H
+
+#include "qopcuaclient.h"
+#include "qopcuaclientimpl_p.h"
 
 #include <QtOpcUa/qopcuaglobal.h>
+#include <QtOpcUa/qopcuavaluesubscription.h>
+
+#include <private/qobject_p.h>
 
 #include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
+#include <QtCore/qurl.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaPlugin;
-class QOpcUaClient;
-
-class Q_OPCUA_EXPORT QOpcUaProvider : public QObject
+class Q_OPCUA_EXPORT QOpcUaClientPrivate : public QObjectPrivate
 {
-    Q_OBJECT
-
 public:
-    static QStringList availableBackends();
+    Q_DECLARE_PUBLIC(QOpcUaClient)
 
-    explicit QOpcUaProvider(QObject *parent = 0);
-    ~QOpcUaProvider() Q_DECL_OVERRIDE;
+    QOpcUaClientPrivate(QOpcUaClientImpl *impl);
+    ~QOpcUaClientPrivate() Q_DECL_OVERRIDE;
 
-    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
+    QScopedPointer<QOpcUaClientImpl> m_impl;
+    bool m_connected;
+    QUrl m_url;
 
-private:
-    QHash<QString, QOpcUaPlugin*> m_plugins;
+    void setConnected(bool connected);
+    bool processUrl(const QUrl &url);
 };
 
 QT_END_NAMESPACE
 
-#endif // QOPCUAPROVIDER_H
+#endif // QOPCUACLIENT_P_H

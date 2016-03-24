@@ -34,36 +34,44 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAPROVIDER_H
-#define QOPCUAPROVIDER_H
-
-#include <QtOpcUa/qopcuaglobal.h>
-
-#include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
+#include "qopcuavaluesubscription.h"
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaPlugin;
-class QOpcUaClient;
+/*!
+    \class QOpcUaValueSubscription
+    \inmodule QtOpcUa
 
-class Q_OPCUA_EXPORT QOpcUaProvider : public QObject
+    \brief Enables the user to utilize the
+    subscription mechanism in OPC UA for data change subscriptions.
+
+    \note This class is not exposed to application developers.
+*/
+
+/*!
+    Creates an empty QOpcUaValueSubscription object with interval \a interval
+ */
+QOpcUaValueSubscription::QOpcUaValueSubscription(uint interval)
+    : QOpcUaSubscription()
+    , d_ptr(0)  // new QOpcUaValueSubscriptionPrivate(this))
 {
-    Q_OBJECT
+    m_interval = interval;
+}
 
-public:
-    static QStringList availableBackends();
+/*!
+    Return the interval of the subscription.
+ */
+uint QOpcUaValueSubscription::interval() const
+{
+   return m_interval;
+}
 
-    explicit QOpcUaProvider(QObject *parent = 0);
-    ~QOpcUaProvider() Q_DECL_OVERRIDE;
+/*!
+    \fn QOpcUaMonitoredValue QOpcUaValueSubscription::addValue(const QString &nodeId)
 
-    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
+    Adds the node with \a nodeId to this subscription.
 
-private:
-    QHash<QString, QOpcUaPlugin*> m_plugins;
-};
+    Must be reimplemented in the concrete plugin implementation.
+*/
 
 QT_END_NAMESPACE
-
-#endif // QOPCUAPROVIDER_H

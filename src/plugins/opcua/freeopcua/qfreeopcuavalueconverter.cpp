@@ -324,13 +324,13 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
 
 QString nodeIdToString(const OpcUa::NodeId &id)
 {
-    QString xmlNodeId = QString("ns=%1;").arg(id.GetNamespaceIndex());
+    QString nodeId = QString("ns=%1;").arg(id.GetNamespaceIndex());
     if (id.IsInteger()) {
-        xmlNodeId += QString("i=%1").arg(id.GetIntegerIdentifier());
+        nodeId += QString("i=%1").arg(id.GetIntegerIdentifier());
     } else if (id.IsString()) {
-        xmlNodeId += QString("s=%1").arg(id.GetStringIdentifier().c_str());
+        nodeId += QString("s=%1").arg(id.GetStringIdentifier().c_str());
     }
-    return xmlNodeId;
+    return nodeId;
 }
 
 OpcUa::Variant toVariant(const QVariant &variant)

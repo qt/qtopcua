@@ -34,36 +34,34 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAPROVIDER_H
-#define QOPCUAPROVIDER_H
+#ifndef QOPCUAVALUESUBSCRIPTION_H
+#define QOPCUAVALUESUBSCRIPTION_H
 
-#include <QtOpcUa/qopcuaglobal.h>
-
-#include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
+#include <QtOpcUa/qopcuasubscription.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaPlugin;
-class QOpcUaClient;
+class QOpcUaMonitoredValue;
+class QOpcUaValueSubscriptionPrivate;
 
-class Q_OPCUA_EXPORT QOpcUaProvider : public QObject
+class Q_OPCUA_EXPORT QOpcUaValueSubscription : public QOpcUaSubscription
 {
-    Q_OBJECT
-
 public:
-    static QStringList availableBackends();
+    ~QOpcUaValueSubscription() Q_DECL_OVERRIDE = default;
 
-    explicit QOpcUaProvider(QObject *parent = 0);
-    ~QOpcUaProvider() Q_DECL_OVERRIDE;
+    virtual QOpcUaMonitoredValue *addValue(const QString &nodeId) = 0;
 
-    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
+    uint interval() const;
+
+protected:
+    explicit QOpcUaValueSubscription(uint interval);
+
+    uint m_interval;
 
 private:
-    QHash<QString, QOpcUaPlugin*> m_plugins;
+    Q_DECLARE_PRIVATE(QOpcUaValueSubscription)
 };
 
 QT_END_NAMESPACE
 
-#endif // QOPCUAPROVIDER_H
+#endif // QOPCUAVALUESUBSCRIPTION_H

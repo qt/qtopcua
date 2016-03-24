@@ -34,36 +34,48 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAPROVIDER_H
-#define QOPCUAPROVIDER_H
-
-#include <QtOpcUa/qopcuaglobal.h>
-
-#include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
+#include "qopcuatype.h"
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaPlugin;
-class QOpcUaClient;
+/*!
+    \namespace QOpcUa
+    \ingroup modules
+    \inmodule QtOpcua
 
-class Q_OPCUA_EXPORT QOpcUaProvider : public QObject
-{
-    Q_OBJECT
+    \brief The QOpcUa namespace contains miscellaneous identifiers used throughout the Qt OpcUa library.
+*/
 
-public:
-    static QStringList availableBackends();
+/*!
+    \enum QOpcUa::Types
 
-    explicit QOpcUaProvider(QObject *parent = 0);
-    ~QOpcUaProvider() Q_DECL_OVERRIDE;
+    Enumerates the types supported by Qt OpcUa.
 
-    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
+    \value Boolean
+    \value Int32
+    \value UInt32
+    \value Double
+    \value Float
+    \value String
+    \value LocalizedText
+    \value DateTime
+    \value UInt16
+    \value Int16
+    \value UInt64 \warning Broken with the FreeOPCUA backend
+    \value Int64 \warning Broken with the FreeOPCUA backend
+    \value Byte
+    \value SByte
+    \value ByteString
+    \value XmlElement \warning Currently not supported by the FreeOPCUA backend
+    \value NodeId \warning Currently not supported by the FreeOPCUA backend
+    \value Undefined
+*/
 
-private:
-    QHash<QString, QOpcUaPlugin*> m_plugins;
-};
+/*!
+    \typedef QOpcUa::TypedVariant
+
+    This is QPair<QVariant, QOpcUa::Types>.
+*/
 
 QT_END_NAMESPACE
 
-#endif // QOPCUAPROVIDER_H

@@ -46,9 +46,11 @@
 #include "ui_accontroltest.h"
 
 QT_BEGIN_NAMESPACE
-class QOpcUaProvider;
 class QOpcUaClient;
-class QOpcUaMonitoredItem;
+class QOpcUaNode;
+class QOpcUaProvider;
+class QOpcUaMonitoredValue;
+class QOpcUaSubscription;
 QT_END_NAMESPACE
 
 class QOpcUaACControlTest : public QMainWindow
@@ -71,10 +73,19 @@ public slots:
 private:
     Ui::QOpcUaACControlTest ui;
 
-    QOpcUaMonitoredItem *m_pTimeMonitor;
-    QOpcUaMonitoredItem *m_pSetPointMonitor;
-    QOpcUaMonitoredItem *m_pTemperatureMonitor;
-    QOpcUaMonitoredItem *m_pStateMonitor;
+    QOpcUaNode *m_pSetPointNode;
+
+    QOpcUaSubscription   *m_oneSecondSubscription;
+    QOpcUaNode           *m_timeNode;
+    QOpcUaMonitoredValue *m_pTimeMonitor;
+
+    QOpcUaSubscription   *m_hundredMsSubscription;
+    QOpcUaMonitoredValue *m_pSetPointMonitor;
+    QOpcUaMonitoredValue *m_pTemperatureMonitor;
+    QOpcUaNode           *m_temperatureNode;
+    QOpcUaMonitoredValue *m_pStateMonitor;
+    QOpcUaNode           *m_stateNode;
+
     QOpcUaClient        *m_pClient;
     QOpcUaProvider      *m_pProvider;
 };

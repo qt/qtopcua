@@ -37,14 +37,18 @@
 #include "qfreeopcuanode.h"
 
 #include "qfreeopcuaclient.h"
+#include "qfreeopcuavaluesubscription.h"
 #include "qfreeopcuavalueconverter.h"
 
+#include <QtOpcUa/qopcuamonitoredvalue.h>
+#include <QtOpcUa/qopcuamonitoredevent.h>
+
+#include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
 
 QFreeOpcUaNode::QFreeOpcUaNode(OpcUa::Node node, QFreeOpcUaClient *client)
-    : QOpcUaNode(client)
-    , m_node(node)
-    , m_client(client) // FIXME: it seems this is only used for getType() at the moment, check if it is really needed
+    : m_node(node)
+    , m_client(client)
 {
 }
 
@@ -70,8 +74,8 @@ QString QFreeOpcUaNode::type() const
     try {
         OpcUa::NodeId idNode = m_node.GetDataType().As<OpcUa::NodeId>();
         return QString::fromStdString(m_client->GetNode(idNode)
-                                      .GetAttribute(OpcUa::AttributeId::DisplayName)
-                                      .Value.As<OpcUa::LocalizedText>()
+                                      .GetAttribute(OpcUa::AttributeId::DisplayName).Value
+                                      .As<OpcUa::LocalizedText>()
                                       .Text);
     } catch (const std::exception &ex) {
         qWarning() << ex.what();
@@ -82,56 +86,15 @@ QString QFreeOpcUaNode::type() const
 QVariant QFreeOpcUaNode::value() const
 {
     try {
-        return QFreeOpcUaValueConverter::toQVariant(m_node.GetValue());
+        OpcUa::Variant val = m_node.GetValue();
+        if (val.IsNul())
+            return QVariant();
+        else
+            return QFreeOpcUaValueConverter::toQVariant(val);
     } catch (const std::exception &ex) {
         qWarning() << ex.what();
         return QVariant();
     }
-}
-
-int QFreeOpcUaNode::nodeId() const
-{
-    try {
-        return m_node.GetId().GetIntegerIdentifier();
-    } catch (const std::exception &ex) {
-        qWarning() << "Failed to get numeric ID for node:" << ex.what();
-        return -1;
-    }
-}
-
-int QFreeOpcUaNode::childCount() const
-{
-    try {
-        return m_node.GetChildren().size();
-    } catch (const std::exception &ex) {
-        qWarning() << "Failed to get child count for node:" << ex.what();
-        return 0;
-    }
-}
-
-QList<QOpcUaNode *> QFreeOpcUaNode::children()
-{
-    QList<QOpcUaNode *> result;
-
-    try {
-        std::vector<OpcUa::Node> tmp = m_node.GetChildren();
-        result.reserve(tmp.size());
-        for (std::vector<OpcUa::Node>::const_iterator it = tmp.cbegin(); it != tmp.cend(); ++it) {
-            // FIXME: leaks on the exception path!
-            QFreeOpcUaNode* child = new QFreeOpcUaNode(*it, m_client);
-
-            // set this node as parent for a natural parent/child tree
-            // FIXME: but let's think about ownership here a bit more, because calling this method
-            // multiple times will create a bunch of children
-            child->setParent(this);
-
-            result.append(child);
-        }
-    } catch (const std::exception &ex) {
-        qWarning() << "Failed to get children for node:" << ex.what();
-    }
-
-    return result;
 }
 
 QStringList QFreeOpcUaNode::childIds() const
@@ -150,12 +113,12 @@ QStringList QFreeOpcUaNode::childIds() const
     return result;
 }
 
-QString QFreeOpcUaNode::xmlNodeId() const
+QString QFreeOpcUaNode::nodeId() const
 {
     try {
         return QFreeOpcUaValueConverter::nodeIdToString(m_node.GetId());
     } catch (const std::exception &ex) {
-        qWarning() << "Failed to get XML id for node:" << ex.what();
+        qWarning() << "Failed to get id for node:" << ex.what();
         return QString();
     }
 }
@@ -190,4 +153,106 @@ QString QFreeOpcUaNode::nodeClass() const
         qWarning() << "Failed to get node class for node:" << ex.what();
         return QString();
     }
+}
+
+bool QFreeOpcUaNode::setValue(const QVariant &value, QOpcUa::Types type)
+{
+    try {
+        OpcUa::Variant toWrite = QFreeOpcUaValueConverter::toTypedVariant(value, type);
+        if (toWrite.IsNul())
+            return false;
+
+        m_node.SetValue(toWrite);
+        return true;
+    } catch (const std::exception &ex) {
+        qWarning() << "Could not write value to node " <<  nodeId();
+        qWarning() << ex.what();
+    }
+    return false;
+}
+
+bool QFreeOpcUaNode::call(const QString &methodNodeId,
+                            QVector<QOpcUa::TypedVariant> *args, QVector<QVariant> *ret)
+{
+    OpcUa::NodeId objectId;
+    OpcUa::NodeId methodId;
+
+    try {
+        objectId = m_node.GetId();
+
+        OpcUa::Node methodNode = m_client->GetNode(methodNodeId.toStdString());
+        methodNode.GetBrowseName();
+        methodId = methodNode.GetId();
+    } catch (const std::exception &ex) {
+        qWarning() << "Could not get node for method call";
+        qWarning() << ex.what();
+        return false;
+    }
+
+    try {
+        std::vector<OpcUa::Variant> arguments;
+        if (args) {
+            arguments.reserve(args->size());
+            foreach (const QOpcUa::TypedVariant &v, *args)
+                arguments.push_back(QFreeOpcUaValueConverter::toTypedVariant(v.first, v.second));
+        }
+        OpcUa::CallMethodRequest myCallRequest;
+        myCallRequest.ObjectId = objectId;
+        myCallRequest.MethodId = methodId;
+        myCallRequest.InputArguments = arguments;
+        std::vector<OpcUa::CallMethodRequest> myCallVector;
+        myCallVector.push_back(myCallRequest);
+
+
+        std::vector<OpcUa::Variant> returnedValues = m_node.CallMethod(methodId, arguments);
+
+        // status code of method call is checked via exception inside the node
+        ret->reserve(returnedValues.size());
+        for (auto it = returnedValues.cbegin(); it != returnedValues.cend(); ++it)
+            ret->push_back(QFreeOpcUaValueConverter::toQVariant(*it));
+
+        return true;
+
+    } catch (const std::exception &ex) {
+        qWarning() << "Method call failed: " << ex.what();
+        return false;
+    }
+}
+
+// Support for structures in freeopcua seems to be not implemented yet
+QPair<QString, QString> QFreeOpcUaNode::readEui() const
+{
+    // Return empty QVariant
+    return QPair<QString, QString>();
+}
+
+// Support for structures in freeopcua seems to be not implemented yet
+QPair<double, double> QFreeOpcUaNode::readEuRange() const
+{
+    // Return empty QVariant
+    return QPair<double, double>();
+}
+
+QVector<QPair<QVariant, QDateTime> > QFreeOpcUaNode::readHistorical(uint maxCount,
+        const QDateTime &begin, const QDateTime &end) const
+{
+    // not supported with freeopcua
+    Q_UNUSED(begin);
+    Q_UNUSED(end);
+    Q_UNUSED(maxCount);
+    return QVector<QPair<QVariant, QDateTime>>();
+}
+
+bool QFreeOpcUaNode::writeHistorical(QOpcUa::Types type,
+            const QVector<QPair<QVariant, QDateTime> > data)
+{
+    // not supported with freeopcua
+    Q_UNUSED(type);
+    Q_UNUSED(data);
+    return false;
+}
+
+OpcUa::Node QFreeOpcUaNode::opcuaNode() const
+{
+   return m_node;
 }

@@ -34,46 +34,34 @@
 **
 ****************************************************************************/
 
-#ifndef QFREEOPCUACLIENT_H
-#define QFREEOPCUACLIENT_H
+#ifndef QFREEOPCUACLIENT_P_H
+#define QFREEOPCUACLIENT_P_H
 
-#include <QtOpcUa/qopcuaclient.h>
+#include <private/qopcuaclientimpl_p.h>
 
+// freeopcua
 #include <opc/ua/client/client.h>
-#include <QtCore/QUrl>
+
+#include <QtCore/qobject.h>
+#include <QtCore/qurl.h>
 
 QT_BEGIN_NAMESPACE
 
-class QFreeOpcUaClient : public QOpcUaClient, public OpcUa::UaClient
+class QFreeOpcUaClient : public QOpcUaClientImpl, public OpcUa::UaClient
 {
-    Q_OBJECT
-
 public:
-    explicit QFreeOpcUaClient(QObject *parent = 0);
+    explicit QFreeOpcUaClient();
     ~QFreeOpcUaClient() Q_DECL_OVERRIDE;
 
     bool connectToEndpoint(const QUrl &url) Q_DECL_OVERRIDE;
     bool secureConnectToEndpoint(const QUrl &url) Q_DECL_OVERRIDE;
     bool disconnectFromEndpoint() Q_DECL_OVERRIDE;
-    QVariant read(const QString &xmlNodeId) Q_DECL_OVERRIDE;
-    bool write(const QString &xmlNodeId, const QVariant &value, QOpcUa::Types type) Q_DECL_OVERRIDE;
-    bool call(const QString &xmlObjectNodeId, const QString &xmlMethodNodeId,
-              QVector<QOpcUaTypedVariant> *args = 0, QVector<QVariant>  *ret = 0) Q_DECL_OVERRIDE;
-    QPair<QString, QString> readEui(const QString &xmlNodeId) Q_DECL_OVERRIDE;
-    QPair<double, double> readEuRange(const QString &xmlNodeId) Q_DECL_OVERRIDE;
+    QOpcUaNode *node(const QString &nodeId) Q_DECL_OVERRIDE;
+    QString backend() const Q_DECL_OVERRIDE { return QStringLiteral("freeopcua"); }
 
-    QOpcUaMonitoredItem *dataMonitor(double interval, const QString &xmlNodeId) Q_DECL_OVERRIDE;
-    QOpcUaMonitoredItem *eventMonitor(const QString &xmlEventNodeId) Q_DECL_OVERRIDE;
-
-    QOpcUaNode *node(const QString &xmlNodeId) Q_DECL_OVERRIDE;
-
-    QList<QPair<QVariant, QDateTime> > readHistorical(const QString &node, int maxCount,
-            const QDateTime &begin, const QDateTime &end) Q_DECL_OVERRIDE;
-
-protected:
-    QOpcUaSubscription *createSubscription(double interval) Q_DECL_OVERRIDE;
+    QOpcUaSubscription *createSubscription(quint32 interval) Q_DECL_OVERRIDE;
 };
 
 QT_END_NAMESPACE
 
-#endif // QFREEOPCUACLIENT_H
+#endif // QFREEOPCUACLIENT_P_H

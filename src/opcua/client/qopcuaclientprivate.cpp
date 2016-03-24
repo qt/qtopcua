@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
+** Copyright (C) 2016 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,36 +34,37 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAPROVIDER_H
-#define QOPCUAPROVIDER_H
+#include <private/qopcuaclient_p.h>
+#include <QDebug>
 
-#include <QtOpcUa/qopcuaglobal.h>
+QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
+    : m_impl(impl)
+    , m_connected(false)
+{}
 
-#include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
-
-QT_BEGIN_NAMESPACE
-
-class QOpcUaPlugin;
-class QOpcUaClient;
-
-class Q_OPCUA_EXPORT QOpcUaProvider : public QObject
+QOpcUaClientPrivate::~QOpcUaClientPrivate()
 {
-    Q_OBJECT
+}
 
-public:
-    static QStringList availableBackends();
+void QOpcUaClientPrivate::setConnected(bool connected)
+{
+    m_connected = connected;
+    emit q_func()->connectedChanged(m_connected);
+}
 
-    explicit QOpcUaProvider(QObject *parent = 0);
-    ~QOpcUaProvider() Q_DECL_OVERRIDE;
+bool QOpcUaClientPrivate::processUrl(const QUrl &url)
+{
+    if (url.scheme() != QStringLiteral("opc.tcp")) {
+        qWarning() << "Wrong url scheme, could not connect";
+        return false;
+    }
 
-    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
-
-private:
-    QHash<QString, QOpcUaPlugin*> m_plugins;
-};
-
-QT_END_NAMESPACE
-
-#endif // QOPCUAPROVIDER_H
+    if (m_connected) {
+        if (m_url == url)
+            return true;
+        else
+            m_impl->disconnectFromEndpoint();
+    }
+    m_url = url;
+    return true;
+}

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
+** Copyright (C) 2016 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,36 +34,35 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAPROVIDER_H
-#define QOPCUAPROVIDER_H
+#ifndef QOPCUACLIENTIMPL_P_H
+#define QOPCUACLIENTIMPL_P_H
+
+#include <QtCore/qobject.h>
 
 #include <QtOpcUa/qopcuaglobal.h>
 
-#include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
-
 QT_BEGIN_NAMESPACE
 
-class QOpcUaPlugin;
-class QOpcUaClient;
+class QOpcUaNode;
+class QOpcUaClientPrivate;
+class QOpcUaSubscription;
 
-class Q_OPCUA_EXPORT QOpcUaProvider : public QObject
+struct Q_OPCUA_EXPORT QOpcUaClientImpl
 {
-    Q_OBJECT
+    QOpcUaClientImpl();
+    virtual ~QOpcUaClientImpl();
 
-public:
-    static QStringList availableBackends();
+    virtual bool connectToEndpoint(const QUrl &url) = 0;
+    virtual bool secureConnectToEndpoint(const QUrl &url) = 0;
+    virtual bool disconnectFromEndpoint() = 0;
+    virtual QOpcUaNode *node(const QString &nodeId) = 0;
+    virtual QString backend() const = 0;
 
-    explicit QOpcUaProvider(QObject *parent = 0);
-    ~QOpcUaProvider() Q_DECL_OVERRIDE;
+    virtual QOpcUaSubscription *createSubscription(quint32 interval) = 0;
 
-    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
-
-private:
-    QHash<QString, QOpcUaPlugin*> m_plugins;
+    QOpcUaClientPrivate *m_clientPrivate;
 };
 
 QT_END_NAMESPACE
 
-#endif // QOPCUAPROVIDER_H
+#endif // QOPCUACLIENTIMPL_P_H

@@ -37,35 +37,45 @@
 #ifndef QFREEOPCUANODE_H
 #define QFREEOPCUANODE_H
 
-#include <QtOpcUa/qopcuanode.h>
+#include <private/qopcuanodeimpl_p.h>
 
+// freeopcua
 #include <opc/ua/node.h>
+
+#include <QtCore/QPointer>
 
 QT_BEGIN_NAMESPACE
 
 class QFreeOpcUaClient;
 
-class QFreeOpcUaNode : public QOpcUaNode
+class QFreeOpcUaNode : public QOpcUaNodeImpl
 {
-    Q_OBJECT
 public:
     explicit QFreeOpcUaNode(OpcUa::Node node, QFreeOpcUaClient *client);
     ~QFreeOpcUaNode() Q_DECL_OVERRIDE;
 
     QString name() const Q_DECL_OVERRIDE;
     QString type() const Q_DECL_OVERRIDE;
-    QVariant value() const Q_DECL_OVERRIDE;
-    int nodeId() const Q_DECL_OVERRIDE;
-    int childCount() const Q_DECL_OVERRIDE;
-    QList<QOpcUaNode *> children() Q_DECL_OVERRIDE;
     QStringList childIds() const Q_DECL_OVERRIDE;
-    QString xmlNodeId() const Q_DECL_OVERRIDE;
+    QString nodeId() const Q_DECL_OVERRIDE;
     QString nodeClass() const Q_DECL_OVERRIDE;
 
-private:
+    QVariant value() const Q_DECL_OVERRIDE;
+    bool setValue(const QVariant &value, QOpcUa::Types type) Q_DECL_OVERRIDE;
+    bool call(const QString &methodNodeId,
+              QVector<QOpcUa::TypedVariant> *args = 0, QVector<QVariant> *ret = 0) Q_DECL_OVERRIDE;
+    QPair<QString, QString> readEui() const Q_DECL_OVERRIDE;
+    QPair<double, double> readEuRange() const Q_DECL_OVERRIDE;
+
+    QVector<QPair<QVariant, QDateTime> > readHistorical(uint maxCount,
+            const QDateTime &begin, const QDateTime &end) const Q_DECL_OVERRIDE;
+    Q_INVOKABLE bool writeHistorical(QOpcUa::Types type,
+            const QVector<QPair<QVariant, QDateTime> > data) Q_DECL_OVERRIDE;
+
+    OpcUa::Node opcuaNode() const;
+
     OpcUa::Node m_node;
-    QString m_xmlNodeId;
-    QFreeOpcUaClient *m_client;
+    QFreeOpcUaClient* m_client;
 };
 
 QT_END_NAMESPACE

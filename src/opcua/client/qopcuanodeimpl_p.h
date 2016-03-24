@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
+** Copyright (C) 2016 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,36 +34,46 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAPROVIDER_H
-#define QOPCUAPROVIDER_H
+#ifndef QOPCUANODEIMPL_P_H
+#define QOPCUANODEIMPL_P_H
 
 #include <QtOpcUa/qopcuaglobal.h>
+#include <QtOpcUa/qopcuatype.h>
 
-#include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaPlugin;
-class QOpcUaClient;
+class QOpcUaMonitoredEvent;
+class QOpcUaMonitoredValue;
 
-class Q_OPCUA_EXPORT QOpcUaProvider : public QObject
+class Q_OPCUA_EXPORT QOpcUaNodeImpl
 {
-    Q_OBJECT
-
 public:
-    static QStringList availableBackends();
+    QOpcUaNodeImpl();
+    virtual ~QOpcUaNodeImpl();
 
-    explicit QOpcUaProvider(QObject *parent = 0);
-    ~QOpcUaProvider() Q_DECL_OVERRIDE;
+    virtual QString name() const = 0;
+    virtual QString type() const = 0;
+    virtual QVariant value() const = 0;
+    virtual QStringList childIds() const = 0;
+    virtual QString nodeId() const = 0;
+    virtual QString nodeClass() const = 0;
 
-    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
+    virtual bool setValue(const QVariant &value,
+            QOpcUa::Types type = QOpcUa::Undefined)  = 0;
+    virtual QPair<double, double> readEuRange() const = 0;
+    virtual QPair<QString, QString> readEui() const = 0;
 
-private:
-    QHash<QString, QOpcUaPlugin*> m_plugins;
+    virtual QVector<QPair<QVariant, QDateTime> > readHistorical(
+            uint maxCount, const QDateTime &begin, const QDateTime &end) const = 0;
+    virtual bool writeHistorical(QOpcUa::Types type,
+            const QVector<QPair<QVariant, QDateTime> > data) = 0;
+
+    virtual bool call(const QString &methodNodeId,
+            QVector<QOpcUa::TypedVariant> *args = 0, QVector<QVariant> *ret = 0) = 0;
 };
 
 QT_END_NAMESPACE
 
-#endif // QOPCUAPROVIDER_H
+#endif // QOPCUANODEIMPL_P_H

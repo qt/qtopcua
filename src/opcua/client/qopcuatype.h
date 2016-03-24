@@ -38,6 +38,7 @@
 #define QOPCUATYPE
 
 #include <QtCore/qpair.h>
+#include <QtCore/qmetatype.h>
 #include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
@@ -66,10 +67,12 @@ enum Types
     Undefined
 };
 
+typedef QPair<QVariant, QOpcUa::Types> TypedVariant;
 }
 
-typedef QPair<QVariant, QOpcUa::Types> QOpcUaTypedVariant;
-
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QOpcUa::Types)
+Q_DECLARE_METATYPE(QOpcUa::TypedVariant)
 
 #endif // QOPCUATYPE

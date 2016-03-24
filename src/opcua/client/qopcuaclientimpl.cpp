@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
+** Copyright (C) 2016 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,36 +34,14 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAPROVIDER_H
-#define QOPCUAPROVIDER_H
-
-#include <QtOpcUa/qopcuaglobal.h>
-
-#include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
+#include "qopcuaclientimpl_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaPlugin;
-class QOpcUaClient;
+QOpcUaClientImpl::QOpcUaClientImpl()
+{}
 
-class Q_OPCUA_EXPORT QOpcUaProvider : public QObject
-{
-    Q_OBJECT
-
-public:
-    static QStringList availableBackends();
-
-    explicit QOpcUaProvider(QObject *parent = 0);
-    ~QOpcUaProvider() Q_DECL_OVERRIDE;
-
-    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
-
-private:
-    QHash<QString, QOpcUaPlugin*> m_plugins;
-};
+QOpcUaClientImpl::~QOpcUaClientImpl()
+{}
 
 QT_END_NAMESPACE
-
-#endif // QOPCUAPROVIDER_H

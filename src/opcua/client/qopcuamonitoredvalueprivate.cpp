@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
+** Copyright (C) 2016 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,36 +34,22 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAPROVIDER_H
-#define QOPCUAPROVIDER_H
+#include <private/qopcuamonitoredvalue_p.h>
+#include <private/qopcuasubscriptionimpl_p.h>
 
-#include <QtOpcUa/qopcuaglobal.h>
-
-#include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
-
-QT_BEGIN_NAMESPACE
-
-class QOpcUaPlugin;
-class QOpcUaClient;
-
-class Q_OPCUA_EXPORT QOpcUaProvider : public QObject
+QOpcUaMonitoredValuePrivate::QOpcUaMonitoredValuePrivate(QOpcUaNode *node, QOpcUaSubscription *subscription)
+    : m_node(node)
+    , m_subscription(subscription)
 {
-    Q_OBJECT
+}
 
-public:
-    static QStringList availableBackends();
+QOpcUaMonitoredValuePrivate::~QOpcUaMonitoredValuePrivate()
+{
+}
 
-    explicit QOpcUaProvider(QObject *parent = 0);
-    ~QOpcUaProvider() Q_DECL_OVERRIDE;
-
-    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
-
-private:
-    QHash<QString, QOpcUaPlugin*> m_plugins;
-};
-
-QT_END_NAMESPACE
-
-#endif // QOPCUAPROVIDER_H
+bool QOpcUaMonitoredValuePrivate::triggerValueChanged(const QVariant &val)
+{
+    // explicitly use invoke to force the signal to be emitted on the main thread
+    // even if the plugin triggered this from a worker thread
+    return QMetaObject::invokeMethod(q_func(), "valueChanged", Qt::AutoConnection, Q_ARG(QVariant, val));
+}

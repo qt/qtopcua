@@ -40,28 +40,29 @@
 #include <QtOpcUa/qopcuaglobal.h>
 
 #include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaMonitoredItem;
+class QOpcUaMonitoredEvent;
+class QOpcUaMonitoredValue;
+class QOpcUaNode;
+class QOpcUaSubscriptionImpl;
+class QOpcUaSubscriptionPrivate;
 
 class Q_OPCUA_EXPORT QOpcUaSubscription : public QObject
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QOpcUaSubscription)
 public:
-    virtual ~QOpcUaSubscription();
+    QOpcUaSubscription(QOpcUaSubscriptionImpl *impl, quint32 interval, QObject *parent = 0);
+    ~QOpcUaSubscription() Q_DECL_OVERRIDE;
 
-    virtual void unsubscribe() {}
-    virtual bool success() const;
+    QOpcUaMonitoredEvent *addEvent(QOpcUaNode *node);
+    void removeEvent(QOpcUaMonitoredEvent *e);
 
-    virtual QOpcUaMonitoredItem *addItem(const QString &xmlNodeId) = 0;
-    virtual QOpcUaMonitoredItem *addEventItem(const QString &xmlNodeId) = 0;
+    QOpcUaMonitoredValue *addValue(QOpcUaNode *node);
+    void removeValue(QOpcUaMonitoredValue *v);
 
-    virtual bool unsubscribe(QOpcUaMonitoredItem *) = 0;
-
-protected:
-    explicit QOpcUaSubscription(QObject *parent = 0);
 };
 
 QT_END_NAMESPACE

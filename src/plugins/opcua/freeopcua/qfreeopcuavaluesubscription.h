@@ -34,36 +34,50 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAPROVIDER_H
-#define QOPCUAPROVIDER_H
+#ifndef QFREEOPCUAVALUESUBSCRIPTION_H
+#define QFREEOPCUAVALUESUBSCRIPTION_H
 
-#include <QtOpcUa/qopcuaglobal.h>
+#include <private/qopcuasubscriptionimpl_p.h>
+#include <QtOpcUa/qopcuamonitoredevent.h>
+#include <QtOpcUa/qopcuamonitoredvalue.h>
 
-#include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
+#include <opc/ua/subscription.h>
+
+namespace OpcUa {
+    class Event;
+    class UaClient;
+}
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaPlugin;
-class QOpcUaClient;
+class QFreeOpcUaClient;
+class QOpcUaNode;
+class QFreeOpcUaMonitoredValue;
+class QOpcUaSubscription;
 
-class Q_OPCUA_EXPORT QOpcUaProvider : public QObject
+class QFreeOpcUaSubscription : public QOpcUaSubscriptionImpl, public OpcUa::SubscriptionHandler
 {
-    Q_OBJECT
-
 public:
-    static QStringList availableBackends();
+    explicit QFreeOpcUaSubscription(QFreeOpcUaClient *client, quint32 interval);
+    ~QFreeOpcUaSubscription() Q_DECL_OVERRIDE;
 
-    explicit QOpcUaProvider(QObject *parent = 0);
-    ~QOpcUaProvider() Q_DECL_OVERRIDE;
+    // FreeOPC-UA callbacks
+    void DataChange(uint32_t handle, const OpcUa::Node &node, const OpcUa::Variant &val,
+                    OpcUa::AttributeId attr) Q_DECL_OVERRIDE;
+    void Event(quint32 handle, const OpcUa::Event &event) Q_DECL_OVERRIDE;
 
-    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
+    QOpcUaMonitoredEvent *addEvent(QOpcUaNode *node) Q_DECL_OVERRIDE;
+    void removeEvent(QOpcUaMonitoredEvent *event) Q_DECL_OVERRIDE;
+    QOpcUaMonitoredValue *addValue(QOpcUaNode *node) Q_DECL_OVERRIDE;
+    void removeValue(QOpcUaMonitoredValue *value) Q_DECL_OVERRIDE;
 
-private:
-    QHash<QString, QOpcUaPlugin*> m_plugins;
+    QFreeOpcUaClient *m_client;
+    QOpcUaSubscription *m_qsubscription;
+    std::unique_ptr<OpcUa::Subscription> m_subscription;
+    QMap<int32_t, QOpcUaMonitoredValue *> m_dataChangeHandles;
+    QMap<int32_t, QOpcUaMonitoredEvent *> m_eventHandles;
 };
 
 QT_END_NAMESPACE
 
-#endif // QOPCUAPROVIDER_H
+#endif // QFREEOPCUAVALUESUBSCRIPTION_H

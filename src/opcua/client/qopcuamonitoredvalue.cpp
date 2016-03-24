@@ -34,36 +34,47 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAPROVIDER_H
-#define QOPCUAPROVIDER_H
+#include "qopcuamonitoredvalue.h"
+#include <private/qopcuamonitoredvalue_p.h>
 
-#include <QtOpcUa/qopcuaglobal.h>
-
-#include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
+#include "qopcuasubscription.h"
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaPlugin;
-class QOpcUaClient;
+/*!
+    \class QOpcUaMonitoredValue
+    \inmodule QtOpcUa
 
-class Q_OPCUA_EXPORT QOpcUaProvider : public QObject
+    \brief Represents a source for values corresponding to a node on a OPC UA server.
+
+    \chapter QOpcUaMonitoredValue
+    Every QOpcUaMonitoredValue emits signals when the corresponding value in
+    nodes on the server change. They are backed by QOpcUaSubscriptions.
+
+    The objects are owned by the user and must be deleted when they are no longer needed.
+    Deletion causes the monitored items to be unsubscribed from the server.
+*/
+
+/*!
+    \fn void QOpcUaMonitoredValue::valueChanged(QVariant val) const
+
+    This signal is emitted when a new update for a data change subscription
+    arrives. \a val contains the new value.
+ */
+
+QOpcUaMonitoredValue::QOpcUaMonitoredValue(QOpcUaNode *node, QOpcUaSubscription *subscription, QObject *parent)
+    : QObject(*new QOpcUaMonitoredValuePrivate(node, subscription), parent)
 {
-    Q_OBJECT
+}
 
-public:
-    static QStringList availableBackends();
+QOpcUaMonitoredValue::~QOpcUaMonitoredValue()
+{
+    d_func()->m_subscription->removeValue(this);
+}
 
-    explicit QOpcUaProvider(QObject *parent = 0);
-    ~QOpcUaProvider() Q_DECL_OVERRIDE;
-
-    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
-
-private:
-    QHash<QString, QOpcUaPlugin*> m_plugins;
-};
+QOpcUaNode &QOpcUaMonitoredValue::node()
+{
+    return *d_func()->m_node;
+}
 
 QT_END_NAMESPACE
-
-#endif // QOPCUAPROVIDER_H

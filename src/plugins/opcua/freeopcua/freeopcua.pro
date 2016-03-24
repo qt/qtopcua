@@ -1,5 +1,5 @@
 TARGET = freeopcua_backend
-QT = core opcua network
+QT += core core-private opcua opcua-private network
 
 PLUGIN_TYPE = opcua
 PLUGIN_CLASS_NAME = QFreeOpcUaPlugin
@@ -9,18 +9,19 @@ CONFIG += exceptions link_pkgconfig
 PKGCONFIG += libopcuaprotocol libopcuacore libopcuaclient
 
 # Input
-HEADERS += qfreeopcuaclient.h \
+HEADERS += \
            qfreeopcuanode.h \
-           qfreeopcuasubscription.h \
+           qfreeopcuavaluesubscription.h \
            qfreeopcuaplugin.h \
            qfreeopcuavalueconverter.h \
-           qfreeopcuamonitoreditem.h \
+           qfreeopcuaclient.h
 
 SOURCES += qfreeopcuaclient.cpp \
            qfreeopcuanode.cpp \
-           qfreeopcuasubscription.cpp \
+           qfreeopcuavaluesubscription.cpp \
            qfreeopcuaplugin.cpp \
-           qfreeopcuavalueconverter.cpp \
-           qfreeopcuamonitoreditem.cpp \
+           qfreeopcuavalueconverter.cpp
 
 OTHER_FILES = freeopcua-metadata.json
+
+HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS

@@ -49,7 +49,6 @@ class QFreeOpcUaPlugin : public QOpcUaPlugin
     Q_INTERFACES(QOpcUaPlugin)
 
 public:
-
     explicit QFreeOpcUaPlugin(QObject *parent = 0);
     ~QFreeOpcUaPlugin() Q_DECL_OVERRIDE;
 

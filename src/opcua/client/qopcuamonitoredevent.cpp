@@ -34,36 +34,57 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAPROVIDER_H
-#define QOPCUAPROVIDER_H
-
-#include <QtOpcUa/qopcuaglobal.h>
-
-#include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
+#include "qopcuamonitoredevent.h"
+#include <QtOpcUa/qopcuasubscription.h>
+#include <private/qopcuamonitoredevent_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaPlugin;
-class QOpcUaClient;
+/*!
+ * \internal
+ */
+QOpcUaMonitoredEvent::QOpcUaMonitoredEvent(QOpcUaNode *node, QOpcUaSubscription *subscription, QObject *parent)
+    : QObject(*new QOpcUaMonitoredEventPrivate(node, subscription), parent)
+{}
 
-class Q_OPCUA_EXPORT QOpcUaProvider : public QObject
+/*!
+    \fn QOpcUaMonitoredEvent::~QOpcUaMonitoredEvent()
+
+    Destroys this event monitor instance. This will automatically
+    remove it from its subscription.
+ */
+QOpcUaMonitoredEvent::~QOpcUaMonitoredEvent()
 {
-    Q_OBJECT
+    d_func()->m_subscription->removeEvent(this);
+}
 
-public:
-    static QStringList availableBackends();
+QOpcUaNode &QOpcUaMonitoredEvent::node()
+{
+    return *d_func()->m_node;
+}
 
-    explicit QOpcUaProvider(QObject *parent = 0);
-    ~QOpcUaProvider() Q_DECL_OVERRIDE;
+/*!
+    \class QOpcUaMonitoredEvent
+    \inmodule QtOpcUa
 
-    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
+    \brief Represents a source for events corresponding to a node on a OPC UA server.
 
-private:
-    QHash<QString, QOpcUaPlugin*> m_plugins;
-};
+    \chapter QOpcUaMonitoredEvent
+    Every QOpcUaMonitoredEvent emits signals when the corresponding event on
+    the server is triggered. They are backed by QOpcUaSubscriptions.
+
+    The objects are owned by the user and must be deleted when they are no longer needed.
+    Deletion causes the monitored items to be unsubscribed from the server.
+*/
+
+/*!
+    \fn void QOpcUaMonitoredEvent::newEvent(QVector<QVariant> val) const
+    This signal is emitted when a new event is received by a data change
+    subscription.
+    The QVector \a val currently contains three QVariants holding the values of the
+    first three event fields.
+    \warning When using the FreeOPCUA backend, no signal is emitted as the
+    internal implementation of events does not call the callback method.
+*/
 
 QT_END_NAMESPACE
-
-#endif // QOPCUAPROVIDER_H

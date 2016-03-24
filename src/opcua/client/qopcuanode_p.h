@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
+** Copyright (C) 2016 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,54 +34,35 @@
 **
 ****************************************************************************/
 
-#ifndef QFREEOPCUAOPCUASUBSCRIPTION_H
-#define QFREEOPCUAOPCUASUBSCRIPTION_H
+#ifndef QOPCUANODE_P_H
+#define QOPCUANODE_P_H
 
-#include <QtOpcUa/qopcuasubscription.h>
+#include "qopcuaclient.h"
+#include "qopcuanode.h"
+#include "qopcuanodeimpl_p.h"
 
-#include <opc/ua/subscription.h>
-
-namespace OpcUa {
-    class Event;
-    class UaClient;
-}
+#include <private/qobject_p.h>
+#include <QtCore/qpointer.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_NAMESPACE
 
-class QFreeOpcUaClient;
-class QFreeOpcUaMonitoredItem;
-
-class QFreeOpcUaSubscription : public QOpcUaSubscription, public OpcUa::SubscriptionHandler
+class QOpcUaNodePrivate : public QObjectPrivate
 {
-    Q_OBJECT
+    Q_DECLARE_PUBLIC(QOpcUaNode)
+
 public:
-    explicit QFreeOpcUaSubscription(QFreeOpcUaClient *myclient, int interval = 0);
-    ~QFreeOpcUaSubscription() Q_DECL_OVERRIDE;
+    QOpcUaNodePrivate(QOpcUaNodeImpl *impl, QOpcUaClient *client)
+        : m_impl(impl)
+        , m_client(client)
+    {}
 
-    // FreeOPC-UA callbacks
-    void DataChange(uint32_t handle, const OpcUa::Node &node, const OpcUa::Variant &val,
-                    OpcUa::AttributeId attr) Q_DECL_OVERRIDE;
-    void Event(uint32_t handle, const OpcUa::Event &event) Q_DECL_OVERRIDE;
+    ~QOpcUaNodePrivate() {}
 
-    // QOpcUaClient implementation
-    QOpcUaMonitoredItem *addItem(const QString &xmlNodeId) Q_DECL_OVERRIDE;
-    QOpcUaMonitoredItem *addEventItem(const QString &xmlNodeId) Q_DECL_OVERRIDE;
-
-    virtual bool unsubscribe(QOpcUaMonitoredItem *) Q_DECL_OVERRIDE;
-
-    bool success() const Q_DECL_OVERRIDE;
-    void unsubscribe() Q_DECL_OVERRIDE;
-
-private:
-    OpcUa::UaClient *m_pClient;
-    QString m_variable;
-    int m_interval;
-    std::unique_ptr<OpcUa::Subscription> m_dataChangeSubscription;
-    QMap<int32_t, QFreeOpcUaMonitoredItem *> m_dataChangeHandles;
-    int32_t m_eventHandle;
-    bool m_status;
+    QScopedPointer<QOpcUaNodeImpl> m_impl;
+    QPointer<QOpcUaClient> m_client;
 };
 
 QT_END_NAMESPACE
 
-#endif // QFREEOPCUAOPCUASUBSCRIPTION_H
+#endif // QOPCUANODE_P_H

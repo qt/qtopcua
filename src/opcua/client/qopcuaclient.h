@@ -37,82 +37,46 @@
 #ifndef QOPCUACLIENT_H
 #define QOPCUACLIENT_H
 
-#include <QtCore/qdatetime.h>
 #include <QtCore/qobject.h>
-#include <QtCore/qpluginloader.h>
-#include <QtCore/QUrl>
-#include <QtCore/qvariant.h>
+#include <QtCore/qurl.h>
+#include <QtCore/qsharedpointer.h>
+#include <QtCore/qhash.h>
 
 #include <QtOpcUa/qopcuaglobal.h>
-#include <QtOpcUa/qopcuamonitoreditem.h>
-#include <QtOpcUa/qopcuanode.h>
 #include <QtOpcUa/qopcuasubscription.h>
-#include <QtOpcUa/qopcuatype.h>
+#include <QtOpcUa/qopcuanode.h>
 
 QT_BEGIN_NAMESPACE
+
+class QOpcUaClientPrivate;
+class QOpcUaClientImpl;
 
 class Q_OPCUA_EXPORT QOpcUaClient : public QObject
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QOpcUaClient)
 
+    // FIXME: is this property needed when we have a "proper qml client"?
     Q_PROPERTY(bool connected READ isConnected NOTIFY connectedChanged)
 
 public:
+    QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent = 0);
     ~QOpcUaClient();
 
-    // Convenience methods
-    Q_INVOKABLE bool connectToEndpoint();
-    Q_INVOKABLE bool secureConnectToEndpoint();
+    bool connectToEndpoint(const QUrl &url);
+    bool secureConnectToEndpoint(const QUrl &url);
+    bool disconnectFromEndpoint();
+    QOpcUaNode *node(const QString &nodeId);
 
-    // Overridables
-    Q_INVOKABLE virtual bool connectToEndpoint(const QUrl &url) = 0;
-    Q_INVOKABLE virtual bool secureConnectToEndpoint(const QUrl &url) = 0;
-    Q_INVOKABLE virtual bool disconnectFromEndpoint() = 0;
-
-    Q_INVOKABLE virtual QVariant read(const QString &xmlNodeId) = 0;
-    Q_INVOKABLE virtual bool write(const QString &xmlNodeId, const QVariant &value,
-            QOpcUa::Types type = QOpcUa::Undefined)  = 0;
-    Q_INVOKABLE virtual bool call(const QString &xmlObjectNodeId, const QString &xmlMethodNodeId,
-            QVector<QOpcUaTypedVariant> *args = 0, QVector<QVariant>  *ret = 0) = 0;
-    Q_INVOKABLE virtual QPair<QString, QString> readEui(const QString &xmlNodeId) = 0;
-    Q_INVOKABLE virtual QPair<double, double> readEuRange(const QString &xmlNodeId) = 0;
-
-    Q_INVOKABLE virtual QOpcUaMonitoredItem *dataMonitor(double interval,
-            const QString &xmlNodeId) = 0;
-    Q_INVOKABLE virtual QOpcUaMonitoredItem *eventMonitor(const QString &xmlEventNodeId) = 0;
-
-    Q_INVOKABLE virtual QOpcUaNode *node(const QString &xmlNodeId) = 0;
-
-    Q_INVOKABLE virtual QList<QPair<QVariant, QDateTime> > readHistorical(
-            const QString &node, int maxCount, const QDateTime &begin, const QDateTime &end) = 0;
+    QOpcUaSubscription *createSubscription(quint32 interval);
 
     QUrl url() const;
     bool isConnected() const;
 
-public Q_SLOTS:
-    void setUrl(const QUrl &url);
+    QString backend() const;
 
 Q_SIGNALS:
-    void connectedChanged(bool connected);
-
-protected:
-    explicit QOpcUaClient(QObject *parent = 0);
-
-    QOpcUaSubscription *getSubscription(double interval);
-    virtual QOpcUaSubscription *createSubscription(double interval) = 0;
-    bool removeSubscription(double interval);
-
-    bool setConnected(bool connected);
-    void cleanupChildren();
-
-private:
-    QUrl m_url;
-    QPluginLoader m_loader;
-    bool m_connected;
-    QString m_bestPlugin;
-    QString m_plugin;
-
-    QHash<double, QOpcUaSubscription*> m_subscriptions;
+    void connectedChanged(bool connected);  // FIXME: connectionStateChanged would be nicer
 };
 
 QT_END_NAMESPACE

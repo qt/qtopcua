@@ -38,6 +38,8 @@
 
 #include "qopcuaplugin.h"
 
+#include <QtOpcUa/qopcuatype.h>
+
 #include <private/qfactoryloader_p.h>
 
 #include <QtCore/qdebug.h>
@@ -67,109 +69,60 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 /*!
     Reads the meta data from the plugins known by the loader.
 */
-static void loadPluginMetadata(QHash<QString, QJsonObject> &list)
+static QHash<QString, QJsonObject> loadPluginMetadata()
 {
+    QHash<QString, QJsonObject> plugins;
     const QFactoryLoader *l = loader();
     QList<QJsonObject> const meta = l->metaData();
     for (int i = 0; i < meta.size(); ++i) {
         QJsonObject obj = meta.at(i).value(QStringLiteral("MetaData")).toObject();
         obj.insert(QStringLiteral("index"), i);
-        list.insertMulti(obj.value(QStringLiteral("Provider")).toString(), obj);
+        plugins.insertMulti(obj.value(QStringLiteral("Provider")).toString(), obj);
     }
+    return plugins;
 }
 
 /*!
     Returns a QHash mapping names to JSON objects containing the meta data of
     available plugins.
 */
-static QHash<QString, QJsonObject> plugins(bool reload = false)
+static QHash<QString, QJsonObject> plugins()
 {
     static QHash<QString, QJsonObject> plugins;
     static bool alreadyDiscovered = false;
 
-    if (reload == true)
-        alreadyDiscovered = false;
-
     if (!alreadyDiscovered) {
-        loadPluginMetadata(plugins);
+        plugins = loadPluginMetadata();
         alreadyDiscovered = true;
     }
     return plugins;
 }
 
 /*!
-    Returns the name of the best plugin according to the plugin meta data.
-*/
-static QString findBestPlugin()
-{
-    int bestStability = -1;
-    QString bestPlugin;
-
-    const QList<QJsonObject> meta = loader()->metaData();
-
-    for (int i = 0; i < meta.size(); ++i) {
-        const QJsonObject obj = meta.at(i).value(QStringLiteral("MetaData")).toObject();
-        if (obj.value(QStringLiteral("stability")).toInt() > bestStability) {
-            // FIXME: is "Keys" correct?
-            bestPlugin = obj.value(QStringLiteral("Keys")).toArray().first().toString();
-        }
-    }
-
-    return bestPlugin;
-}
-
-/*!
-    Creates a new OPC UA provider using the plugin specified in \a backend.
-    The value of \a parent is passed on to the QObject constructor.
-    In the standard configuration the only useful value is "freeopcua".
-    If the requested plugin is not available a diagnostic message will appear
-    and creating objects will not be possible.
+    Creates a new OPC UA provider.
  */
-QOpcUaProvider::QOpcUaProvider(const QString &backend, QObject* parent)
+QOpcUaProvider::QOpcUaProvider(QObject *parent)
     : QObject(parent)
-    , m_pBackend(0)
 {
-    setBackend(backend);
+    qRegisterMetaType<QOpcUa::Types>();
+    qRegisterMetaType<QOpcUa::TypedVariant>();
 }
 
 QOpcUaProvider::~QOpcUaProvider()
 {
-    delete m_pBackend;
+    qDeleteAll(m_plugins);
 }
 
-/*!
-    Loads the OPC UA plugin specified in \a key.
-    Returns true if the plugin could be loaded, false if not.
-*/
-bool QOpcUaProvider::loadPlugin(const QString &key)
+static QOpcUaPlugin *loadPlugin(const QString &key)
 {
     const int index = loader()->indexOf(key);
     if (index != -1) {
         QObject *factoryObject = loader->instance(index);
-        if (QOpcUaPlugin *factory = qobject_cast<QOpcUaPlugin *>(factoryObject)) {
-            m_pBackend = factory;
-            return true;
+        if (QOpcUaPlugin *plugin = qobject_cast<QOpcUaPlugin *>(factoryObject)) {
+            return plugin;
         }
     }
-    return false;
-}
-
-/*!
-    Returns the name of the currently selected backend.
-*/
-QString QOpcUaProvider::backend() const
-{
-    return m_backendName;
-}
-
-void QOpcUaProvider::setBackend(const QString &name)
-{
-    m_backendName = name;
-
-    if (m_backendName.isEmpty()) {
-        // try to find the most stable plugin
-        m_backendName = findBestPlugin();
-    }
+    return Q_NULLPTR;
 }
 
 /*!
@@ -180,22 +133,24 @@ void QOpcUaProvider::setBackend(const QString &name)
     The user is responsible for deleting the returned \a QOpcUaClient object
     when it is no longer needed.
 */
-QOpcUaClient *QOpcUaProvider::createClient()
+QOpcUaClient *QOpcUaProvider::createClient(const QString &backend)
 {
-    if (!m_pBackend) {
-        // we need a plugin now
-        if (!loadPlugin(m_backendName)) {
-            qWarning() << "Failed to load OPC UA plugin:" << m_pBackend;
+    QOpcUaPlugin *plugin;
+    auto it = m_plugins.find(backend);
+    if (it == m_plugins.end()) {
+        plugin = loadPlugin(backend);
+        if (!plugin) {
+            qWarning() << "Failed to load OPC UA plugin:" << backend;
             qWarning() << "Available plugins:" << availableBackends();
+            return Q_NULLPTR;
         }
+        m_plugins.insert(backend, plugin);
     }
-
-    if (m_pBackend)
-        return m_pBackend->createClient();
-
-    return 0;
+    else {
+        plugin = it.value();
+    }
+    return plugin->createClient();
 }
-
 
 /*!
     Returns a QStringList of available plugins.

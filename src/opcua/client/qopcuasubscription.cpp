@@ -34,7 +34,10 @@
 **
 ****************************************************************************/
 
-#include "qopcuasubscription.h"
+#include <QtOpcUa/qopcuasubscription.h>
+
+#include <private/qopcuasubscription_p.h>
+#include <private/qopcuasubscriptionimpl_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -42,68 +45,72 @@ QT_BEGIN_NAMESPACE
     \class QOpcUaSubscription
     \inmodule QtOpcUa
 
-    \brief The QOpcSubscription class enables the user to utilize the
-    subscription mechanism in OPC UA for event and data change subscriptions.
-
-    Subscriptions are a concept in OPC UA to enable updating values by data
-    changes or events instead of polling.
-    The subscription has an interval in which it checks for value changes and
-    sends updates to the client. For an event monitored item, the interval is
-    set to 0.
-
-    Monitored Items are used to assign the node and the node's attribute or the
-    event we want to keep up with to the subscription.
-
-    \image subscriptions.png
-
-    After getting a subscription from QOpcUaClient via getSubscription or
-    getEventSubscription, a pointer to an object of this type is returned.
-    The object has a signal which is emitted on a data change or event,
-    depending on which type of subscription has been requested from the server.
-
-    Objects of this type are owned by QOpcUaClient and will be destroyed when the
-    QOpcUaClient object is destroyed.
+    \brief Enables the user to utilize the
+    subscription mechanism in OPC UA for event subscriptions.
 */
-
-/*!
-    Creates an empty QOpcUaSubscription object. The value of \a parent is passed
-    to the QObject constructor.
- */
-QOpcUaSubscription::QOpcUaSubscription(QObject *parent)
-    : QObject(parent)
-{
-}
-
-/*!
-    Unsubscribes the subscription from the server and deletes the wrapper
-    object.
-*/
-QOpcUaSubscription::~QOpcUaSubscription()
-{
-    unsubscribe();
-}
 
 /*!
     \internal
-    Returns the success status of the subscription.
  */
-bool QOpcUaSubscription::success() const
+QOpcUaSubscription::QOpcUaSubscription(QOpcUaSubscriptionImpl *impl, quint32 interval, QObject *parent)
+    : QObject(*new QOpcUaSubscriptionPrivate(impl, interval), parent)
 {
-    return true;
 }
 
 /*!
-    \fn void QOpcUaSubscription::unsubscribe()
+   \fn QOpcUaSubscription::~QOpcUaSubscription()
 
-    Removes the subscription from the server.
-    \warning When using the FreeOPCUA plugin, unsubscribing can result in
-    unwanted behavior.
-*/
+   Destroys this subscription instance. It will also destroy the subscrption on
+   the server.
+ */
+QOpcUaSubscription::~QOpcUaSubscription()
+{
+}
 
 /*!
-    \fn int QOpcUaSubscription::addItem(const QString &xmlNodeId)
+    \fn QOpcUaMonitoredEvent *QOpcUaSubscription::addEvent(QOpcUaNode *node)
 
-    Adds the node with \a xmlNodeId to this subscription.
+    Create an event monitor for \a node by adding it to this subscription object.
+
+    Returns a QOpcUaMonitoredEvent which can be used to receive a signal when an
+    event occcurs.
 */
+QOpcUaMonitoredEvent *QOpcUaSubscription::addEvent(QOpcUaNode *node)
+{
+    return d_func()->m_impl->addEvent(node);
+}
+
+/*!
+   \fn QOpcUaMonitoredValue *QOpcUaSubscription::addValue(QOpcUaNode *node)
+
+   Create a value monitor for \a node by adding it to this subscription object.
+
+   Return a QOpcUaMonitoredEvent which can be used to receive a signal when
+   the value changes.
+ */
+QOpcUaMonitoredValue *QOpcUaSubscription::addValue(QOpcUaNode *node)
+{
+    return d_func()->m_impl->addValue(node);
+}
+
+/*!
+   \fn void QOpcUaSubscription::removeEvent(QOpcUaMonitoredEvent *event)
+
+   Remove the monitored event represented by \a event from this subscription.
+ */
+void QOpcUaSubscription::removeEvent(QOpcUaMonitoredEvent *e)
+{
+    d_func()->m_impl->removeEvent(e);
+}
+
+/*!
+   void QOpcUaSubscription::removeValue(QOpcUaMonitoredValue *value)
+
+   Remove the monitored value represented by \a value from this subscription.
+ */
+void QOpcUaSubscription::removeValue(QOpcUaMonitoredValue *v)
+{
+    d_func()->m_impl->removeValue(v);
+}
 
 QT_END_NAMESPACE

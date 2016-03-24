@@ -34,36 +34,37 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAPROVIDER_H
-#define QOPCUAPROVIDER_H
+#ifndef QOPCUAMONITOREDEVENT_H
+#define QOPCUAMONITOREDEVENT_H
 
 #include <QtOpcUa/qopcuaglobal.h>
 
-#include <QtCore/qobject.h>
+#include <QtCore/qvector.h>
 #include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
+#include <QtCore/qobject.h>
+#include <QtOpcUa/qopcuanode.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaPlugin;
-class QOpcUaClient;
+class QOpcUaMonitoredEventPrivate;
+class QOpcUaMonitoredEventImpl;
+class QOpcUaSubscription;
 
-class Q_OPCUA_EXPORT QOpcUaProvider : public QObject
+class Q_OPCUA_EXPORT QOpcUaMonitoredEvent : public QObject
 {
     Q_OBJECT
 
 public:
-    static QStringList availableBackends();
+    Q_DECLARE_PRIVATE(QOpcUaMonitoredEvent)
 
-    explicit QOpcUaProvider(QObject *parent = 0);
-    ~QOpcUaProvider() Q_DECL_OVERRIDE;
+    QOpcUaMonitoredEvent(QOpcUaNode *node, QOpcUaSubscription *subscription, QObject *parent = Q_NULLPTR);
+    ~QOpcUaMonitoredEvent() Q_DECL_OVERRIDE;
+    QOpcUaNode &node();
 
-    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
-
-private:
-    QHash<QString, QOpcUaPlugin*> m_plugins;
+Q_SIGNALS:
+    void newEvent(QVector<QVariant> value) const;
 };
 
 QT_END_NAMESPACE
 
-#endif // QOPCUAPROVIDER_H
+#endif // QOPCUAMONITOREDEVENT_H

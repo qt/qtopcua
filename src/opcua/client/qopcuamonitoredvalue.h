@@ -34,36 +34,36 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAPROVIDER_H
-#define QOPCUAPROVIDER_H
+#ifndef QOPCUAMONITOREDVALUE_H
+#define QOPCUAMONITOREDVALUE_H
 
 #include <QtOpcUa/qopcuaglobal.h>
+#include <QtOpcUa/qopcuanode.h>
 
-#include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
+#include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaPlugin;
-class QOpcUaClient;
+class QOpcUaMonitoredValuePrivate;
+class QOpcUaMonitoredValueImpl;
+class QOpcUaSubscription;
 
-class Q_OPCUA_EXPORT QOpcUaProvider : public QObject
+class Q_OPCUA_EXPORT QOpcUaMonitoredValue : public QObject
 {
     Q_OBJECT
 
 public:
-    static QStringList availableBackends();
+    Q_DECLARE_PRIVATE(QOpcUaMonitoredValue)
 
-    explicit QOpcUaProvider(QObject *parent = 0);
-    ~QOpcUaProvider() Q_DECL_OVERRIDE;
+    QOpcUaMonitoredValue(QOpcUaNode *node, QOpcUaSubscription *subscription, QObject *parent = Q_NULLPTR);
+    ~QOpcUaMonitoredValue() Q_DECL_OVERRIDE;
+    QOpcUaNode &node();
 
-    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
-
-private:
-    QHash<QString, QOpcUaPlugin*> m_plugins;
+Q_SIGNALS:
+    void valueChanged(QVariant val) const;
 };
 
 QT_END_NAMESPACE
 
-#endif // QOPCUAPROVIDER_H
+#endif // QOPCUAMONITOREDVALUE_H

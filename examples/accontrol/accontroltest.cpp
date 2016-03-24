@@ -41,8 +41,11 @@
 #include "accontroltest.h"
 #include "ui_accontroltest.h"
 
-#include <QtOpcUa/qopcuaprovider.h>
-#include <QtOpcUa/qopcuaclient.h>
+#include <QtOpcUa/QOpcUaClient>
+#include <QtOpcUa/QOpcUaMonitoredValue>
+#include <QtOpcUa/QOpcUaSubscription>
+#include <QtOpcUa/QOpcUaNode>
+#include <QtOpcUa/QOpcUaProvider>
 
 #include <QtCore/qcommandlineparser.h>
 #include <QtCore/qdebug.h>
@@ -51,7 +54,9 @@ const QString SETPOINT_NODE = QStringLiteral("ns=3;s=ACControl.SetPoint");
 
 QOpcUaACControlTest::QOpcUaACControlTest(QWidget *parent)
     : QMainWindow(parent)
+    , m_oneSecondSubscription(0)
     , m_pTimeMonitor(0)
+    , m_hundredMsSubscription(0)
     , m_pSetPointMonitor(0)
     , m_pTemperatureMonitor(0)
     , m_pStateMonitor(0)
@@ -77,8 +82,8 @@ QOpcUaACControlTest::QOpcUaACControlTest(QWidget *parent)
     // setup UI, the OPC UA connection and some subscriptions
     ui.setupUi(this);
 
-    m_pProvider = new QOpcUaProvider(parser.value(pluginOption), this);
-    m_pClient = m_pProvider->createClient();
+    m_pProvider = new QOpcUaProvider(this);
+    m_pClient = m_pProvider->createClient(parser.value(pluginOption));
 
     if (!m_pClient) {
         qFatal("Could not initialize QtOpcUa plugin: %s\n",
@@ -86,29 +91,36 @@ QOpcUaACControlTest::QOpcUaACControlTest(QWidget *parent)
     }
 
     // show currently selected plugin in the title bar
-    setWindowTitle(windowTitle() + " (backend: " + m_pProvider->backend() + ")");
+    setWindowTitle(windowTitle() + " (backend: " + m_pClient->backend() + ")");
 
     bool res = m_pClient->connectToEndpoint(parser.value(endpointOption));
     if (!res)
         qFatal("Failed to connect to endpoint: %s\n", qPrintable(parser.value(endpointOption)));
 
+    m_oneSecondSubscription = m_pClient->createSubscription(1000);
     // get current time from server every 1 second and display it
-    m_pTimeMonitor = m_pClient->dataMonitor(1000, QStringLiteral("ns=0;i=2258"));
+
+    m_timeNode = m_pClient->node(QStringLiteral("ns=0;i=2258"));
+    m_pTimeMonitor = m_oneSecondSubscription->addValue(m_timeNode);
     if (m_pTimeMonitor) {
-        connect(m_pTimeMonitor, &QOpcUaMonitoredItem::valueChanged, this,
+        connect(m_pTimeMonitor, &QOpcUaMonitoredValue::valueChanged, this,
                 &QOpcUaACControlTest::updateText);
     }
 
+    m_hundredMsSubscription = m_pClient->createSubscription(100);
+
     // subscribe to current set point and temperature
-    m_pSetPointMonitor = m_pClient->dataMonitor(100, SETPOINT_NODE);
+    m_pSetPointNode = m_pClient->node(SETPOINT_NODE);
+    m_pSetPointMonitor = m_hundredMsSubscription->addValue(m_pSetPointNode);
     if (m_pSetPointMonitor) {
-        connect(m_pSetPointMonitor, &QOpcUaMonitoredItem::valueChanged, this,
+        connect(m_pSetPointMonitor, &QOpcUaMonitoredValue::valueChanged, this,
                 &QOpcUaACControlTest::updateSetpoint);
     }
 
-    m_pTemperatureMonitor = m_pClient->dataMonitor(100, QStringLiteral("ns=3;s=ACControl.CurrentTemp"));
+    m_temperatureNode = m_pClient->node(QStringLiteral("ns=3;s=ACControl.CurrentTemp"));
+    m_pTemperatureMonitor = m_hundredMsSubscription->addValue(m_temperatureNode);
     if (m_pTemperatureMonitor) {
-        connect(m_pTemperatureMonitor, &QOpcUaMonitoredItem::valueChanged,
+        connect(m_pTemperatureMonitor, &QOpcUaMonitoredValue::valueChanged,
                 this, &QOpcUaACControlTest::updateTemperature);
     }
 
@@ -119,9 +131,10 @@ QOpcUaACControlTest::QOpcUaACControlTest(QWidget *parent)
     connect(ui.stopButton, &QAbstractButton::clicked, this, &QOpcUaACControlTest::stop);
     connect(ui.startButton, &QAbstractButton::clicked, this, &QOpcUaACControlTest::start);
 
-    m_pStateMonitor = m_pClient->dataMonitor(100, QStringLiteral("ns=3;s=ACControl.IsRunning"));
+    m_stateNode = m_pClient->node(QStringLiteral("ns=3;s=ACControl.IsRunning"));
+    m_pStateMonitor = m_oneSecondSubscription->addValue(m_stateNode);
     if (m_pStateMonitor) {
-        connect(m_pStateMonitor, &QOpcUaMonitoredItem::valueChanged, this,
+        connect(m_pStateMonitor, &QOpcUaMonitoredValue::valueChanged, this,
                 &QOpcUaACControlTest::stateChange);
     }
 }
@@ -130,11 +143,16 @@ QOpcUaACControlTest::~QOpcUaACControlTest()
 {
     delete m_pClient;
     delete m_pProvider;
+    delete m_pSetPointMonitor;
+    delete m_pTemperatureMonitor;
+    delete m_pTimeMonitor;
+    delete m_oneSecondSubscription;
+    delete m_hundredMsSubscription;
 }
 
 void QOpcUaACControlTest::writeValue(int val)
 {
-    if (!m_pClient->write(SETPOINT_NODE, QVariant(static_cast<double>(val))))
+    if (!m_pSetPointNode->setValue(QVariant(static_cast<double>(val))))
         qWarning() << "Failed to write new set point value!";
 }
 
@@ -160,14 +178,14 @@ void QOpcUaACControlTest::updateTemperature(QVariant val)
 
 void QOpcUaACControlTest::start(void)
 {
-    bool res = m_pClient->write(QStringLiteral("ns=3;s=ACControl.Start"), true);
+    bool res = m_pClient->node(QStringLiteral("ns=3;s=ACControl.Start"))->setValue(true);
     if (!res)
         qDebug("Could not call start method");
 }
 
 void QOpcUaACControlTest::stop(void)
 {
-    bool res = m_pClient->write(QStringLiteral("ns=3;s=ACControl.Stop"), true);
+    bool res = m_pClient->node(QStringLiteral("ns=3;s=ACControl.Stop"))->setValue(true);
     if (!res)
         qDebug("Could not call stop method");
 }

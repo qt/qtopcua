@@ -38,40 +38,44 @@
 #define QOPCUANODE_H
 
 #include <QtOpcUa/qopcuaglobal.h>
-
-#include <QtCore/qobject.h>
+#include <QtOpcUa/qopcuatype.h>
+#include <QtCore/qdatetime.h>
 #include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
+class QOpcUaNodePrivate;
+class QOpcUaNodeImpl;
+class QOpcUaClient;
+class QOpcUaMonitoredEvent;
+class QOpcUaMonitoredValue;
+
 class Q_OPCUA_EXPORT QOpcUaNode : public QObject
 {
-    Q_OBJECT
-    Q_PROPERTY(QString name READ name CONSTANT)
-    Q_PROPERTY(QString type READ type CONSTANT)
-    Q_PROPERTY(int id READ nodeId CONSTANT)
-    Q_PROPERTY(QString xmlNodeId READ xmlNodeId CONSTANT)
-    Q_PROPERTY(int childCount READ childCount CONSTANT)
-    Q_PROPERTY(QStringList childIds READ childIds CONSTANT)
-    Q_PROPERTY(QVariant value READ value CONSTANT)
-    Q_PROPERTY(QString nodeClass READ nodeClass CONSTANT)
-
 public:
+    Q_DECLARE_PRIVATE(QOpcUaNode)
 
-    Q_INVOKABLE QVariant encodedValue() const ;
+    QOpcUaNode(QOpcUaNodeImpl *impl, QOpcUaClient *client, QObject *parent = 0);
+    virtual ~QOpcUaNode();
 
-    virtual QString name() const = 0;
-    virtual QString type() const = 0;
-    virtual QVariant value() const = 0;
-    virtual int nodeId() const = 0;
-    virtual int childCount() const = 0;
-    virtual QList<QOpcUaNode *> children() = 0;
-    virtual QStringList childIds() const = 0;
-    virtual QString xmlNodeId() const = 0;
-    virtual QString nodeClass() const = 0;
+    QVariant encodedValue() const;
 
-protected:
-    explicit QOpcUaNode(QObject *parent = 0);
+    QString name() const;
+    QString type() const;
+    QVariant value() const;
+    QStringList childIds() const;
+    QString nodeId() const;
+    QString nodeClass() const;
+
+    bool setValue(const QVariant &value, QOpcUa::Types type = QOpcUa::Undefined);
+    QPair<double, double> readEuRange() const;
+    QPair<QString, QString> readEui() const;
+
+    QVector<QPair<QVariant, QDateTime> > readHistorical(
+            uint maxCount, const QDateTime &begin, const QDateTime &end) const;
+    bool writeHistorical(QOpcUa::Types type, const QVector<QPair<QVariant, QDateTime> > data);
+
+    bool call(const QString &methodNodeId, QVector<QOpcUa::TypedVariant> *args = 0, QVector<QVariant> *ret = 0);
 };
 
 QT_END_NAMESPACE

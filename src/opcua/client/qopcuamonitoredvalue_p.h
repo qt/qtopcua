@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
+** Copyright (C) 2016 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,36 +34,34 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAPROVIDER_H
-#define QOPCUAPROVIDER_H
+#ifndef QOPCUAMONITOREDVALUE_P_H
+#define QOPCUAMONITOREDVALUE_P_H
 
+#include <QtOpcUa/qopcuamonitoredvalue.h>
+#include <QtOpcUa/qopcuanode.h>
 #include <QtOpcUa/qopcuaglobal.h>
 
-#include <QtCore/qobject.h>
+#include <private/qobject_p.h>
+
 #include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaPlugin;
-class QOpcUaClient;
+class QOpcUaSubscriptionImpl;
+class QOpcUaSubscription;
 
-class Q_OPCUA_EXPORT QOpcUaProvider : public QObject
+class Q_OPCUA_EXPORT QOpcUaMonitoredValuePrivate : public QObjectPrivate
 {
-    Q_OBJECT
-
+    Q_DECLARE_PUBLIC(QOpcUaMonitoredValue)
 public:
-    static QStringList availableBackends();
+    QOpcUaMonitoredValuePrivate(QOpcUaNode *node, QOpcUaSubscription *subscription);
+    ~QOpcUaMonitoredValuePrivate() Q_DECL_OVERRIDE;
 
-    explicit QOpcUaProvider(QObject *parent = 0);
-    ~QOpcUaProvider() Q_DECL_OVERRIDE;
-
-    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
-
-private:
-    QHash<QString, QOpcUaPlugin*> m_plugins;
+    bool triggerValueChanged(const QVariant &val);
+    QOpcUaNode *m_node;
+    QOpcUaSubscription *m_subscription;
 };
 
 QT_END_NAMESPACE
 
-#endif // QOPCUAPROVIDER_H
+#endif // QOPCUAMONITOREDVALUE_P_H

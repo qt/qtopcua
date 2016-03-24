@@ -36,6 +36,7 @@
 
 #include "qfreeopcuaplugin.h"
 #include "qfreeopcuaclient.h"
+#include <QtOpcUa/qopcuaclient.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -51,12 +52,11 @@ QFreeOpcUaPlugin::~QFreeOpcUaPlugin()
 QString QFreeOpcUaPlugin::provider() const
 {
     return QStringLiteral("freeopcua");
-
 }
 
 QOpcUaClient *QFreeOpcUaPlugin::createClient()
 {
-    return new QFreeOpcUaClient();
+    return new QOpcUaClient(new QFreeOpcUaClient);
 }
 
 QT_END_NAMESPACE
