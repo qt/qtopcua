@@ -1008,6 +1008,7 @@ public slots:
 
     void processSubscription(QVariant val)
     {
+        QCOMPARE(QThread::currentThread(), QCoreApplication::instance()->thread());
         m_value = val.toDouble();
     }
 
