@@ -153,6 +153,8 @@ private slots:
         QVERIFY(m_client->url() == QUrl(m_endpoint));
         isConnected = m_client->isConnected();
         QVERIFY(isConnected == true);
+
+        QTRY_VERIFY_WITH_TIMEOUT(m_connected == true, 1250); // Wait 1.25 seconds for state change
     }
 
     void getRootNode()
