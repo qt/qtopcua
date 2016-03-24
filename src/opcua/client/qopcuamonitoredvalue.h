@@ -41,7 +41,6 @@
 #include <QtOpcUa/qopcuanode.h>
 
 #include <QtCore/qvariant.h>
-#include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -39,8 +39,6 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
-#include <QtCore/qsharedpointer.h>
-#include <QtCore/qhash.h>
 
 #include <QtOpcUa/qopcuaglobal.h>
 #include <QtOpcUa/qopcuasubscription.h>
