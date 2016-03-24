@@ -69,7 +69,7 @@ public:
 
     QVector<QPair<QVariant, QDateTime> > readHistorical(uint maxCount,
             const QDateTime &begin, const QDateTime &end) const Q_DECL_OVERRIDE;
-    Q_INVOKABLE bool writeHistorical(QOpcUa::Types type,
+    bool writeHistorical(QOpcUa::Types type,
             const QVector<QPair<QVariant, QDateTime> > data) Q_DECL_OVERRIDE;
 
     OpcUa::Node opcuaNode() const;
