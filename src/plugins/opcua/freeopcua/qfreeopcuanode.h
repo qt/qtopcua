@@ -72,8 +72,6 @@ public:
     bool writeHistorical(QOpcUa::Types type,
             const QVector<QPair<QVariant, QDateTime> > data) Q_DECL_OVERRIDE;
 
-    OpcUa::Node opcuaNode() const;
-
     OpcUa::Node m_node;
     QFreeOpcUaClient* m_client;
 };

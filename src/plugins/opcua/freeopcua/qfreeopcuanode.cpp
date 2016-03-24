@@ -248,8 +248,3 @@ bool QFreeOpcUaNode::writeHistorical(QOpcUa::Types type,
     Q_UNUSED(data);
     return false;
 }
-
-OpcUa::Node QFreeOpcUaNode::opcuaNode() const
-{
-   return m_node;
-}
