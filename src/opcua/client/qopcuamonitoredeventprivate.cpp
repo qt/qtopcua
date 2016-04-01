@@ -49,6 +49,9 @@ QOpcUaMonitoredEventPrivate::~QOpcUaMonitoredEventPrivate()
 
 bool QOpcUaMonitoredEventPrivate::triggerNewEvent(const QVector<QVariant> &val)
 {
+    static const int meta = qRegisterMetaType<QVector<QVariant>>();
+    Q_UNUSED(meta);
+
     // explicitly use invoke to force the signal to be emitted on the main thread
     // even if the plugin triggered this from a worker thread
     return QMetaObject::invokeMethod(q_func(), "newEvent", Qt::AutoConnection, Q_ARG(QVector<QVariant>, val));
