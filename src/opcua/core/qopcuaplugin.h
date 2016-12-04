@@ -51,7 +51,7 @@ class Q_OPCUA_EXPORT QOpcUaPlugin : public QObject
 {
     Q_OBJECT
 public:
-    explicit QOpcUaPlugin(QObject *parent = 0);
+    explicit QOpcUaPlugin(QObject *parent = nullptr);
     ~QOpcUaPlugin() Q_DECL_OVERRIDE;
 
     virtual QOpcUaClient *createClient() = 0;

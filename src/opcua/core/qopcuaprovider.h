@@ -55,7 +55,7 @@ class Q_OPCUA_EXPORT QOpcUaProvider : public QObject
 public:
     static QStringList availableBackends();
 
-    explicit QOpcUaProvider(QObject *parent = 0);
+    explicit QOpcUaProvider(QObject *parent = nullptr);
     ~QOpcUaProvider() Q_DECL_OVERRIDE;
 
     Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);

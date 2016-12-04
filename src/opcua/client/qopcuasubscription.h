@@ -54,7 +54,7 @@ class Q_OPCUA_EXPORT QOpcUaSubscription : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QOpcUaSubscription)
 public:
-    QOpcUaSubscription(QOpcUaSubscriptionImpl *impl, quint32 interval, QObject *parent = 0);
+    QOpcUaSubscription(QOpcUaSubscriptionImpl *impl, quint32 interval, QObject *parent = nullptr);
     ~QOpcUaSubscription() Q_DECL_OVERRIDE;
 
     QOpcUaMonitoredEvent *addEvent(QOpcUaNode *node);

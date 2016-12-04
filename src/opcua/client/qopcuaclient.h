@@ -58,7 +58,7 @@ class Q_OPCUA_EXPORT QOpcUaClient : public QObject
     Q_PROPERTY(bool connected READ isConnected NOTIFY connectedChanged)
 
 public:
-    QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent = 0);
+    QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent = nullptr);
     ~QOpcUaClient();
 
     bool connectToEndpoint(const QUrl &url);

@@ -55,7 +55,7 @@ class Q_OPCUA_EXPORT QOpcUaNode : public QObject
 public:
     Q_DECLARE_PRIVATE(QOpcUaNode)
 
-    QOpcUaNode(QOpcUaNodeImpl *impl, QOpcUaClient *client, QObject *parent = 0);
+    QOpcUaNode(QOpcUaNodeImpl *impl, QOpcUaClient *client, QObject *parent = nullptr);
     virtual ~QOpcUaNode();
 
     QVariant encodedValue() const;
@@ -75,7 +75,8 @@ public:
             uint maxCount, const QDateTime &begin, const QDateTime &end) const;
     bool writeHistorical(QOpcUa::Types type, const QVector<QPair<QVariant, QDateTime> > data);
 
-    bool call(const QString &methodNodeId, QVector<QOpcUa::TypedVariant> *args = 0, QVector<QVariant> *ret = 0);
+    bool call(const QString &methodNodeId, QVector<QOpcUa::TypedVariant> *args = nullptr,
+              QVector<QVariant> *ret = nullptr);
 };
 
 QT_END_NAMESPACE
