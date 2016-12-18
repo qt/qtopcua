@@ -3,8 +3,6 @@ TARGET = accontrol
 
 QT += widgets opcua
 
-QMAKE_RPATHDIR += $${ROOT_BUILD_DIR}/lib
-
 # Input
 HEADERS += \
     accontroltest.h
@@ -12,3 +10,7 @@ FORMS += \
     accontroltest.ui
 SOURCES += main.cpp \
     accontroltest.cpp
+
+# install
+target.path = $$[QT_INSTALL_EXAMPLES]/opcua/accontrol
+INSTALLS += target

@@ -1,5 +1,3 @@
 TEMPLATE = subdirs
-
-SUBDIRS = accontrol
-#  qml-browser
+SUBDIRS = opcua
 
