@@ -82,13 +82,16 @@ QOpcUaACControlTest::QOpcUaACControlTest(QWidget *parent)
     // setup UI, the OPC UA connection and some subscriptions
     ui.setupUi(this);
 
+    m_pProvider = new QOpcUaProvider(this);
     if (!parser.isSet(pluginOption)) {
-        qWarning() << "You must select a plugin via -p or --plugin, e.g. freeopcua";
-        exit(EXIT_FAILURE);
+        qWarning() << "You didn't select a plugin. Use -p or --plugin, e.g. freeopcua";
+        qWarning() << "Available backends: " << m_pProvider->availableBackends().join(", ");
+        qWarning() << "Falling back to \"freeopcua\" plugin!";
+        m_pClient = m_pProvider->createClient("freeopcua");
+    } else {
+        m_pClient = m_pProvider->createClient(parser.value(pluginOption));
     }
 
-    m_pProvider = new QOpcUaProvider(this);
-    m_pClient = m_pProvider->createClient(parser.value(pluginOption));
 
     if (!m_pClient) {
         qWarning() << "Could not initialize QtOpcUa plugin: " <<
