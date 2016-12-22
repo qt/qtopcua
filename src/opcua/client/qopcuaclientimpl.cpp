@@ -38,7 +38,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QOpcUaClientImpl::QOpcUaClientImpl()
+QOpcUaClientImpl::QOpcUaClientImpl(QObject *parent)
+    : QObject(parent)
 {}
 
 QOpcUaClientImpl::~QOpcUaClientImpl()

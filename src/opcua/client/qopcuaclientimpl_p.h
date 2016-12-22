@@ -49,6 +49,7 @@
 //
 
 #include <QtCore/qobject.h>
+#include <QtCore/QFuture>
 
 #include <QtOpcUa/qopcuaglobal.h>
 
@@ -58,21 +59,28 @@ class QOpcUaNode;
 class QOpcUaClientPrivate;
 class QOpcUaSubscription;
 
-class Q_OPCUA_EXPORT QOpcUaClientImpl
+class Q_OPCUA_EXPORT QOpcUaClientImpl : public QObject
 {
+    Q_OBJECT
+
 public:
-    QOpcUaClientImpl();
+    QOpcUaClientImpl(QObject *parent = 0);
     virtual ~QOpcUaClientImpl();
 
-    virtual bool connectToEndpoint(const QUrl &url) = 0;
-    virtual bool secureConnectToEndpoint(const QUrl &url) = 0;
-    virtual bool disconnectFromEndpoint() = 0;
+    virtual void connectToEndpoint(const QUrl &url) = 0;
+    virtual void secureConnectToEndpoint(const QUrl &url) = 0;
+    virtual void disconnectFromEndpoint() = 0;
     virtual QOpcUaNode *node(const QString &nodeId) = 0;
+    virtual bool isSecureConnectionSupported() const = 0;
     virtual QString backend() const = 0;
 
     virtual QOpcUaSubscription *createSubscription(quint32 interval) = 0;
 
     QOpcUaClientPrivate *m_clientPrivate;
+
+signals:
+    void connected();
+    void disconnected();
 };
 
 QT_END_NAMESPACE

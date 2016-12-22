@@ -41,7 +41,6 @@
 #include "accontroltest.h"
 #include "ui_accontroltest.h"
 
-#include <QtOpcUa/QOpcUaClient>
 #include <QtOpcUa/QOpcUaMonitoredValue>
 #include <QtOpcUa/QOpcUaSubscription>
 #include <QtOpcUa/QOpcUaNode>
@@ -49,6 +48,7 @@
 
 #include <QtCore/qcommandlineparser.h>
 #include <QtCore/qdebug.h>
+#include <QtWidgets/qstatusbar.h>
 
 const QString SETPOINT_NODE = QStringLiteral("ns=3;s=ACControl.SetPoint");
 
@@ -102,52 +102,14 @@ QOpcUaACControlTest::QOpcUaACControlTest(QWidget *parent)
     // show currently selected plugin in the title bar
     setWindowTitle(windowTitle() + " (backend: " + m_pClient->backend() + ")");
 
-    bool res = m_pClient->connectToEndpoint(parser.value(endpointOption));
-    if (!res) {
-        qWarning() << "Failed to connect to endpoint: " << qPrintable(parser.value(endpointOption));
-        exit(EXIT_FAILURE);
-    }
+    connect(m_pClient, &QOpcUaClient::connected,
+            this, &QOpcUaACControlTest::clientConnected);
+    connect(m_pClient, &QOpcUaClient::disconnected,
+            this, &QOpcUaACControlTest::clientDisconnected);
+    connect(m_pClient, &QOpcUaClient::stateChanged,
+            this, &QOpcUaACControlTest::statusChanged);
 
-    m_oneSecondSubscription = m_pClient->createSubscription(1000);
-    // get current time from server every 1 second and display it
-
-    m_timeNode = m_pClient->node(QStringLiteral("ns=0;i=2258"));
-    m_pTimeMonitor = m_oneSecondSubscription->addValue(m_timeNode);
-    if (m_pTimeMonitor) {
-        connect(m_pTimeMonitor, &QOpcUaMonitoredValue::valueChanged, this,
-                &QOpcUaACControlTest::updateText);
-    }
-
-    m_hundredMsSubscription = m_pClient->createSubscription(100);
-
-    // subscribe to current set point and temperature
-    m_pSetPointNode = m_pClient->node(SETPOINT_NODE);
-    m_pSetPointMonitor = m_hundredMsSubscription->addValue(m_pSetPointNode);
-    if (m_pSetPointMonitor) {
-        connect(m_pSetPointMonitor, &QOpcUaMonitoredValue::valueChanged, this,
-                &QOpcUaACControlTest::updateSetpoint);
-    }
-
-    m_temperatureNode = m_pClient->node(QStringLiteral("ns=3;s=ACControl.CurrentTemp"));
-    m_pTemperatureMonitor = m_hundredMsSubscription->addValue(m_temperatureNode);
-    if (m_pTemperatureMonitor) {
-        connect(m_pTemperatureMonitor, &QOpcUaMonitoredValue::valueChanged,
-                this, &QOpcUaACControlTest::updateTemperature);
-    }
-
-    ui.horizontalSlider->setEnabled(false); // wait for real value from server
-    connect(ui.horizontalSlider, &QAbstractSlider::valueChanged, this, &QOpcUaACControlTest::writeValue);
-
-    // connect start/stop logic
-    connect(ui.stopButton, &QAbstractButton::clicked, this, &QOpcUaACControlTest::stop);
-    connect(ui.startButton, &QAbstractButton::clicked, this, &QOpcUaACControlTest::start);
-
-    m_stateNode = m_pClient->node(QStringLiteral("ns=3;s=ACControl.IsRunning"));
-    m_pStateMonitor = m_oneSecondSubscription->addValue(m_stateNode);
-    if (m_pStateMonitor) {
-        connect(m_pStateMonitor, &QOpcUaMonitoredValue::valueChanged, this,
-                &QOpcUaACControlTest::stateChange);
-    }
+    m_pClient->connectToEndpoint(parser.value(endpointOption));
 }
 
 QOpcUaACControlTest::~QOpcUaACControlTest()
@@ -214,5 +176,59 @@ void QOpcUaACControlTest::stateChange(QVariant state)
         ui.startButton->setDisabled(true);
         ui.stopButton->setFocus();
     }
+}
+
+void QOpcUaACControlTest::clientConnected()
+{
+    // get current time from server every 1 second and display it
+    m_oneSecondSubscription = m_pClient->createSubscription(1000);
+
+    m_timeNode = m_pClient->node(QStringLiteral("ns=0;i=2258"));
+    m_pTimeMonitor = m_oneSecondSubscription->addValue(m_timeNode);
+    if (m_pTimeMonitor) {
+        connect(m_pTimeMonitor, &QOpcUaMonitoredValue::valueChanged, this,
+                &QOpcUaACControlTest::updateText);
+    }
+
+    m_hundredMsSubscription = m_pClient->createSubscription(100);
+
+    // subscribe to current set point and temperature
+    m_pSetPointNode = m_pClient->node(SETPOINT_NODE);
+    m_pSetPointMonitor = m_hundredMsSubscription->addValue(m_pSetPointNode);
+    if (m_pSetPointMonitor) {
+        connect(m_pSetPointMonitor, &QOpcUaMonitoredValue::valueChanged, this,
+                &QOpcUaACControlTest::updateSetpoint);
+    }
+
+    m_temperatureNode = m_pClient->node(QStringLiteral("ns=3;s=ACControl.CurrentTemp"));
+    m_pTemperatureMonitor = m_hundredMsSubscription->addValue(m_temperatureNode);
+    if (m_pTemperatureMonitor) {
+        connect(m_pTemperatureMonitor, &QOpcUaMonitoredValue::valueChanged,
+                this, &QOpcUaACControlTest::updateTemperature);
+    }
+
+    ui.horizontalSlider->setEnabled(false); // wait for real value from server
+    connect(ui.horizontalSlider, &QAbstractSlider::valueChanged, this, &QOpcUaACControlTest::writeValue);
+
+    // connect start/stop logic
+    connect(ui.stopButton, &QAbstractButton::clicked, this, &QOpcUaACControlTest::stop);
+    connect(ui.startButton, &QAbstractButton::clicked, this, &QOpcUaACControlTest::start);
+
+    m_stateNode = m_pClient->node(QStringLiteral("ns=3;s=ACControl.IsRunning"));
+    m_pStateMonitor = m_oneSecondSubscription->addValue(m_stateNode);
+    if (m_pStateMonitor) {
+        connect(m_pStateMonitor, &QOpcUaMonitoredValue::valueChanged, this,
+                &QOpcUaACControlTest::stateChange);
+    }
+}
+
+void QOpcUaACControlTest::clientDisconnected()
+{
+    qWarning() << "Could not connect to server!";
+}
+
+void QOpcUaACControlTest::statusChanged(QOpcUaClient::ClientState state)
+{
+    statusBar()->showMessage(QString("current state: ") + QVariant::fromValue(state).toString());
 }
 

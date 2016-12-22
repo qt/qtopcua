@@ -69,7 +69,8 @@ QT_BEGIN_NAMESPACE
     it is public).
 */
 QOpcUaClient::QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent)
-    : QObject(*new QOpcUaClientPrivate(impl), parent)
+    : QObject(parent)
+    , d_ptr(new QOpcUaClientPrivate(impl, this))
 {
     impl->m_clientPrivate = d_func();
 }
@@ -85,18 +86,12 @@ QOpcUaClient::~QOpcUaClient()
     \fn  bool QOpcUaClient::connectToEndpoint(const QUrl &url)
 
     Connects to the OPC UA endpoint given in \a url.
-    true is returned in case of success, false is returned when the connection
-    fails.
     \sa disconnectFromEndpoint()
 */
-bool QOpcUaClient::connectToEndpoint(const QUrl &url)
+void QOpcUaClient::connectToEndpoint(const QUrl &url)
 {
     Q_D(QOpcUaClient);
-    bool result = d->processUrl(url);
-    if (result)
-        return d->m_impl->connectToEndpoint(url);
-    else
-        return false;
+    d->connectToEndpoint(url);
 }
 
 /*!
@@ -112,29 +107,22 @@ bool QOpcUaClient::connectToEndpoint(const QUrl &url)
     \warning Currently not supported by the FreeOPCUA backend.
     \sa disconnectFromEndpoint()
 */
-bool QOpcUaClient::secureConnectToEndpoint(const QUrl &url)
+void QOpcUaClient::secureConnectToEndpoint(const QUrl &url)
 {
     Q_D(QOpcUaClient);
-    bool result = d->processUrl(url);
-    if (result)
-        return d->m_impl->secureConnectToEndpoint(url);
-    else
-        return false;
+    d->secureConnectToEndpoint(url);
 }
 
 /*!
     \fn bool QOpcUaClient::disconnectFromEndpoint()
 
     Disconnects from the server.
-    Returns \c true on success; otherwise \c false.
     \sa connectToEndpoint()
 */
-bool QOpcUaClient::disconnectFromEndpoint()
+void QOpcUaClient::disconnectFromEndpoint()
 {
-    if (!isConnected())
-       return true;
-
-    return d_func()->m_impl->disconnectFromEndpoint();
+    Q_D(QOpcUaClient);
+    d->disconnectFromEndpoint();
 }
 
 /*! \fn QUrl QOpcUaClient::url() const
@@ -144,16 +132,24 @@ bool QOpcUaClient::disconnectFromEndpoint()
 */
 QUrl QOpcUaClient::url() const
 {
-    return d_func()->m_url;
+    Q_D(const QOpcUaClient);
+    return d->m_url;
 }
 
-/*!
-    \property QOpcUaClient::connected
-    \brief the connection status of QOpcUaClient.
-*/
-bool QOpcUaClient::isConnected() const
+QOpcUaClient::ClientState QOpcUaClient::state() const
 {
-    return d_func()->m_connected;
+    Q_D(const QOpcUaClient);
+    return d->m_state;
+}
+
+/*! Return if the backend is supported a connection over a secured channel.
+
+    \sa secureConnectToEndpoint
+*/
+bool QOpcUaClient::isSecureConnectionSupported() const
+{
+    Q_D(const QOpcUaClient);
+    return d->m_impl->isSecureConnectionSupported();
 }
 
 /*!
@@ -166,7 +162,7 @@ bool QOpcUaClient::isConnected() const
 */
 QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 {
-    if (!isConnected())
+    if (state() != ConnectedState)
        return nullptr;
 
     return d_func()->m_impl->node(nodeId);
@@ -196,7 +192,7 @@ QString QOpcUaClient::backend() const
 */
 QOpcUaSubscription *QOpcUaClient::createSubscription(quint32 interval)
 {
-    if (!isConnected())
+    if (state() != ConnectedState)
        return nullptr;
 
     return d_func()->m_impl->createSubscription(interval);

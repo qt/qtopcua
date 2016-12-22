@@ -52,19 +52,27 @@
 
 #include <QtCore/qdebug.h>
 #include <QtNetwork/qhostinfo.h>
+#include <QtConcurrent/QtConcurrent>
 
 QT_BEGIN_NAMESPACE
 
 QFreeOpcUaClient::QFreeOpcUaClient()
     : OpcUa::UaClient(false)
 {
+    m_clientThreadPool = new QThreadPool(this);
+    m_clientThreadPool->setMaxThreadCount(1);
+
+    connect(&m_connectWatcher, &QFutureWatcher<bool>::finished,
+            this, &QFreeOpcUaClient::connectToEndpointFinished);
+    connect(&m_disconnectWatcher, &QFutureWatcher<bool>::finished,
+            this, &QFreeOpcUaClient::disconnectFromEndpointFinished);
 }
 
 QFreeOpcUaClient::~QFreeOpcUaClient()
 {
 }
 
-bool QFreeOpcUaClient::connectToEndpoint(const QUrl &url)
+bool QFreeOpcUaClient::asyncConnectToEndpoint(const QUrl &url)
 {
     try {
         QString sNodeName = QHostInfo::localHostName();
@@ -83,28 +91,55 @@ bool QFreeOpcUaClient::connectToEndpoint(const QUrl &url)
         qWarning() << e.what();
         return false;
     }
-    m_clientPrivate->setConnected(true);
     return true;
 }
 
-bool QFreeOpcUaClient::secureConnectToEndpoint(const QUrl &)
+void QFreeOpcUaClient::connectToEndpoint(const QUrl &url)
 {
-    // not possible ATM with the freeopcua backend
-    return false;
+    m_connectWatcher.setFuture(QtConcurrent::run(m_clientThreadPool,
+                                                 this, &QFreeOpcUaClient::asyncConnectToEndpoint,
+                                                 url));
 }
 
-bool QFreeOpcUaClient::disconnectFromEndpoint()
+void QFreeOpcUaClient::connectToEndpointFinished()
+{
+    if (m_connectWatcher.result()) {
+        emit connected();
+    } else {
+        emit disconnected();
+    }
+}
+
+void QFreeOpcUaClient::secureConnectToEndpoint(const QUrl &)
+{
+    // No need to do something, never reached
+}
+
+bool QFreeOpcUaClient::asyncDisconnectFromEndpoint()
 {
     try {
         Disconnect();
-
-        m_clientPrivate->setConnected(false);
         return true;
     } catch (const std::exception &ex) {
         qWarning() << "Could not disconnect from endpoint: " << ex.what();
     }
 
     return false;
+}
+
+void QFreeOpcUaClient::disconnectFromEndpoint()
+{
+    m_disconnectWatcher.setFuture(QtConcurrent::run(m_clientThreadPool,
+                                                    this, &QFreeOpcUaClient::asyncDisconnectFromEndpoint));
+}
+
+void QFreeOpcUaClient::disconnectFromEndpointFinished()
+{
+    if (m_disconnectWatcher.result()) {
+        emit disconnected();
+    } else {
+        // emit error
+    }
 }
 
 QOpcUaNode *QFreeOpcUaClient::node(const QString &nodeId)

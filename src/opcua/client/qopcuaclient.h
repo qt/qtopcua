@@ -54,27 +54,47 @@ class Q_OPCUA_EXPORT QOpcUaClient : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QOpcUaClient)
 
-    // FIXME: is this property needed when we have a "proper qml client"?
-    Q_PROPERTY(bool connected READ isConnected NOTIFY connectedChanged)
-
 public:
+    enum ClientState {
+        UnconnectedState,
+        ConnectingState,
+        ConnectedState,
+        ClosingState
+    };
+    Q_ENUM(ClientState)
+
+    enum ClientError {
+        NoError,
+        InvalidUrl,
+        UnknownError
+    };
+    Q_ENUM(ClientError)
+
     QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent = nullptr);
     ~QOpcUaClient();
 
-    Q_INVOKABLE bool connectToEndpoint(const QUrl &url);
-    Q_INVOKABLE bool secureConnectToEndpoint(const QUrl &url);
-    Q_INVOKABLE bool disconnectFromEndpoint();
+    Q_INVOKABLE void connectToEndpoint(const QUrl &url);
+    Q_INVOKABLE void secureConnectToEndpoint(const QUrl &url);
+    Q_INVOKABLE void disconnectFromEndpoint();
     QOpcUaNode *node(const QString &nodeId);
 
     QOpcUaSubscription *createSubscription(quint32 interval);
 
     QUrl url() const;
-    bool isConnected() const;
 
+    ClientState state() const;
+
+    bool isSecureConnectionSupported() const;
     QString backend() const;
 
 Q_SIGNALS:
-    void connectedChanged(bool connected);  // FIXME: connectionStateChanged would be nicer
+    void connected();
+    void disconnected();
+    void stateChanged(ClientState state);
+    void error(ClientError error);
+
+private:
+    QOpcUaClientPrivate * const d_ptr;
 };
 
 QT_END_NAMESPACE

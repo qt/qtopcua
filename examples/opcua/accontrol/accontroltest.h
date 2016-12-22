@@ -42,6 +42,7 @@
 #define ACCONTROLTEST_H
 
 #include <QtWidgets/qmainwindow.h>
+#include <QtOpcUa/qopcuaclient.h>
 
 #include "ui_accontroltest.h"
 
@@ -69,6 +70,10 @@ public slots:
     void stop(void);
     void start(void);
     void stateChange(QVariant state);
+
+    void clientConnected();
+    void clientDisconnected();
+    void statusChanged(QOpcUaClient::ClientState state);
 
 private:
     Ui::QOpcUaACControlTest ui;

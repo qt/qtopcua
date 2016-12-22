@@ -37,19 +37,63 @@
 #include <private/qopcuaclient_p.h>
 #include <QDebug>
 
-QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
-    : m_impl(impl)
-    , m_connected(false)
-{}
+QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl, QOpcUaClient *parent)
+    : QObject(parent)
+    , m_impl(impl)
+    , m_state(QOpcUaClient::UnconnectedState)
+    , q_ptr(parent)
+{
+    connect(m_impl.data(), &QOpcUaClientImpl::connected,
+            this, &QOpcUaClientPrivate::clientConnected);
+    connect(m_impl.data(), &QOpcUaClientImpl::disconnected,
+            this, &QOpcUaClientPrivate::clientDisconnected);
+}
 
 QOpcUaClientPrivate::~QOpcUaClientPrivate()
 {
 }
 
-void QOpcUaClientPrivate::setConnected(bool connected)
+void QOpcUaClientPrivate::connectToEndpoint(const QUrl &url)
 {
-    m_connected = connected;
-    emit q_func()->connectedChanged(m_connected);
+    Q_Q(QOpcUaClient);
+
+    bool result = processUrl(url);
+    if (result) {
+        m_impl->connectToEndpoint(url);
+        m_state = QOpcUaClient::ConnectingState;
+        emit q->stateChanged(m_state);
+    } else {
+        emit q->disconnected();
+        emit q->error(QOpcUaClient::InvalidUrl);
+    }
+}
+
+void QOpcUaClientPrivate::secureConnectToEndpoint(const QUrl &url)
+{
+    Q_Q(QOpcUaClient);
+
+    if (!m_impl->isSecureConnectionSupported()) {
+        qWarning("Backend does not support secure connections. Cancelling connection.");
+        return;
+    }
+
+    bool result = processUrl(url);
+    if (result) {
+        m_impl->secureConnectToEndpoint(url);
+        m_state = QOpcUaClient::ClosingState;
+        emit q->stateChanged(m_state);
+    } else {
+        emit q->disconnected();
+        emit q->error(QOpcUaClient::InvalidUrl);
+    }
+}
+
+void QOpcUaClientPrivate::disconnectFromEndpoint()
+{
+    if (m_state != QOpcUaClient::ConnectedState)
+        return;
+
+    m_impl->disconnectFromEndpoint();
 }
 
 bool QOpcUaClientPrivate::processUrl(const QUrl &url)
@@ -59,12 +103,24 @@ bool QOpcUaClientPrivate::processUrl(const QUrl &url)
         return false;
     }
 
-    if (m_connected) {
-        if (m_url == url)
-            return true;
-        else
-            m_impl->disconnectFromEndpoint();
-    }
     m_url = url;
     return true;
+}
+
+void QOpcUaClientPrivate::clientConnected()
+{
+    Q_Q(QOpcUaClient);
+
+    m_state = QOpcUaClient::ConnectedState;
+    emit q->stateChanged(m_state);
+    emit q->connected();
+}
+
+void QOpcUaClientPrivate::clientDisconnected()
+{
+    Q_Q(QOpcUaClient);
+
+    m_state = QOpcUaClient::UnconnectedState;
+    emit q->stateChanged(m_state);
+    emit q->disconnected();
 }

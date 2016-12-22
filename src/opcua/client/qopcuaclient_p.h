@@ -62,20 +62,32 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_OPCUA_EXPORT QOpcUaClientPrivate : public QObjectPrivate
+class Q_OPCUA_EXPORT QOpcUaClientPrivate : public QObject
 {
+    Q_OBJECT
+
 public:
     Q_DECLARE_PUBLIC(QOpcUaClient)
 
-    QOpcUaClientPrivate(QOpcUaClientImpl *impl);
+    QOpcUaClientPrivate(QOpcUaClientImpl *impl, QOpcUaClient *parent);
     ~QOpcUaClientPrivate() Q_DECL_OVERRIDE;
 
+    void connectToEndpoint(const QUrl &url);
+    void secureConnectToEndpoint(const QUrl &url);
+    void disconnectFromEndpoint();
+
     QScopedPointer<QOpcUaClientImpl> m_impl;
-    bool m_connected;
+    QOpcUaClient::ClientState m_state;
     QUrl m_url;
 
-    void setConnected(bool connected);
     bool processUrl(const QUrl &url);
+
+public slots:
+    void clientConnected();
+    void clientDisconnected();
+
+private:
+    QOpcUaClient * const q_ptr;
 };
 
 QT_END_NAMESPACE

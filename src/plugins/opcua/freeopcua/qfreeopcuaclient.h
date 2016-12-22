@@ -44,6 +44,8 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
+#include <QtCore/qfuturewatcher.h>
+#include <QtCore/qthreadpool.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -53,13 +55,27 @@ public:
     explicit QFreeOpcUaClient();
     ~QFreeOpcUaClient() Q_DECL_OVERRIDE;
 
-    bool connectToEndpoint(const QUrl &url) Q_DECL_OVERRIDE;
-    bool secureConnectToEndpoint(const QUrl &url) Q_DECL_OVERRIDE;
-    bool disconnectFromEndpoint() Q_DECL_OVERRIDE;
+    void connectToEndpoint(const QUrl &url) Q_DECL_OVERRIDE;
+    void secureConnectToEndpoint(const QUrl &url) Q_DECL_OVERRIDE;
+    void disconnectFromEndpoint() Q_DECL_OVERRIDE;
     QOpcUaNode *node(const QString &nodeId) Q_DECL_OVERRIDE;
+
+    bool isSecureConnectionSupported() const Q_DECL_OVERRIDE { return false; }
     QString backend() const Q_DECL_OVERRIDE { return QStringLiteral("freeopcua"); }
 
     QOpcUaSubscription *createSubscription(quint32 interval) Q_DECL_OVERRIDE;
+
+private slots:
+    void connectToEndpointFinished();
+    void disconnectFromEndpointFinished();
+
+private:
+    bool asyncConnectToEndpoint(const QUrl &url);
+    bool asyncDisconnectFromEndpoint();
+
+    QThreadPool *m_clientThreadPool;
+    QFutureWatcher<bool> m_connectWatcher;
+    QFutureWatcher<bool> m_disconnectWatcher;
 };
 
 QT_END_NAMESPACE
