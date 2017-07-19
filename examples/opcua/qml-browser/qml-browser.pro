@@ -16,3 +16,6 @@ DISTFILES += \
     qml/OPCNode.qml \
     qml/Line.qml \
     qml/NodeText.qml
+
+target.path = $$[QT_INSTALL_EXAMPLES]/opcua/qml-browser
+INSTALLS += target
