@@ -73,7 +73,7 @@ public:
 
     QFreeOpcUaClient *m_client;
     QOpcUaSubscription *m_qsubscription;
-    std::unique_ptr<OpcUa::Subscription> m_subscription;
+    OpcUa::Subscription::SharedPtr m_subscription;
     QMap<int32_t, QOpcUaMonitoredValue *> m_dataChangeHandles;
     QMap<int32_t, QOpcUaMonitoredEvent *> m_eventHandles;
 };
