@@ -61,9 +61,9 @@ public:
     QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent = nullptr);
     ~QOpcUaClient();
 
-    bool connectToEndpoint(const QUrl &url);
-    bool secureConnectToEndpoint(const QUrl &url);
-    bool disconnectFromEndpoint();
+    Q_INVOKABLE bool connectToEndpoint(const QUrl &url);
+    Q_INVOKABLE bool secureConnectToEndpoint(const QUrl &url);
+    Q_INVOKABLE bool disconnectFromEndpoint();
     QOpcUaNode *node(const QString &nodeId);
 
     QOpcUaSubscription *createSubscription(quint32 interval);
