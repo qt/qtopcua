@@ -58,8 +58,9 @@ class QOpcUaNode;
 class QOpcUaClientPrivate;
 class QOpcUaSubscription;
 
-struct Q_OPCUA_EXPORT QOpcUaClientImpl
+class Q_OPCUA_EXPORT QOpcUaClientImpl
 {
+public:
     QOpcUaClientImpl();
     virtual ~QOpcUaClientImpl();
 
