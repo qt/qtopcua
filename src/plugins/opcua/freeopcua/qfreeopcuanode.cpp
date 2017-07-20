@@ -190,7 +190,7 @@ bool QFreeOpcUaNode::call(const QString &methodNodeId,
         std::vector<OpcUa::Variant> arguments;
         if (args) {
             arguments.reserve(args->size());
-            foreach (const QOpcUa::TypedVariant &v, *args)
+            for (const QOpcUa::TypedVariant &v: qAsConst(*args))
                 arguments.push_back(QFreeOpcUaValueConverter::toTypedVariant(v.first, v.second));
         }
         OpcUa::CallMethodRequest myCallRequest;

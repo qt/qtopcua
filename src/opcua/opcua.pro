@@ -12,5 +12,6 @@ load(qt_module)
 PUBLIC_HEADERS += qopcuaglobal.h
 
 CONFIG -= create_cmake
+DEFINES += QT_NO_FOREACH
 
 HEADERS += $$PUBLIC_HEADERS $$PRIVATE_HEADERS

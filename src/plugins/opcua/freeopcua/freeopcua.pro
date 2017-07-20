@@ -6,6 +6,7 @@ PLUGIN_CLASS_NAME = QFreeOpcUaPlugin
 load(qt_plugin)
 
 CONFIG += exceptions link_pkgconfig
+DEFINES += QT_NO_FOREACH
 unix: PKGCONFIG += libopcuaprotocol libopcuacore libopcuaclient
 win32: LIBS += opcuaprotocol.lib opcuacore.lib opcuaclient.lib Wininet.lib
 
