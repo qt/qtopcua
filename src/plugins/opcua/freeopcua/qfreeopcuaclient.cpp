@@ -115,9 +115,9 @@ QOpcUaNode *QFreeOpcUaClient::node(const QString &nodeId)
         return new QOpcUaNode(new QFreeOpcUaNode(node, this), m_clientPrivate->q_func());
     } catch (const std::exception &ex) {
         qWarning() << "Could not get node: " << nodeId << " " << ex.what();
-        return Q_NULLPTR;
+        return nullptr;
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 QOpcUaSubscription *QFreeOpcUaClient::createSubscription(quint32 interval)

@@ -55,7 +55,7 @@ class Q_OPCUA_EXPORT QOpcUaMonitoredValue : public QObject
 public:
     Q_DECLARE_PRIVATE(QOpcUaMonitoredValue)
 
-    QOpcUaMonitoredValue(QOpcUaNode *node, QOpcUaSubscription *subscription, QObject *parent = Q_NULLPTR);
+    QOpcUaMonitoredValue(QOpcUaNode *node, QOpcUaSubscription *subscription, QObject *parent = nullptr);
     ~QOpcUaMonitoredValue() Q_DECL_OVERRIDE;
     QOpcUaNode &node();
 

@@ -122,7 +122,7 @@ static QOpcUaPlugin *loadPlugin(const QString &key)
             return plugin;
         }
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 /*!
@@ -142,7 +142,7 @@ QOpcUaClient *QOpcUaProvider::createClient(const QString &backend)
         if (!plugin) {
             qWarning() << "Failed to load OPC UA plugin:" << backend;
             qWarning() << "Available plugins:" << availableBackends();
-            return Q_NULLPTR;
+            return nullptr;
         }
         m_plugins.insert(backend, plugin);
     }

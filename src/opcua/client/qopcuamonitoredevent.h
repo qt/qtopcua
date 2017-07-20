@@ -57,7 +57,7 @@ class Q_OPCUA_EXPORT QOpcUaMonitoredEvent : public QObject
 public:
     Q_DECLARE_PRIVATE(QOpcUaMonitoredEvent)
 
-    QOpcUaMonitoredEvent(QOpcUaNode *node, QOpcUaSubscription *subscription, QObject *parent = Q_NULLPTR);
+    QOpcUaMonitoredEvent(QOpcUaNode *node, QOpcUaSubscription *subscription, QObject *parent = nullptr);
     ~QOpcUaMonitoredEvent() Q_DECL_OVERRIDE;
     QOpcUaNode &node();
 

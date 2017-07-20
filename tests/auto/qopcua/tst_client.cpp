@@ -204,7 +204,7 @@ private slots:
 
         QScopedPointer<QOpcUaSubscription> subscription(m_client->createSubscription(100));
         QScopedPointer<QOpcUaMonitoredValue> monitoredValue(subscription->addValue(node.data()));
-        QVERIFY(monitoredValue != Q_NULLPTR);
+        QVERIFY(monitoredValue != nullptr);
         if (!monitoredValue)
             QFAIL("can not monitor value");
         QObject::connect(monitoredValue.data(), &QOpcUaMonitoredValue::valueChanged,

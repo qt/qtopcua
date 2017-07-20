@@ -104,13 +104,13 @@ void QFreeOpcUaSubscription::DataChange(quint32 handle, const OpcUa::Node &node,
 QOpcUaMonitoredValue *QFreeOpcUaSubscription::addValue(QOpcUaNode *node)
 {
     if (!m_subscription)
-        return Q_NULLPTR;
+        return nullptr;
 
     try {
         // Only add a monitored item if the node has a value attribute
         QFreeOpcUaNode *nnode = static_cast<QFreeOpcUaNode *>(node->d_func()->m_impl.data());
         if (nnode->m_node.GetAttribute(OpcUa::AttributeId::Value).Status != OpcUa::StatusCode::Good)
-            return Q_NULLPTR;
+            return nullptr;
 
         if (m_subscription) {
             uint32_t handle = m_subscription->SubscribeDataChange(m_client->GetNode(node->nodeId().toStdString()));
@@ -121,7 +121,7 @@ QOpcUaMonitoredValue *QFreeOpcUaSubscription::addValue(QOpcUaNode *node)
     } catch (const std::exception &ex) {
         qWarning("Caught: %s", ex.what());
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void QFreeOpcUaSubscription::Event(quint32 handle, const OpcUa::Event &event)
@@ -151,12 +151,12 @@ QOpcUaMonitoredEvent *QFreeOpcUaSubscription::addEvent(QOpcUaNode *node)
 {
     // Note: Callback is not called due to some error in the event implementation in freeopcua
     if (!m_subscription)
-        return Q_NULLPTR;
+        return nullptr;
 
     try {
         QFreeOpcUaNode *nnode = static_cast<QFreeOpcUaNode *>(node->d_func()->m_impl.data());
         if (nnode->m_node.GetAttribute(OpcUa::AttributeId::EventNotifier).Status != OpcUa::StatusCode::Good)
-            return Q_NULLPTR;
+            return nullptr;
 
         OpcUa::Node serverNode = m_client->GetNode(OpcUa::ObjectId::Server);
         OpcUa::Node typeNode = m_client->GetNode(node->nodeId().toStdString());
@@ -168,7 +168,7 @@ QOpcUaMonitoredEvent *QFreeOpcUaSubscription::addEvent(QOpcUaNode *node)
     } catch (const std::exception &ex) {
         qWarning("Caught: %s", ex.what());
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
 void QFreeOpcUaSubscription::removeEvent(QOpcUaMonitoredEvent *event)
