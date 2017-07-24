@@ -71,7 +71,7 @@ private:
     OpcUa::Node m_stopNode;
     OpcUa::Node m_stateNode;
 
-    std::unique_ptr<OpcUa::Subscription> m_subscription;
+    OpcUa::Subscription::SharedPtr m_subscription;
 
     QTimer m_timer;
 };

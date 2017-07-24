@@ -104,7 +104,7 @@ int main(int argc, char** argv)
     SubClient clt;
     clt.m_event = &ev;
     clt.m_server = &server;
-    std::unique_ptr<Subscription> sub = server.CreateSubscription(100, clt);
+    Subscription::SharedPtr sub = server.CreateSubscription(100, clt);
     sub->SubscribeDataChange(triggerVar);
 
     // Test variables containing arrays of various types
