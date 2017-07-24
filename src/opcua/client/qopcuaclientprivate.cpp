@@ -80,7 +80,7 @@ void QOpcUaClientPrivate::secureConnectToEndpoint(const QUrl &url)
     bool result = processUrl(url);
     if (result) {
         m_impl->secureConnectToEndpoint(url);
-        m_state = QOpcUaClient::ClosingState;
+        m_state = QOpcUaClient::ConnectingState;
         emit q->stateChanged(m_state);
     } else {
         emit q->disconnected();
