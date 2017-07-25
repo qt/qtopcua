@@ -81,10 +81,6 @@ public:
 
     bool processUrl(const QUrl &url);
 
-public slots:
-    void clientConnected();
-    void clientDisconnected();
-
 private:
     Q_DECLARE_PUBLIC(QOpcUaClient)
     QOpcUaClient * const q_ptr;

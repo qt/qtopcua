@@ -44,10 +44,6 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl, QOpcUaClient *p
     , m_error(QOpcUaClient::NoError)
     , q_ptr(parent)
 {
-    connect(m_impl.data(), &QOpcUaClientImpl::connected,
-            this, &QOpcUaClientPrivate::clientConnected);
-    connect(m_impl.data(), &QOpcUaClientImpl::disconnected,
-            this, &QOpcUaClientPrivate::clientDisconnected);
 }
 
 QOpcUaClientPrivate::~QOpcUaClientPrivate()
@@ -110,18 +106,4 @@ bool QOpcUaClientPrivate::processUrl(const QUrl &url)
 
     m_url = url;
     return true;
-}
-
-void QOpcUaClientPrivate::clientConnected()
-{
-    Q_Q(QOpcUaClient);
-
-    q->setState(QOpcUaClient::Connected);
-}
-
-void QOpcUaClientPrivate::clientDisconnected()
-{
-    Q_Q(QOpcUaClient);
-
-    q->setState(QOpcUaClient::Disconnected);
 }
