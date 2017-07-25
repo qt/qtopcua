@@ -34,8 +34,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFREEOPCUAVALUESUBSCRIPTION_H
-#define QFREEOPCUAVALUESUBSCRIPTION_H
+#ifndef QFREEOPCUASUBSCRIPTION_H
+#define QFREEOPCUASUBSCRIPTION_H
 
 #include <private/qopcuasubscriptionimpl_p.h>
 #include <QtOpcUa/qopcuamonitoredevent.h>
@@ -80,4 +80,4 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QFREEOPCUAVALUESUBSCRIPTION_H
+#endif // QFREEOPCUASUBSCRIPTION_H

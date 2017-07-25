@@ -40,7 +40,7 @@
 
 #include "qfreeopcuanode.h"
 #include "qfreeopcuavalueconverter.h"
-#include "qfreeopcuavaluesubscription.h"
+#include "qfreeopcuasubscription.h"
 
 #include <qopcuasubscription.h>
 

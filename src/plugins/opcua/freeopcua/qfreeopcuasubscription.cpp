@@ -34,7 +34,7 @@
 **
 ****************************************************************************/
 
-#include "qfreeopcuavaluesubscription.h"
+#include "qfreeopcuasubscription.h"
 #include "qfreeopcuanode.h"
 #include "qfreeopcuaclient.h"
 #include "qopcuamonitoredvalue.h"
@@ -45,8 +45,6 @@
 #include <private/qopcuanode_p.h>
 
 #include <qopcuasubscription.h>
-
-// FIXME: rename file!
 
 #include <QtCore/QDebug>
 

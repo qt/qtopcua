@@ -37,7 +37,7 @@
 #include "qfreeopcuanode.h"
 
 #include "qfreeopcuaclient.h"
-#include "qfreeopcuavaluesubscription.h"
+#include "qfreeopcuasubscription.h"
 #include "qfreeopcuavalueconverter.h"
 
 #include <QtOpcUa/qopcuamonitoredvalue.h>

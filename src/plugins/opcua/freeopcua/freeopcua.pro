@@ -13,14 +13,14 @@ win32: LIBS += opcuaprotocol.lib opcuacore.lib opcuaclient.lib Wininet.lib
 # Input
 HEADERS += \
            qfreeopcuanode.h \
-           qfreeopcuavaluesubscription.h \
+           qfreeopcuasubscription.h \
            qfreeopcuaplugin.h \
            qfreeopcuavalueconverter.h \
            qfreeopcuaclient.h
 
 SOURCES += qfreeopcuaclient.cpp \
            qfreeopcuanode.cpp \
-           qfreeopcuavaluesubscription.cpp \
+           qfreeopcuasubscription.cpp \
            qfreeopcuaplugin.cpp \
            qfreeopcuavalueconverter.cpp
 
