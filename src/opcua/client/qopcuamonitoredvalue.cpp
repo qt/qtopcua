@@ -72,6 +72,11 @@ QOpcUaMonitoredValue::~QOpcUaMonitoredValue()
     d_func()->m_subscription->removeValue(this);
 }
 
+/*!
+    \fn QOpcUaNode &QOpcUaMonitoredValue::node()
+
+    Returns the node which belongs to this value monitor instance.
+*/
 QOpcUaNode &QOpcUaMonitoredValue::node()
 {
     return *d_func()->m_node;

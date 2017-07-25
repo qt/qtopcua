@@ -58,6 +58,11 @@ QOpcUaMonitoredEvent::~QOpcUaMonitoredEvent()
     d_func()->m_subscription->removeEvent(this);
 }
 
+/*!
+    \fn QOpcUaNode &QOpcUaMonitoredEvent::node()
+
+    Returns the node which belongs to this event monitor instance.
+*/
 QOpcUaNode &QOpcUaMonitoredEvent::node()
 {
     return *d_func()->m_node;

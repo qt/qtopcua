@@ -64,6 +64,58 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QOpcUaClient::ClientState
+
+    This enum type specifies the connection state of the client.
+
+    \value Disconnected
+           The client is not connected to a server.
+    \value Connecting
+           The client is currently connecting to a server.
+    \value Connected
+           The client is connected to a server.
+    \value Closing
+           The client has been connected and requests a disconnect from the server.
+*/
+
+/*!
+    \enum QOpcUaClient::ClientError
+
+    This enum type specifies the current error state of the client.
+
+    \value NoError
+           No error occurred.
+    \value InvalidUrl
+           The url to connect to has been wrongly specified or a connection to this url failed.
+    \value SecureConnectionError
+           An attempt to connect to a server with a secure connection failed.
+    \value UnknownError
+           An unknown error occurred.
+*/
+
+/*!
+    \property QOpcUaClient::error
+    \brief Specifies the current error state of the client.
+*/
+
+/*!
+    \property QOpcUaClient::state
+    \brief Specifies the current connection state of the client.
+*/
+
+/*!
+    \fn QOpcUaClient::connected()
+
+    This signal is emitted when a connection has been established.
+*/
+
+/*!
+    \fn QOpcUaClient::disconnected()
+
+    This signal is emitted when a connection has been closed following to a close request.
+*/
+
+/*!
     \internal QOpcUaClientImpl is an opaque type (as seen from the public API).
     This prevents users of the public API to use this constructor (eventhough
     it is public).
@@ -156,6 +208,10 @@ void QOpcUaClient::setState(QOpcUaClient::ClientState s)
         emit disconnected();
 }
 
+/*! \fn QOpcUaClient::ClientError QOpcUaClient::error() const
+
+    Returns the current error state of the client.
+*/
 QOpcUaClient::ClientError QOpcUaClient::error() const
 {
     Q_D(const QOpcUaClient);

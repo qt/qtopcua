@@ -99,7 +99,7 @@ static QHash<QString, QJsonObject> plugins()
 }
 
 /*!
-    Creates a new OPC UA provider.
+    Creates a new OPC UA provider with a given \a parent.
  */
 QOpcUaProvider::QOpcUaProvider(QObject *parent)
     : QObject(parent)
@@ -126,11 +126,11 @@ static QOpcUaPlugin *loadPlugin(const QString &key)
 }
 
 /*!
-    Returns a pointer to a QOpcUaClient object by loading the selected backend
+    Returns a pointer to a QOpcUaClient object by loading the selected \a backend
     as a plugin and creating a client object.
     If the plugin loading fails, 0 is returned instead.
 
-    The user is responsible for deleting the returned \a QOpcUaClient object
+    The user is responsible for deleting the returned \l QOpcUaClient object
     when it is no longer needed.
 */
 QOpcUaClient *QOpcUaProvider::createClient(const QString &backend)

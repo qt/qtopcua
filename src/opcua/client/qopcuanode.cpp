@@ -266,7 +266,7 @@ QVector<QPair<QVariant, QDateTime> > QOpcUaNode::readHistorical(
 /*!
     \fn bool QOpcUaNode::writeHistorical(QOpcUa::Types type, const QVector<QPair<QVariant, QDateTime> > data)
 
-    Write historical \a data from the OPC UA server at timestamps \a datetime.
+    Write historical \a data from the OPC UA server of \a type QOpcUa::Types.
 
     Returns whether operation was successful.
 
