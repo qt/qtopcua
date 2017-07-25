@@ -82,9 +82,15 @@ private:
 private slots:
     void initTestCase()
     {
-        const QString testServerPath(QDir::currentPath() + "/../../freeopcua-testserver/freeopcua-testserver");
-        if (!QFile::exists(testServerPath))
+        const QString testServerPath = QDir::currentPath() + QLatin1String("/../../freeopcua-testserver/freeopcua-testserver")
+#ifdef Q_OS_WIN
+                + QLatin1String(".exe")
+#endif
+        ;
+        if (!QFile::exists(testServerPath)) {
+            qDebug() << "Server Path:" << testServerPath;
             QSKIP("all auto tests rely on a freeopcua based test-server");
+        }
 
         m_serverProcess.start(testServerPath);
         QVERIFY2(m_serverProcess.waitForStarted(), qPrintable(m_serverProcess.errorString()));
@@ -101,10 +107,18 @@ private slots:
 
     void connectToInvalid()
     {
-        bool isConnected = m_client->connectToEndpoint(QUrl("opc.tcp:127.0.0.1:1234"));
-        QVERIFY(isConnected == false);
-        isConnected = m_client->isConnected();
-        QVERIFY(isConnected == false);
+        m_client->connectToEndpoint(QUrl("opc.tcp:127.0.0.1:1234"));
+        QVERIFY(m_client->state() == QOpcUaClient::ConnectingState);
+
+        for (int i = 0; i < 10; ++i) {
+            QTest::qWait(50);
+            if (m_client->state() == QOpcUaClient::UnconnectedState)
+                break;
+            QVERIFY(m_client->state() == QOpcUaClient::ConnectingState);
+        }
+        QVERIFY(m_client->state() == QOpcUaClient::ConnectedState ||
+                m_client->state() == QOpcUaClient::UnconnectedState);
+
         QUrl url = m_client->url();
         QVERIFY( url == QUrl("opc.tcp:127.0.0.1:1234"));
     }
@@ -116,16 +130,15 @@ private slots:
             QSKIP("Secure connections are not supported with the freeopcua backend");
 
         QVERIFY(m_client != 0);
-        bool isConnected = m_client->secureConnectToEndpoint(QUrl(m_endpoint));
-        QVERIFY(isConnected == true);
-        isConnected = m_client->isConnected();
-        QVERIFY(isConnected == true);
+
+        m_client->secureConnectToEndpoint(QUrl(m_endpoint));
+        QVERIFY(m_client->state() == QOpcUaClient::ConnectingState);
+        QTRY_VERIFY2(m_client->state() == QOpcUaClient::ConnectedState, "Could not connect to server");
+
         QVERIFY(m_client->url() == QUrl(m_endpoint));
 
-        bool disconnected = m_client->disconnectFromEndpoint();
-        QVERIFY(disconnected == true);
-        isConnected = m_client->isConnected();
-        QVERIFY(isConnected == false);
+        m_client->disconnectFromEndpoint();
+        QTRY_VERIFY2(m_client->state() == QOpcUaClient::UnconnectedState, "Could not disconnect from server");
     }
 
     void secureConnectToInvalid()
@@ -134,10 +147,18 @@ private slots:
         if (m_client->backend() == QLatin1String("freeopcua"))
             QSKIP("Secure connections are not supported with the freeopcua backend");
 
-        bool isConnected = m_client->secureConnectToEndpoint(QUrl("opc.tcp:127.0.0.1:1234"));
-        QVERIFY(isConnected == false);
-        isConnected = m_client->isConnected();
-        QVERIFY(isConnected == false);
+        m_client->secureConnectToEndpoint(QUrl("opc.tcp:127.0.0.1:1234"));
+        QVERIFY(m_client->state() == QOpcUaClient::ConnectingState);
+
+        for (int i = 0; i < 10; ++i) {
+            QTest::qWait(50);
+            if (m_client->state() == QOpcUaClient::UnconnectedState)
+                break;
+            QVERIFY(m_client->state() == QOpcUaClient::ConnectingState);
+        }
+        QVERIFY(m_client->state() == QOpcUaClient::ConnectedState ||
+                m_client->state() == QOpcUaClient::UnconnectedState);
+
         QUrl url = m_client->url();
         QVERIFY( url == QUrl("opc.tcp:127.0.0.1:1234"));
     }
@@ -147,12 +168,14 @@ private slots:
         QVERIFY(m_client != 0);
         QVERIFY(m_connected == false);
 
-        QObject::connect(m_client, &QOpcUaClient::connectedChanged, this, &TestQOpcUaClient::processConnectedChanged);
-        bool isConnected = m_client->connectToEndpoint(QUrl(m_endpoint));
-        QVERIFY(isConnected == true);
+        QObject::connect(m_client, &QOpcUaClient::connected, this, &TestQOpcUaClient::processConnected);
+        QObject::connect(m_client, &QOpcUaClient::disconnected, this, &TestQOpcUaClient::processDisconnected);
+
+        m_client->connectToEndpoint(QUrl(m_endpoint));
+        QVERIFY(m_client->state() == QOpcUaClient::ConnectingState);
+        QTRY_VERIFY2(m_client->state() == QOpcUaClient::ConnectedState, "Could not connect to server");
+
         QVERIFY(m_client->url() == QUrl(m_endpoint));
-        isConnected = m_client->isConnected();
-        QVERIFY(isConnected == true);
 
         QTRY_VERIFY_WITH_TIMEOUT(m_connected == true, 1250); // Wait 1.25 seconds for state change
     }
@@ -356,29 +379,29 @@ private slots:
     void multipleClients()
     {
         QScopedPointer<QOpcUaClient> a(m_opcUa.createClient(m_backend));
-        bool result = a->connectToEndpoint(m_endpoint);
-        QVERIFY(result == true);
+        a->connectToEndpoint(m_endpoint);
+        QTRY_VERIFY2(a->state() == QOpcUaClient::ConnectedState, "Could not connect to server");
         double value = a->node(readWriteNode)->value().toDouble();
         QVERIFY(value == 42.0);
         qDebug() << "a: " << value;
         QScopedPointer<QOpcUaClient> b(m_opcUa.createClient(m_backend));
-        result = b->connectToEndpoint(m_endpoint);
-        QVERIFY(result == true);
+        b->connectToEndpoint(m_endpoint);
+        QTRY_VERIFY2(b->state() == QOpcUaClient::ConnectedState, "Could not connect to server");
         value = b->node(readWriteNode)->value().toDouble();
         QVERIFY(value == 42.0);
         qDebug() << "b: " << value;
         QScopedPointer<QOpcUaClient> d(m_opcUa.createClient(m_backend));
-        result =  d->connectToEndpoint(m_endpoint);
-        QVERIFY(result == true);
+        d->connectToEndpoint(m_endpoint);
+        QTRY_VERIFY2(d->state() == QOpcUaClient::ConnectedState, "Could not connect to server");
         value = d->node(readWriteNode)->value().toDouble();
         QVERIFY(value == 42.0);
         qDebug() << "d: " << value;
-        result = d->disconnectFromEndpoint();
-        QVERIFY(result == true);
-        result = a->disconnectFromEndpoint();
-        QVERIFY(result == true);
-        result = b->disconnectFromEndpoint();
-        QVERIFY(result == true);
+        d->disconnectFromEndpoint();
+        QTRY_VERIFY2(d->state() == QOpcUaClient::UnconnectedState, "Could not disconnect from server");
+        a->disconnectFromEndpoint();
+        QTRY_VERIFY2(a->state() == QOpcUaClient::UnconnectedState, "Could not disconnect from server");
+        b->disconnectFromEndpoint();
+        QTRY_VERIFY2(b->state() == QOpcUaClient::UnconnectedState, "Could not disconnect from server");
     }
 
     void nodeClass()
@@ -991,8 +1014,7 @@ private slots:
     {
         QVERIFY(m_connected == true);
 
-        bool disconnected = m_client->disconnectFromEndpoint();
-        QVERIFY(disconnected == true);
+        m_client->disconnectFromEndpoint();
 
         QTRY_VERIFY_WITH_TIMEOUT(m_connected == false, 1250); // Wait 1.25 seconds for state change
 
@@ -1009,10 +1031,15 @@ private slots:
 
 
 public slots:
-    void processConnectedChanged(bool connected)
+    void processConnected()
     {
         qDebug("Connection state changed");
-        m_connected = connected;
+        m_connected = true;
+    }
+
+    void processDisconnected()
+    {
+        m_connected = false;
     }
 
     void processSubscription(QVariant val)
