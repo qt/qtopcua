@@ -67,8 +67,6 @@ class Q_OPCUA_EXPORT QOpcUaClientPrivate : public QObject
     Q_OBJECT
 
 public:
-    Q_DECLARE_PUBLIC(QOpcUaClient)
-
     QOpcUaClientPrivate(QOpcUaClientImpl *impl, QOpcUaClient *parent);
     ~QOpcUaClientPrivate() override;
 
@@ -78,6 +76,7 @@ public:
 
     QScopedPointer<QOpcUaClientImpl> m_impl;
     QOpcUaClient::ClientState m_state;
+    QOpcUaClient::ClientError m_error;
     QUrl m_url;
 
     bool processUrl(const QUrl &url);
@@ -87,6 +86,7 @@ public slots:
     void clientDisconnected();
 
 private:
+    Q_DECLARE_PUBLIC(QOpcUaClient)
     QOpcUaClient * const q_ptr;
 };
 

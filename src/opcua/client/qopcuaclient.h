@@ -52,20 +52,23 @@ class QOpcUaClientImpl;
 class Q_OPCUA_EXPORT QOpcUaClient : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(ClientState state READ state WRITE setState NOTIFY stateChanged)
+    Q_PROPERTY(ClientError error READ error WRITE setError NOTIFY errorChanged)
     Q_DECLARE_PRIVATE(QOpcUaClient)
 
 public:
     enum ClientState {
-        DisconnectedState,
-        ConnectingState,
-        ConnectedState,
-        ClosingState
+        Disconnected,
+        Connecting,
+        Connected,
+        Closing
     };
     Q_ENUM(ClientState)
 
     enum ClientError {
         NoError,
         InvalidUrl,
+        SecureConnectionError,
         UnknownError
     };
     Q_ENUM(ClientError)
@@ -83,6 +86,10 @@ public:
     QUrl url() const;
 
     ClientState state() const;
+    void setState(ClientState s);
+
+    ClientError error() const;
+    void setError(ClientError e);
 
     bool isSecureConnectionSupported() const;
     QString backend() const;
@@ -91,7 +98,7 @@ Q_SIGNALS:
     void connected();
     void disconnected();
     void stateChanged(ClientState state);
-    void error(ClientError error);
+    void errorChanged(ClientError error);
 
 private:
     Q_DISABLE_COPY(QOpcUaClient)

@@ -110,7 +110,7 @@ QString QOpcUaNode::name() const
 {
     // m_client.isNull() is checked bc. someone might have deleted the client
     // leaving a dangling reference here
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::ConnectedState)
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return QString();
 
     return d_func()->m_impl->name();
@@ -122,7 +122,7 @@ QString QOpcUaNode::name() const
  */
 QString QOpcUaNode::type() const
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::ConnectedState)
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return QString();
 
     return d_func()->m_impl->type();
@@ -136,7 +136,7 @@ QString QOpcUaNode::type() const
 */
 QVariant QOpcUaNode::value() const
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::ConnectedState)
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return QVariant();
 
     return d_func()->m_impl->value();
@@ -148,7 +148,7 @@ QVariant QOpcUaNode::value() const
 */
 QStringList QOpcUaNode::childIds() const
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::ConnectedState)
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return QStringList();
 
     return d_func()->m_impl->childIds();
@@ -160,7 +160,7 @@ QStringList QOpcUaNode::childIds() const
 */
 QString QOpcUaNode::nodeId() const
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::ConnectedState)
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return QString();
 
     return d_func()->m_impl->nodeId();
@@ -172,7 +172,7 @@ QString QOpcUaNode::nodeId() const
 */
 QString QOpcUaNode::nodeClass() const
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::ConnectedState)
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return QString();
 
     return d_func()->m_impl->nodeClass();
@@ -205,7 +205,7 @@ QVariant QOpcUaNode::encodedValue() const
   */
 bool QOpcUaNode::setValue(const QVariant &value, QOpcUa::Types type)
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::ConnectedState)
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return false;
 
     return d_func()->m_impl->setValue(value, type);
@@ -224,7 +224,7 @@ bool QOpcUaNode::setValue(const QVariant &value, QOpcUa::Types type)
 */
 QPair<double, double> QOpcUaNode::readEuRange() const
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::ConnectedState)
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return QPair<double, double>(qQNaN(), qQNaN());
 
     return d_func()->m_impl->readEuRange();
@@ -240,7 +240,7 @@ QPair<double, double> QOpcUaNode::readEuRange() const
 */
 QPair<QString, QString> QOpcUaNode::readEui() const
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::ConnectedState)
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return QPair<QString, QString>();
 
     return d_func()->m_impl->readEui();
@@ -257,7 +257,7 @@ QPair<QString, QString> QOpcUaNode::readEui() const
 QVector<QPair<QVariant, QDateTime> > QOpcUaNode::readHistorical(
         uint maxCount, const QDateTime &begin, const QDateTime &end) const
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::ConnectedState)
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return QVector<QPair<QVariant, QDateTime> >();
 
     return d_func()->m_impl->readHistorical(maxCount, begin, end);
@@ -276,7 +276,7 @@ bool QOpcUaNode::writeHistorical(QOpcUa::Types type,
         const QVector<QPair<QVariant, QDateTime> > data)
 {
     Q_D(QOpcUaNode);
-    if (d->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::ConnectedState)
+    if (d->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return false;
 
     return d->m_impl->writeHistorical(type, data);
@@ -292,7 +292,7 @@ bool QOpcUaNode::call(const QString &methodNodeId,
         QVector<QOpcUa::TypedVariant> *args, QVector<QVariant> *ret)
 {
     Q_D(QOpcUaNode);
-    if (d->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::ConnectedState)
+    if (d->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return false;
 
     return d->m_impl->call(methodNodeId, args, ret);

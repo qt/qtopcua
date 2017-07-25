@@ -72,7 +72,7 @@ QOpcUaClient::QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent)
     : QObject(parent)
     , d_ptr(new QOpcUaClientPrivate(impl, this))
 {
-    impl->m_clientPrivate = d_func();
+    impl->m_client = this;
 }
 
 /*!
@@ -142,6 +142,37 @@ QOpcUaClient::ClientState QOpcUaClient::state() const
     return d->m_state;
 }
 
+void QOpcUaClient::setState(QOpcUaClient::ClientState s)
+{
+    Q_D(QOpcUaClient);
+    if (s == d->m_state)
+        return;
+
+    d->m_state = s;
+    emit stateChanged(s);
+
+    if (s == QOpcUaClient::Connected)
+        emit connected();
+    else if (s == QOpcUaClient::Disconnected)
+        emit disconnected();
+}
+
+QOpcUaClient::ClientError QOpcUaClient::error() const
+{
+    Q_D(const QOpcUaClient);
+    return d->m_error;
+}
+
+void QOpcUaClient::setError(ClientError e)
+{
+    Q_D(QOpcUaClient);
+    if (e == d->m_error)
+        return;
+
+    d->m_error = e;
+    emit errorChanged(e);
+}
+
 /*! Return if the backend is supported a connection over a secured channel.
 
     \sa secureConnectToEndpoint
@@ -162,7 +193,7 @@ bool QOpcUaClient::isSecureConnectionSupported() const
 */
 QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 {
-    if (state() != ConnectedState)
+    if (state() != QOpcUaClient::Connected)
        return nullptr;
 
     return d_func()->m_impl->node(nodeId);
@@ -192,7 +223,7 @@ QString QOpcUaClient::backend() const
 */
 QOpcUaSubscription *QOpcUaClient::createSubscription(quint32 interval)
 {
-    if (state() != ConnectedState)
+    if (state() != QOpcUaClient::Connected)
        return nullptr;
 
     return d_func()->m_impl->createSubscription(interval);

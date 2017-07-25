@@ -56,7 +56,7 @@
 QT_BEGIN_NAMESPACE
 
 class QOpcUaNode;
-class QOpcUaClientPrivate;
+class QOpcUaClient;
 class QOpcUaSubscription;
 
 class Q_OPCUA_EXPORT QOpcUaClientImpl : public QObject
@@ -76,7 +76,7 @@ public:
 
     virtual QOpcUaSubscription *createSubscription(quint32 interval) = 0;
 
-    QOpcUaClientPrivate *m_clientPrivate;
+    QOpcUaClient *m_client;
 
 signals:
     void connected();

@@ -104,10 +104,10 @@ void QFreeOpcUaClient::connectToEndpoint(const QUrl &url)
 void QFreeOpcUaClient::connectToEndpointFinished()
 {
     if (m_connectWatcher.result()) {
-        m_clientPrivate->m_state = QOpcUaClient::ConnectedState;
+        m_client->setState(QOpcUaClient::Connected);
         emit connected();
     } else {
-        m_clientPrivate->m_state = QOpcUaClient::DisconnectedState;
+        m_client->setState(QOpcUaClient::Disconnected);
         emit disconnected();
     }
 }
@@ -121,7 +121,7 @@ bool QFreeOpcUaClient::asyncDisconnectFromEndpoint()
 {
     try {
         Disconnect();
-        m_clientPrivate->m_state = QOpcUaClient::DisconnectedState;
+        m_client->setState(QOpcUaClient::Disconnected);
         emit disconnected();
         return true;
     } catch (const std::exception &ex) {
@@ -142,7 +142,7 @@ void QFreeOpcUaClient::disconnectFromEndpointFinished()
     if (m_disconnectWatcher.result()) {
         emit disconnected();
     } else {
-        // emit error
+        m_client->setError(QOpcUaClient::UnknownError);
     }
 }
 
@@ -151,7 +151,7 @@ QOpcUaNode *QFreeOpcUaClient::node(const QString &nodeId)
     try {
         OpcUa::Node node = GetNode(nodeId.toStdString());
         node.GetBrowseName(); // make the client fetch the node data from the server
-        return new QOpcUaNode(new QFreeOpcUaNode(node, this), m_clientPrivate->q_func());
+        return new QOpcUaNode(new QFreeOpcUaNode(node, this), m_client);
     } catch (const std::exception &ex) {
         qWarning() << "Could not get node: " << nodeId << " " << ex.what();
         return nullptr;

@@ -40,7 +40,8 @@
 QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl, QOpcUaClient *parent)
     : QObject(parent)
     , m_impl(impl)
-    , m_state(QOpcUaClient::DisconnectedState)
+    , m_state(QOpcUaClient::Disconnected)
+    , m_error(QOpcUaClient::NoError)
     , q_ptr(parent)
 {
     connect(m_impl.data(), &QOpcUaClientImpl::connected,
@@ -60,11 +61,10 @@ void QOpcUaClientPrivate::connectToEndpoint(const QUrl &url)
     bool result = processUrl(url);
     if (result) {
         m_impl->connectToEndpoint(url);
-        m_state = QOpcUaClient::ConnectingState;
-        emit q->stateChanged(m_state);
+        q->setState(QOpcUaClient::Connecting);
     } else {
-        emit q->disconnected();
-        emit q->error(QOpcUaClient::InvalidUrl);
+        q->setState(QOpcUaClient::Disconnected);
+        q->setError(QOpcUaClient::InvalidUrl);
     }
 }
 
@@ -74,26 +74,31 @@ void QOpcUaClientPrivate::secureConnectToEndpoint(const QUrl &url)
 
     if (!m_impl->isSecureConnectionSupported()) {
         qWarning("Backend does not support secure connections. Cancelling connection.");
+        q->setError(QOpcUaClient::SecureConnectionError);
         return;
     }
 
     bool result = processUrl(url);
     if (result) {
         m_impl->secureConnectToEndpoint(url);
-        m_state = QOpcUaClient::ConnectingState;
-        emit q->stateChanged(m_state);
+        q->setState(QOpcUaClient::Connecting);
     } else {
-        emit q->disconnected();
-        emit q->error(QOpcUaClient::InvalidUrl);
+        q->setState(QOpcUaClient::Disconnected);
+        q->setError(QOpcUaClient::InvalidUrl);
     }
 }
 
 void QOpcUaClientPrivate::disconnectFromEndpoint()
 {
-    if (m_state != QOpcUaClient::ConnectedState)
+    Q_Q(QOpcUaClient);
+
+    if (m_state != QOpcUaClient::Connected) {
+        qWarning("Closing a connection without being connected.");
         return;
+    }
 
     m_impl->disconnectFromEndpoint();
+    q->setState(QOpcUaClient::Closing);
 }
 
 bool QOpcUaClientPrivate::processUrl(const QUrl &url)
@@ -111,16 +116,12 @@ void QOpcUaClientPrivate::clientConnected()
 {
     Q_Q(QOpcUaClient);
 
-    m_state = QOpcUaClient::ConnectedState;
-    emit q->stateChanged(m_state);
-    emit q->connected();
+    q->setState(QOpcUaClient::Connected);
 }
 
 void QOpcUaClientPrivate::clientDisconnected()
 {
     Q_Q(QOpcUaClient);
 
-    m_state = QOpcUaClient::DisconnectedState;
-    emit q->stateChanged(m_state);
-    emit q->disconnected();
+    q->setState(QOpcUaClient::Disconnected);
 }
