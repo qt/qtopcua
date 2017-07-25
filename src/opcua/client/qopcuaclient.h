@@ -102,7 +102,6 @@ Q_SIGNALS:
 
 private:
     Q_DISABLE_COPY(QOpcUaClient)
-    QOpcUaClientPrivate * const d_ptr;
 };
 
 QT_END_NAMESPACE

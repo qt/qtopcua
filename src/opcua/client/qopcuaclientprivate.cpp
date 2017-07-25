@@ -38,7 +38,7 @@
 #include <QDebug>
 
 QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl, QOpcUaClient *parent)
-    : QObject(parent)
+    : QObjectPrivate()
     , m_impl(impl)
     , m_state(QOpcUaClient::Disconnected)
     , m_error(QOpcUaClient::NoError)

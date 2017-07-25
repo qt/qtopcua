@@ -62,10 +62,8 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_OPCUA_EXPORT QOpcUaClientPrivate : public QObject
+class Q_OPCUA_EXPORT QOpcUaClientPrivate : public QObjectPrivate
 {
-    Q_OBJECT
-
 public:
     QOpcUaClientPrivate(QOpcUaClientImpl *impl, QOpcUaClient *parent);
     ~QOpcUaClientPrivate() override;

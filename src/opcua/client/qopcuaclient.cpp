@@ -69,8 +69,7 @@ QT_BEGIN_NAMESPACE
     it is public).
 */
 QOpcUaClient::QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent)
-    : QObject(parent)
-    , d_ptr(new QOpcUaClientPrivate(impl, this))
+    : QObject(*(new QOpcUaClientPrivate(impl, this)), parent)
 {
     impl->m_client = this;
 }
