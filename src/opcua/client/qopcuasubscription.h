@@ -62,7 +62,8 @@ public:
 
     QOpcUaMonitoredValue *addValue(QOpcUaNode *node);
     void removeValue(QOpcUaMonitoredValue *v);
-
+private:
+    Q_DISABLE_COPY(QOpcUaSubscription)
 };
 
 QT_END_NAMESPACE

@@ -81,6 +81,8 @@ public:
 signals:
     void connected();
     void disconnected();
+private:
+    Q_DISABLE_COPY(QOpcUaClientImpl)
 };
 
 QT_END_NAMESPACE

@@ -77,6 +77,8 @@ public:
 
     bool call(const QString &methodNodeId, QVector<QOpcUa::TypedVariant> *args = nullptr,
               QVector<QVariant> *ret = nullptr);
+private:
+    Q_DISABLE_COPY(QOpcUaNode)
 };
 
 QT_END_NAMESPACE

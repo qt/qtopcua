@@ -63,6 +63,8 @@ public:
 
 Q_SIGNALS:
     void newEvent(QVector<QVariant> value) const;
+private:
+    Q_DISABLE_COPY(QOpcUaMonitoredEvent)
 };
 
 QT_END_NAMESPACE

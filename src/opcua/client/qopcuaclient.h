@@ -70,7 +70,7 @@ public:
     };
     Q_ENUM(ClientError)
 
-    QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent = nullptr);
+    explicit QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent = nullptr);
     ~QOpcUaClient();
 
     Q_INVOKABLE void connectToEndpoint(const QUrl &url);
@@ -94,6 +94,7 @@ Q_SIGNALS:
     void error(ClientError error);
 
 private:
+    Q_DISABLE_COPY(QOpcUaClient)
     QOpcUaClientPrivate * const d_ptr;
 };
 

@@ -61,6 +61,8 @@ public:
 
 Q_SIGNALS:
     void valueChanged(QVariant val) const;
+private:
+    Q_DISABLE_COPY(QOpcUaMonitoredValue)
 };
 
 QT_END_NAMESPACE
