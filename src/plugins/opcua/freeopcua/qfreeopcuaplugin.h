@@ -50,9 +50,9 @@ class QFreeOpcUaPlugin : public QOpcUaPlugin
 
 public:
     explicit QFreeOpcUaPlugin(QObject *parent = 0);
-    ~QFreeOpcUaPlugin() Q_DECL_OVERRIDE;
+    ~QFreeOpcUaPlugin() override;
 
-    QOpcUaClient *createClient() Q_DECL_OVERRIDE;
+    QOpcUaClient *createClient() override;
 };
 
 QT_END_NAMESPACE

@@ -58,7 +58,7 @@ public:
     Q_DECLARE_PRIVATE(QOpcUaMonitoredEvent)
 
     QOpcUaMonitoredEvent(QOpcUaNode *node, QOpcUaSubscription *subscription, QObject *parent = nullptr);
-    ~QOpcUaMonitoredEvent() Q_DECL_OVERRIDE;
+    ~QOpcUaMonitoredEvent() override;
     QOpcUaNode &node();
 
 Q_SIGNALS:

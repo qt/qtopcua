@@ -70,7 +70,7 @@ public:
     Q_DECLARE_PUBLIC(QOpcUaClient)
 
     QOpcUaClientPrivate(QOpcUaClientImpl *impl, QOpcUaClient *parent);
-    ~QOpcUaClientPrivate() Q_DECL_OVERRIDE;
+    ~QOpcUaClientPrivate() override;
 
     void connectToEndpoint(const QUrl &url);
     void secureConnectToEndpoint(const QUrl &url);

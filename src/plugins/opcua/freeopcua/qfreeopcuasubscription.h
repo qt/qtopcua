@@ -59,17 +59,17 @@ class QFreeOpcUaSubscription : public QOpcUaSubscriptionImpl, public OpcUa::Subs
 {
 public:
     explicit QFreeOpcUaSubscription(QFreeOpcUaClient *client, quint32 interval);
-    ~QFreeOpcUaSubscription() Q_DECL_OVERRIDE;
+    ~QFreeOpcUaSubscription() override;
 
     // FreeOPC-UA callbacks
     void DataChange(uint32_t handle, const OpcUa::Node &node, const OpcUa::Variant &val,
-                    OpcUa::AttributeId attr) Q_DECL_OVERRIDE;
-    void Event(quint32 handle, const OpcUa::Event &event) Q_DECL_OVERRIDE;
+                    OpcUa::AttributeId attr) override;
+    void Event(quint32 handle, const OpcUa::Event &event) override;
 
-    QOpcUaMonitoredEvent *addEvent(QOpcUaNode *node) Q_DECL_OVERRIDE;
-    void removeEvent(QOpcUaMonitoredEvent *event) Q_DECL_OVERRIDE;
-    QOpcUaMonitoredValue *addValue(QOpcUaNode *node) Q_DECL_OVERRIDE;
-    void removeValue(QOpcUaMonitoredValue *value) Q_DECL_OVERRIDE;
+    QOpcUaMonitoredEvent *addEvent(QOpcUaNode *node) override;
+    void removeEvent(QOpcUaMonitoredEvent *event) override;
+    QOpcUaMonitoredValue *addValue(QOpcUaNode *node) override;
+    void removeValue(QOpcUaMonitoredValue *value) override;
 
     QFreeOpcUaClient *m_client;
     QOpcUaSubscription *m_qsubscription;

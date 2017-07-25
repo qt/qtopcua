@@ -67,7 +67,7 @@ class Q_OPCUA_EXPORT QOpcUaMonitoredEventPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QOpcUaMonitoredEvent)
 public:
     QOpcUaMonitoredEventPrivate(QOpcUaNode *node, QOpcUaSubscription *subscription);
-    ~QOpcUaMonitoredEventPrivate() Q_DECL_OVERRIDE;
+    ~QOpcUaMonitoredEventPrivate() override;
 
     bool triggerNewEvent(const QVector<QVariant> &val);
     QOpcUaNode *m_node;

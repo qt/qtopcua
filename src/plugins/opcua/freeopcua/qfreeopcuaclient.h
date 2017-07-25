@@ -53,17 +53,17 @@ class QFreeOpcUaClient : public QOpcUaClientImpl, public OpcUa::UaClient
 {
 public:
     explicit QFreeOpcUaClient();
-    ~QFreeOpcUaClient() Q_DECL_OVERRIDE;
+    ~QFreeOpcUaClient() override;
 
-    void connectToEndpoint(const QUrl &url) Q_DECL_OVERRIDE;
-    void secureConnectToEndpoint(const QUrl &url) Q_DECL_OVERRIDE;
-    void disconnectFromEndpoint() Q_DECL_OVERRIDE;
-    QOpcUaNode *node(const QString &nodeId) Q_DECL_OVERRIDE;
+    void connectToEndpoint(const QUrl &url) override;
+    void secureConnectToEndpoint(const QUrl &url) override;
+    void disconnectFromEndpoint() override;
+    QOpcUaNode *node(const QString &nodeId) override;
 
-    bool isSecureConnectionSupported() const Q_DECL_OVERRIDE { return false; }
-    QString backend() const Q_DECL_OVERRIDE { return QStringLiteral("freeopcua"); }
+    bool isSecureConnectionSupported() const override { return false; }
+    QString backend() const override { return QStringLiteral("freeopcua"); }
 
-    QOpcUaSubscription *createSubscription(quint32 interval) Q_DECL_OVERRIDE;
+    QOpcUaSubscription *createSubscription(quint32 interval) override;
 
 private slots:
     void connectToEndpointFinished();

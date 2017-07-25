@@ -56,7 +56,7 @@ public:
     static QStringList availableBackends();
 
     explicit QOpcUaProvider(QObject *parent = nullptr);
-    ~QOpcUaProvider() Q_DECL_OVERRIDE;
+    ~QOpcUaProvider() override;
 
     Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
 

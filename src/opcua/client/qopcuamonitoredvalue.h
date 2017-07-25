@@ -56,7 +56,7 @@ public:
     Q_DECLARE_PRIVATE(QOpcUaMonitoredValue)
 
     QOpcUaMonitoredValue(QOpcUaNode *node, QOpcUaSubscription *subscription, QObject *parent = nullptr);
-    ~QOpcUaMonitoredValue() Q_DECL_OVERRIDE;
+    ~QOpcUaMonitoredValue() override;
     QOpcUaNode &node();
 
 Q_SIGNALS:

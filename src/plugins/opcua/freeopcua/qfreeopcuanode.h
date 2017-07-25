@@ -52,25 +52,25 @@ class QFreeOpcUaNode : public QOpcUaNodeImpl
 {
 public:
     explicit QFreeOpcUaNode(OpcUa::Node node, QFreeOpcUaClient *client);
-    ~QFreeOpcUaNode() Q_DECL_OVERRIDE;
+    ~QFreeOpcUaNode() override;
 
-    QString name() const Q_DECL_OVERRIDE;
-    QString type() const Q_DECL_OVERRIDE;
-    QStringList childIds() const Q_DECL_OVERRIDE;
-    QString nodeId() const Q_DECL_OVERRIDE;
-    QString nodeClass() const Q_DECL_OVERRIDE;
+    QString name() const override;
+    QString type() const override;
+    QStringList childIds() const override;
+    QString nodeId() const override;
+    QString nodeClass() const override;
 
-    QVariant value() const Q_DECL_OVERRIDE;
-    bool setValue(const QVariant &value, QOpcUa::Types type) Q_DECL_OVERRIDE;
+    QVariant value() const override;
+    bool setValue(const QVariant &value, QOpcUa::Types type) override;
     bool call(const QString &methodNodeId,
-              QVector<QOpcUa::TypedVariant> *args = 0, QVector<QVariant> *ret = 0) Q_DECL_OVERRIDE;
-    QPair<QString, QString> readEui() const Q_DECL_OVERRIDE;
-    QPair<double, double> readEuRange() const Q_DECL_OVERRIDE;
+              QVector<QOpcUa::TypedVariant> *args = 0, QVector<QVariant> *ret = 0) override;
+    QPair<QString, QString> readEui() const override;
+    QPair<double, double> readEuRange() const override;
 
     QVector<QPair<QVariant, QDateTime> > readHistorical(uint maxCount,
-            const QDateTime &begin, const QDateTime &end) const Q_DECL_OVERRIDE;
+            const QDateTime &begin, const QDateTime &end) const override;
     bool writeHistorical(QOpcUa::Types type,
-            const QVector<QPair<QVariant, QDateTime> > data) Q_DECL_OVERRIDE;
+            const QVector<QPair<QVariant, QDateTime> > data) override;
 
     OpcUa::Node m_node;
     QFreeOpcUaClient* m_client;

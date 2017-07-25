@@ -54,7 +54,7 @@ public:
     explicit ACControl(QObject *parent = 0);
     void initNodes(OpcUa::UaServer &server);
 
-    void DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr) Q_DECL_OVERRIDE;
+    void DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr) override;
 
 public slots:
 

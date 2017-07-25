@@ -66,7 +66,7 @@ class Q_OPCUA_EXPORT QOpcUaMonitoredValuePrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QOpcUaMonitoredValue)
 public:
     QOpcUaMonitoredValuePrivate(QOpcUaNode *node, QOpcUaSubscription *subscription);
-    ~QOpcUaMonitoredValuePrivate() Q_DECL_OVERRIDE;
+    ~QOpcUaMonitoredValuePrivate() override;
 
     bool triggerValueChanged(const QVariant &val);
     QOpcUaNode *m_node;
