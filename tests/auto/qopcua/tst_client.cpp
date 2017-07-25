@@ -112,12 +112,12 @@ private slots:
 
         for (int i = 0; i < 10; ++i) {
             QTest::qWait(50);
-            if (m_client->state() == QOpcUaClient::UnconnectedState)
+            if (m_client->state() == QOpcUaClient::DisconnectedState)
                 break;
             QVERIFY(m_client->state() == QOpcUaClient::ConnectingState);
         }
         QVERIFY(m_client->state() == QOpcUaClient::ConnectedState ||
-                m_client->state() == QOpcUaClient::UnconnectedState);
+                m_client->state() == QOpcUaClient::DisconnectedState);
 
         QUrl url = m_client->url();
         QVERIFY( url == QUrl("opc.tcp:127.0.0.1:1234"));
@@ -138,7 +138,7 @@ private slots:
         QVERIFY(m_client->url() == QUrl(m_endpoint));
 
         m_client->disconnectFromEndpoint();
-        QTRY_VERIFY2(m_client->state() == QOpcUaClient::UnconnectedState, "Could not disconnect from server");
+        QTRY_VERIFY2(m_client->state() == QOpcUaClient::DisconnectedState, "Could not disconnect from server");
     }
 
     void secureConnectToInvalid()
@@ -152,12 +152,12 @@ private slots:
 
         for (int i = 0; i < 10; ++i) {
             QTest::qWait(50);
-            if (m_client->state() == QOpcUaClient::UnconnectedState)
+            if (m_client->state() == QOpcUaClient::DisconnectedState)
                 break;
             QVERIFY(m_client->state() == QOpcUaClient::ConnectingState);
         }
         QVERIFY(m_client->state() == QOpcUaClient::ConnectedState ||
-                m_client->state() == QOpcUaClient::UnconnectedState);
+                m_client->state() == QOpcUaClient::DisconnectedState);
 
         QUrl url = m_client->url();
         QVERIFY( url == QUrl("opc.tcp:127.0.0.1:1234"));
@@ -397,11 +397,11 @@ private slots:
         QVERIFY(value == 42.0);
         qDebug() << "d: " << value;
         d->disconnectFromEndpoint();
-        QTRY_VERIFY2(d->state() == QOpcUaClient::UnconnectedState, "Could not disconnect from server");
+        QTRY_VERIFY2(d->state() == QOpcUaClient::DisconnectedState, "Could not disconnect from server");
         a->disconnectFromEndpoint();
-        QTRY_VERIFY2(a->state() == QOpcUaClient::UnconnectedState, "Could not disconnect from server");
+        QTRY_VERIFY2(a->state() == QOpcUaClient::DisconnectedState, "Could not disconnect from server");
         b->disconnectFromEndpoint();
-        QTRY_VERIFY2(b->state() == QOpcUaClient::UnconnectedState, "Could not disconnect from server");
+        QTRY_VERIFY2(b->state() == QOpcUaClient::DisconnectedState, "Could not disconnect from server");
     }
 
     void nodeClass()

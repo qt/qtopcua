@@ -56,7 +56,7 @@ class Q_OPCUA_EXPORT QOpcUaClient : public QObject
 
 public:
     enum ClientState {
-        UnconnectedState,
+        DisconnectedState,
         ConnectingState,
         ConnectedState,
         ClosingState

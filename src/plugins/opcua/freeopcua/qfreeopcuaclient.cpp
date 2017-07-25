@@ -107,7 +107,7 @@ void QFreeOpcUaClient::connectToEndpointFinished()
         m_clientPrivate->m_state = QOpcUaClient::ConnectedState;
         emit connected();
     } else {
-        m_clientPrivate->m_state = QOpcUaClient::UnconnectedState;
+        m_clientPrivate->m_state = QOpcUaClient::DisconnectedState;
         emit disconnected();
     }
 }
@@ -121,7 +121,7 @@ bool QFreeOpcUaClient::asyncDisconnectFromEndpoint()
 {
     try {
         Disconnect();
-        m_clientPrivate->m_state = QOpcUaClient::UnconnectedState;
+        m_clientPrivate->m_state = QOpcUaClient::DisconnectedState;
         emit disconnected();
         return true;
     } catch (const std::exception &ex) {

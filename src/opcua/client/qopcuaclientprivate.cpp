@@ -40,7 +40,7 @@
 QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl, QOpcUaClient *parent)
     : QObject(parent)
     , m_impl(impl)
-    , m_state(QOpcUaClient::UnconnectedState)
+    , m_state(QOpcUaClient::DisconnectedState)
     , q_ptr(parent)
 {
     connect(m_impl.data(), &QOpcUaClientImpl::connected,
@@ -120,7 +120,7 @@ void QOpcUaClientPrivate::clientDisconnected()
 {
     Q_Q(QOpcUaClient);
 
-    m_state = QOpcUaClient::UnconnectedState;
+    m_state = QOpcUaClient::DisconnectedState;
     emit q->stateChanged(m_state);
     emit q->disconnected();
 }
