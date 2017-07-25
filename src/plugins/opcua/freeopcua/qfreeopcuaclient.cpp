@@ -104,8 +104,10 @@ void QFreeOpcUaClient::connectToEndpoint(const QUrl &url)
 void QFreeOpcUaClient::connectToEndpointFinished()
 {
     if (m_connectWatcher.result()) {
+        m_clientPrivate->m_state = QOpcUaClient::ConnectedState;
         emit connected();
     } else {
+        m_clientPrivate->m_state = QOpcUaClient::UnconnectedState;
         emit disconnected();
     }
 }
@@ -119,6 +121,8 @@ bool QFreeOpcUaClient::asyncDisconnectFromEndpoint()
 {
     try {
         Disconnect();
+        m_clientPrivate->m_state = QOpcUaClient::UnconnectedState;
+        emit disconnected();
         return true;
     } catch (const std::exception &ex) {
         qWarning() << "Could not disconnect from endpoint: " << ex.what();
