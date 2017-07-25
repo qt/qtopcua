@@ -1,4 +1,4 @@
-TARGET = tst_client
+TARGET = tst_qopcuaclient
 
 QT += testlib opcua
 CONFIG += testcase

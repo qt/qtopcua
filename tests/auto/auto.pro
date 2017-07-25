@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS +=  qopcua
+SUBDIRS +=  qopcuaclient
