@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
 
 SUBDIRS = accontrol
-#  qml-browser
+
+qtHaveModule(quick): SUBDIRS += qml-browser
 

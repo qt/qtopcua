@@ -5,5 +5,4 @@
 );
 %dependencies = (
     "qtbase" => "",
-    "qtdeclarative" => "",
 );
