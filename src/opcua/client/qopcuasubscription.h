@@ -61,7 +61,7 @@ public:
     void removeEvent(QOpcUaMonitoredEvent *e);
 
     QOpcUaMonitoredValue *addValue(QOpcUaNode *node);
-    void removeValue(QOpcUaMonitoredValue *v);
+    void removeValue(QOpcUaMonitoredValue *value);
 private:
     Q_DISABLE_COPY(QOpcUaSubscription)
 };

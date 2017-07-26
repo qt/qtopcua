@@ -108,9 +108,9 @@ void QOpcUaSubscription::removeEvent(QOpcUaMonitoredEvent *e)
 
    Remove the monitored value represented by \a value from this subscription.
  */
-void QOpcUaSubscription::removeValue(QOpcUaMonitoredValue *v)
+void QOpcUaSubscription::removeValue(QOpcUaMonitoredValue *value)
 {
-    d_func()->m_impl->removeValue(v);
+    d_func()->m_impl->removeValue(value);
 }
 
 QT_END_NAMESPACE
