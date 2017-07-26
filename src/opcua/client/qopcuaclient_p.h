@@ -77,7 +77,7 @@ public:
     QOpcUaClient::ClientError m_error;
     QUrl m_url;
 
-    bool processUrl(const QUrl &url);
+    bool checkAndSetUrl(const QUrl &url);
 
 private:
     Q_DECLARE_PUBLIC(QOpcUaClient)

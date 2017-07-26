@@ -54,7 +54,7 @@ void QOpcUaClientPrivate::connectToEndpoint(const QUrl &url)
 {
     Q_Q(QOpcUaClient);
 
-    bool result = processUrl(url);
+    bool result = checkAndSetUrl(url);
     if (result) {
         m_impl->connectToEndpoint(url);
         q->setState(QOpcUaClient::Connecting);
@@ -74,7 +74,7 @@ void QOpcUaClientPrivate::secureConnectToEndpoint(const QUrl &url)
         return;
     }
 
-    bool result = processUrl(url);
+    bool result = checkAndSetUrl(url);
     if (result) {
         m_impl->secureConnectToEndpoint(url);
         q->setState(QOpcUaClient::Connecting);
@@ -97,7 +97,7 @@ void QOpcUaClientPrivate::disconnectFromEndpoint()
     q->setState(QOpcUaClient::Closing);
 }
 
-bool QOpcUaClientPrivate::processUrl(const QUrl &url)
+bool QOpcUaClientPrivate::checkAndSetUrl(const QUrl &url)
 {
     if (url.scheme() != QStringLiteral("opc.tcp")) {
         qWarning() << "Wrong url scheme, could not connect";
