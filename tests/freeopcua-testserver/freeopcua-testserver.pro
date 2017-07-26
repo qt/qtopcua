@@ -6,10 +6,9 @@ INCLUDEPATH += .
 CONFIG += c++11 console
 CONFIG += exceptions
 
-CONFIG += exceptions link_pkgconfig
-unix: PKGCONFIG += libopcuaprotocol libopcuacore libopcuaserver
+CONFIG += exceptions
+QMAKE_USE_PRIVATE += freeopcua
 win32 {
-    LIBS += opcuacore.lib opcuaprotocol.lib opcuaserver.lib Wininet.lib
     QMAKE_LFLAGS += -STACK:3000000
     DESTDIR = ./
 }

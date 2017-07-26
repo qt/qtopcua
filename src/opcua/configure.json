@@ -1,0 +1,36 @@
+{
+    "module": "opcua",
+    "testDir": "../../config.tests",
+
+    "libraries": {
+        "freeopcua": {
+            "label": "FreeOpcua",
+            "test": "freeopcua",
+            "sources": [
+                {
+                    "type": "pkgConfig",
+                    "args": "libopcuacore libopcuaprotocol libopcuaclient libopcuaserver"
+                },
+                {
+                    "libs": "-lopcuacore -lopcuaclient -lopcuaprotocol -lopcuaserver -lWininet",
+                    "condition": "config.win32"
+                }
+            ]
+        }
+    },
+
+    "features": {
+        "freeopcua": {
+            "label": "FreeOpcua",
+            "condition": "libs.freeopcua",
+            "output": [ "privateFeature" ]
+        }
+    },
+
+    "summary": [
+        {
+            "section": "Qt Opcua",
+            "entries": [ "freeopcua" ]
+        }
+    ]
+}

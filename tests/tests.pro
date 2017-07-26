@@ -1,4 +1,7 @@
 TEMPLATE = subdirs
 SUBDIRS += auto
 
-config_freeopcua: SUBDIRS += freeopcua-testserver
+QT_FOR_CONFIG += opcua-private
+qtConfig(freeopcua) {
+    SUBDIRS += freeopcua-testserver
+}
