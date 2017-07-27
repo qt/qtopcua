@@ -56,8 +56,8 @@ void QOpcUaClientPrivate::connectToEndpoint(const QUrl &url)
 
     bool result = checkAndSetUrl(url);
     if (result) {
-        m_impl->connectToEndpoint(url);
         q->setState(QOpcUaClient::Connecting);
+        m_impl->connectToEndpoint(url);
     } else {
         q->setState(QOpcUaClient::Disconnected);
         q->setError(QOpcUaClient::InvalidUrl);
@@ -76,8 +76,8 @@ void QOpcUaClientPrivate::secureConnectToEndpoint(const QUrl &url)
 
     bool result = checkAndSetUrl(url);
     if (result) {
-        m_impl->secureConnectToEndpoint(url);
         q->setState(QOpcUaClient::Connecting);
+        m_impl->secureConnectToEndpoint(url);
     } else {
         q->setState(QOpcUaClient::Disconnected);
         q->setError(QOpcUaClient::InvalidUrl);
