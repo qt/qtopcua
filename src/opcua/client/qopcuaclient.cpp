@@ -193,21 +193,6 @@ QOpcUaClient::ClientState QOpcUaClient::state() const
     return d->m_state;
 }
 
-void QOpcUaClient::setState(QOpcUaClient::ClientState s)
-{
-    Q_D(QOpcUaClient);
-    if (s == d->m_state)
-        return;
-
-    d->m_state = s;
-    emit stateChanged(s);
-
-    if (s == QOpcUaClient::Connected)
-        emit connected();
-    else if (s == QOpcUaClient::Disconnected)
-        emit disconnected();
-}
-
 /*! \fn QOpcUaClient::ClientError QOpcUaClient::error() const
 
     Returns the current error state of the client.
@@ -216,16 +201,6 @@ QOpcUaClient::ClientError QOpcUaClient::error() const
 {
     Q_D(const QOpcUaClient);
     return d->m_error;
-}
-
-void QOpcUaClient::setError(ClientError e)
-{
-    Q_D(QOpcUaClient);
-    if (e == d->m_error)
-        return;
-
-    d->m_error = e;
-    emit errorChanged(e);
 }
 
 /*! Return if the backend is supported a connection over a secured channel.

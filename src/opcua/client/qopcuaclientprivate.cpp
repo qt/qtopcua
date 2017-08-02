@@ -44,6 +44,11 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl, QOpcUaClient *p
     , m_error(QOpcUaClient::NoError)
     , q_ptr(parent)
 {
+    // callback from client implementation
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::stateAndOrErrorChanged,
+                    [this](QOpcUaClient::ClientState state, QOpcUaClient::ClientError error) {
+        setStateAndError(state, error);
+    });
 }
 
 QOpcUaClientPrivate::~QOpcUaClientPrivate()
@@ -52,49 +57,41 @@ QOpcUaClientPrivate::~QOpcUaClientPrivate()
 
 void QOpcUaClientPrivate::connectToEndpoint(const QUrl &url)
 {
-    Q_Q(QOpcUaClient);
-
     bool result = checkAndSetUrl(url);
     if (result) {
-        q->setState(QOpcUaClient::Connecting);
+        setStateAndError(QOpcUaClient::Connecting);
         m_impl->connectToEndpoint(url);
     } else {
-        q->setState(QOpcUaClient::Disconnected);
-        q->setError(QOpcUaClient::InvalidUrl);
+        setStateAndError(QOpcUaClient::Disconnected, QOpcUaClient::InvalidUrl);
     }
 }
 
 void QOpcUaClientPrivate::secureConnectToEndpoint(const QUrl &url)
 {
-    Q_Q(QOpcUaClient);
-
     if (!m_impl->isSecureConnectionSupported()) {
         qWarning("Backend does not support secure connections. Cancelling connection.");
-        q->setError(QOpcUaClient::SecureConnectionError);
+        setStateAndError(m_state, QOpcUaClient::SecureConnectionError);
         return;
     }
 
     bool result = checkAndSetUrl(url);
     if (result) {
-        q->setState(QOpcUaClient::Connecting);
+        setStateAndError(QOpcUaClient::Connecting);
         m_impl->secureConnectToEndpoint(url);
     } else {
-        q->setState(QOpcUaClient::Disconnected);
-        q->setError(QOpcUaClient::InvalidUrl);
+        setStateAndError(QOpcUaClient::Disconnected, QOpcUaClient::InvalidUrl);
     }
 }
 
 void QOpcUaClientPrivate::disconnectFromEndpoint()
 {
-    Q_Q(QOpcUaClient);
-
     if (m_state != QOpcUaClient::Connected) {
         qWarning("Closing a connection without being connected.");
         return;
     }
 
+    setStateAndError(QOpcUaClient::Closing);
     m_impl->disconnectFromEndpoint();
-    q->setState(QOpcUaClient::Closing);
 }
 
 bool QOpcUaClientPrivate::checkAndSetUrl(const QUrl &url)
@@ -106,4 +103,34 @@ bool QOpcUaClientPrivate::checkAndSetUrl(const QUrl &url)
 
     m_url = url;
     return true;
+}
+
+void QOpcUaClientPrivate::setStateAndError(QOpcUaClient::ClientState state,
+                                           QOpcUaClient::ClientError error)
+{
+     Q_Q(QOpcUaClient);
+
+    // ensure that state and error transition are atomic before signal emission
+    bool stateChanged = false;
+    bool errorOccurred = false;
+
+    if (m_state != state) {
+        m_state = state;
+        stateChanged = true;
+    }
+    if (error != QOpcUaClient::NoError && m_error != error) {
+        m_error = error;
+        errorOccurred = true;
+    }
+
+    if (errorOccurred)
+        emit q->errorChanged(m_error);
+    if (stateChanged) {
+        emit q->stateChanged(m_state);
+
+        if (m_state == QOpcUaClient::Connected)
+            emit q->connected();
+        else if (m_state == QOpcUaClient::Disconnected)
+            emit q->disconnected();
+    }
 }

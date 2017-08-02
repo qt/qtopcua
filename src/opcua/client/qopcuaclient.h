@@ -52,8 +52,8 @@ class QOpcUaClientImpl;
 class Q_OPCUA_EXPORT QOpcUaClient : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(ClientState state READ state WRITE setState NOTIFY stateChanged)
-    Q_PROPERTY(ClientError error READ error WRITE setError NOTIFY errorChanged)
+    Q_PROPERTY(ClientState state READ state NOTIFY stateChanged)
+    Q_PROPERTY(ClientError error READ error NOTIFY errorChanged)
     Q_DECLARE_PRIVATE(QOpcUaClient)
 
 public:
@@ -86,10 +86,7 @@ public:
     QUrl url() const;
 
     ClientState state() const;
-    void setState(ClientState s);
-
     ClientError error() const;
-    void setError(ClientError e);
 
     bool isSecureConnectionSupported() const;
     QString backend() const;

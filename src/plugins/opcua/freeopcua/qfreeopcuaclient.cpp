@@ -104,9 +104,9 @@ void QFreeOpcUaClient::connectToEndpoint(const QUrl &url)
 void QFreeOpcUaClient::connectToEndpointFinished()
 {
     if (m_connectWatcher.result())
-        m_client->setState(QOpcUaClient::Connected);
+        emit stateAndOrErrorChanged(QOpcUaClient::Connected, QOpcUaClient::NoError);
     else
-        m_client->setState(QOpcUaClient::Disconnected);
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
 }
 
 void QFreeOpcUaClient::secureConnectToEndpoint(const QUrl &)
@@ -118,7 +118,6 @@ bool QFreeOpcUaClient::asyncDisconnectFromEndpoint()
 {
     try {
         Disconnect();
-        m_client->setState(QOpcUaClient::Disconnected);
         return true;
     } catch (const std::exception &ex) {
         qWarning() << "Could not disconnect from endpoint: " << ex.what();
@@ -136,9 +135,9 @@ void QFreeOpcUaClient::disconnectFromEndpoint()
 void QFreeOpcUaClient::disconnectFromEndpointFinished()
 {
     if (m_disconnectWatcher.result())
-        m_client->setState(QOpcUaClient::Disconnected);
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
     else
-        m_client->setError(QOpcUaClient::UnknownError);
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
 }
 
 QOpcUaNode *QFreeOpcUaClient::node(const QString &nodeId)

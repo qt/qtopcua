@@ -52,6 +52,7 @@
 #include <QtCore/QFuture>
 
 #include <QtOpcUa/qopcuaglobal.h>
+#include <QtOpcUa/qopcuaclient.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -81,6 +82,8 @@ public:
 signals:
     void connected();
     void disconnected();
+    void stateAndOrErrorChanged(QOpcUaClient::ClientState state,
+                                QOpcUaClient::ClientError error);
 private:
     Q_DISABLE_COPY(QOpcUaClientImpl)
 };

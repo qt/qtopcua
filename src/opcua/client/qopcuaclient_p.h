@@ -78,6 +78,8 @@ public:
     QUrl m_url;
 
     bool checkAndSetUrl(const QUrl &url);
+    void setStateAndError(QOpcUaClient::ClientState state,
+                          QOpcUaClient::ClientError error = QOpcUaClient::NoError);
 
 private:
     Q_DECLARE_PUBLIC(QOpcUaClient)
