@@ -56,7 +56,7 @@ class Tst_QOpcUaClient: public QObject
     Q_OBJECT
 
 public:
-    Tst_QOpcUaClient(const QString &backend);
+    Tst_QOpcUaClient();
 
 private slots:
     void initTestCase();
@@ -104,20 +104,31 @@ private:
     double m_value;
     bool m_event;
     QOpcUaProvider m_opcUa;
-    QString m_backend;
-    QOpcUaClient *m_client;
+    QStringList m_backends;
+    QVector<QOpcUaClient *> m_clients;
+    QOpcUaClient* m_client;
     QProcess m_serverProcess;
 };
 
-Tst_QOpcUaClient::Tst_QOpcUaClient(const QString &backend)
+Tst_QOpcUaClient::Tst_QOpcUaClient()
     : m_connected(false)
-    , m_backend(backend)
-    , m_client(m_opcUa.createClient(backend))
 {
+    m_backends = QOpcUaProvider::availableBackends();
 }
 
 void Tst_QOpcUaClient::initTestCase()
 {
+    for (const auto backend: m_backends) {
+        QOpcUaClient *client = m_opcUa.createClient(backend);
+        QVERIFY2(client != nullptr,
+                 QString("Loading backend failed: %1").arg(backend).toLatin1().data());
+        m_clients.append(client);
+    }
+
+    // for now run tests for the first available client
+    m_client = m_clients[0];
+    qDebug() << "Testing backend:" << m_backends[0];
+
     if (qEnvironmentVariableIsEmpty("OPCUA_HOST") && qEnvironmentVariableIsEmpty("OPCUA_PORT")) {
         const QString testServerPath = QDir::currentPath()
                                      + QLatin1String("/../../freeopcua-testserver/freeopcua-testserver")
@@ -417,19 +428,19 @@ void Tst_QOpcUaClient::invalidNodeAccess()
 
 void Tst_QOpcUaClient::multipleClients()
 {
-    QScopedPointer<QOpcUaClient> a(m_opcUa.createClient(m_backend));
+    QScopedPointer<QOpcUaClient> a(m_opcUa.createClient(m_backends[0]));
     a->connectToEndpoint(m_endpoint);
     QTRY_VERIFY2(a->state() == QOpcUaClient::Connected, "Could not connect to server");
     double value = a->node(readWriteNode)->value().toDouble();
     QVERIFY(value == 42.0);
     qDebug() << "a: " << value;
-    QScopedPointer<QOpcUaClient> b(m_opcUa.createClient(m_backend));
+    QScopedPointer<QOpcUaClient> b(m_opcUa.createClient(m_backends[0]));
     b->connectToEndpoint(m_endpoint);
     QTRY_VERIFY2(b->state() == QOpcUaClient::Connected, "Could not connect to server");
     value = b->node(readWriteNode)->value().toDouble();
     QVERIFY(value == 42.0);
     qDebug() << "b: " << value;
-    QScopedPointer<QOpcUaClient> d(m_opcUa.createClient(m_backend));
+    QScopedPointer<QOpcUaClient> d(m_opcUa.createClient(m_backends[0]));
     d->connectToEndpoint(m_endpoint);
     QTRY_VERIFY2(d->state() == QOpcUaClient::Connected, "Could not connect to server");
     value = d->node(readWriteNode)->value().toDouble();
@@ -1114,13 +1125,8 @@ int main(int argc, char *argv[])
         return EXIT_SUCCESS;
     }
 
-    for (const QString &backend : availableBackends) {
-        qDebug() << "Testing backend:" << backend;
-
-        Tst_QOpcUaClient tc(backend);
-        result = QTest::qExec(&tc, argc, argv) || result;
-    }
-
+    Tst_QOpcUaClient tc;
+    result = QTest::qExec(&tc, argc, argv);
     return result;
 }
 
