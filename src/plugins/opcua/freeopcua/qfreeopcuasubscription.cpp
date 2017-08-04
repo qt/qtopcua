@@ -50,7 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QFreeOpcUaSubscription::QFreeOpcUaSubscription(QFreeOpcUaClient *client, quint32 interval)
+QFreeOpcUaSubscription::QFreeOpcUaSubscription(OpcUa::UaClient *client, quint32 interval)
     : m_client(client)
 {
     Q_ASSERT(m_client);

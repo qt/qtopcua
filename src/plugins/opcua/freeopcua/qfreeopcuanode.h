@@ -44,14 +44,19 @@
 
 #include <QtCore/QPointer>
 
+namespace OpcUa
+{
+    class UaClient;
+}
+
 QT_BEGIN_NAMESPACE
 
-class QFreeOpcUaClient;
+class QFreeOpcUaClientImpl;
 
 class QFreeOpcUaNode : public QOpcUaNodeImpl
 {
 public:
-    explicit QFreeOpcUaNode(OpcUa::Node node, QFreeOpcUaClient *client);
+    explicit QFreeOpcUaNode(OpcUa::Node node, OpcUa::UaClient *client);
     ~QFreeOpcUaNode() override;
 
     QString name() const override;
@@ -73,7 +78,7 @@ public:
             const QVector<QPair<QVariant, QDateTime> > data) override;
 
     OpcUa::Node m_node;
-    QFreeOpcUaClient* m_client;
+    OpcUa::UaClient* m_client;
 };
 
 QT_END_NAMESPACE

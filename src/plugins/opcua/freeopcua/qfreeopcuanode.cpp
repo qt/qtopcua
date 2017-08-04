@@ -46,7 +46,9 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
 
-QFreeOpcUaNode::QFreeOpcUaNode(OpcUa::Node node, QFreeOpcUaClient *client)
+#include <opc/ua/client/client.h>
+
+QFreeOpcUaNode::QFreeOpcUaNode(OpcUa::Node node, OpcUa::UaClient *client)
     : m_node(node)
     , m_client(client)
 {

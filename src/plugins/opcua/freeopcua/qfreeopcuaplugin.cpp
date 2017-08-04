@@ -51,7 +51,7 @@ QFreeOpcUaPlugin::~QFreeOpcUaPlugin()
 
 QOpcUaClient *QFreeOpcUaPlugin::createClient()
 {
-    return new QOpcUaClient(new QFreeOpcUaClient);
+    return new QOpcUaClient(new QFreeOpcUaClientImpl);
 }
 
 QT_END_NAMESPACE

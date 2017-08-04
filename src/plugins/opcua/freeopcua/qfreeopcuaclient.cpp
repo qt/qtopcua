@@ -56,23 +56,31 @@
 
 QT_BEGIN_NAMESPACE
 
-QFreeOpcUaClient::QFreeOpcUaClient()
-    : OpcUa::UaClient(false)
+class FreeOpcuaWorker : public QObject, public OpcUa::UaClient
 {
-    m_clientThreadPool = new QThreadPool(this);
-    m_clientThreadPool->setMaxThreadCount(1);
+    Q_OBJECT
+public:
+    FreeOpcuaWorker() : QObject() {}
 
-    connect(&m_connectWatcher, &QFutureWatcher<bool>::finished,
-            this, &QFreeOpcUaClient::connectToEndpointFinished);
-    connect(&m_disconnectWatcher, &QFutureWatcher<bool>::finished,
-            this, &QFreeOpcUaClient::disconnectFromEndpointFinished);
+    QOpcUaNode *node(const QString &nodeId, QFreeOpcUaClientImpl *client);
+    QOpcUaSubscription *createSubscription(quint32 interval);
+
+signals:
+    void connectFinished(bool succeeded);
+    void disconnectFinished(bool succeeded);
+
+public slots:
+    void stopWorker();
+    void asyncConnectToEndpoint(const QUrl &url);
+    void asyncDisconnectFromEndpoint();
+};
+
+void FreeOpcuaWorker::stopWorker()
+{
+    QThread::currentThread()->quit();
 }
 
-QFreeOpcUaClient::~QFreeOpcUaClient()
-{
-}
-
-bool QFreeOpcUaClient::asyncConnectToEndpoint(const QUrl &url)
+void FreeOpcuaWorker::asyncConnectToEndpoint(const QUrl &url)
 {
     try {
         QString sNodeName = QHostInfo::localHostName();
@@ -89,63 +97,132 @@ bool QFreeOpcUaClient::asyncConnectToEndpoint(const QUrl &url)
         Disconnect();
         qWarning() << "Client could not connect to endpoint" << url;
         qWarning() << e.what();
-        return false;
+        emit connectFinished(false);
+        return;
     }
-    return true;
+    emit connectFinished(true);
 }
 
-void QFreeOpcUaClient::connectToEndpoint(const QUrl &url)
+void FreeOpcuaWorker::asyncDisconnectFromEndpoint()
 {
-    m_connectWatcher.setFuture(QtConcurrent::run(m_clientThreadPool,
-                                                 this, &QFreeOpcUaClient::asyncConnectToEndpoint,
-                                                 url));
+    try {
+        emit disconnectFinished(true);
+        return;
+    } catch (const std::exception &ex) {
+        qWarning() << "Could not disconnect from endpoint: " << ex.what();
+    }
+
+    emit disconnectFinished(false);
 }
 
-void QFreeOpcUaClient::connectToEndpointFinished()
+class WorkerThread : public QThread
 {
-    if (m_connectWatcher.result())
+    Q_OBJECT
+public:
+    WorkerThread() : QThread(), opcuaWorker(0) {}
+
+    void setupWorker(QFreeOpcUaClientImpl* client);
+    void stopWorker();
+    void connectToServer(const QUrl &url);
+    void disconnectServer();
+
+    // for now easy pass through
+    // TODO make thread safe
+    QPointer<FreeOpcuaWorker> worker() { return opcuaWorker; }
+
+private:
+    QPointer<FreeOpcuaWorker> opcuaWorker;
+};
+
+void WorkerThread::setupWorker(QFreeOpcUaClientImpl* client)
+{
+    opcuaWorker = new FreeOpcuaWorker();
+    opcuaWorker->moveToThread(this);
+    connect(this, &QThread::finished, opcuaWorker, &QObject::deleteLater);
+    connect(this, &QThread::finished, this, &QObject::deleteLater);
+    connect(opcuaWorker, &FreeOpcuaWorker::connectFinished,
+            client, &QFreeOpcUaClientImpl::connectToEndpointFinished);
+    connect(opcuaWorker, &FreeOpcuaWorker::disconnectFinished,
+            client, &QFreeOpcUaClientImpl::disconnectFromEndpointFinished);
+}
+
+void WorkerThread::connectToServer(const QUrl &url)
+{
+    QMetaObject::invokeMethod(opcuaWorker, "asyncConnectToEndpoint", Qt::QueuedConnection,
+                              Q_ARG(QUrl, url));
+}
+
+void WorkerThread::disconnectServer()
+{
+    QMetaObject::invokeMethod(opcuaWorker, "asyncDisconnectFromEndpoint", Qt::QueuedConnection);
+}
+
+void WorkerThread::stopWorker()
+{
+    QMetaObject::invokeMethod(opcuaWorker, "stopWorker", Qt::QueuedConnection);
+}
+
+QFreeOpcUaClientImpl::QFreeOpcUaClientImpl()
+    : QOpcUaClientImpl()
+{
+    workerThread = new WorkerThread();
+    workerThread->setupWorker(this);
+    workerThread->start();
+}
+
+QFreeOpcUaClientImpl::~QFreeOpcUaClientImpl()
+{
+    workerThread->stopWorker();
+    workerThread = 0; // worker thread cleans itself up after stopping
+}
+
+void QFreeOpcUaClientImpl::connectToEndpoint(const QUrl &url)
+{
+    workerThread->connectToServer(url);
+}
+
+void QFreeOpcUaClientImpl::connectToEndpointFinished(bool succeeded)
+{
+    if (succeeded)
         emit stateAndOrErrorChanged(QOpcUaClient::Connected, QOpcUaClient::NoError);
     else
         emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
 }
 
-void QFreeOpcUaClient::secureConnectToEndpoint(const QUrl &)
+void QFreeOpcUaClientImpl::secureConnectToEndpoint(const QUrl &)
 {
     // No need to do something, never reached
 }
 
-bool QFreeOpcUaClient::asyncDisconnectFromEndpoint()
+void QFreeOpcUaClientImpl::disconnectFromEndpoint()
 {
-    try {
-        Disconnect();
-        return true;
-    } catch (const std::exception &ex) {
-        qWarning() << "Could not disconnect from endpoint: " << ex.what();
-    }
-
-    return false;
+    workerThread->disconnectServer();
 }
 
-void QFreeOpcUaClient::disconnectFromEndpoint()
+void QFreeOpcUaClientImpl::disconnectFromEndpointFinished(bool succeeded)
 {
-    m_disconnectWatcher.setFuture(QtConcurrent::run(m_clientThreadPool,
-                                                    this, &QFreeOpcUaClient::asyncDisconnectFromEndpoint));
-}
-
-void QFreeOpcUaClient::disconnectFromEndpointFinished()
-{
-    if (m_disconnectWatcher.result())
+    if (succeeded)
         emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
     else
         emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
 }
 
-QOpcUaNode *QFreeOpcUaClient::node(const QString &nodeId)
+QOpcUaNode *QFreeOpcUaClientImpl::node(const QString &nodeId)
+{
+    QPointer<FreeOpcuaWorker> opcuaWorker = workerThread->worker();
+    if (opcuaWorker.isNull())
+        return nullptr;
+
+    return opcuaWorker->node(nodeId, this);
+}
+
+QOpcUaNode *FreeOpcuaWorker::node(const QString &nodeId, QFreeOpcUaClientImpl *clientImpl)
 {
     try {
         OpcUa::Node node = GetNode(nodeId.toStdString());
         node.GetBrowseName(); // make the client fetch the node data from the server
-        return new QOpcUaNode(new QFreeOpcUaNode(node, this), m_client);
+        QFreeOpcUaNode* n = new QFreeOpcUaNode(node, this);
+        return new QOpcUaNode(n, clientImpl->m_client);
     } catch (const std::exception &ex) {
         qWarning() << "Could not get node: " << nodeId << " " << ex.what();
         return nullptr;
@@ -153,7 +230,16 @@ QOpcUaNode *QFreeOpcUaClient::node(const QString &nodeId)
     return nullptr;
 }
 
-QOpcUaSubscription *QFreeOpcUaClient::createSubscription(quint32 interval)
+QOpcUaSubscription *QFreeOpcUaClientImpl::createSubscription(quint32 interval)
+{
+    QPointer<FreeOpcuaWorker> opcuaWorker = workerThread->worker();
+    if (opcuaWorker.isNull())
+        return nullptr;
+
+    return opcuaWorker->createSubscription(interval);
+}
+
+QOpcUaSubscription *FreeOpcuaWorker::createSubscription(quint32 interval)
 {
     QFreeOpcUaSubscription *backendSubscription = new QFreeOpcUaSubscription(this, interval);
     QOpcUaSubscription *subscription = new QOpcUaSubscription(backendSubscription, interval);
@@ -162,3 +248,5 @@ QOpcUaSubscription *QFreeOpcUaClient::createSubscription(quint32 interval)
 }
 
 QT_END_NAMESPACE
+
+#include <qfreeopcuaclient.moc>

@@ -48,12 +48,12 @@
 #include <QtCore/qthreadpool.h>
 
 QT_BEGIN_NAMESPACE
-
-class QFreeOpcUaClient : public QOpcUaClientImpl, public OpcUa::UaClient
+class WorkerThread;
+class QFreeOpcUaClientImpl : public QOpcUaClientImpl
 {
 public:
-    explicit QFreeOpcUaClient();
-    ~QFreeOpcUaClient() override;
+    explicit QFreeOpcUaClientImpl();
+    ~QFreeOpcUaClientImpl() override;
 
     void connectToEndpoint(const QUrl &url) override;
     void secureConnectToEndpoint(const QUrl &url) override;
@@ -65,17 +65,12 @@ public:
 
     QOpcUaSubscription *createSubscription(quint32 interval) override;
 
-private slots:
-    void connectToEndpointFinished();
-    void disconnectFromEndpointFinished();
+public slots:
+    void connectToEndpointFinished(bool isSuccess);
+    void disconnectFromEndpointFinished(bool isSuccess);
 
 private:
-    bool asyncConnectToEndpoint(const QUrl &url);
-    bool asyncDisconnectFromEndpoint();
-
-    QThreadPool *m_clientThreadPool;
-    QFutureWatcher<bool> m_connectWatcher;
-    QFutureWatcher<bool> m_disconnectWatcher;
+    WorkerThread *workerThread;
 };
 
 QT_END_NAMESPACE

@@ -50,7 +50,6 @@ namespace OpcUa {
 
 QT_BEGIN_NAMESPACE
 
-class QFreeOpcUaClient;
 class QOpcUaNode;
 class QFreeOpcUaMonitoredValue;
 class QOpcUaSubscription;
@@ -58,7 +57,7 @@ class QOpcUaSubscription;
 class QFreeOpcUaSubscription : public QOpcUaSubscriptionImpl, public OpcUa::SubscriptionHandler
 {
 public:
-    explicit QFreeOpcUaSubscription(QFreeOpcUaClient *client, quint32 interval);
+    explicit QFreeOpcUaSubscription(OpcUa::UaClient *client, quint32 interval);
     ~QFreeOpcUaSubscription() override;
 
     // FreeOPC-UA callbacks
@@ -71,7 +70,7 @@ public:
     QOpcUaMonitoredValue *addValue(QOpcUaNode *node) override;
     void removeValue(QOpcUaMonitoredValue *value) override;
 
-    QFreeOpcUaClient *m_client;
+    OpcUa::UaClient *m_client;
     QOpcUaSubscription *m_qsubscription;
     OpcUa::Subscription::SharedPtr m_subscription;
     QMap<int32_t, QOpcUaMonitoredValue *> m_dataChangeHandles;
