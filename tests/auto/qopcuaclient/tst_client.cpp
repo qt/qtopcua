@@ -51,6 +51,13 @@
 const QString readWriteNode = QStringLiteral("ns=3;s=TestNode.ReadWrite");
 const int numberOfOperations = 1000;
 
+#define defineDataMethod(name) void name()\
+{\
+    QTest::addColumn<QOpcUaClient *>("m_client");\
+    for (auto *client: m_clients)\
+        QTest::newRow(client->backend().toLatin1().constData()) << client;\
+}
+
 class Tst_QOpcUaClient: public QObject
 {
     Q_OBJECT
@@ -60,32 +67,63 @@ public:
 
 private slots:
     void initTestCase();
-    void connectToInvalid();
-    void secureConnect();
-    void secureConnectToInvalid();
-    void connect();
-    void getRootNode();
-    void getChildren();
-    void read();
-    void readWrite();
-    void dataChangeSubscription();
-    void dataChangeSubscriptionInvalidNode();
-    void methodCall();
-    void eventSubscription();
-    void eventSubscribeInvalidNode();
-    void readRange();
-    void readEui();
-    void readHistorical();
-    void writeHistorical();
-    void invalidNodeAccess();
-    void multipleClients();
-    void nodeClass();
-    void writeArray();
-    void readArray();
-    void writeScalar();
-    void readScalar();
-    void disconnect();
     void cleanupTestCase();
+
+    // connect & disconnect
+    defineDataMethod(connectToInvalid_data)
+    void connectToInvalid();
+    defineDataMethod(secureConnect_data)
+    void secureConnect();
+    defineDataMethod(secureConnectToInvalid_data)
+    void secureConnectToInvalid();
+    defineDataMethod(connect_data)
+    void connect();
+
+    defineDataMethod(getRootNode_data)
+    void getRootNode();
+    defineDataMethod(getChildren_data)
+    void getChildren();
+
+    // read & write
+    defineDataMethod(read_data)
+    void read();
+    defineDataMethod(readWrite_data)
+    void readWrite();
+
+    defineDataMethod(dataChangeSubscription_data)
+    void dataChangeSubscription();
+    defineDataMethod(dataChangeSubscriptionInvalidNode_data)
+    void dataChangeSubscriptionInvalidNode();
+    defineDataMethod(methodCall_data)
+    void methodCall();
+    defineDataMethod(eventSubscription_data)
+    void eventSubscription();
+    defineDataMethod(eventSubscribeInvalidNode_data)
+    void eventSubscribeInvalidNode();
+    defineDataMethod(readRange_data)
+    void readRange();
+    defineDataMethod(readEui_data)
+    void readEui();
+    defineDataMethod(readHistorical_data)
+    void readHistorical();
+    defineDataMethod(writeHistorical_data)
+    void writeHistorical();
+    defineDataMethod(invalidNodeAccess_data)
+    void invalidNodeAccess();
+
+    void multipleClients();
+    defineDataMethod(nodeClass_data)
+    void nodeClass();
+    defineDataMethod(writeArray_data)
+    void writeArray();
+    defineDataMethod(readArray_data)
+    void readArray();
+    defineDataMethod(writeScalar_data)
+    void writeScalar();
+    defineDataMethod(readScalar_data)
+    void readScalar();
+    defineDataMethod(disconnect_data)
+    void disconnect();
 
 public slots:
     void processConnected();
@@ -106,7 +144,6 @@ private:
     QOpcUaProvider m_opcUa;
     QStringList m_backends;
     QVector<QOpcUaClient *> m_clients;
-    QOpcUaClient* m_client;
     QProcess m_serverProcess;
 };
 
@@ -120,14 +157,12 @@ void Tst_QOpcUaClient::initTestCase()
 {
     for (const auto backend: m_backends) {
         QOpcUaClient *client = m_opcUa.createClient(backend);
+        client->setParent(this);
         QVERIFY2(client != nullptr,
                  QString("Loading backend failed: %1").arg(backend).toLatin1().data());
+        qDebug() << "Using SDK plugin:" << client->backend();
         m_clients.append(client);
     }
-
-    // for now run tests for the first available client
-    m_client = m_clients[0];
-    qDebug() << "Testing backend:" << m_backends[0];
 
     if (qEnvironmentVariableIsEmpty("OPCUA_HOST") && qEnvironmentVariableIsEmpty("OPCUA_PORT")) {
         const QString testServerPath = QDir::currentPath()
@@ -150,13 +185,11 @@ void Tst_QOpcUaClient::initTestCase()
     QString port = envOrDefault("OPCUA_PORT", "43344");
     m_endpoint = QString("opc.tcp://%1:%2").arg(host).arg(port);
     qDebug() << "Using endpoint:" << m_endpoint;
-    qDebug() << "Using SDK plugin:" << m_client->backend();
-
-    QVERIFY(m_client != 0);
 }
 
 void Tst_QOpcUaClient::connectToInvalid()
 {
+    QFETCH(QOpcUaClient*, m_client);
     m_client->connectToEndpoint(QUrl("opc.tcp:127.0.0.1:1234"));
     QVERIFY(m_client->state() == QOpcUaClient::Connecting);
 
@@ -175,6 +208,7 @@ void Tst_QOpcUaClient::connectToInvalid()
 
 void Tst_QOpcUaClient::secureConnect()
 {
+    QFETCH(QOpcUaClient*, m_client);
     QSKIP("Secure connections are not supported by freeopcua-based testserver");
     if (m_client->backend() == QLatin1String("freeopcua"))
         QSKIP("Secure connections are not supported with the freeopcua backend");
@@ -193,6 +227,8 @@ void Tst_QOpcUaClient::secureConnect()
 
 void Tst_QOpcUaClient::secureConnectToInvalid()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QSKIP("Secure connections are not supported by freeopcua-based testserver");
     if (m_client->backend() == QLatin1String("freeopcua"))
         QSKIP("Secure connections are not supported with the freeopcua backend");
@@ -215,6 +251,8 @@ void Tst_QOpcUaClient::secureConnectToInvalid()
 
 void Tst_QOpcUaClient::connect()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QVERIFY(m_client != 0);
     QVERIFY(m_connected == false);
 
@@ -232,6 +270,8 @@ void Tst_QOpcUaClient::connect()
 
 void Tst_QOpcUaClient::getRootNode()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QScopedPointer<QOpcUaNode> root(m_client->node("ns=0;i=84"));
     QVERIFY(root != 0);
     QVERIFY(root->name() == QLatin1String("Root"));
@@ -242,6 +282,8 @@ void Tst_QOpcUaClient::getRootNode()
 
 void Tst_QOpcUaClient::getChildren()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QScopedPointer<QOpcUaNode> node(m_client->node("ns=1;s=Large.Folder"));
     QVERIFY(node != 0);
     QVERIFY(node->name() == QLatin1String("Large_Folder"));
@@ -250,6 +292,8 @@ void Tst_QOpcUaClient::getChildren()
 
 void Tst_QOpcUaClient::read()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QScopedPointer<QOpcUaNode> node(m_client->node(readWriteNode));
     QVERIFY(node != 0);
     for (int i = 0; i < numberOfOperations; i++)
@@ -258,6 +302,8 @@ void Tst_QOpcUaClient::read()
 
 void Tst_QOpcUaClient::readWrite()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QScopedPointer<QOpcUaNode> node(m_client->node(readWriteNode));
     QVERIFY(node != 0);
     for (int i = 0; i < numberOfOperations; i++) {
@@ -269,6 +315,8 @@ void Tst_QOpcUaClient::readWrite()
 
 void Tst_QOpcUaClient::dataChangeSubscription()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     m_value = 0;
     QScopedPointer<QOpcUaNode> node(m_client->node(readWriteNode));
     QVERIFY(node != 0);
@@ -294,6 +342,8 @@ void Tst_QOpcUaClient::dataChangeSubscription()
 
 void Tst_QOpcUaClient::dataChangeSubscriptionInvalidNode()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QScopedPointer<QOpcUaNode> noDataNode(m_client->node("ns=0;i=84"));
     QVERIFY(noDataNode != 0);
     QScopedPointer<QOpcUaSubscription> subscription(m_client->createSubscription(100));
@@ -303,6 +353,8 @@ void Tst_QOpcUaClient::dataChangeSubscriptionInvalidNode()
 
 void Tst_QOpcUaClient::methodCall()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QSKIP("Method calls are not implemented in freeopcua-based testserver");
     QVector<QOpcUa::TypedVariant> args;
     QVector<QVariant> ret;
@@ -323,6 +375,8 @@ void Tst_QOpcUaClient::methodCall()
 
 void Tst_QOpcUaClient::eventSubscription()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QSKIP("Does not reliably work with the testserver");
     if (m_client->backend() == QLatin1String("freeopcua")) {
         QSKIP("Event subscriptions do not yet work with the freeopcua backend");
@@ -358,6 +412,8 @@ void Tst_QOpcUaClient::eventSubscription()
 
 void Tst_QOpcUaClient::eventSubscribeInvalidNode()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QScopedPointer<QOpcUaNode> noEventNode(m_client->node(readWriteNode));
     QVERIFY(noEventNode != 0);
     QScopedPointer<QOpcUaSubscription> subscription(m_client->createSubscription(100));
@@ -367,6 +423,8 @@ void Tst_QOpcUaClient::eventSubscribeInvalidNode()
 
 void Tst_QOpcUaClient::readRange()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QSKIP("No ranges supported in freeopcua-based testserver");
     if (m_client->backend() == QLatin1String("freeopcua"))
         QSKIP("Ranges are not yet implemented in the freeopcua backend");
@@ -379,6 +437,8 @@ void Tst_QOpcUaClient::readRange()
 
 void Tst_QOpcUaClient::readEui()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QSKIP("No engineering unit information supported in freeopcua-based testserver");
     if (m_client->backend() == QLatin1String("freeopcua"))
         QSKIP("Engineering unit information are not yet implemented in the freeopcua backend");
@@ -392,6 +452,8 @@ void Tst_QOpcUaClient::readEui()
 
 void Tst_QOpcUaClient::readHistorical()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QSKIP("History is not supported in freeopcua-based testserver");
     if (m_client->backend() == QLatin1String("freeopcua"))
         QSKIP("History not yet implemented in the freeopcua backend");
@@ -407,6 +469,8 @@ void Tst_QOpcUaClient::readHistorical()
 
 void Tst_QOpcUaClient::writeHistorical()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QSKIP("History is not supported in freeopcua-based testserver");
     if (m_client->backend() == QLatin1String("freeopcua"))
         QSKIP("History not yet implemented in the freeopcua backend");
@@ -422,6 +486,8 @@ void Tst_QOpcUaClient::writeHistorical()
 
 void Tst_QOpcUaClient::invalidNodeAccess()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QScopedPointer<QOpcUaNode> invalidNode(m_client->node("ns=0;s=IDoNotExist"));
     QVERIFY(invalidNode == 0);
 }
@@ -456,6 +522,8 @@ void Tst_QOpcUaClient::multipleClients()
 
 void Tst_QOpcUaClient::nodeClass()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     // Root -> Types -> ReferenceTypes -> References
     QScopedPointer<QOpcUaNode> refNode(m_client->node("ns=0;i=31"));
     QVERIFY(refNode != 0);
@@ -464,6 +532,8 @@ void Tst_QOpcUaClient::nodeClass()
 
 void Tst_QOpcUaClient::writeArray()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QVariantList list;
 
     list.append(true);
@@ -618,6 +688,8 @@ void Tst_QOpcUaClient::writeArray()
 
 void Tst_QOpcUaClient::readArray()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QScopedPointer<QOpcUaNode> booleanArrayNode(m_client->node("ns=2;s=Demo.Static.Arrays.Boolean"));
     QVERIFY(booleanArrayNode != 0);
     QVariant booleanArray = booleanArrayNode->value();
@@ -796,6 +868,7 @@ void Tst_QOpcUaClient::readArray()
 
 void Tst_QOpcUaClient::writeScalar()
 {
+    QFETCH(QOpcUaClient*, m_client);
     bool success;
 
     QScopedPointer<QOpcUaNode> booleanNode(m_client->node("ns=2;s=Demo.Static.Scalar.Boolean"));
@@ -895,7 +968,10 @@ void Tst_QOpcUaClient::writeScalar()
     QVERIFY(success == true);
 }
 
-void Tst_QOpcUaClient::readScalar() {
+void Tst_QOpcUaClient::readScalar()
+{
+    QFETCH(QOpcUaClient*, m_client);
+
     QOpcUaNode *node;
 
     node = m_client->node("ns=2;s=Demo.Static.Scalar.Boolean");
@@ -1062,6 +1138,8 @@ void Tst_QOpcUaClient::readScalar() {
 
 void Tst_QOpcUaClient::disconnect()
 {
+    QFETCH(QOpcUaClient*, m_client);
+
     QVERIFY(m_connected == true);
 
     m_client->disconnectFromEndpoint();
@@ -1078,7 +1156,6 @@ void Tst_QOpcUaClient::cleanupTestCase()
         m_serverProcess.kill();
         m_serverProcess.waitForFinished(2000);
     }
-    delete m_client;
 }
 
 void Tst_QOpcUaClient::processConnected()
