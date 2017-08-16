@@ -106,6 +106,7 @@ void FreeOpcuaWorker::asyncConnectToEndpoint(const QUrl &url)
 void FreeOpcuaWorker::asyncDisconnectFromEndpoint()
 {
     try {
+        Disconnect();
         emit disconnectFinished(true);
         return;
     } catch (const std::exception &ex) {
