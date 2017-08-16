@@ -47,6 +47,66 @@
 #include <QtCore/QTimer>
 
 #include <QtTest/QtTest>
+#include <QtTest/QSignalSpy>
+
+class OpcuaConnector
+{
+public:
+    OpcuaConnector(QOpcUaClient *client, const QString &endPoint)
+        : opcuaClient(client)
+    {
+        QVERIFY(opcuaClient != nullptr);
+        QSignalSpy connectedSpy(opcuaClient, &QOpcUaClient::connected);
+        QSignalSpy disconnectedSpy(opcuaClient, &QOpcUaClient::disconnected);
+        QSignalSpy stateSpy(opcuaClient, &QOpcUaClient::stateChanged);
+
+        QTest::qWait(500);
+        opcuaClient->connectToEndpoint(QUrl(endPoint));
+        QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
+
+        QCOMPARE(connectedSpy.count(), 1); // one connected signal fired
+        QCOMPARE(disconnectedSpy.count(), 0); // zero disconnected signals fired
+        QCOMPARE(stateSpy.count(), 2);
+
+        QCOMPARE(stateSpy.at(0).at(0).value<QOpcUaClient::ClientState>(),
+                 QOpcUaClient::ClientState::Connecting);
+        QCOMPARE(stateSpy.at(1).at(0).value<QOpcUaClient::ClientState>(),
+                 QOpcUaClient::ClientState::Connected);
+
+        stateSpy.clear();
+        connectedSpy.clear();
+        disconnectedSpy.clear();
+
+        QVERIFY(opcuaClient->url() == QUrl(endPoint));
+    }
+
+    ~OpcuaConnector()
+    {
+        QSignalSpy connectedSpy(opcuaClient, &QOpcUaClient::connected);
+        QSignalSpy disconnectedSpy(opcuaClient, &QOpcUaClient::disconnected);
+        QSignalSpy stateSpy(opcuaClient, &QOpcUaClient::stateChanged);
+
+        QVERIFY(opcuaClient != nullptr);
+        if (opcuaClient->state() == QOpcUaClient::Connected) {
+
+            opcuaClient->disconnectFromEndpoint();
+
+            QTRY_VERIFY(opcuaClient->state() == QOpcUaClient::Disconnected);
+
+            QCOMPARE(connectedSpy.count(), 0);
+            QCOMPARE(disconnectedSpy.count(), 1);
+            QCOMPARE(stateSpy.count(), 2);
+            QCOMPARE(stateSpy.at(0).at(0).value<QOpcUaClient::ClientState>(),
+                     QOpcUaClient::ClientState::Closing);
+            QCOMPARE(stateSpy.at(1).at(0).value<QOpcUaClient::ClientState>(),
+                     QOpcUaClient::ClientState::Disconnected);
+        }
+
+        opcuaClient = nullptr;
+    }
+
+    QOpcUaClient* opcuaClient = nullptr;
+};
 
 const QString readWriteNode = QStringLiteral("ns=3;s=TestNode.ReadWrite");
 const int numberOfOperations = 1000;
@@ -76,8 +136,8 @@ private slots:
     void secureConnect();
     defineDataMethod(secureConnectToInvalid_data)
     void secureConnectToInvalid();
-    defineDataMethod(connect_data)
-    void connect();
+    defineDataMethod(connectAndDisconnect_data)
+    void connectAndDisconnect();
 
     defineDataMethod(getRootNode_data)
     void getRootNode();
@@ -122,12 +182,8 @@ private slots:
     void writeScalar();
     defineDataMethod(readScalar_data)
     void readScalar();
-    defineDataMethod(disconnect_data)
-    void disconnect();
 
 public slots:
-    void processConnected();
-    void processDisconnected();
     void processSubscription(QVariant val);
     void processEventSubscription(QVector<QVariant> val);
 
@@ -138,7 +194,6 @@ private:
     }
 
     QString m_endpoint;
-    bool m_connected;
     double m_value;
     bool m_event;
     QOpcUaProvider m_opcUa;
@@ -148,8 +203,9 @@ private:
 };
 
 Tst_QOpcUaClient::Tst_QOpcUaClient()
-    : m_connected(false)
 {
+    qRegisterMetaType<QOpcUaClient::ClientState>("ClientState");
+
     m_backends = QOpcUaProvider::availableBackends();
 }
 
@@ -249,28 +305,16 @@ void Tst_QOpcUaClient::secureConnectToInvalid()
     QVERIFY( url == QUrl("opc.tcp:127.0.0.1:1234"));
 }
 
-void Tst_QOpcUaClient::connect()
+void Tst_QOpcUaClient::connectAndDisconnect()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
-
-    QVERIFY(opcuaClient != 0);
-    QVERIFY(m_connected == false);
-
-    QObject::connect(opcuaClient, &QOpcUaClient::connected, this, &Tst_QOpcUaClient::processConnected);
-    QObject::connect(opcuaClient, &QOpcUaClient::disconnected, this, &Tst_QOpcUaClient::processDisconnected);
-
-    opcuaClient->connectToEndpoint(QUrl(m_endpoint));
-    QVERIFY(opcuaClient->state() == QOpcUaClient::Connecting);
-    QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
-
-    QVERIFY(opcuaClient->url() == QUrl(m_endpoint));
-
-    QTRY_VERIFY_WITH_TIMEOUT(m_connected == true, 1250); // Wait 1.25 seconds for state change
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 }
 
 void Tst_QOpcUaClient::getRootNode()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> root(opcuaClient->node("ns=0;i=84"));
     QVERIFY(root != 0);
@@ -283,6 +327,7 @@ void Tst_QOpcUaClient::getRootNode()
 void Tst_QOpcUaClient::getChildren()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=1;s=Large.Folder"));
     QVERIFY(node != 0);
@@ -293,6 +338,7 @@ void Tst_QOpcUaClient::getChildren()
 void Tst_QOpcUaClient::read()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
     QVERIFY(node != 0);
@@ -303,6 +349,7 @@ void Tst_QOpcUaClient::read()
 void Tst_QOpcUaClient::readWrite()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
     QVERIFY(node != 0);
@@ -316,6 +363,7 @@ void Tst_QOpcUaClient::readWrite()
 void Tst_QOpcUaClient::dataChangeSubscription()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     m_value = 0;
     QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
@@ -343,6 +391,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
 void Tst_QOpcUaClient::dataChangeSubscriptionInvalidNode()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> noDataNode(opcuaClient->node("ns=0;i=84"));
     QVERIFY(noDataNode != 0);
@@ -354,6 +403,7 @@ void Tst_QOpcUaClient::dataChangeSubscriptionInvalidNode()
 void Tst_QOpcUaClient::methodCall()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSKIP("Method calls are not implemented in freeopcua-based testserver");
     QVector<QOpcUa::TypedVariant> args;
@@ -376,6 +426,7 @@ void Tst_QOpcUaClient::methodCall()
 void Tst_QOpcUaClient::eventSubscription()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSKIP("Does not reliably work with the testserver");
     if (opcuaClient->backend() == QLatin1String("freeopcua")) {
@@ -413,6 +464,7 @@ void Tst_QOpcUaClient::eventSubscription()
 void Tst_QOpcUaClient::eventSubscribeInvalidNode()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> noEventNode(opcuaClient->node(readWriteNode));
     QVERIFY(noEventNode != 0);
@@ -424,6 +476,7 @@ void Tst_QOpcUaClient::eventSubscribeInvalidNode()
 void Tst_QOpcUaClient::readRange()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSKIP("No ranges supported in freeopcua-based testserver");
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
@@ -438,6 +491,7 @@ void Tst_QOpcUaClient::readRange()
 void Tst_QOpcUaClient::readEui()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSKIP("No engineering unit information supported in freeopcua-based testserver");
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
@@ -453,6 +507,7 @@ void Tst_QOpcUaClient::readEui()
 void Tst_QOpcUaClient::readHistorical()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSKIP("History is not supported in freeopcua-based testserver");
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
@@ -470,6 +525,7 @@ void Tst_QOpcUaClient::readHistorical()
 void Tst_QOpcUaClient::writeHistorical()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSKIP("History is not supported in freeopcua-based testserver");
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
@@ -487,6 +543,7 @@ void Tst_QOpcUaClient::writeHistorical()
 void Tst_QOpcUaClient::invalidNodeAccess()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> invalidNode(opcuaClient->node("ns=0;s=IDoNotExist"));
     QVERIFY(invalidNode == 0);
@@ -523,6 +580,7 @@ void Tst_QOpcUaClient::multipleClients()
 void Tst_QOpcUaClient::nodeClass()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     // Root -> Types -> ReferenceTypes -> References
     QScopedPointer<QOpcUaNode> refNode(opcuaClient->node("ns=0;i=31"));
@@ -533,6 +591,7 @@ void Tst_QOpcUaClient::nodeClass()
 void Tst_QOpcUaClient::writeArray()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QVariantList list;
 
@@ -689,6 +748,7 @@ void Tst_QOpcUaClient::writeArray()
 void Tst_QOpcUaClient::readArray()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> booleanArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Boolean"));
     QVERIFY(booleanArrayNode != 0);
@@ -869,6 +929,7 @@ void Tst_QOpcUaClient::readArray()
 void Tst_QOpcUaClient::writeScalar()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
     bool success;
 
     QScopedPointer<QOpcUaNode> booleanNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Boolean"));
@@ -971,6 +1032,7 @@ void Tst_QOpcUaClient::writeScalar()
 void Tst_QOpcUaClient::readScalar()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QOpcUaNode *node;
 
@@ -1136,37 +1198,12 @@ void Tst_QOpcUaClient::readScalar()
     // TODO add Static.Scalar.XmlElement test
 }
 
-void Tst_QOpcUaClient::disconnect()
-{
-    QFETCH(QOpcUaClient*, opcuaClient);
-
-    QVERIFY(m_connected == true);
-
-    opcuaClient->disconnectFromEndpoint();
-
-    QTRY_VERIFY_WITH_TIMEOUT(m_connected == false, 1250); // Wait 1.25 seconds for state change
-
-    QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
-    QVERIFY(node == 0);
-}
-
 void Tst_QOpcUaClient::cleanupTestCase()
 {
     if (m_serverProcess.state() == QProcess::Running) {
         m_serverProcess.kill();
         m_serverProcess.waitForFinished(2000);
     }
-}
-
-void Tst_QOpcUaClient::processConnected()
-{
-    qDebug("Connection state changed");
-    m_connected = true;
-}
-
-void Tst_QOpcUaClient::processDisconnected()
-{
-    m_connected = false;
 }
 
 void Tst_QOpcUaClient::processSubscription(QVariant val)
