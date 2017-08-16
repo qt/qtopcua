@@ -103,4 +103,7 @@ private:
 
 QT_END_NAMESPACE
 
+Q_DECLARE_METATYPE(QOpcUaClient::ClientState)
+Q_DECLARE_METATYPE(QOpcUaClient::ClientError)
+
 #endif // QOPCUACLIENT_H
