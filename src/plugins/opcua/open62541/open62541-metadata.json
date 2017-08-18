@@ -1,0 +1,7 @@
+{
+    "Keys" : [ "open62541" ],
+    "Provider" : "open62541",
+    "Version" : "1.0",
+    "Features" : [ "client" ],
+    "stability" : 1
+}
