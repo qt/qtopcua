@@ -213,9 +213,9 @@ void Tst_QOpcUaClient::initTestCase()
 {
     for (const auto backend: m_backends) {
         QOpcUaClient *client = m_opcUa.createClient(backend);
-        client->setParent(this);
         QVERIFY2(client != nullptr,
                  QString("Loading backend failed: %1").arg(backend).toLatin1().data());
+        client->setParent(this);
         qDebug() << "Using SDK plugin:" << client->backend();
         m_clients.append(client);
     }
