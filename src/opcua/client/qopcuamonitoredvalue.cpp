@@ -69,7 +69,9 @@ QOpcUaMonitoredValue::QOpcUaMonitoredValue(QOpcUaNode *node, QOpcUaSubscription 
 
 QOpcUaMonitoredValue::~QOpcUaMonitoredValue()
 {
-    d_func()->m_subscription->removeValue(this);
+    Q_D(QOpcUaMonitoredValue);
+    if (d->m_subscription)
+        d->m_subscription->removeValue(this);
 }
 
 /*!
