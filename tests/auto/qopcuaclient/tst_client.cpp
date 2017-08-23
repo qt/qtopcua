@@ -861,7 +861,6 @@ void Tst_QOpcUaClient::readArray()
     if (opcuaClient->backend() == QLatin1String("freeopcua")) {
         QWARN("*Int64 types are broken with the freeopcua backend");
     } else {
-        QSKIP("Int64 types broken with freeopcua-based test server");
         QScopedPointer<QOpcUaNode> uint64ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt64"));
         QVERIFY(uint64ArrayNode != 0);
         QVariant uint64Array = uint64ArrayNode->value();
