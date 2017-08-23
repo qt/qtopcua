@@ -753,7 +753,8 @@ void Tst_QOpcUaClient::readArray()
     QScopedPointer<QOpcUaNode> booleanArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Boolean"));
     QVERIFY(booleanArrayNode != 0);
     QVariant booleanArray = booleanArrayNode->value();
-    QVERIFY(booleanArray.type() == QVariant::List && booleanArray.toList().length() == 3);
+    QVERIFY(booleanArray.type() == QVariant::List);
+    QVERIFY(booleanArray.toList().length() == 3);
     QCOMPARE(booleanArray.toList()[0].type(), QVariant::Bool);
     QCOMPARE(booleanArray.toList()[0].toBool(), true);
     QCOMPARE(booleanArray.toList()[1].toBool(), false);
@@ -763,7 +764,8 @@ void Tst_QOpcUaClient::readArray()
     QScopedPointer<QOpcUaNode> int32ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int32"));
     QVERIFY(int32ArrayNode != 0);
     QVariant int32Array = int32ArrayNode->value();
-    QVERIFY(int32Array.type() == QVariant::List && int32Array.toList().length() == 3);
+    QVERIFY(int32Array.type() == QVariant::List);
+    QVERIFY(int32Array.toList().length() == 3);
     QCOMPARE(int32Array.toList()[0].type(), QVariant::Int);
     QCOMPARE(int32Array.toList()[0].toInt(), -11);
     QCOMPARE(int32Array.toList()[1].toInt(), -12);
@@ -774,7 +776,8 @@ void Tst_QOpcUaClient::readArray()
     QScopedPointer<QOpcUaNode> uint32ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt32"));
     QVERIFY(uint32ArrayNode != 0);
     QVariant uint32Array = uint32ArrayNode->value();
-    QVERIFY(uint32Array.type() == QVariant::List && uint32Array.toList().length() == 3);
+    QVERIFY(uint32Array.type() == QVariant::List);
+    QVERIFY(uint32Array.toList().length() == 3);
     QCOMPARE(uint32Array.toList()[0].type(), QVariant::UInt);
     QCOMPARE(uint32Array.toList()[0].toUInt(), (uint)11);
     QCOMPARE(uint32Array.toList()[1].toUInt(), (uint)12);
@@ -784,7 +787,8 @@ void Tst_QOpcUaClient::readArray()
     QScopedPointer<QOpcUaNode> doubleArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Double"));
     QVERIFY(doubleArrayNode != 0);
     QVariant doubleArray = doubleArrayNode->value();
-    QVERIFY(doubleArray.type() == QVariant::List && doubleArray.toList().length() == 3);
+    QVERIFY(doubleArray.type() == QVariant::List);
+    QVERIFY(doubleArray.toList().length() == 3);
     QCOMPARE(doubleArray.toList()[0].type(), QVariant::Double);
     QCOMPARE(doubleArray.toList()[0].toDouble(), (double)23.5);
     QCOMPARE(doubleArray.toList()[1].toDouble(), (double)23.6);
@@ -794,7 +798,8 @@ void Tst_QOpcUaClient::readArray()
     QScopedPointer<QOpcUaNode> floatArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Float"));
     QVERIFY(floatArrayNode != 0);
     QVariant floatArray = floatArrayNode->value();
-    QVERIFY(floatArray.type() == QVariant::List && floatArray.toList().length() == 3);
+    QVERIFY(floatArray.type() == QVariant::List);
+    QVERIFY(floatArray.toList().length() == 3);
     QVERIFY(floatArray.toList()[0].userType() == QMetaType::Float);
     QCOMPARE(floatArray.toList()[0].toFloat(), (float)23.5);
     QCOMPARE(floatArray.toList()[1].toFloat(), (float)23.6);
@@ -804,7 +809,8 @@ void Tst_QOpcUaClient::readArray()
     QScopedPointer<QOpcUaNode> stringArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.String"));
     QVERIFY(stringArrayNode != 0);
     QVariant stringArray = stringArrayNode->value();
-    QVERIFY(stringArray.type() == QVariant::List && stringArray.toList().length() == 3);
+    QVERIFY(stringArray.type() == QVariant::List);
+    QVERIFY(stringArray.toList().length() == 3);
     QCOMPARE(stringArray.toList()[0].type(), QVariant::String);
     QCOMPARE(stringArray.toList()[0].toString(), QStringLiteral("Test1"));
     QCOMPARE(stringArray.toList()[1].toString(), QStringLiteral("Test2"));
@@ -814,14 +820,16 @@ void Tst_QOpcUaClient::readArray()
     QScopedPointer<QOpcUaNode> dateTimeArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DateTime"));
     QVERIFY(dateTimeArrayNode != 0);
     QVariant dateTimeArray = dateTimeArrayNode->value();
-    QVERIFY(dateTimeArray.type() == QVariant::List && dateTimeArray.toList().length() == 3);
+    QVERIFY(dateTimeArray.type() == QVariant::List);
+    QVERIFY(dateTimeArray.toList().length() == 3);
     QCOMPARE(dateTimeArray.toList()[0].type(), QVariant::DateTime);
     qDebug() << dateTimeArray.toList();
 
     QScopedPointer<QOpcUaNode> ltArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.LocalizedText"));
     QVERIFY(ltArrayNode != 0);
     QVariant ltArray = ltArrayNode->value();
-    QVERIFY(ltArray.type() == QVariant::List && ltArray.toList().length() == 3);
+    QVERIFY(ltArray.type() == QVariant::List);
+    QVERIFY(ltArray.toList().length() == 3);
     QCOMPARE(ltArray.toList()[0].type(), QVariant::String);
     QCOMPARE(ltArray.toList()[0].toString(), QStringLiteral("Localized Text 1"));
     QCOMPARE(ltArray.toList()[1].toString(), QStringLiteral("Localized Text 2"));
@@ -831,7 +839,8 @@ void Tst_QOpcUaClient::readArray()
     QScopedPointer<QOpcUaNode> uint16ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt16"));
     QVERIFY(uint16ArrayNode != 0);
     QVariant uint16Array = uint16ArrayNode->value();
-    QVERIFY(uint16Array.type() == QVariant::List && uint16Array.toList().length() == 3);
+    QVERIFY(uint16Array.type() == QVariant::List);
+    QVERIFY(uint16Array.toList().length() == 3);
     QVERIFY(uint16Array.toList()[0].userType() == QMetaType::UShort);
     QVERIFY(uint16Array.toList()[0] == (ushort)11);
     QVERIFY(uint16Array.toList()[1] == (ushort)12);
@@ -841,7 +850,8 @@ void Tst_QOpcUaClient::readArray()
     QScopedPointer<QOpcUaNode> int16ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int16"));
     QVERIFY(int16ArrayNode != 0);
     QVariant int16Array = int16ArrayNode->value();
-    QVERIFY(int16Array.type() == QVariant::List && int16Array.toList().length() == 3);
+    QVERIFY(int16Array.type() == QVariant::List);
+    QVERIFY(int16Array.toList().length() == 3);
     QVERIFY(int16Array.toList()[0].userType() == QMetaType::Short);
     QVERIFY(int16Array.toList()[0] == (short)-11);
     QVERIFY(int16Array.toList()[1] == (short)-12);
@@ -877,7 +887,8 @@ void Tst_QOpcUaClient::readArray()
     QScopedPointer<QOpcUaNode> byteArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Byte"));
     QVERIFY(byteArrayNode != 0);
     QVariant byteArray = byteArrayNode->value();
-    QVERIFY(byteArray.type() == QVariant::List && byteArray.toList().length() == 3);
+    QVERIFY(byteArray.type() == QVariant::List);
+    QVERIFY(byteArray.toList().length() == 3);
     QVERIFY(byteArray.toList()[0].userType() == QMetaType::UChar);
     QVERIFY(byteArray.toList()[0] == (char)11);
     QVERIFY(byteArray.toList()[1] == (char)12);
@@ -887,7 +898,8 @@ void Tst_QOpcUaClient::readArray()
     QScopedPointer<QOpcUaNode> byteStringArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ByteString"));
     QVERIFY(byteStringArrayNode != 0);
     QVariant byteStringArray = byteStringArrayNode->value();
-    QVERIFY(byteStringArray.type() == QVariant::List && byteStringArray.toList().length() == 3);
+    QVERIFY(byteStringArray.type() == QVariant::List);
+    QVERIFY(byteStringArray.toList().length() == 3);
     QVERIFY(byteStringArray.toList()[0].userType() == QMetaType::QByteArray);
     QVERIFY(byteStringArray.toList()[0] == "abc");
     QVERIFY(byteStringArray.toList()[1] == "def");
@@ -900,7 +912,8 @@ void Tst_QOpcUaClient::readArray()
         QScopedPointer<QOpcUaNode> sbyteArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.SByte"));
         QVERIFY(sbyteArrayNode != 0);
         QVariant sbyteArray = sbyteArrayNode->value();
-        QVERIFY(sbyteArray.type() == QVariant::List && sbyteArray.toList().length() == 3);
+        QVERIFY(sbyteArray.type() == QVariant::List);
+        QVERIFY(sbyteArray.toList().length() == 3);
         QVERIFY(byteArray.toList()[0].userType() == QMetaType::SChar);
         QVERIFY(byteArray.toList()[0] == (char)-11);
         QVERIFY(byteArray.toList()[1] == (char)-12);
@@ -914,7 +927,8 @@ void Tst_QOpcUaClient::readArray()
         QScopedPointer<QOpcUaNode> nodeIdArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.NodeId"));
         QVERIFY(byteArrayNode != 0);
         QVariant nodeIdArray = nodeIdArrayNode->value();
-        QVERIFY(nodeIdArray.type() == QVariant::List && nodeIdArray.toList().length() == 3);
+        QVERIFY(nodeIdArray.type() == QVariant::List);
+        QVERIFY(nodeIdArray.toList().length() == 3);
         QCOMPARE(nodeIdArray.toList()[0].type(), QVariant::String);
         QCOMPARE(nodeIdArray.toList()[0].toString(), QStringLiteral("ns=0;i=0"));
         QCOMPARE(nodeIdArray.toList()[1].toString(), QStringLiteral("ns=0;i=1"));
