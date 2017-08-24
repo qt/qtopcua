@@ -223,7 +223,7 @@ void Tst_QOpcUaClient::initTestCase()
 
     if (qEnvironmentVariableIsEmpty("OPCUA_HOST") && qEnvironmentVariableIsEmpty("OPCUA_PORT")) {
         const QString testServerPath = QDir::currentPath()
-                                     + QLatin1String("/../../freeopcua-testserver/freeopcua-testserver")
+                                     + QLatin1String("/../../open62541-testserver/open62541-testserver")
 #ifdef Q_OS_WIN
                                      + QLatin1String(".exe")
 #endif

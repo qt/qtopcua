@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
+** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,46 +34,40 @@
 **
 ****************************************************************************/
 
-#ifndef ACCONTROL_H
-#define ACCONTROL_H
+#ifndef TESTSERVER_H
+#define TESTSERVER_H
 
-#include <QtCore/qtimer.h>
+#include <open62541.h>
 
-#include <opc/ua/node.h>
-#include <opc/ua/subscription.h>
+#include <QtCore/QDateTime>
+#include <QtCore/QObject>
+#include <QtCore/QTimer>
+#include <QtCore/QVariant>
 
-namespace OpcUa
-{
-    class UaServer;
-}
-
-class ACControl : public QObject, public OpcUa::SubscriptionHandler
+class TestServer : public QObject
 {
     Q_OBJECT
 public:
-    explicit ACControl(QObject *parent = 0);
-    void initNodes(OpcUa::UaServer &server);
+    explicit TestServer(QObject *parent = nullptr);
+    ~TestServer();
+    bool init();
 
-    void DataChange(uint32_t handle, const OpcUa::Node& node, const OpcUa::Variant& val, OpcUa::AttributeId attr) override;
+    int registerNamespace(const QString &ns);
+    UA_NodeId addFolder(const QString &nodeString, const QString &displayName, const QString &description = QString());
+    UA_NodeId addObject(const UA_NodeId &folderId, int namespaceIndex, const QString &objectName = QString());
+
+    template <typename UA_TYPE_VALUE, typename QTYPE, int UA_TYPE_IDENTIFIER>
+    UA_NodeId addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &description, QTYPE value);
+
+    UA_ServerConfig *m_config{nullptr};
+    UA_Server *m_server{nullptr};
+    QAtomicInt m_running{false};
+    QTimer m_timer;
 
 public slots:
-
-    void adjustTemperature();
-
-private:
-
-    double m_currentTemp;
-    double m_temperatureSetpoint;
-
-    OpcUa::Node m_currentTempNode;
-    OpcUa::Node m_setPointNode;
-    OpcUa::Node m_startNode;
-    OpcUa::Node m_stopNode;
-    OpcUa::Node m_stateNode;
-
-    OpcUa::Subscription::SharedPtr m_subscription;
-
-    QTimer m_timer;
+    void launch();
+    void processServerEvents();
+    void shutdown();
 };
 
-#endif // ACCONTROL_H
+#endif // TESTSERVER_H

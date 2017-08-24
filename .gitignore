@@ -10,7 +10,7 @@
 /config.log
 
 examples/opcua/accontrol/accontrol
-tests/freeopcua-testserver/freeopcua-testserver
+tests/open62541-testserver/open62541-testserver
 
 
 tst_*
