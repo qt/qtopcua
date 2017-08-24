@@ -907,6 +907,8 @@ void Tst_QOpcUaClient::readArray()
 
     if (opcuaClient->backend() == QLatin1String("freeopcua")) {
         QWARN("SByte is broken with the freeopcua backend");
+    } else if (opcuaClient->backend() == QLatin1String("open62541")) {
+        QWARN("Implicit conversion of SChar to UChar in qvariant.cpp");
     } else {
         QScopedPointer<QOpcUaNode> sbyteArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.SByte"));
         QVERIFY(sbyteArrayNode != 0);
