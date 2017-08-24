@@ -105,7 +105,7 @@ public:
         opcuaClient = nullptr;
     }
 
-    QOpcUaClient* opcuaClient = nullptr;
+    QOpcUaClient* opcuaClient;
 };
 
 const QString readWriteNode = QStringLiteral("ns=3;s=TestNode.ReadWrite");
@@ -183,10 +183,6 @@ private slots:
     defineDataMethod(readScalar_data)
     void readScalar();
 
-public slots:
-    void processSubscription(QVariant val);
-    void processEventSubscription(QVector<QVariant> val);
-
 private:
     QString envOrDefault(const char *env, QString def)
     {
@@ -194,8 +190,6 @@ private:
     }
 
     QString m_endpoint;
-    double m_value;
-    bool m_event;
     QOpcUaProvider m_opcUa;
     QStringList m_backends;
     QVector<QOpcUaClient *> m_clients;
@@ -365,7 +359,6 @@ void Tst_QOpcUaClient::dataChangeSubscription()
     QFETCH(QOpcUaClient*, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
-    m_value = 0;
     QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
     QVERIFY(node != 0);
     bool result = node->setValue(QVariant((double ) 0));
@@ -376,16 +369,14 @@ void Tst_QOpcUaClient::dataChangeSubscription()
     QVERIFY(monitoredValue != nullptr);
     if (!monitoredValue)
         QFAIL("can not monitor value");
-    QObject::connect(monitoredValue.data(), &QOpcUaMonitoredValue::valueChanged,
-                     this, &Tst_QOpcUaClient::processSubscription);
+
+    QSignalSpy valueSpy(monitoredValue.data(), &QOpcUaMonitoredValue::valueChanged);
 
     result = node->setValue(QVariant((double ) 42));
     QVERIFY(result == true);
-    int i = 0;
-    while (m_value == 0 && i++ < 50) {
-        QTest::qWait(25); // wait n periods for data change
-    }
-    QVERIFY(m_value == (double) 42);
+
+    valueSpy.wait();
+    QVERIFY(valueSpy.at(0).at(0).toDouble() == (double) 42);
 }
 
 void Tst_QOpcUaClient::dataChangeSubscriptionInvalidNode()
@@ -433,18 +424,17 @@ void Tst_QOpcUaClient::eventSubscription()
         QSKIP("Event subscriptions do not yet work with the freeopcua backend");
     }
 
-    m_event = false;
     QScopedPointer<QOpcUaNode> triggerNode(opcuaClient->node("ns=3;s=TriggerNode"));
     QVERIFY(triggerNode != 0);
 
     QScopedPointer<QOpcUaSubscription> subscription(opcuaClient->createSubscription(100));
     QOpcUaMonitoredEvent *monitoredEvent = subscription->addEvent(triggerNode.data());
     QVERIFY(monitoredEvent != 0);
-    QObject::connect(monitoredEvent, &QOpcUaMonitoredEvent::newEvent, this,
-                     &Tst_QOpcUaClient::processEventSubscription);
 
     if (!monitoredEvent)
         QFAIL("can not monitor event");
+
+    QSignalSpy monitorSpy(monitoredEvent, &QOpcUaMonitoredEvent::newEvent);
 
     QScopedPointer<QOpcUaNode> triggerVariable(opcuaClient->node("ns=3;s=TriggerVariable"));
     QVERIFY(triggerVariable != 0);
@@ -453,11 +443,13 @@ void Tst_QOpcUaClient::eventSubscription()
     result = triggerVariable->setValue(QVariant((double) 1));
     QVERIFY(result == true);
 
-    int i = 0;
-    while (m_event == false && i++ < 50) {
-        QTest::qWait(25);
-    }
-    QVERIFY(m_event == true);
+    QVERIFY(monitorSpy.wait());
+    QVector<QVariant> val = monitorSpy.at(0).at(0).toList().toVector();
+    QCOMPARE(val.size(), 3);
+    QCOMPARE(val.at(0).type(), QVariant::String);
+    QCOMPARE(val.at(1).type(), QVariant::String);
+    QCOMPARE(val.at(2).type(), QVariant::Int);
+
     delete monitoredEvent;
 }
 
@@ -1219,24 +1211,6 @@ void Tst_QOpcUaClient::cleanupTestCase()
         m_serverProcess.kill();
         m_serverProcess.waitForFinished(2000);
     }
-}
-
-void Tst_QOpcUaClient::processSubscription(QVariant val)
-{
-    QCOMPARE(QThread::currentThread(), QCoreApplication::instance()->thread());
-    m_value = val.toDouble();
-}
-
-void Tst_QOpcUaClient::processEventSubscription(QVector<QVariant> val)
-{
-    qDebug("Event");
-    QCOMPARE(QThread::currentThread(), QCoreApplication::instance()->thread());
-    Q_UNUSED(val)
-    m_event = true;
-    QCOMPARE(val.size(), 3);
-    QCOMPARE(val.at(0).type(), QVariant::String);
-    QCOMPARE(val.at(1).type(), QVariant::String);
-    QCOMPARE(val.at(2).type(), QVariant::Int);
 }
 
 int main(int argc, char *argv[])
