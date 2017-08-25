@@ -325,8 +325,8 @@ void Tst_QOpcUaClient::getChildren()
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=1;s=Large.Folder"));
     QVERIFY(node != 0);
-    QVERIFY(node->name() == QLatin1String("Large_Folder"));
-    QVERIFY(node->childIds().size() == 1001);
+    QCOMPARE(node->name(), QLatin1String("Large_Folder"));
+    QCOMPARE(node->childIds().size(), 1001);
 }
 
 void Tst_QOpcUaClient::read()
