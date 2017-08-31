@@ -117,51 +117,51 @@ QVariant Open62541AsyncBackend::readNodeValueAttribute(UA_NodeId id)
     return QOpen62541ValueConverter::toQVariant(value);
 }
 
-QString Open62541AsyncBackend::readNodeValueType(UA_NodeId id)
+QOpcUa::Types Open62541AsyncBackend::readNodeValueType(UA_NodeId id)
 {
     UA_Variant value;
 
     UA_StatusCode ret = UA_Client_readValueAttribute(m_uaclient, id, &value);
     if (ret != UA_STATUSCODE_GOOD)
-        return QString();
+        return QOpcUa::Types::Undefined;
 
     switch (value.type->typeIndex) {
     case UA_TYPES_BOOLEAN:
-        return QStringLiteral("Boolean");
+        return QOpcUa::Types::Boolean;
     case UA_TYPES_SBYTE:
-        return QStringLiteral("SByte");
+        return QOpcUa::Types::SByte;
     case UA_TYPES_BYTE:
-        return QStringLiteral("Byte");
+        return QOpcUa::Types::Byte;
     case UA_TYPES_INT16:
-        return QStringLiteral("Int16");
+        return QOpcUa::Types::Int16;
     case UA_TYPES_UINT16:
-        return QStringLiteral("UInt16");
+        return QOpcUa::Types::UInt16;
     case UA_TYPES_INT32:
-        return QStringLiteral("Int32");
+        return QOpcUa::Types::Int32;
     case UA_TYPES_UINT32:
-        return QStringLiteral("UInt32");
+        return QOpcUa::Types::UInt32;
     case UA_TYPES_INT64:
-        return QStringLiteral("Int64");
+        return QOpcUa::Types::Int64;
     case UA_TYPES_UINT64:
-        return QStringLiteral("UInt64");
+        return QOpcUa::Types::UInt64;
     case UA_TYPES_FLOAT:
-        return QStringLiteral("Float");
+        return QOpcUa::Types::Float;
     case UA_TYPES_DOUBLE:
-        return QStringLiteral("Double");
+        return QOpcUa::Types::Double;
     case UA_TYPES_BYTESTRING:
-        return QStringLiteral("ByteString");
+        return QOpcUa::Types::ByteString;
     case UA_TYPES_STRING:
-        return QStringLiteral("String");
+        return QOpcUa::Types::String;
     case UA_TYPES_LOCALIZEDTEXT:
-        return QStringLiteral("LocalizedText");
+        return QOpcUa::Types::LocalizedText;
     case UA_TYPES_NODEID:
-        return QStringLiteral("NodeId");
+        return QOpcUa::Types::NodeId;
     case UA_TYPES_DATETIME:
-        return QStringLiteral("DateTime");
+        return QOpcUa::Types::DateTime;
     default:
         qWarning() << "Type resolution failed for typeIndex:" << value.type->typeIndex;
     }
-    return QString();
+    return QOpcUa::Types::Undefined;
 }
 
 bool Open62541AsyncBackend::writeNodeValueAttribute(UA_NodeId id, const QVariant &value, QOpcUa::Types type)

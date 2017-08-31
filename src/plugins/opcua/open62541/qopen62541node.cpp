@@ -67,13 +67,13 @@ QString QOpen62541Node::name() const
 }
 
 // ToDo: move from string to enum
-QString QOpen62541Node::type() const
+QOpcUa::Types QOpen62541Node::type() const
 {
     // Can we optimize this? We need to acquire the value just to identify the type of that value
-    QString result;
+    QOpcUa::Types result;
     QMetaObject::invokeMethod(m_client->m_backend, "readNodeValueType",
                               Qt::BlockingQueuedConnection,
-                              Q_RETURN_ARG(QString, result),
+                              Q_RETURN_ARG(QOpcUa::Types, result),
                               Q_ARG(UA_NodeId, m_nodeId));
     return result;
 }

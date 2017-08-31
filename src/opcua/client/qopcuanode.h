@@ -61,7 +61,7 @@ public:
     QVariant encodedValue() const;
 
     QString name() const;
-    QString type() const;
+    QOpcUa::Types type() const;
     QVariant value() const;
     QStringList childIds() const;
     QString nodeId() const;

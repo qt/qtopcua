@@ -53,7 +53,7 @@ public Q_SLOTS:
     QString resolveNodeNameById(UA_NodeId id);
     QString resolveNodeClassAttribute(UA_NodeId id);
     QVariant readNodeValueAttribute(UA_NodeId id);
-    QString readNodeValueType(UA_NodeId id);
+    QOpcUa::Types readNodeValueType(UA_NodeId id);
     bool writeNodeValueAttribute(UA_NodeId id, const QVariant &value, QOpcUa::Types type);
     QStringList childIds(const UA_NodeId *parentNode);
 

@@ -60,7 +60,7 @@ public:
     ~QFreeOpcUaNode() override;
 
     QString name() const override;
-    QString type() const override;
+    QOpcUa::Types type() const override;
     QStringList childIds() const override;
     QString nodeId() const override;
     QString nodeClass() const override;

@@ -120,10 +120,10 @@ QString QOpcUaNode::name() const
     \fn QString QOpcUaNode::type() const
     \brief the type attribute of the OPC UA node.
  */
-QString QOpcUaNode::type() const
+QOpcUa::Types QOpcUaNode::type() const
 {
     if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
-        return QString();
+        return QOpcUa::Types::Undefined;
 
     return d_func()->m_impl->type();
 }

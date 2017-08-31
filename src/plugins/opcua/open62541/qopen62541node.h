@@ -50,7 +50,7 @@ public:
     ~QOpen62541Node() Q_DECL_OVERRIDE;
 
     QString name() const override;
-    QString type() const override;
+    QOpcUa::Types type() const override;
     QStringList childIds() const override;
     QString nodeId() const override;
     QString nodeClass() const override;

@@ -69,18 +69,19 @@ QString QFreeOpcUaNode::name() const
     return QString();
 }
 
-QString QFreeOpcUaNode::type() const
+QOpcUa::Types QFreeOpcUaNode::type() const
 {
-    try {
-        OpcUa::NodeId idNode = m_node.GetDataType().As<OpcUa::NodeId>();
-        return QString::fromStdString(m_client->GetNode(idNode)
-                                      .GetAttribute(OpcUa::AttributeId::DisplayName).Value
-                                      .As<OpcUa::LocalizedText>()
-                                      .Text);
-    } catch (const std::exception &ex) {
-        qWarning() << ex.what();
-        return QString();
-    }
+    return QOpcUa::Types::Undefined;
+//    try {
+//        OpcUa::NodeId idNode = m_node.GetDataType().As<OpcUa::NodeId>();
+//        return QString::fromStdString(m_client->GetNode(idNode)
+//                                      .GetAttribute(OpcUa::AttributeId::DisplayName).Value
+//                                      .As<OpcUa::LocalizedText>()
+//                                      .Text);
+//    } catch (const std::exception &ex) {
+//        qWarning() << ex.what();
+//        return QString();
+//    }
 }
 
 QVariant QFreeOpcUaNode::value() const
