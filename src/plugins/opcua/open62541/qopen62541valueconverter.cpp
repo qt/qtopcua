@@ -70,6 +70,8 @@ QOpcUa::Types QOpen62541ValueConverter::qvariantTypeToQOpcUaType(QVariant::Type 
     //return QOpcUa::XmlElement;
     //return QOpcUa::NodeId;
     //return QOpcUa::Undefined;
+    default:
+        break;
     }
 
     return QOpcUa::Undefined;
