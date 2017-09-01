@@ -183,10 +183,14 @@ static UA_StatusCode nodeIter(UA_NodeId childId, UA_Boolean isInverse, UA_NodeId
         return UA_STATUSCODE_GOOD;
 
     // ### TODO: Question: Is it actually correct to skip these
-    if (UA_NodeId_equal(&childId, &UA_NODEID_NUMERIC(0, UA_NS0ID_FOLDERTYPE)))
+    UA_NodeId temp = UA_NODEID_NUMERIC(0, UA_NS0ID_FOLDERTYPE);
+    if (UA_NodeId_equal(&childId, &temp))
         return UA_STATUSCODE_GOOD;
-    if (UA_NodeId_equal(&childId, &UA_NODEID_NUMERIC(0, UA_NS0ID_BASEOBJECTTYPE)))
+
+    temp = UA_NODEID_NUMERIC(0, UA_NS0ID_BASEOBJECTTYPE);
+    if (UA_NodeId_equal(&childId, &temp))
         return UA_STATUSCODE_GOOD;
+
     auto back = static_cast<QStringList *>(pass);
 
     QString childName;
