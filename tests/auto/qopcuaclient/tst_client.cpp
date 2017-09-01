@@ -365,6 +365,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
     QVERIFY(node != 0);
     bool result = node->setValue(QVariant((double ) 0));
     QVERIFY(result == true);
+    QTRY_COMPARE(node->value(), 0);
 
     QScopedPointer<QOpcUaSubscription> subscription(opcuaClient->createSubscription(100));
     QScopedPointer<QOpcUaMonitoredValue> monitoredValue(subscription->addValue(node.data()));
@@ -378,7 +379,8 @@ void Tst_QOpcUaClient::dataChangeSubscription()
     QVERIFY(result == true);
 
     valueSpy.wait();
-    QVERIFY(valueSpy.at(0).at(0).toDouble() == (double) 42);
+    QCOMPARE(valueSpy.count(), 1);
+    QCOMPARE(valueSpy.at(0).at(0).toDouble(), (double) 42);
 }
 
 void Tst_QOpcUaClient::dataChangeSubscriptionInvalidNode()

@@ -71,6 +71,7 @@ public:
     bool triggerValueChanged(const QVariant &val);
     QOpcUaNode *m_node;
     QOpcUaSubscription *m_subscription;
+    QVariant m_currentValue;
 };
 
 QT_END_NAMESPACE

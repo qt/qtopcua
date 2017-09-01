@@ -40,6 +40,7 @@
 QOpcUaMonitoredValuePrivate::QOpcUaMonitoredValuePrivate(QOpcUaNode *node, QOpcUaSubscription *subscription)
     : m_node(node)
     , m_subscription(subscription)
+    , m_currentValue(node->value())
 {
 }
 
@@ -51,5 +52,10 @@ bool QOpcUaMonitoredValuePrivate::triggerValueChanged(const QVariant &val)
 {
     // explicitly use invoke to force the signal to be emitted on the main thread
     // even if the plugin triggered this from a worker thread
-    return QMetaObject::invokeMethod(q_func(), "valueChanged", Qt::AutoConnection, Q_ARG(QVariant, val));
+    if (val != m_currentValue) {
+        m_currentValue = val;
+        return QMetaObject::invokeMethod(q_func(), "valueChanged", Qt::AutoConnection, Q_ARG(QVariant, val));
+    }
+
+    return true;
 }
