@@ -61,10 +61,8 @@ QT_BEGIN_NAMESPACE
     \l QOpcUaClient documentation.
 */
 
-#ifndef QT_NO_LIBRARY
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, qOpcualoader,
         (QOpcUaProviderFactory_iid, QLatin1String("/opcua")))
-#endif
 
 /*!
     Reads the meta data from the plugins known by the loader.
