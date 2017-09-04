@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 */
 
 #ifndef QT_NO_LIBRARY
-Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
+Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, qOpcualoader,
         (QOpcUaProviderFactory_iid, QLatin1String("/opcua")))
 #endif
 
@@ -72,7 +72,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 static QHash<QString, QJsonObject> loadPluginMetadata()
 {
     QHash<QString, QJsonObject> plugins;
-    const QFactoryLoader *l = loader();
+    const QFactoryLoader *l = qOpcualoader();
     QList<QJsonObject> const meta = l->metaData();
     for (int i = 0; i < meta.size(); ++i) {
         QJsonObject obj = meta.at(i).value(QStringLiteral("MetaData")).toObject();
@@ -115,9 +115,9 @@ QOpcUaProvider::~QOpcUaProvider()
 
 static QOpcUaPlugin *loadPlugin(const QString &key)
 {
-    const int index = loader()->indexOf(key);
+    const int index = qOpcualoader()->indexOf(key);
     if (index != -1) {
-        QObject *factoryObject = loader->instance(index);
+        QObject *factoryObject = qOpcualoader()->instance(index);
         if (QOpcUaPlugin *plugin = qobject_cast<QOpcUaPlugin *>(factoryObject)) {
             return plugin;
         }
