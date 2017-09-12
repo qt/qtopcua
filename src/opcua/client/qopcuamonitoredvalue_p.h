@@ -68,7 +68,7 @@ public:
     QOpcUaMonitoredValuePrivate(QOpcUaNode *node, QOpcUaSubscription *subscription);
     ~QOpcUaMonitoredValuePrivate() override;
 
-    bool triggerValueChanged(const QVariant &val);
+    void triggerValueChanged(const QVariant &val);
     QOpcUaNode *m_node;
     QOpcUaSubscription *m_subscription;
     QVariant m_currentValue;
