@@ -47,24 +47,24 @@ namespace QOpcUa {
 
 enum Types
 {
-    Boolean,
-    Int32,
-    UInt32,
-    Double,
-    Float,
-    String,
-    LocalizedText,
-    DateTime,
-    UInt16,
-    Int16,
-    UInt64,
-    Int64,
-    Byte,
-    SByte,
-    ByteString,
-    XmlElement,
-    NodeId,
-    Undefined
+    Boolean         = 0,
+    Int32           = 1,
+    UInt32          = 2,
+    Double          = 3,
+    Float           = 4,
+    String          = 5,
+    LocalizedText   = 6,
+    DateTime        = 7,
+    UInt16          = 8,
+    Int16           = 9,
+    UInt64          = 10,
+    Int64           = 11,
+    Byte            = 12,
+    SByte           = 13,
+    ByteString      = 14,
+    XmlElement      = 15,
+    NodeId          = 16,
+    Undefined       = 17
 };
 
 typedef QPair<QVariant, QOpcUa::Types> TypedVariant;
