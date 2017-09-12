@@ -221,7 +221,11 @@ QOpcUaNode *FreeOpcuaWorker::node(const QString &nodeId, QFreeOpcUaClientImpl *c
 {
     try {
         OpcUa::Node node = GetNode(nodeId.toStdString());
-        node.GetBrowseName(); // make the client fetch the node data from the server
+        try {
+            node.GetBrowseName(); // make the client fetch the node data from the server
+        } catch (const std::exception &) {
+            return nullptr;
+        }
         QFreeOpcUaNode* n = new QFreeOpcUaNode(node, this);
         return new QOpcUaNode(n, clientImpl->m_client);
     } catch (const std::exception &ex) {
