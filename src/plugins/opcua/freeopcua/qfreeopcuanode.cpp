@@ -71,17 +71,56 @@ QString QFreeOpcUaNode::name() const
 
 QOpcUa::Types QFreeOpcUaNode::type() const
 {
+    const OpcUa::Variant value = m_node.GetValue();
+    switch (value.Type()) {
+    case OpcUa::VariantType::BOOLEAN:
+        return QOpcUa::Types::Boolean;
+    case OpcUa::VariantType::SBYTE:
+        return QOpcUa::Types::SByte;
+    case OpcUa::VariantType::BYTE:
+        return QOpcUa::Types::Byte;
+    case OpcUa::VariantType::INT16:
+        return QOpcUa::Types::Int16;
+    case OpcUa::VariantType::UINT16:
+        return QOpcUa::Types::UInt16;
+    case OpcUa::VariantType::INT32:
+        return QOpcUa::Types::Int32;
+    case OpcUa::VariantType::UINT32:
+        return QOpcUa::Types::UInt32;
+    case OpcUa::VariantType::INT64:
+        return QOpcUa::Types::Int64;
+    case OpcUa::VariantType::UINT64:
+        return QOpcUa::Types::UInt64;
+    case OpcUa::VariantType::FLOAT:
+        return QOpcUa::Types::Float;
+    case OpcUa::VariantType::DOUBLE:
+        return QOpcUa::Types::Double;
+    case OpcUa::VariantType::STRING:
+        return QOpcUa::Types::String;
+    case OpcUa::VariantType::DATE_TIME:
+        return QOpcUa::Types::DateTime;
+    case OpcUa::VariantType::BYTE_STRING:
+        return QOpcUa::Types::ByteString;
+    case OpcUa::VariantType::NODE_Id:
+        return QOpcUa::Types::NodeId;
+    case OpcUa::VariantType::LOCALIZED_TEXT:
+        return QOpcUa::Types::LocalizedText;
+
+    case OpcUa::VariantType::EXPANDED_NODE_Id:
+    case OpcUa::VariantType::STATUS_CODE:
+    case OpcUa::VariantType::QUALIFIED_NAME:
+    case OpcUa::VariantType::GUId:
+    case OpcUa::VariantType::XML_ELEMENT:
+    case OpcUa::VariantType::NUL:
+    case OpcUa::VariantType::EXTENSION_OBJECT:
+    case OpcUa::VariantType::DATA_VALUE:
+    case OpcUa::VariantType::VARIANT:
+    case OpcUa::VariantType::DIAGNOSTIC_INFO:
+        qWarning() << "Type resolution failed for " << (int)value.Type();
+        break;
+    }
+
     return QOpcUa::Types::Undefined;
-//    try {
-//        OpcUa::NodeId idNode = m_node.GetDataType().As<OpcUa::NodeId>();
-//        return QString::fromStdString(m_client->GetNode(idNode)
-//                                      .GetAttribute(OpcUa::AttributeId::DisplayName).Value
-//                                      .As<OpcUa::LocalizedText>()
-//                                      .Text);
-//    } catch (const std::exception &ex) {
-//        qWarning() << ex.what();
-//        return QString();
-//    }
 }
 
 QVariant QFreeOpcUaNode::value() const
