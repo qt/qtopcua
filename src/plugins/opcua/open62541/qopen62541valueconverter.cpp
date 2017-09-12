@@ -228,7 +228,6 @@ UA_Variant QOpen62541ValueConverter::toOpen62541Variant(const QVariant &value, Q
             case QOpcUa::Undefined:
             default:
                 qWarning() << "VariantList conversion to Open62541 for typeIndex" << listValueType << " not implemented";
-                qFatal("");
             }
         }
         UA_Variant_setArray(&open62541value, arr, list.size(), dt);
