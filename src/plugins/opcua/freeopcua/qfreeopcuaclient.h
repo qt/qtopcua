@@ -48,7 +48,7 @@
 #include <QtCore/qthreadpool.h>
 
 QT_BEGIN_NAMESPACE
-class WorkerThread;
+class FreeOpcuaWorker;
 class QFreeOpcUaClientImpl : public QOpcUaClientImpl
 {
 public:
@@ -70,7 +70,8 @@ public slots:
     void disconnectFromEndpointFinished(bool isSuccess);
 
 private:
-    WorkerThread *workerThread;
+    QThread *m_thread{};
+    FreeOpcuaWorker *m_opcuaWorker{};
 };
 
 QT_END_NAMESPACE

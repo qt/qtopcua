@@ -60,25 +60,21 @@ class FreeOpcuaWorker : public QObject, public OpcUa::UaClient
 {
     Q_OBJECT
 public:
-    FreeOpcuaWorker() : QObject() {}
+    FreeOpcuaWorker(QFreeOpcUaClientImpl *client)
+        : QObject()
+        , m_client(client)
+    {}
 
     QOpcUaNode *node(const QString &nodeId, QFreeOpcUaClientImpl *client);
     QOpcUaSubscription *createSubscription(quint32 interval);
 
-signals:
-    void connectFinished(bool succeeded);
-    void disconnectFinished(bool succeeded);
-
 public slots:
-    void stopWorker();
     void asyncConnectToEndpoint(const QUrl &url);
     void asyncDisconnectFromEndpoint();
-};
 
-void FreeOpcuaWorker::stopWorker()
-{
-    QThread::currentThread()->quit();
-}
+private:
+    QFreeOpcUaClientImpl *m_client;
+};
 
 void FreeOpcuaWorker::asyncConnectToEndpoint(const QUrl &url)
 {
@@ -97,97 +93,48 @@ void FreeOpcuaWorker::asyncConnectToEndpoint(const QUrl &url)
         Disconnect();
         qWarning() << "Client could not connect to endpoint" << url;
         qWarning() << e.what();
-        emit connectFinished(false);
+        emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
         return;
     }
-    emit connectFinished(true);
+
+    emit m_client->stateAndOrErrorChanged(QOpcUaClient::Connected, QOpcUaClient::NoError);
 }
 
 void FreeOpcuaWorker::asyncDisconnectFromEndpoint()
 {
     try {
         Disconnect();
-        emit disconnectFinished(true);
+        emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
         return;
     } catch (const std::exception &ex) {
         qWarning() << "Could not disconnect from endpoint: " << ex.what();
     }
 
-    emit disconnectFinished(false);
+    emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
 }
 
-class WorkerThread : public QThread
-{
-    Q_OBJECT
-public:
-    WorkerThread() : QThread(), opcuaWorker(0) {}
-
-    void setupWorker(QFreeOpcUaClientImpl* client);
-    void stopWorker();
-    void connectToServer(const QUrl &url);
-    void disconnectServer();
-
-    // for now easy pass through
-    // TODO make thread safe
-    QPointer<FreeOpcuaWorker> worker() { return opcuaWorker; }
-
-private:
-    QPointer<FreeOpcuaWorker> opcuaWorker;
-};
-
-void WorkerThread::setupWorker(QFreeOpcUaClientImpl* client)
-{
-    opcuaWorker = new FreeOpcuaWorker();
-    opcuaWorker->moveToThread(this);
-    connect(this, &QThread::finished, opcuaWorker, &QObject::deleteLater);
-    connect(this, &QThread::finished, this, &QObject::deleteLater);
-    connect(opcuaWorker, &FreeOpcuaWorker::connectFinished,
-            client, &QFreeOpcUaClientImpl::connectToEndpointFinished);
-    connect(opcuaWorker, &FreeOpcuaWorker::disconnectFinished,
-            client, &QFreeOpcUaClientImpl::disconnectFromEndpointFinished);
-}
-
-void WorkerThread::connectToServer(const QUrl &url)
-{
-    QMetaObject::invokeMethod(opcuaWorker, "asyncConnectToEndpoint", Qt::QueuedConnection,
-                              Q_ARG(QUrl, url));
-}
-
-void WorkerThread::disconnectServer()
-{
-    QMetaObject::invokeMethod(opcuaWorker, "asyncDisconnectFromEndpoint", Qt::QueuedConnection);
-}
-
-void WorkerThread::stopWorker()
-{
-    QMetaObject::invokeMethod(opcuaWorker, "stopWorker", Qt::QueuedConnection);
-}
 
 QFreeOpcUaClientImpl::QFreeOpcUaClientImpl()
     : QOpcUaClientImpl()
 {
-    workerThread = new WorkerThread();
-    workerThread->setupWorker(this);
-    workerThread->start();
+    m_thread = new QThread();
+    m_opcuaWorker = new FreeOpcuaWorker(this);
+    m_opcuaWorker->moveToThread(m_thread);
+    connect(m_thread, &QThread::finished, m_opcuaWorker, &QObject::deleteLater);
+    connect(m_thread, &QThread::finished, m_thread, &QObject::deleteLater);
+    m_thread->start();
 }
 
 QFreeOpcUaClientImpl::~QFreeOpcUaClientImpl()
 {
-    workerThread->stopWorker();
-    workerThread = 0; // worker thread cleans itself up after stopping
+    if (m_thread->isRunning())
+        m_thread->quit();
 }
 
 void QFreeOpcUaClientImpl::connectToEndpoint(const QUrl &url)
 {
-    workerThread->connectToServer(url);
-}
-
-void QFreeOpcUaClientImpl::connectToEndpointFinished(bool succeeded)
-{
-    if (succeeded)
-        emit stateAndOrErrorChanged(QOpcUaClient::Connected, QOpcUaClient::NoError);
-    else
-        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
+    QMetaObject::invokeMethod(m_opcuaWorker, "asyncConnectToEndpoint", Qt::QueuedConnection,
+                              Q_ARG(QUrl, url));
 }
 
 void QFreeOpcUaClientImpl::secureConnectToEndpoint(const QUrl &)
@@ -197,24 +144,13 @@ void QFreeOpcUaClientImpl::secureConnectToEndpoint(const QUrl &)
 
 void QFreeOpcUaClientImpl::disconnectFromEndpoint()
 {
-    workerThread->disconnectServer();
-}
-
-void QFreeOpcUaClientImpl::disconnectFromEndpointFinished(bool succeeded)
-{
-    if (succeeded)
-        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
-    else
-        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
+    QMetaObject::invokeMethod(m_opcuaWorker, "asyncDisconnectFromEndpoint", Qt::QueuedConnection);
 }
 
 QOpcUaNode *QFreeOpcUaClientImpl::node(const QString &nodeId)
 {
-    QPointer<FreeOpcuaWorker> opcuaWorker = workerThread->worker();
-    if (opcuaWorker.isNull())
-        return nullptr;
-
-    return opcuaWorker->node(nodeId, this);
+    // TODO: ignores thread boundaries
+    return m_opcuaWorker->node(nodeId, this);
 }
 
 QOpcUaNode *FreeOpcuaWorker::node(const QString &nodeId, QFreeOpcUaClientImpl *clientImpl)
@@ -237,11 +173,8 @@ QOpcUaNode *FreeOpcuaWorker::node(const QString &nodeId, QFreeOpcUaClientImpl *c
 
 QOpcUaSubscription *QFreeOpcUaClientImpl::createSubscription(quint32 interval)
 {
-    QPointer<FreeOpcuaWorker> opcuaWorker = workerThread->worker();
-    if (opcuaWorker.isNull())
-        return nullptr;
-
-    return opcuaWorker->createSubscription(interval);
+    // TODO: ignores thread boundaries
+    return m_opcuaWorker->createSubscription(interval);
 }
 
 QOpcUaSubscription *FreeOpcuaWorker::createSubscription(quint32 interval)
