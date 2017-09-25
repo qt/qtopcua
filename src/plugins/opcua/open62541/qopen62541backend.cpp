@@ -110,7 +110,7 @@ QVariant Open62541AsyncBackend::readNodeValueAttribute(UA_NodeId id)
         return QVariant();
 
     if (!value.type->builtin) {
-        qWarning() << "Open62541: not builtin types are currently not supported!";
+        qWarning() << "Open62541: only builtin types are currently supported!";
         return QVariant();
     }
 
