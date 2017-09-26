@@ -199,6 +199,9 @@ static UA_StatusCode nodeIter(UA_NodeId childId, UA_Boolean isInverse, UA_NodeId
     } else if (childId.identifierType == UA_NODEIDTYPE_STRING) {
         childName = QString::fromUtf8(reinterpret_cast<char *>(childId.identifier.string.data), childId.identifier.string.length);
     }
+    else {
+        qWarning() << "Skipping child with unsupported nodeid type";
+    }
 
     if (!childName.isEmpty())
         back->append(childName);
