@@ -46,7 +46,7 @@
 
 static void monitoredValueHandler(UA_UInt32 monId, UA_DataValue *value, void *context)
 {
-    QOpen62541Subscription* subscription = (QOpen62541Subscription*) context;
+    QOpen62541Subscription* subscription = static_cast<QOpen62541Subscription *>(context);
     subscription->monitoredValueUpdated(monId, value);
 }
 
