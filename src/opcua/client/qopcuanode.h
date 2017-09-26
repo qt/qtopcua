@@ -42,6 +42,8 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/qvariant.h>
 
+#include <QtCore/qdebug.h>
+
 QT_BEGIN_NAMESPACE
 
 class QOpcUaNodePrivate;
@@ -80,6 +82,8 @@ public:
 private:
     Q_DISABLE_COPY(QOpcUaNode)
 };
+
+Q_OPCUA_EXPORT QDebug operator<<(QDebug dbg, const QOpcUaNode &node);
 
 QT_END_NAMESPACE
 

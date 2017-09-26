@@ -298,4 +298,14 @@ bool QOpcUaNode::call(const QString &methodNodeId,
     return d->m_impl->call(methodNodeId, args, ret);
 }
 
+QDebug operator<<(QDebug dbg, const QOpcUaNode &node)
+{
+    dbg << "QOpcUaNode {"
+        << "Name:" << node.name()
+        << "Id:" << node.nodeId()
+        << "Class:" << node.nodeClass()
+        << "}";
+    return dbg;
+}
+
 QT_END_NAMESPACE
