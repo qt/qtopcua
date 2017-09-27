@@ -197,7 +197,8 @@ static UA_StatusCode nodeIter(UA_NodeId childId, UA_Boolean isInverse, UA_NodeId
     if (childId.identifierType == UA_NODEIDTYPE_NUMERIC) {
         childName = QString::fromLatin1("ns=%1;i=%2").arg(childId.namespaceIndex).arg(childId.identifier.numeric);
     } else if (childId.identifierType == UA_NODEIDTYPE_STRING) {
-        childName = QString::fromUtf8(reinterpret_cast<char *>(childId.identifier.string.data), childId.identifier.string.length);
+        childName = QString::fromUtf8("ns=%1;s=%2").arg(childId.namespaceIndex).arg(
+                    QString::fromUtf8(reinterpret_cast<char *>(childId.identifier.string.data), childId.identifier.string.length));
     }
     else {
         qWarning() << "Skipping child with unsupported nodeid type";
