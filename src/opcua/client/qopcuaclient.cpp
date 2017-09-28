@@ -36,6 +36,7 @@
 
 #include <QtOpcUa/qopcuaclient.h>
 #include <private/qopcuaclient_p.h>
+#include <QRegExp>
 
 QT_BEGIN_NAMESPACE
 
@@ -225,6 +226,12 @@ QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 {
     if (state() != QOpcUaClient::Connected)
        return nullptr;
+
+    static const QRegExp validXmlNotation(QLatin1String("^ns=\\d+;[isgb]=.+$"));
+    if (validXmlNotation.indexIn(nodeId) != 0) {
+        qWarning() << "NodeId" << "'" << nodeId << "' is not a valid XML node identifier";
+        return nullptr;
+    }
 
     return d_func()->m_impl->node(nodeId);
 }
