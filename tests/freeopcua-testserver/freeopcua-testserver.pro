@@ -6,7 +6,6 @@ INCLUDEPATH += .
 CONFIG += c++11 console
 CONFIG += exceptions
 
-CONFIG += exceptions
 QMAKE_USE_PRIVATE += freeopcua
 win32 {
     QMAKE_LFLAGS += -STACK:3000000
