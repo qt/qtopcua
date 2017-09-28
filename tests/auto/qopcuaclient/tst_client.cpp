@@ -1225,8 +1225,6 @@ int main(int argc, char *argv[])
 
     QTEST_SET_MAIN_SOURCE_PATH
 
-    int result = 0;
-
     // run tests for all available backends
     QStringList availableBackends = QOpcUaProvider::availableBackends();
     if (availableBackends.empty()) {
@@ -1235,8 +1233,7 @@ int main(int argc, char *argv[])
     }
 
     Tst_QOpcUaClient tc;
-    result = QTest::qExec(&tc, argc, argv);
-    return result;
+    return QTest::qExec(&tc, argc, argv);
 }
 
 #include "tst_client.moc"
