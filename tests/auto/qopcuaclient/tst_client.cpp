@@ -170,6 +170,8 @@ private slots:
     void writeHistorical();
     defineDataMethod(invalidNodeAccess_data)
     void invalidNodeAccess();
+    defineDataMethod(malformedNodeString_data)
+    void malformedNodeString();
 
     void multipleClients();
     defineDataMethod(nodeClass_data)
@@ -544,6 +546,30 @@ void Tst_QOpcUaClient::invalidNodeAccess()
     QScopedPointer<QOpcUaNode> invalidNode(opcuaClient->node("ns=0;s=IDoNotExist"));
     if (opcuaClient->backend() == QStringLiteral("open62541"))
         QEXPECT_FAIL("", "Invalid Node test on Open62541 not working", Continue);
+    QVERIFY(invalidNode == 0);
+}
+
+void Tst_QOpcUaClient::malformedNodeString()
+{
+    QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> invalidNode(opcuaClient->node("justsomerandomstring"));
+    QVERIFY(invalidNode == 0);
+
+    invalidNode.reset(opcuaClient->node("ns=a;i=b"));
+    QVERIFY(invalidNode == 0);
+
+    invalidNode.reset(opcuaClient->node("ns=;i="));
+    QVERIFY(invalidNode == 0);
+
+    invalidNode.reset(opcuaClient->node("ns=0;x=123"));
+    QVERIFY(invalidNode == 0);
+
+    invalidNode.reset(opcuaClient->node("ns=0,i=31;"));
+    QVERIFY(invalidNode == 0);
+
+    invalidNode.reset(opcuaClient->node("ns:0;i:31;"));
     QVERIFY(invalidNode == 0);
 }
 
