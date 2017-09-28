@@ -143,6 +143,8 @@ private slots:
     void getRootNode();
     defineDataMethod(getChildren_data)
     void getChildren();
+    defineDataMethod(childIdsString_data)
+    void childIdsString();
 
     // read & write
     defineDataMethod(read_data)
@@ -329,6 +331,18 @@ void Tst_QOpcUaClient::getChildren()
     QVERIFY(node != 0);
     QCOMPARE(node->displayName(), QLatin1String("Large_Folder"));
     QCOMPARE(node->childIds().size(), 1001);
+}
+
+void Tst_QOpcUaClient::childIdsString()
+{
+    QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=testStringIdsFolder"));
+    QVERIFY(node != 0);
+    QStringList childIds = node->childIds();
+    QCOMPARE(childIds.size(), 1);
+    QCOMPARE(childIds.at(0), "ns=3;s=theStringId");
 }
 
 void Tst_QOpcUaClient::read()

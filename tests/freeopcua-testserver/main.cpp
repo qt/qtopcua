@@ -86,6 +86,9 @@ int main(int argc, char** argv)
     Node testFolder = objects.AddFolder("ns=3;s=TestFolder", "TestFolder");
     testFolder.AddVariable("ns=3;s=TestNode.ReadWrite", "ReadWriteTest", Variant(0.1));
 
+    Node testStringIdsFolder = objects.AddFolder("ns=3;s=testStringIdsFolder", "testStringIdsFolder");
+    testStringIdsFolder.AddVariable("ns=3;s=theStringId", "theStringId", std::string());
+
     //addView(server.GetNode(ObjectId::ViewsFolder), "ns=3;i=5000", "ClassTestObject");
 
     //Create event
