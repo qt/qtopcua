@@ -43,8 +43,6 @@
 #include <QVariant>
 
 namespace QOpen62541ValueConverter {
-    QOpcUa::Types qvariantTypeToQOpcUaType(QVariant::Type type);
-
     UA_Variant toOpen62541Variant(const QVariant&, QOpcUa::Types);
     QVariant toQVariant(const UA_Variant&);
     QOpcUa::Types toQOpcUaVariantType(quint8 typeIndex);

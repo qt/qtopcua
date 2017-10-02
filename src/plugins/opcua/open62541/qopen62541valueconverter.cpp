@@ -42,34 +42,40 @@
 
 #include <QtCore/QDebug>
 
-// TODO
-QOpcUa::Types QOpen62541ValueConverter::qvariantTypeToQOpcUaType(QVariant::Type type)
+static QOpcUa::Types qvariantTypeToQOpcUaType(QMetaType::Type type)
 {
     switch (type) {
-    case QVariant::Bool:
+    case QMetaType::Bool:
         return QOpcUa::Boolean;
-    case QVariant::Int:
+    case QMetaType::UChar:
+        return QOpcUa::Byte;
+    case QMetaType::Char:
+        return QOpcUa::SByte;
+    case QMetaType::UShort:
+        return QOpcUa::UInt16;
+    case QMetaType::Short:
+        return QOpcUa::Int16;
+    case QMetaType::Int:
         return QOpcUa::Int32;
-    case QVariant::UInt:
+    case QMetaType::UInt:
         return QOpcUa::UInt32;
-    case QVariant::Double:
+    case QMetaType::ULongLong:
+        return QOpcUa::UInt64;
+    case QMetaType::LongLong:
+        return QOpcUa::Int64;
+    case QMetaType::Double:
         return QOpcUa::Double;
-    //return QOpcUa::Float;
-    case QVariant::String:
+    case QMetaType::Float:
+        return QOpcUa::Float;
+    case QMetaType::QString:
         return QOpcUa::String;
-    //return QOpcUa::LocalizedText;
-    case QVariant::DateTime:
+    //return QOpcUa::LocalizedText;  // TODO: unclear
+    case QMetaType::QDateTime:
         return QOpcUa::DateTime;
-    //return QOpcUa::UInt16;
-    //return QOpcUa::Int16;
-    //return QOpcUa::UInt64;
-    //return QOpcUa::Int64;
-    //return QOpcUa::Byte;
-    //return QOpcUa::SByte;
-    //return QOpcUa::ByteString;
+    case QMetaType::QByteArray:
+        return QOpcUa::ByteString;
     //return QOpcUa::XmlElement;
     //return QOpcUa::NodeId;
-    //return QOpcUa::Undefined;
     default:
         break;
     }
@@ -87,7 +93,8 @@ UA_Variant QOpen62541ValueConverter::toOpen62541Variant(const QVariant &value, Q
         if (list.isEmpty())
             return open62541value;
 
-        QOpcUa::Types listValueType = type == QOpcUa::Undefined ? qvariantTypeToQOpcUaType(list.at(0).type()) : type;
+        QOpcUa::Types listValueType = type == QOpcUa::Undefined ?
+                    qvariantTypeToQOpcUaType(static_cast<QMetaType::Type>(list.at(0).type())) : type;
         const UA_DataType *dt;
         void *arr;
         switch (listValueType) {
@@ -234,7 +241,8 @@ UA_Variant QOpen62541ValueConverter::toOpen62541Variant(const QVariant &value, Q
         return open62541value;
     }
 
-    QOpcUa::Types valueType = type == QOpcUa::Undefined ? qvariantTypeToQOpcUaType(value.type()) : type;
+    QOpcUa::Types valueType = type == QOpcUa::Undefined ?
+                qvariantTypeToQOpcUaType(static_cast<QMetaType::Type>(value.type())) : type;
 
     switch (valueType) {
     case QOpcUa::Boolean: {
