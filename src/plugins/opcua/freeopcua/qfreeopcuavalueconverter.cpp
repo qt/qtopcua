@@ -194,20 +194,21 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
     OpcUa::DateTime dt;
     std::vector<uint8_t> data;
     OpcUa::Variant var;
+    const bool isList = variant.type() == QVariant::Type::List;
 
     switch (type) {
     case QOpcUa::Boolean:
-        if (variant.type() == QVariant::Type::List)
+        if (isList)
             return QFreeOpcUaValueConverter::getArray<bool>(variant);
         return OpcUa::Variant(variant.value<bool>());
 
     case QOpcUa::Byte:
-        if (variant.type() == QVariant::Type::List)
+        if (isList)
             return QFreeOpcUaValueConverter::getArray<uint8_t>(variant);
         return OpcUa::Variant(variant.value<uint8_t>());
 
     case QOpcUa::DateTime:
-        if (variant.type() == QVariant::Type::List) {
+        if (isList) {
             QVariantList list = variant.toList();
             std::vector<OpcUa::DateTime> vec;
             for (int i = 0; i < list.size(); i++)
@@ -218,37 +219,37 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
         dt = OpcUa::DateTime::FromTimeT(variant.value<QDateTime>().toTime_t());
         return OpcUa::Variant(dt);
     case QOpcUa::Double:
-        if (variant.type() == QVariant::Type::List)
+        if (isList)
             return QFreeOpcUaValueConverter::getArray<double>(variant);
         return OpcUa::Variant(variant.value<double>());
 
     case QOpcUa::Float:
-        if (variant.type() == QVariant::Type::List)
+        if (isList)
             return QFreeOpcUaValueConverter::getArray<float>(variant);
         return OpcUa::Variant(variant.value<float>());
 
     case QOpcUa::Int16:
-        if (variant.type() == QVariant::Type::List)
+        if (isList)
             return QFreeOpcUaValueConverter::getArray<int16_t>(variant);
         return OpcUa::Variant(variant.value<int16_t>());
 
     case QOpcUa::Int32:
-        if (variant.type() == QVariant::Type::List)
+        if (isList)
             return QFreeOpcUaValueConverter::getArray<int32_t>(variant);
         return OpcUa::Variant(variant.value<int32_t>());
 
     case QOpcUa::Int64:
-        if (variant.type() == QVariant::Type::List)
+        if (isList)
             return QFreeOpcUaValueConverter::getArray<int64_t>(variant);
         return OpcUa::Variant(variant.value<int64_t>());
 
     case QOpcUa::SByte:
-        if (variant.type() == QVariant::Type::List)
+        if (isList)
             return QFreeOpcUaValueConverter::getArray<int8_t>(variant);
         return OpcUa::Variant(variant.value<int8_t>());
 
     case QOpcUa::String:
-        if (variant.type() == QVariant::Type::List) {
+        if (isList) {
             QVariantList list = variant.toList();
             std::vector<std::string> vec;
             for (int i = 0; i < list.size(); i++)
@@ -259,22 +260,22 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
         return OpcUa::Variant(variant.toString().toStdString());
 
     case QOpcUa::UInt16:
-        if (variant.type() == QVariant::Type::List)
+        if (isList)
             return QFreeOpcUaValueConverter::getArray<uint16_t>(variant);
         return OpcUa::Variant(variant.value<uint16_t>());
 
     case QOpcUa::UInt32:
-        if (variant.type() == QVariant::Type::List)
+        if (isList)
             return QFreeOpcUaValueConverter::getArray<uint32_t>(variant);
         return OpcUa::Variant(variant.value<uint32_t>());
 
     case QOpcUa::UInt64:
-        if (variant.type() == QVariant::Type::List)
+        if (isList)
             return QFreeOpcUaValueConverter::getArray<uint64_t>(variant);
         return OpcUa::Variant(variant.value<uint64_t>());
 
     case QOpcUa::LocalizedText:
-        if (variant.type() == QVariant::Type::List) {
+        if (isList) {
             QVariantList list = variant.toList();
             std::vector<OpcUa::LocalizedText> vec;
             for (int i = 0; i < list.size(); i++)
@@ -287,7 +288,7 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
     case QOpcUa::ByteString: {
         char *bufferStart;
         char *bufferEnd;
-        if (variant.type() == QVariant::Type::List) {
+        if (isList) {
             QVariantList list = variant.toList();
             std::vector<OpcUa::ByteString> vec;
             for (int i = 0; i < list.size(); i++) {
