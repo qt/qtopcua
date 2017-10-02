@@ -329,6 +329,15 @@ QString nodeIdToString(const OpcUa::NodeId &id)
         nodeId += QString("i=%1").arg(id.GetIntegerIdentifier());
     } else if (id.IsString()) {
         nodeId += QString("s=%1").arg(id.GetStringIdentifier().c_str());
+    } else if (id.IsGuid()) {
+        qWarning("Guid nodeIds are not supported");
+        nodeId = QString();
+    } else if (id.IsBinary()) {
+        qWarning("Opaque nodeIds are not supported");
+        nodeId = QString();
+    } else {
+        qWarning("Unknown nodeId type!");
+        nodeId = QString();
     }
     return nodeId;
 }
