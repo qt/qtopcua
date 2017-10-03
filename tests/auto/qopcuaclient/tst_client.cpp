@@ -1189,12 +1189,6 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(byteStringScalar == "abc");
     qDebug() << byteStringScalar;
 
-    QVariant encodedByteStringScalar = node->encodedValue();
-    QVERIFY(encodedByteStringScalar.isValid());
-    QVERIFY(encodedByteStringScalar.type() == QVariant::String);
-    QVERIFY(encodedByteStringScalar == QByteArray("abc").toBase64());
-    qDebug() << encodedByteStringScalar;
-
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("NodeId parsing is not yet implemented in the freeopcua backend");
 

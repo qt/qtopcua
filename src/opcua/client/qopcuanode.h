@@ -60,7 +60,6 @@ public:
     QOpcUaNode(QOpcUaNodeImpl *impl, QOpcUaClient *client, QObject *parent = nullptr);
     virtual ~QOpcUaNode();
 
-    QVariant encodedValue() const;
 
     QString name() const;
     QOpcUa::Types type() const;
