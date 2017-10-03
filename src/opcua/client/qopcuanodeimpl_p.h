@@ -64,7 +64,7 @@ public:
     QOpcUaNodeImpl();
     virtual ~QOpcUaNodeImpl();
 
-    virtual QString name() const = 0;
+    virtual QString displayName() const = 0;
     virtual QOpcUa::Types type() const = 0;
     virtual QVariant value() const = 0;
     virtual QStringList childIds() const = 0;

@@ -103,17 +103,17 @@ QOpcUaNode::~QOpcUaNode()
 }
 
 /*!
-    \fn QString QOpcUaNode::name() const
+    \fn QString QOpcUaNode::displayName() const
     \brief the DisplayName attribute of the OPC UA node.
 */
-QString QOpcUaNode::name() const
+QString QOpcUaNode::displayName() const
 {
     // m_client.isNull() is checked bc. someone might have deleted the client
     // leaving a dangling reference here
     if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return QString();
 
-    return d_func()->m_impl->name();
+    return d_func()->m_impl->displayName();
 }
 
 /*!
@@ -286,7 +286,7 @@ bool QOpcUaNode::call(const QString &methodNodeId,
 QDebug operator<<(QDebug dbg, const QOpcUaNode &node)
 {
     dbg << "QOpcUaNode {"
-        << "Name:" << node.name()
+        << "DisplayName:" << node.displayName()
         << "Id:" << node.nodeId()
         << "Class:" << node.nodeClass()
         << "}";

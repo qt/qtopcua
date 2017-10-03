@@ -60,8 +60,7 @@ public:
     QOpcUaNode(QOpcUaNodeImpl *impl, QOpcUaClient *client, QObject *parent = nullptr);
     virtual ~QOpcUaNode();
 
-
-    QString name() const;
+    QString displayName() const;
     QOpcUa::Types type() const;
     QVariant value() const;
     QStringList childIds() const;

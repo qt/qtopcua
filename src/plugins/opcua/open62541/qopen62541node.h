@@ -49,7 +49,7 @@ public:
     explicit QOpen62541Node(const UA_NodeId nodeId, QOpen62541Client *client, const QString nodeIdString);
     ~QOpen62541Node() override;
 
-    QString name() const override;
+    QString displayName() const override;
     QOpcUa::Types type() const override;
     QStringList childIds() const override;
     QString nodeId() const override;

@@ -137,7 +137,7 @@ void QOpen62541Subscription::monitoredValueUpdated(UA_UInt32 monId, UA_DataValue
     if (var.isValid())
         (*monitoredValue)->d_func()->triggerValueChanged(var);
     else
-        qWarning() << "Could not convert value for node:" << (*monitoredValue)->node().name();
+        qWarning() << "Could not convert value for node:" << (*monitoredValue)->node().displayName();
 }
 
 bool QOpen62541Subscription::ensureNativeSubscription()

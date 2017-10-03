@@ -56,7 +56,7 @@ QOpen62541Node::~QOpen62541Node()
 {
 }
 
-QString QOpen62541Node::name() const
+QString QOpen62541Node::displayName() const
 {
     QString result;
     QMetaObject::invokeMethod(m_client->m_backend, "resolveNodeNameById",

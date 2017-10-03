@@ -312,7 +312,7 @@ void Tst_QOpcUaClient::getRootNode()
 
     QScopedPointer<QOpcUaNode> root(opcuaClient->node("ns=0;i=84"));
     QVERIFY(root != 0);
-    QVERIFY(root->name() == QLatin1String("Root"));
+    QVERIFY(root->displayName() == QLatin1String("Root"));
 
     QString nodeId = root->nodeId();
     QCOMPARE(nodeId, QStringLiteral("ns=0;i=84"));
@@ -325,7 +325,7 @@ void Tst_QOpcUaClient::getChildren()
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=1;s=Large.Folder"));
     QVERIFY(node != 0);
-    QCOMPARE(node->name(), QLatin1String("Large_Folder"));
+    QCOMPARE(node->displayName(), QLatin1String("Large_Folder"));
     QCOMPARE(node->childIds().size(), 1001);
 }
 

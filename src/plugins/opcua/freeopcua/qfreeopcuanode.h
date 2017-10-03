@@ -59,7 +59,7 @@ public:
     explicit QFreeOpcUaNode(OpcUa::Node node, OpcUa::UaClient *client);
     ~QFreeOpcUaNode() override;
 
-    QString name() const override;
+    QString displayName() const override;
     QOpcUa::Types type() const override;
     QStringList childIds() const override;
     QString nodeId() const override;

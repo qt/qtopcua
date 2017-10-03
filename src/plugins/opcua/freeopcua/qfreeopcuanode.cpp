@@ -58,7 +58,7 @@ QFreeOpcUaNode::~QFreeOpcUaNode()
 {
 }
 
-QString QFreeOpcUaNode::name() const
+QString QFreeOpcUaNode::displayName() const
 {
     try {
         return QString::fromStdString(m_node.GetAttribute(
