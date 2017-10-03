@@ -57,6 +57,19 @@ class Q_OPCUA_EXPORT QOpcUaNode : public QObject
 public:
     Q_DECLARE_PRIVATE(QOpcUaNode)
 
+    enum class NodeClass {
+        Undefined = 0,
+        Object = 1,
+        Variable = 2,
+        Method = 4,
+        ObjectType = 8,
+        VariableType = 16,
+        ReferenceType = 32,
+        DataType = 64,
+        View = 128,
+    };
+    Q_ENUM(NodeClass)
+
     QOpcUaNode(QOpcUaNodeImpl *impl, QOpcUaClient *client, QObject *parent = nullptr);
     virtual ~QOpcUaNode();
 
@@ -65,7 +78,7 @@ public:
     QVariant value() const;
     QStringList childIds() const;
     QString nodeId() const;
-    QString nodeClass() const;
+    NodeClass nodeClass() const;
 
     bool setValue(const QVariant &value, QOpcUa::Types type = QOpcUa::Undefined);
     QPair<double, double> readEuRange() const;

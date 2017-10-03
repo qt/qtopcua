@@ -583,7 +583,7 @@ void Tst_QOpcUaClient::nodeClass()
     // Root -> Types -> ReferenceTypes -> References
     QScopedPointer<QOpcUaNode> refNode(opcuaClient->node("ns=0;i=31"));
     QVERIFY(refNode != 0);
-    QCOMPARE(refNode->nodeClass(), QStringLiteral("ReferenceType"));
+    QCOMPARE(refNode->nodeClass(), QOpcUaNode::NodeClass::ReferenceType);
 }
 
 void Tst_QOpcUaClient::writeArray()

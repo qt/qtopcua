@@ -39,6 +39,7 @@
 #include "qopcuaplugin.h"
 
 #include <QtOpcUa/qopcuatype.h>
+#include <QtOpcUa/qopcuanode.h>
 
 #include <private/qfactoryloader_p.h>
 
@@ -104,6 +105,7 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
 {
     qRegisterMetaType<QOpcUa::Types>();
     qRegisterMetaType<QOpcUa::TypedVariant>();
+    qRegisterMetaType<QOpcUaNode::NodeClass>();
 }
 
 QOpcUaProvider::~QOpcUaProvider()

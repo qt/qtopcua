@@ -50,7 +50,7 @@
 
 #include <QtOpcUa/qopcuaglobal.h>
 #include <QtOpcUa/qopcuatype.h>
-
+#include <QtOpcUa/qopcuanode.h>
 #include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
@@ -69,7 +69,7 @@ public:
     virtual QVariant value() const = 0;
     virtual QStringList childIds() const = 0;
     virtual QString nodeId() const = 0;
-    virtual QString nodeClass() const = 0;
+    virtual QOpcUaNode::NodeClass nodeClass() const = 0;
 
     virtual bool setValue(const QVariant &value,
             QOpcUa::Types type = QOpcUa::Undefined)  = 0;

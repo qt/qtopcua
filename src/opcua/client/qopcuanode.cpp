@@ -89,6 +89,25 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QOpcUaNode::NodeClass
+
+    This enum specifies the class a node belongs to. OPC-UA specifies a fixed
+    set of eight different classes.
+
+    \value Undefined     The node class is not known. This is the case before
+                         the NodeClass attribute has been read on the server.
+
+    \value Object        An Object node.
+    \value Variable      A Variable node.
+    \value Method        A Method node.
+    \value ObjectType    An ObjectType node.
+    \value VariableType  A VariableType node.
+    \value ReferenceType A ReferenceType node.
+    \value DataType      A DataType node.
+    \value View          A View node.
+*/
+
+/*!
     \internal QOpcUaNodeImpl is an opaque type (as seen from the public API).
     This prevents users of the public API to use this constructor (eventhough
     it is public).
@@ -167,13 +186,13 @@ QString QOpcUaNode::nodeId() const
 }
 
 /*!
-   \fn QString QOpcUaNode::nodeClass() const
+   \fn QOpcUaNodeClass QOpcUaNode::nodeClass() const
    \brief the node class of the OPC UA node.
 */
-QString QOpcUaNode::nodeClass() const
+QOpcUaNode::NodeClass QOpcUaNode::nodeClass() const
 {
     if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
-        return QString();
+        return NodeClass::Undefined;
 
     return d_func()->m_impl->nodeClass();
 }

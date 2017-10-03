@@ -162,7 +162,7 @@ QString QFreeOpcUaNode::nodeId() const
     }
 }
 
-QString QFreeOpcUaNode::nodeClass() const
+QOpcUaNode::NodeClass QFreeOpcUaNode::nodeClass() const
 {
     try {
         int32_t temp = m_node.GetAttribute(OpcUa::AttributeId::NodeClass).Value.As<int32_t>();
@@ -170,27 +170,27 @@ QString QFreeOpcUaNode::nodeClass() const
 
         switch (nc) {
         case OpcUa::NodeClass::Object:
-            return QStringLiteral("Object");
+            return QOpcUaNode::NodeClass::Object;
         case OpcUa::NodeClass::Variable:
-            return QStringLiteral("Variable");
+            return QOpcUaNode::NodeClass::Variable;
         case OpcUa::NodeClass::Method:
-            return QStringLiteral("Method");
+            return QOpcUaNode::NodeClass::Method;
         case OpcUa::NodeClass::ObjectType:
-            return QStringLiteral("ObjectType");
+            return QOpcUaNode::NodeClass::ObjectType;
         case OpcUa::NodeClass::VariableType:
-            return QStringLiteral("VariableType");
+            return QOpcUaNode::NodeClass::VariableType;
         case OpcUa::NodeClass::ReferenceType:
-            return QStringLiteral("ReferenceType");
+            return QOpcUaNode::NodeClass::ReferenceType;
         case OpcUa::NodeClass::DataType:
-            return QStringLiteral("DataType");
+            return QOpcUaNode::NodeClass::DataType;
         case OpcUa::NodeClass::View:
-            return QStringLiteral("View");
+            return QOpcUaNode::NodeClass::View;
         default:
-            return QString();
+            return QOpcUaNode::NodeClass::Undefined;
         }
     } catch (const std::exception &ex) {
         qWarning() << "Failed to get node class for node:" << ex.what();
-        return QString();
+        return QOpcUaNode::NodeClass::Undefined;
     }
 }
 

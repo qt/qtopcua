@@ -53,7 +53,7 @@ public:
     QOpcUa::Types type() const override;
     QStringList childIds() const override;
     QString nodeId() const override;
-    QString nodeClass() const override;
+    QOpcUaNode::NodeClass nodeClass() const override;
 
     QVariant value() const override;
     bool setValue(const QVariant &value, QOpcUa::Types type) override;

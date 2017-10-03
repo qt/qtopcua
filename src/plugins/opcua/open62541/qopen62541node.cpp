@@ -89,13 +89,12 @@ QString QOpen62541Node::nodeId() const
     return m_nodeIdString;
 }
 
-// ToDo: move from string to enum
-QString QOpen62541Node::nodeClass() const
+QOpcUaNode::NodeClass QOpen62541Node::nodeClass() const
 {
-    QString result;
+    QOpcUaNode::NodeClass result;
     QMetaObject::invokeMethod(m_client->m_backend, "resolveNodeClassAttribute",
                               Qt::BlockingQueuedConnection,
-                              Q_RETURN_ARG(QString, result),
+                              Q_RETURN_ARG(QOpcUaNode::NodeClass, result),
                               Q_ARG(UA_NodeId, m_nodeId));
     return result;
 }

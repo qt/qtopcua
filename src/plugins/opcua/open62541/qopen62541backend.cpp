@@ -62,7 +62,7 @@ QString Open62541AsyncBackend::resolveNodeNameById(UA_NodeId id)
     return QOpen62541ValueConverter::toQString(type.text);
 }
 
-QString Open62541AsyncBackend::resolveNodeClassAttribute(UA_NodeId id)
+QOpcUaNode::NodeClass Open62541AsyncBackend::resolveNodeClassAttribute(UA_NodeId id)
 {
     UA_NodeClass nodeClass;
 
@@ -77,27 +77,27 @@ QString Open62541AsyncBackend::resolveNodeClassAttribute(UA_NodeId id)
 
 
     if (ret != UA_STATUSCODE_GOOD)
-        return QString();
+        return QOpcUaNode::NodeClass::Undefined;
 
     switch (nodeClass) {
     case UA_NODECLASS_OBJECT:
-        return QStringLiteral("Object");
+        return QOpcUaNode::NodeClass::Object;
     case UA_NODECLASS_VARIABLE:
-        return QStringLiteral("Variable");
+        return QOpcUaNode::NodeClass::Variable;
     case UA_NODECLASS_METHOD:
-        return QStringLiteral("Method");
+        return QOpcUaNode::NodeClass::Method;
     case UA_NODECLASS_OBJECTTYPE:
-        return QStringLiteral("ObjectType");
+        return QOpcUaNode::NodeClass::ObjectType;
     case UA_NODECLASS_VARIABLETYPE:
-        return QStringLiteral("VariableType");
+        return QOpcUaNode::NodeClass::VariableType;
     case UA_NODECLASS_REFERENCETYPE:
-        return QStringLiteral("ReferenceType");
+        return QOpcUaNode::NodeClass::ReferenceType;
     case UA_NODECLASS_DATATYPE:
-        return QStringLiteral("DataType");
+        return QOpcUaNode::NodeClass::DataType;
     case UA_NODECLASS_VIEW:
-        return QStringLiteral("View");
+        return QOpcUaNode::NodeClass::View;
     default:
-        return QStringLiteral("");
+        return QOpcUaNode::NodeClass::Undefined;
     }
 }
 
