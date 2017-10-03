@@ -584,6 +584,31 @@ void Tst_QOpcUaClient::nodeClass()
     QScopedPointer<QOpcUaNode> refNode(opcuaClient->node("ns=0;i=31"));
     QVERIFY(refNode != 0);
     QCOMPARE(refNode->nodeClass(), QOpcUaNode::NodeClass::ReferenceType);
+
+    // Root -> Types -> DataTypes -> BaseDataTypes -> Boolean
+    QScopedPointer<QOpcUaNode> dataTypeNode(opcuaClient->node("ns=0;i=1"));
+    QVERIFY(dataTypeNode != 0);
+    QCOMPARE(dataTypeNode->nodeClass(), QOpcUaNode::NodeClass::DataType);
+
+    // Root -> Types -> DataTypes -> ObjectTypes -> BaseObjectTypes -> FolderType
+    QScopedPointer<QOpcUaNode> objectTypeNode(opcuaClient->node("ns=0;i=61"));
+    QVERIFY(objectTypeNode != 0);
+    QCOMPARE(objectTypeNode->nodeClass(), QOpcUaNode::NodeClass::ObjectType);
+
+    // Root -> Types -> DataTypes -> VariableTypes -> BaseVariableType -> PropertyType
+    QScopedPointer<QOpcUaNode> variableTypeNode(opcuaClient->node("ns=0;i=68"));
+    QVERIFY(variableTypeNode != 0);
+    QCOMPARE(variableTypeNode->nodeClass(), QOpcUaNode::NodeClass::VariableType);
+
+    // Root -> Objects
+    QScopedPointer<QOpcUaNode> objectNode(opcuaClient->node("ns=0;i=85"));
+    QVERIFY(objectNode != 0);
+    QCOMPARE(objectNode->nodeClass(), QOpcUaNode::NodeClass::Object);
+
+    // Root -> Objects -> Server -> NamespaceArray
+    QScopedPointer<QOpcUaNode> variableNode(opcuaClient->node("ns=0;i=2255"));
+    QVERIFY(variableNode != 0);
+    QCOMPARE(variableNode->nodeClass(), QOpcUaNode::NodeClass::Variable);
 }
 
 void Tst_QOpcUaClient::writeArray()
