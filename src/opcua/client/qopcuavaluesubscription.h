@@ -47,7 +47,7 @@ class QOpcUaValueSubscriptionPrivate;
 class Q_OPCUA_EXPORT QOpcUaValueSubscription : public QOpcUaSubscription
 {
 public:
-    ~QOpcUaValueSubscription() Q_DECL_OVERRIDE = default;
+    ~QOpcUaValueSubscription() override = default;
 
     virtual QOpcUaMonitoredValue *addValue(const QString &nodeId) = 0;
 

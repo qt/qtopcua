@@ -50,9 +50,9 @@ class QOpen62541Plugin : public QOpcUaPlugin
 
 public:
     explicit QOpen62541Plugin(QObject *parent = 0);
-    ~QOpen62541Plugin() Q_DECL_OVERRIDE;
+    ~QOpen62541Plugin() override;
 
-    QOpcUaClient *createClient() Q_DECL_OVERRIDE;
+    QOpcUaClient *createClient() override;
 };
 
 QT_END_NAMESPACE

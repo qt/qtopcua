@@ -47,7 +47,7 @@ class QOpen62541Node : public QOpcUaNodeImpl
 {
 public:
     explicit QOpen62541Node(const UA_NodeId nodeId, QOpen62541Client *client, const QString nodeIdString);
-    ~QOpen62541Node() Q_DECL_OVERRIDE;
+    ~QOpen62541Node() override;
 
     QString name() const override;
     QOpcUa::Types type() const override;
