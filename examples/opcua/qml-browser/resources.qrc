@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>qml/main.qml</file>
-        <file>qml/OPCNode.qml</file>
-        <file>qml/Line.qml</file>
-        <file>qml/NodeText.qml</file>
-    </qresource>
-</RCC>
