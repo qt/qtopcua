@@ -182,10 +182,18 @@ UA_Variant QOpen62541ValueConverter::toOpen62541Variant(const QVariant &value, Q
                 p[i] = list[i].toFloat();
                 break;
             }
-            case QOpcUa::String:
-            case QOpcUa::ByteString: {
+            case QOpcUa::String: {
                 UA_String *p = static_cast<UA_String *>(arr);
                 p[i] = UA_String_fromChars(list[i].toString().toUtf8().constData());
+                break;
+            }
+            case QOpcUa::ByteString: {
+                UA_ByteString *p = static_cast<UA_ByteString *>(arr);
+                QByteArray qBa = list[i].toByteArray();
+                UA_ByteString temp;
+                temp.length = qBa.length();
+                temp.data = reinterpret_cast<UA_Byte *>(qBa.data());
+                UA_ByteString_copy(&temp, &p[i]);
                 break;
             }
             case QOpcUa::LocalizedText: {
@@ -320,8 +328,11 @@ UA_Variant QOpen62541ValueConverter::toOpen62541Variant(const QVariant &value, Q
         break;
     }
     case QOpcUa::ByteString: {
-        QByteArray str = value.toString().toUtf8();
-        UA_ByteString tmpValue = UA_BYTESTRING(str.data());
+        QByteArray arr = value.toByteArray();
+        UA_ByteString tmpValue;
+        UA_ByteString_init(&tmpValue);
+        tmpValue.length = arr.length();
+        tmpValue.data = reinterpret_cast<UA_Byte *>(arr.data());
         UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_BYTESTRING]);
         break;
     }
@@ -417,6 +428,10 @@ QVariant QOpen62541ValueConverter::toQVariant(const UA_Variant &value)
     case UA_TYPES_STRING: {
         UA_String *uaStr = static_cast<UA_String *>(value.data);
         return QVariant(QString::fromUtf8(reinterpret_cast<char*>(uaStr->data), uaStr->length));
+    }
+    case UA_TYPES_BYTESTRING: {
+        UA_ByteString *uaBs = static_cast<UA_ByteString *>(value.data);
+        return QVariant(QByteArray(reinterpret_cast<char *>(uaBs->data), uaBs->length));
     }
     case UA_TYPES_LOCALIZEDTEXT: {
         UA_LocalizedText *uaLt = static_cast<UA_LocalizedText *>(value.data);

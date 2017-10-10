@@ -786,7 +786,10 @@ void Tst_QOpcUaClient::writeArray()
     list.clear();
     list.append("abc");
     list.append("def");
-    list.append("ghi");
+    QByteArray withNull("gh");
+    withNull.append('\0');
+    withNull.append("i");
+    list.append(withNull);
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ByteString"));
     QVERIFY(node != 0);
     success = node->setValue(list, QOpcUa::ByteString);
@@ -951,7 +954,10 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(byteStringArray.toList()[0].userType() == QMetaType::QByteArray);
     QVERIFY(byteStringArray.toList()[0] == "abc");
     QVERIFY(byteStringArray.toList()[1] == "def");
-    QVERIFY(byteStringArray.toList()[2] == "ghi");
+    QByteArray withNull("gh");
+    withNull.append('\0');
+    withNull.append("i");
+    QVERIFY(byteStringArray.toList()[2] == withNull);
 
     if (opcuaClient->backend() == QLatin1String("freeopcua")) {
         QWARN("SByte is broken with the freeopcua backend");
@@ -1065,7 +1071,11 @@ void Tst_QOpcUaClient::writeScalar()
     QVERIFY(success == true);
 
 
-    QVariant data = QByteArray("abc");
+    QByteArray withNull("gh");
+    withNull.append('\0');
+    withNull.append("i");
+
+    QVariant data = withNull;
 
     QScopedPointer<QOpcUaNode> byteStringNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ByteString"));
     QVERIFY(byteStringNode != 0);
@@ -1215,7 +1225,10 @@ void Tst_QOpcUaClient::readScalar()
     QVariant byteStringScalar = node->value();
     QVERIFY(byteStringScalar.isValid());
     QVERIFY(byteStringScalar.userType() == QMetaType::QByteArray);
-    QVERIFY(byteStringScalar == "abc");
+    QByteArray withNull("gh");
+    withNull.append('\0');
+    withNull.append("i");
+    QVERIFY(byteStringScalar == withNull);
 
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("NodeId parsing is not yet implemented in the freeopcua backend");
