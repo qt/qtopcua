@@ -57,6 +57,7 @@ class Q_OPCUA_EXPORT QOpcUaNode : public QObject
 public:
     Q_DECLARE_PRIVATE(QOpcUaNode)
 
+    // see OPC-UA Part 3, 5.2.3 & 8.30
     enum class NodeClass {
         Undefined = 0,
         Object = 1,
