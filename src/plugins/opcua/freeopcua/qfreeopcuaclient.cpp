@@ -96,8 +96,12 @@ QOpcUaNode *QFreeOpcUaClientImpl::node(const QString &nodeId)
 
 QOpcUaSubscription *QFreeOpcUaClientImpl::createSubscription(quint32 interval)
 {
-    // TODO: ignores thread boundaries
-    return m_opcuaWorker->createSubscription(interval);
+    QOpcUaSubscription *result;
+    QMetaObject::invokeMethod(m_opcuaWorker, "createSubscription",
+                              Qt::BlockingQueuedConnection,
+                              Q_RETURN_ARG(QOpcUaSubscription *, result),
+                              Q_ARG(quint32, interval));
+    return result;
 }
 
 QT_END_NAMESPACE
