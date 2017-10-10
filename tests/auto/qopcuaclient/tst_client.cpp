@@ -187,6 +187,9 @@ private slots:
     defineDataMethod(readScalar_data)
     void readScalar();
 
+    defineDataMethod(stringCharset_data)
+    void stringCharset();
+
 private:
     QString envOrDefault(const char *env, QString def)
     {
@@ -1235,6 +1238,59 @@ void Tst_QOpcUaClient::readScalar()
 
     QSKIP("XmlElement not available with freeopcua-based test server");
     // TODO add Static.Scalar.XmlElement test
+}
+
+void Tst_QOpcUaClient::stringCharset()
+{
+    QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> stringScalarNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.String"));
+    QScopedPointer<QOpcUaNode> localizedScalarNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.LocalizedText"));
+    QScopedPointer<QOpcUaNode> stringArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.String"));
+    QScopedPointer<QOpcUaNode> localizedArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.LocalizedText"));
+
+    QVERIFY(stringScalarNode != 0);
+    QVERIFY(localizedScalarNode != 0);
+    QVERIFY(stringArrayNode != 0);
+    QVERIFY(localizedArrayNode != 0);
+
+    QString testString = QString::fromUtf8("🞀🞁🞂🞃");
+
+    bool success = stringScalarNode->setValue(testString,cQOpcUa::String);
+    QVERIFY(success == true);
+    success = localizedScalarNode->setValue(testString, QOpcUa::LocalizedText);
+    QVERIFY(success == true);
+
+    QVariantList l;
+    l.append(testString);
+    l.append(testString);
+
+    success = stringArrayNode->setValue(l, QOpcUa::String);
+    QVERIFY(success == true);
+    success = localizedArrayNode->setValue(l, QOpcUa::LocalizedText);
+    QVERIFY(success == true);
+
+    QVariant result = stringScalarNode->value();
+    QVERIFY(result.toString() == testString);
+    result = localizedScalarNode->value();
+    QVERIFY(result.toString() == testString);
+
+    result = stringArrayNode->value();
+    QVERIFY(result.type() == QVariant::List);
+    QVERIFY(result.toList().length() == 2);
+    QVERIFY(result.toList()[0].type() == QVariant::String);
+    QVERIFY(result.toList()[0].toString() == testString);
+    QVERIFY(result.toList()[1].type() == QVariant::String);
+    QVERIFY(result.toList()[1].toString() == testString);
+
+    result = localizedArrayNode->value();
+    QVERIFY(result.type() == QVariant::List);
+    QVERIFY(result.toList().length() == 2);
+    QVERIFY(result.toList()[0].type() == QVariant::String);
+    QVERIFY(result.toList()[0].toString() == testString);
+    QVERIFY(result.toList()[1].type() == QVariant::String);
+    QVERIFY(result.toList()[1].toString() == testString);
 }
 
 void Tst_QOpcUaClient::cleanupTestCase()

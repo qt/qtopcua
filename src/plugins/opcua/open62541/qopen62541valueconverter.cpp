@@ -178,13 +178,13 @@ UA_Variant QOpen62541ValueConverter::toOpen62541Variant(const QVariant &value, Q
             case QOpcUa::String:
             case QOpcUa::ByteString: {
                 UA_String *p = static_cast<UA_String *>(arr);
-                p[i] = UA_String_fromChars(list[i].toString().toLocal8Bit().constData());
+                p[i] = UA_String_fromChars(list[i].toString().toUtf8().constData());
                 break;
             }
             case QOpcUa::LocalizedText: {
                 UA_LocalizedText *p = static_cast<UA_LocalizedText *>(arr);
                 UA_String_init(&p[i].locale);
-                p[i].text = UA_String_fromChars(list[i].toString().toLocal8Bit().constData());
+                p[i].text = UA_String_fromChars(list[i].toString().toUtf8().constData());
                 break;
             }
             case QOpcUa::DateTime: {
@@ -298,19 +298,19 @@ UA_Variant QOpen62541ValueConverter::toOpen62541Variant(const QVariant &value, Q
         break;
     }
     case QOpcUa::String: {
-        UA_String tmpValue = UA_String_fromChars(value.toString().toLocal8Bit().constData());
+        UA_String tmpValue = UA_String_fromChars(value.toString().toUtf8().constData());
         UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_STRING]);
         break;
     }
     case QOpcUa::LocalizedText: {
         UA_LocalizedText tmpValue;
         UA_String_init(&tmpValue.locale);
-        tmpValue.text = UA_String_fromChars(value.toString().toLocal8Bit().constData());
+        tmpValue.text = UA_String_fromChars(value.toString().toUtf8().constData());
         UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
         break;
     }
     case QOpcUa::ByteString: {
-        QByteArray str = value.toString().toLocal8Bit();
+        QByteArray str = value.toString().toUtf8();
         UA_ByteString tmpValue = UA_BYTESTRING(str.data());
         UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_BYTESTRING]);
         break;
@@ -361,13 +361,13 @@ QVariant QOpen62541ValueConverter::toQVariant(const UA_Variant &value)
             }
             case UA_TYPES_STRING: {
                 UA_String *uaStr = static_cast<UA_String *>(value.data);
-                list.append(QVariant(QString::fromLocal8Bit(reinterpret_cast<char*>(uaStr[i].data),
+                list.append(QVariant(QString::fromUtf8(reinterpret_cast<char*>(uaStr[i].data),
                                                             uaStr[i].length)));
                 break;
             }
             case UA_TYPES_LOCALIZEDTEXT: {
                 UA_LocalizedText *uaLt = static_cast<UA_LocalizedText *>(value.data);
-                list.append(QVariant(QString::fromLocal8Bit(reinterpret_cast<char*>(uaLt[i].text.data),
+                list.append(QVariant(QString::fromUtf8(reinterpret_cast<char*>(uaLt[i].text.data),
                                                             uaLt[i].text.length)));
                 break;
             }
@@ -405,11 +405,11 @@ QVariant QOpen62541ValueConverter::toQVariant(const UA_Variant &value)
     SIMPLE_TYPE_CASE(UA_TYPES_DOUBLE, QMetaType::Double, double);
     case UA_TYPES_STRING: {
         UA_String *uaStr = static_cast<UA_String *>(value.data);
-        return QVariant(QString::fromLocal8Bit(reinterpret_cast<char*>(uaStr->data), uaStr->length));
+        return QVariant(QString::fromUtf8(reinterpret_cast<char*>(uaStr->data), uaStr->length));
     }
     case UA_TYPES_LOCALIZEDTEXT: {
         UA_LocalizedText *uaLt = static_cast<UA_LocalizedText *>(value.data);
-        return QVariant(QString::fromLocal8Bit(reinterpret_cast<char*>(uaLt->text.data),
+        return QVariant(QString::fromUtf8(reinterpret_cast<char*>(uaLt->text.data),
                                                uaLt->text.length));
     }
     case UA_TYPES_NODEID: {
