@@ -151,76 +151,76 @@ UA_Variant QOpen62541ValueConverter::toOpen62541Variant(const QVariant &value, Q
         for (int i = 0; i < list.size(); ++i) {
             switch (listValueType) {
             case QOpcUa::Boolean: {
-                UA_Boolean *bA = reinterpret_cast<UA_Boolean *>(arr);
-                bA[i] = list[i].toBool();
+                UA_Boolean *p = static_cast<UA_Boolean *>(arr);
+                p[i] = list[i].toBool();
                 break;
             }
             case QOpcUa::Int32: {
-                UA_Int32 *p = reinterpret_cast<UA_Int32 *>(arr);
+                UA_Int32 *p = static_cast<UA_Int32 *>(arr);
                 p[i] = list[i].toInt();
                 break;
             }
             case QOpcUa::UInt32: {
-                UA_UInt32 *p = reinterpret_cast<UA_UInt32 *>(arr);
+                UA_UInt32 *p = static_cast<UA_UInt32 *>(arr);
                 p[i] = list[i].toUInt();
                 break;
             }
             case QOpcUa::Double: {
-                UA_Double *p = reinterpret_cast<UA_Double *>(arr);
+                UA_Double *p = static_cast<UA_Double *>(arr);
                 p[i] = list[i].toDouble();
                 break;
             }
             case QOpcUa::Float: {
-                UA_Float *p = reinterpret_cast<UA_Float *>(arr);
+                UA_Float *p = static_cast<UA_Float *>(arr);
                 p[i] = list[i].toFloat();
                 break;
             }
             case QOpcUa::String:
             case QOpcUa::ByteString: {
-                UA_String *p = reinterpret_cast<UA_String *>(arr);
+                UA_String *p = static_cast<UA_String *>(arr);
                 p[i] = UA_String_fromChars(list[i].toString().toLocal8Bit().constData());
                 break;
             }
             case QOpcUa::LocalizedText: {
-                UA_LocalizedText *p = reinterpret_cast<UA_LocalizedText *>(arr);
+                UA_LocalizedText *p = static_cast<UA_LocalizedText *>(arr);
                 UA_String_init(&p[i].locale);
                 p[i].text = UA_String_fromChars(list[i].toString().toLocal8Bit().constData());
                 break;
             }
             case QOpcUa::DateTime: {
-                UA_DateTime *p = reinterpret_cast<UA_DateTime *>(arr);
+                UA_DateTime *p = static_cast<UA_DateTime *>(arr);
                 QDateTime dt = list[i].toDateTime();
                 p[i] = UA_MSEC_TO_DATETIME * dt.toMSecsSinceEpoch();
                 break;
             }
             case QOpcUa::UInt16: {
-                UA_UInt16 *p = reinterpret_cast<UA_UInt16 *>(arr);
+                UA_UInt16 *p = static_cast<UA_UInt16 *>(arr);
                 p[i] = list[i].toUInt();
                 break;
             }
             case QOpcUa::Int16: {
-                UA_Int16 *p = reinterpret_cast<UA_Int16 *>(arr);
+                UA_Int16 *p = static_cast<UA_Int16 *>(arr);
                 p[i] = list[i].toInt();
                 break;
             }
             case QOpcUa::UInt64: {
-                UA_UInt64 *p = reinterpret_cast<UA_UInt64 *>(arr);
+                UA_UInt64 *p = static_cast<UA_UInt64 *>(arr);
                 p[i] = list[i].toULongLong();
                 break;
             }
             case QOpcUa::Int64: {
-                UA_Int64 *p = reinterpret_cast<UA_Int64 *>(arr);
+                UA_Int64 *p = static_cast<UA_Int64 *>(arr);
                 p[i] = list[i].toLongLong();
                 break;
             }
             case QOpcUa::Byte:
             case QOpcUa::SByte: {
-                UA_SByte *p = reinterpret_cast<UA_SByte *>(arr);
-                p[i] = *reinterpret_cast<const UA_SByte *>(list[i].constData());
+                UA_SByte *p = static_cast<UA_SByte *>(arr);
+                p[i] = *static_cast<const UA_SByte *>(list[i].constData());
                 break;
             }
             case QOpcUa::NodeId: {
-                UA_NodeId *p = reinterpret_cast<UA_NodeId *>(arr);
+                UA_NodeId *p = static_cast<UA_NodeId *>(arr);
                 p[i] = Open62541Utils::nodeIdFromQString(list[i].toString());
                 break;
             }
@@ -354,30 +354,30 @@ QVariant QOpen62541ValueConverter::toQVariant(const UA_Variant &value)
             SIMPLE_TYPE_CASE_LIST(UA_TYPES_FLOAT, QMetaType::Float, float);
             SIMPLE_TYPE_CASE_LIST(UA_TYPES_DOUBLE, QMetaType::Double, double);
             case UA_TYPES_BYTESTRING: {
-                UA_ByteString *ua_bs = (UA_ByteString *) value.data;
-                QByteArray arr = QByteArray(reinterpret_cast<char *>(ua_bs[i].data), ua_bs[i].length);
+                UA_ByteString *uaBs = static_cast<UA_ByteString *>(value.data);
+                QByteArray arr = QByteArray(reinterpret_cast<char *>(uaBs[i].data), uaBs[i].length);
                 list.append(QVariant(QMetaType::QByteArray, &arr));
                 break;
             }
             case UA_TYPES_STRING: {
-                UA_String *ua_str = (UA_String *) value.data;
-                list.append(QVariant(QString::fromLocal8Bit(reinterpret_cast<char*>(ua_str[i].data),
-                                                            ua_str[i].length)));
+                UA_String *uaStr = static_cast<UA_String *>(value.data);
+                list.append(QVariant(QString::fromLocal8Bit(reinterpret_cast<char*>(uaStr[i].data),
+                                                            uaStr[i].length)));
                 break;
             }
             case UA_TYPES_LOCALIZEDTEXT: {
-                UA_LocalizedText *ua_lt = (UA_LocalizedText *) value.data;
-                list.append(QVariant(QString::fromLocal8Bit(reinterpret_cast<char*>(ua_lt[i].text.data),
-                                                            ua_lt[i].text.length)));
+                UA_LocalizedText *uaLt = static_cast<UA_LocalizedText *>(value.data);
+                list.append(QVariant(QString::fromLocal8Bit(reinterpret_cast<char*>(uaLt[i].text.data),
+                                                            uaLt[i].text.length)));
                 break;
             }
             case UA_TYPES_DATETIME: {
-                UA_DateTime *dt = (UA_DateTime *) value.data;
+                UA_DateTime *dt = static_cast<UA_DateTime *>(value.data);
                 list.append(QVariant(QDateTime::fromMSecsSinceEpoch(dt[i] * UA_DATETIME_TO_MSEC)));
                 break;
             }
             case UA_TYPES_NODEID: {
-                UA_NodeId *uan = (UA_NodeId *) value.data;
+                UA_NodeId *uan = static_cast<UA_NodeId *>(value.data);
                 const QString nstr = Open62541Utils::nodeIdToQString(uan[i]);
                 list.append(QVariant(nstr));
                 break;
@@ -404,20 +404,20 @@ QVariant QOpen62541ValueConverter::toQVariant(const UA_Variant &value)
     SIMPLE_TYPE_CASE(UA_TYPES_FLOAT, QMetaType::Float, float);
     SIMPLE_TYPE_CASE(UA_TYPES_DOUBLE, QMetaType::Double, double);
     case UA_TYPES_STRING: {
-        UA_String *ua_str = (UA_String*) value.data;
-        return QVariant(QString::fromLocal8Bit(reinterpret_cast<char*>(ua_str->data), ua_str->length));
+        UA_String *uaStr = static_cast<UA_String *>(value.data);
+        return QVariant(QString::fromLocal8Bit(reinterpret_cast<char*>(uaStr->data), uaStr->length));
     }
     case UA_TYPES_LOCALIZEDTEXT: {
-        UA_LocalizedText *ua_lt = (UA_LocalizedText *) value.data;
-        return QVariant(QString::fromLocal8Bit(reinterpret_cast<char*>(ua_lt->text.data),
-                                               ua_lt->text.length));
+        UA_LocalizedText *uaLt = static_cast<UA_LocalizedText *>(value.data);
+        return QVariant(QString::fromLocal8Bit(reinterpret_cast<char*>(uaLt->text.data),
+                                               uaLt->text.length));
     }
     case UA_TYPES_NODEID: {
-        UA_NodeId *uan = (UA_NodeId *) value.data;
+        UA_NodeId *uan = static_cast<UA_NodeId *>(value.data);
         return Open62541Utils::nodeIdToQString(*uan);
     }
     case UA_TYPES_DATETIME:
-        return QVariant(QDateTime::fromMSecsSinceEpoch(*reinterpret_cast<UA_DateTime *>(value.data) * UA_DATETIME_TO_MSEC));
+        return QVariant(QDateTime::fromMSecsSinceEpoch(*static_cast<UA_DateTime *>(value.data) * UA_DATETIME_TO_MSEC));
     default:
         qWarning() << "Variant conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
         return QVariant();
