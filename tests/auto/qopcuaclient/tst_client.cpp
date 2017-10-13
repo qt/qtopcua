@@ -1041,9 +1041,6 @@ void Tst_QOpcUaClient::writeScalar()
     success = int16Node->setValue(42, QOpcUa::Int16);
     QVERIFY(success == true);
 
-    success = opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt64")->setValue(42, QOpcUa::UInt64);
-    QVERIFY(success == true);
-
     QScopedPointer<QOpcUaNode> uint64Node(opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt64"));
     QVERIFY(uint64Node != 0);
     success = uint64Node->setValue(42, QOpcUa::UInt64);
@@ -1051,7 +1048,8 @@ void Tst_QOpcUaClient::writeScalar()
 
     QScopedPointer<QOpcUaNode> int64Node(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int64"));
     QVERIFY(int64Node != 0);
-    success = int64Node->setValue(true, QOpcUa::Int64);
+    // TODO: Test signed types with a negative number
+    success = int64Node->setValue(42, QOpcUa::Int64);
     QVERIFY(success == true);
 
     QScopedPointer<QOpcUaNode> byteNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Byte"));
@@ -1183,7 +1181,6 @@ void Tst_QOpcUaClient::readScalar()
     if (opcuaClient->backend() == QLatin1String("freeopcua")) {
         QWARN("*Int64 types are broken with the freeopcua backend");
     } else {
-        QSKIP("Int64 types broken with freeopcua-based test server");
         node = opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt64");
         QVERIFY(node != 0);
         QCOMPARE(node->type(), QOpcUa::Types::UInt64);
