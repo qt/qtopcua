@@ -13,7 +13,9 @@ win32: DESTDIR = ./
 
 SOURCES += \
            main.cpp \
-           testserver.cpp
+           testserver.cpp \
+           $$PWD/../../src/plugins/opcua/open62541/qopen62541utils.cpp
+
 
 HEADERS += \
            testserver.h

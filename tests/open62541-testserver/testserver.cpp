@@ -35,36 +35,14 @@
 ****************************************************************************/
 
 #include "testserver.h"
+#include "qopen62541utils.h"
 
 #include <QtCore/QDebug>
+#include <QtCore/QLoggingCategory>
 
-// Taken from qopen62541utils.cpp
-static UA_NodeId qStringToNodeId(const QString &name)
-{
-    QStringList splittedNodeId = name.split(";", QString::SkipEmptyParts);
-    QString indexString = splittedNodeId.at(0);
-    indexString = indexString.replace("ns=", "");
-    QString identifierString = splittedNodeId.at(1);
-    identifierString = identifierString.replace("s=", "");
-    identifierString = identifierString.replace("i=", "");
-
-    bool isNumber = false;
-    UA_NodeId uaNodeId;
-    UA_NodeId_init(&uaNodeId);
-
-    UA_UInt16 index = (UA_UInt16) indexString.toUInt();
-    UA_UInt32 identifier = (UA_UInt32) identifierString.toUInt(&isNumber);
-
-    if (isNumber) {
-        uaNodeId = UA_NODEID_NUMERIC((quint16) index, identifier);
-    } else {
-        // ToDo: Guid
-        // TODO: Who cleans up alloc?
-        // uaNodeId = UA_NODEID_STRING((quint16) index, identifierString.toUtf8().data());
-        uaNodeId = UA_NODEID_STRING_ALLOC((quint16) index, identifierString.toUtf8().data());
-    }
-    return uaNodeId;
-}
+// Node ID conversion is included from the open62541 plugin but warnings from there should be logged
+// using qt.opcua.testserver instead of qt.opcua.plugins.open62541 for usage in the test server
+Q_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541, "qt.opcua.testserver")
 
 TestServer::TestServer(QObject *parent) : QObject(parent)
 {
@@ -132,7 +110,7 @@ UA_NodeId TestServer::addFolder(const QString &nodeString, const QString &displa
         oAttr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
 
     UA_StatusCode result;
-    UA_NodeId requestedNodeId = qStringToNodeId(nodeString);
+    UA_NodeId requestedNodeId = Open62541Utils::nodeIdFromQString(nodeString);
 
     result = UA_Server_addObjectNode(m_server,
                                      requestedNodeId,
@@ -178,7 +156,7 @@ template <typename UA_TYPE_VALUE, typename QTYPE, int UA_TYPE_IDENTIFIER>
 UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variableNode,
                                   const QString &description, QTYPE value)
 {
-    UA_NodeId variableNodeId = qStringToNodeId(variableNode);
+    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
     UA_VariableAttributes attr = UA_VariableAttributes_default;
     UA_TYPE_VALUE uaValue = static_cast<UA_TYPE_VALUE>(value);
@@ -214,7 +192,7 @@ template <>
 UA_NodeId TestServer::addVariable<UA_String, QString, UA_TYPES_STRING>(const UA_NodeId &folder, const QString &variableNode,
                                   const QString &description, QString value)
 {
-    UA_NodeId variableNodeId = qStringToNodeId(variableNode);
+    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
     UA_VariableAttributes attr = UA_VariableAttributes_default;
     UA_String uaValue = UA_String_fromChars(value.toUtf8().constData());
@@ -247,7 +225,7 @@ template <>
 UA_NodeId TestServer::addVariable<UA_LocalizedText, QString, UA_TYPES_LOCALIZEDTEXT>(const UA_NodeId &folder, const QString &variableNode,
                                   const QString &description, QString value)
 {
-    UA_NodeId variableNodeId = qStringToNodeId(variableNode);
+    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
     UA_VariableAttributes attr = UA_VariableAttributes_default;
     UA_LocalizedText uaValue;
@@ -282,7 +260,7 @@ template <>
 UA_NodeId TestServer::addVariable<UA_ByteString, QByteArray, UA_TYPES_BYTESTRING>(const UA_NodeId &folder, const QString &variableNode,
                                   const QString &description, QByteArray value)
 {
-    UA_NodeId variableNodeId = qStringToNodeId(variableNode);
+    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
     UA_VariableAttributes attr = UA_VariableAttributes_default;
     UA_ByteString uaValue = UA_BYTESTRING(value.data());
@@ -315,7 +293,7 @@ template <>
 UA_NodeId TestServer::addVariable<UA_DateTime, QDateTime, UA_TYPES_DATETIME>(const UA_NodeId &folder, const QString &variableNode,
                                   const QString &description, QDateTime value)
 {
-    UA_NodeId variableNodeId = qStringToNodeId(variableNode);
+    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
     UA_VariableAttributes attr = UA_VariableAttributes_default;
     UA_DateTime uaValue = UA_MSEC_TO_DATETIME * value.toMSecsSinceEpoch();
@@ -348,10 +326,10 @@ template <>
 UA_NodeId TestServer::addVariable<UA_NodeId, QString, UA_TYPES_NODEID>(const UA_NodeId &folder, const QString &variableNode,
                                   const QString &description, QString value)
 {
-    UA_NodeId variableNodeId = qStringToNodeId(variableNode);
+    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
     UA_VariableAttributes attr = UA_VariableAttributes_default;
-    UA_NodeId uaValue = value.size() ? qStringToNodeId(value) : UA_NODEID_NULL;
+    UA_NodeId uaValue = value.size() ? Open62541Utils::nodeIdFromQString(value) : UA_NODEID_NULL;
     UA_Variant_setScalar(&attr.value, &uaValue, &UA_TYPES[UA_TYPES_NODEID]);
     attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
     attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", variableNode.toUtf8().constData());

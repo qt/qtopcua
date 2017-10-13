@@ -112,6 +112,11 @@ int main(int argc, char** argv)
     UA_NodeId testStringIdsFolder = server.addFolder("ns=3;s=testStringIdsFolder", "testStringIdsFolder");
     server.addVariable<UA_String, QString, UA_TYPES_STRING>(testStringIdsFolder, "ns=3;s=theStringId", "theStringId", QString());
 
+    UA_NodeId testGuidIdsFolder = server.addFolder("ns=3;s=testGuidIdsFolder", "testGuidIdsFolder");
+    server.addVariable<UA_String, QString, UA_TYPES_STRING>(testGuidIdsFolder, "ns=3;g=08081e75-8e5e-319b-954f-f3a7613dc29b", "theGuidId", QString());
+    UA_NodeId testOpaqueIdsFolder = server.addFolder("ns=3;s=testOpaqueIdsFolder", "testOpaqueIdsFolder");
+    server.addVariable<UA_String, QString, UA_TYPES_STRING>(testOpaqueIdsFolder, "ns=3;b=UXQgZnR3IQ==", "theOpaqueId", QString());
+
     UA_NodeId demoFolder = server.addFolder("ns=3;s=DemoFolder", "DemoFolder");
     UA_NodeId timeTickerNode = server.addVariable<UA_DateTime, QDateTime, UA_TYPES_DATETIME>(demoFolder, "ns=2;s=DemoFolder.TimeTicker", "TimeTicker", QDateTime());
 
