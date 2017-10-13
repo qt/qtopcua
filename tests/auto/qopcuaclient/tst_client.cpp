@@ -145,6 +145,10 @@ private slots:
     void getChildren();
     defineDataMethod(childrenIdsString_data)
     void childrenIdsString();
+    defineDataMethod(childrenIdsGuidNodeId_data)
+    void childrenIdsGuidNodeId();
+    defineDataMethod(childrenIdsOpaqueNodeId_data)
+    void childrenIdsOpaqueNodeId();
 
     // read & write
     defineDataMethod(read_data)
@@ -344,6 +348,30 @@ void Tst_QOpcUaClient::childrenIdsString()
     QStringList childrenIds = node->childrenIds();
     QCOMPARE(childrenIds.size(), 1);
     QCOMPARE(childrenIds.at(0), "ns=3;s=theStringId");
+}
+
+void Tst_QOpcUaClient::childrenIdsGuidNodeId()
+{
+    QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=testGuidIdsFolder"));
+    QVERIFY(node != 0);
+    const QStringList childrenIds = node->childrenIds();
+    QCOMPARE(childrenIds.size(), 1);
+    QCOMPARE(childrenIds.at(0), "ns=3;g=08081e75-8e5e-319b-954f-f3a7613dc29b");
+}
+
+void Tst_QOpcUaClient::childrenIdsOpaqueNodeId()
+{
+    QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=testOpaqueIdsFolder"));
+    QVERIFY(node != 0);
+    const QStringList childrenIds = node->childrenIds();
+    QCOMPARE(childrenIds.size(), 1);
+    QCOMPARE(childrenIds.at(0), "ns=3;b=UXQgZnR3IQ==");
 }
 
 void Tst_QOpcUaClient::read()

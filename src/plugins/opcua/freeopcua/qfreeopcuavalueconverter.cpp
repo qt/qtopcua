@@ -37,6 +37,7 @@
 #include "qfreeopcuavalueconverter.h"
 #include <QDateTime>
 #include <QLoggingCategory>
+#include <QUuid>
 #include <vector>
 
 #include <opc/ua/protocol/string_utils.h>
@@ -178,17 +179,20 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
 
 QString nodeIdToString(const OpcUa::NodeId &id)
 {
-    QString nodeId = QString("ns=%1;").arg(id.GetNamespaceIndex());
+    QString nodeId = QStringLiteral("ns=%1;").arg(id.GetNamespaceIndex());
     if (id.IsInteger()) {
-        nodeId += QString("i=%1").arg(id.GetIntegerIdentifier());
+        nodeId += QStringLiteral("i=%1").arg(id.GetIntegerIdentifier());
     } else if (id.IsString()) {
-        nodeId += QString("s=%1").arg(id.GetStringIdentifier().c_str());
+        nodeId += QStringLiteral("s=%1").arg(id.GetStringIdentifier().c_str());
     } else if (id.IsGuid()) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Guid nodeIds are not supported");
-        nodeId = QString();
+        OpcUa::Guid tempId = id.GetGuidIdentifier();
+        const QUuid uuid(tempId.Data1, tempId.Data2, tempId.Data3, tempId.Data4[0], tempId.Data4[1], tempId.Data4[2],
+                tempId.Data4[3], tempId.Data4[4], tempId.Data4[5], tempId.Data4[6], tempId.Data4[7]);
+        nodeId += QStringLiteral("g=").append(uuid.toString().midRef(1, 36)); // Remove enclosing {...}
     } else if (id.IsBinary()) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Opaque nodeIds are not supported");
-        nodeId = QString();
+        const QString base64String = QByteArray(reinterpret_cast<const char *>(id.GetBinaryIdentifier().data()),
+                                          id.GetBinaryIdentifier().size()).toBase64();
+        nodeId += QStringLiteral("b=").append(base64String);
     } else {
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Unknown nodeId type!");
         nodeId = QString();

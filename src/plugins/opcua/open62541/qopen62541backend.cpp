@@ -40,6 +40,7 @@
 #include <QtCore/QStringList>
 #include <QtCore/QUrl>
 #include <QtCore/QLoggingCategory>
+#include <QtCore/QUuid>
 
 #include <QtOpcUa/private/qopcuaclient_p.h>
 
@@ -218,10 +219,19 @@ static UA_StatusCode nodeIter(UA_NodeId childId, UA_Boolean isInverse, UA_NodeId
 
     QString childName;
     if (childId.identifierType == UA_NODEIDTYPE_NUMERIC) {
-        childName = QString::fromLatin1("ns=%1;i=%2").arg(childId.namespaceIndex).arg(childId.identifier.numeric);
+        childName = QStringLiteral("ns=%1;i=%2").arg(childId.namespaceIndex).arg(childId.identifier.numeric);
     } else if (childId.identifierType == UA_NODEIDTYPE_STRING) {
-        childName = QString::fromUtf8("ns=%1;s=%2").arg(childId.namespaceIndex).arg(
+        childName = QStringLiteral("ns=%1;s=%2").arg(childId.namespaceIndex).arg(
                     QString::fromUtf8(reinterpret_cast<char *>(childId.identifier.string.data), childId.identifier.string.length));
+    } else if (childId.identifierType == UA_NODEIDTYPE_GUID) {
+        UA_Guid tempId = childId.identifier.guid;
+        const QUuid uuid(tempId.data1, tempId.data2, tempId.data3, tempId.data4[0], tempId.data4[1], tempId.data4[2],
+                tempId.data4[3], tempId.data4[4], tempId.data4[5], tempId.data4[6], tempId.data4[7]);
+        childName = QStringLiteral("ns=%1;g=").arg(childId.namespaceIndex).append(uuid.toString().midRef(1, 36)); // Remove enclosing {...}
+    } else if (childId.identifierType == UA_NODEIDTYPE_BYTESTRING) {
+        const QString base64String = QByteArray(reinterpret_cast<char *>(childId.identifier.byteString.data),
+                                          childId.identifier.byteString.length).toBase64();
+        childName = QStringLiteral("ns=%1;b=").arg(childId.namespaceIndex).append(base64String);
     }
     else {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Skipping child with unsupported nodeid type";
