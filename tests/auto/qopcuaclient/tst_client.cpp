@@ -822,7 +822,6 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(booleanArray.toList()[0].toBool(), true);
     QCOMPARE(booleanArray.toList()[1].toBool(), false);
     QCOMPARE(booleanArray.toList()[2].toBool(), true);
-    qDebug() << booleanArray.toList();
 
     QScopedPointer<QOpcUaNode> int32ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int32"));
     QVERIFY(int32ArrayNode != 0);
@@ -833,8 +832,6 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(int32Array.toList()[0].toInt(), -11);
     QCOMPARE(int32Array.toList()[1].toInt(), -12);
     QCOMPARE(int32Array.toList()[2].toInt(), -13);
-    qDebug() << int32Array.toList();
-
 
     QScopedPointer<QOpcUaNode> uint32ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt32"));
     QVERIFY(uint32ArrayNode != 0);
@@ -845,7 +842,6 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(uint32Array.toList()[0].toUInt(), (uint)11);
     QCOMPARE(uint32Array.toList()[1].toUInt(), (uint)12);
     QCOMPARE(uint32Array.toList()[2].toUInt(), (uint)13);
-    qDebug() << uint32Array.toList();
 
     QScopedPointer<QOpcUaNode> doubleArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Double"));
     QVERIFY(doubleArrayNode != 0);
@@ -856,7 +852,6 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(doubleArray.toList()[0].toDouble(), (double)23.5);
     QCOMPARE(doubleArray.toList()[1].toDouble(), (double)23.6);
     QCOMPARE(doubleArray.toList()[2].toDouble(), (double)23.7);
-    qDebug() << doubleArray.toList();
 
     QScopedPointer<QOpcUaNode> floatArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Float"));
     QVERIFY(floatArrayNode != 0);
@@ -867,7 +862,6 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(floatArray.toList()[0].toFloat(), (float)23.5);
     QCOMPARE(floatArray.toList()[1].toFloat(), (float)23.6);
     QCOMPARE(floatArray.toList()[2].toFloat(), (float)23.7);
-    qDebug() << floatArray.toList();
 
     QScopedPointer<QOpcUaNode> stringArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.String"));
     QVERIFY(stringArrayNode != 0);
@@ -878,7 +872,6 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(stringArray.toList()[0].toString(), QStringLiteral("Test1"));
     QCOMPARE(stringArray.toList()[1].toString(), QStringLiteral("Test2"));
     QCOMPARE(stringArray.toList()[2].toString(), QStringLiteral("Test3"));
-    qDebug() << stringArray.toList();
 
     QScopedPointer<QOpcUaNode> dateTimeArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DateTime"));
     QVERIFY(dateTimeArrayNode != 0);
@@ -886,7 +879,6 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(dateTimeArray.type() == QVariant::List);
     QVERIFY(dateTimeArray.toList().length() == 3);
     QCOMPARE(dateTimeArray.toList()[0].type(), QVariant::DateTime);
-    qDebug() << dateTimeArray.toList();
 
     QScopedPointer<QOpcUaNode> ltArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.LocalizedText"));
     QVERIFY(ltArrayNode != 0);
@@ -897,7 +889,6 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(ltArray.toList()[0].toString(), QStringLiteral("Localized Text 1"));
     QCOMPARE(ltArray.toList()[1].toString(), QStringLiteral("Localized Text 2"));
     QCOMPARE(ltArray.toList()[2].toString(), QStringLiteral("Localized Text 3"));
-    qDebug() << ltArray.toList();
 
     QScopedPointer<QOpcUaNode> uint16ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt16"));
     QVERIFY(uint16ArrayNode != 0);
@@ -908,7 +899,6 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(uint16Array.toList()[0] == (ushort)11);
     QVERIFY(uint16Array.toList()[1] == (ushort)12);
     QVERIFY(uint16Array.toList()[2] == (ushort)13);
-    qDebug() << uint16Array.toList();
 
     QScopedPointer<QOpcUaNode> int16ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int16"));
     QVERIFY(int16ArrayNode != 0);
@@ -919,7 +909,6 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(int16Array.toList()[0] == (short)-11);
     QVERIFY(int16Array.toList()[1] == (short)-12);
     QVERIFY(int16Array.toList()[2] == (short)-13);
-    qDebug() << int16Array.toList();
 
     if (opcuaClient->backend() == QLatin1String("freeopcua")) {
         QWARN("*Int64 types are broken with the freeopcua backend");
@@ -933,7 +922,6 @@ void Tst_QOpcUaClient::readArray()
         QVERIFY(uint64Array.toList()[0] == (unsigned long long)11);
         QVERIFY(uint64Array.toList()[1] == (unsigned long long)12);
         QVERIFY(uint64Array.toList()[2] == (unsigned long long)13);
-        qDebug() << uint64Array.toList();
 
         QScopedPointer<QOpcUaNode> int64ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int64"));
         QVERIFY(int64ArrayNode != 0);
@@ -943,7 +931,6 @@ void Tst_QOpcUaClient::readArray()
         QVERIFY(int64Array.toList()[0] == (long long)-11);
         QVERIFY(int64Array.toList()[1] == (long long)-12);
         QVERIFY(int64Array.toList()[2] == (long long)-13);
-        qDebug() << int64Array.toList();
     }
 
     QScopedPointer<QOpcUaNode> byteArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Byte"));
@@ -955,7 +942,6 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(byteArray.toList()[0] == (char)11);
     QVERIFY(byteArray.toList()[1] == (char)12);
     QVERIFY(byteArray.toList()[2] == (char)13);
-    qDebug() << byteArray.toList();
 
     QScopedPointer<QOpcUaNode> byteStringArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ByteString"));
     QVERIFY(byteStringArrayNode != 0);
@@ -966,7 +952,6 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(byteStringArray.toList()[0] == "abc");
     QVERIFY(byteStringArray.toList()[1] == "def");
     QVERIFY(byteStringArray.toList()[2] == "ghi");
-    qDebug() << byteStringArray.toList();
 
     if (opcuaClient->backend() == QLatin1String("freeopcua")) {
         QWARN("SByte is broken with the freeopcua backend");
@@ -982,7 +967,6 @@ void Tst_QOpcUaClient::readArray()
         QVERIFY(byteArray.toList()[0] == (char)-11);
         QVERIFY(byteArray.toList()[1] == (char)-12);
         QVERIFY(byteArray.toList()[2] == (char)-13);
-        qDebug() << sbyteArray.toList();
     }
 
     if (opcuaClient->backend() == QLatin1String("freeopcua")) {
@@ -997,7 +981,6 @@ void Tst_QOpcUaClient::readArray()
         QCOMPARE(nodeIdArray.toList()[0].toString(), QStringLiteral("ns=0;i=0"));
         QCOMPARE(nodeIdArray.toList()[1].toString(), QStringLiteral("ns=0;i=1"));
         QCOMPARE(nodeIdArray.toList()[2].toString(), QStringLiteral("ns=0;i=2"));
-        qDebug() << nodeIdArray.toList();
     }
 
     QSKIP("XmlElement not available with freeopcua-based test server");
@@ -1121,7 +1104,6 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(booleanScalar.isValid());
     QCOMPARE(booleanScalar.type(), QVariant::Bool);
     QCOMPARE(booleanScalar.toBool(), true);
-    qDebug() << booleanScalar;
 
     node = opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int32");
     QVERIFY(node != 0);
@@ -1131,7 +1113,6 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(int32Scalar.isValid());
     QCOMPARE(int32Scalar.type(), QVariant::Int);
     QCOMPARE(int32Scalar.toInt(), 42);
-    qDebug() << int32Scalar;
 
     node = opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt32");
     QVERIFY(node != 0);
@@ -1140,7 +1121,6 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(uint32Scalar.isValid());
     QCOMPARE(uint32Scalar.type(), QVariant::UInt);
     QCOMPARE(uint32Scalar.toUInt(), (uint)42);
-    qDebug() << uint32Scalar;
 
     node = opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double");
     QVERIFY(node != 0);
@@ -1149,7 +1129,6 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(doubleScalar.isValid());
     QCOMPARE(doubleScalar.type(), QVariant::Double);
     QCOMPARE(doubleScalar.toDouble(), (double)42);
-    qDebug() << doubleScalar;
 
     node = opcuaClient->node("ns=2;s=Demo.Static.Scalar.Float");
     QVERIFY(node != 0);
@@ -1158,7 +1137,6 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(floatScalar.isValid());
     QVERIFY(floatScalar.userType() == QMetaType::Float);
     QCOMPARE(floatScalar.toFloat(), (float)42);
-    qDebug() << floatScalar;
 
     node = opcuaClient->node("ns=2;s=Demo.Static.Scalar.String");
     QVERIFY(node != 0);
@@ -1167,7 +1145,6 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(stringScalar.isValid());
     QCOMPARE(stringScalar.type(), QVariant::String);
     QCOMPARE(stringScalar.toString(), QStringLiteral("QOpcUa Teststring"));
-    qDebug() << stringScalar;
 
     node = opcuaClient->node("ns=2;s=Demo.Static.Scalar.DateTime");
     QVERIFY(node != 0);
@@ -1175,7 +1152,6 @@ void Tst_QOpcUaClient::readScalar()
     QVariant dateTimeScalar = node->value();
     QCOMPARE(dateTimeScalar.type(), QVariant::DateTime);
     QVERIFY(dateTimeScalar.isValid());
-    qDebug() << dateTimeScalar;
 
     node = opcuaClient->node("ns=2;s=Demo.Static.Scalar.LocalizedText");
     QVERIFY(node != 0);
@@ -1184,7 +1160,6 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(ltScalar.isValid());
     QCOMPARE(ltScalar.type(), QVariant::String);
     QCOMPARE(ltScalar.toString(), QStringLiteral("QOpcUaClient Localized Text"));
-    qDebug() << ltScalar;
 
     node = opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt16");
     QVERIFY(node != 0);
@@ -1193,7 +1168,6 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(uint16Scalar.isValid());
     QVERIFY(uint16Scalar.userType() == QMetaType::UShort);
     QVERIFY(uint16Scalar == (ushort)42);
-    qDebug() << uint16Scalar;
 
     node = opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int16");
     QVERIFY(node != 0);
@@ -1202,7 +1176,6 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(int16Scalar.isValid());
     QVERIFY(int16Scalar.userType() == QMetaType::Short);
     QVERIFY(uint16Scalar == (short)42);
-    qDebug() << int16Scalar;
 
     if (opcuaClient->backend() == QLatin1String("freeopcua")) {
         QWARN("*Int64 types are broken with the freeopcua backend");
@@ -1215,7 +1188,6 @@ void Tst_QOpcUaClient::readScalar()
         QVERIFY(uint64Scalar.isValid());
         QCOMPARE(uint64Scalar.type(), QVariant::ULongLong);
         QVERIFY(uint64Scalar == (unsigned long long)42);
-        qDebug() << uint64Scalar;
 
         node = opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int64");
         QVERIFY(node != 0);
@@ -1224,7 +1196,6 @@ void Tst_QOpcUaClient::readScalar()
         QVERIFY(int64Scalar.isValid());
         QCOMPARE(int64Scalar.type(), QVariant::LongLong);
         QVERIFY(int64Scalar == (long long)42);
-        qDebug() << int64Scalar;
     }
 
     node = opcuaClient->node("ns=2;s=Demo.Static.Scalar.Byte");
@@ -1234,7 +1205,6 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(byteScalar.isValid());
     QVERIFY(byteScalar.userType() == QMetaType::UChar);
     QVERIFY(byteScalar == (char)42);
-    qDebug() << byteScalar;
 
     node = opcuaClient->node("ns=2;s=Demo.Static.Scalar.SByte");
     QVERIFY(node != 0);
@@ -1243,7 +1213,6 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(sbyteScalar.isValid());
     QVERIFY(sbyteScalar.userType() == QMetaType::SChar);
     QVERIFY(sbyteScalar == (char)42);
-    qDebug() << sbyteScalar;
 
     node = opcuaClient->node("ns=2;s=Demo.Static.Scalar.ByteString");
     QVERIFY(node != 0);
@@ -1252,7 +1221,6 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(byteStringScalar.isValid());
     QVERIFY(byteStringScalar.userType() == QMetaType::QByteArray);
     QVERIFY(byteStringScalar == "abc");
-    qDebug() << byteStringScalar;
 
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("NodeId parsing is not yet implemented in the freeopcua backend");
@@ -1264,7 +1232,6 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(nodeIdScalar.isValid());
     QCOMPARE(nodeIdScalar.type(), QVariant::String);
     QCOMPARE(nodeIdScalar.toString(), QStringLiteral("ns=42;s=Test"));
-    qDebug() << nodeIdScalar;
 
     QSKIP("XmlElement not available with freeopcua-based test server");
     // TODO add Static.Scalar.XmlElement test
