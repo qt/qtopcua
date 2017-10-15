@@ -42,6 +42,17 @@
 
 #include <QtOpcUa/private/qopcuaclient_p.h>
 
+struct UaVariantMemberDeleter
+{
+    static void cleanup(UA_Variant *p) { UA_Variant_deleteMembers(p); }
+};
+
+struct UaLocalizedTextMemberDeleter
+{
+    static void cleanup(UA_LocalizedText *p) { UA_LocalizedText_deleteMembers(p); }
+};
+
+
 Open62541AsyncBackend::Open62541AsyncBackend(QOpen62541Client *parent)
     : QObject()
     , m_clientImpl(parent)
@@ -53,6 +64,8 @@ Open62541AsyncBackend::Open62541AsyncBackend(QOpen62541Client *parent)
 QString Open62541AsyncBackend::resolveNodeNameById(UA_NodeId id)
 {
     UA_LocalizedText type;
+    UA_LocalizedText_init(&type);
+    QScopedPointer<UA_LocalizedText, UaLocalizedTextMemberDeleter> ts(&type);
     UA_StatusCode ret = UA_Client_readDisplayNameAttribute(m_uaclient, id, &type);
     if (ret != UA_STATUSCODE_GOOD) {
         qWarning() << "Could not read display name attribute:" << ret;
@@ -104,6 +117,8 @@ QOpcUaNode::NodeClass Open62541AsyncBackend::resolveNodeClassAttribute(UA_NodeId
 QVariant Open62541AsyncBackend::readNodeValueAttribute(UA_NodeId id)
 {
     UA_Variant value;
+    UA_Variant_init(&value);
+    QScopedPointer<UA_Variant, UaVariantMemberDeleter> vs(&value);
 
     UA_StatusCode ret = UA_Client_readValueAttribute(m_uaclient, id, &value);
     if (ret != UA_STATUSCODE_GOOD)
@@ -120,6 +135,8 @@ QVariant Open62541AsyncBackend::readNodeValueAttribute(UA_NodeId id)
 QOpcUa::Types Open62541AsyncBackend::readNodeValueType(UA_NodeId id)
 {
     UA_Variant value;
+    UA_Variant_init(&value);
+    QScopedPointer<UA_Variant, UaVariantMemberDeleter> vs(&value);
 
     UA_StatusCode ret = UA_Client_readValueAttribute(m_uaclient, id, &value);
     if (ret != UA_STATUSCODE_GOOD)
@@ -166,7 +183,8 @@ QOpcUa::Types Open62541AsyncBackend::readNodeValueType(UA_NodeId id)
 
 bool Open62541AsyncBackend::writeNodeValueAttribute(UA_NodeId id, const QVariant &value, QOpcUa::Types type)
 {
-    const UA_Variant val = QOpen62541ValueConverter::toOpen62541Variant(value, type);
+    UA_Variant val = QOpen62541ValueConverter::toOpen62541Variant(value, type);
+    QScopedPointer<UA_Variant, UaVariantMemberDeleter> vs(&val);
     UA_StatusCode ret = UA_Client_writeValueAttribute(m_uaclient, id, &val);
     if (ret != UA_STATUSCODE_GOOD) {
         qWarning() << "Open62541: Could not write Value Attribute:" << ret;
