@@ -300,6 +300,7 @@ UA_Variant QOpen62541ValueConverter::toOpen62541Variant(const QVariant &value, Q
     case QOpcUa::String: {
         UA_String tmpValue = UA_String_fromChars(value.toString().toUtf8().constData());
         UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_STRING]);
+        UA_String_deleteMembers(&tmpValue);
         break;
     }
     case QOpcUa::LocalizedText: {
@@ -307,6 +308,7 @@ UA_Variant QOpen62541ValueConverter::toOpen62541Variant(const QVariant &value, Q
         UA_String_init(&tmpValue.locale);
         tmpValue.text = UA_String_fromChars(value.toString().toUtf8().constData());
         UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
+        UA_LocalizedText_deleteMembers(&tmpValue);
         break;
     }
     case QOpcUa::ByteString: {
@@ -318,6 +320,7 @@ UA_Variant QOpen62541ValueConverter::toOpen62541Variant(const QVariant &value, Q
     case QOpcUa::NodeId: {
         UA_NodeId tmpValue = Open62541Utils::nodeIdFromQString(value.toString());
         UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_NODEID]);
+        UA_NodeId_deleteMembers(&tmpValue);
         break;
     }
     default:
