@@ -1257,7 +1257,7 @@ void Tst_QOpcUaClient::stringCharset()
 
     QString testString = QString::fromUtf8("🞀🞁🞂🞃");
 
-    bool success = stringScalarNode->setValue(testString,cQOpcUa::String);
+    bool success = stringScalarNode->setValue(testString, QOpcUa::String);
     QVERIFY(success == true);
     success = localizedScalarNode->setValue(testString, QOpcUa::LocalizedText);
     QVERIFY(success == true);
