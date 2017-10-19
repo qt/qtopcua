@@ -38,6 +38,8 @@
 #include <QDateTime>
 #include <vector>
 
+#include <opc/ua/protocol/string_utils.h>
+
 QT_BEGIN_NAMESPACE
 
 namespace QFreeOpcUaValueConverter {
@@ -321,9 +323,23 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
         }
         return OpcUa::Variant();
     }
-    case QOpcUa::NodeId:
-        qWarning("There is no parse function in FreeOPCUA!");
-        return OpcUa::Variant();
+    case QOpcUa::NodeId: {
+        try {
+            if (isList) {
+                std::vector<OpcUa::NodeId> vec;
+                QVariantList list = variant.toList();
+                for (int i=0; i<list.size(); i++) {
+                    vec.push_back(OpcUa::ToNodeId(list[i].toString().toStdString()));
+                }
+                return OpcUa::Variant(vec);
+            } else {
+                return OpcUa::Variant(OpcUa::ToNodeId(variant.toString().toStdString()));
+            }
+        } catch (const std::exception &ex) {
+            qWarning("Failed to parse node id: %s", ex.what());
+            return OpcUa::Variant();
+        }
+    }
     case QOpcUa::XmlElement:
         qWarning("Type XMLElement is not yet supported in FreeOPCUA");
         return OpcUa::Variant();
