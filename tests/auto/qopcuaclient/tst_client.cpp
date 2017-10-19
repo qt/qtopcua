@@ -959,21 +959,15 @@ void Tst_QOpcUaClient::readArray()
     withNull.append("i");
     QVERIFY(byteStringArray.toList()[2] == withNull);
 
-    if (opcuaClient->backend() == QLatin1String("freeopcua")) {
-        QWARN("SByte is broken with the freeopcua backend");
-    } else if (opcuaClient->backend() == QLatin1String("open62541")) {
-        QWARN("Implicit conversion of SChar to UChar in qvariant.cpp");
-    } else {
-        QScopedPointer<QOpcUaNode> sbyteArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.SByte"));
-        QVERIFY(sbyteArrayNode != 0);
-        QVariant sbyteArray = sbyteArrayNode->value();
-        QVERIFY(sbyteArray.type() == QVariant::List);
-        QVERIFY(sbyteArray.toList().length() == 3);
-        QVERIFY(byteArray.toList()[0].userType() == QMetaType::SChar);
-        QVERIFY(byteArray.toList()[0] == (char)-11);
-        QVERIFY(byteArray.toList()[1] == (char)-12);
-        QVERIFY(byteArray.toList()[2] == (char)-13);
-    }
+    QScopedPointer<QOpcUaNode> sbyteArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.SByte"));
+    QVERIFY(sbyteArrayNode != 0);
+    QVariant sbyteArray = sbyteArrayNode->value();
+    QVERIFY(sbyteArray.type() == QVariant::List);
+    QVERIFY(sbyteArray.toList().length() == 3);
+    QVERIFY(sbyteArray.toList()[0].userType() == QMetaType::SChar);
+    QVERIFY(sbyteArray.toList()[0] == (char)-11);
+    QVERIFY(sbyteArray.toList()[1] == (char)-12);
+    QVERIFY(sbyteArray.toList()[2] == (char)-13);
 
     if (opcuaClient->backend() == QLatin1String("freeopcua")) {
         QWARN("NodeId arrays are broken with the freeopcua backend");
