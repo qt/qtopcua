@@ -40,6 +40,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QThread>
 #include <QtCore/QVariant>
+#include <QUuid>
 
 int main(int argc, char** argv)
 {
@@ -91,6 +92,7 @@ int main(int argc, char** argv)
     server.addVariable<UA_ByteString, QByteArray, UA_TYPES_BYTESTRING>(testFolder, "ns=2;s=Demo.Static.Arrays.ByteString", "ByteStringArrayTest", QByteArray());
     server.addVariable<UA_DateTime, QDateTime, UA_TYPES_DATETIME>(testFolder, "ns=2;s=Demo.Static.Arrays.DateTime", "DateTimeArrayTest", QDateTime());
     server.addVariable<UA_NodeId, QString, UA_TYPES_NODEID>(testFolder, "ns=2;s=Demo.Static.Arrays.NodeId", "NodeIdArrayTest", QString());
+    server.addVariable<UA_Guid, QUuid, UA_TYPES_GUID>(testFolder, "ns=2;s=Demo.Static.Arrays.Guid", "GuidArrayTest", QUuid());
 //  server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.XmlElement", "XmlElementArrayTest", std::vector<XmlElement>());
 
     server.addVariable<UA_Boolean, bool, UA_TYPES_BOOLEAN>(testFolder, "ns=2;s=Demo.Static.Scalar.Boolean", "BoolScalarTest", true);
@@ -111,6 +113,7 @@ int main(int argc, char** argv)
     server.addVariable<UA_ByteString, QByteArray, UA_TYPES_BYTESTRING>(testFolder, "ns=2;s=Demo.Static.Scalar.ByteString", "ByteStringScalarTest", QByteArray());
     UA_NodeId testStringIdsFolder = server.addFolder("ns=3;s=testStringIdsFolder", "testStringIdsFolder");
     server.addVariable<UA_String, QString, UA_TYPES_STRING>(testStringIdsFolder, "ns=3;s=theStringId", "theStringId", QString());
+    server.addVariable<UA_Guid, QUuid, UA_TYPES_GUID>(testFolder, "ns=2;s=Demo.Static.Scalar.Guid", "GuidScalarTest", QUuid());
 
     UA_NodeId testGuidIdsFolder = server.addFolder("ns=3;s=testGuidIdsFolder", "testGuidIdsFolder");
     server.addVariable<UA_String, QString, UA_TYPES_STRING>(testGuidIdsFolder, "ns=3;g=08081e75-8e5e-319b-954f-f3a7613dc29b", "theGuidId", QString());

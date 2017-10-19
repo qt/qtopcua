@@ -112,6 +112,9 @@ QVariant toQVariant(const OpcUa::Variant &variant)
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Type XMLElement is not yet supported in FreeOPCUA");
         return QVariant();
 
+    case OpcUa::VariantType::GUId:
+        return arrayToQVariant<QUuid, OpcUa::Guid>(variant, QMetaType::QUuid);
+
     default:
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Variant type is not yet supported: %d", static_cast<int>(variant.Type()));
         return QVariant();
@@ -172,6 +175,9 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Type XMLElement is not yet supported in FreeOPCUA");
         return OpcUa::Variant();
 
+    case QOpcUa::Guid:
+        return arrayFromQVariant<OpcUa::Guid>(variant);
+
     default:
         return toVariant(variant);
     }
@@ -185,7 +191,7 @@ QString nodeIdToString(const OpcUa::NodeId &id)
     } else if (id.IsString()) {
         nodeId += QStringLiteral("s=%1").arg(id.GetStringIdentifier().c_str());
     } else if (id.IsGuid()) {
-        OpcUa::Guid tempId = id.GetGuidIdentifier();
+        const OpcUa::Guid tempId = id.GetGuidIdentifier();
         const QUuid uuid(tempId.Data1, tempId.Data2, tempId.Data3, tempId.Data4[0], tempId.Data4[1], tempId.Data4[2],
                 tempId.Data4[3], tempId.Data4[4], tempId.Data4[5], tempId.Data4[6], tempId.Data4[7]);
         nodeId += QStringLiteral("g=").append(uuid.toString().midRef(1, 36)); // Remove enclosing {...}
@@ -277,6 +283,18 @@ OpcUa::NodeId scalarFromQVariant(const QVariant &var)
     }
 }
 
+template<>
+OpcUa::Guid scalarFromQVariant(const QVariant &var)
+{
+    OpcUa::Guid temp;
+    const QUuid uuid = var.toUuid();
+    temp.Data1 = uuid.data1;
+    temp.Data2 = uuid.data2;
+    temp.Data3 = uuid.data3;
+    std::memcpy(temp.Data4, uuid.data4, sizeof(uuid.data4));
+    return temp;
+}
+
 template<typename QTTYPE, typename UATYPE>
 QVariant arrayToQVariant(const OpcUa::Variant &var, QMetaType::Type type)
 {
@@ -336,6 +354,14 @@ template<>
 QString scalarUaToQt<QString, OpcUa::NodeId>(const OpcUa::NodeId &data)
 {
     return nodeIdToString(data);
+}
+
+template<>
+QUuid scalarUaToQt<QUuid, OpcUa::Guid>(const OpcUa::Guid &data)
+{
+    return QUuid(data.Data1, data.Data2, data.Data3, data.Data4[0],
+            data.Data4[1], data.Data4[2], data.Data4[3], data.Data4[4],
+            data.Data4[5], data.Data4[6], data.Data4[7]);
 }
 
 }

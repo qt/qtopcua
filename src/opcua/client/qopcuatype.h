@@ -64,7 +64,8 @@ enum Types
     ByteString      = 14,
     XmlElement      = 15,
     NodeId          = 16,
-    Undefined       = 17
+    Guid            = 17,
+    Undefined       = 0xFFFFFFFF
 };
 
 typedef QPair<QVariant, QOpcUa::Types> TypedVariant;

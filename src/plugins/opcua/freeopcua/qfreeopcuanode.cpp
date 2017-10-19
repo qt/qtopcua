@@ -110,11 +110,12 @@ QOpcUa::Types QFreeOpcUaNode::type() const
         return QOpcUa::Types::NodeId;
     case OpcUa::VariantType::LOCALIZED_TEXT:
         return QOpcUa::Types::LocalizedText;
+    case OpcUa::VariantType::GUId:
+        return QOpcUa::Types::Guid;
 
     case OpcUa::VariantType::EXPANDED_NODE_Id:
     case OpcUa::VariantType::STATUS_CODE:
     case OpcUa::VariantType::QUALIFIED_NAME:
-    case OpcUa::VariantType::GUId:
     case OpcUa::VariantType::XML_ELEMENT:
     case OpcUa::VariantType::NUL:
     case OpcUa::VariantType::EXTENSION_OBJECT:

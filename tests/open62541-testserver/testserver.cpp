@@ -39,6 +39,9 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QLoggingCategory>
+#include <QtCore/QUuid>
+
+#include <cstring>
 
 // Node ID conversion is included from the open62541 plugin but warnings from there should be logged
 // using qt.opcua.testserver instead of qt.opcua.plugins.open62541 for usage in the test server
@@ -354,6 +357,44 @@ UA_NodeId TestServer::addVariable<UA_NodeId, QString, UA_TYPES_NODEID>(const UA_
     }
     return resultId;
 }
+
+template <>
+UA_NodeId TestServer::addVariable<UA_Guid, QUuid, UA_TYPES_GUID>(const UA_NodeId &folder, const QString &variableNode,
+                                  const QString &description, QUuid value)
+{
+    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
+
+    UA_VariableAttributes attr = UA_VariableAttributes_default;
+    UA_Guid uaValue;
+    uaValue.data1 = value.data1;
+    uaValue.data2 = value.data2;
+    uaValue.data3 = value.data3;
+    std::memcpy(uaValue.data4, value.data4, sizeof(value.data4));
+    UA_Variant_setScalar(&attr.value, &uaValue, &UA_TYPES[UA_TYPES_GUID]);
+    attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toLocal8Bit().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", variableNode.toLocal8Bit().constData());
+    attr.dataType = UA_TYPES[UA_TYPES_GUID].typeId;
+    attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+
+    UA_QualifiedName variableName = UA_QUALIFIEDNAME_ALLOC(variableNodeId.namespaceIndex, variableNode.toLocal8Bit().constData());
+
+    UA_NodeId resultId;
+    UA_StatusCode result = UA_Server_addVariableNode(m_server,
+                                                     variableNodeId,
+                                                     folder,
+                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                     variableName,
+                                                     UA_NODEID_NULL,
+                                                     attr,
+                                                     NULL,
+                                                     &resultId);
+    if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not add variable:" << result;
+        return UA_NODEID_NULL;
+    }
+    return resultId;
+}
+
 
 template UA_NodeId TestServer::addVariable<UA_Double, double, UA_TYPES_DOUBLE>(const UA_NodeId &, const QString &, const QString &, double);
 template UA_NodeId TestServer::addVariable<UA_Boolean, bool, UA_TYPES_BOOLEAN>(const UA_NodeId &, const QString &, const QString &, bool);

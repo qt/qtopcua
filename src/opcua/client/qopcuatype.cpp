@@ -68,6 +68,7 @@ QT_BEGIN_NAMESPACE
     \value ByteString
     \value XmlElement \warning Currently not supported by the FreeOPCUA backend
     \value NodeId \warning Currently not supported by the FreeOPCUA backend
+    \value Guid
     \value Undefined
 */
 

@@ -811,6 +811,14 @@ void Tst_QOpcUaClient::writeArray()
     QVERIFY(success == true);
 
     list.clear();
+    list.append(QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216"));
+    list.append(QUuid("460ebe04-89d8-42f3-a0e0-7b45940f1a4e4"));
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Guid"));
+    QVERIFY(node != 0);
+    success = node->setValue(list, QOpcUa::Guid);
+    QVERIFY(success == true);
+
+    list.clear();
     list.append("ns=0;i=0");
     list.append("ns=0;i=1");
     list.append("ns=0;i=2");
@@ -968,6 +976,14 @@ void Tst_QOpcUaClient::readArray()
     withNull.append("i");
     QVERIFY(byteStringArray.toList()[2] == withNull);
 
+    QScopedPointer<QOpcUaNode> guidArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Guid"));
+    QVERIFY(guidArrayNode != 0);
+    QVariant guidArray = guidArrayNode->value();
+    QVERIFY(guidArray.type() == QVariant::List);
+    QVERIFY(guidArray.toList().length() == 2);
+    QCOMPARE(guidArray.toList()[0], QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216}"));
+    QCOMPARE(guidArray.toList()[1], QUuid("460ebe04-89d8-42f3-a0e0-7b45940f1a4e4"));
+
     QScopedPointer<QOpcUaNode> sbyteArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.SByte"));
     QVERIFY(sbyteArrayNode != 0);
     QVariant sbyteArray = sbyteArrayNode->value();
@@ -1078,6 +1094,11 @@ void Tst_QOpcUaClient::writeScalar()
     QScopedPointer<QOpcUaNode> byteStringNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ByteString"));
     QVERIFY(byteStringNode != 0);
     success = byteStringNode->setValue(data, QOpcUa::ByteString);
+    QVERIFY(success == true);
+
+    QScopedPointer<QOpcUaNode> guidNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Guid"));
+    QVERIFY(guidNode != 0);
+    success = guidNode->setValue(QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216"), QOpcUa::Guid);
     QVERIFY(success == true);
 
     QScopedPointer<QOpcUaNode> nodeIdNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.NodeId"));
@@ -1223,6 +1244,14 @@ void Tst_QOpcUaClient::readScalar()
     withNull.append('\0');
     withNull.append("i");
     QVERIFY(byteStringScalar == withNull);
+
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Guid"));
+    QVERIFY(node != 0);
+    QCOMPARE(node->type(), QOpcUa::Types::Guid);
+    QVariant guidScalar = node->value();
+    QVERIFY(guidScalar.isValid());
+    QVERIFY(guidScalar.userType() == QMetaType::QUuid);
+    QCOMPARE(guidScalar, QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216"));
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.NodeId"));
     QVERIFY(node != 0);

@@ -42,6 +42,9 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QLoggingCategory>
+#include <QtCore/QUuid>
+
+#include <cstring>
 
 QT_BEGIN_NAMESPACE
 
@@ -81,6 +84,8 @@ QOpcUa::Types qvariantTypeToQOpcUaType(QMetaType::Type type)
         return QOpcUa::DateTime;
     case QMetaType::QByteArray:
         return QOpcUa::ByteString;
+    case QMetaType::QUuid:
+        return QOpcUa::Guid;
     //return QOpcUa::XmlElement;
     //return QOpcUa::NodeId;
     default:
@@ -138,6 +143,8 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
         return arrayFromQVariant<UA_ByteString, QByteArray>(value, dt);
     case QOpcUa::NodeId:
         return arrayFromQVariant<UA_NodeId, QString>(value, dt);
+    case QOpcUa::Guid:
+        return arrayFromQVariant<UA_Guid, QUuid>(value, dt);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion to Open62541 for typeIndex" << type << " not implemented";
     }
@@ -180,6 +187,8 @@ QVariant toQVariant(const UA_Variant &value)
         return arrayToQVariant<QString, UA_NodeId>(value, QMetaType::QString);
     case UA_TYPES_DATETIME:
         return arrayToQVariant<QDateTime, UA_DateTime>(value, QMetaType::QDateTime);
+    case UA_TYPES_GUID:
+        return arrayToQVariant<QUuid, UA_Guid>(value, QMetaType::QUuid);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
         return QVariant();
@@ -252,6 +261,8 @@ const UA_DataType *toDataType(QOpcUa::Types valueType)
         return &UA_TYPES[UA_TYPES_XMLELEMENT];
     case QOpcUa::NodeId:
         return &UA_TYPES[UA_TYPES_NODEID];
+    case QOpcUa::Guid:
+        return &UA_TYPES[UA_TYPES_GUID];
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Trying to convert undefined type:" << valueType;
         return nullptr;
@@ -307,6 +318,14 @@ QVariant scalarToQVariant<QDateTime, UA_DateTime>(UA_DateTime *data, QMetaType::
 {
     Q_UNUSED(type)
     return QVariant(QDateTime::fromMSecsSinceEpoch(*static_cast<UA_DateTime *>(data) * UA_DATETIME_TO_MSEC));
+}
+
+template<>
+QVariant scalarToQVariant<QUuid, UA_Guid>(UA_Guid *data, QMetaType::Type type)
+{
+    Q_UNUSED(type)
+    return QUuid(data->data1, data->data2, data->data3, data->data4[0], data->data4[1], data->data4[2],
+            data->data4[3], data->data4[4], data->data4[5], data->data4[6], data->data4[7]);
 }
 
 template<typename TARGETTYPE, typename UATYPE>
@@ -371,6 +390,16 @@ void scalarFromQVariant<UA_NodeId, QString>(const QVariant &var, UA_NodeId *ptr)
     UA_NodeId tmpValue = Open62541Utils::nodeIdFromQString(var.toString());
     UA_NodeId_copy(&tmpValue, ptr);
     UA_NodeId_deleteMembers(&tmpValue);
+}
+
+template<>
+void scalarFromQVariant<UA_Guid, QUuid>(const QVariant &var, UA_Guid *ptr)
+{
+    const QUuid uuid = var.toUuid();
+    ptr->data1 = uuid.data1;
+    ptr->data2 = uuid.data2;
+    ptr->data3 = uuid.data3;
+    std::memcpy(ptr->data4, uuid.data4, sizeof(uuid.data4));
 }
 
 template<typename TARGETTYPE, typename QTTYPE>
