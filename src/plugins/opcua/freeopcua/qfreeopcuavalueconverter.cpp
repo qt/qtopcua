@@ -121,6 +121,9 @@ QVariant toQVariant(const OpcUa::Variant &variant)
     case OpcUa::VariantType::QUALIFIED_NAME:
         return arrayToQVariant<QOpcUa::QQualifiedName, OpcUa::QualifiedName>(variant);
 
+    case OpcUa::VariantType::STATUS_CODE:
+        return arrayToQVariant<QOpcUa::UaStatusCode, OpcUa::StatusCode>(variant);
+
     default:
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Variant type is not yet supported: %d", static_cast<int>(variant.Type()));
         return QVariant();
@@ -186,6 +189,9 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
 
     case QOpcUa::QualifiedName:
         return arrayFromQVariant<OpcUa::QualifiedName>(variant);
+
+    case QOpcUa::StatusCode:
+        return arrayFromQVariant<OpcUa::StatusCode, QOpcUa::UaStatusCode>(variant);
 
     default:
         return toVariant(variant);

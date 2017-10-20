@@ -918,6 +918,15 @@ void Tst_QOpcUaClient::writeArray()
     success = node->setValue(list, QOpcUa::QualifiedName);
     QVERIFY(success == true);
 
+    list.clear();
+    list.append(QOpcUa::UaStatusCode::Good);
+    list.append(QOpcUa::UaStatusCode::BadUnexpectedError);
+    list.append(QOpcUa::UaStatusCode::BadInternalError);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.StatusCode"));
+    QVERIFY(node != 0);
+    success = node->setValue(list, QOpcUa::Types::StatusCode);
+    QVERIFY(success == true);
+
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("XmlElement support is not yet implemented in the freeopcua library");
 
@@ -1129,6 +1138,16 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(qualifiedNameArray.toList()[1].value<QOpcUa::QQualifiedName>()  == QOpcUa::QQualifiedName(1, "Test1"));
     QVERIFY(qualifiedNameArray.toList()[2].value<QOpcUa::QQualifiedName>()  == QOpcUa::QQualifiedName(2, "Test2"));
 
+    QScopedPointer<QOpcUaNode> statusCodeArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.StatusCode"));
+    QVERIFY(statusCodeArrayNode != 0);
+    READ_MANDATORY_VARIABLE_NODE(statusCodeArrayNode);
+    QVariant statusCodeArray = statusCodeArrayNode->attribute(QOpcUaNode::NodeAttribute::Value);
+    QVERIFY(statusCodeArray.type() == QVariant::List);
+    QVERIFY(statusCodeArray.toList().length() == 3);
+    QCOMPARE(statusCodeArray.toList()[0].value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(statusCodeArray.toList()[1].value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadUnexpectedError);
+    QCOMPARE(statusCodeArray.toList()[2].value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadInternalError);
+
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("XmlElement support is not yet implemented in the freeopcua backend");
 
@@ -1245,6 +1264,11 @@ void Tst_QOpcUaClient::writeScalar()
     QScopedPointer<QOpcUaNode> qualifiedNameNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.QualifiedName"));
     QVERIFY(qualifiedNameNode != 0);
     success = qualifiedNameNode->setValue(QVariant::fromValue(QOpcUa::QQualifiedName(0, QLatin1String("Test0"))), QOpcUa::QualifiedName);
+    QVERIFY(success == true);
+
+    QScopedPointer<QOpcUaNode> statusCodeNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.StatusCode"));
+    QVERIFY(statusCodeNode != 0);
+    success = statusCodeNode->setValue(QOpcUa::UaStatusCode::BadInternalError, QOpcUa::StatusCode);
     QVERIFY(success == true);
 
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
@@ -1403,6 +1427,13 @@ void Tst_QOpcUaClient::readScalar()
     READ_MANDATORY_VARIABLE_NODE(node)
     QVariant qualifiedNameScalar = node->attribute(QOpcUaNode::NodeAttribute::Value);
     QVERIFY(qualifiedNameScalar.value<QOpcUa::QQualifiedName>() == QOpcUa::QQualifiedName(0, "Test0"));
+
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.StatusCode"));
+    QVERIFY(node != 0);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant statusCodeScalar = node->attribute(QOpcUaNode::NodeAttribute::Value);
+    QVERIFY(statusCodeScalar.isValid());
+    QCOMPARE(statusCodeScalar.value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadInternalError);
 
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("XmlElement support is not yet implemented in the freeopcua backend");

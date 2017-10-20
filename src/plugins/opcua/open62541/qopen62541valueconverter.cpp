@@ -147,6 +147,8 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
         return arrayFromQVariant<UA_XmlElement, QString>(value, dt);
     case QOpcUa::QualifiedName:
         return arrayFromQVariant<UA_QualifiedName, QOpcUa::QQualifiedName>(value, dt);
+    case QOpcUa::StatusCode:
+        return arrayFromQVariant<UA_StatusCode, QOpcUa::UaStatusCode>(value, dt);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion to Open62541 for typeIndex" << type << " not implemented";
     }
@@ -195,6 +197,8 @@ QVariant toQVariant(const UA_Variant &value)
         return arrayToQVariant<QString, UA_XmlElement>(value, QMetaType::QString);
     case UA_TYPES_QUALIFIEDNAME:
         return arrayToQVariant<QOpcUa::QQualifiedName, UA_QualifiedName>(value);
+    case UA_TYPES_STATUSCODE:
+        return arrayToQVariant<QOpcUa::UaStatusCode, UA_StatusCode>(value, QMetaType::UInt);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
         return QVariant();
@@ -269,6 +273,8 @@ const UA_DataType *toDataType(QOpcUa::Types valueType)
         return &UA_TYPES[UA_TYPES_GUID];
     case QOpcUa::QualifiedName:
         return &UA_TYPES[UA_TYPES_QUALIFIEDNAME];
+    case QOpcUa::StatusCode:
+        return &UA_TYPES[UA_TYPES_STATUSCODE];
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Trying to convert undefined type:" << valueType;
         return nullptr;

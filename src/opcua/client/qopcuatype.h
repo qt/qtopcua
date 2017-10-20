@@ -69,6 +69,7 @@ enum Types
     NodeId          = 16,
     Guid            = 17,
     QualifiedName   = 18,
+    StatusCode      = 19,
     Undefined       = 0xFFFFFFFF
 };
 
