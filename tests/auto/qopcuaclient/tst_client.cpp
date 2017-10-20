@@ -913,28 +913,24 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(int16Array.toList()[1] == (short)-12);
     QVERIFY(int16Array.toList()[2] == (short)-13);
 
-    if (opcuaClient->backend() == QLatin1String("freeopcua")) {
-        QWARN("*Int64 types are broken with the freeopcua backend");
-    } else {
-        QScopedPointer<QOpcUaNode> uint64ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt64"));
-        QVERIFY(uint64ArrayNode != 0);
-        QVariant uint64Array = uint64ArrayNode->value();
-        QCOMPARE(uint64Array.type(), QVariant::List);
-        QCOMPARE(uint64Array.toList().length(), 3);
-        QCOMPARE(uint64Array.toList()[0].type(), QVariant::ULongLong);
-        QVERIFY(uint64Array.toList()[0] == (unsigned long long)11);
-        QVERIFY(uint64Array.toList()[1] == (unsigned long long)12);
-        QVERIFY(uint64Array.toList()[2] == (unsigned long long)13);
+    QScopedPointer<QOpcUaNode> uint64ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt64"));
+    QVERIFY(uint64ArrayNode != 0);
+    QVariant uint64Array = uint64ArrayNode->value();
+    QCOMPARE(uint64Array.type(), QVariant::List);
+    QCOMPARE(uint64Array.toList().length(), 3);
+    QCOMPARE(uint64Array.toList()[0].type(), QVariant::ULongLong);
+    QVERIFY(uint64Array.toList()[0] == (unsigned long long)11);
+    QVERIFY(uint64Array.toList()[1] == (unsigned long long)12);
+    QVERIFY(uint64Array.toList()[2] == (unsigned long long)13);
 
-        QScopedPointer<QOpcUaNode> int64ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int64"));
-        QVERIFY(int64ArrayNode != 0);
-        QVariant int64Array = int64ArrayNode->value();
-        QVERIFY(int64Array.type() == QVariant::List && int64Array.toList().length() == 3);
-        QCOMPARE(int64Array.toList()[0].type(), QVariant::LongLong);
-        QVERIFY(int64Array.toList()[0] == (long long)-11);
-        QVERIFY(int64Array.toList()[1] == (long long)-12);
-        QVERIFY(int64Array.toList()[2] == (long long)-13);
-    }
+    QScopedPointer<QOpcUaNode> int64ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int64"));
+    QVERIFY(int64ArrayNode != 0);
+    QVariant int64Array = int64ArrayNode->value();
+    QVERIFY(int64Array.type() == QVariant::List && int64Array.toList().length() == 3);
+    QCOMPARE(int64Array.toList()[0].type(), QVariant::LongLong);
+    QVERIFY(int64Array.toList()[0] == (long long)-11);
+    QVERIFY(int64Array.toList()[1] == (long long)-12);
+    QVERIFY(int64Array.toList()[2] == (long long)-13);
 
     QScopedPointer<QOpcUaNode> byteArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Byte"));
     QVERIFY(byteArrayNode != 0);
@@ -1177,25 +1173,21 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(int16Scalar.userType() == QMetaType::Short);
     QVERIFY(uint16Scalar == (short)42);
 
-    if (opcuaClient->backend() == QLatin1String("freeopcua")) {
-        QWARN("*Int64 types are broken with the freeopcua backend");
-    } else {
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt64"));
-        QVERIFY(node != 0);
-        QCOMPARE(node->type(), QOpcUa::Types::UInt64);
-        QVariant uint64Scalar = node->value();
-        QVERIFY(uint64Scalar.isValid());
-        QCOMPARE(uint64Scalar.type(), QVariant::ULongLong);
-        QVERIFY(uint64Scalar == (unsigned long long)42);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt64"));
+    QVERIFY(node != 0);
+    QCOMPARE(node->type(), QOpcUa::Types::UInt64);
+    QVariant uint64Scalar = node->value();
+    QVERIFY(uint64Scalar.isValid());
+    QCOMPARE(uint64Scalar.type(), QVariant::ULongLong);
+    QVERIFY(uint64Scalar == (unsigned long long)42);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int64"));
-        QVERIFY(node != 0);
-        QCOMPARE(node->type(), QOpcUa::Types::Int64);
-        QVariant int64Scalar = node->value();
-        QVERIFY(int64Scalar.isValid());
-        QCOMPARE(int64Scalar.type(), QVariant::LongLong);
-        QVERIFY(int64Scalar == (long long)42);
-    }
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int64"));
+    QVERIFY(node != 0);
+    QCOMPARE(node->type(), QOpcUa::Types::Int64);
+    QVariant int64Scalar = node->value();
+    QVERIFY(int64Scalar.isValid());
+    QCOMPARE(int64Scalar.type(), QVariant::LongLong);
+    QVERIFY(int64Scalar == (long long)42);
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Byte"));
     QVERIFY(node != 0);

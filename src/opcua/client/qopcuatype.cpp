@@ -61,8 +61,8 @@ QT_BEGIN_NAMESPACE
     \value DateTime
     \value UInt16
     \value Int16
-    \value UInt64 \warning Broken with the FreeOPCUA backend
-    \value Int64 \warning Broken with the FreeOPCUA backend
+    \value UInt64
+    \value Int64
     \value Byte
     \value SByte
     \value ByteString

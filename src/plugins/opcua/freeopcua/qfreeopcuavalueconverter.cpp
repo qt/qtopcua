@@ -99,16 +99,25 @@ QVariant toQVariant(const OpcUa::Variant &variant)
             return QVariant(variant.As<uint32_t>());
         return getArray<quint32>(variant.As<std::vector<uint32_t>>());
 
-    case OpcUa::VariantType::INT64:
+    case OpcUa::VariantType::INT64: {
         if (variant.IsScalar())
-            return QVariant(variant.As<qint64>());
-        return getArray<qint64>(variant.As<std::vector<qint64>>());
+            return QVariant(static_cast<qint64>(variant.As<int64_t>()));
+        std::vector<int64_t> temp = variant.As<std::vector<int64_t>>();
+        QVariantList ret;
+        for (auto it : temp)
+            ret.append(QVariant(static_cast<qint64>(it)));
+        return ret;
+    }
 
-    case OpcUa::VariantType::UINT64:
+    case OpcUa::VariantType::UINT64: {
         if (variant.IsScalar())
-            return QVariant(variant.As<quint64>());
-        return getArray<quint64>(variant.As<std::vector<quint64>>());
-
+            return QVariant(static_cast<quint64>(variant.As<uint64_t>()));
+        std::vector<uint64_t> temp = variant.As<std::vector<uint64_t>>();
+        QVariantList ret;
+        for (auto it : temp)
+            ret.append(QVariant(static_cast<quint64>(it)));
+        return ret;
+    }
     case OpcUa::VariantType::FLOAT:
         if (variant.IsScalar())
             return QVariant(variant.As<float>());
