@@ -54,6 +54,7 @@ QOpen62541Node::QOpen62541Node(const UA_NodeId nodeId, QOpen62541Client *client,
 
 QOpen62541Node::~QOpen62541Node()
 {
+    UA_NodeId_deleteMembers(&m_nodeId);
 }
 
 QString QOpen62541Node::displayName() const
