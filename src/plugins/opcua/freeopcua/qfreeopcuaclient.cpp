@@ -90,7 +90,12 @@ void FreeOpcuaWorker::asyncConnectToEndpoint(const QUrl &url)
         // Check connection status by getting the root node
         GetRootNode();
     } catch (const std::exception &e) {
-        Disconnect();
+        try {
+            Disconnect();
+        } catch (const std::exception &e) {
+            qWarning() << "Disconnect failed";
+            qWarning() << e.what();
+        }
         qWarning() << "Client could not connect to endpoint" << url;
         qWarning() << e.what();
         emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
