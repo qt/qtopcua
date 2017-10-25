@@ -10,7 +10,6 @@
 /config.log
 
 examples/opcua/accontrol/accontrol
-examples/opcua/qml-browser/qml-browser
 tests/freeopcua-testserver/freeopcua-testserver
 
 
