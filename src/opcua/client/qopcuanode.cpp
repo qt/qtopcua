@@ -123,7 +123,7 @@ QOpcUaNode::~QOpcUaNode()
 
 /*!
     \fn QString QOpcUaNode::displayName() const
-    \brief the DisplayName attribute of the OPC UA node.
+    The DisplayName attribute of the OPC UA node.
 */
 QString QOpcUaNode::displayName() const
 {
@@ -137,7 +137,7 @@ QString QOpcUaNode::displayName() const
 
 /*!
     \fn QString QOpcUaNode::type() const
-    \brief the type attribute of the OPC UA node.
+    The type attribute of the OPC UA node.
  */
 QOpcUa::Types QOpcUaNode::type() const
 {
@@ -149,7 +149,7 @@ QOpcUa::Types QOpcUaNode::type() const
 
 /*!
     \fn QVarient QOpcUaNode::value() const
-    \brief the value attribute of the OPC UA node.
+    The value attribute of the OPC UA node.
 
     \sa setValue()
 */
@@ -163,7 +163,7 @@ QVariant QOpcUaNode::value() const
 
 /*!
    \fn QStringList QOpcUaNode::childIds() const
-   \brief QStringList filled with the node IDs of all child nodes of the OPC UA node.
+   QStringList filled with the node IDs of all child nodes of the OPC UA node.
 */
 QStringList QOpcUaNode::childIds() const
 {
@@ -175,7 +175,7 @@ QStringList QOpcUaNode::childIds() const
 
 /*!
     \fn QString QOpcUaNode::nodeId() const
-    \brief the ID of the OPC UA node.
+    The ID of the OPC UA node.
 */
 QString QOpcUaNode::nodeId() const
 {
@@ -187,7 +187,7 @@ QString QOpcUaNode::nodeId() const
 
 /*!
    \fn QOpcUaNodeClass QOpcUaNode::nodeClass() const
-   \brief the node class of the OPC UA node.
+   The node class of the OPC UA node.
 */
 QOpcUaNode::NodeClass QOpcUaNode::nodeClass() const
 {
