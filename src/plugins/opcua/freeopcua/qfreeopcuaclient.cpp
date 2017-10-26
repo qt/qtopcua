@@ -35,95 +35,22 @@
 ****************************************************************************/
 
 #include "qfreeopcuaclient.h"
+#include "qfreeopcuaworker.h"
+
 #include <private/qopcuaclient_p.h>
-#include <private/qopcuasubscription_p.h>
 
-#include "qfreeopcuanode.h"
-#include "qfreeopcuavalueconverter.h"
-#include "qfreeopcuasubscription.h"
-
+#include <qfreeopcuanode.h>
 #include <qopcuasubscription.h>
 
-// freeopcua
-#include <opc/ua/node.h>
-#include <opc/ua/client/client.h>
-#include <opc/ua/protocol/variant.h>
-#include <opc/ua/services/method.h>
-
 #include <QtCore/qdebug.h>
-#include <QtNetwork/qhostinfo.h>
-#include <QtConcurrent/QtConcurrent>
 
 QT_BEGIN_NAMESPACE
-
-class FreeOpcuaWorker : public QObject, public OpcUa::UaClient
-{
-    Q_OBJECT
-public:
-    FreeOpcuaWorker(QFreeOpcUaClientImpl *client)
-        : QObject()
-        , m_client(client)
-    {}
-
-    QOpcUaNode *node(const QString &nodeId, QFreeOpcUaClientImpl *client);
-    QOpcUaSubscription *createSubscription(quint32 interval);
-
-public slots:
-    void asyncConnectToEndpoint(const QUrl &url);
-    void asyncDisconnectFromEndpoint();
-
-private:
-    QFreeOpcUaClientImpl *m_client;
-};
-
-void FreeOpcuaWorker::asyncConnectToEndpoint(const QUrl &url)
-{
-    try {
-        QString sNodeName = QHostInfo::localHostName();
-        SetApplicationURI(QString("urn:%1:%2:%3").arg(
-                              sNodeName).arg("qt-project").arg("QOpcUaClient").toStdString());
-        SetProductURI("urn:qt-project:QOpcUaClient");
-        SetSessionName(GetApplicationURI());
-
-        Connect(url.toString().toStdString());
-
-        // Check connection status by getting the root node
-        GetRootNode();
-    } catch (const std::exception &e) {
-        try {
-            Disconnect();
-        } catch (const std::exception &e) {
-            qWarning() << "Disconnect failed";
-            qWarning() << e.what();
-        }
-        qWarning() << "Client could not connect to endpoint" << url;
-        qWarning() << e.what();
-        emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
-        return;
-    }
-
-    emit m_client->stateAndOrErrorChanged(QOpcUaClient::Connected, QOpcUaClient::NoError);
-}
-
-void FreeOpcuaWorker::asyncDisconnectFromEndpoint()
-{
-    try {
-        Disconnect();
-        emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
-        return;
-    } catch (const std::exception &ex) {
-        qWarning() << "Could not disconnect from endpoint: " << ex.what();
-    }
-
-    emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
-}
-
 
 QFreeOpcUaClientImpl::QFreeOpcUaClientImpl()
     : QOpcUaClientImpl()
 {
     m_thread = new QThread();
-    m_opcuaWorker = new FreeOpcuaWorker(this);
+    m_opcuaWorker = new QFreeOpcUaWorker(this);
     m_opcuaWorker->moveToThread(m_thread);
     connect(m_thread, &QThread::finished, m_opcuaWorker, &QObject::deleteLater);
     connect(m_thread, &QThread::finished, m_thread, &QObject::deleteLater);
@@ -158,38 +85,10 @@ QOpcUaNode *QFreeOpcUaClientImpl::node(const QString &nodeId)
     return m_opcuaWorker->node(nodeId, this);
 }
 
-QOpcUaNode *FreeOpcuaWorker::node(const QString &nodeId, QFreeOpcUaClientImpl *clientImpl)
-{
-    try {
-        OpcUa::Node node = GetNode(nodeId.toStdString());
-        try {
-            node.GetBrowseName(); // make the client fetch the node data from the server
-        } catch (const std::exception &) {
-            return nullptr;
-        }
-        QFreeOpcUaNode* n = new QFreeOpcUaNode(node, this);
-        return new QOpcUaNode(n, clientImpl->m_client);
-    } catch (const std::exception &ex) {
-        qWarning() << "Could not get node: " << nodeId << " " << ex.what();
-        return nullptr;
-    }
-    return nullptr;
-}
-
 QOpcUaSubscription *QFreeOpcUaClientImpl::createSubscription(quint32 interval)
 {
     // TODO: ignores thread boundaries
     return m_opcuaWorker->createSubscription(interval);
 }
 
-QOpcUaSubscription *FreeOpcuaWorker::createSubscription(quint32 interval)
-{
-    QFreeOpcUaSubscription *backendSubscription = new QFreeOpcUaSubscription(this, interval);
-    QOpcUaSubscription *subscription = new QOpcUaSubscription(backendSubscription, interval);
-    backendSubscription->m_qsubscription = subscription;
-    return subscription;
-}
-
 QT_END_NAMESPACE
-
-#include <qfreeopcuaclient.moc>

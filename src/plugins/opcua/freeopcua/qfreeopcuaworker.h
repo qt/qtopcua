@@ -34,47 +34,37 @@
 **
 ****************************************************************************/
 
-#ifndef QFREEOPCUACLIENT_P_H
-#define QFREEOPCUACLIENT_P_H
-
-#include <private/qopcuaclientimpl_p.h>
+#ifndef QFREEOPCUAWORKER_H
+#define QFREEOPCUAWORKER_H
 
 // freeopcua
 #include <opc/ua/client/client.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
-#include <QtCore/qthread.h>
 
 QT_BEGIN_NAMESPACE
-class QFreeOpcUaWorker;
-class QOpcUaSubscription;
+
+class QFreeOpcUaClientImpl;
 class QOpcUaNode;
-class QFreeOpcUaClientImpl : public QOpcUaClientImpl
+class QOpcUaSubscription;
+class QFreeOpcUaWorker : public QObject, public OpcUa::UaClient
 {
+    Q_OBJECT
 public:
-    explicit QFreeOpcUaClientImpl();
-    ~QFreeOpcUaClientImpl() override;
+    QFreeOpcUaWorker(QFreeOpcUaClientImpl *client);
 
-    void connectToEndpoint(const QUrl &url) override;
-    void secureConnectToEndpoint(const QUrl &url) override;
-    void disconnectFromEndpoint() override;
-    QOpcUaNode *node(const QString &nodeId) override;
-
-    bool isSecureConnectionSupported() const override { return false; }
-    QString backend() const override { return QStringLiteral("freeopcua"); }
-
-    QOpcUaSubscription *createSubscription(quint32 interval) override;
+    QOpcUaNode *node(const QString &nodeId, QFreeOpcUaClientImpl *client);
+    QOpcUaSubscription *createSubscription(quint32 interval);
 
 public slots:
-    void connectToEndpointFinished(bool isSuccess);
-    void disconnectFromEndpointFinished(bool isSuccess);
+    void asyncConnectToEndpoint(const QUrl &url);
+    void asyncDisconnectFromEndpoint();
 
 private:
-    QThread *m_thread{};
-    QFreeOpcUaWorker *m_opcuaWorker{};
+    QFreeOpcUaClientImpl *m_client;
 };
 
 QT_END_NAMESPACE
 
-#endif // QFREEOPCUACLIENT_P_H
+#endif // QFREEOPCUAWORKER_H

@@ -15,13 +15,15 @@ HEADERS += \
            qfreeopcuasubscription.h \
            qfreeopcuaplugin.h \
            qfreeopcuavalueconverter.h \
-           qfreeopcuaclient.h
+           qfreeopcuaclient.h \
+           qfreeopcuaworker.h
 
 SOURCES += qfreeopcuaclient.cpp \
            qfreeopcuanode.cpp \
            qfreeopcuasubscription.cpp \
            qfreeopcuaplugin.cpp \
-           qfreeopcuavalueconverter.cpp
+           qfreeopcuavalueconverter.cpp \
+           qfreeopcuaworker.cpp
 
 OTHER_FILES = freeopcua-metadata.json
 
