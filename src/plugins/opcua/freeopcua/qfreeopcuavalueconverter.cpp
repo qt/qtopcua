@@ -60,290 +60,112 @@ QVariant toQVariant(const OpcUa::Variant &variant)
         return QVariant::fromValue(static_cast<QObject *>(0));
 
     case OpcUa::VariantType::BOOLEAN:
-        if (variant.IsScalar())
-            return QVariant(variant.As<bool>());
-        return getArray<bool>(variant.As<std::vector<bool>>());
+        return arrayToQVariant<bool, bool>(variant);
 
     case OpcUa::VariantType::SBYTE:
-        if (variant.IsScalar()) {
-            qint8 value = variant.As<qint8>();
-            return QVariant(QMetaType::SChar, &value);
-        }
-        return getArray<qint8>(variant.As<std::vector<qint8>>(), QMetaType::SChar);
+        return arrayToQVariant<qint8, qint8>(variant, QMetaType::SChar);
 
     case OpcUa::VariantType::BYTE:
-        if (variant.IsScalar()) {
-            quint8 value = variant.As<quint8>();
-            return QVariant(QMetaType::UChar, &value);
-        }
-        return getArray<quint8>(variant.As<std::vector<quint8>>(), QMetaType::UChar);
+        return arrayToQVariant<quint8, quint8>(variant, QMetaType::UChar);
 
     case OpcUa::VariantType::INT16:
-        if (variant.IsScalar()) {
-            QVariant var(QMetaType::Int, 0);
-            var.setValue(variant.As<qint16>());
-            return var;
-        }
-        return getArray<qint16>(variant.As<std::vector<qint16>>(), QMetaType::Int);
+        return arrayToQVariant<qint16, qint16>(variant, QMetaType::Short);
 
     case OpcUa::VariantType::UINT16:
-        if (variant.IsScalar()) {
-            QVariant var(QMetaType::UInt, 0);
-            var.setValue(variant.As<quint16>());
-            return var;
-        }
-        return getArray<quint16>(variant.As<std::vector<quint16>>(), QMetaType::UInt);
+        return arrayToQVariant<quint16, quint16>(variant, QMetaType::UShort);
 
     case OpcUa::VariantType::INT32:
-        if (variant.IsScalar())
-            return QVariant(variant.As<int32_t>());
-        return getArray<qint32>(variant.As<std::vector<int32_t>>());
+        return arrayToQVariant<qint32, qint32>(variant, QMetaType::Int);
 
     case OpcUa::VariantType::UINT32:
-        if (variant.IsScalar())
-            return QVariant(variant.As<uint32_t>());
-        return getArray<quint32>(variant.As<std::vector<uint32_t>>());
+        return arrayToQVariant<quint32, quint32>(variant, QMetaType::UInt);
 
-    case OpcUa::VariantType::INT64: {
-        if (variant.IsScalar())
-            return QVariant(static_cast<qint64>(variant.As<int64_t>()));
-        std::vector<int64_t> temp = variant.As<std::vector<int64_t>>();
-        QVariantList ret;
-        for (auto it : temp)
-            ret.append(QVariant(static_cast<qint64>(it)));
-        return ret;
-    }
+    case OpcUa::VariantType::INT64:
+        return arrayToQVariant<int64_t, int64_t>(variant, QMetaType::LongLong);
 
-    case OpcUa::VariantType::UINT64: {
-        if (variant.IsScalar())
-            return QVariant(static_cast<quint64>(variant.As<uint64_t>()));
-        std::vector<uint64_t> temp = variant.As<std::vector<uint64_t>>();
-        QVariantList ret;
-        for (auto it : temp)
-            ret.append(QVariant(static_cast<quint64>(it)));
-        return ret;
-    }
+    case OpcUa::VariantType::UINT64:
+        return arrayToQVariant<uint64_t, uint64_t>(variant, QMetaType::ULongLong);
+
     case OpcUa::VariantType::FLOAT:
-        if (variant.IsScalar())
-            return QVariant(variant.As<float>());
-        return getArray<float>(variant.As<std::vector<float>>());
+        return arrayToQVariant<float, float>(variant, QMetaType::Float);
 
     case OpcUa::VariantType::DOUBLE:
-        if (variant.IsScalar())
-            return QVariant(variant.As<double>());
-        return getArray<double>(variant.As<std::vector<double>>());
+        return arrayToQVariant<double, double>(variant, QMetaType::Double);
 
     case OpcUa::VariantType::STRING:
-        if (variant.IsScalar()) {
-            return QVariant(QString::fromStdString(variant.As<std::string>()));
-        } else {
-            std::vector<std::string> temp = variant.As<std::vector<std::string>>();
-            QVariantList ret;
-            for (uint i = 0; i < temp.size(); i++) {
-                ret.append(QString::fromStdString(temp[i]));
-            }
-            return ret;
-        }
+        return arrayToQVariant<QString, std::string>(variant, QMetaType::QString);
 
     case OpcUa::VariantType::DATE_TIME:
-        if (variant.IsScalar()) {
-            return QVariant(QDateTime::fromTime_t( OpcUa::DateTime::ToTimeT(variant.As<OpcUa::DateTime>()) ));
-        } else {
-            std::vector<OpcUa::DateTime> temp = variant.As<std::vector<OpcUa::DateTime>>();
-            QVariantList ret;
-            for (uint i = 0; i < temp.size(); i++) {
-                ret.append(QDateTime::fromTime_t(OpcUa::DateTime::ToTimeT(temp[i])));
-            }
-            return ret;
-        }
+        return arrayToQVariant<QDateTime, OpcUa::DateTime>(variant, QMetaType::QDateTime);
 
     case OpcUa::VariantType::BYTE_STRING:
-        if (variant.IsScalar()) {
-            bs = variant.As<OpcUa::ByteString>();
-            return QVariant(QByteArray((char *) bs.Data.data(), bs.Data.size()));
-        } else {
-            std::vector<OpcUa::ByteString> temp = variant.As<std::vector<OpcUa::ByteString>>();
-            QVariantList ret;
-            for (uint i = 0; i < temp.size(); i++) {
-                ret.append(QByteArray((char *) temp[i].Data.data(), temp[i].Data.size()));
-            }
-            return ret;
-        }
+        return arrayToQVariant<QByteArray, OpcUa::ByteString>(variant, QMetaType::QByteArray);
 
     case OpcUa::VariantType::LOCALIZED_TEXT:
-        if (variant.IsScalar()) {
-            return QVariant(QString::fromStdString(variant.As<OpcUa::LocalizedText>().Text));
-        } else {
-            std::vector<OpcUa::LocalizedText> temp = variant.As<std::vector<OpcUa::LocalizedText>>();
-            QVariantList ret;
-            for (uint i = 0; i < temp.size(); i++) {
-                ret.append(QString::fromStdString(temp[i].Text));
-            }
-            return ret;
-        }
+        return arrayToQVariant<QString, OpcUa::LocalizedText>(variant, QMetaType::QString);
 
     case OpcUa::VariantType::NODE_Id:
-        if (variant.IsScalar()) {
-            return QFreeOpcUaValueConverter::nodeIdToString(variant.As<OpcUa::NodeId>());
-        } else {
-            std::vector<OpcUa::NodeId> temp = variant.As<std::vector<OpcUa::NodeId>>();
-            QVariantList ret;
-            for (uint i = 0; i < temp.size(); i++) {
-                ret.append(QFreeOpcUaValueConverter::nodeIdToString(temp[i]));
-            }
-            return ret;
-        }
+        return arrayToQVariant<QString, OpcUa::NodeId>(variant, QMetaType::QString);
 
     case OpcUa::VariantType::XML_ELEMENT:
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Type XMLElement is not yet supported in FreeOPCUA");
         return QVariant();
 
     default:
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Variant type is not yet supported: %d", static_cast<int>(variant.Type()));
         return QVariant();
     }
 }
 
 OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
 {
-    OpcUa::DateTime dt;
-    std::vector<uint8_t> data;
-    OpcUa::Variant var;
-    const bool isList = variant.type() == QVariant::Type::List;
-
     switch (type) {
     case QOpcUa::Boolean:
-        if (isList)
-            return QFreeOpcUaValueConverter::getArray<bool>(variant);
-        return OpcUa::Variant(variant.value<bool>());
+        return arrayFromQVariant<bool>(variant);
 
     case QOpcUa::Byte:
-        if (isList)
-            return QFreeOpcUaValueConverter::getArray<uint8_t>(variant);
-        return OpcUa::Variant(variant.value<uint8_t>());
+        return arrayFromQVariant<uint8_t>(variant);
 
     case QOpcUa::DateTime:
-        if (isList) {
-            QVariantList list = variant.toList();
-            std::vector<OpcUa::DateTime> vec;
-            for (int i = 0; i < list.size(); i++)
-                vec.push_back(OpcUa::DateTime::FromTimeT(list[i].value<QDateTime>().toTime_t()));
-
-            return OpcUa::Variant(vec);
-        }
-        dt = OpcUa::DateTime::FromTimeT(variant.value<QDateTime>().toTime_t());
-        return OpcUa::Variant(dt);
+        return arrayFromQVariant<OpcUa::DateTime>(variant);
     case QOpcUa::Double:
-        if (isList)
-            return QFreeOpcUaValueConverter::getArray<double>(variant);
-        return OpcUa::Variant(variant.value<double>());
+        return arrayFromQVariant<double>(variant);
 
     case QOpcUa::Float:
-        if (isList)
-            return QFreeOpcUaValueConverter::getArray<float>(variant);
-        return OpcUa::Variant(variant.value<float>());
+        return arrayFromQVariant<float>(variant);
 
     case QOpcUa::Int16:
-        if (isList)
-            return QFreeOpcUaValueConverter::getArray<int16_t>(variant);
-        return OpcUa::Variant(variant.value<int16_t>());
+        return arrayFromQVariant<int16_t>(variant);
 
     case QOpcUa::Int32:
-        if (isList)
-            return QFreeOpcUaValueConverter::getArray<int32_t>(variant);
-        return OpcUa::Variant(variant.value<int32_t>());
+        return arrayFromQVariant<int32_t>(variant);
 
     case QOpcUa::Int64:
-        if (isList)
-            return QFreeOpcUaValueConverter::getArray<int64_t>(variant);
-        return OpcUa::Variant(variant.value<int64_t>());
+        return arrayFromQVariant<int64_t>(variant);
 
     case QOpcUa::SByte:
-        if (isList)
-            return QFreeOpcUaValueConverter::getArray<int8_t>(variant);
-        return OpcUa::Variant(variant.value<int8_t>());
+        return arrayFromQVariant<int8_t>(variant);
 
     case QOpcUa::String:
-        if (isList) {
-            QVariantList list = variant.toList();
-            std::vector<std::string> vec;
-            for (int i = 0; i < list.size(); i++)
-                vec.push_back(list[i].value<QString>().toStdString());
-
-            return OpcUa::Variant(vec);
-        }
-        return OpcUa::Variant(variant.toString().toStdString());
+        return arrayFromQVariant<std::string>(variant);
 
     case QOpcUa::UInt16:
-        if (isList)
-            return QFreeOpcUaValueConverter::getArray<uint16_t>(variant);
-        return OpcUa::Variant(variant.value<uint16_t>());
+        return arrayFromQVariant<uint16_t>(variant);
 
     case QOpcUa::UInt32:
-        if (isList)
-            return QFreeOpcUaValueConverter::getArray<uint32_t>(variant);
-        return OpcUa::Variant(variant.value<uint32_t>());
+        return arrayFromQVariant<uint32_t>(variant);
 
     case QOpcUa::UInt64:
-        if (isList)
-            return QFreeOpcUaValueConverter::getArray<uint64_t>(variant);
-        return OpcUa::Variant(variant.value<uint64_t>());
+        return arrayFromQVariant<uint64_t>(variant);
 
     case QOpcUa::LocalizedText:
-        if (isList) {
-            QVariantList list = variant.toList();
-            std::vector<OpcUa::LocalizedText> vec;
-            for (int i = 0; i < list.size(); i++)
-                vec.push_back(OpcUa::LocalizedText(list[i].toString().toStdString(), std::string("en")));
+        return arrayFromQVariant<OpcUa::LocalizedText>(variant);
 
-            return OpcUa::Variant(vec);
-        }
-        return OpcUa::Variant(OpcUa::LocalizedText(variant.toString().toStdString(), std::string("en")));
+    case QOpcUa::ByteString:
+        return arrayFromQVariant<OpcUa::ByteString>(variant);
 
-    case QOpcUa::ByteString: {
-        char *bufferStart;
-        char *bufferEnd;
-        if (isList) {
-            QVariantList list = variant.toList();
-            std::vector<OpcUa::ByteString> vec;
-            for (int i = 0; i < list.size(); i++) {
-                QByteArray rawData = list[i].toByteArray();
-
-                bufferStart = rawData.data();
-                bufferEnd = bufferStart + rawData.length();
-                data = std::vector<uint8_t>(bufferStart, bufferEnd);
-                vec.push_back(OpcUa::ByteString(data));
-            }
-            var = OpcUa::Variant(vec);
-            return var;
-        }
-        if (variant.type() == QVariant::Type::ByteArray) {
-            QByteArray rawData = variant.toByteArray();
-
-            bufferStart = rawData.data();
-            bufferEnd = bufferStart + rawData.length();
-            data = std::vector<uint8_t>(bufferStart, bufferEnd);
-            return OpcUa::Variant(OpcUa::ByteString(data));
-        }
-        return OpcUa::Variant();
-    }
-
-    case QOpcUa::NodeId: {
-        try {
-            if (isList) {
-                std::vector<OpcUa::NodeId> vec;
-                QVariantList list = variant.toList();
-                for (int i=0; i<list.size(); i++) {
-                    vec.push_back(OpcUa::ToNodeId(list[i].toString().toStdString()));
-                }
-                return OpcUa::Variant(vec);
-            } else {
-                return OpcUa::Variant(OpcUa::ToNodeId(variant.toString().toStdString()));
-            }
-        } catch (const std::exception &ex) {
-            qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Failed to parse node id: %s", ex.what());
-            return OpcUa::Variant();
-        }
-    }
+    case QOpcUa::NodeId:
+        return arrayFromQVariant<OpcUa::NodeId>(variant);
 
     case QOpcUa::XmlElement:
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Type XMLElement is not yet supported in FreeOPCUA");
@@ -378,19 +200,140 @@ OpcUa::Variant toVariant(const QVariant &variant)
 {
     switch (variant.type()) {
     case QMetaType::Bool:
-        return OpcUa::Variant(variant.value<bool>());
+        return arrayFromQVariant<bool>(variant);
     case QMetaType::Int:
-        return OpcUa::Variant(variant.value<qint32>());
+        return arrayFromQVariant<qint32>(variant);
     case QMetaType::UInt:
-        return OpcUa::Variant(variant.value<quint32>());
+        return arrayFromQVariant<quint32>(variant);
     case QMetaType::Double:
-        return OpcUa::Variant(variant.value<double>());
+        return arrayFromQVariant<double>(variant);
     case QMetaType::QString:
-        return OpcUa::Variant(variant.value<QString>().toStdString());
+        return arrayFromQVariant<std::string>(variant);
     default:
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Variant type is not yet supported: %d", variant.type());
         return OpcUa::Variant();
     }
 }
+
+template<typename UATYPE, typename QTTYPE=UATYPE>
+OpcUa::Variant arrayFromQVariant(const QVariant &var)
+{
+    if (var.type() == QVariant::List) {
+        QVariantList list = var.toList();
+        std::vector<UATYPE> temp;
+        for (int i = 0; i < list.size(); ++i)
+            temp.push_back(scalarFromQVariant<UATYPE, QTTYPE>(list[i]));
+        return OpcUa::Variant(temp);
+    }
+    return OpcUa::Variant(scalarFromQVariant<UATYPE, QTTYPE>(var));
+}
+
+template<typename UATYPE, typename QTTYPE=UATYPE>
+UATYPE scalarFromQVariant(const QVariant &var)
+{
+    return static_cast<UATYPE>(var.value<QTTYPE>());
+}
+
+template<>
+std::string scalarFromQVariant(const QVariant &var)
+{
+    return var.toString().toStdString();
+}
+
+template<>
+OpcUa::DateTime scalarFromQVariant(const QVariant &var)
+{
+    return OpcUa::DateTime::FromTimeT(var.value<QDateTime>().toTime_t());
+}
+
+template<>
+OpcUa::ByteString scalarFromQVariant(const QVariant &var)
+{
+    const QByteArray arr = var.toByteArray();
+    const char *start = arr.data();
+    const char *end = start + arr.length();
+    std::vector<uint8_t> temp(start, end);
+    return OpcUa::ByteString(temp);
+}
+
+template<>
+OpcUa::LocalizedText scalarFromQVariant(const QVariant &var)
+{
+    return OpcUa::LocalizedText(var.toString().toStdString(), std::string("en"));
+}
+
+template<>
+OpcUa::NodeId scalarFromQVariant(const QVariant &var)
+{
+    try {
+        return OpcUa::ToNodeId(var.toString().toStdString());
+    } catch (const std::exception &ex) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Failed to parse node id:" << ex.what();
+        return OpcUa::NodeId();
+    }
+}
+
+template<typename QTTYPE, typename UATYPE>
+QVariant arrayToQVariant(const OpcUa::Variant &var, QMetaType::Type type)
+{
+    if (var.IsArray()) {
+        QVariantList list;
+        std::vector<UATYPE> temp = var.As<std::vector<UATYPE>>();
+
+        for (unsigned int i = 0; i < temp.size(); ++i) {
+            QTTYPE data = scalarUaToQt<QTTYPE, UATYPE>(temp[i]);
+            if (type == QMetaType::UnknownType)
+                list.append(QVariant::fromValue(data));
+            else
+                list.append(QVariant(type, &data));
+        }
+        return list;
+
+    } else if (var.IsScalar()) {
+        QTTYPE data = scalarUaToQt<QTTYPE, UATYPE>(var.As<UATYPE>());
+        if (type == QMetaType::UnknownType)
+            return QVariant::fromValue(data);
+        return QVariant(type, &data);
+    }
+    return QVariant();
+}
+
+template<typename QTTYPE, typename UATYPE>
+QTTYPE scalarUaToQt(const UATYPE &data)
+{
+    return static_cast<QTTYPE>(data);
+}
+
+template<>
+QString scalarUaToQt<QString, std::string>(const std::string &data)
+{
+    return QString::fromStdString(data);
+}
+
+template<>
+QDateTime scalarUaToQt<QDateTime, OpcUa::DateTime>(const OpcUa::DateTime &data)
+{
+    return QDateTime::fromTime_t( OpcUa::DateTime::ToTimeT(data));
+}
+
+template<>
+QByteArray scalarUaToQt<QByteArray, OpcUa::ByteString>(const OpcUa::ByteString &data)
+{
+    return QByteArray(reinterpret_cast<const char *>(data.Data.data()), data.Data.size());
+}
+
+template<>
+QString scalarUaToQt<QString, OpcUa::LocalizedText>(const OpcUa::LocalizedText &data)
+{
+    return QString::fromStdString(data.Text);
+}
+
+template<>
+QString scalarUaToQt<QString, OpcUa::NodeId>(const OpcUa::NodeId &data)
+{
+    return nodeIdToString(data);
+}
+
 }
 
 QT_END_NAMESPACE

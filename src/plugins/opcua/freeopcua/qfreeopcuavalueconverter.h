@@ -55,36 +55,17 @@ namespace QFreeOpcUaValueConverter
     OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type);
     QString nodeIdToString(const OpcUa::NodeId &id);
 
-    template <typename T> QVariantList getArray(const std::vector<T> &values, QMetaType::Type typeoverride = QMetaType::UnknownType)
-    {
-        QVariantList ret;
-        ret.reserve(values.size());
-        for (typename std::vector<T>::const_iterator it = values.cbegin(); it != values.cend(); ++it) {
-            if (typeoverride == QMetaType::UnknownType) {
-                ret << *it;
-            } else {
-                QVariant var(typeoverride, 0);
-                var.setValue(*it);
-                ret << var;
-            }
-        }
-        return ret;
-    }
+    template <typename UATYPE, typename QTTYPE=UATYPE>
+    OpcUa::Variant arrayFromQVariant(const QVariant &var);
 
-    template <typename T> OpcUa::Variant getArray(const QVariant &variant)
-    {
-        if (variant.type() == QVariant::Type::List) {
-            QVariantList list = variant.toList();
-            std::vector<T> vec;
-            vec.reserve(list.size());
-            for (int i = 0; i < list.size(); ++i)
-                vec.push_back(list[i].value<T>());
+    template <typename UATYPE, typename QTTYPE=UATYPE>
+    UATYPE scalarFromQVariant(const QVariant &var);
 
-            return OpcUa::Variant(vec);
-        } else {
-            return OpcUa::Variant();
-        }
-    }
+    template<typename QTTYPE, typename UATYPE>
+    QTTYPE scalarUaToQt(const UATYPE &data);
+
+    template<typename QTTYPE, typename UATYPE>
+    QVariant arrayToQVariant(const OpcUa::Variant &var, QMetaType::Type type = QMetaType::UnknownType);
 }
 
 QT_END_NAMESPACE

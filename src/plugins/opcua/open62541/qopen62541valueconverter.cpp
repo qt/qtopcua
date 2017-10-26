@@ -47,7 +47,9 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541)
 
-static QOpcUa::Types qvariantTypeToQOpcUaType(QMetaType::Type type)
+namespace QOpen62541ValueConverter {
+
+QOpcUa::Types qvariantTypeToQOpcUaType(QMetaType::Type type)
 {
     switch (type) {
     case QMetaType::Bool:
@@ -88,265 +90,54 @@ static QOpcUa::Types qvariantTypeToQOpcUaType(QMetaType::Type type)
     return QOpcUa::Undefined;
 }
 
-UA_Variant QOpen62541ValueConverter::toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
+UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
 {
     UA_Variant open62541value;
     UA_Variant_init(&open62541value);
 
-    if (value.type() == QVariant::List) {
-        const QVariantList list = value.toList();
-        if (list.isEmpty())
-            return open62541value;
 
-        QOpcUa::Types listValueType = type == QOpcUa::Undefined ?
-                    qvariantTypeToQOpcUaType(static_cast<QMetaType::Type>(list.at(0).type())) : type;
-        const UA_DataType *dt;
-        void *arr;
-        switch (listValueType) {
-        case QOpcUa::Boolean:
-            dt = &UA_TYPES[UA_TYPES_BOOLEAN];
-            break;
-        case QOpcUa::Int32:
-            dt = &UA_TYPES[UA_TYPES_INT32];
-            break;
-        case QOpcUa::UInt32:
-            dt = &UA_TYPES[UA_TYPES_UINT32];
-            break;
-        case QOpcUa::Double:
-            dt = &UA_TYPES[UA_TYPES_DOUBLE];
-            break;
-        case QOpcUa::Float:
-            dt = &UA_TYPES[UA_TYPES_FLOAT];
-            break;
-        case QOpcUa::String:
-            dt = &UA_TYPES[UA_TYPES_STRING];
-            break;
-        case QOpcUa::LocalizedText:
-            dt = &UA_TYPES[UA_TYPES_LOCALIZEDTEXT];
-            break;
-        case QOpcUa::DateTime:
-            dt = &UA_TYPES[UA_TYPES_DATETIME];
-            break;
-        case QOpcUa::UInt16:
-            dt = &UA_TYPES[UA_TYPES_UINT16];
-            break;
-        case QOpcUa::Int16:
-            dt = &UA_TYPES[UA_TYPES_INT16];
-            break;
-        case QOpcUa::UInt64:
-            dt = &UA_TYPES[UA_TYPES_UINT64];
-            break;
-        case QOpcUa::Int64:
-            dt = &UA_TYPES[UA_TYPES_INT64];
-            break;
-        case QOpcUa::Byte:
-            dt = &UA_TYPES[UA_TYPES_BYTE];
-            break;
-        case QOpcUa::SByte:
-            dt = &UA_TYPES[UA_TYPES_SBYTE];
-            break;
-        case QOpcUa::ByteString:
-            dt = &UA_TYPES[UA_TYPES_BYTESTRING];
-            break;
-        case QOpcUa::XmlElement:
-            dt = &UA_TYPES[UA_TYPES_XMLELEMENT];
-            break;
-        case QOpcUa::NodeId:
-            dt = &UA_TYPES[UA_TYPES_NODEID];
-            break;
-        default:
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Trying to create array of undefined type:" << listValueType;
-            return open62541value;
-        }
-        arr = UA_Array_new(list.size(), dt);
-
-        for (int i = 0; i < list.size(); ++i) {
-            switch (listValueType) {
-            case QOpcUa::Boolean: {
-                UA_Boolean *p = static_cast<UA_Boolean *>(arr);
-                p[i] = list[i].toBool();
-                break;
-            }
-            case QOpcUa::Int32: {
-                UA_Int32 *p = static_cast<UA_Int32 *>(arr);
-                p[i] = list[i].toInt();
-                break;
-            }
-            case QOpcUa::UInt32: {
-                UA_UInt32 *p = static_cast<UA_UInt32 *>(arr);
-                p[i] = list[i].toUInt();
-                break;
-            }
-            case QOpcUa::Double: {
-                UA_Double *p = static_cast<UA_Double *>(arr);
-                p[i] = list[i].toDouble();
-                break;
-            }
-            case QOpcUa::Float: {
-                UA_Float *p = static_cast<UA_Float *>(arr);
-                p[i] = list[i].toFloat();
-                break;
-            }
-            case QOpcUa::String: {
-                UA_String *p = static_cast<UA_String *>(arr);
-                p[i] = UA_String_fromChars(list[i].toString().toUtf8().constData());
-                break;
-            }
-            case QOpcUa::ByteString: {
-                UA_ByteString *p = static_cast<UA_ByteString *>(arr);
-                QByteArray qBa = list[i].toByteArray();
-                UA_ByteString temp;
-                temp.length = qBa.length();
-                temp.data = reinterpret_cast<UA_Byte *>(qBa.data());
-                UA_ByteString_copy(&temp, &p[i]);
-                break;
-            }
-            case QOpcUa::LocalizedText: {
-                UA_LocalizedText *p = static_cast<UA_LocalizedText *>(arr);
-                UA_String_init(&p[i].locale);
-                p[i].text = UA_String_fromChars(list[i].toString().toUtf8().constData());
-                break;
-            }
-            case QOpcUa::DateTime: {
-                UA_DateTime *p = static_cast<UA_DateTime *>(arr);
-                QDateTime dt = list[i].toDateTime();
-                p[i] = UA_MSEC_TO_DATETIME * dt.toMSecsSinceEpoch();
-                break;
-            }
-            case QOpcUa::UInt16: {
-                UA_UInt16 *p = static_cast<UA_UInt16 *>(arr);
-                p[i] = list[i].toUInt();
-                break;
-            }
-            case QOpcUa::Int16: {
-                UA_Int16 *p = static_cast<UA_Int16 *>(arr);
-                p[i] = list[i].toInt();
-                break;
-            }
-            case QOpcUa::UInt64: {
-                UA_UInt64 *p = static_cast<UA_UInt64 *>(arr);
-                p[i] = list[i].toULongLong();
-                break;
-            }
-            case QOpcUa::Int64: {
-                UA_Int64 *p = static_cast<UA_Int64 *>(arr);
-                p[i] = list[i].toLongLong();
-                break;
-            }
-            case QOpcUa::Byte:
-            case QOpcUa::SByte: {
-                UA_SByte *p = static_cast<UA_SByte *>(arr);
-                p[i] = *static_cast<const UA_SByte *>(list[i].constData());
-                break;
-            }
-            case QOpcUa::NodeId: {
-                UA_NodeId *p = static_cast<UA_NodeId *>(arr);
-                p[i] = Open62541Utils::nodeIdFromQString(list[i].toString());
-                break;
-            }
-            case QOpcUa::XmlElement:
-            case QOpcUa::Undefined:
-            default:
-                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "VariantList conversion to Open62541 for typeIndex" << listValueType << " not implemented";
-            }
-        }
-        UA_Variant_setArray(&open62541value, arr, list.size(), dt);
+    if (value.type() == QVariant::List && value.toList().size() == 0)
         return open62541value;
-    }
 
+    QVariant temp = (value.type() == QVariant::List) ? value.toList().at(0) : value;
     QOpcUa::Types valueType = type == QOpcUa::Undefined ?
-                qvariantTypeToQOpcUaType(static_cast<QMetaType::Type>(value.type())) : type;
+                qvariantTypeToQOpcUaType(static_cast<QMetaType::Type>(temp.type())) : type;
+
+    const UA_DataType *dt = toDataType(valueType);
 
     switch (valueType) {
-    case QOpcUa::Boolean: {
-        UA_Boolean tmpValue = value.toBool();
-        UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_BOOLEAN]);
-        break;
-    }
-    case QOpcUa::SByte: {
-        UA_SByte tmpValue = *static_cast<const UA_SByte *>(value.constData());
-        UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_SBYTE]);
-        break;
-    }
-    case QOpcUa::Byte: {
-        UA_Byte tmpValue = *static_cast<const UA_Byte *>(value.constData());
-        UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_BYTE]);
-        break;
-    }
-    case QOpcUa::Int16: {
-        UA_Int16 tmpValue = value.toInt();
-        UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_INT16]);
-        break;
-    }
-    case QOpcUa::UInt16: {
-        UA_UInt16 tmpValue = value.toUInt();
-        UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_UINT16]);
-        break;
-    }
-    case QOpcUa::Int32: {
-        UA_Int32 tmpValue = value.toInt();
-        UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_INT32]);
-        break;
-    }
-    case QOpcUa::UInt32: {
-        UA_UInt32 tmpValue = value.toUInt();
-        UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_UINT32]);
-        break;
-    }
-    case QOpcUa::Int64: {
-        UA_Int64 tmpValue = value.toLongLong();
-        UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_INT64]);
-        break;
-    }
-    case QOpcUa::UInt64: {
-        UA_UInt64 tmpValue = value.toULongLong();
-        UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_UINT64]);
-        break;
-    }
-    case QOpcUa::Float: {
-        UA_Float tmpValue = value.toFloat();
-        UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_FLOAT]);
-        break;
-    }
-    case QOpcUa::Double: {
-        UA_Double tmpValue = value.toDouble();
-        UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_DOUBLE]);
-        break;
-    }
-    case QOpcUa::DateTime: {
-        UA_DateTime tmpValue = UA_MSEC_TO_DATETIME * value.toDateTime().toMSecsSinceEpoch();
-        UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_DATETIME]);
-        break;
-    }
-    case QOpcUa::String: {
-        UA_String tmpValue = UA_String_fromChars(value.toString().toUtf8().constData());
-        UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_STRING]);
-        UA_String_deleteMembers(&tmpValue);
-        break;
-    }
-    case QOpcUa::LocalizedText: {
-        UA_LocalizedText tmpValue;
-        UA_String_init(&tmpValue.locale);
-        tmpValue.text = UA_String_fromChars(value.toString().toUtf8().constData());
-        UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
-        UA_LocalizedText_deleteMembers(&tmpValue);
-        break;
-    }
-    case QOpcUa::ByteString: {
-        QByteArray arr = value.toByteArray();
-        UA_ByteString tmpValue;
-        UA_ByteString_init(&tmpValue);
-        tmpValue.length = arr.length();
-        tmpValue.data = reinterpret_cast<UA_Byte *>(arr.data());
-        UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_BYTESTRING]);
-        break;
-    }
-    case QOpcUa::NodeId: {
-        UA_NodeId tmpValue = Open62541Utils::nodeIdFromQString(value.toString());
-        UA_Variant_setScalarCopy(&open62541value, &tmpValue, &UA_TYPES[UA_TYPES_NODEID]);
-        UA_NodeId_deleteMembers(&tmpValue);
-        break;
-    }
+    case QOpcUa::Boolean:
+        return arrayFromQVariant<UA_Boolean, bool>(value, dt);
+    case QOpcUa::SByte:
+        return arrayFromQVariant<UA_SByte, char>(value, dt);
+    case QOpcUa::Byte:
+        return arrayFromQVariant<UA_Byte, uchar>(value, dt);
+    case QOpcUa::Int16:
+        return arrayFromQVariant<UA_Int16, qint16>(value, dt);
+    case QOpcUa::UInt16:
+        return arrayFromQVariant<UA_UInt16, quint16>(value, dt);
+    case QOpcUa::Int32:
+        return arrayFromQVariant<UA_Int32, qint32>(value, dt);
+    case QOpcUa::UInt32:
+        return arrayFromQVariant<UA_UInt32, quint32>(value, dt);
+    case QOpcUa::Int64:
+        return arrayFromQVariant<UA_Int64, int64_t>(value, dt);
+    case QOpcUa::UInt64:
+        return arrayFromQVariant<UA_UInt64, uint64_t>(value, dt);
+    case QOpcUa::Float:
+        return arrayFromQVariant<UA_Float, float>(value, dt);
+    case QOpcUa::Double:
+        return arrayFromQVariant<UA_Double, double>(value, dt);
+    case QOpcUa::DateTime:
+        return arrayFromQVariant<UA_DateTime, QDateTime>(value, dt);
+    case QOpcUa::String:
+        return arrayFromQVariant<UA_String, QString>(value, dt);
+    case QOpcUa::LocalizedText:
+        return arrayFromQVariant<UA_LocalizedText, QString>(value, dt);
+    case QOpcUa::ByteString:
+        return arrayFromQVariant<UA_ByteString, QByteArray>(value, dt);
+    case QOpcUa::NodeId:
+        return arrayFromQVariant<UA_NodeId, QString>(value, dt);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion to Open62541 for typeIndex" << type << " not implemented";
     }
@@ -354,101 +145,41 @@ UA_Variant QOpen62541ValueConverter::toOpen62541Variant(const QVariant &value, Q
     return open62541value;
 }
 
-#define SIMPLE_TYPE_CASE(uat, qmt, qtt) \
-    case uat:\
-    return QVariant(qmt, static_cast<qtt *>(value.data))
-
-#define SIMPLE_TYPE_CASE_LIST(uat, qmt, qtt) \
-    case uat:\
-    list.append(QVariant(qmt, &static_cast<qtt *>(value.data)[i]));\
-    break
-
-QVariant QOpen62541ValueConverter::toQVariant(const UA_Variant &value)
+QVariant toQVariant(const UA_Variant &value)
 {
-    if (value.arrayLength > 0) {
-        QVariantList list;
-        for (size_t i = 0; i < value.arrayLength; ++i) {
-            switch (value.type->typeIndex) {
-            SIMPLE_TYPE_CASE_LIST(UA_TYPES_BOOLEAN, QMetaType::Bool, bool);
-            SIMPLE_TYPE_CASE_LIST(UA_TYPES_SBYTE, QMetaType::SChar, char);
-            SIMPLE_TYPE_CASE_LIST(UA_TYPES_BYTE, QMetaType::UChar, uchar);
-            SIMPLE_TYPE_CASE_LIST(UA_TYPES_INT16, QMetaType::Short, qint16);
-            SIMPLE_TYPE_CASE_LIST(UA_TYPES_UINT16, QMetaType::UShort, quint16);
-            SIMPLE_TYPE_CASE_LIST(UA_TYPES_INT32, QMetaType::Int, qint32);
-            SIMPLE_TYPE_CASE_LIST(UA_TYPES_UINT32, QMetaType::UInt, quint32);
-            SIMPLE_TYPE_CASE_LIST(UA_TYPES_INT64, QMetaType::LongLong, qint64);
-            SIMPLE_TYPE_CASE_LIST(UA_TYPES_UINT64, QMetaType::ULongLong, quint64);
-            SIMPLE_TYPE_CASE_LIST(UA_TYPES_FLOAT, QMetaType::Float, float);
-            SIMPLE_TYPE_CASE_LIST(UA_TYPES_DOUBLE, QMetaType::Double, double);
-            case UA_TYPES_BYTESTRING: {
-                UA_ByteString *uaBs = static_cast<UA_ByteString *>(value.data);
-                QByteArray arr = QByteArray(reinterpret_cast<char *>(uaBs[i].data), uaBs[i].length);
-                list.append(QVariant(QMetaType::QByteArray, &arr));
-                break;
-            }
-            case UA_TYPES_STRING: {
-                UA_String *uaStr = static_cast<UA_String *>(value.data);
-                list.append(QVariant(QString::fromUtf8(reinterpret_cast<char*>(uaStr[i].data),
-                                                            uaStr[i].length)));
-                break;
-            }
-            case UA_TYPES_LOCALIZEDTEXT: {
-                UA_LocalizedText *uaLt = static_cast<UA_LocalizedText *>(value.data);
-                list.append(QVariant(QString::fromUtf8(reinterpret_cast<char*>(uaLt[i].text.data),
-                                                            uaLt[i].text.length)));
-                break;
-            }
-            case UA_TYPES_DATETIME: {
-                UA_DateTime *dt = static_cast<UA_DateTime *>(value.data);
-                list.append(QVariant(QDateTime::fromMSecsSinceEpoch(dt[i] * UA_DATETIME_TO_MSEC)));
-                break;
-            }
-            case UA_TYPES_NODEID: {
-                UA_NodeId *uan = static_cast<UA_NodeId *>(value.data);
-                const QString nstr = Open62541Utils::nodeIdToQString(uan[i]);
-                list.append(QVariant(nstr));
-                break;
-            }
-            default:
-                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant list conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
-                return QVariant();
-            }
-        }
-        QVariant v(list);
-        return v;
-    }
-
     switch (value.type->typeIndex) {
-    SIMPLE_TYPE_CASE(UA_TYPES_BOOLEAN, QMetaType::Bool, bool);
-    SIMPLE_TYPE_CASE(UA_TYPES_SBYTE, QMetaType::SChar, char);
-    SIMPLE_TYPE_CASE(UA_TYPES_BYTE, QMetaType::UChar, uchar);
-    SIMPLE_TYPE_CASE(UA_TYPES_INT16, QMetaType::Short, qint16);
-    SIMPLE_TYPE_CASE(UA_TYPES_UINT16, QMetaType::UShort, quint16);
-    SIMPLE_TYPE_CASE(UA_TYPES_INT32, QMetaType::Int, qint32);
-    SIMPLE_TYPE_CASE(UA_TYPES_UINT32, QMetaType::UInt, quint32);
-    SIMPLE_TYPE_CASE(UA_TYPES_INT64, QMetaType::LongLong, qint64);
-    SIMPLE_TYPE_CASE(UA_TYPES_UINT64, QMetaType::ULongLong, quint64);
-    SIMPLE_TYPE_CASE(UA_TYPES_FLOAT, QMetaType::Float, float);
-    SIMPLE_TYPE_CASE(UA_TYPES_DOUBLE, QMetaType::Double, double);
-    case UA_TYPES_STRING: {
-        UA_String *uaStr = static_cast<UA_String *>(value.data);
-        return QVariant(QString::fromUtf8(reinterpret_cast<char*>(uaStr->data), uaStr->length));
-    }
-    case UA_TYPES_BYTESTRING: {
-        UA_ByteString *uaBs = static_cast<UA_ByteString *>(value.data);
-        return QVariant(QByteArray(reinterpret_cast<char *>(uaBs->data), uaBs->length));
-    }
-    case UA_TYPES_LOCALIZEDTEXT: {
-        UA_LocalizedText *uaLt = static_cast<UA_LocalizedText *>(value.data);
-        return QVariant(QString::fromUtf8(reinterpret_cast<char*>(uaLt->text.data),
-                                               uaLt->text.length));
-    }
-    case UA_TYPES_NODEID: {
-        UA_NodeId *uan = static_cast<UA_NodeId *>(value.data);
-        return Open62541Utils::nodeIdToQString(*uan);
-    }
+    case UA_TYPES_BOOLEAN:
+        return arrayToQVariant<bool, UA_Boolean>(value, QMetaType::Bool);
+    case UA_TYPES_SBYTE:
+        return arrayToQVariant<signed char, UA_SByte>(value, QMetaType::SChar);
+    case UA_TYPES_BYTE:
+        return arrayToQVariant<uchar, UA_Byte>(value, QMetaType::UChar);
+    case UA_TYPES_INT16:
+        return arrayToQVariant<qint16, UA_Int16>(value, QMetaType::Short);
+    case UA_TYPES_UINT16:
+        return arrayToQVariant<quint16, UA_UInt16>(value, QMetaType::UShort);
+    case UA_TYPES_INT32:
+        return arrayToQVariant<qint32, UA_Int32>(value, QMetaType::Int);
+    case UA_TYPES_UINT32:
+        return arrayToQVariant<quint32, UA_UInt32>(value, QMetaType::UInt);
+    case UA_TYPES_INT64:
+        return arrayToQVariant<int64_t, UA_Int64>(value, QMetaType::LongLong);
+    case UA_TYPES_UINT64:
+        return arrayToQVariant<uint64_t, UA_UInt64>(value, QMetaType::ULongLong);
+    case UA_TYPES_FLOAT:
+        return arrayToQVariant<float, UA_Float>(value, QMetaType::Float);
+    case UA_TYPES_DOUBLE:
+        return arrayToQVariant<double, UA_Double>(value, QMetaType::Double);
+    case UA_TYPES_STRING:
+        return arrayToQVariant<QString, UA_String>(value, QMetaType::QString);
+    case UA_TYPES_BYTESTRING:
+        return arrayToQVariant<QByteArray, UA_ByteString>(value, QMetaType::QByteArray);
+    case UA_TYPES_LOCALIZEDTEXT:
+        return arrayToQVariant<QString, UA_LocalizedText>(value, QMetaType::QString);
+    case UA_TYPES_NODEID:
+        return arrayToQVariant<QString, UA_NodeId>(value, QMetaType::QString);
     case UA_TYPES_DATETIME:
-        return QVariant(QDateTime::fromMSecsSinceEpoch(*static_cast<UA_DateTime *>(value.data) * UA_DATETIME_TO_MSEC));
+        return arrayToQVariant<QDateTime, UA_DateTime>(value, QMetaType::QDateTime);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
         return QVariant();
@@ -456,7 +187,7 @@ QVariant QOpen62541ValueConverter::toQVariant(const UA_Variant &value)
     return QVariant();
 }
 
-QOpcUa::Types QOpen62541ValueConverter::toQOpcUaVariantType(quint8 typeIndex)
+QOpcUa::Types toQOpcUaVariantType(quint8 typeIndex)
 {
     switch (typeIndex) {
     case UA_TYPES_BOOLEAN:
@@ -484,9 +215,190 @@ QOpcUa::Types QOpen62541ValueConverter::toQOpcUaVariantType(quint8 typeIndex)
     return QOpcUa::Undefined;
 }
 
-QString QOpen62541ValueConverter::toQString(UA_String value)
+const UA_DataType *toDataType(QOpcUa::Types valueType)
+{
+    switch (valueType) {
+    case QOpcUa::Boolean:
+        return &UA_TYPES[UA_TYPES_BOOLEAN];
+    case QOpcUa::Int32:
+        return &UA_TYPES[UA_TYPES_INT32];
+    case QOpcUa::UInt32:
+        return &UA_TYPES[UA_TYPES_UINT32];
+    case QOpcUa::Double:
+        return &UA_TYPES[UA_TYPES_DOUBLE];
+    case QOpcUa::Float:
+        return &UA_TYPES[UA_TYPES_FLOAT];
+    case QOpcUa::String:
+        return &UA_TYPES[UA_TYPES_STRING];
+    case QOpcUa::LocalizedText:
+        return &UA_TYPES[UA_TYPES_LOCALIZEDTEXT];
+    case QOpcUa::DateTime:
+        return &UA_TYPES[UA_TYPES_DATETIME];
+    case QOpcUa::UInt16:
+        return &UA_TYPES[UA_TYPES_UINT16];
+    case QOpcUa::Int16:
+        return &UA_TYPES[UA_TYPES_INT16];
+    case QOpcUa::UInt64:
+        return &UA_TYPES[UA_TYPES_UINT64];
+    case QOpcUa::Int64:
+        return &UA_TYPES[UA_TYPES_INT64];
+    case QOpcUa::Byte:
+        return &UA_TYPES[UA_TYPES_BYTE];
+    case QOpcUa::SByte:
+        return &UA_TYPES[UA_TYPES_SBYTE];
+    case QOpcUa::ByteString:
+        return &UA_TYPES[UA_TYPES_BYTESTRING];
+    case QOpcUa::XmlElement:
+        return &UA_TYPES[UA_TYPES_XMLELEMENT];
+    case QOpcUa::NodeId:
+        return &UA_TYPES[UA_TYPES_NODEID];
+    default:
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Trying to convert undefined type:" << valueType;
+        return nullptr;
+    }
+}
+
+QString toQString(UA_String value)
 {
     return QString::fromUtf8((const char*) value.data, value.length);
+}
+
+template<typename TARGETTYPE, typename UATYPE>
+QVariant scalarToQVariant(UATYPE *data, QMetaType::Type type)
+{
+    return QVariant(type, reinterpret_cast<TARGETTYPE *>(data));
+}
+
+template<>
+QVariant scalarToQVariant<QString, UA_String>(UA_String *data, QMetaType::Type type)
+{
+    Q_UNUSED(type)
+    UA_String *uaStr = static_cast<UA_String *>(data);
+    return QVariant(QString::fromUtf8(reinterpret_cast<char*>(uaStr->data), uaStr->length));
+}
+
+template<>
+QVariant scalarToQVariant<QByteArray, UA_ByteString>(UA_ByteString *data, QMetaType::Type type)
+{
+    Q_UNUSED(type)
+    UA_ByteString *uaBs = static_cast<UA_ByteString *>(data);
+    return QVariant(QByteArray(reinterpret_cast<char *>(uaBs->data), uaBs->length));
+}
+
+template<>
+QVariant scalarToQVariant<QString, UA_LocalizedText>(UA_LocalizedText *data, QMetaType::Type type)
+{
+    Q_UNUSED(type)
+    UA_LocalizedText *uaLt = static_cast<UA_LocalizedText *>(data);
+    return QVariant(QString::fromUtf8(reinterpret_cast<char*>(uaLt->text.data),
+                                      uaLt->text.length));
+}
+
+template<>
+QVariant scalarToQVariant<QString, UA_NodeId>(UA_NodeId *data, QMetaType::Type type)
+{
+    Q_UNUSED(type)
+    UA_NodeId *uan = static_cast<UA_NodeId *>(data);
+    return Open62541Utils::nodeIdToQString(*uan);
+}
+
+template<>
+QVariant scalarToQVariant<QDateTime, UA_DateTime>(UA_DateTime *data, QMetaType::Type type)
+{
+    Q_UNUSED(type)
+    return QVariant(QDateTime::fromMSecsSinceEpoch(*static_cast<UA_DateTime *>(data) * UA_DATETIME_TO_MSEC));
+}
+
+template<typename TARGETTYPE, typename UATYPE>
+QVariant arrayToQVariant(const UA_Variant &var, QMetaType::Type type)
+{
+    if (var.arrayLength > 1) {
+        QVariantList list;
+        for (size_t i = 0; i < var.arrayLength; ++i) {
+            UATYPE *temp = static_cast<UATYPE *>(var.data);
+            list.append(scalarToQVariant<TARGETTYPE, UATYPE>(&temp[i], type));
+        }
+        return list;
+    }
+    UATYPE *temp = static_cast<UATYPE *>(var.data);
+    return scalarToQVariant<TARGETTYPE, UATYPE>(temp, type);
+}
+
+template<typename TARGETTYPE, typename QTTYPE>
+void scalarFromQVariant(const QVariant &var, TARGETTYPE *ptr)
+{
+    *ptr = static_cast<TARGETTYPE>(var.value<QTTYPE>());
+}
+
+template<>
+void scalarFromQVariant<UA_DateTime, QDateTime>(const QVariant &var, UA_DateTime *ptr)
+{
+    *ptr = UA_MSEC_TO_DATETIME * var.toDateTime().toMSecsSinceEpoch();
+}
+
+template<>
+void scalarFromQVariant<UA_String, QString>(const QVariant &var, UA_String *ptr)
+{
+    UA_String tmpValue = UA_String_fromChars(var.toString().toUtf8().constData());
+    UA_String_copy(&tmpValue, ptr);
+    UA_String_deleteMembers(&tmpValue);
+}
+
+template<>
+void scalarFromQVariant<UA_LocalizedText, QString>(const QVariant &var, UA_LocalizedText *ptr)
+{
+    UA_LocalizedText tmpValue;
+    UA_String_init(&tmpValue.locale);
+    tmpValue.text = UA_String_fromChars(var.toString().toUtf8().constData());
+    UA_LocalizedText_copy(&tmpValue, ptr);
+    UA_LocalizedText_deleteMembers(&tmpValue);
+}
+
+template<>
+void scalarFromQVariant<UA_ByteString, QByteArray>(const QVariant &var, UA_ByteString *ptr)
+{
+    QByteArray arr = var.toByteArray();
+    UA_ByteString tmpValue;
+    UA_ByteString_init(&tmpValue);
+    tmpValue.length = arr.length();
+    tmpValue.data = reinterpret_cast<UA_Byte *>(arr.data());
+    UA_ByteString_copy(&tmpValue, ptr);
+}
+
+template<>
+void scalarFromQVariant<UA_NodeId, QString>(const QVariant &var, UA_NodeId *ptr)
+{
+    UA_NodeId tmpValue = Open62541Utils::nodeIdFromQString(var.toString());
+    UA_NodeId_copy(&tmpValue, ptr);
+    UA_NodeId_deleteMembers(&tmpValue);
+}
+
+template<typename TARGETTYPE, typename QTTYPE>
+UA_Variant arrayFromQVariant(const QVariant &var, const UA_DataType *type)
+{
+    UA_Variant open62541value;
+    UA_Variant_init(&open62541value);
+
+    if (var.type() == QVariant::List) {
+        const QVariantList list = var.toList();
+        if (list.isEmpty())
+            return open62541value;
+
+        TARGETTYPE *arr = static_cast<TARGETTYPE *>(UA_Array_new(list.size(), type));
+
+        for (int i = 0; i < list.size(); ++i)
+            scalarFromQVariant<TARGETTYPE, QTTYPE>(list[i], &arr[i]);
+
+        UA_Variant_setArray(&open62541value, arr, list.size(), type);
+        return open62541value;
+    }
+
+    TARGETTYPE *temp = static_cast<TARGETTYPE *>(UA_new(type));
+    scalarFromQVariant<TARGETTYPE, QTTYPE>(var, temp);
+    UA_Variant_setScalar(&open62541value, temp, type);
+    return open62541value;
+}
+
 }
 
 QT_END_NAMESPACE
