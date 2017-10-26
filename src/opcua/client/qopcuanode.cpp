@@ -162,15 +162,15 @@ QVariant QOpcUaNode::value() const
 }
 
 /*!
-   \fn QStringList QOpcUaNode::childIds() const
+   \fn QStringList QOpcUaNode::childrenIds() const
    QStringList filled with the node IDs of all child nodes of the OPC UA node.
 */
-QStringList QOpcUaNode::childIds() const
+QStringList QOpcUaNode::childrenIds() const
 {
     if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return QStringList();
 
-    return d_func()->m_impl->childIds();
+    return d_func()->m_impl->childrenIds();
 }
 
 /*!

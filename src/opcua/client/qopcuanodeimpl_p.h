@@ -67,7 +67,7 @@ public:
     virtual QString displayName() const = 0;
     virtual QOpcUa::Types type() const = 0;
     virtual QVariant value() const = 0;
-    virtual QStringList childIds() const = 0;
+    virtual QStringList childrenIds() const = 0;
     virtual QString nodeId() const = 0;
     virtual QOpcUaNode::NodeClass nodeClass() const = 0;
 

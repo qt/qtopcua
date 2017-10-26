@@ -55,7 +55,7 @@ public Q_SLOTS:
     QVariant readNodeValueAttribute(UA_NodeId id);
     QOpcUa::Types readNodeValueType(UA_NodeId id);
     bool writeNodeValueAttribute(UA_NodeId id, const QVariant &value, QOpcUa::Types type);
-    QStringList childIds(const UA_NodeId *parentNode);
+    QStringList childrenIds(const UA_NodeId *parentNode);
 
     // Subscription
     UA_UInt32 createSubscription(int interval);

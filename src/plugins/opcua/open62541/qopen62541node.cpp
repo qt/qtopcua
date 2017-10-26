@@ -79,9 +79,9 @@ QOpcUa::Types QOpen62541Node::type() const
     return result;
 }
 
-QStringList QOpen62541Node::childIds() const
+QStringList QOpen62541Node::childrenIds() const
 {
-    QStringList result = m_client->m_backend->childIds(&m_nodeId);
+    QStringList result = m_client->m_backend->childrenIds(&m_nodeId);
     return result;
 }
 

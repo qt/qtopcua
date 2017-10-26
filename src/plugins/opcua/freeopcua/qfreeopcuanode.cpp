@@ -137,7 +137,7 @@ QVariant QFreeOpcUaNode::value() const
     }
 }
 
-QStringList QFreeOpcUaNode::childIds() const
+QStringList QFreeOpcUaNode::childrenIds() const
 {
     QStringList result;
     try {

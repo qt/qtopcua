@@ -61,7 +61,7 @@ public:
 
     QString displayName() const override;
     QOpcUa::Types type() const override;
-    QStringList childIds() const override;
+    QStringList childrenIds() const override;
     QString nodeId() const override;
     QOpcUaNode::NodeClass nodeClass() const override;
 
