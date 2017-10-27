@@ -47,8 +47,11 @@
 #include <qopcuasubscription.h>
 
 #include <QtCore/QDebug>
+#include <QtCore/QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_FREEOPCUA)
 
 QFreeOpcUaSubscription::QFreeOpcUaSubscription(OpcUa::UaClient *client, quint32 interval)
     : m_client(client)
@@ -58,7 +61,7 @@ QFreeOpcUaSubscription::QFreeOpcUaSubscription(OpcUa::UaClient *client, quint32 
     try {
         m_subscription = m_client->CreateSubscription(interval, *this);
     } catch (const std::exception &ex) {
-        qWarning("Caught: %s", ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Caught: %s", ex.what());
     }
 }
 
@@ -75,7 +78,7 @@ QFreeOpcUaSubscription::~QFreeOpcUaSubscription()
             m_subscription->Delete();
         }
     } catch (const std::exception &ex) {
-        qWarning("Caught: %s", ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Caught: %s", ex.what());
     }
 }
 
@@ -88,14 +91,14 @@ void QFreeOpcUaSubscription::DataChange(quint32 handle, const OpcUa::Node &node,
 
     auto it = m_dataChangeHandles.find(handle);
     if (it == m_dataChangeHandles.end()) {
-        qWarning("Received event for unknown handle: %ul", handle);
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Received event for unknown handle: %ul", handle);
         return;
     }
 
     try {
         (*it)->d_func()->triggerValueChanged(QFreeOpcUaValueConverter::toQVariant(val));
     } catch (const std::exception &ex) {
-        qWarning("Caught: %s", ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Caught: %s", ex.what());
     }
 }
 
@@ -117,7 +120,7 @@ QOpcUaMonitoredValue *QFreeOpcUaSubscription::addValue(QOpcUaNode *node)
             return monitoredValue;
         }
     } catch (const std::exception &ex) {
-        qWarning("Caught: %s", ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Caught: %s", ex.what());
     }
     return nullptr;
 }
@@ -126,7 +129,7 @@ void QFreeOpcUaSubscription::Event(quint32 handle, const OpcUa::Event &event)
 {
     auto it = m_eventHandles.find(handle);
     if (it == m_eventHandles.end()) {
-        qWarning() << "Received event for unknown handle:" << handle;
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Received event for unknown handle:" << handle;
         return;
     }
 
@@ -141,7 +144,7 @@ void QFreeOpcUaSubscription::Event(quint32 handle, const OpcUa::Event &event)
         QOpcUaMonitoredEvent *me = *it;
         me->d_func()->triggerNewEvent(val);
     } catch (const std::exception &ex) {
-        qWarning("Caught: %s", ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Caught: %s", ex.what());
     }
 }
 
@@ -164,7 +167,7 @@ QOpcUaMonitoredEvent *QFreeOpcUaSubscription::addEvent(QOpcUaNode *node)
         m_eventHandles[handle] = monitoredEvent;
         return monitoredEvent;
     } catch (const std::exception &ex) {
-        qWarning("Caught: %s", ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Caught: %s", ex.what());
     }
     return nullptr;
 }
@@ -182,7 +185,7 @@ void QFreeOpcUaSubscription::removeEvent(QOpcUaMonitoredEvent *event)
             ++it;
         }
     } catch (const std::exception &ex) {
-        qWarning("Caught: %s", ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Caught: %s", ex.what());
     }
 }
 
@@ -199,7 +202,7 @@ void QFreeOpcUaSubscription::removeValue(QOpcUaMonitoredValue *value)
             ++it;
         }
     } catch (const std::exception &ex) {
-        qWarning("Caught: %s", ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Caught: %s", ex.what());
     }
 }
 

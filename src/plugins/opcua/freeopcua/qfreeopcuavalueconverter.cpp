@@ -36,18 +36,21 @@
 
 #include "qfreeopcuavalueconverter.h"
 #include <QDateTime>
+#include <QLoggingCategory>
 #include <vector>
 
 #include <opc/ua/protocol/string_utils.h>
 
 QT_BEGIN_NAMESPACE
 
+Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_FREEOPCUA)
+
 namespace QFreeOpcUaValueConverter {
 
 QVariant toQVariant(const OpcUa::Variant &variant)
 {
     if (!variant.IsScalar() && !variant.IsArray()) {
-        qWarning("Matrix values are not yet supported by FreeOPCUA");
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Matrix values are not yet supported by FreeOPCUA");
         return QVariant();
     }
 
@@ -192,7 +195,7 @@ QVariant toQVariant(const OpcUa::Variant &variant)
         }
 
     case OpcUa::VariantType::XML_ELEMENT:
-        qWarning("Type XMLElement is not yet supported in FreeOPCUA");
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Type XMLElement is not yet supported in FreeOPCUA");
         return QVariant();
 
     default:
@@ -323,6 +326,7 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
         }
         return OpcUa::Variant();
     }
+
     case QOpcUa::NodeId: {
         try {
             if (isList) {
@@ -336,13 +340,15 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
                 return OpcUa::Variant(OpcUa::ToNodeId(variant.toString().toStdString()));
             }
         } catch (const std::exception &ex) {
-            qWarning("Failed to parse node id: %s", ex.what());
+            qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Failed to parse node id: %s", ex.what());
             return OpcUa::Variant();
         }
     }
+
     case QOpcUa::XmlElement:
-        qWarning("Type XMLElement is not yet supported in FreeOPCUA");
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Type XMLElement is not yet supported in FreeOPCUA");
         return OpcUa::Variant();
+
     default:
         return toVariant(variant);
     }
@@ -356,13 +362,13 @@ QString nodeIdToString(const OpcUa::NodeId &id)
     } else if (id.IsString()) {
         nodeId += QString("s=%1").arg(id.GetStringIdentifier().c_str());
     } else if (id.IsGuid()) {
-        qWarning("Guid nodeIds are not supported");
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Guid nodeIds are not supported");
         nodeId = QString();
     } else if (id.IsBinary()) {
-        qWarning("Opaque nodeIds are not supported");
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Opaque nodeIds are not supported");
         nodeId = QString();
     } else {
-        qWarning("Unknown nodeId type!");
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Unknown nodeId type!");
         nodeId = QString();
     }
     return nodeId;

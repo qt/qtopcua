@@ -44,7 +44,11 @@
 #include "qopen62541node.h"
 #include "qopen62541valueconverter.h"
 
+#include <QtCore/qloggingcategory.h>
+
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541)
 
 static void monitoredValueHandler(UA_UInt32 monId, UA_DataValue *value, void *context)
 {
@@ -88,13 +92,13 @@ QOpcUaMonitoredValue *QOpen62541Subscription::addValue(QOpcUaNode *node)
                                                                  open62541node->nativeNodeId(), UA_ATTRIBUTEID_VALUE,
                                                                  monitoredValueHandler, this, &monitoredItemId);
     if (ret != UA_STATUSCODE_GOOD) {
-        qWarning() << "Could not add monitored item:" << ret;
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not add monitored item:" << ret;
         return nullptr;
     }
 
     QOpcUaMonitoredValue *monitoredValue = new QOpcUaMonitoredValue(node, m_qsubscription);
     if (m_dataChangeHandles.contains(monitoredItemId)) {
-        qWarning() << "monitoredItemId already handled:" << monitoredItemId;
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "monitoredItemId already handled:" << monitoredItemId;
     } else {
         m_dataChangeHandles[monitoredItemId] = monitoredValue;
     }
@@ -114,7 +118,7 @@ void QOpen62541Subscription::removeValue(QOpcUaMonitoredValue *monitoredValue)
         if (it.value() == monitoredValue) {
             UA_StatusCode ret = UA_Client_Subscriptions_removeMonitoredItem(m_backend->m_uaclient, m_subscriptionId, it.key());
             if (ret != UA_STATUSCODE_GOOD) {
-                qWarning() << "Could not remove monitored value from subscription:" << it.key();
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not remove monitored value from subscription:" << it.key();
             }
             m_dataChangeHandles.erase(it);
             QMetaObject::invokeMethod(m_backend, "removeSubscriptionTimer", Qt::QueuedConnection, Q_ARG(int, m_interval));
@@ -128,7 +132,7 @@ void QOpen62541Subscription::monitoredValueUpdated(UA_UInt32 monId, UA_DataValue
 {
     auto monitoredValue = m_dataChangeHandles.find(monId);
     if (monitoredValue == m_dataChangeHandles.end()) {
-        qWarning() << "Could not find object for monitoredItemId:" << monId;
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not find object for monitoredItemId:" << monId;
         return;
     }
 
@@ -139,7 +143,7 @@ void QOpen62541Subscription::monitoredValueUpdated(UA_UInt32 monId, UA_DataValue
     if (var.isValid())
         (*monitoredValue)->d_func()->triggerValueChanged(var);
     else
-        qWarning() << "Could not convert value for node:" << (*monitoredValue)->node().displayName();
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not convert value for node:" << (*monitoredValue)->node().displayName();
 }
 
 bool QOpen62541Subscription::ensureNativeSubscription()

@@ -45,10 +45,13 @@
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qloggingcategory.h>
 
 #include <opc/ua/client/client.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_FREEOPCUA)
 
 QFreeOpcUaNode::QFreeOpcUaNode(OpcUa::Node node, OpcUa::UaClient *client)
     : m_node(node)
@@ -66,7 +69,7 @@ QString QFreeOpcUaNode::displayName() const
         return QString::fromStdString(m_node.GetAttribute(
                                           OpcUa::AttributeId::DisplayName).Value.As<OpcUa::LocalizedText>().Text);
     } catch (const std::exception &ex) {
-        qWarning() << "Failed to get BrowseName for node: " << ex.what();
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Failed to get BrowseName for node: " << ex.what();
     }
     return QString();
 }
@@ -118,7 +121,7 @@ QOpcUa::Types QFreeOpcUaNode::type() const
     case OpcUa::VariantType::DATA_VALUE:
     case OpcUa::VariantType::VARIANT:
     case OpcUa::VariantType::DIAGNOSTIC_INFO:
-        qWarning() << "Type resolution failed for " << (int)value.Type();
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Type resolution failed for " << (int)value.Type();
         break;
     }
 
@@ -134,7 +137,7 @@ QVariant QFreeOpcUaNode::value() const
         else
             return QFreeOpcUaValueConverter::toQVariant(val);
     } catch (const std::exception &ex) {
-        qWarning() << ex.what();
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << ex.what();
         return QVariant();
     }
 }
@@ -148,7 +151,7 @@ QStringList QFreeOpcUaNode::childrenIds() const
         for (std::vector<OpcUa::Node>::const_iterator it = tmp.cbegin(); it != tmp.end(); ++it)
             result.append(QFreeOpcUaValueConverter::nodeIdToString(it->GetId()));
     } catch (const std::exception &ex) {
-        qWarning() << "Failed to get child ids for node:" << ex.what();
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Failed to get child ids for node:" << ex.what();
     }
 
     return result;
@@ -159,7 +162,7 @@ QString QFreeOpcUaNode::nodeId() const
     try {
         return QFreeOpcUaValueConverter::nodeIdToString(m_node.GetId());
     } catch (const std::exception &ex) {
-        qWarning() << "Failed to get id for node:" << ex.what();
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Failed to get id for node:" << ex.what();
         return QString();
     }
 }
@@ -191,7 +194,7 @@ QOpcUaNode::NodeClass QFreeOpcUaNode::nodeClass() const
             return QOpcUaNode::NodeClass::Undefined;
         }
     } catch (const std::exception &ex) {
-        qWarning() << "Failed to get node class for node:" << ex.what();
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Failed to get node class for node:" << ex.what();
         return QOpcUaNode::NodeClass::Undefined;
     }
 }
@@ -206,8 +209,8 @@ bool QFreeOpcUaNode::setValue(const QVariant &value, QOpcUa::Types type)
         m_node.SetValue(toWrite);
         return true;
     } catch (const std::exception &ex) {
-        qWarning() << "Could not write value to node " <<  nodeId();
-        qWarning() << ex.what();
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Could not write value to node " <<  nodeId();
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << ex.what();
     }
     return false;
 }
@@ -228,8 +231,8 @@ bool QFreeOpcUaNode::call(const QString &methodNodeId,
         methodNode.GetBrowseName();
         methodId = methodNode.GetId();
     } catch (const std::exception &ex) {
-        qWarning() << "Could not get node for method call";
-        qWarning() << ex.what();
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Could not get node for method call";
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << ex.what();
         return false;
     }
 
@@ -258,7 +261,7 @@ bool QFreeOpcUaNode::call(const QString &methodNodeId,
         return true;
 
     } catch (const std::exception &ex) {
-        qWarning() << "Method call failed: " << ex.what();
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Method call failed: " << ex.what();
         return false;
     }
 }

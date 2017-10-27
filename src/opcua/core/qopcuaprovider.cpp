@@ -45,9 +45,12 @@
 
 #include <QtCore/qdebug.h>
 #include <QtCore/qjsonarray.h>
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qpluginloader.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_LOGGING_CATEGORY(QT_OPCUA, "qt.opcua")
 
 /*!
     \class QOpcUaProvider
@@ -140,8 +143,8 @@ QOpcUaClient *QOpcUaProvider::createClient(const QString &backend)
     if (it == m_plugins.end()) {
         plugin = loadPlugin(backend);
         if (!plugin) {
-            qWarning() << "Failed to load OPC UA plugin:" << backend;
-            qWarning() << "Available plugins:" << availableBackends();
+            qCWarning(QT_OPCUA) << "Failed to load OPC UA plugin:" << backend;
+            qCWarning(QT_OPCUA) << "Available plugins:" << availableBackends();
             return nullptr;
         }
         m_plugins.insert(backend, plugin);

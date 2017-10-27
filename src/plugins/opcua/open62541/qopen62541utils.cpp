@@ -37,8 +37,11 @@
 #include "qopen62541utils.h"
 
 #include <QtCore/QStringList>
+#include <QtCore/QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541)
 
 UA_NodeId Open62541Utils::nodeIdFromQString(const QString &name)
 {
@@ -84,7 +87,7 @@ QString Open62541Utils::nodeIdToQString(UA_NodeId id)
     case UA_NODEIDTYPE_GUID:
     case UA_NODEIDTYPE_BYTESTRING:
     default:
-        qWarning("Open62541 Utils: Could not convert UA_NodeId to QString");
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Open62541 Utils: Could not convert UA_NodeId to QString");
         result.clear();
     }
     return result;

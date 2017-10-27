@@ -39,6 +39,8 @@
 #include <QtOpcUa/qopcuaclient.h>
 #include "qopen62541client.h"
 
+#include <QtCore/qloggingcategory.h>
+
 QT_BEGIN_NAMESPACE
 
 QOpen62541Plugin::QOpen62541Plugin(QObject *parent)
@@ -54,5 +56,7 @@ QOpcUaClient *QOpen62541Plugin::createClient()
 {
     return new QOpcUaClient(new QOpen62541Client);
 }
+
+Q_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541, "qt.opcua.plugins.open62541")
 
 QT_END_NAMESPACE

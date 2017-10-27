@@ -36,9 +36,12 @@
 
 #include <QtOpcUa/qopcuaclient.h>
 #include <private/qopcuaclient_p.h>
+#include <QLoggingCategory>
 #include <QRegExp>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 
 /*!
     \class QOpcUaClient
@@ -229,7 +232,7 @@ QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 
     static const QRegExp validXmlNotation(QLatin1String("^ns=\\d+;[isgb]=.+$"));
     if (validXmlNotation.indexIn(nodeId) != 0) {
-        qWarning() << "NodeId" << "'" << nodeId << "' is not a valid XML node identifier";
+        qCWarning(QT_OPCUA) << "NodeId" << "'" << nodeId << "' is not a valid XML node identifier";
         return nullptr;
     }
 

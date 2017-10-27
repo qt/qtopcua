@@ -36,8 +36,11 @@
 
 #include <private/qopcuaclient_p.h>
 #include <QDebug>
+#include <QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 
 QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl, QOpcUaClient *parent)
     : QObjectPrivate()
@@ -71,7 +74,7 @@ void QOpcUaClientPrivate::connectToEndpoint(const QUrl &url)
 void QOpcUaClientPrivate::secureConnectToEndpoint(const QUrl &url)
 {
     if (!m_impl->isSecureConnectionSupported()) {
-        qWarning("Backend does not support secure connections. Cancelling connection.");
+        qCWarning(QT_OPCUA, "Backend does not support secure connections. Cancelling connection.");
         setStateAndError(m_state, QOpcUaClient::SecureConnectionError);
         return;
     }
@@ -88,7 +91,7 @@ void QOpcUaClientPrivate::secureConnectToEndpoint(const QUrl &url)
 void QOpcUaClientPrivate::disconnectFromEndpoint()
 {
     if (m_state != QOpcUaClient::Connected) {
-        qWarning("Closing a connection without being connected.");
+        qCWarning(QT_OPCUA, "Closing a connection without being connected.");
         return;
     }
 
@@ -99,7 +102,7 @@ void QOpcUaClientPrivate::disconnectFromEndpoint()
 bool QOpcUaClientPrivate::checkAndSetUrl(const QUrl &url)
 {
     if (url.scheme() != QStringLiteral("opc.tcp")) {
-        qWarning() << "Wrong url scheme, could not connect";
+        qCWarning(QT_OPCUA) << "Wrong url scheme, could not connect";
         return false;
     }
 

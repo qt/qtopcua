@@ -41,8 +41,11 @@
 #include <qopen62541.h>
 
 #include <QtCore/QDebug>
+#include <QtCore/QLoggingCategory>
 
-QT_END_NAMESPACE
+QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541)
 
 static QOpcUa::Types qvariantTypeToQOpcUaType(QMetaType::Type type)
 {
@@ -152,7 +155,7 @@ UA_Variant QOpen62541ValueConverter::toOpen62541Variant(const QVariant &value, Q
             dt = &UA_TYPES[UA_TYPES_NODEID];
             break;
         default:
-            qWarning() << "Trying to create array of undefined type:" << listValueType;
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Trying to create array of undefined type:" << listValueType;
             return open62541value;
         }
         arr = UA_Array_new(list.size(), dt);
@@ -244,7 +247,7 @@ UA_Variant QOpen62541ValueConverter::toOpen62541Variant(const QVariant &value, Q
             case QOpcUa::XmlElement:
             case QOpcUa::Undefined:
             default:
-                qWarning() << "VariantList conversion to Open62541 for typeIndex" << listValueType << " not implemented";
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "VariantList conversion to Open62541 for typeIndex" << listValueType << " not implemented";
             }
         }
         UA_Variant_setArray(&open62541value, arr, list.size(), dt);
@@ -345,7 +348,7 @@ UA_Variant QOpen62541ValueConverter::toOpen62541Variant(const QVariant &value, Q
         break;
     }
     default:
-        qWarning() << "Variant conversion to Open62541 for typeIndex" << type << " not implemented";
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion to Open62541 for typeIndex" << type << " not implemented";
     }
 
     return open62541value;
@@ -407,7 +410,7 @@ QVariant QOpen62541ValueConverter::toQVariant(const UA_Variant &value)
                 break;
             }
             default:
-                qWarning() << "Variant list conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant list conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
                 return QVariant();
             }
         }
@@ -447,7 +450,7 @@ QVariant QOpen62541ValueConverter::toQVariant(const UA_Variant &value)
     case UA_TYPES_DATETIME:
         return QVariant(QDateTime::fromMSecsSinceEpoch(*static_cast<UA_DateTime *>(value.data) * UA_DATETIME_TO_MSEC));
     default:
-        qWarning() << "Variant conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
         return QVariant();
     }
     return QVariant();
@@ -475,7 +478,7 @@ QOpcUa::Types QOpen62541ValueConverter::toQOpcUaVariantType(quint8 typeIndex)
     case UA_TYPES_UINT64:
         return QOpcUa::UInt64;
     default:
-        qWarning() << "Variant conversion to Qt type " << typeIndex << " not implemented";
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion to Qt type " << typeIndex << " not implemented";
         return QOpcUa::Undefined;
     }
     return QOpcUa::Undefined;

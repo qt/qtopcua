@@ -38,6 +38,8 @@
 #include "qfreeopcuaclient.h"
 #include <QtOpcUa/qopcuaclient.h>
 
+#include <QtCore/qloggingcategory.h>
+
 QT_BEGIN_NAMESPACE
 
 QFreeOpcUaPlugin::QFreeOpcUaPlugin(QObject *parent)
@@ -53,5 +55,7 @@ QOpcUaClient *QFreeOpcUaPlugin::createClient()
 {
     return new QOpcUaClient(new QFreeOpcUaClientImpl);
 }
+
+Q_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_FREEOPCUA, "qt.opcua.plugins.freeopcua")
 
 QT_END_NAMESPACE

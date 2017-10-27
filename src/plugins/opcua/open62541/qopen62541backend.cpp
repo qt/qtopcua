@@ -39,10 +39,13 @@
 
 #include <QtCore/QStringList>
 #include <QtCore/QUrl>
+#include <QtCore/QLoggingCategory>
 
 #include <QtOpcUa/private/qopcuaclient_p.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541)
 
 struct UaVariantMemberDeleter
 {
@@ -70,7 +73,7 @@ QString Open62541AsyncBackend::resolveNodeNameById(UA_NodeId id)
     QScopedPointer<UA_LocalizedText, UaLocalizedTextMemberDeleter> ts(&type);
     UA_StatusCode ret = UA_Client_readDisplayNameAttribute(m_uaclient, id, &type);
     if (ret != UA_STATUSCODE_GOOD) {
-        qWarning() << "Could not read display name attribute:" << ret;
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not read display name attribute:" << ret;
         return QString();
     }
 
@@ -127,7 +130,7 @@ QVariant Open62541AsyncBackend::readNodeValueAttribute(UA_NodeId id)
         return QVariant();
 
     if (!value.type->builtin) {
-        qWarning() << "Open62541: only builtin types are currently supported!";
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: only builtin types are currently supported!";
         return QVariant();
     }
 
@@ -178,7 +181,7 @@ QOpcUa::Types Open62541AsyncBackend::readNodeValueType(UA_NodeId id)
     case UA_TYPES_DATETIME:
         return QOpcUa::Types::DateTime;
     default:
-        qWarning() << "Type resolution failed for typeIndex:" << value.type->typeIndex;
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Type resolution failed for typeIndex:" << value.type->typeIndex;
     }
     return QOpcUa::Types::Undefined;
 }
@@ -189,7 +192,7 @@ bool Open62541AsyncBackend::writeNodeValueAttribute(UA_NodeId id, const QVariant
     QScopedPointer<UA_Variant, UaVariantMemberDeleter> vs(&val);
     UA_StatusCode ret = UA_Client_writeValueAttribute(m_uaclient, id, &val);
     if (ret != UA_STATUSCODE_GOOD) {
-        qWarning() << "Open62541: Could not write Value Attribute:" << ret;
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Could not write Value Attribute:" << ret;
         return false;
     }
 
@@ -221,7 +224,7 @@ static UA_StatusCode nodeIter(UA_NodeId childId, UA_Boolean isInverse, UA_NodeId
                     QString::fromUtf8(reinterpret_cast<char *>(childId.identifier.string.data), childId.identifier.string.length));
     }
     else {
-        qWarning() << "Skipping child with unsupported nodeid type";
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Skipping child with unsupported nodeid type";
     }
 
     if (!childName.isEmpty())
@@ -255,7 +258,7 @@ void Open62541AsyncBackend::deleteSubscription(UA_UInt32 id)
 {
     UA_StatusCode ret = UA_Client_Subscriptions_remove(m_uaclient, id);
     if (ret != UA_STATUSCODE_GOOD)
-        qWarning() << "QOpcUa::Open62541: Could not remove subscription";
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "QOpcUa::Open62541: Could not remove subscription";
 }
 
 void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
@@ -267,7 +270,7 @@ void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
         UA_Client_delete(m_uaclient);
         m_uaclient = nullptr;
         emit m_clientImpl->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
-        qWarning("Open62541: Failed to connect.");
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Open62541: Failed to connect.");
         return;
     }
 
@@ -284,7 +287,7 @@ void Open62541AsyncBackend::disconnectFromEndpoint()
 {
     UA_StatusCode ret = UA_Client_disconnect(m_uaclient);
     if (ret != UA_STATUSCODE_GOOD) {
-        qWarning("Open62541: Failed to disconnect.");
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Open62541: Failed to disconnect.");
         // Fall through intentionally
     }
 
@@ -323,7 +326,7 @@ void Open62541AsyncBackend::activateSubscriptionTimer(int timeout)
 void Open62541AsyncBackend::removeSubscriptionTimer(int timeout)
 {
     if (!m_subscriptionIntervals.remove(timeout))
-        qWarning() << "Trying to remove non-existent interval.";
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Trying to remove non-existent interval.";
     if (m_subscriptionIntervals.isEmpty())
         m_subscriptionTimer->stop();
 }
