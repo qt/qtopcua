@@ -36,6 +36,8 @@
 
 #include "qopcuanodeimpl_p.h"
 
+QT_BEGIN_NAMESPACE
+
 QOpcUaNodeImpl::QOpcUaNodeImpl()
 {
 }
@@ -43,3 +45,5 @@ QOpcUaNodeImpl::QOpcUaNodeImpl()
 QOpcUaNodeImpl::~QOpcUaNodeImpl()
 {
 }
+
+QT_END_NAMESPACE

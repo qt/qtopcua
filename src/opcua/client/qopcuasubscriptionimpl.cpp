@@ -36,6 +36,8 @@
 
 #include <private/qopcuasubscriptionimpl_p.h>
 
+QT_BEGIN_NAMESPACE
+
 QOpcUaSubscriptionImpl::QOpcUaSubscriptionImpl()
 {
 }
@@ -43,3 +45,5 @@ QOpcUaSubscriptionImpl::QOpcUaSubscriptionImpl()
 QOpcUaSubscriptionImpl::~QOpcUaSubscriptionImpl()
 {
 }
+
+QT_END_NAMESPACE

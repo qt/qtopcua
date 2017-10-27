@@ -37,6 +37,8 @@
 #include <private/qopcuamonitoredevent_p.h>
 #include <private/qopcuasubscriptionimpl_p.h>
 
+QT_BEGIN_NAMESPACE
+
 QOpcUaMonitoredEventPrivate::QOpcUaMonitoredEventPrivate(QOpcUaNode *node, QOpcUaSubscription *subscription)
     : m_node(node)
     , m_subscription(subscription)
@@ -56,3 +58,5 @@ bool QOpcUaMonitoredEventPrivate::triggerNewEvent(const QVector<QVariant> &val)
     // even if the plugin triggered this from a worker thread
     return QMetaObject::invokeMethod(q_func(), "newEvent", Qt::AutoConnection, Q_ARG(QVector<QVariant>, val));
 }
+
+QT_END_NAMESPACE

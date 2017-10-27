@@ -44,6 +44,8 @@
 #include "qopen62541node.h"
 #include "qopen62541valueconverter.h"
 
+QT_BEGIN_NAMESPACE
+
 static void monitoredValueHandler(UA_UInt32 monId, UA_DataValue *value, void *context)
 {
     QOpen62541Subscription* subscription = static_cast<QOpen62541Subscription *>(context);
@@ -160,3 +162,5 @@ void QOpen62541Subscription::removeNativeSubscription()
         m_subscriptionId = 0;
     }
 }
+
+QT_END_NAMESPACE

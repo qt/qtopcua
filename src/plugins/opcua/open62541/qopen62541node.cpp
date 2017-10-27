@@ -45,6 +45,8 @@
 
 #include "qopen62541valueconverter.h"
 
+QT_BEGIN_NAMESPACE
+
 QOpen62541Node::QOpen62541Node(const UA_NodeId nodeId, QOpen62541Client *client, const QString nodeIdString)
     : m_client(client)
     , m_nodeIdString(nodeIdString)
@@ -163,3 +165,5 @@ UA_NodeId QOpen62541Node::nativeNodeId() const
 {
     return m_nodeId;
 }
+
+QT_END_NAMESPACE

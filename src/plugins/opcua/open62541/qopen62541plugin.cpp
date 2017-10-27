@@ -39,6 +39,8 @@
 #include <QtOpcUa/qopcuaclient.h>
 #include "qopen62541client.h"
 
+QT_BEGIN_NAMESPACE
+
 QOpen62541Plugin::QOpen62541Plugin(QObject *parent)
     : QOpcUaPlugin(parent)
 {
@@ -52,3 +54,5 @@ QOpcUaClient *QOpen62541Plugin::createClient()
 {
     return new QOpcUaClient(new QOpen62541Client);
 }
+
+QT_END_NAMESPACE

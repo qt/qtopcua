@@ -42,6 +42,8 @@
 
 #include <QVariant>
 
+QT_BEGIN_NAMESPACE
+
 namespace QOpen62541ValueConverter {
     UA_Variant toOpen62541Variant(const QVariant&, QOpcUa::Types);
     QVariant toQVariant(const UA_Variant&);
@@ -49,5 +51,7 @@ namespace QOpen62541ValueConverter {
 
     QString toQString(UA_String value);
 }
+
+QT_END_NAMESPACE
 
 #endif // QOPEN62541VALUECONVERTER_H

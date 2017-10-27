@@ -37,6 +37,8 @@
 #include <private/qopcuamonitoredvalue_p.h>
 #include <private/qopcuasubscriptionimpl_p.h>
 
+QT_BEGIN_NAMESPACE
+
 QOpcUaMonitoredValuePrivate::QOpcUaMonitoredValuePrivate(QOpcUaNode *node, QOpcUaSubscription *subscription)
     : m_node(node)
     , m_subscription(subscription)
@@ -57,3 +59,5 @@ void QOpcUaMonitoredValuePrivate::triggerValueChanged(const QVariant &val)
         QMetaObject::invokeMethod(q_func(), "valueChanged", Qt::AutoConnection, Q_ARG(QVariant, val));
     }
 }
+
+QT_END_NAMESPACE

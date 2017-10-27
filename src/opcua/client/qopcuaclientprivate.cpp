@@ -37,6 +37,8 @@
 #include <private/qopcuaclient_p.h>
 #include <QDebug>
 
+QT_BEGIN_NAMESPACE
+
 QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl, QOpcUaClient *parent)
     : QObjectPrivate()
     , m_impl(impl)
@@ -134,3 +136,5 @@ void QOpcUaClientPrivate::setStateAndError(QOpcUaClient::ClientState state,
             emit q->disconnected();
     }
 }
+
+QT_END_NAMESPACE

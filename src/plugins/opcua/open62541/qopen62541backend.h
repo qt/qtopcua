@@ -39,6 +39,8 @@
 #include <QtCore/QString>
 #include <QtCore/QTimer>
 
+QT_BEGIN_NAMESPACE
+
 class Open62541AsyncBackend : public QObject
 {
     Q_OBJECT
@@ -70,3 +72,4 @@ public:
     QSet<int> m_subscriptionIntervals;
 };
 
+QT_END_NAMESPACE

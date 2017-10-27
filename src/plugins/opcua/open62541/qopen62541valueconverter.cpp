@@ -42,6 +42,8 @@
 
 #include <QtCore/QDebug>
 
+QT_END_NAMESPACE
+
 static QOpcUa::Types qvariantTypeToQOpcUaType(QMetaType::Type type)
 {
     switch (type) {
@@ -483,3 +485,5 @@ QString QOpen62541ValueConverter::toQString(UA_String value)
 {
     return QString::fromUtf8((const char*) value.data, value.length);
 }
+
+QT_END_NAMESPACE

@@ -48,6 +48,8 @@
 
 #include <opc/ua/client/client.h>
 
+QT_BEGIN_NAMESPACE
+
 QFreeOpcUaNode::QFreeOpcUaNode(OpcUa::Node node, OpcUa::UaClient *client)
     : m_node(node)
     , m_client(client)
@@ -289,3 +291,5 @@ bool QFreeOpcUaNode::writeHistorical(QOpcUa::Types type,
     Q_UNUSED(data);
     return false;
 }
+
+QT_END_NAMESPACE

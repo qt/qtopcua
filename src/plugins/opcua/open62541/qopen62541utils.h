@@ -41,9 +41,13 @@
 
 #include <QtCore/QString>
 
+QT_BEGIN_NAMESPACE
+
 namespace Open62541Utils {
     UA_NodeId nodeIdFromQString(const QString &name);
     QString nodeIdToQString(UA_NodeId id);
 }
+
+QT_END_NAMESPACE
 
 #endif // QOPEN62541UTILS_H

@@ -42,6 +42,8 @@
 
 #include <QtOpcUa/private/qopcuaclient_p.h>
 
+QT_BEGIN_NAMESPACE
+
 struct UaVariantMemberDeleter
 {
     static void cleanup(UA_Variant *p) { UA_Variant_deleteMembers(p); }
@@ -326,3 +328,4 @@ void Open62541AsyncBackend::removeSubscriptionTimer(int timeout)
         m_subscriptionTimer->stop();
 }
 
+QT_END_NAMESPACE

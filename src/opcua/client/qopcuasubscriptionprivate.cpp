@@ -36,6 +36,8 @@
 
 #include <private/qopcuasubscription_p.h>
 
+QT_BEGIN_NAMESPACE
+
 QOpcUaSubscriptionPrivate::QOpcUaSubscriptionPrivate(QOpcUaSubscriptionImpl *impl, quint32 interval)
     : m_impl(impl)
     , m_interval(interval)
@@ -47,3 +49,5 @@ QOpcUaSubscriptionPrivate::~QOpcUaSubscriptionPrivate()
 {
 
 }
+
+QT_END_NAMESPACE

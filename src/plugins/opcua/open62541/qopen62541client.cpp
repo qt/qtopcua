@@ -47,6 +47,8 @@
 
 #include <QtOpcUa/private/qopcuaclient_p.h>
 
+QT_BEGIN_NAMESPACE
+
 QOpen62541Client::QOpen62541Client()
     : QOpcUaClientImpl()
     , m_backend(new Open62541AsyncBackend(this))
@@ -107,3 +109,4 @@ UA_Client *QOpen62541Client::nativeClient() const
     return m_backend->m_uaclient;
 }
 
+QT_END_NAMESPACE

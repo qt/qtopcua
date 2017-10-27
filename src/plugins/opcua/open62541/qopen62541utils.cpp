@@ -38,6 +38,8 @@
 
 #include <QtCore/QStringList>
 
+QT_BEGIN_NAMESPACE
+
 UA_NodeId Open62541Utils::nodeIdFromQString(const QString &name)
 {
     // FIXME: proper type recognition
@@ -87,3 +89,5 @@ QString Open62541Utils::nodeIdToQString(UA_NodeId id)
     }
     return result;
 }
+
+QT_END_NAMESPACE
