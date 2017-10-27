@@ -81,8 +81,17 @@ void QFreeOpcUaClientImpl::disconnectFromEndpoint()
 
 QOpcUaNode *QFreeOpcUaClientImpl::node(const QString &nodeId)
 {
-    // TODO: ignores thread boundaries
-    return m_opcuaWorker->node(nodeId, this);
+    if (!m_opcuaWorker)
+        return new QOpcUaNode(new QFreeOpcUaNode(OpcUa::Node(), nullptr), m_client);
+
+    try {
+        OpcUa::Node node = m_opcuaWorker->GetNode(nodeId.toStdString());
+        QFreeOpcUaNode *n = new QFreeOpcUaNode(node, m_opcuaWorker);
+        return new QOpcUaNode(n, m_client);
+    } catch (const std::exception &ex) {
+        qWarning() << "Could not get node: " << nodeId << " " << ex.what();
+        return new QOpcUaNode(new QFreeOpcUaNode(OpcUa::Node(), m_opcuaWorker), m_client);
+    }
 }
 
 QOpcUaSubscription *QFreeOpcUaClientImpl::createSubscription(quint32 interval)

@@ -97,24 +97,6 @@ void QFreeOpcUaWorker::asyncDisconnectFromEndpoint()
     emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
 }
 
-QOpcUaNode *QFreeOpcUaWorker::node(const QString &nodeId, QFreeOpcUaClientImpl *clientImpl)
-{
-    try {
-        OpcUa::Node node = GetNode(nodeId.toStdString());
-        try {
-            node.GetBrowseName(); // make the client fetch the node data from the server
-        } catch (const std::exception &) {
-            return nullptr;
-        }
-        QFreeOpcUaNode* n = new QFreeOpcUaNode(node, this);
-        return new QOpcUaNode(n, clientImpl->m_client);
-    } catch (const std::exception &ex) {
-        qWarning() << "Could not get node: " << nodeId << " " << ex.what();
-        return nullptr;
-    }
-    return nullptr;
-}
-
 QOpcUaSubscription *QFreeOpcUaWorker::createSubscription(quint32 interval)
 {
     QFreeOpcUaSubscription *backendSubscription = new QFreeOpcUaSubscription(this, interval);

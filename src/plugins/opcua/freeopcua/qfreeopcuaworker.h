@@ -54,7 +54,6 @@ class QFreeOpcUaWorker : public QObject, public OpcUa::UaClient
 public:
     QFreeOpcUaWorker(QFreeOpcUaClientImpl *client);
 
-    QOpcUaNode *node(const QString &nodeId, QFreeOpcUaClientImpl *client);
     QOpcUaSubscription *createSubscription(quint32 interval);
 
 public slots:

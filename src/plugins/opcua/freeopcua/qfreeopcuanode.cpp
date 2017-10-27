@@ -218,6 +218,9 @@ bool QFreeOpcUaNode::call(const QString &methodNodeId,
     OpcUa::NodeId objectId;
     OpcUa::NodeId methodId;
 
+    if (!m_client)
+        return false;
+
     try {
         objectId = m_node.GetId();
 

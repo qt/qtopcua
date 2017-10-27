@@ -170,8 +170,6 @@ private slots:
     void readHistorical();
     defineDataMethod(writeHistorical_data)
     void writeHistorical();
-    defineDataMethod(invalidNodeAccess_data)
-    void invalidNodeAccess();
     defineDataMethod(malformedNodeString_data)
     void malformedNodeString();
 
@@ -553,17 +551,6 @@ void Tst_QOpcUaClient::writeHistorical()
     QVector<QPair<QVariant, QDateTime> > data;
     bool result = node->writeHistorical(QOpcUa::Double, data);
     QVERIFY(result == true);
-}
-
-void Tst_QOpcUaClient::invalidNodeAccess()
-{
-    QFETCH(QOpcUaClient*, opcuaClient);
-    OpcuaConnector connector(opcuaClient, m_endpoint);
-
-    QScopedPointer<QOpcUaNode> invalidNode(opcuaClient->node("ns=0;s=IDoNotExist"));
-    if (opcuaClient->backend() == QStringLiteral("open62541"))
-        QEXPECT_FAIL("", "Invalid Node test on Open62541 not working", Continue);
-    QVERIFY(invalidNode == 0);
 }
 
 void Tst_QOpcUaClient::malformedNodeString()
