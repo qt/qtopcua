@@ -75,6 +75,7 @@ public:
     Q_ENUM(NodeClass)
 
     enum class NodeAttribute {
+        None = 0,
         NodeId = (1 << 0),
         NodeClass = (1 << 1),
         BrowseName = (1 << 2),
@@ -107,6 +108,7 @@ public:
 
     static Q_DECL_CONSTEXPR QOpcUaNode::NodeAttributes mandatoryBaseAttributes();
     static Q_DECL_CONSTEXPR QOpcUaNode::NodeAttributes allBaseAttributes();
+    typedef QMap<QOpcUaNode::NodeAttribute, QVariant> AttributeMap;
 
     QOpcUaNode(QOpcUaNodeImpl *impl, QOpcUaClient *client, QObject *parent = nullptr);
     virtual ~QOpcUaNode();
@@ -114,11 +116,12 @@ public:
     bool readAttributes(QOpcUaNode::NodeAttributes attributes = mandatoryBaseAttributes());
     QVariant attribute(QOpcUaNode::NodeAttribute attribute) const;
     QOpcUa::UaStatusCode attributeError(QOpcUaNode::NodeAttribute attribute) const;
+    bool writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type = QOpcUa::Types::Undefined);
+    bool writeAttributes(const AttributeMap &toWrite, QOpcUa::Types valueAttributeType = QOpcUa::Types::Undefined);
 
     QStringList childrenIds() const;
     QString nodeId() const;
 
-    bool setValue(const QVariant &value, QOpcUa::Types type = QOpcUa::Undefined);
     QPair<double, double> readEuRange() const;
     QPair<QString, QString> readEui() const;
 
@@ -127,6 +130,7 @@ public:
 
 Q_SIGNALS:
     void readFinished(QOpcUaNode::NodeAttributes attributes);
+    void attributeWritten(QOpcUaNode::NodeAttribute attribute, QOpcUa::UaStatusCode statusCode);
 
 private:
     Q_DISABLE_COPY(QOpcUaNode)
@@ -143,6 +147,7 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QOpcUaNode::NodeClass)
 Q_DECLARE_METATYPE(QOpcUaNode::NodeAttribute)
 Q_DECLARE_METATYPE(QOpcUaNode::NodeAttributes)
+Q_DECLARE_METATYPE(QOpcUaNode::AttributeMap)
 
 inline Q_DECL_CONSTEXPR QOpcUaNode::NodeAttributes QOpcUaNode::mandatoryBaseAttributes()
 {

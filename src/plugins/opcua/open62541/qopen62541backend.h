@@ -56,9 +56,11 @@ public Q_SLOTS:
     void disconnectFromEndpoint();
 
     // Node functions
-    bool writeNodeValueAttribute(UA_NodeId id, const QVariant &value, QOpcUa::Types type);
     QStringList childrenIds(const UA_NodeId *parentNode);
     void readAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttributes attr);
+
+    void writeAttribute(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttribute attrId, QVariant value, QOpcUa::Types type);
+    void writeAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType);
 
     // Subscription
     UA_UInt32 createSubscription(int interval);

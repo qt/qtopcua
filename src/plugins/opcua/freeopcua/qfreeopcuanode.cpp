@@ -98,20 +98,25 @@ QString QFreeOpcUaNode::nodeId() const
     }
 }
 
-bool QFreeOpcUaNode::setValue(const QVariant &value, QOpcUa::Types type)
+bool QFreeOpcUaNode::writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type)
 {
-    try {
-        OpcUa::Variant toWrite = QFreeOpcUaValueConverter::toTypedVariant(value, type);
-        if (toWrite.IsNul())
-            return false;
+    return QMetaObject::invokeMethod(m_client->m_opcuaWorker, "writeAttribute",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(OpcUa::Node, m_node),
+                                     Q_ARG(QOpcUaNode::NodeAttribute, attribute),
+                                     Q_ARG(QVariant, value),
+                                     Q_ARG(QOpcUa::Types, type));
+}
 
-        m_node.SetValue(toWrite);
-        return true;
-    } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Could not write value to node " <<  nodeId();
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << ex.what();
-    }
-    return false;
+bool QFreeOpcUaNode::writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType)
+{
+    return QMetaObject::invokeMethod(m_client->m_opcuaWorker, "writeAttributes",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(OpcUa::Node, m_node),
+                                     Q_ARG(QOpcUaNode::AttributeMap, toWrite),
+                                     Q_ARG(QOpcUa::Types, valueAttributeType));
 }
 
 bool QFreeOpcUaNode::call(const QString &methodNodeId,

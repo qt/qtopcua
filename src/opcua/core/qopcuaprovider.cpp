@@ -111,6 +111,7 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUa::QQualifiedName>();
     qRegisterMetaType<QOpcUaNode::NodeAttribute>();
     qRegisterMetaType<QOpcUaNode::NodeAttributes>();
+    qRegisterMetaType<QOpcUaNode::AttributeMap>();
     qRegisterMetaType<QVector<QOpcUaReadResult>>();
     qRegisterMetaType<QOpcUaClient::ClientState>();
     qRegisterMetaType<QOpcUaClient::ClientError>();

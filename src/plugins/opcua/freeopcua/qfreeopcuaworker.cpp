@@ -135,6 +135,68 @@ void QFreeOpcUaWorker::readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUa
     }
 }
 
+void QFreeOpcUaWorker::writeAttribute(uintptr_t handle, OpcUa::Node node, QOpcUaNode::NodeAttribute attr, QVariant value, QOpcUa::Types type)
+{
+    std::vector<OpcUa::StatusCode> res;
+
+    try {
+        if (type == QOpcUa::Types::Undefined && attr != QOpcUaNode::NodeAttribute::Value)
+            type = attributeIdToTypeId(attr);
+        OpcUa::Variant toWrite = QFreeOpcUaValueConverter::toTypedVariant(value, type);
+
+        OpcUa::WriteValue val;
+        val.NodeId = node.GetId();
+        val.AttributeId = QFreeOpcUaValueConverter::toUaAttributeId(attr);
+        val.Value = OpcUa::DataValue(toWrite);
+        std::vector<OpcUa::WriteValue> req;
+        req.push_back(val);
+
+        res = node.GetServices()->Attributes()->Write(req);
+
+        emit attributeWritten(handle, attr, res[0] == OpcUa::StatusCode::Good ? value : QVariant(), static_cast<QOpcUa::UaStatusCode>(res[0]));
+    } catch (const std::exception &ex) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Could not write value to node: %s: %s", OpcUa::ToString(node.GetId()).c_str(), ex.what());
+        emit attributeWritten(handle, attr, QVariant(), QFreeOpcUaValueConverter::exceptionToStatusCode(ex));
+    }
+}
+
+void QFreeOpcUaWorker::writeAttributes(uintptr_t handle, OpcUa::Node node, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType)
+{
+    if (toWrite.size() == 0) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "No values to be written");
+        emit attributeWritten(handle, QOpcUaNode::NodeAttribute::None, QVariant(), QOpcUa::UaStatusCode::BadNothingToDo);
+        return;
+    }
+
+    std::vector<OpcUa::StatusCode> res;
+
+    try {
+        std::vector<OpcUa::WriteValue> req;
+
+        for (auto it = toWrite.constBegin(); it != toWrite.constEnd(); ++it) {
+            OpcUa::WriteValue val;
+            val.NodeId = node.GetId();
+            val.AttributeId = QFreeOpcUaValueConverter::toUaAttributeId(it.key());
+            QOpcUa::Types type = it.key() == QOpcUaNode::NodeAttribute::Value ? valueAttributeType : attributeIdToTypeId(it.key());
+            val.Value = OpcUa::DataValue(QFreeOpcUaValueConverter::toTypedVariant(it.value(), type));
+            req.push_back(val);
+        }
+
+        res = node.GetServices()->Attributes()->Write(req);
+
+        size_t index = 0;
+        for (auto it = toWrite.constBegin(); it != toWrite.constEnd(); ++it, ++index) {
+            emit attributeWritten(handle, it.key(), res[index] == OpcUa::StatusCode::Good ? it.value() : QVariant(), static_cast<QOpcUa::UaStatusCode>(res[index]));
+        }
+
+    } catch (const std::exception &ex) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Could not write attributes: %s", ex.what());
+        for (auto it = toWrite.constBegin(); it != toWrite.constEnd(); ++it) {
+            emit attributeWritten(handle, it.key(), QVariant(), QFreeOpcUaValueConverter::exceptionToStatusCode(ex));
+        }
+    }
+}
+
 QOpcUaSubscription *QFreeOpcUaWorker::createSubscription(quint32 interval)
 {
     QFreeOpcUaSubscription *backendSubscription = new QFreeOpcUaSubscription(this, interval);

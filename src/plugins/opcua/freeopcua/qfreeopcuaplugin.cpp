@@ -61,6 +61,7 @@ QFreeOpcUaPlugin::QFreeOpcUaPlugin(QObject *parent)
 {
     compileTimeEnforceEnumMappings();
     qRegisterMetaType<OpcUa::NodeId>();
+    qRegisterMetaType<OpcUa::Node>();
 }
 
 QFreeOpcUaPlugin::~QFreeOpcUaPlugin()

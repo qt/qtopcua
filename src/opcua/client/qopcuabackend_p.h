@@ -72,10 +72,13 @@ public:
         return sizeof(std::underlying_type<QOpcUaNode::NodeAttribute>::type) * CHAR_BIT;
     }
 
+    QOpcUa::Types attributeIdToTypeId(QOpcUaNode::NodeAttribute attr);
+
 Q_SIGNALS:
     void stateAndOrErrorChanged(QOpcUaClient::ClientState state,
                                 QOpcUaClient::ClientError error);
     void attributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attributes, QOpcUa::UaStatusCode serviceResult);
+    void attributeWritten(uintptr_t hande, QOpcUaNode::NodeAttribute attribute, QVariant value, QOpcUa::UaStatusCode statusCode);
 
 private:
     Q_DISABLE_COPY(QOpcUaBackend)

@@ -66,6 +66,8 @@ public slots:
     void asyncDisconnectFromEndpoint();
 
     void readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUaNode::NodeAttributes attr);
+    void writeAttribute(uintptr_t handle, OpcUa::Node node, QOpcUaNode::NodeAttribute attr, QVariant value, QOpcUa::Types type);
+    void writeAttributes(uintptr_t handle, OpcUa::Node node, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType);
 
 private:
     QFreeOpcUaClientImpl *m_client;

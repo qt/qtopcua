@@ -89,6 +89,7 @@ public:
 
 private Q_SLOTS:
     void handleAttributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
+    void handleAttributeWritten(uintptr_t handle, QOpcUaNode::NodeAttribute attr, const QVariant &value, QOpcUa::UaStatusCode statusCode);
 
 signals:
     void connected();

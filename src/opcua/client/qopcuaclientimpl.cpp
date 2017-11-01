@@ -60,6 +60,7 @@ void QOpcUaClientImpl::connectBackendWithClient(QOpcUaBackend *backend)
 {
     connect(backend, &QOpcUaBackend::attributesRead, this, &QOpcUaClientImpl::handleAttributesRead);
     connect(backend, &QOpcUaBackend::stateAndOrErrorChanged, this, &QOpcUaClientImpl::stateAndOrErrorChanged);
+    connect(backend, &QOpcUaBackend::attributeWritten, this, &QOpcUaClientImpl::handleAttributeWritten);
 }
 
 void QOpcUaClientImpl::handleAttributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
@@ -67,6 +68,13 @@ void QOpcUaClientImpl::handleAttributesRead(uintptr_t handle, QVector<QOpcUaRead
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
         emit (*it)->attributesRead(attr, serviceResult);
+}
+
+void QOpcUaClientImpl::handleAttributeWritten(uintptr_t handle, QOpcUaNode::NodeAttribute attr, const QVariant &value, QOpcUa::UaStatusCode statusCode)
+{
+    auto it = m_handles.constFind(handle);
+    if (it != m_handles.constEnd() && !it->isNull())
+        emit (*it)->attributeWritten(attr, value, statusCode);
 }
 
 QT_END_NAMESPACE

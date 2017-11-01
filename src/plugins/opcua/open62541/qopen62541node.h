@@ -54,7 +54,8 @@ public:
     QStringList childrenIds() const override;
     QString nodeId() const override;
 
-    bool setValue(const QVariant &value, QOpcUa::Types type) override;
+    bool writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type) override;
+    bool writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType) override;
     bool call(const QString &methodNodeId, QVector<QOpcUa::TypedVariant> *args = nullptr,
               QVector<QVariant> *ret = nullptr) override;
     QPair<QString, QString> readEui() const override;

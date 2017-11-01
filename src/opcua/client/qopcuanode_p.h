@@ -84,11 +84,22 @@ public:
 
             emit q_func()->readFinished(updatedAttributes);
         });
+
+        m_attributeWrittenConnection = QObject::connect(impl, &QOpcUaNodeImpl::attributeWritten,
+                [this](QOpcUaNode::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode)
+        {
+            m_nodeAttributes[attr].statusCode = statusCode;
+            if (statusCode == QOpcUa::UaStatusCode::Good)
+                m_nodeAttributes[attr].attribute = value;
+
+            emit q_func()->attributeWritten(attr, statusCode);
+        });
     }
 
     ~QOpcUaNodePrivate()
     {
         QObject::disconnect(m_attributesReadConnection);
+        QObject::disconnect(m_attributeWrittenConnection);
     }
 
     QScopedPointer<QOpcUaNodeImpl> m_impl;
@@ -101,6 +112,7 @@ public:
     QHash<QOpcUaNode::NodeAttribute, AttributeWithStatus> m_nodeAttributes;
 
     QMetaObject::Connection m_attributesReadConnection;
+    QMetaObject::Connection m_attributeWrittenConnection;
 };
 
 QT_END_NAMESPACE

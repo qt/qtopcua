@@ -76,8 +76,9 @@ public:
     virtual QStringList childrenIds() const = 0;
     virtual QString nodeId() const = 0;
 
-    virtual bool setValue(const QVariant &value,
-            QOpcUa::Types type = QOpcUa::Undefined)  = 0;
+    virtual bool writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type) = 0;
+    virtual bool writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType) = 0;
+
     virtual QPair<double, double> readEuRange() const = 0;
     virtual QPair<QString, QString> readEui() const = 0;
 
@@ -86,6 +87,7 @@ public:
 
 Q_SIGNALS:
     void attributesRead(QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
+    void attributeWritten(QOpcUaNode::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode);
 
 };
 

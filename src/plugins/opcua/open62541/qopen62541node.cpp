@@ -83,16 +83,29 @@ QString QOpen62541Node::nodeId() const
     return m_nodeIdString;
 }
 
-bool QOpen62541Node::setValue(const QVariant &value, QOpcUa::Types type)
+bool QOpen62541Node::writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type)
 {
-    bool result;
-    QMetaObject::invokeMethod(m_client->m_backend, "writeNodeValueAttribute",
-                              Qt::BlockingQueuedConnection,
-                              Q_RETURN_ARG(bool, result),
-                              Q_ARG(UA_NodeId, m_nodeId),
-                              Q_ARG(const QVariant&, value),
-                              Q_ARG(QOpcUa::Types, type));
-    return result;
+    UA_NodeId tempId;
+    UA_NodeId_copy(&m_nodeId, &tempId);
+    return QMetaObject::invokeMethod(m_client->m_backend, "writeAttribute",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(UA_NodeId, tempId),
+                                     Q_ARG(QOpcUaNode::NodeAttribute, attribute),
+                                     Q_ARG(QVariant, value),
+                                     Q_ARG(QOpcUa::Types, type));
+}
+
+bool QOpen62541Node::writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType)
+{
+    UA_NodeId tempId;
+    UA_NodeId_copy(&m_nodeId, &tempId);
+    return QMetaObject::invokeMethod(m_client->m_backend, "writeAttributes",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(UA_NodeId, tempId),
+                                     Q_ARG(QOpcUaNode::AttributeMap, toWrite),
+                                     Q_ARG(QOpcUa::Types, valueAttributeType));
 }
 
 bool QOpen62541Node::call(const QString &methodNodeId, QVector<QOpcUa::TypedVariant> *args, QVector<QVariant> *ret)

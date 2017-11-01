@@ -107,10 +107,26 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \typedef QOpcUaNode::AttributeMap
+
+    This type is used by \l writeAttributes() to write more than one attribute at a time.
+    QVariant values must be assigned to the attributes to be written.
+*/
+
+/*!
     \fn void QOpcUaNode::readFinished(QOpcUaNode::NodeAttributes attributes)
 
     This signal is emitted after a \l readAttributes() operation has finished.
     The receiver has to check the status code for the attributes contained in \a attributes.
+*/
+
+/*!
+    \fn QOpcUaNode::attributeWritten(QOpcUaNode::NodeAttribute attribute, quint32 statusCode)
+
+    This signal is emitted after a \l writeAttribute() or \l writeAttributes()  operation has finished.
+
+    Before this signal is emitted, the attribute cache is updated in case of a successful write.
+    For \l writeAttributes() a signal is emitted for each attribute in the write call.
 */
 
 /*!
@@ -173,6 +189,86 @@ QOpcUa::UaStatusCode QOpcUaNode::attributeError(QOpcUaNode::NodeAttribute attrib
 }
 
 /*!
+    Writes \a value to the attribute given in \a attribute using the type information from \a type.
+    Returns true if the asynchronous call has been successfully dispatched.
+
+    If the \a type parameter is omitted, the backend tries to find the correct type. Following default types are assumed:
+    \table
+        \header
+            \li Qt MetaType
+            \li OPC UA type
+        \row
+            \li Bool
+            \li Boolean
+        \row
+            \li UChar
+            \li Byte
+        \row
+            \li Char
+            \li SByte
+        \row
+            \li UShort
+            \li UInt16
+        \row
+            \li Short
+            \li Int16
+        \row
+            \li Int
+            \li Int32
+        \row
+            \li UInt
+            \li UInt32
+        \row
+            \li ULongLong
+            \li UInt64
+        \row
+            \li LongLong
+            \li Int64
+        \row
+            \li Double
+            \li Double
+        \row
+            \li Float
+            \li Float
+        \row
+            \li QString
+            \li String
+        \row
+            \li QDateTime
+            \li DateTime
+        \row
+            \li QByteArray
+            \li ByteString
+        \row
+            \li QUuid
+            \li Guid
+    \endtable
+*/
+bool QOpcUaNode::writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type)
+{
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+        return false;
+
+    return d_func()->m_impl->writeAttribute(attribute, value, type);
+}
+
+/*!
+    Executes a write operation for the attributes and values specified in \a toWrite.
+    Returns true if the asynchronous call has been successfully dispatched.
+
+    The \a valueAttributeType parameter can be used to supply type information for the value attribute.
+    All other attributes have known types.
+    \sa writeAttribute
+*/
+bool QOpcUaNode::writeAttributes(const AttributeMap &toWrite, QOpcUa::Types valueAttributeType)
+{
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+        return false;
+
+    return d_func()->m_impl->writeAttributes(toWrite, valueAttributeType);
+}
+
+/*!
    QStringList filled with the node IDs of all child nodes of the OPC UA node.
 */
 QStringList QOpcUaNode::childrenIds() const
@@ -192,22 +288,6 @@ QString QOpcUaNode::nodeId() const
         return QString();
 
     return d_func()->m_impl->nodeId();
-}
-
-/*!
-    Writes the value given in \a value to the OPC UA node.
-    The data type must be supplied in \a type.
-    true is returned in case of success, false is returned when the
-    write call fails.
-
-    \sa value()
-  */
-bool QOpcUaNode::setValue(const QVariant &value, QOpcUa::Types type)
-{
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
-        return false;
-
-    return d_func()->m_impl->setValue(value, type);
 }
 
 /*!
