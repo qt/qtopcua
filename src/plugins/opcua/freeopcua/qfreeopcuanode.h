@@ -68,7 +68,7 @@ public:
     QVariant value() const override;
     bool setValue(const QVariant &value, QOpcUa::Types type) override;
     bool call(const QString &methodNodeId,
-              QVector<QOpcUa::TypedVariant> *args = 0, QVector<QVariant> *ret = 0) override;
+              QVector<QOpcUa::TypedVariant> *args = nullptr, QVector<QVariant> *ret = nullptr) override;
     QPair<QString, QString> readEui() const override;
     QPair<double, double> readEuRange() const override;
 

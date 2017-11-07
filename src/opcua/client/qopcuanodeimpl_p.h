@@ -82,7 +82,7 @@ public:
             const QVector<QPair<QVariant, QDateTime> > data) = 0;
 
     virtual bool call(const QString &methodNodeId,
-            QVector<QOpcUa::TypedVariant> *args = 0, QVector<QVariant> *ret = 0) = 0;
+            QVector<QOpcUa::TypedVariant> *args = nullptr, QVector<QVariant> *ret = nullptr) = 0;
 };
 
 QT_END_NAMESPACE
