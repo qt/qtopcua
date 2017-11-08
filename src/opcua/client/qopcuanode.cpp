@@ -107,6 +107,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn void QOpcUaNode::readFinished(QOpcUaNode::NodeAttributes attributes)
+
+    This signal is emitted after a \l readAttributes() operation has finished.
+    The receiver has to check the status code for the attributes contained in \a attributes.
+*/
+
+/*!
     \internal QOpcUaNodeImpl is an opaque type (as seen from the public API).
     This prevents users of the public API to use this constructor (eventhough
     it is public).
@@ -121,40 +128,48 @@ QOpcUaNode::~QOpcUaNode()
 }
 
 /*!
-    The DisplayName attribute of the OPC UA node.
-*/
-QString QOpcUaNode::displayName() const
-{
-    // m_client.isNull() is checked bc. someone might have deleted the client
-    // leaving a dangling reference here
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
-        return QString();
+    Starts an asynchronous read operation for the node attributes in \a attributes.
+    Returns true if the asynchronous call has been successfully dispatched.
 
-    return d_func()->m_impl->displayName();
+    Attribute values only contain valid information after the \l readFinished signal has been emitted.
+*/
+bool QOpcUaNode::readAttributes(QOpcUaNode::NodeAttributes attributes)
+{
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+        return false;
+
+    return d_func()->m_impl->readAttributes(attributes);
 }
 
 /*!
-    The type attribute of the OPC UA node.
+    Returns the value of the attribute given in \a attribute.
+
+    The value is only valid after the \l readFinished signal has been emitted.
+    An empty QVariant is returned if there is no cached value for the attribute.
  */
-QOpcUa::Types QOpcUaNode::type() const
+QVariant QOpcUaNode::attribute(QOpcUaNode::NodeAttribute attribute) const
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
-        return QOpcUa::Types::Undefined;
-
-    return d_func()->m_impl->type();
-}
-
-/*!
-    The value attribute of the OPC UA node.
-
-    \sa setValue()
-*/
-QVariant QOpcUaNode::value() const
-{
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+    auto it = d_func()->m_nodeAttributes.constFind(attribute);
+    if (it == d_func()->m_nodeAttributes.constEnd())
         return QVariant();
 
-    return d_func()->m_impl->value();
+    return it->attribute;
+}
+
+/*!
+    Returns the error code for the attribute given in \a attribute.
+
+    The error code is only valid after the \l readFinished signal has been emitted.
+
+    \sa QOpcUa::errorCategory
+ */
+QOpcUa::UaStatusCode QOpcUaNode::attributeError(QOpcUaNode::NodeAttribute attribute) const
+{
+    auto it = d_func()->m_nodeAttributes.constFind(attribute);
+    if (it == d_func()->m_nodeAttributes.constEnd())
+        return QOpcUa::UaStatusCode::BadNotFound;
+
+    return it->statusCode;
 }
 
 /*!
@@ -177,17 +192,6 @@ QString QOpcUaNode::nodeId() const
         return QString();
 
     return d_func()->m_impl->nodeId();
-}
-
-/*!
-   The node class of the OPC UA node.
-*/
-QOpcUaNode::NodeClass QOpcUaNode::nodeClass() const
-{
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
-        return NodeClass::Undefined;
-
-    return d_func()->m_impl->nodeClass();
 }
 
 /*!
@@ -254,9 +258,9 @@ bool QOpcUaNode::call(const QString &methodNodeId,
 QDebug operator<<(QDebug dbg, const QOpcUaNode &node)
 {
     dbg << "QOpcUaNode {"
-        << "DisplayName:" << node.displayName()
-        << "Id:" << node.nodeId()
-        << "Class:" << node.nodeClass()
+        << "DisplayName:" << node.attribute(QOpcUaNode::NodeAttribute::DisplayName)
+        << "Id:" << node.attribute(QOpcUaNode::NodeAttribute::NodeId)
+        << "Class:" << node.attribute(QOpcUaNode::NodeAttribute::NodeClass)
         << "}";
     return dbg;
 }

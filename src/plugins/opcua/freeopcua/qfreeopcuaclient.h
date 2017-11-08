@@ -65,13 +65,10 @@ public:
 
     QOpcUaSubscription *createSubscription(quint32 interval) override;
 
-public slots:
-    void connectToEndpointFinished(bool isSuccess);
-    void disconnectFromEndpointFinished(bool isSuccess);
+    QFreeOpcUaWorker *m_opcuaWorker{};
 
 private:
     QThread *m_thread{};
-    QFreeOpcUaWorker *m_opcuaWorker{};
 };
 
 QT_END_NAMESPACE

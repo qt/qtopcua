@@ -37,6 +37,7 @@
 #ifndef QFREEOPCUAPLUGIN_H
 #define QFREEOPCUAPLUGIN_H
 
+#include "qfreeopcuanode.h"
 #include <QtOpcUa/qopcuaplugin.h>
 
 QT_BEGIN_NAMESPACE
@@ -56,5 +57,7 @@ public:
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(OpcUa::NodeId)
 
 #endif // QFREEOPCUAPLUGIN_H

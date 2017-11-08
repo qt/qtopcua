@@ -43,6 +43,7 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -54,6 +55,8 @@ class QOpcUaMonitoredValue;
 
 class Q_OPCUA_EXPORT QOpcUaNode : public QObject
 {
+    Q_OBJECT
+
 public:
     Q_DECLARE_PRIVATE(QOpcUaNode)
 
@@ -71,15 +74,49 @@ public:
     };
     Q_ENUM(NodeClass)
 
+    enum class NodeAttribute {
+        NodeId = (1 << 0),
+        NodeClass = (1 << 1),
+        BrowseName = (1 << 2),
+        DisplayName = (1 << 3),
+        Description = (1 << 4),
+        WriteMask = (1 << 5),
+        UserWriteMask = (1 << 6), // Base attributes, see part 4, 5.2.1
+        IsAbstract = (1 << 7),
+        Symmetric = (1 << 8),
+        InverseName = (1 << 9),   // Reference attributes, see part 4, 5.3.1
+        ContainsNoLoops = (1 << 10),
+        EventNotifier = (1 << 11), // View attributes, see part 4, 5.4
+        // Objects also add the EventNotifier attribute, see part 4, 5.5.1
+        // ObjectType also add the IsAbstract attribute, see part 4, 5.5.2
+        Value = (1 << 12),
+        DataType = (1 << 13),
+        ValueRank = (1 << 14),
+        ArrayDimensions = (1 << 15),
+        AccessLevel = (1 << 16),
+        UserAccessLevel = (1 << 17),
+        MinimumSamplingInterval = (1 << 18),
+        Historizing = (1 << 19),   // Value attributes, see part 4, 5.6.2
+        // VariableType also adds the Value, DataType, ValueRank, ArrayDimensions
+        // and isAbstract attributes, see part 4, 5.6.5
+        Executable = (1 << 20),
+        UserExecutable = (1 << 21), // Method attributes, see part 4, 5.7
+    };
+    Q_ENUM(NodeAttribute)
+    Q_DECLARE_FLAGS(NodeAttributes, NodeAttribute)
+
+    static Q_DECL_CONSTEXPR QOpcUaNode::NodeAttributes mandatoryBaseAttributes();
+    static Q_DECL_CONSTEXPR QOpcUaNode::NodeAttributes allBaseAttributes();
+
     QOpcUaNode(QOpcUaNodeImpl *impl, QOpcUaClient *client, QObject *parent = nullptr);
     virtual ~QOpcUaNode();
 
-    QString displayName() const;
-    QOpcUa::Types type() const;
-    QVariant value() const;
+    bool readAttributes(QOpcUaNode::NodeAttributes attributes = mandatoryBaseAttributes());
+    QVariant attribute(QOpcUaNode::NodeAttribute attribute) const;
+    QOpcUa::UaStatusCode attributeError(QOpcUaNode::NodeAttribute attribute) const;
+
     QStringList childrenIds() const;
     QString nodeId() const;
-    NodeClass nodeClass() const;
 
     bool setValue(const QVariant &value, QOpcUa::Types type = QOpcUa::Undefined);
     QPair<double, double> readEuRange() const;
@@ -87,12 +124,37 @@ public:
 
     bool call(const QString &methodNodeId, QVector<QOpcUa::TypedVariant> *args = nullptr,
               QVector<QVariant> *ret = nullptr);
+
+Q_SIGNALS:
+    void readFinished(QOpcUaNode::NodeAttributes attributes);
+
 private:
     Q_DISABLE_COPY(QOpcUaNode)
 };
 
 Q_OPCUA_EXPORT QDebug operator<<(QDebug dbg, const QOpcUaNode &node);
 
+Q_DECLARE_TYPEINFO(QOpcUaNode::NodeClass, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(QOpcUaNode::NodeAttribute, Q_PRIMITIVE_TYPE);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QOpcUaNode::NodeAttributes)
+
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QOpcUaNode::NodeClass)
+Q_DECLARE_METATYPE(QOpcUaNode::NodeAttribute)
+Q_DECLARE_METATYPE(QOpcUaNode::NodeAttributes)
+
+inline Q_DECL_CONSTEXPR QOpcUaNode::NodeAttributes QOpcUaNode::mandatoryBaseAttributes()
+{
+    return QOpcUaNode::NodeAttribute::NodeId | QOpcUaNode::NodeAttribute::NodeClass |
+            QOpcUaNode::NodeAttribute::BrowseName | QOpcUaNode::NodeAttribute::DisplayName;
+}
+
+inline Q_DECL_CONSTEXPR QOpcUaNode::NodeAttributes QOpcUaNode::allBaseAttributes()
+{
+    return NodeAttribute::NodeId | NodeAttribute::NodeClass | NodeAttribute::BrowseName |
+            NodeAttribute::DisplayName | NodeAttribute::Description | NodeAttribute::WriteMask |
+            NodeAttribute::UserWriteMask;
+}
 
 #endif // QOPCUANODE_H

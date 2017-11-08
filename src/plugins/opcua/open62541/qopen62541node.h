@@ -40,6 +40,8 @@
 #include "qopen62541client.h"
 #include <private/qopcuanodeimpl_p.h>
 
+#include <QPointer>
+
 QT_BEGIN_NAMESPACE
 
 class QOpen62541Node : public QOpcUaNodeImpl
@@ -48,13 +50,10 @@ public:
     explicit QOpen62541Node(const UA_NodeId nodeId, QOpen62541Client *client, const QString nodeIdString);
     ~QOpen62541Node() override;
 
-    QString displayName() const override;
-    QOpcUa::Types type() const override;
+    bool readAttributes(QOpcUaNode::NodeAttributes attr) override;
     QStringList childrenIds() const override;
     QString nodeId() const override;
-    QOpcUaNode::NodeClass nodeClass() const override;
 
-    QVariant value() const override;
     bool setValue(const QVariant &value, QOpcUa::Types type) override;
     bool call(const QString &methodNodeId, QVector<QOpcUa::TypedVariant> *args = nullptr,
               QVector<QVariant> *ret = nullptr) override;
@@ -64,7 +63,7 @@ public:
     UA_NodeId nativeNodeId() const;
 
 private:
-    QOpen62541Client *m_client;
+    QPointer<QOpen62541Client> m_client;
     QString m_nodeIdString;
     UA_NodeId m_nodeId;
 };

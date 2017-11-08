@@ -43,6 +43,8 @@
 
 #include <opc/ua/node.h>
 
+class QFreeOpcUaWorker;
+
 namespace OpcUa
 {
     class UaClient;
@@ -55,16 +57,13 @@ class QFreeOpcUaClientImpl;
 class QFreeOpcUaNode : public QOpcUaNodeImpl
 {
 public:
-    explicit QFreeOpcUaNode(OpcUa::Node node, OpcUa::UaClient *client);
+    explicit QFreeOpcUaNode(OpcUa::Node node, QFreeOpcUaClientImpl *client);
     ~QFreeOpcUaNode() override;
 
-    QString displayName() const override;
-    QOpcUa::Types type() const override;
+    bool readAttributes(QOpcUaNode::NodeAttributes attr) override;
     QStringList childrenIds() const override;
     QString nodeId() const override;
-    QOpcUaNode::NodeClass nodeClass() const override;
 
-    QVariant value() const override;
     bool setValue(const QVariant &value, QOpcUa::Types type) override;
     bool call(const QString &methodNodeId,
               QVector<QOpcUa::TypedVariant> *args = nullptr, QVector<QVariant> *ret = nullptr) override;
@@ -72,7 +71,7 @@ public:
     QPair<double, double> readEuRange() const override;
 
     OpcUa::Node m_node;
-    OpcUa::UaClient *m_client;
+    QPointer<QFreeOpcUaClientImpl> m_client;
 };
 
 QT_END_NAMESPACE

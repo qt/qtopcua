@@ -34,6 +34,7 @@
 **
 ****************************************************************************/
 
+#include <private/qopcuabackend_p.h>
 #include <private/qopcuaclientimpl_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -44,5 +45,28 @@ QOpcUaClientImpl::QOpcUaClientImpl(QObject *parent)
 
 QOpcUaClientImpl::~QOpcUaClientImpl()
 {}
+
+void QOpcUaClientImpl::registerNode(QPointer<QOpcUaNodeImpl> obj)
+{
+    m_handles[reinterpret_cast<uintptr_t>(obj.data())] = obj;
+}
+
+void QOpcUaClientImpl::unregisterNode(QPointer<QOpcUaNodeImpl> obj)
+{
+    m_handles.remove(reinterpret_cast<uintptr_t>(obj.data()));
+}
+
+void QOpcUaClientImpl::connectBackendWithClient(QOpcUaBackend *backend)
+{
+    connect(backend, &QOpcUaBackend::attributesRead, this, &QOpcUaClientImpl::handleAttributesRead);
+    connect(backend, &QOpcUaBackend::stateAndOrErrorChanged, this, &QOpcUaClientImpl::stateAndOrErrorChanged);
+}
+
+void QOpcUaClientImpl::handleAttributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
+{
+    auto it = m_handles.constFind(handle);
+    if (it != m_handles.constEnd() && !it->isNull())
+        emit (*it)->attributesRead(attr, serviceResult);
+}
 
 QT_END_NAMESPACE

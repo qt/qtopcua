@@ -35,6 +35,7 @@
 ****************************************************************************/
 
 #include "qopen62541backend.h"
+#include "qopen62541node.h"
 #include "qopen62541valueconverter.h"
 #include <private/qopcuaclient_p.h>
 
@@ -57,139 +58,54 @@ struct UaLocalizedTextMemberDeleter
     static void cleanup(UA_LocalizedText *p) { UA_LocalizedText_deleteMembers(p); }
 };
 
-
 Open62541AsyncBackend::Open62541AsyncBackend(QOpen62541Client *parent)
-    : QObject()
+    : QOpcUaBackend()
     , m_clientImpl(parent)
     , m_uaclient(nullptr)
     , m_subscriptionTimer(nullptr)
 {
 }
 
-QString Open62541AsyncBackend::resolveNodeNameById(UA_NodeId id)
+void Open62541AsyncBackend::readAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttributes attr)
 {
-    UA_LocalizedText type;
-    UA_LocalizedText_init(&type);
-    QScopedPointer<UA_LocalizedText, UaLocalizedTextMemberDeleter> ts(&type);
-    UA_StatusCode ret = UA_Client_readDisplayNameAttribute(m_uaclient, id, &type);
-    if (ret != UA_STATUSCODE_GOOD) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not read display name attribute:" << ret;
-        return QString();
+    UA_ReadRequest req;
+    UA_ReadRequest_init(&req);
+    QVector<UA_ReadValueId> valueIds;
+
+    UA_ReadValueId readId;
+    UA_ReadValueId_init(&readId);
+    readId.nodeId = id;
+
+    QVector<QOpcUaReadResult> vec;
+
+    for (uint i = 0; i < nodeAttributeEnumBits(); ++i) {
+        if (attr & (1 << i)) {
+            readId.attributeId = QOpen62541ValueConverter::toUaAttributeId(static_cast<QOpcUaNode::NodeAttribute>(1 << i));
+            valueIds.push_back(readId);
+            QOpcUaReadResult temp;
+            temp.attributeId = static_cast<QOpcUaNode::NodeAttribute>(1 << i);
+            vec.push_back(temp);
+        }
     }
 
-    return QOpen62541ValueConverter::toQString(type.text);
-}
+    UA_ReadResponse res;
+    UA_ReadResponse_init(&res);
+    req.nodesToRead = valueIds.data();
+    req.nodesToReadSize = valueIds.size();
 
-QOpcUaNode::NodeClass Open62541AsyncBackend::resolveNodeClassAttribute(UA_NodeId id)
-{
-    UA_NodeClass nodeClass;
+    res = UA_Client_Service_read(m_uaclient, req);
 
-    // ### TODO: We cannot use the high level function as the test server returns an int32
-    // Instead of a NodeClass object, hence UA_TYPES[UA_TYPES_NODECLASS] fails for
-    // res->value.type == outDataType in __UA_Client_readAttribute.
-    // Should this be fixed upstream? Or is this related to test setup infrastructure?
-
-    // UA_StatusCode ret = UA_Client_readNodeClassAttribute(m_uaclient, id, &nodeClass);
-    UA_StatusCode ret = __UA_Client_readAttribute(m_uaclient, &id, UA_ATTRIBUTEID_NODECLASS,
-                                     &nodeClass, &UA_TYPES[UA_TYPES_INT32]);
-
-
-    if (ret != UA_STATUSCODE_GOOD)
-        return QOpcUaNode::NodeClass::Undefined;
-
-    switch (nodeClass) {
-    case UA_NODECLASS_OBJECT:
-        return QOpcUaNode::NodeClass::Object;
-    case UA_NODECLASS_VARIABLE:
-        return QOpcUaNode::NodeClass::Variable;
-    case UA_NODECLASS_METHOD:
-        return QOpcUaNode::NodeClass::Method;
-    case UA_NODECLASS_OBJECTTYPE:
-        return QOpcUaNode::NodeClass::ObjectType;
-    case UA_NODECLASS_VARIABLETYPE:
-        return QOpcUaNode::NodeClass::VariableType;
-    case UA_NODECLASS_REFERENCETYPE:
-        return QOpcUaNode::NodeClass::ReferenceType;
-    case UA_NODECLASS_DATATYPE:
-        return QOpcUaNode::NodeClass::DataType;
-    case UA_NODECLASS_VIEW:
-        return QOpcUaNode::NodeClass::View;
-    default:
-        return QOpcUaNode::NodeClass::Undefined;
+    for (size_t i = 0; i < res.resultsSize; ++i) {
+        if (res.results[i].hasStatus)
+            vec[i].statusCode = static_cast<QOpcUa::UaStatusCode>(res.results[i].status);
+        else
+            vec[i].statusCode = QOpcUa::UaStatusCode::Good;
+        if (res.results[i].hasValue && res.results[i].value.data)
+                vec[i].value = QOpen62541ValueConverter::toQVariant(res.results[i].value);
     }
-}
-
-QVariant Open62541AsyncBackend::readNodeValueAttribute(UA_NodeId id)
-{
-    UA_Variant value;
-    UA_Variant_init(&value);
-    QScopedPointer<UA_Variant, UaVariantMemberDeleter> vs(&value);
-
-    UA_StatusCode ret = UA_Client_readValueAttribute(m_uaclient, id, &value);
-    if (ret != UA_STATUSCODE_GOOD)
-        return QVariant();
-
-    if (!value.type->builtin) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: only builtin types are currently supported!";
-        return QVariant();
-    }
-
-    return QOpen62541ValueConverter::toQVariant(value);
-}
-
-QOpcUa::Types Open62541AsyncBackend::readNodeValueType(UA_NodeId id)
-{
-    UA_Variant value;
-    UA_Variant_init(&value);
-    QScopedPointer<UA_Variant, UaVariantMemberDeleter> vs(&value);
-
-    UA_StatusCode ret = UA_Client_readValueAttribute(m_uaclient, id, &value);
-    if (ret != UA_STATUSCODE_GOOD)
-        return QOpcUa::Types::Undefined;
-
-    switch (value.type->typeIndex) {
-    case UA_TYPES_BOOLEAN:
-        return QOpcUa::Types::Boolean;
-    case UA_TYPES_SBYTE:
-        return QOpcUa::Types::SByte;
-    case UA_TYPES_BYTE:
-        return QOpcUa::Types::Byte;
-    case UA_TYPES_INT16:
-        return QOpcUa::Types::Int16;
-    case UA_TYPES_UINT16:
-        return QOpcUa::Types::UInt16;
-    case UA_TYPES_INT32:
-        return QOpcUa::Types::Int32;
-    case UA_TYPES_UINT32:
-        return QOpcUa::Types::UInt32;
-    case UA_TYPES_INT64:
-        return QOpcUa::Types::Int64;
-    case UA_TYPES_UINT64:
-        return QOpcUa::Types::UInt64;
-    case UA_TYPES_FLOAT:
-        return QOpcUa::Types::Float;
-    case UA_TYPES_DOUBLE:
-        return QOpcUa::Types::Double;
-    case UA_TYPES_BYTESTRING:
-        return QOpcUa::Types::ByteString;
-    case UA_TYPES_STRING:
-        return QOpcUa::Types::String;
-    case UA_TYPES_LOCALIZEDTEXT:
-        return QOpcUa::Types::LocalizedText;
-    case UA_TYPES_NODEID:
-        return QOpcUa::Types::NodeId;
-    case UA_TYPES_DATETIME:
-        return QOpcUa::Types::DateTime;
-    case UA_TYPES_GUID:
-        return QOpcUa::Types::Guid;
-    case UA_TYPES_XMLELEMENT:
-        return QOpcUa::Types::XmlElement;
-    case UA_TYPES_QUALIFIEDNAME:
-        return QOpcUa::Types::QualifiedName;
-    default:
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Type resolution failed for typeIndex:" << value.type->typeIndex;
-    }
-    return QOpcUa::Types::Undefined;
+    emit attributesRead(handle, vec, static_cast<QOpcUa::UaStatusCode>(res.responseHeader.serviceResult));
+    UA_ReadResponse_deleteMembers(&res);
+    UA_NodeId_deleteMembers(&id);
 }
 
 bool Open62541AsyncBackend::writeNodeValueAttribute(UA_NodeId id, const QVariant &value, QOpcUa::Types type)
@@ -307,7 +223,7 @@ void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
         QObject::connect(m_subscriptionTimer, &QTimer::timeout,
                          this, &Open62541AsyncBackend::updatePublishSubscriptionRequests);
     }
-    emit m_clientImpl->stateAndOrErrorChanged(QOpcUaClient::Connected, QOpcUaClient::NoError);
+    emit stateAndOrErrorChanged(QOpcUaClient::Connected, QOpcUaClient::NoError);
 }
 
 void Open62541AsyncBackend::disconnectFromEndpoint()
@@ -321,7 +237,7 @@ void Open62541AsyncBackend::disconnectFromEndpoint()
     UA_Client_delete(m_uaclient);
     m_uaclient = nullptr;
     m_subscriptionTimer->stop();
-    emit m_clientImpl->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
+    emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
 }
 
 void Open62541AsyncBackend::updatePublishSubscriptionRequests() const

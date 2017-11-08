@@ -37,6 +37,10 @@
 #ifndef QFREEOPCUAWORKER_H
 #define QFREEOPCUAWORKER_H
 
+#include <QtOpcUa/qopcuanode.h>
+#include <QtOpcUa/qopcuasubscription.h>
+#include <private/qopcuabackend_p.h>
+
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
 
@@ -44,10 +48,12 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFreeOpcUaClientImpl;
-class QOpcUaNode;
+class QFreeOpcUaNode;
 class QOpcUaSubscription;
-class QFreeOpcUaWorker : public QObject, public OpcUa::UaClient
+class QOpcUaNode;
+class QFreeOpcUaClientImpl;
+
+class QFreeOpcUaWorker : public QOpcUaBackend, public OpcUa::UaClient
 {
     Q_OBJECT
 public:
@@ -58,6 +64,8 @@ public:
 public slots:
     void asyncConnectToEndpoint(const QUrl &url);
     void asyncDisconnectFromEndpoint();
+
+    void readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUaNode::NodeAttributes attr);
 
 private:
     QFreeOpcUaClientImpl *m_client;

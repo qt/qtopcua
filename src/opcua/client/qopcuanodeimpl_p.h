@@ -59,18 +59,22 @@ QT_BEGIN_NAMESPACE
 class QOpcUaMonitoredEvent;
 class QOpcUaMonitoredValue;
 
-class Q_OPCUA_EXPORT QOpcUaNodeImpl
+struct QOpcUaReadResult {
+    QOpcUaNode::NodeAttribute attributeId;
+    QOpcUa::UaStatusCode statusCode;
+    QVariant value;
+};
+
+class Q_OPCUA_EXPORT QOpcUaNodeImpl : public QObject
 {
+    Q_OBJECT
 public:
     QOpcUaNodeImpl();
     virtual ~QOpcUaNodeImpl();
 
-    virtual QString displayName() const = 0;
-    virtual QOpcUa::Types type() const = 0;
-    virtual QVariant value() const = 0;
+    virtual bool readAttributes(QOpcUaNode::NodeAttributes attr) = 0;
     virtual QStringList childrenIds() const = 0;
     virtual QString nodeId() const = 0;
-    virtual QOpcUaNode::NodeClass nodeClass() const = 0;
 
     virtual bool setValue(const QVariant &value,
             QOpcUa::Types type = QOpcUa::Undefined)  = 0;
@@ -79,8 +83,14 @@ public:
 
     virtual bool call(const QString &methodNodeId,
             QVector<QOpcUa::TypedVariant> *args = nullptr, QVector<QVariant> *ret = nullptr) = 0;
+
+Q_SIGNALS:
+    void attributesRead(QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
+
 };
 
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(QOpcUaReadResult)
 
 #endif // QOPCUANODEIMPL_P_H

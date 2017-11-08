@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2017 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,45 +34,15 @@
 **
 ****************************************************************************/
 
-#include "qopen62541client.h"
-#include "qopen62541node.h"
-#include "qopen62541plugin.h"
-#include "qopen62541valueconverter.h"
-#include <QtOpcUa/qopcuaclient.h>
-
-#include <QtCore/qloggingcategory.h>
+#include <private/qopcuabackend_p.h>
 
 QT_BEGIN_NAMESPACE
 
-static void compileTimeEnforceEnumMappings(void)
-{
-    static_assert(static_cast<QOpcUaNode::NodeClass>(UA_NODECLASS_UNSPECIFIED) == QOpcUaNode::NodeClass::Undefined,
-                  "open62541 and QOpcUa values for NodeClasses must be the same");
-    static_assert(static_cast<QOpcUaNode::NodeClass>(UA_NODECLASS_VARIABLE) == QOpcUaNode::NodeClass::Variable,
-                  "open62541 and QOpcUa values for NodeClasses must be the same");
+QOpcUaBackend::QOpcUaBackend()
+    : QObject()
+{}
 
-    static_assert(UA_ATTRIBUTEID_NODEID == QOpen62541ValueConverter::toUaAttributeId(QOpcUaNode::NodeAttribute::NodeId),
-                  "open62541 and QOpcUa values for AttributeId must be the same");
-    static_assert(UA_ATTRIBUTEID_USEREXECUTABLE == QOpen62541ValueConverter::toUaAttributeId(QOpcUaNode::NodeAttribute::UserExecutable),
-                  "open62541 and QOpcUa values for AttributeId must be the same");
-}
-
-QOpen62541Plugin::QOpen62541Plugin(QObject *parent)
-    : QOpcUaPlugin(parent)
-{
-    compileTimeEnforceEnumMappings();
-    qRegisterMetaType<UA_NodeId>();
-}
-
-QOpen62541Plugin::~QOpen62541Plugin()
-{
-}
-
-QOpcUaClient *QOpen62541Plugin::createClient()
-{
-    return new QOpcUaClient(new QOpen62541Client);
-}
-
-Q_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541, "qt.opcua.plugins.open62541")
+QOpcUaBackend::~QOpcUaBackend()
+{}
 
 QT_END_NAMESPACE

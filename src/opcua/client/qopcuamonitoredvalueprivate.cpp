@@ -42,7 +42,8 @@ QT_BEGIN_NAMESPACE
 QOpcUaMonitoredValuePrivate::QOpcUaMonitoredValuePrivate(QOpcUaNode *node, QOpcUaSubscription *subscription)
     : m_node(node)
     , m_subscription(subscription)
-    , m_currentValue(node->value())
+    // TODO: is it useful to initialize a monitored item with a potentially uninitialized value?
+    , m_currentValue(node->attribute(QOpcUaNode::NodeAttribute::Value))
 {
 }
 

@@ -55,6 +55,7 @@
 #include <private/qobject_p.h>
 #include <QtCore/qpointer.h>
 #include <QtCore/qscopedpointer.h>
+#include <QtCore/qhash.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -66,12 +67,40 @@ public:
     QOpcUaNodePrivate(QOpcUaNodeImpl *impl, QOpcUaClient *client)
         : m_impl(impl)
         , m_client(client)
-    {}
+    {
+        m_attributesReadConnection = QObject::connect(impl, &QOpcUaNodeImpl::attributesRead,
+                [this](QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
+        {
+            for (auto &entry : qAsConst(attr)) {
+                if (serviceResult == QOpcUa::UaStatusCode::Good)
+                    m_nodeAttributes[entry.attributeId] = { entry.value, entry.statusCode };
+                else
+                    m_nodeAttributes[entry.attributeId] = { QVariant(), serviceResult };
+            }
 
-    ~QOpcUaNodePrivate() {}
+            QOpcUaNode::NodeAttributes updatedAttributes;
+            for (auto &entry : qAsConst(attr))
+                updatedAttributes |= entry.attributeId;
+
+            emit q_func()->readFinished(updatedAttributes);
+        });
+    }
+
+    ~QOpcUaNodePrivate()
+    {
+        QObject::disconnect(m_attributesReadConnection);
+    }
 
     QScopedPointer<QOpcUaNodeImpl> m_impl;
     QPointer<QOpcUaClient> m_client;
+
+    struct AttributeWithStatus {
+        QVariant attribute;
+        QOpcUa::UaStatusCode statusCode;
+    };
+    QHash<QOpcUaNode::NodeAttribute, AttributeWithStatus> m_nodeAttributes;
+
+    QMetaObject::Connection m_attributesReadConnection;
 };
 
 QT_END_NAMESPACE

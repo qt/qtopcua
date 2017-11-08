@@ -21,7 +21,8 @@ SOURCES += \
     client/qopcuamonitoredeventprivate.cpp \
     client/qopcuasubscriptionprivate.cpp \
     client/qopcuamonitoredvalueprivate.cpp \
-    client/qopcuasubscriptionimpl.cpp
+    client/qopcuasubscriptionimpl.cpp \
+    client/qopcuabackend.cpp
 
 HEADERS += \
     client/qopcuaclient_p.h \
@@ -31,4 +32,5 @@ HEADERS += \
     client/qopcuamonitoredevent_p.h \
     client/qopcuamonitoredvalue_p.h \
     client/qopcuasubscription_p.h \
-    client/qopcuasubscriptionimpl_p.h
+    client/qopcuasubscriptionimpl_p.h \
+    client/qopcuabackend_p.h

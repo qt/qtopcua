@@ -53,6 +53,7 @@ QOpen62541Client::QOpen62541Client()
     , m_backend(new Open62541AsyncBackend(this))
 {
     m_thread = new QThread();
+    connectBackendWithClient(m_backend);
     m_backend->moveToThread(m_thread);
     connect(m_thread, &QThread::finished, m_thread, &QObject::deleteLater);
     connect(m_thread, &QThread::finished, m_backend, &QObject::deleteLater);

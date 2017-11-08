@@ -50,14 +50,18 @@
 
 #include <QtOpcUa/qopcuaclient.h>
 #include <QtOpcUa/qopcuaglobal.h>
+#include <private/qopcuanodeimpl_p.h>
 
 #include <QtCore/qobject.h>
+#include <QtCore/qpointer.h>
+#include <QtCore/qset.h>
 
 QT_BEGIN_NAMESPACE
 
 class QOpcUaNode;
 class QOpcUaClient;
 class QOpcUaSubscription;
+class QOpcUaBackend;
 
 class Q_OPCUA_EXPORT QOpcUaClientImpl : public QObject
 {
@@ -74,9 +78,17 @@ public:
     virtual bool isSecureConnectionSupported() const = 0;
     virtual QString backend() const = 0;
 
+    void registerNode(QPointer<QOpcUaNodeImpl> obj);
+    void unregisterNode(QPointer<QOpcUaNodeImpl> obj);
+
+    void connectBackendWithClient(QOpcUaBackend *backend);
+
     virtual QOpcUaSubscription *createSubscription(quint32 interval) = 0;
 
     QOpcUaClient *m_client;
+
+private Q_SLOTS:
+    void handleAttributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
 
 signals:
     void connected();
@@ -85,7 +97,18 @@ signals:
                                 QOpcUaClient::ClientError error);
 private:
     Q_DISABLE_COPY(QOpcUaClientImpl)
+    QHash<uintptr_t, QPointer<QOpcUaNodeImpl>> m_handles;
 };
+
+inline uint qHash(const QPointer<QOpcUaNodeImpl>& n)
+{
+    return ::qHash(n.data());
+}
+
+inline uint qHash(const QOpcUaNode::NodeAttribute& attr)
+{
+    return ::qHash(static_cast<uint>(attr));
+}
 
 QT_END_NAMESPACE
 

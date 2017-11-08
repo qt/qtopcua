@@ -35,6 +35,7 @@
 ****************************************************************************/
 
 #include "qopen62541client.h"
+#include <private/qopcuabackend_p.h>
 
 #include <QtCore/qset.h>
 #include <QtCore/qstring.h>
@@ -42,7 +43,9 @@
 
 QT_BEGIN_NAMESPACE
 
-class Open62541AsyncBackend : public QObject
+class QOpen62541Node;
+
+class Open62541AsyncBackend : public QOpcUaBackend
 {
     Q_OBJECT
 public:
@@ -53,12 +56,9 @@ public Q_SLOTS:
     void disconnectFromEndpoint();
 
     // Node functions
-    QString resolveNodeNameById(UA_NodeId id);
-    QOpcUaNode::NodeClass resolveNodeClassAttribute(UA_NodeId id);
-    QVariant readNodeValueAttribute(UA_NodeId id);
-    QOpcUa::Types readNodeValueType(UA_NodeId id);
     bool writeNodeValueAttribute(UA_NodeId id, const QVariant &value, QOpcUa::Types type);
     QStringList childrenIds(const UA_NodeId *parentNode);
+    void readAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttributes attr);
 
     // Subscription
     UA_UInt32 createSubscription(int interval);

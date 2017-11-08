@@ -38,6 +38,8 @@
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qmetaobject.h>
+#include <QtCore/qregularexpression.h>
 #include <QtCore/quuid.h>
 
 #include <vector>
@@ -386,6 +388,21 @@ template<>
 QOpcUa::QQualifiedName scalarUaToQt<QOpcUa::QQualifiedName, OpcUa::QualifiedName>(const OpcUa::QualifiedName &data)
 {
     return QOpcUa::QQualifiedName(data.NamespaceIndex, QString::fromStdString(data.Name));
+}
+
+QOpcUa::UaStatusCode exceptionToStatusCode(const std::exception &ex)
+{
+    QOpcUa::UaStatusCode statusCode = QOpcUa::UaStatusCode::BadUnexpectedError;
+
+    QString text(ex.what());
+    int index = text.lastIndexOf(QRegularExpression(QStringLiteral("0x[0-9A-Fa-f]{8}")));
+    if (index != -1) {
+        bool good = false;
+        quint32 code = text.midRef(index, 10).toUInt(&good, 16);
+        if (good && QMetaEnum::fromType<QOpcUa::UaStatusCode>().valueToKey(code) != 0)
+            statusCode = static_cast<QOpcUa::UaStatusCode>(code);
+    }
+    return statusCode;
 }
 
 }

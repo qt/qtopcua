@@ -50,33 +50,26 @@ QOpen62541Node::QOpen62541Node(const UA_NodeId nodeId, QOpen62541Client *client,
     , m_nodeIdString(nodeIdString)
     , m_nodeId(nodeId)
 {
+    m_client->registerNode(this);
 }
 
 QOpen62541Node::~QOpen62541Node()
 {
+    if (m_client)
+        m_client->unregisterNode(this);
+
     UA_NodeId_deleteMembers(&m_nodeId);
 }
 
-QString QOpen62541Node::displayName() const
+bool QOpen62541Node::readAttributes(QOpcUaNode::NodeAttributes attr)
 {
-    QString result;
-    QMetaObject::invokeMethod(m_client->m_backend, "resolveNodeNameById",
-                              Qt::BlockingQueuedConnection,
-                              Q_RETURN_ARG(QString, result),
-                              Q_ARG(UA_NodeId, m_nodeId));
-    return result;
-}
-
-// ToDo: move from string to enum
-QOpcUa::Types QOpen62541Node::type() const
-{
-    // Can we optimize this? We need to acquire the value just to identify the type of that value
-    QOpcUa::Types result;
-    QMetaObject::invokeMethod(m_client->m_backend, "readNodeValueType",
-                              Qt::BlockingQueuedConnection,
-                              Q_RETURN_ARG(QOpcUa::Types, result),
-                              Q_ARG(UA_NodeId, m_nodeId));
-    return result;
+    UA_NodeId tempId;
+    UA_NodeId_copy(&m_nodeId, &tempId);
+    return QMetaObject::invokeMethod(m_client->m_backend, "readAttributes",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(UA_NodeId, tempId),
+                                     Q_ARG(QOpcUaNode::NodeAttributes, attr));
 }
 
 QStringList QOpen62541Node::childrenIds() const
@@ -88,27 +81,6 @@ QStringList QOpen62541Node::childrenIds() const
 QString QOpen62541Node::nodeId() const
 {
     return m_nodeIdString;
-}
-
-QOpcUaNode::NodeClass QOpen62541Node::nodeClass() const
-{
-    QOpcUaNode::NodeClass result;
-    QMetaObject::invokeMethod(m_client->m_backend, "resolveNodeClassAttribute",
-                              Qt::BlockingQueuedConnection,
-                              Q_RETURN_ARG(QOpcUaNode::NodeClass, result),
-                              Q_ARG(UA_NodeId, m_nodeId));
-    return result;
-}
-
-QVariant QOpen62541Node::value() const
-{
-    QVariant result;
-    QMetaObject::invokeMethod(m_client->m_backend, "readNodeValueAttribute",
-                              Qt::BlockingQueuedConnection,
-                              Q_RETURN_ARG(QVariant, result),
-                              Q_ARG(UA_NodeId, m_nodeId));
-
-    return result;
 }
 
 bool QOpen62541Node::setValue(const QVariant &value, QOpcUa::Types type)

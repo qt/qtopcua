@@ -48,3 +48,6 @@ depends += \
    qtcore \
    qtqml \
    qtquick
+
+Cpp.ignoretokens   += \
+   Q_OPCUA_EXPORT

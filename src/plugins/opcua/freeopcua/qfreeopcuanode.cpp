@@ -38,6 +38,7 @@
 #include "qfreeopcuanode.h"
 #include "qfreeopcuasubscription.h"
 #include "qfreeopcuavalueconverter.h"
+#include "qfreeopcuaworker.h"
 #include <QtOpcUa/qopcuamonitoredevent.h>
 #include <QtOpcUa/qopcuamonitoredvalue.h>
 
@@ -50,95 +51,26 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_FREEOPCUA)
 
-QFreeOpcUaNode::QFreeOpcUaNode(OpcUa::Node node, OpcUa::UaClient *client)
+QFreeOpcUaNode::QFreeOpcUaNode(OpcUa::Node node, QFreeOpcUaClientImpl *client)
     : m_node(node)
     , m_client(client)
 {
+    m_client->registerNode(this);
 }
 
 QFreeOpcUaNode::~QFreeOpcUaNode()
 {
+    if (m_client)
+        m_client->unregisterNode(this);
 }
 
-QString QFreeOpcUaNode::displayName() const
+bool QFreeOpcUaNode::readAttributes(QOpcUaNode::NodeAttributes attr)
 {
-    try {
-        return QString::fromStdString(m_node.GetAttribute(
-                                          OpcUa::AttributeId::DisplayName).Value.As<OpcUa::LocalizedText>().Text);
-    } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Failed to get BrowseName for node: " << ex.what();
-    }
-    return QString();
-}
-
-QOpcUa::Types QFreeOpcUaNode::type() const
-{
-    const OpcUa::Variant value = m_node.GetValue();
-    switch (value.Type()) {
-    case OpcUa::VariantType::BOOLEAN:
-        return QOpcUa::Types::Boolean;
-    case OpcUa::VariantType::SBYTE:
-        return QOpcUa::Types::SByte;
-    case OpcUa::VariantType::BYTE:
-        return QOpcUa::Types::Byte;
-    case OpcUa::VariantType::INT16:
-        return QOpcUa::Types::Int16;
-    case OpcUa::VariantType::UINT16:
-        return QOpcUa::Types::UInt16;
-    case OpcUa::VariantType::INT32:
-        return QOpcUa::Types::Int32;
-    case OpcUa::VariantType::UINT32:
-        return QOpcUa::Types::UInt32;
-    case OpcUa::VariantType::INT64:
-        return QOpcUa::Types::Int64;
-    case OpcUa::VariantType::UINT64:
-        return QOpcUa::Types::UInt64;
-    case OpcUa::VariantType::FLOAT:
-        return QOpcUa::Types::Float;
-    case OpcUa::VariantType::DOUBLE:
-        return QOpcUa::Types::Double;
-    case OpcUa::VariantType::STRING:
-        return QOpcUa::Types::String;
-    case OpcUa::VariantType::DATE_TIME:
-        return QOpcUa::Types::DateTime;
-    case OpcUa::VariantType::BYTE_STRING:
-        return QOpcUa::Types::ByteString;
-    case OpcUa::VariantType::NODE_Id:
-        return QOpcUa::Types::NodeId;
-    case OpcUa::VariantType::LOCALIZED_TEXT:
-        return QOpcUa::Types::LocalizedText;
-    case OpcUa::VariantType::GUId:
-        return QOpcUa::Types::Guid;
-    case OpcUa::VariantType::QUALIFIED_NAME:
-        return QOpcUa::Types::QualifiedName;
-
-    case OpcUa::VariantType::EXPANDED_NODE_Id:
-    case OpcUa::VariantType::STATUS_CODE:
-    case OpcUa::VariantType::XML_ELEMENT:
-    case OpcUa::VariantType::NUL:
-    case OpcUa::VariantType::EXTENSION_OBJECT:
-    case OpcUa::VariantType::DATA_VALUE:
-    case OpcUa::VariantType::VARIANT:
-    case OpcUa::VariantType::DIAGNOSTIC_INFO:
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Type resolution failed for " << static_cast<int>(value.Type());
-        break;
-    }
-
-    return QOpcUa::Types::Undefined;
-}
-
-QVariant QFreeOpcUaNode::value() const
-{
-    try {
-        OpcUa::Variant val = m_node.GetValue();
-        if (val.IsNul())
-            return QVariant();
-        else
-            return QFreeOpcUaValueConverter::toQVariant(val);
-    } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << ex.what();
-        return QVariant();
-    }
+    return QMetaObject::invokeMethod(m_client->m_opcuaWorker, "readAttributes",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(OpcUa::NodeId, m_node.GetId()),
+                                     Q_ARG(QOpcUaNode::NodeAttributes, attr));
 }
 
 QStringList QFreeOpcUaNode::childrenIds() const
@@ -163,38 +95,6 @@ QString QFreeOpcUaNode::nodeId() const
     } catch (const std::exception &ex) {
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Failed to get id for node:" << ex.what();
         return QString();
-    }
-}
-
-QOpcUaNode::NodeClass QFreeOpcUaNode::nodeClass() const
-{
-    try {
-        int32_t temp = m_node.GetAttribute(OpcUa::AttributeId::NodeClass).Value.As<int32_t>();
-        OpcUa::NodeClass nc = static_cast<OpcUa::NodeClass>(temp);
-
-        switch (nc) {
-        case OpcUa::NodeClass::Object:
-            return QOpcUaNode::NodeClass::Object;
-        case OpcUa::NodeClass::Variable:
-            return QOpcUaNode::NodeClass::Variable;
-        case OpcUa::NodeClass::Method:
-            return QOpcUaNode::NodeClass::Method;
-        case OpcUa::NodeClass::ObjectType:
-            return QOpcUaNode::NodeClass::ObjectType;
-        case OpcUa::NodeClass::VariableType:
-            return QOpcUaNode::NodeClass::VariableType;
-        case OpcUa::NodeClass::ReferenceType:
-            return QOpcUaNode::NodeClass::ReferenceType;
-        case OpcUa::NodeClass::DataType:
-            return QOpcUaNode::NodeClass::DataType;
-        case OpcUa::NodeClass::View:
-            return QOpcUaNode::NodeClass::View;
-        default:
-            return QOpcUaNode::NodeClass::Undefined;
-        }
-    } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Failed to get node class for node:" << ex.what();
-        return QOpcUaNode::NodeClass::Undefined;
     }
 }
 
@@ -226,7 +126,7 @@ bool QFreeOpcUaNode::call(const QString &methodNodeId,
     try {
         objectId = m_node.GetId();
 
-        OpcUa::Node methodNode = m_client->GetNode(methodNodeId.toStdString());
+        OpcUa::Node methodNode = m_client->m_opcuaWorker->GetNode(methodNodeId.toStdString());
         methodNode.GetBrowseName();
         methodId = methodNode.GetId();
     } catch (const std::exception &ex) {

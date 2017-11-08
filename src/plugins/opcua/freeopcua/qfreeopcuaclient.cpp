@@ -51,6 +51,7 @@ QFreeOpcUaClientImpl::QFreeOpcUaClientImpl()
 {
     m_thread = new QThread();
     m_opcuaWorker = new QFreeOpcUaWorker(this);
+    connectBackendWithClient(m_opcuaWorker);
     m_opcuaWorker->moveToThread(m_thread);
     connect(m_thread, &QThread::finished, m_opcuaWorker, &QObject::deleteLater);
     connect(m_thread, &QThread::finished, m_thread, &QObject::deleteLater);
@@ -86,11 +87,11 @@ QOpcUaNode *QFreeOpcUaClientImpl::node(const QString &nodeId)
 
     try {
         OpcUa::Node node = m_opcuaWorker->GetNode(nodeId.toStdString());
-        QFreeOpcUaNode *n = new QFreeOpcUaNode(node, m_opcuaWorker);
+        QFreeOpcUaNode *n = new QFreeOpcUaNode(node, this);
         return new QOpcUaNode(n, m_client);
     } catch (const std::exception &ex) {
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Could not get node: %s %s", qUtf8Printable(nodeId), ex.what());
-        return new QOpcUaNode(new QFreeOpcUaNode(OpcUa::Node(), m_opcuaWorker), m_client);
+        return new QOpcUaNode(new QFreeOpcUaNode(OpcUa::Node(), this), m_client);
     }
 }
 

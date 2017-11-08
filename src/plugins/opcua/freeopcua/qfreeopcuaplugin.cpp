@@ -36,15 +36,31 @@
 
 #include "qfreeopcuaclient.h"
 #include "qfreeopcuaplugin.h"
+#include "qfreeopcuavalueconverter.h"
 #include <QtOpcUa/qopcuaclient.h>
 
 #include <QtCore/qloggingcategory.h>
 
 QT_BEGIN_NAMESPACE
 
+static void compileTimeEnforceEnumMappings(void)
+{
+    static_assert(static_cast<QOpcUaNode::NodeClass>(OpcUa::NodeClass::Unspecified) == QOpcUaNode::NodeClass::Undefined,
+                  "FreeOPCUA and QOpcUa values for NodeClasses must be the same");
+    static_assert(static_cast<QOpcUaNode::NodeClass>(OpcUa::NodeClass::Variable) == QOpcUaNode::NodeClass::Variable,
+                  "FreeOPCUA and QOpcUa values for NodeClasses must be the same");
+
+    static_assert(OpcUa::AttributeId::NodeId == QFreeOpcUaValueConverter::toUaAttributeId(QOpcUaNode::NodeAttribute::NodeId),
+                  "FreeOPCUA and QOpcUa values for AttributeId must be the same");
+    static_assert(OpcUa::AttributeId::UserExecutable == QFreeOpcUaValueConverter::toUaAttributeId(QOpcUaNode::NodeAttribute::UserExecutable),
+                  "FreeOPCUA and QOpcUa values for AttributeId must be the same");
+}
+
 QFreeOpcUaPlugin::QFreeOpcUaPlugin(QObject *parent)
     : QOpcUaPlugin(parent)
 {
+    compileTimeEnforceEnumMappings();
+    qRegisterMetaType<OpcUa::NodeId>();
 }
 
 QFreeOpcUaPlugin::~QFreeOpcUaPlugin()

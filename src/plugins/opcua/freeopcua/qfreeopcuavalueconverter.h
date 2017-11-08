@@ -37,6 +37,7 @@
 #ifndef QFREEOPCUAVALUECONVERTER_H
 #define QFREEOPCUAVALUECONVERTER_H
 
+#include <QtOpcUa/qopcuanode.h>
 #include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/qstring.h>
@@ -44,6 +45,7 @@
 
 #include <vector>
 
+#include <opc/ua/client/client.h>
 #include <opc/ua/protocol/variant.h>
 
 QT_BEGIN_NAMESPACE
@@ -55,8 +57,15 @@ namespace QFreeOpcUaValueConverter
     OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type);
     QString nodeIdToString(const OpcUa::NodeId &id);
 
+    QOpcUa::UaStatusCode exceptionToStatusCode(const std::exception &ex);
+
     template <typename UATYPE, typename QTTYPE=UATYPE>
     OpcUa::Variant arrayFromQVariant(const QVariant &var);
+
+    constexpr OpcUa::AttributeId toUaAttributeId(QOpcUaNode::NodeAttribute attr)
+    {
+        return static_cast<OpcUa::AttributeId>(std::log2(static_cast<std::underlying_type<QOpcUaNode::NodeAttribute>::type>(attr)) + 1);
+    }
 
     template <typename UATYPE, typename QTTYPE=UATYPE>
     UATYPE scalarFromQVariant(const QVariant &var);

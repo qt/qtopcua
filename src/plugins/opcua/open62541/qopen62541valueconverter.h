@@ -38,6 +38,7 @@
 #define QOPEN62541VALUECONVERTER_H
 
 #include "qopen62541.h"
+#include <QtOpcUa/qopcuanode.h>
 #include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/qvariant.h>
@@ -45,6 +46,13 @@
 QT_BEGIN_NAMESPACE
 
 namespace QOpen62541ValueConverter {
+    QOpcUa::Types qvariantTypeToQOpcUaType(QVariant::Type type);
+
+    constexpr UA_AttributeId toUaAttributeId(QOpcUaNode::NodeAttribute attr)
+    {
+        return static_cast<UA_AttributeId>(std::log2(static_cast<std::underlying_type<QOpcUaNode::NodeAttribute>::type>(attr)) + 1);
+    }
+
     UA_Variant toOpen62541Variant(const QVariant&, QOpcUa::Types);
     QVariant toQVariant(const UA_Variant&);
     QOpcUa::Types toQOpcUaVariantType(quint8 typeIndex);

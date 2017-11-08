@@ -36,8 +36,10 @@
 
 #include "qopcuaplugin.h"
 #include "qopcuaprovider.h"
+#include <QtOpcUa/qopcuaclient.h>
 #include <QtOpcUa/qopcuanode.h>
 #include <QtOpcUa/qopcuatype.h>
+#include <private/qopcuanodeimpl_p.h>
 
 #include <private/qfactoryloader_p.h>
 #include <QtCore/qjsonarray.h>
@@ -104,8 +106,15 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
 {
     qRegisterMetaType<QOpcUa::Types>();
     qRegisterMetaType<QOpcUa::TypedVariant>();
+    qRegisterMetaType<QOpcUa::UaStatusCode>();
     qRegisterMetaType<QOpcUaNode::NodeClass>();
     qRegisterMetaType<QOpcUa::QQualifiedName>();
+    qRegisterMetaType<QOpcUaNode::NodeAttribute>();
+    qRegisterMetaType<QOpcUaNode::NodeAttributes>();
+    qRegisterMetaType<QVector<QOpcUaReadResult>>();
+    qRegisterMetaType<QOpcUaClient::ClientState>();
+    qRegisterMetaType<QOpcUaClient::ClientError>();
+    qRegisterMetaType<uintptr_t>("uintptr_t");
 }
 
 QOpcUaProvider::~QOpcUaProvider()

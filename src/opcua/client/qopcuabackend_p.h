@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2017 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,45 +34,51 @@
 **
 ****************************************************************************/
 
-#include "qopen62541client.h"
-#include "qopen62541node.h"
-#include "qopen62541plugin.h"
-#include "qopen62541valueconverter.h"
-#include <QtOpcUa/qopcuaclient.h>
+#ifndef QOPCUABACKEND_P_H
+#define QOPCUABACKEND_P_H
 
-#include <QtCore/qloggingcategory.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtOpcUa/qopcuaclient.h>
+#include <private/qopcuanodeimpl_p.h>
+
+#include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
 
-static void compileTimeEnforceEnumMappings(void)
+class QOpcUaNodeImpl;
+
+class Q_OPCUA_EXPORT QOpcUaBackend : public QObject
 {
-    static_assert(static_cast<QOpcUaNode::NodeClass>(UA_NODECLASS_UNSPECIFIED) == QOpcUaNode::NodeClass::Undefined,
-                  "open62541 and QOpcUa values for NodeClasses must be the same");
-    static_assert(static_cast<QOpcUaNode::NodeClass>(UA_NODECLASS_VARIABLE) == QOpcUaNode::NodeClass::Variable,
-                  "open62541 and QOpcUa values for NodeClasses must be the same");
+    Q_OBJECT
 
-    static_assert(UA_ATTRIBUTEID_NODEID == QOpen62541ValueConverter::toUaAttributeId(QOpcUaNode::NodeAttribute::NodeId),
-                  "open62541 and QOpcUa values for AttributeId must be the same");
-    static_assert(UA_ATTRIBUTEID_USEREXECUTABLE == QOpen62541ValueConverter::toUaAttributeId(QOpcUaNode::NodeAttribute::UserExecutable),
-                  "open62541 and QOpcUa values for AttributeId must be the same");
-}
+public:
+    explicit QOpcUaBackend();
+    virtual ~QOpcUaBackend();
 
-QOpen62541Plugin::QOpen62541Plugin(QObject *parent)
-    : QOpcUaPlugin(parent)
-{
-    compileTimeEnforceEnumMappings();
-    qRegisterMetaType<UA_NodeId>();
-}
+    static Q_DECL_CONSTEXPR size_t nodeAttributeEnumBits()
+    {
+        return sizeof(std::underlying_type<QOpcUaNode::NodeAttribute>::type) * CHAR_BIT;
+    }
 
-QOpen62541Plugin::~QOpen62541Plugin()
-{
-}
+Q_SIGNALS:
+    void stateAndOrErrorChanged(QOpcUaClient::ClientState state,
+                                QOpcUaClient::ClientError error);
+    void attributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attributes, QOpcUa::UaStatusCode serviceResult);
 
-QOpcUaClient *QOpen62541Plugin::createClient()
-{
-    return new QOpcUaClient(new QOpen62541Client);
-}
-
-Q_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541, "qt.opcua.plugins.open62541")
+private:
+    Q_DISABLE_COPY(QOpcUaBackend)
+};
 
 QT_END_NAMESPACE
+
+#endif // QOPCUABACKEND_P_H

@@ -141,7 +141,7 @@ void QOpen62541Subscription::monitoredValueUpdated(UA_UInt32 monId, UA_DataValue
     if (var.isValid())
         (*monitoredValue)->d_func()->triggerValueChanged(var);
     else
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not convert value for node:" << (*monitoredValue)->node().displayName();
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not convert value for node:" << (*monitoredValue)->node().nodeId();
 }
 
 bool QOpen62541Subscription::ensureNativeSubscription()

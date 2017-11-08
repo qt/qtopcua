@@ -37,11 +37,12 @@
 #include "qfreeopcuaclient.h"
 #include "qfreeopcuanode.h"
 #include "qfreeopcuasubscription.h"
+#include "qfreeopcuavalueconverter.h"
 #include "qfreeopcuaworker.h"
 #include <QtOpcUa/qopcuasubscription.h>
 
-#include <QtCore/qloggingcategory.h>
 #include <QtNetwork/qhostinfo.h>
+#include <QtCore/qloggingcategory.h>
 
 #include <opc/ua/node.h>
 
@@ -50,7 +51,7 @@ QT_BEGIN_NAMESPACE
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_FREEOPCUA)
 
 QFreeOpcUaWorker::QFreeOpcUaWorker(QFreeOpcUaClientImpl *client)
-    : QObject()
+    : QOpcUaBackend()
     , m_client(client)
 {}
 
@@ -81,11 +82,11 @@ void QFreeOpcUaWorker::asyncConnectToEndpoint(const QUrl &url)
         }
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Client could not connect to endpoint" << url;
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << e.what();
-        emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
         return;
     }
 
-    emit m_client->stateAndOrErrorChanged(QOpcUaClient::Connected, QOpcUaClient::NoError);
+    emit stateAndOrErrorChanged(QOpcUaClient::Connected, QOpcUaClient::NoError);
 }
 
 void QFreeOpcUaWorker::asyncDisconnectFromEndpoint()
@@ -99,6 +100,41 @@ void QFreeOpcUaWorker::asyncDisconnectFromEndpoint()
     }
 
     emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
+}
+
+void QFreeOpcUaWorker::readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUaNode::NodeAttributes attr)
+{
+    QVector<QOpcUaReadResult> vec;
+
+    try {
+        OpcUa::ReadParameters params;
+        OpcUa::ReadValueId attribute;
+        attribute.NodeId = id;
+
+        for (uint i = 0; i < nodeAttributeEnumBits(); ++i) {
+            if (attr & (1 << i)) {
+                attribute.AttributeId = QFreeOpcUaValueConverter::toUaAttributeId(static_cast<QOpcUaNode::NodeAttribute>(1 << i));
+                params.AttributesToRead.push_back(attribute);
+                QOpcUaReadResult temp;
+                temp.attributeId = static_cast<QOpcUaNode::NodeAttribute>(1 << i);
+                vec.push_back(temp);
+            }
+        }
+
+        std::vector<OpcUa::DataValue> res = GetRootNode().GetServices()->Attributes()->Read(params);
+
+        for (size_t i = 0; i < res.size(); ++i) {
+            vec[i].statusCode = static_cast<QOpcUa::UaStatusCode>(res[i].Status);
+            if (res[i].Status == OpcUa::StatusCode::Good) {
+                vec[i].value = QFreeOpcUaValueConverter::toQVariant(res[i].Value);
+            }
+        }
+
+        emit attributesRead(handle, vec, QOpcUa::UaStatusCode::Good);
+    } catch(const std::exception &ex) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Batch read of node attributes failed: %s", ex.what());
+        emit attributesRead(handle, vec, QFreeOpcUaValueConverter::exceptionToStatusCode(ex));
+    }
 }
 
 QOpcUaSubscription *QFreeOpcUaWorker::createSubscription(quint32 interval)

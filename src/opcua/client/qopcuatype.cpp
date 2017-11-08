@@ -74,6 +74,266 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QOpcUa::UaStatusCode
+
+    Enumerates all status codes from https://opcfoundation.org/UA/schemas/1.03/Opc.Ua.StatusCodes.csv
+
+    \value Good
+    \value BadUnexpectedError
+    \value BadInternalError
+    \value BadOutOfMemory
+    \value BadResourceUnavailable
+    \value BadCommunicationError
+    \value BadEncodingError
+    \value BadDecodingError
+    \value BadEncodingLimitsExceeded
+    \value BadRequestTooLarge
+    \value BadResponseTooLarge
+    \value BadUnknownResponse
+    \value BadTimeout
+    \value BadServiceUnsupported
+    \value BadShutdown
+    \value BadServerNotConnected
+    \value BadServerHalted
+    \value BadNothingToDo
+    \value BadTooManyOperations
+    \value BadTooManyMonitoredItems
+    \value BadDataTypeIdUnknown
+    \value BadCertificateInvalid
+    \value BadSecurityChecksFailed
+    \value BadCertificateTimeInvalid
+    \value BadCertificateIssuerTimeInvalid
+    \value BadCertificateHostNameInvalid
+    \value BadCertificateUriInvalid
+    \value BadCertificateUseNotAllowed
+    \value BadCertificateIssuerUseNotAllowed
+    \value BadCertificateUntrusted
+    \value BadCertificateRevocationUnknown
+    \value BadCertificateIssuerRevocationUnknown
+    \value BadCertificateRevoked
+    \value BadCertificateIssuerRevoked
+    \value BadCertificateChainIncomplete
+    \value BadUserAccessDenied
+    \value BadIdentityTokenInvalid
+    \value BadIdentityTokenRejected
+    \value BadSecureChannelIdInvalid
+    \value BadInvalidTimestamp
+    \value BadNonceInvalid
+    \value BadSessionIdInvalid
+    \value BadSessionClosed
+    \value BadSessionNotActivated
+    \value BadSubscriptionIdInvalid
+    \value BadRequestHeaderInvalid
+    \value BadTimestampsToReturnInvalid
+    \value BadRequestCancelledByClient
+    \value BadTooManyArguments
+    \value GoodSubscriptionTransferred
+    \value GoodCompletesAsynchronously
+    \value GoodOverload
+    \value GoodClamped
+    \value BadNoCommunication
+    \value BadWaitingForInitialData
+    \value BadNodeIdInvalid
+    \value BadNodeIdUnknown
+    \value BadAttributeIdInvalid
+    \value BadIndexRangeInvalid
+    \value BadIndexRangeNoData
+    \value BadDataEncodingInvalid
+    \value BadDataEncodingUnsupported
+    \value BadNotReadable
+    \value BadNotWritable
+    \value BadOutOfRange
+    \value BadNotSupported
+    \value BadNotFound
+    \value BadObjectDeleted
+    \value BadNotImplemented
+    \value BadMonitoringModeInvalid
+    \value BadMonitoredItemIdInvalid
+    \value BadMonitoredItemFilterInvalid
+    \value BadMonitoredItemFilterUnsupported
+    \value BadFilterNotAllowed
+    \value BadStructureMissing
+    \value BadEventFilterInvalid
+    \value BadContentFilterInvalid
+    \value BadFilterOperatorInvalid
+    \value BadFilterOperatorUnsupported
+    \value BadFilterOperandCountMismatch
+    \value BadFilterOperandInvalid
+    \value BadFilterElementInvalid
+    \value BadFilterLiteralInvalid
+    \value BadContinuationPointInvalid
+    \value BadNoContinuationPoints
+    \value BadReferenceTypeIdInvalid
+    \value BadBrowseDirectionInvalid
+    \value BadNodeNotInView
+    \value BadServerUriInvalid
+    \value BadServerNameMissing
+    \value BadDiscoveryUrlMissing
+    \value BadSempahoreFileMissing
+    \value BadRequestTypeInvalid
+    \value BadSecurityModeRejected
+    \value BadSecurityPolicyRejected
+    \value BadTooManySessions
+    \value BadUserSignatureInvalid
+    \value BadApplicationSignatureInvalid
+    \value BadNoValidCertificates
+    \value BadIdentityChangeNotSupported
+    \value BadRequestCancelledByRequest
+    \value BadParentNodeIdInvalid
+    \value BadReferenceNotAllowed
+    \value BadNodeIdRejected
+    \value BadNodeIdExists
+    \value BadNodeClassInvalid
+    \value BadBrowseNameInvalid
+    \value BadBrowseNameDuplicated
+    \value BadNodeAttributesInvalid
+    \value BadTypeDefinitionInvalid
+    \value BadSourceNodeIdInvalid
+    \value BadTargetNodeIdInvalid
+    \value BadDuplicateReferenceNotAllowed
+    \value BadInvalidSelfReference
+    \value BadReferenceLocalOnly
+    \value BadNoDeleteRights
+    \value UncertainReferenceNotDeleted
+    \value BadServerIndexInvalid
+    \value BadViewIdUnknown
+    \value BadViewTimestampInvalid
+    \value BadViewParameterMismatch
+    \value BadViewVersionInvalid
+    \value UncertainNotAllNodesAvailable
+    \value GoodResultsMayBeIncomplete
+    \value BadNotTypeDefinition
+    \value UncertainReferenceOutOfServer
+    \value BadTooManyMatches
+    \value BadQueryTooComplex
+    \value BadNoMatch
+    \value BadMaxAgeInvalid
+    \value BadSecurityModeInsufficient
+    \value BadHistoryOperationInvalid
+    \value BadHistoryOperationUnsupported
+    \value BadInvalidTimestampArgument
+    \value BadWriteNotSupported
+    \value BadTypeMismatch
+    \value BadMethodInvalid
+    \value BadArgumentsMissing
+    \value BadTooManySubscriptions
+    \value BadTooManyPublishRequests
+    \value BadNoSubscription
+    \value BadSequenceNumberUnknown
+    \value BadMessageNotAvailable
+    \value BadInsufficientClientProfile
+    \value BadStateNotActive
+    \value BadTcpServerTooBusy
+    \value BadTcpMessageTypeInvalid
+    \value BadTcpSecureChannelUnknown
+    \value BadTcpMessageTooLarge
+    \value BadTcpNotEnoughResources
+    \value BadTcpInternalError
+    \value BadTcpEndpointUrlInvalid
+    \value BadRequestInterrupted
+    \value BadRequestTimeout
+    \value BadSecureChannelClosed
+    \value BadSecureChannelTokenUnknown
+    \value BadSequenceNumberInvalid
+    \value BadProtocolVersionUnsupported
+    \value BadConfigurationError
+    \value BadNotConnected
+    \value BadDeviceFailure
+    \value BadSensorFailure
+    \value BadOutOfService
+    \value BadDeadbandFilterInvalid
+    \value UncertainNoCommunicationLastUsableValue
+    \value UncertainLastUsableValue
+    \value UncertainSubstituteValue
+    \value UncertainInitialValue
+    \value UncertainSensorNotAccurate
+    \value UncertainEngineeringUnitsExceeded
+    \value UncertainSubNormal
+    \value GoodLocalOverride
+    \value BadRefreshInProgress
+    \value BadConditionAlreadyDisabled
+    \value BadConditionAlreadyEnabled
+    \value BadConditionDisabled
+    \value BadEventIdUnknown
+    \value BadEventNotAcknowledgeable
+    \value BadDialogNotActive
+    \value BadDialogResponseInvalid
+    \value BadConditionBranchAlreadyAcked
+    \value BadConditionBranchAlreadyConfirmed
+    \value BadConditionAlreadyShelved
+    \value BadConditionNotShelved
+    \value BadShelvingTimeOutOfRange
+    \value BadNoData
+    \value BadBoundNotFound
+    \value BadBoundNotSupported
+    \value BadDataLost
+    \value BadDataUnavailable
+    \value BadEntryExists
+    \value BadNoEntryExists
+    \value BadTimestampNotSupported
+    \value GoodEntryInserted
+    \value GoodEntryReplaced
+    \value UncertainDataSubNormal
+    \value GoodNoData
+    \value GoodMoreData
+    \value BadAggregateListMismatch
+    \value BadAggregateNotSupported
+    \value BadAggregateInvalidInputs
+    \value BadAggregateConfigurationRejected
+    \value GoodDataIgnored
+    \value BadRequestNotAllowed
+    \value GoodEdited
+    \value GoodPostActionFailed
+    \value UncertainDominantValueChanged
+    \value GoodDependentValueChanged
+    \value BadDominantValueChanged
+    \value UncertainDependentValueChanged
+    \value BadDependentValueChanged
+    \value GoodCommunicationEvent
+    \value GoodShutdownEvent
+    \value GoodCallAgain
+    \value GoodNonCriticalTimeout
+    \value BadInvalidArgument
+    \value BadConnectionRejected
+    \value BadDisconnect
+    \value BadConnectionClosed
+    \value BadInvalidState
+    \value BadEndOfStream
+    \value BadNoDataAvailable
+    \value BadWaitingForResponse
+    \value BadOperationAbandoned
+    \value BadExpectedStreamToBlock
+    \value BadWouldBlock
+    \value BadSyntaxError
+    \value BadMaxConnectionsReached
+*/
+
+/*!
+    \enum QOpcUa::ErrorCategory
+
+    This enum contains simplified categories for OPC UA errors.
+
+    \value NoError The operation has been successful.
+    \value NodeError There is a problem with the node, e. g. it does not exist.
+    \value AttributeError The attributes to operate on where invalid.
+    \value PermissionError The user did not have the permission to perform the operation.
+    \value ArgumentError The arguments supplied by the user were invalid or incomplete.
+    \value TypeError There has been a type mismatch for a write operation.
+    \value ConnectionError Communication with the server did not work as expected.
+    \value UnspecifiedError Any error that is not categorized. The detailed status code must be checked.
+*/
+
+/*!
+    This method can be used to check if a call has successfully finished.
+
+    Returns true if \a statusCode's serverity field is Good.
+*/
+bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
+{
+    return (statusCode & 0xC0000000) == 0;
+}
+
+/*!
     \typedef QOpcUa::TypedVariant
 
     This is QPair<QVariant, QOpcUa::Types>.
@@ -133,5 +393,108 @@ QT_BEGIN_NAMESPACE
     The locale of the QLocalizedText.
 */
 
+static bool isNodeError(QOpcUa::UaStatusCode statusCode)
+{
+    switch (statusCode) {
+    case QOpcUa::UaStatusCode::BadMethodInvalid:
+    case QOpcUa::UaStatusCode::BadNodeIdInvalid:
+    case QOpcUa::UaStatusCode::BadNodeIdExists:
+    case QOpcUa::UaStatusCode::BadNodeIdRejected:
+    case QOpcUa::UaStatusCode::BadNodeIdUnknown:
+    case QOpcUa::UaStatusCode::BadObjectDeleted:
+        return true;
+    default:
+        return false;
+    }
+}
+
+static bool isAttributeError(QOpcUa::UaStatusCode statusCode)
+{
+    switch (statusCode) {
+    case QOpcUa::UaStatusCode::BadAttributeIdInvalid:
+    case QOpcUa::UaStatusCode::BadNodeAttributesInvalid:
+        return true;
+    default:
+        return false;
+    }
+}
+
+static bool isPermissionError(QOpcUa::UaStatusCode statusCode)
+{
+    switch (statusCode) {
+    case QOpcUa::UaStatusCode::BadUserAccessDenied:
+    case QOpcUa::UaStatusCode::BadNotWritable:
+    case QOpcUa::UaStatusCode::BadNoDeleteRights:
+    case QOpcUa::UaStatusCode::BadNotReadable:
+        return true;
+    default:
+        return false;
+    }
+}
+
+static bool isArgumentError(QOpcUa::UaStatusCode statusCode)
+{
+    switch (statusCode) {
+    case QOpcUa::UaStatusCode::BadArgumentsMissing:
+    case QOpcUa::UaStatusCode::BadInvalidArgument:
+    case QOpcUa::UaStatusCode::BadTooManyArguments:
+    case QOpcUa::UaStatusCode::BadInvalidTimestampArgument:
+        return true;
+    default:
+        return false;
+    }
+}
+
+static bool isTypeError(QOpcUa::UaStatusCode statusCode)
+{
+    switch (statusCode) {
+    case QOpcUa::UaStatusCode::BadTypeMismatch:
+    case QOpcUa::UaStatusCode::BadInvalidTimestampArgument:
+        return true;
+    default:
+        return false;
+    }
+}
+
+static bool isConnectionError(QOpcUa::UaStatusCode statusCode)
+{
+    switch (statusCode) {
+    case QOpcUa::UaStatusCode::BadConnectionClosed:
+    case QOpcUa::UaStatusCode::BadNoCommunication:
+        return true;
+    default:
+        return false;
+    }
+}
+
+/*!
+    Converts \a statusCode to an \l ErrorCategory. \l ErrorCategory can be used in cases where the
+    exact error is not important.
+
+    For error handling dependent on status codes, the full status code must be used instead.
+    The meaning of the status codes for the different services is documented in OPC-UA part 4.
+
+    If \a statusCode has not been categorized, UnspecifiedError is returned. In this case, the user
+    must check the full status code.
+*/
+QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
+{
+    if (isSuccessStatus(statusCode))
+        return QOpcUa::ErrorCategory::NoError;
+    if (isNodeError(statusCode))
+        return QOpcUa::ErrorCategory::NodeError;
+    if (isAttributeError(statusCode))
+        return QOpcUa::ErrorCategory::AttributeError;
+    if (isPermissionError(statusCode))
+        return QOpcUa::ErrorCategory::PermissionError;
+    if (isArgumentError(statusCode))
+        return QOpcUa::ErrorCategory::ArgumentError;
+    if (isTypeError(statusCode))
+        return QOpcUa::ErrorCategory::TypeError;
+    if (isConnectionError(statusCode))
+        return QOpcUa::ErrorCategory::ConnectionError;
+
+    return QOpcUa::ErrorCategory::UnspecifiedError;
+}
 
 QT_END_NAMESPACE
