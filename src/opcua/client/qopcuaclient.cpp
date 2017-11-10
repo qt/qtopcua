@@ -138,8 +138,6 @@ QOpcUaClient::~QOpcUaClient()
 }
 
 /*!
-    \fn  bool QOpcUaClient::connectToEndpoint(const QUrl &url)
-
     Connects to the OPC UA endpoint given in \a url.
     \sa disconnectFromEndpoint()
 */
@@ -150,8 +148,6 @@ void QOpcUaClient::connectToEndpoint(const QUrl &url)
 }
 
 /*!
-    \fn bool QOpcUaClient::secureConnectToEndpoint(const QUrl &url)
-
     Connects to an endpoint given by \a url using the highest security level
     supported by client and server.
     true is returned in case of success, false is returned when the connection
@@ -169,8 +165,6 @@ void QOpcUaClient::secureConnectToEndpoint(const QUrl &url)
 }
 
 /*!
-    \fn bool QOpcUaClient::disconnectFromEndpoint()
-
     Disconnects from the server.
     \sa connectToEndpoint()
 */
@@ -180,8 +174,7 @@ void QOpcUaClient::disconnectFromEndpoint()
     d->disconnectFromEndpoint();
 }
 
-/*! \fn QUrl QOpcUaClient::url() const
-
+/*!
     Returns the URL of the OPC UA server the client is currently connected to
     or was last connected to.
 */
@@ -197,8 +190,7 @@ QOpcUaClient::ClientState QOpcUaClient::state() const
     return d->m_state;
 }
 
-/*! \fn QOpcUaClient::ClientError QOpcUaClient::error() const
-
+/*!
     Returns the current error state of the client.
 */
 QOpcUaClient::ClientError QOpcUaClient::error() const
@@ -218,8 +210,6 @@ bool QOpcUaClient::isSecureConnectionSupported() const
 }
 
 /*!
-    \fn QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
-
     Returns an QOpcUaNode object containing the information about
     the OPC UA node identified by \a nodeId. The caller becomes the owner
     of the node object. For this method to work the client needs to be
@@ -240,8 +230,6 @@ QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 }
 
 /*!
-    \fn QString QOpcUaClient::backend() const
-
     Returns the name of the backend used by this instance of QOpcUaClient,
     e.g. "freeopcua".
 */
@@ -251,8 +239,6 @@ QString QOpcUaClient::backend() const
 }
 
 /*!
-    \fn QString QOpcUaClient::createSubscription(quint32 interval)
-
     Creates a subscription with \a interval milliseconds publishing period
     on the server and returns a QOpcUaSubscription object for it. The
     subscription may be used to monitor nodes for events or value changes.

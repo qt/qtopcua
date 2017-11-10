@@ -68,8 +68,6 @@ QOpcUaSubscription::~QOpcUaSubscription()
 }
 
 /*!
-    \fn QOpcUaMonitoredEvent *QOpcUaSubscription::addEvent(QOpcUaNode *node)
-
     Create an event monitor for \a node by adding it to this subscription object.
 
     Returns a QOpcUaMonitoredEvent which can be used to receive a signal when an
@@ -81,8 +79,6 @@ QOpcUaMonitoredEvent *QOpcUaSubscription::addEvent(QOpcUaNode *node)
 }
 
 /*!
-   \fn QOpcUaMonitoredValue *QOpcUaSubscription::addValue(QOpcUaNode *node)
-
    Create a value monitor for \a node by adding it to this subscription object.
 
    Return a QOpcUaMonitoredEvent which can be used to receive a signal when
@@ -94,8 +90,6 @@ QOpcUaMonitoredValue *QOpcUaSubscription::addValue(QOpcUaNode *node)
 }
 
 /*!
-   \fn void QOpcUaSubscription::removeEvent(QOpcUaMonitoredEvent *event)
-
    Remove the monitored event represented by \a event from this subscription.
  */
 void QOpcUaSubscription::removeEvent(QOpcUaMonitoredEvent *e)
@@ -104,8 +98,6 @@ void QOpcUaSubscription::removeEvent(QOpcUaMonitoredEvent *e)
 }
 
 /*!
-   void QOpcUaSubscription::removeValue(QOpcUaMonitoredValue *value)
-
    Remove the monitored value represented by \a value from this subscription.
  */
 void QOpcUaSubscription::removeValue(QOpcUaMonitoredValue *value)

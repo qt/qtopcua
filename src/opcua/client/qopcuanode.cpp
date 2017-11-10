@@ -122,7 +122,6 @@ QOpcUaNode::~QOpcUaNode()
 }
 
 /*!
-    \fn QString QOpcUaNode::displayName() const
     The DisplayName attribute of the OPC UA node.
 */
 QString QOpcUaNode::displayName() const
@@ -136,7 +135,6 @@ QString QOpcUaNode::displayName() const
 }
 
 /*!
-    \fn QString QOpcUaNode::type() const
     The type attribute of the OPC UA node.
  */
 QOpcUa::Types QOpcUaNode::type() const
@@ -148,7 +146,6 @@ QOpcUa::Types QOpcUaNode::type() const
 }
 
 /*!
-    \fn QVarient QOpcUaNode::value() const
     The value attribute of the OPC UA node.
 
     \sa setValue()
@@ -162,7 +159,6 @@ QVariant QOpcUaNode::value() const
 }
 
 /*!
-   \fn QStringList QOpcUaNode::childrenIds() const
    QStringList filled with the node IDs of all child nodes of the OPC UA node.
 */
 QStringList QOpcUaNode::childrenIds() const
@@ -174,7 +170,6 @@ QStringList QOpcUaNode::childrenIds() const
 }
 
 /*!
-    \fn QString QOpcUaNode::nodeId() const
     The ID of the OPC UA node.
 */
 QString QOpcUaNode::nodeId() const
@@ -186,7 +181,6 @@ QString QOpcUaNode::nodeId() const
 }
 
 /*!
-   \fn QOpcUaNodeClass QOpcUaNode::nodeClass() const
    The node class of the OPC UA node.
 */
 QOpcUaNode::NodeClass QOpcUaNode::nodeClass() const
@@ -198,8 +192,6 @@ QOpcUaNode::NodeClass QOpcUaNode::nodeClass() const
 }
 
 /*!
-    \fn bool QOpcUaNode::setValue(const QVariant &value, QOpcUa::Types type = QOpcUa::Undefined)
-
     Writes the value given in \a value to the OPC UA node.
     The data type must be supplied in \a type.
     true is returned in case of success, false is returned when the
@@ -216,8 +208,6 @@ bool QOpcUaNode::setValue(const QVariant &value, QOpcUa::Types type)
 }
 
 /*!
-    \fn QPair<double, double> QOpcUaNode::readEuRange() const
-
     Reads value range from the OPC UA node and
     returns it as a pair of doubles containing the lower and upper limit.
 
@@ -235,8 +225,6 @@ QPair<double, double> QOpcUaNode::readEuRange() const
 }
 
 /*!
-    \fn QPair<QString, QString> QOpcUaNode::readEui() const
-
     Reads Engineering unit information from the OPC UA node and returns it
     as a pair of strings containing the unit and its description.
 
@@ -251,8 +239,6 @@ QPair<QString, QString> QOpcUaNode::readEui() const
 }
 
 /*!
-    \fn QVector<QPair<QVariant, QDateTime> > QOpcUaNode::readHistorical(uint maxCount, const QDateTime &begin, const QDateTime &end) const
-
     Reads up to \a maxCount points of historical data from the OPC UA server
     for the node between the two timestamps \a begin and \a end.
 
@@ -268,8 +254,6 @@ QVector<QPair<QVariant, QDateTime> > QOpcUaNode::readHistorical(
 }
 
 /*!
-    \fn bool QOpcUaNode::writeHistorical(QOpcUa::Types type, const QVector<QPair<QVariant, QDateTime> > data)
-
     Write historical \a data from the OPC UA server of \a type QOpcUa::Types.
 
     Returns whether operation was successful.
@@ -287,8 +271,6 @@ bool QOpcUaNode::writeHistorical(QOpcUa::Types type,
 }
 
 /*!
-    \fn bool QOpcUaNode::call(const QString &methodNodeId, QVector<QOpcUa::TypedVariant> *args = 0, QVector<QVariant>  *ret = 0)
-
     Calls the OPC UA method \a methodNodeId with the parameters given via \a args. The result is
     returned in \a ret. The success of the service call is returned by the method.
 */

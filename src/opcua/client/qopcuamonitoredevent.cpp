@@ -48,8 +48,6 @@ QOpcUaMonitoredEvent::QOpcUaMonitoredEvent(QOpcUaNode *node, QOpcUaSubscription 
 {}
 
 /*!
-    \fn QOpcUaMonitoredEvent::~QOpcUaMonitoredEvent()
-
     Destroys this event monitor instance. This will automatically
     remove it from its subscription.
  */
@@ -59,8 +57,6 @@ QOpcUaMonitoredEvent::~QOpcUaMonitoredEvent()
 }
 
 /*!
-    \fn QOpcUaNode &QOpcUaMonitoredEvent::node()
-
     Returns the node which belongs to this event monitor instance.
 */
 QOpcUaNode &QOpcUaMonitoredEvent::node()
