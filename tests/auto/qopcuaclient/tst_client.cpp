@@ -139,6 +139,12 @@ private slots:
     defineDataMethod(connectAndDisconnect_data)
     void connectAndDisconnect();
 
+    // Password
+    defineDataMethod(connectInvalidPassword_data)
+    void connectInvalidPassword();
+    defineDataMethod(connectAndDisconnectPassword_data)
+    void connectAndDisconnectPassword();
+
     defineDataMethod(getRootNode_data)
     void getRootNode();
     defineDataMethod(getChildren_data)
@@ -312,6 +318,55 @@ void Tst_QOpcUaClient::connectAndDisconnect()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
+}
+
+void Tst_QOpcUaClient::connectInvalidPassword()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    QUrl url(m_endpoint);
+    url.setUserName("invaliduser");
+    url.setPassword("wrongpassword");
+
+    QSignalSpy connectSpy(opcuaClient, &QOpcUaClient::stateChanged);
+
+    opcuaClient->connectToEndpoint(url);
+    connectSpy.wait();
+
+    QVERIFY(connectSpy.count() == 2);
+    QVERIFY(connectSpy.at(0).at(0) == QOpcUaClient::Connecting);
+    QVERIFY(connectSpy.at(1).at(0) == QOpcUaClient::Disconnected);
+
+    QVERIFY(opcuaClient->url() == url);
+    QVERIFY(opcuaClient->error() == QOpcUaClient::AccessDenied);
+}
+
+void Tst_QOpcUaClient::connectAndDisconnectPassword()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    QUrl url(m_endpoint);
+    url.setUserName("user1");
+    url.setPassword("password");
+
+    QSignalSpy connectSpy(opcuaClient, &QOpcUaClient::stateChanged);
+
+    opcuaClient->connectToEndpoint(url);
+    connectSpy.wait();
+
+    QVERIFY(connectSpy.count() == 2);
+    QVERIFY(connectSpy.at(0).at(0) == QOpcUaClient::Connecting);
+    QVERIFY(connectSpy.at(1).at(0) == QOpcUaClient::Connected);
+
+    QVERIFY(opcuaClient->url() == url);
+    QVERIFY(opcuaClient->error() == QOpcUaClient::NoError);
+
+    connectSpy.clear();
+    opcuaClient->disconnectFromEndpoint();
+    connectSpy.wait();
+    QVERIFY(connectSpy.count() == 2);
+    QVERIFY(connectSpy.at(0).at(0) == QOpcUaClient::Closing);
+    QVERIFY(connectSpy.at(1).at(0) == QOpcUaClient::Disconnected);
 }
 
 void Tst_QOpcUaClient::getRootNode()

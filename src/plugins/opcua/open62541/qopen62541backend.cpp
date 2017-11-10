@@ -276,12 +276,24 @@ void Open62541AsyncBackend::deleteSubscription(UA_UInt32 id)
 void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
 {
     m_uaclient = UA_Client_new(UA_ClientConfig_default);
+    UA_StatusCode ret;
 
-    UA_StatusCode ret = UA_Client_connect(m_uaclient, url.toString().toLatin1().constData());
+    if (url.userName().length()) {
+        QUrl temp = url;
+        const QString userName = temp.userName();
+        const QString password = temp.password();
+        temp.setPassword(QString());
+        temp.setUserName(QString());
+        ret = UA_Client_connect_username(m_uaclient, temp.toString().toUtf8().constData(), userName.toUtf8().constData(), password.toUtf8().constData());
+    } else {
+        ret = UA_Client_connect(m_uaclient, url.toString().toUtf8().constData());
+    }
+
     if (ret != UA_STATUSCODE_GOOD) {
         UA_Client_delete(m_uaclient);
         m_uaclient = nullptr;
-        emit m_clientImpl->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
+        QOpcUaClient::ClientError error = ret == UA_STATUSCODE_BADUSERACCESSDENIED ? QOpcUaClient::AccessDenied : QOpcUaClient::UnknownError;
+        emit m_clientImpl->stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Open62541: Failed to connect.");
         return;
     }

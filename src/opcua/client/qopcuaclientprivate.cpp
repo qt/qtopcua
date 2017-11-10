@@ -124,9 +124,9 @@ void QOpcUaClientPrivate::setStateAndError(QOpcUaClient::ClientState state,
         stateChanged = true;
     }
     if (error != QOpcUaClient::NoError && m_error != error) {
-        m_error = error;
         errorOccurred = true;
     }
+    m_error = error;
 
     if (errorOccurred)
         emit q->errorChanged(m_error);

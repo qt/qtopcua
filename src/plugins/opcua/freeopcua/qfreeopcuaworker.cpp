@@ -72,6 +72,11 @@ void QFreeOpcUaWorker::asyncConnectToEndpoint(const QUrl &url)
         // Check connection status by getting the root node
         GetRootNode();
     } catch (const std::exception &e) {
+        // FreeOPCUA does not expose the error code, the only information is in ex.what()
+        const QString errorString = QString::fromUtf8(e.what());
+        QOpcUaClient::ClientError error = QOpcUaClient::UnknownError;
+        if (errorString.contains(QStringLiteral("0x801f0000")))
+            error = QOpcUaClient::AccessDenied;
         try {
             Disconnect();
         } catch (const std::exception &e) {
@@ -80,7 +85,7 @@ void QFreeOpcUaWorker::asyncConnectToEndpoint(const QUrl &url)
         }
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Client could not connect to endpoint" << url;
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << e.what();
-        emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
+        emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
         return;
     }
 
