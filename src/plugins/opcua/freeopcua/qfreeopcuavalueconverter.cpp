@@ -226,7 +226,7 @@ OpcUa::Variant toVariant(const QVariant &variant)
     }
 }
 
-template<typename UATYPE, typename QTTYPE=UATYPE>
+template<typename UATYPE, typename QTTYPE>
 OpcUa::Variant arrayFromQVariant(const QVariant &var)
 {
     if (var.type() == QVariant::List) {
@@ -239,7 +239,7 @@ OpcUa::Variant arrayFromQVariant(const QVariant &var)
     return OpcUa::Variant(scalarFromQVariant<UATYPE, QTTYPE>(var));
 }
 
-template<typename UATYPE, typename QTTYPE=UATYPE>
+template<typename UATYPE, typename QTTYPE>
 UATYPE scalarFromQVariant(const QVariant &var)
 {
     return static_cast<UATYPE>(var.value<QTTYPE>());
