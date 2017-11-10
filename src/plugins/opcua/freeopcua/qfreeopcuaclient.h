@@ -39,12 +39,11 @@
 
 #include <private/qopcuaclientimpl_p.h>
 
-// freeopcua
-#include <opc/ua/client/client.h>
-
 #include <QtCore/qobject.h>
-#include <QtCore/qurl.h>
 #include <QtCore/qthread.h>
+#include <QtCore/qurl.h>
+
+#include <opc/ua/client/client.h>
 
 QT_BEGIN_NAMESPACE
 class QFreeOpcUaWorker;

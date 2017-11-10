@@ -35,7 +35,7 @@
 ****************************************************************************/
 
 #include "qopcuamonitoredevent.h"
-#include <QtOpcUa/qopcuasubscription.h>
+#include "qopcuasubscription.h"
 #include <private/qopcuamonitoredevent_p.h>
 
 QT_BEGIN_NAMESPACE

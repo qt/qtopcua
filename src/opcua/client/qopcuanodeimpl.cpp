@@ -34,7 +34,7 @@
 **
 ****************************************************************************/
 
-#include "qopcuanodeimpl_p.h"
+#include <private/qopcuanodeimpl_p.h>
 
 QT_BEGIN_NAMESPACE
 

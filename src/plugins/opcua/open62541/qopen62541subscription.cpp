@@ -34,15 +34,13 @@
 **
 ****************************************************************************/
 
-#include "qopen62541subscription.h"
-
-#include <private/qopcuanode_p.h>
-#include <private/qopcuamonitoredvalue_p.h>
-
 #include "qopen62541backend.h"
 #include "qopen62541client.h"
 #include "qopen62541node.h"
+#include "qopen62541subscription.h"
 #include "qopen62541valueconverter.h"
+#include <private/qopcuamonitoredvalue_p.h>
+#include <private/qopcuanode_p.h>
 
 #include <QtCore/qloggingcategory.h>
 

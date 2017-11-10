@@ -38,11 +38,11 @@
 #define QOPCUAMONITOREDEVENT_H
 
 #include <QtOpcUa/qopcuaglobal.h>
-
-#include <QtCore/qvector.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qobject.h>
 #include <QtOpcUa/qopcuanode.h>
+
+#include <QtCore/qobject.h>
+#include <QtCore/qvariant.h>
+#include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
 

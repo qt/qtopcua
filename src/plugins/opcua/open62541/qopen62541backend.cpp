@@ -36,13 +36,12 @@
 
 #include "qopen62541backend.h"
 #include "qopen62541valueconverter.h"
+#include <private/qopcuaclient_p.h>
 
-#include <QtCore/QStringList>
-#include <QtCore/QUrl>
-#include <QtCore/QLoggingCategory>
-#include <QtCore/QUuid>
-
-#include <QtOpcUa/private/qopcuaclient_p.h>
+#include <QtCore/qloggingcategory.h>
+#include <QtCore/qstringlist.h>
+#include <QtCore/qurl.h>
+#include <QtCore/quuid.h>
 
 QT_BEGIN_NAMESPACE
 

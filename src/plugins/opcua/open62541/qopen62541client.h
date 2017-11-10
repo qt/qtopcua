@@ -37,10 +37,10 @@
 #ifndef QOPEN62541CLIENT_H
 #define QOPEN62541CLIENT_H
 
-#include <QTimer>
+#include "qopen62541.h"
 #include <private/qopcuaclientimpl_p.h>
 
-#include <qopen62541.h>
+#include <QtCore/qtimer.h>
 
 QT_BEGIN_NAMESPACE
 

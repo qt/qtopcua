@@ -37,9 +37,8 @@
 #ifndef QOPEN62541NODE_H
 #define QOPEN62541NODE_H
 
-#include <private/qopcuanodeimpl_p.h>
-
 #include "qopen62541client.h"
+#include <private/qopcuanodeimpl_p.h>
 
 QT_BEGIN_NAMESPACE
 

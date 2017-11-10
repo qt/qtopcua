@@ -35,9 +35,8 @@
 ****************************************************************************/
 
 #include "qopcuamonitoredvalue.h"
-#include <private/qopcuamonitoredvalue_p.h>
-
 #include "qopcuasubscription.h"
+#include <private/qopcuamonitoredvalue_p.h>
 
 QT_BEGIN_NAMESPACE
 

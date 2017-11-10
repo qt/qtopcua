@@ -37,12 +37,12 @@
 #ifndef QOPCUACLIENT_H
 #define QOPCUACLIENT_H
 
+#include <QtOpcUa/qopcuaglobal.h>
+#include <QtOpcUa/qopcuanode.h>
+#include <QtOpcUa/qopcuasubscription.h>
+
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
-
-#include <QtOpcUa/qopcuaglobal.h>
-#include <QtOpcUa/qopcuasubscription.h>
-#include <QtOpcUa/qopcuanode.h>
 
 QT_BEGIN_NAMESPACE
 

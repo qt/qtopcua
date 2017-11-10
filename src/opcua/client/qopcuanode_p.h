@@ -48,9 +48,9 @@
 // We mean it.
 //
 
-#include "qopcuaclient.h"
-#include "qopcuanode.h"
-#include "qopcuanodeimpl_p.h"
+#include <QtOpcUa/qopcuaclient.h>
+#include <QtOpcUa/qopcuanode.h>
+#include <private/qopcuanodeimpl_p.h>
 
 #include <private/qobject_p.h>
 #include <QtCore/qpointer.h>

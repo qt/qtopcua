@@ -36,7 +36,7 @@
 
 #ifndef QOPEN62541_H
 #define QOPEN62541_H
-#include <QtCore/QtGlobal>
+#include <QtCore/qglobal.h>
 
 #if defined(_MSC_VER)
 #pragma warning(push)

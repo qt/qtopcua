@@ -34,7 +34,7 @@
 **
 ****************************************************************************/
 
-#include "qopcuaclientimpl_p.h"
+#include <private/qopcuaclientimpl_p.h>
 
 QT_BEGIN_NAMESPACE
 

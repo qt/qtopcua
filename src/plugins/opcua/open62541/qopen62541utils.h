@@ -37,9 +37,9 @@
 #ifndef QOPEN62541UTILS_H
 #define QOPEN62541UTILS_H
 
-#include <qopen62541.h>
+#include "qopen62541.h"
 
-#include <QtCore/QString>
+#include <QtCore/qstring.h>
 
 QT_BEGIN_NAMESPACE
 

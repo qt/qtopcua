@@ -48,14 +48,13 @@
 // We mean it.
 //
 
-#include <QtOpcUa/qopcuamonitoredevent.h>
 #include <QtOpcUa/qopcuaglobal.h>
+#include <QtOpcUa/qopcuamonitoredevent.h>
 #include <QtOpcUa/qopcuanode.h>
 
 #include <private/qobject_p.h>
-
-#include <QtCore/qvector.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -37,10 +37,10 @@
 #ifndef QOPEN62541VALUECONVERTER_H
 #define QOPEN62541VALUECONVERTER_H
 
-#include <qopcuatype.h>
-#include <qopen62541.h>
+#include "qopen62541.h"
+#include <QtOpcUa/qopcuatype.h>
 
-#include <QVariant>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 

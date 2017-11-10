@@ -37,9 +37,9 @@
 #ifndef QFREEOPCUASUBSCRIPTION_H
 #define QFREEOPCUASUBSCRIPTION_H
 
-#include <private/qopcuasubscriptionimpl_p.h>
 #include <QtOpcUa/qopcuamonitoredevent.h>
 #include <QtOpcUa/qopcuamonitoredvalue.h>
+#include <private/qopcuasubscriptionimpl_p.h>
 
 #include <opc/ua/subscription.h>
 

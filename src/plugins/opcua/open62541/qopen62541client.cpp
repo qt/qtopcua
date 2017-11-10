@@ -34,18 +34,17 @@
 **
 ****************************************************************************/
 
+#include "qopen62541backend.h"
 #include "qopen62541client.h"
 #include "qopen62541node.h"
 #include "qopen62541subscription.h"
-#include "qopen62541valueconverter.h"
-#include "qopen62541backend.h"
 #include "qopen62541utils.h"
+#include "qopen62541valueconverter.h"
+#include <private/qopcuaclient_p.h>
 
-#include <QtCore/QStringList>
-#include <QtCore/QThread>
-#include <QtCore/QUrl>
-
-#include <QtOpcUa/private/qopcuaclient_p.h>
+#include <QtCore/qstringlist.h>
+#include <QtCore/qthread.h>
+#include <QtCore/qurl.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -48,11 +48,10 @@
 // We mean it.
 //
 
-#include <QtCore/qobject.h>
-#include <QtCore/QFuture>
-
-#include <QtOpcUa/qopcuaglobal.h>
 #include <QtOpcUa/qopcuaclient.h>
+#include <QtOpcUa/qopcuaglobal.h>
+
+#include <QtCore/qobject.h>
 
 QT_BEGIN_NAMESPACE
 

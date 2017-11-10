@@ -35,9 +35,11 @@
 ****************************************************************************/
 
 #include "qfreeopcuavalueconverter.h"
-#include <QDateTime>
-#include <QLoggingCategory>
-#include <QUuid>
+
+#include <QtCore/qdatetime.h>
+#include <QtCore/qloggingcategory.h>
+#include <QtCore/quuid.h>
+
 #include <vector>
 
 #include <opc/ua/protocol/string_utils.h>

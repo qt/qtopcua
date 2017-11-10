@@ -36,9 +36,9 @@
 
 #include "qopen62541utils.h"
 
-#include <QtCore/QStringList>
-#include <QtCore/QLoggingCategory>
-#include <QtCore/QUuid>
+#include <QtCore/qloggingcategory.h>
+#include <QtCore/qstringlist.h>
+#include <QtCore/quuid.h>
 
 #include <cstring>
 

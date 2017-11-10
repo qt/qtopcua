@@ -35,12 +35,10 @@
 ****************************************************************************/
 
 #include "qfreeopcuaclient.h"
+#include "qfreeopcuanode.h"
 #include "qfreeopcuaworker.h"
-
+#include <QtOpcUa/qopcuasubscription.h>
 #include <private/qopcuaclient_p.h>
-
-#include <qfreeopcuanode.h>
-#include <qopcuasubscription.h>
 
 #include <QtCore/qloggingcategory.h>
 

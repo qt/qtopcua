@@ -34,10 +34,9 @@
 **
 ****************************************************************************/
 
-#include "qopen62541plugin.h"
-
-#include <QtOpcUa/qopcuaclient.h>
 #include "qopen62541client.h"
+#include "qopen62541plugin.h"
+#include <QtOpcUa/qopcuaclient.h>
 
 #include <QtCore/qloggingcategory.h>
 

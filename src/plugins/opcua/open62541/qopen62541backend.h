@@ -36,8 +36,9 @@
 
 #include "qopen62541client.h"
 
-#include <QtCore/QString>
-#include <QtCore/QTimer>
+#include <QtCore/qset.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qtimer.h>
 
 QT_BEGIN_NAMESPACE
 

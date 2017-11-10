@@ -34,17 +34,14 @@
 **
 ****************************************************************************/
 
-#include "qfreeopcuanode.h"
-
 #include "qfreeopcuaclient.h"
+#include "qfreeopcuanode.h"
 #include "qfreeopcuasubscription.h"
 #include "qfreeopcuavalueconverter.h"
-
-#include <QtOpcUa/qopcuamonitoredvalue.h>
 #include <QtOpcUa/qopcuamonitoredevent.h>
+#include <QtOpcUa/qopcuamonitoredvalue.h>
 
 #include <QtCore/qdatetime.h>
-#include <QtCore/qdebug.h>
 #include <QtCore/qloggingcategory.h>
 
 #include <opc/ua/client/client.h>

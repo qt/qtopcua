@@ -39,10 +39,10 @@
 
 #include <QtOpcUa/qopcuaglobal.h>
 #include <QtOpcUa/qopcuatype.h>
-#include <QtCore/qdatetime.h>
-#include <QtCore/qvariant.h>
 
+#include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 

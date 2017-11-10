@@ -37,8 +37,8 @@
 #ifndef QOPCUATYPE
 #define QOPCUATYPE
 
-#include <QtCore/qpair.h>
 #include <QtCore/qmetatype.h>
+#include <QtCore/qpair.h>
 #include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE

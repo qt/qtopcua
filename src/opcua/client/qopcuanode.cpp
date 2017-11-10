@@ -34,16 +34,15 @@
 **
 ****************************************************************************/
 
-#include "qopcuanode.h"
-#include "qopcuanode_p.h"
-#include "qopcuanodeimpl_p.h"
 #include "qopcuaclient.h"
 #include "qopcuamonitoredvalue.h"
-
-#include <private/qopcuaclientimpl_p.h>
+#include "qopcuanode.h"
 #include <private/qopcuaclient_p.h>
-#include <private/qopcuamonitoredvalue_p.h>
+#include <private/qopcuaclientimpl_p.h>
 #include <private/qopcuamonitoredevent_p.h>
+#include <private/qopcuamonitoredvalue_p.h>
+#include <private/qopcuanode_p.h>
+#include <private/qopcuanodeimpl_p.h>
 
 QT_BEGIN_NAMESPACE
 

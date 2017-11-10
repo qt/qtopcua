@@ -37,11 +37,10 @@
 #ifndef QFREEOPCUAWORKER_H
 #define QFREEOPCUAWORKER_H
 
-// freeopcua
-#include <opc/ua/client/client.h>
-
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
+
+#include <opc/ua/client/client.h>
 
 QT_BEGIN_NAMESPACE
 

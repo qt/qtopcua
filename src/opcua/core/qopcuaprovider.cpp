@@ -34,16 +34,12 @@
 **
 ****************************************************************************/
 
-#include "qopcuaprovider.h"
-
 #include "qopcuaplugin.h"
-
-#include <QtOpcUa/qopcuatype.h>
+#include "qopcuaprovider.h"
 #include <QtOpcUa/qopcuanode.h>
+#include <QtOpcUa/qopcuatype.h>
 
 #include <private/qfactoryloader_p.h>
-
-#include <QtCore/qdebug.h>
 #include <QtCore/qjsonarray.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qpluginloader.h>

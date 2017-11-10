@@ -35,8 +35,8 @@
 ****************************************************************************/
 
 #include <private/qopcuaclient_p.h>
-#include <QDebug>
-#include <QLoggingCategory>
+
+#include <QtCore/qloggingcategory.h>
 
 QT_BEGIN_NAMESPACE
 

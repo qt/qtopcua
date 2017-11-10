@@ -34,10 +34,11 @@
 **
 ****************************************************************************/
 
-#include <QtOpcUa/qopcuaclient.h>
+#include "qopcuaclient.h"
 #include <private/qopcuaclient_p.h>
-#include <QLoggingCategory>
-#include <QRegExp>
+
+#include <QtCore/qloggingcategory.h>
+#include <QtCore/qregexp.h>
 
 QT_BEGIN_NAMESPACE
 

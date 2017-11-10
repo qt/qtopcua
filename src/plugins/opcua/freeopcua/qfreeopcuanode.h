@@ -39,10 +39,9 @@
 
 #include <private/qopcuanodeimpl_p.h>
 
-// freeopcua
-#include <opc/ua/node.h>
+#include <QtCore/qpointer.h>
 
-#include <QtCore/QPointer>
+#include <opc/ua/node.h>
 
 namespace OpcUa
 {

@@ -34,20 +34,16 @@
 **
 ****************************************************************************/
 
-#include "qfreeopcuaworker.h"
 #include "qfreeopcuaclient.h"
-
 #include "qfreeopcuanode.h"
 #include "qfreeopcuasubscription.h"
+#include "qfreeopcuaworker.h"
+#include <QtOpcUa/qopcuasubscription.h>
 
-#include <qopcuasubscription.h>
-
-// freeopcua
-#include <opc/ua/node.h>
-
-#include <QtCore/qdebug.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtNetwork/qhostinfo.h>
+
+#include <opc/ua/node.h>
 
 QT_BEGIN_NAMESPACE
 

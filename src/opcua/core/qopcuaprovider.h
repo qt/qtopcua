@@ -39,9 +39,9 @@
 
 #include <QtOpcUa/qopcuaglobal.h>
 
+#include <QtCore/qhash.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
-#include <QtCore/qhash.h>
 
 QT_BEGIN_NAMESPACE
 

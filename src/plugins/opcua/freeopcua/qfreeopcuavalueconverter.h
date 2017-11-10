@@ -39,12 +39,12 @@
 
 #include <QtOpcUa/qopcuatype.h>
 
-#include <opc/ua/protocol/variant.h>
-
 #include <QtCore/qstring.h>
 #include <QtCore/qvariant.h>
 
 #include <vector>
+
+#include <opc/ua/protocol/variant.h>
 
 QT_BEGIN_NAMESPACE
 

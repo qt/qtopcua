@@ -34,20 +34,17 @@
 **
 ****************************************************************************/
 
-#include "qfreeopcuasubscription.h"
-#include "qfreeopcuanode.h"
 #include "qfreeopcuaclient.h"
-#include "qopcuamonitoredvalue.h"
+#include "qfreeopcuanode.h"
+#include "qfreeopcuasubscription.h"
 #include "qfreeopcuavalueconverter.h"
-
+#include <QtOpcUa/qopcuamonitoredvalue.h>
+#include <QtOpcUa/qopcuasubscription.h>
 #include <private/qopcuamonitoredevent_p.h>
 #include <private/qopcuamonitoredvalue_p.h>
 #include <private/qopcuanode_p.h>
 
-#include <qopcuasubscription.h>
-
-#include <QtCore/QDebug>
-#include <QtCore/QLoggingCategory>
+#include <QtCore/qloggingcategory.h>
 
 QT_BEGIN_NAMESPACE
 

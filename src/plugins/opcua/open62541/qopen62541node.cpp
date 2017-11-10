@@ -34,16 +34,14 @@
 **
 ****************************************************************************/
 
-#include "qopen62541node.h"
+#include "qopen62541.h"
 #include "qopen62541backend.h"
-
-#include <QString>
-#include <QVector>
-#include <QDateTime>
-
-#include <qopen62541.h>
-
+#include "qopen62541node.h"
 #include "qopen62541valueconverter.h"
+
+#include <QtCore/qdatetime.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
 

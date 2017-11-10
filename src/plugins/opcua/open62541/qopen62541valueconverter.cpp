@@ -34,15 +34,13 @@
 **
 ****************************************************************************/
 
-#include "qopen62541valueconverter.h"
+#include "qopen62541.h"
 #include "qopen62541utils.h"
+#include "qopen62541valueconverter.h"
 
-#include <QDateTime>
-#include <qopen62541.h>
-
-#include <QtCore/QDebug>
-#include <QtCore/QLoggingCategory>
-#include <QtCore/QUuid>
+#include <QtCore/qdatetime.h>
+#include <QtCore/qloggingcategory.h>
+#include <QtCore/quuid.h>
 
 #include <cstring>
 

@@ -37,13 +37,12 @@
 #ifndef QOPEN62541SUBSCRIPTION_H
 #define QOPEN62541SUBSCRIPTION_H
 
-#include <QtCore/QMutex>
-
+#include "qopen62541.h"
+#include <QtOpcUa/qopcuamonitoredevent.h>
+#include <QtOpcUa/qopcuamonitoredvalue.h>
 #include <private/qopcuasubscriptionimpl_p.h>
-#include <qopcuamonitoredvalue.h>
-#include <qopcuamonitoredevent.h>
 
-#include <qopen62541.h>
+#include <QtCore/qmutex.h>
 
 QT_BEGIN_NAMESPACE
 

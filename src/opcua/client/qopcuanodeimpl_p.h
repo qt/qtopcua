@@ -49,8 +49,9 @@
 //
 
 #include <QtOpcUa/qopcuaglobal.h>
-#include <QtOpcUa/qopcuatype.h>
 #include <QtOpcUa/qopcuanode.h>
+#include <QtOpcUa/qopcuatype.h>
+
 #include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE

@@ -34,8 +34,8 @@
 **
 ****************************************************************************/
 
-#include "qfreeopcuaplugin.h"
 #include "qfreeopcuaclient.h"
+#include "qfreeopcuaplugin.h"
 #include <QtOpcUa/qopcuaclient.h>
 
 #include <QtCore/qloggingcategory.h>

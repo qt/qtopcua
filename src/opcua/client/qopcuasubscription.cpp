@@ -34,8 +34,7 @@
 **
 ****************************************************************************/
 
-#include <QtOpcUa/qopcuasubscription.h>
-
+#include "qopcuasubscription.h"
 #include <private/qopcuasubscription_p.h>
 #include <private/qopcuasubscriptionimpl_p.h>
 

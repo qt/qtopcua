@@ -48,17 +48,15 @@
 // We mean it.
 //
 
-#include "qopcuaclient.h"
-#include "qopcuaclientimpl_p.h"
-
+#include <QtOpcUa/qopcuaclient.h>
 #include <QtOpcUa/qopcuaglobal.h>
 #include <QtOpcUa/qopcuavaluesubscription.h>
-
-#include <private/qobject_p.h>
+#include <private/qopcuaclientimpl_p.h>
 
 #include <QtCore/qobject.h>
-#include <QtCore/qurl.h>
 #include <QtCore/qscopedpointer.h>
+#include <QtCore/qurl.h>
+#include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
 
