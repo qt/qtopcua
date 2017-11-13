@@ -122,7 +122,7 @@ QOpcUa::Types QFreeOpcUaNode::type() const
     case OpcUa::VariantType::DATA_VALUE:
     case OpcUa::VariantType::VARIANT:
     case OpcUa::VariantType::DIAGNOSTIC_INFO:
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Type resolution failed for " << (int)value.Type();
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Type resolution failed for " << static_cast<int>(value.Type());
         break;
     }
 

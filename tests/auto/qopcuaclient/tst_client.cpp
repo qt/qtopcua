@@ -450,7 +450,7 @@ void Tst_QOpcUaClient::readWrite()
     QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
     QVERIFY(node != 0);
     for (int i = 0; i < numberOfOperations; i++) {
-        bool result = node->setValue(QVariant((double)i));
+        bool result = node->setValue(QVariant(double(i)));
         QVERIFY(result==true);
         QVERIFY(node->value().toInt() ==  i);
     }
@@ -463,7 +463,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
     QVERIFY(node != 0);
-    bool result = node->setValue(QVariant((double)0));
+    bool result = node->setValue(QVariant(double(0)));
     QVERIFY(result == true);
     QTRY_COMPARE(node->value(), 0);
 
@@ -475,12 +475,12 @@ void Tst_QOpcUaClient::dataChangeSubscription()
 
     QSignalSpy valueSpy(monitoredValue.data(), &QOpcUaMonitoredValue::valueChanged);
 
-    result = node->setValue(QVariant((double)42));
+    result = node->setValue(QVariant(double(42)));
     QVERIFY(result == true);
 
     valueSpy.wait();
     QCOMPARE(valueSpy.count(), 1);
-    QCOMPARE(valueSpy.at(0).at(0).toDouble(), (double)42);
+    QCOMPARE(valueSpy.at(0).at(0).toDouble(), double(42));
 }
 
 void Tst_QOpcUaClient::dataChangeSubscriptionInvalidNode()
@@ -504,7 +504,7 @@ void Tst_QOpcUaClient::methodCall()
     QVector<QOpcUa::TypedVariant> args;
     QVector<QVariant> ret;
     for (int i = 0; i < 2; i++)
-        args.push_back(QOpcUa::TypedVariant((double)4, QOpcUa::Double));
+        args.push_back(QOpcUa::TypedVariant(double(4), QOpcUa::Double));
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=TestFolder"));
     QVERIFY(node != 0);
@@ -542,9 +542,9 @@ void Tst_QOpcUaClient::eventSubscription()
 
     QScopedPointer<QOpcUaNode> triggerVariable(opcuaClient->node("ns=3;s=TriggerVariable"));
     QVERIFY(triggerVariable != 0);
-    bool result = triggerVariable->setValue(QVariant((double)0));
+    bool result = triggerVariable->setValue(QVariant(double(0)));
     QVERIFY(result == true);
-    result = triggerVariable->setValue(QVariant((double)1));
+    result = triggerVariable->setValue(QVariant(double(1)));
     QVERIFY(result == true);
 
     QVERIFY(monitorSpy.wait());
@@ -919,7 +919,7 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(uint32Array.toList()[0].type(), QVariant::UInt);
     QCOMPARE(uint32Array.toList()[0].toUInt(), std::numeric_limits<quint32>::min());
     QCOMPARE(uint32Array.toList()[1].toUInt(), std::numeric_limits<quint32>::max());
-    QCOMPARE(uint32Array.toList()[2].toUInt(), (uint)10);
+    QCOMPARE(uint32Array.toList()[2].toUInt(), quint32(10));
 
     QScopedPointer<QOpcUaNode> doubleArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Double"));
     QVERIFY(doubleArrayNode != 0);
@@ -927,9 +927,9 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(doubleArray.type() == QVariant::List);
     QVERIFY(doubleArray.toList().length() == 3);
     QCOMPARE(doubleArray.toList()[0].type(), QVariant::Double);
-    QCOMPARE(doubleArray.toList()[0].toDouble(), (double)23.5);
-    QCOMPARE(doubleArray.toList()[1].toDouble(), (double)23.6);
-    QCOMPARE(doubleArray.toList()[2].toDouble(), (double)23.7);
+    QCOMPARE(doubleArray.toList()[0].toDouble(), double(23.5));
+    QCOMPARE(doubleArray.toList()[1].toDouble(), double(23.6));
+    QCOMPARE(doubleArray.toList()[2].toDouble(), double(23.7));
 
     QScopedPointer<QOpcUaNode> floatArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Float"));
     QVERIFY(floatArrayNode != 0);
@@ -937,9 +937,9 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(floatArray.type() == QVariant::List);
     QVERIFY(floatArray.toList().length() == 3);
     QVERIFY(floatArray.toList()[0].userType() == QMetaType::Float);
-    QCOMPARE(floatArray.toList()[0].toFloat(), (float)23.5);
-    QCOMPARE(floatArray.toList()[1].toFloat(), (float)23.6);
-    QCOMPARE(floatArray.toList()[2].toFloat(), (float)23.7);
+    QCOMPARE(floatArray.toList()[0].toFloat(), float(23.5));
+    QCOMPARE(floatArray.toList()[1].toFloat(), float(23.6));
+    QCOMPARE(floatArray.toList()[2].toFloat(), float(23.7));
 
     QScopedPointer<QOpcUaNode> stringArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.String"));
     QVERIFY(stringArrayNode != 0);
@@ -976,7 +976,7 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(uint16Array.toList()[0].userType() == QMetaType::UShort);
     QVERIFY(uint16Array.toList()[0] == std::numeric_limits<quint16>::min());
     QVERIFY(uint16Array.toList()[1] == std::numeric_limits<quint16>::max());
-    QVERIFY(uint16Array.toList()[2] == (ushort)10);
+    QVERIFY(uint16Array.toList()[2] == quint16(10));
 
 
     QScopedPointer<QOpcUaNode> int16ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int16"));
@@ -987,7 +987,7 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(int16Array.toList()[0].userType() == QMetaType::Short);
     QVERIFY(int16Array.toList()[0] == std::numeric_limits<qint16>::min());
     QVERIFY(int16Array.toList()[1] == std::numeric_limits<qint16>::max());
-    QVERIFY(int16Array.toList()[2] == (short)10);
+    QVERIFY(int16Array.toList()[2] == qint16(10));
 
     QScopedPointer<QOpcUaNode> uint64ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt64"));
     QVERIFY(uint64ArrayNode != 0);
@@ -997,7 +997,7 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(uint64Array.toList()[0].type(), QVariant::ULongLong);
     QVERIFY(uint64Array.toList()[0] == std::numeric_limits<quint64>::min());
     QVERIFY(uint64Array.toList()[1] == std::numeric_limits<quint64>::max());
-    QVERIFY(uint64Array.toList()[2] == (unsigned long long)10);
+    QVERIFY(uint64Array.toList()[2] == quint64(10));
 
     QScopedPointer<QOpcUaNode> int64ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int64"));
     QVERIFY(int64ArrayNode != 0);
@@ -1006,7 +1006,7 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(int64Array.toList()[0].type(), QVariant::LongLong);
     QVERIFY(int64Array.toList()[0] == std::numeric_limits<qint64>::min());
     QVERIFY(int64Array.toList()[1] == std::numeric_limits<qint64>::max());
-    QVERIFY(int64Array.toList()[2] == (long long)10);
+    QVERIFY(int64Array.toList()[2] == qint64(10));
 
     QScopedPointer<QOpcUaNode> byteArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Byte"));
     QVERIFY(byteArrayNode != 0);
@@ -1016,7 +1016,7 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(byteArray.toList()[0].userType() == QMetaType::UChar);
     QVERIFY(byteArray.toList()[0] == std::numeric_limits<quint8>::min());
     QVERIFY(byteArray.toList()[1] == std::numeric_limits<quint8>::max());
-    QVERIFY(byteArray.toList()[2] == (uchar)10);
+    QVERIFY(byteArray.toList()[2] == quint8(10));
 
     QScopedPointer<QOpcUaNode> byteStringArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ByteString"));
     QVERIFY(byteStringArrayNode != 0);
@@ -1047,7 +1047,7 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(sbyteArray.toList()[0].userType() == QMetaType::SChar);
     QVERIFY(sbyteArray.toList()[0] == std::numeric_limits<qint8>::min());
     QVERIFY(sbyteArray.toList()[1] == std::numeric_limits<qint8>::max());
-    QVERIFY(sbyteArray.toList()[2] == (char)10);
+    QVERIFY(sbyteArray.toList()[2] == qint8(10));
 
     QScopedPointer<QOpcUaNode> nodeIdArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.NodeId"));
     QVERIFY(nodeIdArrayNode != 0);
@@ -1208,7 +1208,7 @@ void Tst_QOpcUaClient::readScalar()
     QVariant doubleScalar = node->value();
     QVERIFY(doubleScalar.isValid());
     QCOMPARE(doubleScalar.type(), QVariant::Double);
-    QCOMPARE(doubleScalar.toDouble(), (double)42);
+    QCOMPARE(doubleScalar.toDouble(), double(42));
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Float"));
     QVERIFY(node != 0);
@@ -1216,7 +1216,7 @@ void Tst_QOpcUaClient::readScalar()
     QVariant floatScalar = node->value();
     QVERIFY(floatScalar.isValid());
     QVERIFY(floatScalar.userType() == QMetaType::Float);
-    QCOMPARE(floatScalar.toFloat(), (float)42);
+    QCOMPARE(floatScalar.toFloat(), float(42));
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.String"));
     QVERIFY(node != 0);
