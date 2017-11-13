@@ -42,9 +42,11 @@
 #include <qfreeopcuanode.h>
 #include <qopcuasubscription.h>
 
-#include <QtCore/qdebug.h>
+#include <QtCore/qloggingcategory.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_FREEOPCUA)
 
 QFreeOpcUaClientImpl::QFreeOpcUaClientImpl()
     : QOpcUaClientImpl()
@@ -89,7 +91,7 @@ QOpcUaNode *QFreeOpcUaClientImpl::node(const QString &nodeId)
         QFreeOpcUaNode *n = new QFreeOpcUaNode(node, m_opcuaWorker);
         return new QOpcUaNode(n, m_client);
     } catch (const std::exception &ex) {
-        qWarning() << "Could not get node: " << nodeId << " " << ex.what();
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Could not get node: %s %s", qUtf8Printable(nodeId), ex.what());
         return new QOpcUaNode(new QFreeOpcUaNode(OpcUa::Node(), m_opcuaWorker), m_client);
     }
 }
