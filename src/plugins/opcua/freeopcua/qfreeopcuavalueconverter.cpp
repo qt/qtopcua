@@ -50,8 +50,8 @@ namespace QFreeOpcUaValueConverter {
 
 QVariant toQVariant(const OpcUa::Variant &variant)
 {
+    // Null variant, return empty QVariant
     if (!variant.IsScalar() && !variant.IsArray()) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Matrix values are not yet supported by FreeOPCUA");
         return QVariant();
     }
 
