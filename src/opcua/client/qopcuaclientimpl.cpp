@@ -36,6 +36,7 @@
 
 #include <private/qopcuabackend_p.h>
 #include <private/qopcuaclientimpl_p.h>
+#include <QtOpcUa/qopcuamonitoringparameters.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -61,6 +62,9 @@ void QOpcUaClientImpl::connectBackendWithClient(QOpcUaBackend *backend)
     connect(backend, &QOpcUaBackend::attributesRead, this, &QOpcUaClientImpl::handleAttributesRead);
     connect(backend, &QOpcUaBackend::stateAndOrErrorChanged, this, &QOpcUaClientImpl::stateAndOrErrorChanged);
     connect(backend, &QOpcUaBackend::attributeWritten, this, &QOpcUaClientImpl::handleAttributeWritten);
+    connect(backend, &QOpcUaBackend::attributeUpdated, this, &QOpcUaClientImpl::handleAttributeUpdated);
+    connect(backend, &QOpcUaBackend::monitoringEnableDisable, this, &QOpcUaClientImpl::handleMonitoringEnableDisable);
+    connect(backend, &QOpcUaBackend::monitoringStatusChanged, this, &QOpcUaClientImpl::handleMonitoringStatusChanged);
 }
 
 void QOpcUaClientImpl::handleAttributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
@@ -75,6 +79,27 @@ void QOpcUaClientImpl::handleAttributeWritten(uintptr_t handle, QOpcUaNode::Node
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
         emit (*it)->attributeWritten(attr, value, statusCode);
+}
+
+void QOpcUaClientImpl::handleAttributeUpdated(uintptr_t handle, QOpcUaNode::NodeAttribute attr, const QVariant &value)
+{
+    auto it = m_handles.constFind(handle);
+    if (it != m_handles.constEnd() && !it->isNull())
+        emit (*it)->attributeUpdated(attr, value);
+}
+
+void QOpcUaClientImpl::handleMonitoringEnableDisable(uintptr_t handle, QOpcUaNode::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status)
+{
+    auto it = m_handles.constFind(handle);
+    if (it != m_handles.constEnd() && !it->isNull())
+        emit (*it)->monitoringEnableDisable(attr, subscribe, status);
+}
+
+void QOpcUaClientImpl::handleMonitoringStatusChanged(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items, QOpcUaMonitoringParameters param)
+{
+    auto it = m_handles.constFind(handle);
+    if (it != m_handles.constEnd() && !it->isNull())
+        emit (*it)->monitoringStatusChanged(attr, items, param);
 }
 
 QT_END_NAMESPACE

@@ -39,7 +39,6 @@
 
 #include <QtOpcUa/qopcuaglobal.h>
 #include <QtOpcUa/qopcuanode.h>
-#include <QtOpcUa/qopcuasubscription.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -81,8 +80,6 @@ public:
     Q_INVOKABLE void secureConnectToEndpoint(const QUrl &url);
     Q_INVOKABLE void disconnectFromEndpoint();
     QOpcUaNode *node(const QString &nodeId);
-
-    QOpcUaSubscription *createSubscription(quint32 interval);
 
     QUrl url() const;
 

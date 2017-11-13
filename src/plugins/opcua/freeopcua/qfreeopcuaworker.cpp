@@ -39,7 +39,6 @@
 #include "qfreeopcuasubscription.h"
 #include "qfreeopcuavalueconverter.h"
 #include "qfreeopcuaworker.h"
-#include <QtOpcUa/qopcuasubscription.h>
 
 #include <QtNetwork/qhostinfo.h>
 #include <QtCore/qloggingcategory.h>
@@ -54,6 +53,11 @@ QFreeOpcUaWorker::QFreeOpcUaWorker(QFreeOpcUaClientImpl *client)
     : QOpcUaBackend()
     , m_client(client)
 {}
+
+QFreeOpcUaWorker::~QFreeOpcUaWorker()
+{
+    qDeleteAll(m_subscriptions);
+}
 
 void QFreeOpcUaWorker::asyncConnectToEndpoint(const QUrl &url)
 {
@@ -197,12 +201,113 @@ void QFreeOpcUaWorker::writeAttributes(uintptr_t handle, OpcUa::Node node, QOpcU
     }
 }
 
-QOpcUaSubscription *QFreeOpcUaWorker::createSubscription(quint32 interval)
+QFreeOpcUaSubscription *QFreeOpcUaWorker::getSubscription(const QOpcUaMonitoringParameters &settings)
 {
-    QFreeOpcUaSubscription *backendSubscription = new QFreeOpcUaSubscription(this, interval);
-    QOpcUaSubscription *subscription = new QOpcUaSubscription(backendSubscription, interval);
-    backendSubscription->m_qsubscription = subscription;
-    return subscription;
+    if (settings.shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared) {
+        for (auto entry : m_subscriptions)
+            if (entry->interval() == settings.publishingInterval() && entry->shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared)
+                return entry;
+    }
+
+    QFreeOpcUaSubscription *sub = new QFreeOpcUaSubscription(this, settings);
+    quint32 id = sub->createOnServer();
+    if (!id) {
+        delete sub;
+        return nullptr;
+    }
+    m_subscriptions[id] = sub;
+    return sub;
+}
+
+bool QFreeOpcUaWorker::removeSubscription(quint32 subscriptionId)
+{
+    auto sub = m_subscriptions.find(subscriptionId);
+    if (sub != m_subscriptions.end()) {
+        sub.value()->removeOnServer();
+        delete sub.value();
+        m_subscriptions.remove(subscriptionId);
+        return true;
+    }
+    return false;
+}
+
+void QFreeOpcUaWorker::enableMonitoring(uintptr_t handle, OpcUa::Node node, QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
+{
+    QFreeOpcUaSubscription *usedSubscription = nullptr;
+
+    // Create a new subscription if necessary
+    if (settings.subscriptionId()) {
+        if (!m_subscriptions.contains(settings.subscriptionId())) {
+            qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "There is no subscription with id %u", settings.subscriptionId());
+            qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attr) {
+                QOpcUaMonitoringParameters s;
+                s.setStatusCode(QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
+                emit monitoringEnableDisable(handle, attr, true, s);
+            });
+            return;
+        }
+        usedSubscription = m_subscriptions[settings.subscriptionId()]; // Ignore interval != subscription.interval
+    } else {
+        usedSubscription = getSubscription(settings);
+    }
+
+    if (!usedSubscription) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Could not create subscription with interval %f", settings.publishingInterval());
+        qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attr) {
+            QOpcUaMonitoringParameters s;
+            s.setStatusCode(QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
+            emit monitoringEnableDisable(handle, attr, true, s);
+        });
+        return;
+    }
+
+    qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attr) {
+        bool success = usedSubscription->addAttributeMonitoredItem(handle, attr, node, settings);
+        if (success)
+            m_attributeMapping[handle][attr] = usedSubscription;
+    });
+
+    if (usedSubscription->monitoredItemsCount() == 0)
+        removeSubscription(usedSubscription->subscriptionId()); // No items were added
+}
+
+void QFreeOpcUaWorker::disableMonitoring(uintptr_t handle, QOpcUaNode::NodeAttributes attr)
+{
+    qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attr) {
+        QFreeOpcUaSubscription *sub = getSubscriptionForItem(handle, attr);
+        if (sub) {
+            sub->removeAttributeMonitoredItem(handle, attr);
+            if (sub->monitoredItemsCount() == 0)
+                removeSubscription(sub->subscriptionId());
+        }
+    });
+}
+
+void QFreeOpcUaWorker::modifyMonitoring(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
+{
+    QFreeOpcUaSubscription *subscription = getSubscriptionForItem(handle, attr);
+    if (!subscription) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Could not modify parameter for %lu, the monitored item does not exist", handle);
+        QOpcUaMonitoringParameters p;
+        p.setStatusCode(QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
+        emit monitoringStatusChanged(handle, attr, item, p);
+        return;
+    }
+
+    subscription->modifyMonitoring(handle, attr, item, value);
+}
+
+QFreeOpcUaSubscription *QFreeOpcUaWorker::getSubscriptionForItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr)
+{
+    auto nodeEntry = m_attributeMapping.find(handle);
+    if (nodeEntry == m_attributeMapping.end())
+        return nullptr;
+
+    auto subscription = nodeEntry->find(attr);
+    if (subscription == nodeEntry->end())
+        return nullptr;
+
+    return subscription.value();
 }
 
 QT_END_NAMESPACE

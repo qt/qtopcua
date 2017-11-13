@@ -35,13 +35,9 @@
 ****************************************************************************/
 
 #include "qfreeopcuaclient.h"
-#include "qfreeopcuanode.h"
 #include "qfreeopcuasubscription.h"
 #include "qfreeopcuavalueconverter.h"
-#include <QtOpcUa/qopcuamonitoredvalue.h>
-#include <QtOpcUa/qopcuasubscription.h>
-#include <private/qopcuamonitoredevent_p.h>
-#include <private/qopcuamonitoredvalue_p.h>
+#include "qfreeopcuaworker.h"
 #include <private/qopcuanode_p.h>
 
 #include <QtCore/qloggingcategory.h>
@@ -50,33 +46,181 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_FREEOPCUA)
 
-QFreeOpcUaSubscription::QFreeOpcUaSubscription(OpcUa::UaClient *client, quint32 interval)
-    : m_client(client)
+QFreeOpcUaSubscription::QFreeOpcUaSubscription(QFreeOpcUaWorker *backend, const QOpcUaMonitoringParameters &settings)
+    : m_interval(settings.publishingInterval())
+    , m_shared(settings.shared())
+    , m_backend(backend)
 {
-    Q_ASSERT(m_client);
-
-    try {
-        m_subscription = m_client->CreateSubscription(interval, *this);
-    } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Caught: %s", ex.what());
-    }
+    Q_ASSERT(m_backend);
 }
 
 QFreeOpcUaSubscription::~QFreeOpcUaSubscription()
 {
+    removeOnServer();
+}
+
+quint32 QFreeOpcUaSubscription::createOnServer()
+{
+    if (m_subscription)
+        return 0;
+
+    try {
+        m_subscription = m_backend->CreateSubscription(m_interval, *this);
+        m_interval = m_subscription->GetData().RevisedPublishingInterval;
+    } catch (const std::exception &ex) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "CreateOnServer caught: %s", ex.what());
+        return 0;
+    }
+    return m_subscription->GetId();
+}
+
+bool QFreeOpcUaSubscription::removeOnServer()
+{
+    bool success = false;
     try {
         if (m_subscription) {
-            for (int32_t handle : m_dataChangeHandles.keys())
-                m_subscription->UnSubscribe(handle);
-
-            for (int32_t handle : m_eventHandles.keys())
-                m_subscription->UnSubscribe(handle);
-
             m_subscription->Delete();
+            m_subscription.reset();
+            success = true;
         }
     } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Caught: %s", ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "RemoveOnServer caught: %s", ex.what());
     }
+
+    qDeleteAll(m_itemIdToItemMapping);
+
+    m_itemIdToItemMapping.clear();
+    m_handleToItemMapping.clear();
+
+    return success;
+}
+
+void QFreeOpcUaSubscription::modifyMonitoring(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
+{
+    Q_UNUSED(item);
+    Q_UNUSED(value);
+
+    if (!getItemForAttribute(handle, attr)) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Could not modify parameter for %lu, there are no monitored items", handle);
+        QOpcUaMonitoringParameters p;
+        p.setStatusCode(QOpcUa::UaStatusCode::BadAttributeIdInvalid);
+        emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+        return;
+    }
+
+    QOpcUaMonitoringParameters s;
+    s.setStatusCode(QOpcUa::UaStatusCode::BadNotImplemented);
+    emit m_backend->monitoringEnableDisable(handle, attr, true, s);
+}
+
+bool QFreeOpcUaSubscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr, const OpcUa::Node &node, QOpcUaMonitoringParameters settings)
+{
+    Q_UNUSED(settings); // Setting these options is not yet supported
+
+    quint32 monitoredItemId;
+
+    try {
+        if (m_subscription) {
+            monitoredItemId = m_subscription->SubscribeDataChange(node, QFreeOpcUaValueConverter::toUaAttributeId(attr));
+        }
+        else {
+            QOpcUaMonitoringParameters s;
+            s.setStatusCode(QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
+            emit m_backend->monitoringEnableDisable(handle, attr, true, s);
+            return false;
+        }
+    } catch (const std::exception &ex) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "addAttributeMonitoredItem caught: %s", ex.what());
+        QOpcUaMonitoringParameters s;
+        s.setStatusCode(QFreeOpcUaValueConverter::exceptionToStatusCode(ex));
+        emit m_backend->monitoringEnableDisable(handle, attr, true, s);
+        return false;
+    }
+
+    MonitoredItem *temp = new MonitoredItem(handle, attr, monitoredItemId);
+    m_handleToItemMapping[handle][attr] = temp;
+    m_itemIdToItemMapping[monitoredItemId] = temp;
+
+    QOpcUaMonitoringParameters s;
+    s.setSubscriptionId(m_subscription->GetId());
+    s.setPublishingInterval(m_interval);
+    s.setMaxKeepAliveCount(m_subscription->GetData().RevisedMaxKeepAliveCount);
+    s.setLifetimeCount(m_subscription->GetData().RevisedLifetimeCount);
+    s.setStatusCode(QOpcUa::UaStatusCode::Good);
+    s.setSamplingInterval(m_interval);
+    emit m_backend->monitoringEnableDisable(handle, attr, true, s);
+
+    return true;
+}
+
+bool QFreeOpcUaSubscription::removeAttributeMonitoredItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr)
+{
+    QScopedPointer<MonitoredItem> item(getItemForAttribute(handle, attr));
+
+    if (!item) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "There is no monitored item for this attribute");
+        QOpcUaMonitoringParameters s;
+        s.setStatusCode(QOpcUa::UaStatusCode::BadMonitoredItemIdInvalid);
+        emit m_backend->monitoringEnableDisable(handle, attr, false, s);
+        return false;
+    }
+
+    QOpcUaMonitoringParameters s;
+
+    try {
+        m_subscription->UnSubscribe(item->monitoredItemId);
+        s.setStatusCode(QOpcUa::UaStatusCode::Good);
+    } catch (const std::exception &ex) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "removeAttributeMonitoredItem caught: %s", ex.what());
+        s.setStatusCode(QFreeOpcUaValueConverter::exceptionToStatusCode(ex));
+    }
+
+    m_itemIdToItemMapping.remove(item->monitoredItemId);
+    auto it = m_handleToItemMapping.find(handle);
+    it->remove(attr);
+    if (it->empty())
+        m_handleToItemMapping.erase(it);
+
+    emit m_backend->monitoringEnableDisable(handle, attr, false, s);
+
+    return true;
+}
+
+double QFreeOpcUaSubscription::interval() const
+{
+    return m_interval;
+}
+
+QOpcUaMonitoringParameters::SubscriptionType QFreeOpcUaSubscription::shared() const
+{
+    return m_shared;
+}
+
+quint32 QFreeOpcUaSubscription::subscriptionId() const
+{
+    if (m_subscription)
+        return m_subscription->GetId();
+    else
+        return 0;
+}
+
+int QFreeOpcUaSubscription::monitoredItemsCount() const
+{
+    return m_itemIdToItemMapping.size();
+}
+
+QFreeOpcUaSubscription::MonitoredItem *QFreeOpcUaSubscription::getItemForAttribute(uintptr_t handle, QOpcUaNode::NodeAttribute attr)
+{
+    auto nodeEntry = m_handleToItemMapping.find(handle);
+
+    if (nodeEntry == m_handleToItemMapping.end())
+        return nullptr;
+
+    auto item = nodeEntry->find(attr);
+    if (item == nodeEntry->end())
+        return nullptr;
+
+    return item.value();
 }
 
 void QFreeOpcUaSubscription::DataChange(quint32 handle, const OpcUa::Node &node,
@@ -86,121 +230,10 @@ void QFreeOpcUaSubscription::DataChange(quint32 handle, const OpcUa::Node &node,
     OPCUA_UNUSED(node);
     OPCUA_UNUSED(attr);
 
-    auto it = m_dataChangeHandles.find(handle);
-    if (it == m_dataChangeHandles.end()) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Received event for unknown handle: %ul", handle);
+    auto item = m_itemIdToItemMapping.find(handle);
+    if (item == m_itemIdToItemMapping.end())
         return;
-    }
-
-    try {
-        (*it)->d_func()->triggerValueChanged(QFreeOpcUaValueConverter::toQVariant(val));
-    } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Caught: %s", ex.what());
-    }
-}
-
-QOpcUaMonitoredValue *QFreeOpcUaSubscription::addValue(QOpcUaNode *node)
-{
-    if (!m_subscription)
-        return nullptr;
-
-    try {
-        // Only add a monitored item if the node has a value attribute
-        QFreeOpcUaNode *nnode = static_cast<QFreeOpcUaNode *>(node->d_func()->m_impl.data());
-        if (nnode->m_node.GetAttribute(OpcUa::AttributeId::Value).Status != OpcUa::StatusCode::Good)
-            return nullptr;
-
-        if (m_subscription) {
-            uint32_t handle = m_subscription->SubscribeDataChange(m_client->GetNode(node->nodeId().toStdString()));
-            QOpcUaMonitoredValue *monitoredValue = new QOpcUaMonitoredValue(node, m_qsubscription);
-            m_dataChangeHandles[handle] = monitoredValue;
-            return monitoredValue;
-        }
-    } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Caught: %s", ex.what());
-    }
-    return nullptr;
-}
-
-void QFreeOpcUaSubscription::Event(quint32 handle, const OpcUa::Event &event)
-{
-    auto it = m_eventHandles.find(handle);
-    if (it == m_eventHandles.end()) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Received event for unknown handle:" << handle;
-        return;
-    }
-
-    try {
-        QVector<QVariant> val;
-        val.reserve(3);
-
-        val.push_back(QVariant(QString::fromStdString(event.Message.Text)));
-        val.push_back(QVariant(QString::fromStdString(event.SourceName)));
-        val.push_back(QVariant(event.Severity));
-
-        QOpcUaMonitoredEvent *me = *it;
-        me->d_func()->triggerNewEvent(val);
-    } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Caught: %s", ex.what());
-    }
-}
-
-QOpcUaMonitoredEvent *QFreeOpcUaSubscription::addEvent(QOpcUaNode *node)
-{
-    // Note: Callback is not called due to some error in the event implementation in freeopcua
-    if (!m_subscription)
-        return nullptr;
-
-    try {
-        QFreeOpcUaNode *nnode = static_cast<QFreeOpcUaNode *>(node->d_func()->m_impl.data());
-        if (nnode->m_node.GetAttribute(OpcUa::AttributeId::EventNotifier).Status != OpcUa::StatusCode::Good)
-            return nullptr;
-
-        OpcUa::Node serverNode = m_client->GetNode(OpcUa::ObjectId::Server);
-        OpcUa::Node typeNode = m_client->GetNode(node->nodeId().toStdString());
-
-        uint32_t handle = m_subscription->SubscribeEvents(serverNode, typeNode);
-        QOpcUaMonitoredEvent *monitoredEvent = new QOpcUaMonitoredEvent(node, m_qsubscription);
-        m_eventHandles[handle] = monitoredEvent;
-        return monitoredEvent;
-    } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Caught: %s", ex.what());
-    }
-    return nullptr;
-}
-
-void QFreeOpcUaSubscription::removeEvent(QOpcUaMonitoredEvent *event)
-{
-    try {
-        auto it = m_eventHandles.begin();
-        while (it != m_eventHandles.end()) {
-            if (it.value() == event) {
-                m_subscription->UnSubscribe(it.key());
-                m_eventHandles.erase(it);
-                break;
-            }
-            ++it;
-        }
-    } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Caught: %s", ex.what());
-    }
-}
-
-void QFreeOpcUaSubscription::removeValue(QOpcUaMonitoredValue *value)
-{
-    try {
-        auto it = m_dataChangeHandles.begin();
-        while (it != m_dataChangeHandles.end()) {
-            if (it.value() == value) {
-                m_subscription->UnSubscribe(it.key());
-                m_dataChangeHandles.erase(it);
-                break;
-            }
-            ++it;
-        }
-    } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Caught: %s", ex.what());
-    }
+    emit m_backend->attributeUpdated(item.value()->handle, item.value()->attr, QFreeOpcUaValueConverter::toQVariant(val));
 }
 
 QT_END_NAMESPACE

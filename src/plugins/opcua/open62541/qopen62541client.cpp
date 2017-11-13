@@ -91,14 +91,6 @@ QOpcUaNode *QOpen62541Client::node(const QString &nodeId)
     return new QOpcUaNode(new QOpen62541Node(uaNodeId, this, nodeId), m_client);
 }
 
-QOpcUaSubscription *QOpen62541Client::createSubscription(quint32 interval)
-{
-    QOpen62541Subscription *backendSubscription = new QOpen62541Subscription(m_backend, interval);
-    QOpcUaSubscription *subscription = new QOpcUaSubscription(backendSubscription, interval);
-    backendSubscription->m_qsubscription = subscription;
-    return subscription;
-}
-
 QString QOpen62541Client::backend() const
 {
     return QStringLiteral("open62541");

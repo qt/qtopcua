@@ -241,21 +241,4 @@ QString QOpcUaClient::backend() const
     return d_func()->m_impl->backend();
 }
 
-/*!
-    Creates a subscription with \a interval milliseconds publishing period
-    on the server and returns a QOpcUaSubscription object for it. The
-    subscription may be used to monitor nodes for events or value changes.
-    The caller becomes the owner of the newly created subscription object.
-
-    For this method to work the client needs to be connected to the server.
-    A null pointer is returned on error.
-*/
-QOpcUaSubscription *QOpcUaClient::createSubscription(quint32 interval)
-{
-    if (state() != QOpcUaClient::Connected)
-       return nullptr;
-
-    return d_func()->m_impl->createSubscription(interval);
-}
-
 QT_END_NAMESPACE

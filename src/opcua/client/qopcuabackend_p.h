@@ -58,6 +58,7 @@
 QT_BEGIN_NAMESPACE
 
 class QOpcUaNodeImpl;
+class QOpcUaMonitoringParameters;
 
 class Q_OPCUA_EXPORT QOpcUaBackend : public QObject
 {
@@ -79,6 +80,11 @@ Q_SIGNALS:
                                 QOpcUaClient::ClientError error);
     void attributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attributes, QOpcUa::UaStatusCode serviceResult);
     void attributeWritten(uintptr_t hande, QOpcUaNode::NodeAttribute attribute, QVariant value, QOpcUa::UaStatusCode statusCode);
+
+    void attributeUpdated(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QVariant value);
+    void monitoringEnableDisable(uintptr_t handle, QOpcUaNode::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
+    void monitoringStatusChanged(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
+                           QOpcUaMonitoringParameters param);
 
 private:
     Q_DISABLE_COPY(QOpcUaBackend)

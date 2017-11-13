@@ -37,9 +37,9 @@
 #ifndef QFREEOPCUASUBSCRIPTION_H
 #define QFREEOPCUASUBSCRIPTION_H
 
-#include <QtOpcUa/qopcuamonitoredevent.h>
-#include <QtOpcUa/qopcuamonitoredvalue.h>
-#include <private/qopcuasubscriptionimpl_p.h>
+#include "qfreeopcuanode.h"
+
+#include <QtCore/qhash.h>
 
 #include <opc/ua/subscription.h>
 
@@ -51,30 +51,57 @@ namespace OpcUa {
 QT_BEGIN_NAMESPACE
 
 class QOpcUaNode;
-class QFreeOpcUaMonitoredValue;
-class QOpcUaSubscription;
+class QFreeOpcUaWorker;
 
-class QFreeOpcUaSubscription : public QOpcUaSubscriptionImpl, public OpcUa::SubscriptionHandler
+class QFreeOpcUaSubscription : public OpcUa::SubscriptionHandler
 {
 public:
-    explicit QFreeOpcUaSubscription(OpcUa::UaClient *client, quint32 interval);
+    QFreeOpcUaSubscription(QFreeOpcUaWorker *backend, const QOpcUaMonitoringParameters &settings);
     ~QFreeOpcUaSubscription() override;
 
     // FreeOPC-UA callbacks
     void DataChange(uint32_t handle, const OpcUa::Node &node, const OpcUa::Variant &val,
                     OpcUa::AttributeId attr) override;
-    void Event(quint32 handle, const OpcUa::Event &event) override;
 
-    QOpcUaMonitoredEvent *addEvent(QOpcUaNode *node) override;
-    void removeEvent(QOpcUaMonitoredEvent *event) override;
-    QOpcUaMonitoredValue *addValue(QOpcUaNode *node) override;
-    void removeValue(QOpcUaMonitoredValue *value) override;
+    quint32 createOnServer();
+    bool removeOnServer();
 
-    OpcUa::UaClient *m_client;
-    QOpcUaSubscription *m_qsubscription;
+    void modifyMonitoring(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
+
+    bool addAttributeMonitoredItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr, const OpcUa::Node &node, QOpcUaMonitoringParameters settings);
+    bool removeAttributeMonitoredItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr);
+
+    double interval() const;
+    QOpcUaMonitoringParameters::SubscriptionType shared() const;
+    quint32 subscriptionId() const;
+    int monitoredItemsCount() const;
+
+    struct MonitoredItem {
+        uintptr_t handle;
+        QOpcUaNode::NodeAttribute attr;
+        quint32 monitoredItemId;
+        MonitoredItem(uintptr_t h, QOpcUaNode::NodeAttribute a, quint32 id)
+            : handle(h)
+            , attr(a)
+            , monitoredItemId(id)
+        {}
+        MonitoredItem()
+            : handle(0)
+            , monitoredItemId(0)
+        {}
+    };
+
+private:
+    MonitoredItem *getItemForAttribute(uintptr_t handle, QOpcUaNode::NodeAttribute attr);
+
+    double m_interval;
+    QOpcUaMonitoringParameters::SubscriptionType m_shared;
+
     OpcUa::Subscription::SharedPtr m_subscription;
-    QMap<int32_t, QOpcUaMonitoredValue *> m_dataChangeHandles;
-    QMap<int32_t, QOpcUaMonitoredEvent *> m_eventHandles;
+    QFreeOpcUaWorker *m_backend;
+
+    QHash<quint32, MonitoredItem *> m_itemIdToItemMapping;
+    QHash<uintptr_t, QHash<QOpcUaNode::NodeAttribute, MonitoredItem *>> m_handleToItemMapping;
 };
 
 QT_END_NAMESPACE

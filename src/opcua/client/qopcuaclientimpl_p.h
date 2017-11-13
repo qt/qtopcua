@@ -60,8 +60,8 @@ QT_BEGIN_NAMESPACE
 
 class QOpcUaNode;
 class QOpcUaClient;
-class QOpcUaSubscription;
 class QOpcUaBackend;
+class QOpcUaMonitoringParameters;
 
 class Q_OPCUA_EXPORT QOpcUaClientImpl : public QObject
 {
@@ -83,13 +83,15 @@ public:
 
     void connectBackendWithClient(QOpcUaBackend *backend);
 
-    virtual QOpcUaSubscription *createSubscription(quint32 interval) = 0;
-
     QOpcUaClient *m_client;
 
 private Q_SLOTS:
     void handleAttributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
     void handleAttributeWritten(uintptr_t handle, QOpcUaNode::NodeAttribute attr, const QVariant &value, QOpcUa::UaStatusCode statusCode);
+    void handleAttributeUpdated(uintptr_t handle, QOpcUaNode::NodeAttribute attr, const QVariant &value);
+    void handleMonitoringEnableDisable(uintptr_t handle, QOpcUaNode::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
+    void handleMonitoringStatusChanged(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
+                                 QOpcUaMonitoringParameters param);
 
 signals:
     void connected();

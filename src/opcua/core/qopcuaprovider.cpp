@@ -116,6 +116,10 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUaClient::ClientState>();
     qRegisterMetaType<QOpcUaClient::ClientError>();
     qRegisterMetaType<uintptr_t>("uintptr_t");
+    qRegisterMetaType<QOpcUaMonitoringParameters::SubscriptionType>();
+    qRegisterMetaType<QOpcUaMonitoringParameters::Parameter>();
+    qRegisterMetaType<QOpcUaMonitoringParameters::Parameters>();
+    qRegisterMetaType<QOpcUaMonitoringParameters>();
 }
 
 QOpcUaProvider::~QOpcUaProvider()

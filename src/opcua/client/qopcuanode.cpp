@@ -35,12 +35,9 @@
 ****************************************************************************/
 
 #include "qopcuaclient.h"
-#include "qopcuamonitoredvalue.h"
 #include "qopcuanode.h"
 #include <private/qopcuaclient_p.h>
 #include <private/qopcuaclientimpl_p.h>
-#include <private/qopcuamonitoredevent_p.h>
-#include <private/qopcuamonitoredvalue_p.h>
 #include <private/qopcuanode_p.h>
 #include <private/qopcuanodeimpl_p.h>
 
@@ -80,11 +77,6 @@ QT_BEGIN_NAMESPACE
     event we want to keep up with to the subscription.
 
     \image subscriptions.png
-
-    After calling valueMonitor() or eventMonitor(), a QOpcUaMonitoredValue or
-    QOpcUaMonitoredEvent is returned.
-    These objects emit a signal on a data change or event,
-    depending on which type of subscription has been requested from the server.
 */
 
 /*!
@@ -121,12 +113,35 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QOpcUaNode::attributeWritten(QOpcUaNode::NodeAttribute attribute, quint32 statusCode)
+    \fn QOpcUaNode::attributeWritten(QOpcUaNode::NodeAttribute attribute, QOpcUa::UaStatusCode statusCode)
 
     This signal is emitted after a \l writeAttribute() or \l writeAttributes()  operation has finished.
 
     Before this signal is emitted, the attribute cache is updated in case of a successful write.
     For \l writeAttributes() a signal is emitted for each attribute in the write call.
+*/
+
+/*!
+    \fn void enableMonitoringFinished(QOpcUaNode::NodeAttribute attr, QOpcUa::UaStatusCode statusCode)
+
+    This signal is emitted after an asynchronous call to \l enableMonitoring() has finished.
+    After this signal has been emitted, \l monitoringStatus() returns valid information for \a attr.
+*/
+
+/*!
+    \fn void disableMonitoringFinished(QOpcUaNode::NodeAttribute attr, QOpcUa::UaStatusCode statusCode)
+
+    This signal is emitted after an asynchronous call to \l disableMonitoring() has finished.
+    After this signal has been emitted, monitoringStatus returns a default constructed value with
+    status code BadMonitoredItemIdIinvalid for \a attr.
+*/
+
+/*!
+    \fn void QOpcUaNode::monitoringStatusChanged(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value, QOpcUa::UaStatusCode statusCode);
+
+    This signal is emitted after an asynchronous call to \l modifyMonitoring() has finished.
+    The node attribute for which the operation was requested is returned in \a attr. \a item contains the parameters that have been modified.
+    \a statusCode contains the result of the modify operation on the server.
 */
 
 /*!
@@ -244,6 +259,72 @@ QOpcUa::UaStatusCode QOpcUaNode::attributeError(QOpcUaNode::NodeAttribute attrib
             \li Guid
     \endtable
 */
+
+/*!
+    This method creates a monitored item for each of the attributes given in \a attr.
+    The settings from \a settings are used in the creation of the monitored items and the subscription.
+
+    The \a shared field of \a settings controls how the monitored items are assigned to a subscription. If shared in \a settings is set to Shared,
+    the monitored item will be added to a subscription with a matching \a interval. If shared in \a settings is set to Exclusive,
+    either a new subscription is created, or if a subscription is provided via the subscriptionId field in \a settings, an existing subscription is used.
+    This can be used to group monitored items on a subscription manually by creating the first monitored item with \a shared=false and
+    using the subscriptionId returned in \a subscriptionId of monitoringStatus(\a attr) in the following requests.
+
+    Returns true if the asynchronous call has been successfully dispatched.
+
+    On the completion of the call, the \l enableMonitoringFinished signal is emitted.
+    There are multiple error cases in which a Bad status code is generated: A subscription with \a subscriptionId does not exist,
+    the node does not exist on the server, the node does not have the requested attribute or the maximum number of monitored items for
+    the server is reached.
+ */
+bool QOpcUaNode::enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
+{
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+        return false;
+
+    return d_func()->m_impl->enableMonitoring(attr, settings);
+}
+
+/*!
+    This method modifies settings of the monitored item or the subscription.
+    The parameter \a item of the monitored item or subscription associated with \a attr is attempted to set to \a value.
+
+    Returns true if the asynchronous call has been successfully dispatched.
+
+    After the call has finished, the monitoringStatusChanged signal is emitted. This signal contains the modified parameters and the status code.
+    A Bad status code is generated if there is no monitored item associated with the requested attribute, revising the requested
+    parameter is not implemented or if the server has rejected the requested value.
+*/
+bool QOpcUaNode::modifyMonitoring(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value)
+{
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+        return false;
+
+    return d_func()->m_impl->modifyMonitoring(attr, item, value);
+}
+
+/*!
+    Returns the monitoring parameters associated with the attribute \a attr. This can be used to check the success of \l enableMonitoring()
+    or if parameters have been revised.
+    The returned values are only valid after \l enableMonitoringFinished or \l monitoringStatusChanged have been emitted for \a attr.
+*/
+QOpcUaMonitoringParameters QOpcUaNode::monitoringStatus(QOpcUaNode::NodeAttribute attr)
+{
+    auto it = d_func()->m_monitoringStatus.constFind(attr);
+    if (it == d_func()->m_monitoringStatus.constEnd()) {
+        QOpcUaMonitoringParameters p;
+        p.setStatusCode(QOpcUa::UaStatusCode::BadAttributeIdInvalid);
+        return p;
+    }
+
+    return *it;
+}
+
+/*!
+    Writes \value to the attribute given in \a attribute using the type information from \a type.
+
+    Returns true if the write operation has been dispatched successfully.
+ */
 bool QOpcUaNode::writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type)
 {
     if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
@@ -266,6 +347,22 @@ bool QOpcUaNode::writeAttributes(const AttributeMap &toWrite, QOpcUa::Types valu
         return false;
 
     return d_func()->m_impl->writeAttributes(toWrite, valueAttributeType);
+}
+
+/*!
+    This method disables monitoring for the attributes given in \a attr.
+
+    Returns true if the asynchronous call has been successfully dispatched.
+
+    After the call is finished, the \l disableMonitoringFinished signal is emitted and monitoringStatus returns a default constructed value with
+    status code BadMonitoredItemIdIinvalid for \a attr.
+*/
+bool QOpcUaNode::disableMonitoring(QOpcUaNode::NodeAttributes attr)
+{
+  if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+      return false;
+
+  return d_func()->m_impl->disableMonitoring(attr);
 }
 
 /*!

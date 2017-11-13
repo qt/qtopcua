@@ -37,7 +37,6 @@
 #include "qfreeopcuaclient.h"
 #include "qfreeopcuanode.h"
 #include "qfreeopcuaworker.h"
-#include <QtOpcUa/qopcuasubscription.h>
 #include <private/qopcuaclient_p.h>
 
 #include <QtCore/qloggingcategory.h>
@@ -93,16 +92,6 @@ QOpcUaNode *QFreeOpcUaClientImpl::node(const QString &nodeId)
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Could not get node: %s %s", qUtf8Printable(nodeId), ex.what());
         return new QOpcUaNode(new QFreeOpcUaNode(OpcUa::Node(), this), m_client);
     }
-}
-
-QOpcUaSubscription *QFreeOpcUaClientImpl::createSubscription(quint32 interval)
-{
-    QOpcUaSubscription *result;
-    QMetaObject::invokeMethod(m_opcuaWorker, "createSubscription",
-                              Qt::BlockingQueuedConnection,
-                              Q_RETURN_ARG(QOpcUaSubscription *, result),
-                              Q_ARG(quint32, interval));
-    return result;
 }
 
 QT_END_NAMESPACE

@@ -38,39 +38,63 @@
 #define QOPEN62541SUBSCRIPTION_H
 
 #include "qopen62541.h"
-#include <QtOpcUa/qopcuamonitoredevent.h>
-#include <QtOpcUa/qopcuamonitoredvalue.h>
-#include <private/qopcuasubscriptionimpl_p.h>
+#include <QtOpcUa/qopcuanode.h>
 
 QT_BEGIN_NAMESPACE
 
 class QOpen62541Client;
 class Open62541AsyncBackend;
 
-class QOpen62541Subscription : public QOpcUaSubscriptionImpl
+class QOpen62541Subscription
 {
 public:
-    explicit QOpen62541Subscription(Open62541AsyncBackend *backend, quint32 interval);
-    ~QOpen62541Subscription() override;
+    QOpen62541Subscription(Open62541AsyncBackend *backend, const QOpcUaMonitoringParameters &settings);
+    ~QOpen62541Subscription();
 
-    QOpcUaMonitoredEvent *addEvent(QOpcUaNode *node) override;
-    void removeEvent(QOpcUaMonitoredEvent *event) override;
+    UA_UInt32 createOnServer();
+    bool removeOnServer();
 
-    QOpcUaMonitoredValue *addValue(QOpcUaNode *node) override;
-    void removeValue(QOpcUaMonitoredValue *v) override;
+    void modifyMonitoring(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
+
+    bool addAttributeMonitoredItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr, const UA_NodeId &id, QOpcUaMonitoringParameters settings);
+    bool removeAttributeMonitoredItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr);
 
     void monitoredValueUpdated(UA_UInt32 monId, UA_DataValue *value);
 
-    QOpcUaSubscription *m_qsubscription;
+    struct MonitoredItem {
+        uintptr_t handle;
+        QOpcUaNode::NodeAttribute attr;
+        UA_UInt32 monitoredItemId;
+        MonitoredItem(uintptr_t h, QOpcUaNode::NodeAttribute a, UA_UInt32 id)
+            : handle(h)
+            , attr(a)
+            , monitoredItemId(id)
+        {}
+        MonitoredItem()
+            : handle(0)
+            , monitoredItemId(0)
+        {}
+    };
+
+    double interval() const;
+    UA_UInt32 subscriptionId() const;
+    int monitoredItemsCount() const;
+
+    QOpcUaMonitoringParameters::SubscriptionType shared() const;
 
 private:
-    bool ensureNativeSubscription();
-    void removeNativeSubscription();
+    MonitoredItem *getItemForAttribute(uintptr_t handle, QOpcUaNode::NodeAttribute attr);
+
     Open62541AsyncBackend *m_backend;
-    quint32 m_interval;
+    double m_interval;
     UA_UInt32 m_subscriptionId;
-    QMap<UA_UInt32, QOpcUaMonitoredValue *> m_dataChangeHandles;
-    QMap<UA_UInt32, QOpcUaMonitoredEvent *> m_eventHandles;
+    UA_UInt32 m_lifetimeCount;
+    UA_UInt32 m_maxKeepaliveCount;
+    QOpcUaMonitoringParameters::SubscriptionType m_shared;
+    quint8 m_priority;
+
+    QHash<uintptr_t, QHash<QOpcUaNode::NodeAttribute, MonitoredItem *>> m_handleToItemMapping; // Handle -> Attribute -> MonitoredItem
+    QHash<UA_UInt32, MonitoredItem *> m_itemIdToItemMapping; // ItemId -> Item for fast lookup on data change
 };
 
 QT_END_NAMESPACE

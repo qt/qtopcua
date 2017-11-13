@@ -38,6 +38,7 @@
 #define QOPCUANODE_H
 
 #include <QtOpcUa/qopcuaglobal.h>
+#include <QtOpcUa/qopcuamonitoringparameters.h>
 #include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/qdatetime.h>
@@ -50,8 +51,6 @@ QT_BEGIN_NAMESPACE
 class QOpcUaNodePrivate;
 class QOpcUaNodeImpl;
 class QOpcUaClient;
-class QOpcUaMonitoredEvent;
-class QOpcUaMonitoredValue;
 
 class Q_OPCUA_EXPORT QOpcUaNode : public QObject
 {
@@ -119,6 +118,11 @@ public:
     bool writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type = QOpcUa::Types::Undefined);
     bool writeAttributes(const AttributeMap &toWrite, QOpcUa::Types valueAttributeType = QOpcUa::Types::Undefined);
 
+    bool enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
+    bool disableMonitoring(QOpcUaNode::NodeAttributes attr);
+    bool modifyMonitoring(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value);
+    QOpcUaMonitoringParameters monitoringStatus(QOpcUaNode::NodeAttribute attr);
+
     QStringList childrenIds() const;
     QString nodeId() const;
 
@@ -131,6 +135,12 @@ public:
 Q_SIGNALS:
     void readFinished(QOpcUaNode::NodeAttributes attributes);
     void attributeWritten(QOpcUaNode::NodeAttribute attribute, QOpcUa::UaStatusCode statusCode);
+    void attributeUpdated(QOpcUaNode::NodeAttribute attr, QVariant value);
+
+    void monitoringStatusChanged(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
+                           QOpcUa::UaStatusCode statusCode);
+    void enableMonitoringFinished(QOpcUaNode::NodeAttribute attr, QOpcUa::UaStatusCode statusCode);
+    void disableMonitoringFinished(QOpcUaNode::NodeAttribute attr, QOpcUa::UaStatusCode statusCode);
 
 private:
     Q_DISABLE_COPY(QOpcUaNode)

@@ -72,6 +72,34 @@ bool QOpen62541Node::readAttributes(QOpcUaNode::NodeAttributes attr)
                                      Q_ARG(QOpcUaNode::NodeAttributes, attr));
 }
 
+bool QOpen62541Node::enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
+{
+    return QMetaObject::invokeMethod(m_client->m_backend, "enableMonitoring",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(UA_NodeId, m_nodeId),
+                                     Q_ARG(QOpcUaNode::NodeAttributes, attr),
+                                     Q_ARG(QOpcUaMonitoringParameters, settings));
+}
+
+bool QOpen62541Node::disableMonitoring(QOpcUaNode::NodeAttributes attr)
+{
+    return QMetaObject::invokeMethod(m_client->m_backend, "disableMonitoring",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(QOpcUaNode::NodeAttributes, attr));
+}
+
+bool QOpen62541Node::modifyMonitoring(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value)
+{
+    return QMetaObject::invokeMethod(m_client->m_backend, "modifyMonitoring",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(QOpcUaNode::NodeAttribute, attr),
+                                     Q_ARG(QOpcUaMonitoringParameters::Parameter, item),
+                                     Q_ARG(QVariant, value));
+}
+
 QStringList QOpen62541Node::childrenIds() const
 {
     QStringList result = m_client->m_backend->childrenIds(&m_nodeId);

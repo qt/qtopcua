@@ -37,8 +37,8 @@
 #ifndef QFREEOPCUAWORKER_H
 #define QFREEOPCUAWORKER_H
 
+#include "qfreeopcuasubscription.h"
 #include <QtOpcUa/qopcuanode.h>
-#include <QtOpcUa/qopcuasubscription.h>
 #include <private/qopcuabackend_p.h>
 
 #include <QtCore/qobject.h>
@@ -49,7 +49,6 @@
 QT_BEGIN_NAMESPACE
 
 class QFreeOpcUaNode;
-class QOpcUaSubscription;
 class QOpcUaNode;
 class QFreeOpcUaClientImpl;
 
@@ -58,8 +57,7 @@ class QFreeOpcUaWorker : public QOpcUaBackend, public OpcUa::UaClient
     Q_OBJECT
 public:
     QFreeOpcUaWorker(QFreeOpcUaClientImpl *client);
-
-    Q_INVOKABLE QOpcUaSubscription *createSubscription(quint32 interval);
+    ~QFreeOpcUaWorker();
 
 public slots:
     void asyncConnectToEndpoint(const QUrl &url);
@@ -69,8 +67,20 @@ public slots:
     void writeAttribute(uintptr_t handle, OpcUa::Node node, QOpcUaNode::NodeAttribute attr, QVariant value, QOpcUa::Types type);
     void writeAttributes(uintptr_t handle, OpcUa::Node node, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType);
 
+    QFreeOpcUaSubscription *getSubscription(const QOpcUaMonitoringParameters &settings);
+    bool removeSubscription(quint32 subscriptionId);
+
+    void enableMonitoring(uintptr_t handle, OpcUa::Node node, QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
+    void disableMonitoring(uintptr_t handle, QOpcUaNode::NodeAttributes attr);
+    void modifyMonitoring(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
+
 private:
+    QFreeOpcUaSubscription *getSubscriptionForItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr);
+
     QFreeOpcUaClientImpl *m_client;
+
+    QHash<quint32, QFreeOpcUaSubscription *> m_subscriptions;
+    QHash<uintptr_t, QHash<QOpcUaNode::NodeAttribute, QFreeOpcUaSubscription *>> m_attributeMapping; // Handle -> Attribute -> Subscription
 };
 
 QT_END_NAMESPACE

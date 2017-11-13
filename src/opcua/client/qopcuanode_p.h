@@ -94,12 +94,67 @@ public:
 
             emit q_func()->attributeWritten(attr, statusCode);
         });
+
+        m_attributeUpdatedConnection = QObject::connect(impl, &QOpcUaNodeImpl::attributeUpdated,
+                [this](QOpcUaNode::NodeAttribute attr, QVariant value)
+        {
+            this->m_nodeAttributes[attr] = {value, QOpcUa::UaStatusCode::Good};
+            emit q_func()->attributeUpdated(attr, value);
+        });
+
+        m_monitoringEnableDisableConnection = QObject::connect(impl, &QOpcUaNodeImpl::monitoringEnableDisable,
+                [this](QOpcUaNode::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status)
+        {
+            if (subscribe == true) {
+                m_monitoringStatus[attr] = status;
+                emit q_func()->enableMonitoringFinished(attr, status.statusCode());
+            }
+            else {
+                m_monitoringStatus.remove(attr);
+                emit q_func()->disableMonitoringFinished(attr, status.statusCode());
+            }
+        });
+
+        m_monitoringStatusChangedConnection = QObject::connect(impl, &QOpcUaNodeImpl::monitoringStatusChanged,
+                [this](QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items, QOpcUaMonitoringParameters param)
+        {
+            auto it = m_monitoringStatus.find(attr);
+            if (param.statusCode() == QOpcUa::UaStatusCode::Good && it != m_monitoringStatus.end()) {
+                if (items & QOpcUaMonitoringParameters::Parameter::PublishingEnabled)
+                    it->setPublishingEnabled(param.publishingEnabled());
+                if (items & QOpcUaMonitoringParameters::Parameter::PublishingInterval)
+                    it->setPublishingInterval(param.publishingInterval());
+                if (items & QOpcUaMonitoringParameters::Parameter::LifetimeCount)
+                    it->setLifetimeCount(param.lifetimeCount());
+                if (items & QOpcUaMonitoringParameters::Parameter::MaxKeepAliveCount)
+                    it->setMaxKeepAliveCount(param.maxKeepAliveCount());
+                if (items & QOpcUaMonitoringParameters::Parameter::MaxNotificationsPerPublish)
+                    it->setMaxNotificationsPerPublish(param.maxNotificationsPerPublish());
+                if (items & QOpcUaMonitoringParameters::Parameter::Priority)
+                    it->setPriority(param.priority());
+                if (items & QOpcUaMonitoringParameters::Parameter::SamplingInterval)
+                    it->setSamplingInterval(param.samplingInterval());
+                if (items & QOpcUaMonitoringParameters::Parameter::Filter)
+                    it->setFilter(param.filter());
+                if (items & QOpcUaMonitoringParameters::Parameter::QueueSize)
+                    it->setQueueSize(param.queueSize());
+                if (items & QOpcUaMonitoringParameters::Parameter::DiscardOldest)
+                    it->setDiscardOldest(param.discardOldest());
+                if (items & QOpcUaMonitoringParameters::Parameter::MonitoringMode)
+                    it->setMonitoringMode(param.monitoringMode());
+            }
+
+            emit q_func()->monitoringStatusChanged(attr, items, param.statusCode());
+        });
     }
 
     ~QOpcUaNodePrivate()
     {
         QObject::disconnect(m_attributesReadConnection);
         QObject::disconnect(m_attributeWrittenConnection);
+        QObject::disconnect(m_attributeUpdatedConnection);
+        QObject::disconnect(m_monitoringEnableDisableConnection);
+        QObject::disconnect(m_monitoringStatusChangedConnection);
     }
 
     QScopedPointer<QOpcUaNodeImpl> m_impl;
@@ -110,9 +165,13 @@ public:
         QOpcUa::UaStatusCode statusCode;
     };
     QHash<QOpcUaNode::NodeAttribute, AttributeWithStatus> m_nodeAttributes;
+    QHash<QOpcUaNode::NodeAttribute, QOpcUaMonitoringParameters> m_monitoringStatus;
 
     QMetaObject::Connection m_attributesReadConnection;
     QMetaObject::Connection m_attributeWrittenConnection;
+    QMetaObject::Connection m_attributeUpdatedConnection;
+    QMetaObject::Connection m_monitoringEnableDisableConnection;
+    QMetaObject::Connection m_monitoringStatusChangedConnection;
 };
 
 QT_END_NAMESPACE

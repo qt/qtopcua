@@ -35,6 +35,7 @@
 ****************************************************************************/
 
 #include "qopen62541client.h"
+#include "qopen62541subscription.h"
 #include <private/qopcuabackend_p.h>
 
 #include <QtCore/qset.h>
@@ -50,6 +51,7 @@ class Open62541AsyncBackend : public QOpcUaBackend
     Q_OBJECT
 public:
     Open62541AsyncBackend(QOpen62541Client *parent);
+    ~Open62541AsyncBackend();
 
 public Q_SLOTS:
     void connectToEndpoint(const QUrl &url);
@@ -61,18 +63,31 @@ public Q_SLOTS:
 
     void writeAttribute(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttribute attrId, QVariant value, QOpcUa::Types type);
     void writeAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType);
+    void enableMonitoring(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
+    void disableMonitoring(uintptr_t handle, QOpcUaNode::NodeAttributes attr);
+    void modifyMonitoring(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
 
     // Subscription
-    UA_UInt32 createSubscription(int interval);
-    void deleteSubscription(UA_UInt32 id);
-    void updatePublishSubscriptionRequests() const;
-    void activateSubscriptionTimer(int timeout);
-    void removeSubscriptionTimer(int timeout);
+    QOpen62541Subscription *getSubscription(const QOpcUaMonitoringParameters &settings);
+    bool removeSubscription(UA_UInt32 subscriptionId);
+    void sendPublishRequest();
+    void modifyPublishRequests();
+
 public:
-    QOpen62541Client *m_clientImpl;
     UA_Client *m_uaclient;
-    QTimer *m_subscriptionTimer;
-    QSet<int> m_subscriptionIntervals;
+
+private:
+    QOpen62541Subscription *getSubscriptionForItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr);
+
+    QOpen62541Client *m_clientImpl;
+    QTimer m_subscriptionTimer;
+
+    QHash<quint32, QOpen62541Subscription *> m_subscriptions;
+
+    QHash<uintptr_t, QHash<QOpcUaNode::NodeAttribute, QOpen62541Subscription *>> m_attributeMapping; // Handle -> Attribute -> Subscription
+
+    bool m_sendPublishRequests;
+    qint32 m_shortestInterval;
 };
 
 QT_END_NAMESPACE

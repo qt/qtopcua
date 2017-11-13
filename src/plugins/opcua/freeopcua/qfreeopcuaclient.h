@@ -63,8 +63,6 @@ public:
     bool isSecureConnectionSupported() const override { return false; }
     QString backend() const override { return QStringLiteral("freeopcua"); }
 
-    QOpcUaSubscription *createSubscription(quint32 interval) override;
-
     QFreeOpcUaWorker *m_opcuaWorker{};
 
 private:

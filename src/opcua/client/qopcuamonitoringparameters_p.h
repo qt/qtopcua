@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 basysKom GmbH, opensource@basyskom.com
+** Copyright (C) 2017 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,16 +34,67 @@
 **
 ****************************************************************************/
 
-#include <private/qopcuasubscriptionimpl_p.h>
+#ifndef QOPCUAMONITORINGPARAMETERS_P_H
+#define QOPCUAMONITORINGPARAMETERS_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <QtOpcUa/qopcuamonitoringparameters.h>
+
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
 
-QOpcUaSubscriptionImpl::QOpcUaSubscriptionImpl()
+class Q_OPCUA_EXPORT QOpcUaMonitoringParametersPrivate : public QSharedData
 {
-}
+public:
 
-QOpcUaSubscriptionImpl::~QOpcUaSubscriptionImpl()
-{
-}
+    QOpcUaMonitoringParametersPrivate()
+        : samplingInterval(0)
+        , queueSize(0)
+        , discardOldest(true)
+        , monitoringMode(QOpcUaMonitoringParameters::MonitoringMode::Reporting)
+        , subscriptionId(0)
+        , publishingInterval(0)
+        , lifetimeCount(0)
+        , maxKeepAliveCount(0)
+        , maxNotificationsPerPublish(0)
+        , priority(0)
+        , publishingEnabled(true)
+        , statusCode(QOpcUa::UaStatusCode::BadAttributeIdInvalid)
+        , shared(QOpcUaMonitoringParameters::SubscriptionType::Shared)
+    {}
+
+    // MonitoredItem
+    double samplingInterval;
+    QVariant filter;
+    quint32 queueSize;
+    bool discardOldest;
+    QOpcUaMonitoringParameters::MonitoringMode monitoringMode;
+
+    // Subscription
+    quint32 subscriptionId;
+    double publishingInterval;
+    quint32 lifetimeCount;
+    quint32 maxKeepAliveCount;
+    quint32 maxNotificationsPerPublish;
+    quint8 priority;
+    bool publishingEnabled;
+
+    // QtOpcUa specific
+    QOpcUa::UaStatusCode statusCode;
+    QOpcUaMonitoringParameters::SubscriptionType shared;
+};
 
 QT_END_NAMESPACE
+
+#endif // QOPCUAMONITORINGPARAMETERS_P_H

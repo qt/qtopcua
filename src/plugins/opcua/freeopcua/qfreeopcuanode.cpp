@@ -39,8 +39,6 @@
 #include "qfreeopcuasubscription.h"
 #include "qfreeopcuavalueconverter.h"
 #include "qfreeopcuaworker.h"
-#include <QtOpcUa/qopcuamonitoredevent.h>
-#include <QtOpcUa/qopcuamonitoredvalue.h>
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qloggingcategory.h>
@@ -71,6 +69,34 @@ bool QFreeOpcUaNode::readAttributes(QOpcUaNode::NodeAttributes attr)
                                      Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
                                      Q_ARG(OpcUa::NodeId, m_node.GetId()),
                                      Q_ARG(QOpcUaNode::NodeAttributes, attr));
+}
+
+bool QFreeOpcUaNode::enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
+{
+    return QMetaObject::invokeMethod(m_client->m_opcuaWorker, "enableMonitoring",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(OpcUa::Node, m_node),
+                                     Q_ARG(QOpcUaNode::NodeAttributes, attr),
+                                     Q_ARG(QOpcUaMonitoringParameters, settings));
+}
+
+bool QFreeOpcUaNode::disableMonitoring(QOpcUaNode::NodeAttributes attr)
+{
+    return QMetaObject::invokeMethod(m_client->m_opcuaWorker, "disableMonitoring",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(QOpcUaNode::NodeAttributes, attr));
+}
+
+bool QFreeOpcUaNode::modifyMonitoring(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value)
+{
+    return QMetaObject::invokeMethod(m_client->m_opcuaWorker, "modifyMonitoring",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(QOpcUaNode::NodeAttribute, attr),
+                                     Q_ARG(QOpcUaMonitoringParameters::Parameter, item),
+                                     Q_ARG(QVariant, value));
 }
 
 QStringList QFreeOpcUaNode::childrenIds() const

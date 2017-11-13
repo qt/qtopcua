@@ -35,8 +35,6 @@
 ****************************************************************************/
 
 #include <QtOpcUa/QOpcUaClient>
-#include <QtOpcUa/QOpcUaMonitoredEvent>
-#include <QtOpcUa/QOpcUaMonitoredValue>
 #include <QtOpcUa/QOpcUaNode>
 #include <QtOpcUa/QOpcUaProvider>
 
@@ -177,10 +175,6 @@ private slots:
     void dataChangeSubscriptionInvalidNode();
     defineDataMethod(methodCall_data)
     void methodCall();
-    defineDataMethod(eventSubscription_data)
-    void eventSubscription();
-    defineDataMethod(eventSubscribeInvalidNode_data)
-    void eventSubscribeInvalidNode();
     defineDataMethod(readRange_data)
     void readRange();
     defineDataMethod(readEui_data)
@@ -568,19 +562,132 @@ void Tst_QOpcUaClient::dataChangeSubscription()
     READ_MANDATORY_VARIABLE_NODE(node);
     QTRY_COMPARE(node->attribute(QOpcUaNode::NodeAttribute::Value), 0);
 
-    QScopedPointer<QOpcUaSubscription> subscription(opcuaClient->createSubscription(100));
-    QScopedPointer<QOpcUaMonitoredValue> monitoredValue(subscription->addValue(node.data()));
-    QVERIFY(monitoredValue != nullptr);
-    if (!monitoredValue)
-        QFAIL("can not monitor value");
+    WRITE_VALUE_ATTRIBUTE(node, QVariant(double(0)), QOpcUa::Types::Double);
 
-    QSignalSpy valueSpy(monitoredValue.data(), &QOpcUaMonitoredValue::valueChanged);
+    QSignalSpy dataChangeSpy(node.data(), &QOpcUaNode::attributeUpdated);
+    QSignalSpy monitoringEnabledSpy(node.data(), &QOpcUaNode::enableMonitoringFinished);
+
+    node->enableMonitoring(QOpcUaNode::NodeAttribute::Value, QOpcUaMonitoringParameters(100, QOpcUaMonitoringParameters::SubscriptionType::Exclusive));
+    monitoringEnabledSpy.wait();
+
+    QVERIFY(monitoringEnabledSpy.size() == 1);
+    QVERIFY(monitoringEnabledSpy.at(0).at(0).value<QOpcUaNode::NodeAttribute>() == QOpcUaNode::NodeAttribute::Value);
+    QVERIFY(node->monitoringStatus(QOpcUaNode::NodeAttribute::Value).statusCode() == 0);
+
+    QOpcUaMonitoringParameters valueStatus = node->monitoringStatus(QOpcUaNode::NodeAttribute::Value);
+    QVERIFY(valueStatus.subscriptionId() != 0);
+    QVERIFY(valueStatus.statusCode() == 0);
 
     WRITE_VALUE_ATTRIBUTE(node, QVariant(double(42)), QOpcUa::Types::Double);
+    dataChangeSpy.wait();
+    if (dataChangeSpy.size() < 2)
+        dataChangeSpy.wait();
 
-    valueSpy.wait();
-    QCOMPARE(valueSpy.count(), 1);
-    QCOMPARE(valueSpy.at(0).at(0).toDouble(), double(42));
+    QVERIFY(dataChangeSpy.size() >= 1);
+
+    int index = dataChangeSpy.size() == 1 ? 0 : 1;
+    QVERIFY(dataChangeSpy.at(index).at(0).value<QOpcUaNode::NodeAttribute>() == QOpcUaNode::NodeAttribute::Value);
+    QVERIFY(dataChangeSpy.at(index).at(1) == double(42));
+
+    monitoringEnabledSpy.clear();
+    dataChangeSpy.clear();
+
+    node->enableMonitoring(QOpcUaNode::NodeAttribute::DisplayName, QOpcUaMonitoringParameters(100,QOpcUaMonitoringParameters::SubscriptionType::Exclusive,
+                                                                                              valueStatus.subscriptionId()));
+    monitoringEnabledSpy.wait();
+
+    QVERIFY(monitoringEnabledSpy.size() == 1);
+    QVERIFY(monitoringEnabledSpy.at(0).at(0).value<QOpcUaNode::NodeAttribute>() == QOpcUaNode::NodeAttribute::DisplayName);
+    QVERIFY(node->monitoringStatus(QOpcUaNode::NodeAttribute::DisplayName).statusCode() == 0);
+
+    QOpcUaMonitoringParameters displayNameStatus = node->monitoringStatus(QOpcUaNode::NodeAttribute::DisplayName);
+    QVERIFY(displayNameStatus.subscriptionId() == valueStatus.subscriptionId());
+    QVERIFY(displayNameStatus.statusCode() == 0);
+
+    dataChangeSpy.wait();
+    QVERIFY(dataChangeSpy.size() == 1);
+    QVERIFY(dataChangeSpy.at(0).at(0).value<QOpcUaNode::NodeAttribute>() == QOpcUaNode::NodeAttribute::DisplayName);
+    QVERIFY(dataChangeSpy.at(0).at(1).value<QOpcUa::QLocalizedText>().text == QLatin1String("ns=3;s=TestNode.ReadWrite"));
+
+    monitoringEnabledSpy.clear();
+    dataChangeSpy.clear();
+    node->enableMonitoring(QOpcUaNode::NodeAttribute::NodeId, QOpcUaMonitoringParameters(100));
+    monitoringEnabledSpy.wait();
+    QVERIFY(monitoringEnabledSpy.size() == 1);
+    QVERIFY(monitoringEnabledSpy.at(0).at(0).value<QOpcUaNode::NodeAttribute>() == QOpcUaNode::NodeAttribute::NodeId);
+    QVERIFY(node->monitoringStatus(QOpcUaNode::NodeAttribute::NodeId).subscriptionId() != valueStatus.subscriptionId());
+    QVERIFY(node->monitoringStatus(QOpcUaNode::NodeAttribute::NodeId).statusCode() == 0);
+
+    QOpcUaMonitoringParameters nodeIdStatus = node->monitoringStatus(QOpcUaNode::NodeAttribute::NodeId);
+    QVERIFY(nodeIdStatus.subscriptionId() != valueStatus.subscriptionId());
+    QVERIFY(nodeIdStatus.statusCode() == 0);
+
+    dataChangeSpy.wait();
+    QVERIFY(dataChangeSpy.size() == 1);
+    QVERIFY(dataChangeSpy.at(0).at(0).value<QOpcUaNode::NodeAttribute>() == QOpcUaNode::NodeAttribute::NodeId);
+    QVERIFY(dataChangeSpy.at(0).at(1) == QLatin1String("ns=3;s=TestNode.ReadWrite"));
+
+    QVector<QOpcUaNode::NodeAttribute> attrs;
+
+    if (opcuaClient->backend() == QLatin1String("open62541")) {
+        QSignalSpy monitoringModifiedSpy(node.data(), &QOpcUaNode::monitoringStatusChanged);
+        node->modifyMonitoring(QOpcUaNode::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::PublishingInterval, 200);
+
+        monitoringModifiedSpy.wait();
+        if (monitoringModifiedSpy.size() < 2)
+            monitoringModifiedSpy.wait();
+
+        attrs = {QOpcUaNode::NodeAttribute::Value, QOpcUaNode::NodeAttribute::DisplayName};
+        for (auto it : qAsConst(monitoringModifiedSpy)) {
+            QOpcUaNode::NodeAttribute temp = it.at(0).value<QOpcUaNode::NodeAttribute>();
+            QVERIFY(attrs.contains(temp));
+            QVERIFY(it.at(1).value<QOpcUaMonitoringParameters::Parameters>() &  QOpcUaMonitoringParameters::Parameter::PublishingInterval);
+            QVERIFY(it.at(2) == QOpcUa::UaStatusCode::Good);
+            QVERIFY(node->monitoringStatus(temp).publishingInterval() == double(200));
+            attrs.remove(attrs.indexOf(temp));
+        }
+        QVERIFY(attrs.size() == 0);
+
+        QVERIFY(node->monitoringStatus(QOpcUaNode::NodeAttribute::Value).publishingInterval() == 200);
+        QVERIFY(node->monitoringStatus(QOpcUaNode::NodeAttribute::DisplayName).publishingInterval() == 200);
+
+        monitoringModifiedSpy.clear();
+        QOpcUaMonitoringParameters::DataChangeFilter filter;
+        filter.deadbandType = QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType::Absolute;
+        filter.trigger = QOpcUaMonitoringParameters::DataChangeFilter::DataChangeTrigger::StatusValue;
+        filter.deadbandValue = 10;
+        node->modifyMonitoring(QOpcUaNode::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::Filter, QVariant::fromValue(filter));
+        monitoringModifiedSpy.wait();
+        QVERIFY(monitoringModifiedSpy.size() == 1);
+        QVERIFY(monitoringModifiedSpy.at(0).at(0).value<QOpcUaNode::NodeAttribute>() == QOpcUaNode::NodeAttribute::Value);
+        QVERIFY(monitoringModifiedSpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>() & QOpcUaMonitoringParameters::Parameter::Filter);
+        QEXPECT_FAIL("", "Modifying monitored items is not yet supported by open62541", Continue);
+        QVERIFY(monitoringModifiedSpy.at(0).at(2).value<QOpcUa::UaStatusCode>() == QOpcUa::UaStatusCode::Good);
+
+    } else {
+        qDebug() << "Modifying monitoring settings is not supported by the freeopcua backend";
+    }
+
+    QSignalSpy monitoringDisabledSpy(node.data(), &QOpcUaNode::disableMonitoringFinished);
+
+    node->disableMonitoring(QOpcUaNode::NodeAttribute::Value | QOpcUaNode::NodeAttribute::DisplayName | QOpcUaNode::NodeAttribute::NodeId);
+    monitoringDisabledSpy.wait();
+    if (monitoringDisabledSpy.size() < 2)
+        monitoringDisabledSpy.wait();
+    if (monitoringDisabledSpy.size() < 3)
+        monitoringDisabledSpy.wait();
+
+    QVERIFY(monitoringDisabledSpy.size() == 3);
+
+    attrs = {QOpcUaNode::NodeAttribute::Value, QOpcUaNode::NodeAttribute::DisplayName, QOpcUaNode::NodeAttribute::NodeId};
+    for (auto it : qAsConst(monitoringDisabledSpy)) {
+        QOpcUaNode::NodeAttribute temp = it.at(0).value<QOpcUaNode::NodeAttribute>();
+        QVERIFY(attrs.contains(temp));
+        QVERIFY(node->monitoringStatus(temp).subscriptionId() == 0);
+        QVERIFY(node->monitoringStatus(temp).statusCode() == QOpcUa::UaStatusCode::BadAttributeIdInvalid);
+        attrs.remove(attrs.indexOf(temp));
+    }
+    QVERIFY(attrs.size() == 0);
 }
 
 void Tst_QOpcUaClient::dataChangeSubscriptionInvalidNode()
@@ -589,10 +696,17 @@ void Tst_QOpcUaClient::dataChangeSubscriptionInvalidNode()
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> noDataNode(opcuaClient->node("ns=0;i=84"));
-    QVERIFY(noDataNode != 0);
-    QScopedPointer<QOpcUaSubscription> subscription(opcuaClient->createSubscription(100));
-    QOpcUaMonitoredValue *result = subscription->addValue(noDataNode.data());
-    QVERIFY(result == 0);
+    QSignalSpy monitoringEnabledSpy(noDataNode.data(), &QOpcUaNode::enableMonitoringFinished);
+
+    QOpcUaMonitoringParameters settings;
+    settings.setPublishingInterval(100);
+    noDataNode->enableMonitoring(QOpcUaNode::NodeAttribute::Value, settings);
+    monitoringEnabledSpy.wait();
+
+    QVERIFY(monitoringEnabledSpy.size() == 1);
+    QVERIFY(monitoringEnabledSpy.at(0).at(0).value<QOpcUaNode::NodeAttribute>() == QOpcUaNode::NodeAttribute::Value);
+    QVERIFY(noDataNode->monitoringStatus(QOpcUaNode::NodeAttribute::Value).statusCode() == QOpcUa::UaStatusCode::BadAttributeIdInvalid);
+    QVERIFY(noDataNode->monitoringStatus(QOpcUaNode::NodeAttribute::Value).subscriptionId() == 0);
 }
 
 void Tst_QOpcUaClient::methodCall()
@@ -616,58 +730,6 @@ void Tst_QOpcUaClient::methodCall()
     QVERIFY(success == true);
     QVERIFY(ret.size() == 1);
     QVERIFY(ret[0].type() == QVariant::Double && ret[0].value<double>() == 16);
-}
-
-void Tst_QOpcUaClient::eventSubscription()
-{
-    QFETCH(QOpcUaClient *, opcuaClient);
-    OpcuaConnector connector(opcuaClient, m_endpoint);
-
-    QSKIP("Events are not implemented in the open62541-based testserver");
-    if (opcuaClient->backend() == QLatin1String("freeopcua")) {
-        QSKIP("Event subscriptions do not yet work with the freeopcua backend");
-    }
-    if (opcuaClient->backend() == QLatin1String("open62541")) {
-        QSKIP("Event subscriptions do not yet work with the open62541 backend");
-    }
-
-    QScopedPointer<QOpcUaNode> triggerNode(opcuaClient->node("ns=3;s=TriggerNode"));
-    QVERIFY(triggerNode != 0);
-
-    QScopedPointer<QOpcUaSubscription> subscription(opcuaClient->createSubscription(100));
-    QOpcUaMonitoredEvent *monitoredEvent = subscription->addEvent(triggerNode.data());
-    QVERIFY(monitoredEvent != 0);
-
-    if (!monitoredEvent)
-        QFAIL("can not monitor event");
-
-    QSignalSpy monitorSpy(monitoredEvent, &QOpcUaMonitoredEvent::newEvent);
-
-    QScopedPointer<QOpcUaNode> triggerVariable(opcuaClient->node("ns=3;s=TriggerVariable"));
-    QVERIFY(triggerVariable != 0);
-    WRITE_VALUE_ATTRIBUTE(triggerVariable, QVariant(double(0)), QOpcUa::Types::Double);
-    WRITE_VALUE_ATTRIBUTE(triggerVariable, QVariant(double(1)), QOpcUa::Types::Double);
-
-    QVERIFY(monitorSpy.wait());
-    QVector<QVariant> val = monitorSpy.at(0).at(0).toList().toVector();
-    QCOMPARE(val.size(), 3);
-    QCOMPARE(val.at(0).type(), QVariant::String);
-    QCOMPARE(val.at(1).type(), QVariant::String);
-    QCOMPARE(val.at(2).type(), QVariant::Int);
-
-    delete monitoredEvent;
-}
-
-void Tst_QOpcUaClient::eventSubscribeInvalidNode()
-{
-    QFETCH(QOpcUaClient *, opcuaClient);
-    OpcuaConnector connector(opcuaClient, m_endpoint);
-
-    QScopedPointer<QOpcUaNode> noEventNode(opcuaClient->node(readWriteNode));
-    QVERIFY(noEventNode != 0);
-    QScopedPointer<QOpcUaSubscription> subscription(opcuaClient->createSubscription(100));
-    QOpcUaMonitoredEvent *monitoredEvent = subscription->addEvent(noEventNode.data());
-    QVERIFY(monitoredEvent == 0);
 }
 
 void Tst_QOpcUaClient::readRange()

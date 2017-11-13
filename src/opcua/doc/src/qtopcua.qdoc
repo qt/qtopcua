@@ -187,11 +187,9 @@
     \endtable
 
     \section1 Classes and ownership
-    Four important classes are exposed to the user: QOpcUaClient, QOpcUaNode,
-    QOpcUaMonitoredEvent and QOpcUaMonitoredValue.
+    Two important classes are exposed to the user: QOpcUaClient and QOpcUaNode.
 
-    Objects of the types QOpcUaNode, QOpcUaMonitoredEvent and QOpcUaMonitoredValue
-    are owned by the user and must be deleted when they are no longer needed.
+    Objects of the type QOpcUaNode are owned by the user and must be deleted when they are no longer needed.
 
     \section1 Related Information
 

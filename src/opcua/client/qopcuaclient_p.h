@@ -50,7 +50,6 @@
 
 #include <QtOpcUa/qopcuaclient.h>
 #include <QtOpcUa/qopcuaglobal.h>
-#include <QtOpcUa/qopcuavaluesubscription.h>
 #include <private/qopcuaclientimpl_p.h>
 
 #include <QtCore/qobject.h>

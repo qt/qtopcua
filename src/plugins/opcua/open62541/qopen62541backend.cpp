@@ -60,10 +60,20 @@ struct UaLocalizedTextMemberDeleter
 
 Open62541AsyncBackend::Open62541AsyncBackend(QOpen62541Client *parent)
     : QOpcUaBackend()
-    , m_clientImpl(parent)
     , m_uaclient(nullptr)
-    , m_subscriptionTimer(nullptr)
+    , m_clientImpl(parent)
+    , m_subscriptionTimer(this)
+    , m_sendPublishRequests(false)
+    , m_shortestInterval(std::numeric_limits<qint32>::max())
 {
+    m_subscriptionTimer.setSingleShot(true);
+    QObject::connect(&m_subscriptionTimer, &QTimer::timeout,
+                     this, &Open62541AsyncBackend::sendPublishRequest);
+}
+
+Open62541AsyncBackend::~Open62541AsyncBackend()
+{
+    qDeleteAll(m_subscriptions);
 }
 
 void Open62541AsyncBackend::readAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttributes attr)
@@ -155,6 +165,109 @@ void Open62541AsyncBackend::writeAttributes(uintptr_t handle, UA_NodeId id, QOpc
     UA_NodeId_deleteMembers(&id);
 }
 
+void Open62541AsyncBackend::enableMonitoring(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
+{
+    QOpen62541Subscription *usedSubscription = nullptr;
+
+    // Create a new subscription if necessary
+    if (settings.subscriptionId()) {
+        auto sub = m_subscriptions.find(settings.subscriptionId());
+        if (sub == m_subscriptions.end()) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "There is no subscription with id %u", settings.subscriptionId());
+
+            qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attribute){
+                QOpcUaMonitoringParameters s;
+                s.setStatusCode(QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
+                emit monitoringEnableDisable(handle, attribute, true, s);
+            });
+            return;
+        }
+        usedSubscription = sub.value(); // Ignore interval != subscription.interval
+    } else {
+        usedSubscription = getSubscription(settings);
+    }
+
+    if (!usedSubscription) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Could not create subscription with interval %f", settings.publishingInterval());
+        qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attribute){
+            QOpcUaMonitoringParameters s;
+            s.setStatusCode(QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
+            emit monitoringEnableDisable(handle, attribute, true, s);
+        });
+        return;
+    }
+
+    qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attribute){
+        bool success = usedSubscription->addAttributeMonitoredItem(handle, attribute, id, settings);
+        if (success)
+            m_attributeMapping[handle][attribute] = usedSubscription;
+    });
+
+    if (usedSubscription->monitoredItemsCount() == 0)
+        removeSubscription(usedSubscription->subscriptionId()); // No items were added
+
+    modifyPublishRequests();
+}
+
+void Open62541AsyncBackend::disableMonitoring(uintptr_t handle, QOpcUaNode::NodeAttributes attr)
+{
+    qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attribute){
+        QOpen62541Subscription *sub = getSubscriptionForItem(handle, attribute);
+        if (sub) {
+            sub->removeAttributeMonitoredItem(handle, attribute);
+            if (sub->monitoredItemsCount() == 0)
+                removeSubscription(sub->subscriptionId());
+        }
+    });
+    modifyPublishRequests();
+}
+
+void Open62541AsyncBackend::modifyMonitoring(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
+{
+    QOpen62541Subscription *subscription = getSubscriptionForItem(handle, attr);
+    if (!subscription) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Could not modify parameter for %lu, the monitored item does not exist", handle);
+        QOpcUaMonitoringParameters p;
+        p.setStatusCode(QOpcUa::UaStatusCode::BadMonitoredItemIdInvalid);
+        emit monitoringStatusChanged(handle, attr, item, p);
+        return;
+    }
+
+    subscription->modifyMonitoring(handle, attr, item, value);
+    modifyPublishRequests();
+}
+
+QOpen62541Subscription *Open62541AsyncBackend::getSubscription(const QOpcUaMonitoringParameters &settings)
+{
+    if (settings.shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared) {
+        for (auto entry : qAsConst(m_subscriptions)) {
+            if (qFuzzyCompare(entry->interval(), settings.publishingInterval()) && entry->shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared)
+                return entry;
+        }
+    }
+
+    QOpen62541Subscription *sub = new QOpen62541Subscription(this, settings);
+    UA_UInt32 id = sub->createOnServer();
+    if (!id) {
+        delete sub;
+        return nullptr;
+    }
+    m_subscriptions[id] = sub;
+    return sub;
+}
+
+bool Open62541AsyncBackend::removeSubscription(UA_UInt32 subscriptionId)
+{
+    auto sub = m_subscriptions.find(subscriptionId);
+    if (sub != m_subscriptions.end()) {
+        sub.value()->removeOnServer();
+        delete sub.value();
+        m_subscriptions.remove(subscriptionId);
+        return true;
+    }
+    return false;
+}
+
 static UA_StatusCode nodeIter(UA_NodeId childId, UA_Boolean isInverse, UA_NodeId referenceTypeId, void *pass)
 {
     Q_UNUSED(referenceTypeId);
@@ -208,24 +321,6 @@ QStringList Open62541AsyncBackend::childrenIds(const UA_NodeId *parentNode)
     return result;
 }
 
-UA_UInt32 Open62541AsyncBackend::createSubscription(int interval)
-{
-    UA_UInt32 result;
-    UA_SubscriptionSettings settings = UA_SubscriptionSettings_default;
-    settings.requestedPublishingInterval = interval;
-    UA_StatusCode ret = UA_Client_Subscriptions_new(m_uaclient, settings, &result);
-    if (ret != UA_STATUSCODE_GOOD)
-        return 0;
-    return result;
-}
-
-void Open62541AsyncBackend::deleteSubscription(UA_UInt32 id)
-{
-    UA_StatusCode ret = UA_Client_Subscriptions_remove(m_uaclient, id);
-    if (ret != UA_STATUSCODE_GOOD)
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "QOpcUa::Open62541: Could not remove subscription";
-}
-
 void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
 {
     m_uaclient = UA_Client_new(UA_ClientConfig_default);
@@ -251,12 +346,6 @@ void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
         return;
     }
 
-    if (!m_subscriptionTimer) {
-        m_subscriptionTimer = new QTimer(this);
-        m_subscriptionTimer->setInterval(5000);
-        QObject::connect(m_subscriptionTimer, &QTimer::timeout,
-                         this, &Open62541AsyncBackend::updatePublishSubscriptionRequests);
-    }
     emit stateAndOrErrorChanged(QOpcUaClient::Connected, QOpcUaClient::NoError);
 }
 
@@ -270,42 +359,58 @@ void Open62541AsyncBackend::disconnectFromEndpoint()
 
     UA_Client_delete(m_uaclient);
     m_uaclient = nullptr;
-    m_subscriptionTimer->stop();
+    m_subscriptionTimer.stop();
     emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
 }
 
-void Open62541AsyncBackend::updatePublishSubscriptionRequests() const
+void Open62541AsyncBackend::sendPublishRequest()
 {
-    if (m_uaclient)
-        UA_Client_Subscriptions_manuallySendPublishRequest(m_uaclient);
-}
-
-void Open62541AsyncBackend::activateSubscriptionTimer(int timeout)
-{
-    // ### TODO: Check all available subscriptions and their timeout value
-    // Get minimum value
-    if (timeout <= 0)
+    if (!m_uaclient)
         return;
 
-    m_subscriptionIntervals.insert(timeout);
-
-    int minInterval = timeout;
-    for (auto it : m_subscriptionIntervals) {
-        if (it < minInterval)
-            minInterval = it;
+    if (!m_sendPublishRequests) {
+        return;
     }
-    // Update subscriptionTimer timeout
-    m_subscriptionTimer->setInterval(minInterval);
-    // Start / Stop timer
-    m_subscriptionTimer->start();
+
+    if (UA_Client_Subscriptions_manuallySendPublishRequest(m_uaclient) == UA_STATUSCODE_BADSERVERNOTCONNECTED) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Unable to send publish request");
+        m_sendPublishRequests = false;
+        return;
+    }
+
+    m_subscriptionTimer.start(m_shortestInterval);
 }
 
-void Open62541AsyncBackend::removeSubscriptionTimer(int timeout)
+void Open62541AsyncBackend::modifyPublishRequests()
 {
-    if (!m_subscriptionIntervals.remove(timeout))
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Trying to remove non-existent interval.";
-    if (m_subscriptionIntervals.isEmpty())
-        m_subscriptionTimer->stop();
+    if (m_subscriptions.count() == 0) {
+        m_subscriptionTimer.stop();
+        m_sendPublishRequests = false;
+        m_shortestInterval = std::numeric_limits<qint32>::max();
+        return;
+    }
+
+    for (auto it : qAsConst(m_subscriptions))
+        if (it->interval() < m_shortestInterval)
+            m_shortestInterval = it->interval();
+
+    m_subscriptionTimer.stop();
+    m_sendPublishRequests = true;
+    sendPublishRequest();
+}
+
+QOpen62541Subscription *Open62541AsyncBackend::getSubscriptionForItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr)
+{
+    auto nodeEntry = m_attributeMapping.find(handle);
+    if (nodeEntry == m_attributeMapping.end())
+        return nullptr;
+
+    auto subscription = nodeEntry->find(attr);
+    if (subscription == nodeEntry->end()) {
+        return nullptr;
+    }
+
+    return subscription.value();
 }
 
 QT_END_NAMESPACE

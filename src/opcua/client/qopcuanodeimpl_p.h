@@ -49,15 +49,13 @@
 //
 
 #include <QtOpcUa/qopcuaglobal.h>
+#include <QtOpcUa/qopcuamonitoringparameters.h>
 #include <QtOpcUa/qopcuanode.h>
 #include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
-
-class QOpcUaMonitoredEvent;
-class QOpcUaMonitoredValue;
 
 struct QOpcUaReadResult {
     QOpcUaNode::NodeAttribute attributeId;
@@ -73,11 +71,15 @@ public:
     virtual ~QOpcUaNodeImpl();
 
     virtual bool readAttributes(QOpcUaNode::NodeAttributes attr) = 0;
+    virtual bool enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings) = 0;
+    virtual bool disableMonitoring(QOpcUaNode::NodeAttributes attr) = 0;
     virtual QStringList childrenIds() const = 0;
     virtual QString nodeId() const = 0;
 
     virtual bool writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type) = 0;
     virtual bool writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType) = 0;
+    virtual bool modifyMonitoring(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item,
+                                          const QVariant &value) = 0;
 
     virtual QPair<double, double> readEuRange() const = 0;
     virtual QPair<QString, QString> readEui() const = 0;
@@ -89,6 +91,10 @@ Q_SIGNALS:
     void attributesRead(QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
     void attributeWritten(QOpcUaNode::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode);
 
+    void attributeUpdated(QOpcUaNode::NodeAttribute attr, QVariant value);
+    void monitoringEnableDisable(QOpcUaNode::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
+    void monitoringStatusChanged(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
+                           QOpcUaMonitoringParameters param);
 };
 
 QT_END_NAMESPACE

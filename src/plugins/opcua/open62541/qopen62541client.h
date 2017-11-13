@@ -59,7 +59,6 @@ public:
     void disconnectFromEndpoint() override;
 
     QOpcUaNode *node(const QString &nodeId) override;
-    QOpcUaSubscription *createSubscription(quint32 interval) override;
 
     QString backend() const override;
 
