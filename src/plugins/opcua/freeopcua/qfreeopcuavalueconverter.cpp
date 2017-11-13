@@ -55,7 +55,6 @@ QVariant toQVariant(const OpcUa::Variant &variant)
         return QVariant();
     }
 
-    OpcUa::ByteString bs;
     switch (variant.Type()) {
     case OpcUa::VariantType::NUL:
         return QVariant::fromValue(static_cast<QObject *>(0));
