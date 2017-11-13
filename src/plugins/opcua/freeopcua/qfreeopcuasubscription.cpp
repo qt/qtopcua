@@ -139,7 +139,7 @@ void QFreeOpcUaSubscription::Event(quint32 handle, const OpcUa::Event &event)
 
         val.push_back(QVariant(QString::fromStdString(event.Message.Text)));
         val.push_back(QVariant(QString::fromStdString(event.SourceName)));
-        val.push_back(QVariant((double) event.Severity));
+        val.push_back(QVariant((double)event.Severity));
 
         QOpcUaMonitoredEvent *me = *it;
         me->d_func()->triggerNewEvent(val);

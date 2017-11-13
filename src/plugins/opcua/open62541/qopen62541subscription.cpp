@@ -52,7 +52,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541)
 
 static void monitoredValueHandler(UA_UInt32 monId, UA_DataValue *value, void *context)
 {
-    QOpen62541Subscription* subscription = static_cast<QOpen62541Subscription *>(context);
+    QOpen62541Subscription *subscription = static_cast<QOpen62541Subscription *>(context);
     subscription->monitoredValueUpdated(monId, value);
 }
 

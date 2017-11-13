@@ -334,7 +334,7 @@ QString scalarUaToQt<QString, std::string>(const std::string &data)
 template<>
 QDateTime scalarUaToQt<QDateTime, OpcUa::DateTime>(const OpcUa::DateTime &data)
 {
-    return QDateTime::fromTime_t( OpcUa::DateTime::ToTimeT(data));
+    return QDateTime::fromTime_t(OpcUa::DateTime::ToTimeT(data));
 }
 
 template<>

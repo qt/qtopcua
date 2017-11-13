@@ -69,7 +69,7 @@ public:
 private:
     bool ensureNativeSubscription();
     void removeNativeSubscription();
-    Open62541AsyncBackend* m_backend;
+    Open62541AsyncBackend *m_backend;
     quint32 m_interval;
     UA_UInt32 m_subscriptionId;
     QMap<UA_UInt32, QOpcUaMonitoredValue *> m_dataChangeHandles;

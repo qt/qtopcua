@@ -42,7 +42,7 @@
 #include <QtCore/QVariant>
 #include <QUuid>
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
 

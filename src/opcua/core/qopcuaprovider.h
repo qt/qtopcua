@@ -61,7 +61,7 @@ public:
     Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
 
 private:
-    QHash<QString, QOpcUaPlugin*> m_plugins;
+    QHash<QString, QOpcUaPlugin *> m_plugins;
 };
 
 QT_END_NAMESPACE

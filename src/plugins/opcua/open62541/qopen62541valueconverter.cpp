@@ -271,7 +271,7 @@ const UA_DataType *toDataType(QOpcUa::Types valueType)
 
 QString toQString(UA_String value)
 {
-    return QString::fromUtf8((const char*) value.data, value.length);
+    return QString::fromUtf8((const char *)value.data, value.length);
 }
 
 template<typename TARGETTYPE, typename UATYPE>
@@ -285,7 +285,7 @@ QVariant scalarToQVariant<QString, UA_String>(UA_String *data, QMetaType::Type t
 {
     Q_UNUSED(type)
     UA_String *uaStr = static_cast<UA_String *>(data);
-    return QVariant(QString::fromUtf8(reinterpret_cast<char*>(uaStr->data), uaStr->length));
+    return QVariant(QString::fromUtf8(reinterpret_cast<char *>(uaStr->data), uaStr->length));
 }
 
 template<>
@@ -301,7 +301,7 @@ QVariant scalarToQVariant<QString, UA_LocalizedText>(UA_LocalizedText *data, QMe
 {
     Q_UNUSED(type)
     UA_LocalizedText *uaLt = static_cast<UA_LocalizedText *>(data);
-    return QVariant(QString::fromUtf8(reinterpret_cast<char*>(uaLt->text.data),
+    return QVariant(QString::fromUtf8(reinterpret_cast<char *>(uaLt->text.data),
                                       uaLt->text.length));
 }
 

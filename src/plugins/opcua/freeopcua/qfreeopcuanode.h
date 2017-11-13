@@ -78,7 +78,7 @@ public:
             const QVector<QPair<QVariant, QDateTime> > data) override;
 
     OpcUa::Node m_node;
-    OpcUa::UaClient* m_client;
+    OpcUa::UaClient *m_client;
 };
 
 QT_END_NAMESPACE

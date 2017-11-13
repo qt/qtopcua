@@ -248,7 +248,7 @@ static UA_StatusCode nodeIter(UA_NodeId childId, UA_Boolean isInverse, UA_NodeId
 QStringList Open62541AsyncBackend::childrenIds(const UA_NodeId *parentNode)
 {
     QStringList result;
-    UA_StatusCode sc = UA_Client_forEachChildNodeCall(m_uaclient, *parentNode, nodeIter, (void *) &result);
+    UA_StatusCode sc = UA_Client_forEachChildNodeCall(m_uaclient, *parentNode, nodeIter, (void *)&result);
     if (sc != UA_STATUSCODE_GOOD)
         return QStringList();
 

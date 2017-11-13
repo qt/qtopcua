@@ -105,7 +105,7 @@ public:
         opcuaClient = nullptr;
     }
 
-    QOpcUaClient* opcuaClient;
+    QOpcUaClient *opcuaClient;
 };
 
 const QString readWriteNode = QStringLiteral("ns=3;s=TestNode.ReadWrite");
@@ -254,7 +254,7 @@ void Tst_QOpcUaClient::initTestCase()
 
 void Tst_QOpcUaClient::connectToInvalid()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     opcuaClient->connectToEndpoint(QUrl("opc.tcp:127.0.0.1:1234"));
     QVERIFY(opcuaClient->state() == QOpcUaClient::Connecting);
 
@@ -268,12 +268,12 @@ void Tst_QOpcUaClient::connectToInvalid()
             opcuaClient->state() == QOpcUaClient::Disconnected);
 
     QUrl url = opcuaClient->url();
-    QVERIFY( url == QUrl("opc.tcp:127.0.0.1:1234"));
+    QVERIFY(url == QUrl("opc.tcp:127.0.0.1:1234"));
 }
 
 void Tst_QOpcUaClient::secureConnect()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     QSKIP("Secure connections are not supported by freeopcua-based testserver");
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("Secure connections are not supported with the freeopcua backend");
@@ -292,7 +292,7 @@ void Tst_QOpcUaClient::secureConnect()
 
 void Tst_QOpcUaClient::secureConnectToInvalid()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
 
     QSKIP("Secure connections are not supported by freeopcua-based testserver");
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
@@ -311,12 +311,12 @@ void Tst_QOpcUaClient::secureConnectToInvalid()
             opcuaClient->state() == QOpcUaClient::Disconnected);
 
     QUrl url = opcuaClient->url();
-    QVERIFY( url == QUrl("opc.tcp:127.0.0.1:1234"));
+    QVERIFY(url == QUrl("opc.tcp:127.0.0.1:1234"));
 }
 
 void Tst_QOpcUaClient::connectAndDisconnect()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 }
 
@@ -371,7 +371,7 @@ void Tst_QOpcUaClient::connectAndDisconnectPassword()
 
 void Tst_QOpcUaClient::getRootNode()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> root(opcuaClient->node("ns=0;i=84"));
@@ -384,7 +384,7 @@ void Tst_QOpcUaClient::getRootNode()
 
 void Tst_QOpcUaClient::getChildren()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=1;s=Large.Folder"));
@@ -395,7 +395,7 @@ void Tst_QOpcUaClient::getChildren()
 
 void Tst_QOpcUaClient::childrenIdsString()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=testStringIdsFolder"));
@@ -407,7 +407,7 @@ void Tst_QOpcUaClient::childrenIdsString()
 
 void Tst_QOpcUaClient::childrenIdsGuidNodeId()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=testGuidIdsFolder"));
@@ -419,7 +419,7 @@ void Tst_QOpcUaClient::childrenIdsGuidNodeId()
 
 void Tst_QOpcUaClient::childrenIdsOpaqueNodeId()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=testOpaqueIdsFolder"));
@@ -431,7 +431,7 @@ void Tst_QOpcUaClient::childrenIdsOpaqueNodeId()
 
 void Tst_QOpcUaClient::read()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
@@ -444,13 +444,13 @@ void Tst_QOpcUaClient::read()
 
 void Tst_QOpcUaClient::readWrite()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
     QVERIFY(node != 0);
     for (int i = 0; i < numberOfOperations; i++) {
-        bool result = node->setValue(QVariant((double) i));
+        bool result = node->setValue(QVariant((double)i));
         QVERIFY(result==true);
         QVERIFY(node->value().toInt() ==  i);
     }
@@ -458,12 +458,12 @@ void Tst_QOpcUaClient::readWrite()
 
 void Tst_QOpcUaClient::dataChangeSubscription()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
     QVERIFY(node != 0);
-    bool result = node->setValue(QVariant((double ) 0));
+    bool result = node->setValue(QVariant((double)0));
     QVERIFY(result == true);
     QTRY_COMPARE(node->value(), 0);
 
@@ -475,17 +475,17 @@ void Tst_QOpcUaClient::dataChangeSubscription()
 
     QSignalSpy valueSpy(monitoredValue.data(), &QOpcUaMonitoredValue::valueChanged);
 
-    result = node->setValue(QVariant((double ) 42));
+    result = node->setValue(QVariant((double)42));
     QVERIFY(result == true);
 
     valueSpy.wait();
     QCOMPARE(valueSpy.count(), 1);
-    QCOMPARE(valueSpy.at(0).at(0).toDouble(), (double) 42);
+    QCOMPARE(valueSpy.at(0).at(0).toDouble(), (double)42);
 }
 
 void Tst_QOpcUaClient::dataChangeSubscriptionInvalidNode()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> noDataNode(opcuaClient->node("ns=0;i=84"));
@@ -497,14 +497,14 @@ void Tst_QOpcUaClient::dataChangeSubscriptionInvalidNode()
 
 void Tst_QOpcUaClient::methodCall()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSKIP("Method calls are not implemented in freeopcua-based testserver");
     QVector<QOpcUa::TypedVariant> args;
     QVector<QVariant> ret;
     for (int i = 0; i < 2; i++)
-        args.push_back(QOpcUa::TypedVariant((double ) 4, QOpcUa::Double));
+        args.push_back(QOpcUa::TypedVariant((double)4, QOpcUa::Double));
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=TestFolder"));
     QVERIFY(node != 0);
@@ -520,7 +520,7 @@ void Tst_QOpcUaClient::methodCall()
 
 void Tst_QOpcUaClient::eventSubscription()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSKIP("Does not reliably work with the testserver");
@@ -542,9 +542,9 @@ void Tst_QOpcUaClient::eventSubscription()
 
     QScopedPointer<QOpcUaNode> triggerVariable(opcuaClient->node("ns=3;s=TriggerVariable"));
     QVERIFY(triggerVariable != 0);
-    bool result = triggerVariable->setValue(QVariant((double) 0));
+    bool result = triggerVariable->setValue(QVariant((double)0));
     QVERIFY(result == true);
-    result = triggerVariable->setValue(QVariant((double) 1));
+    result = triggerVariable->setValue(QVariant((double)1));
     QVERIFY(result == true);
 
     QVERIFY(monitorSpy.wait());
@@ -559,7 +559,7 @@ void Tst_QOpcUaClient::eventSubscription()
 
 void Tst_QOpcUaClient::eventSubscribeInvalidNode()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> noEventNode(opcuaClient->node(readWriteNode));
@@ -571,7 +571,7 @@ void Tst_QOpcUaClient::eventSubscribeInvalidNode()
 
 void Tst_QOpcUaClient::readRange()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSKIP("No ranges supported in freeopcua-based testserver");
@@ -586,7 +586,7 @@ void Tst_QOpcUaClient::readRange()
 
 void Tst_QOpcUaClient::readEui()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSKIP("No engineering unit information supported in freeopcua-based testserver");
@@ -602,7 +602,7 @@ void Tst_QOpcUaClient::readEui()
 
 void Tst_QOpcUaClient::readHistorical()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSKIP("History is not supported in freeopcua-based testserver");
@@ -620,7 +620,7 @@ void Tst_QOpcUaClient::readHistorical()
 
 void Tst_QOpcUaClient::writeHistorical()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSKIP("History is not supported in freeopcua-based testserver");
@@ -638,7 +638,7 @@ void Tst_QOpcUaClient::writeHistorical()
 
 void Tst_QOpcUaClient::malformedNodeString()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> invalidNode(opcuaClient->node("justsomerandomstring"));
@@ -687,7 +687,7 @@ void Tst_QOpcUaClient::multipleClients()
 
 void Tst_QOpcUaClient::nodeClass()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     // Root -> Types -> ReferenceTypes -> References
@@ -723,7 +723,7 @@ void Tst_QOpcUaClient::nodeClass()
 
 void Tst_QOpcUaClient::writeArray()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QVariantList list;
@@ -888,7 +888,7 @@ void Tst_QOpcUaClient::writeArray()
 
 void Tst_QOpcUaClient::readArray()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> booleanArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Boolean"));
@@ -1065,7 +1065,7 @@ void Tst_QOpcUaClient::readArray()
 
 void Tst_QOpcUaClient::writeScalar()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
     bool success;
 
@@ -1174,7 +1174,7 @@ void Tst_QOpcUaClient::writeScalar()
 
 void Tst_QOpcUaClient::readScalar()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Boolean"));
@@ -1322,7 +1322,7 @@ void Tst_QOpcUaClient::readScalar()
 
 void Tst_QOpcUaClient::stringCharset()
 {
-    QFETCH(QOpcUaClient*, opcuaClient);
+    QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> stringScalarNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.String"));

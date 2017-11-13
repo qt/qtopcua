@@ -63,7 +63,7 @@ public:
 
     QString backend() const override;
 
-    UA_Client* nativeClient() const;
+    UA_Client *nativeClient() const;
     bool isSecureConnectionSupported() const override { return false; }
 private slots:
 
