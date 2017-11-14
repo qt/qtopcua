@@ -42,8 +42,6 @@
 #include <QtOpcUa/qopcuamonitoredvalue.h>
 #include <private/qopcuasubscriptionimpl_p.h>
 
-#include <QtCore/qmutex.h>
-
 QT_BEGIN_NAMESPACE
 
 class QOpen62541Client;
@@ -73,7 +71,6 @@ private:
     UA_UInt32 m_subscriptionId;
     QMap<UA_UInt32, QOpcUaMonitoredValue *> m_dataChangeHandles;
     QMap<UA_UInt32, QOpcUaMonitoredEvent *> m_eventHandles;
-    QMutex m_dataChangeHandlesLock;
 };
 
 QT_END_NAMESPACE
