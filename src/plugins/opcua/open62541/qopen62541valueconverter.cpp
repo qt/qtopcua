@@ -143,6 +143,8 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
         return arrayFromQVariant<UA_NodeId, QString>(value, dt);
     case QOpcUa::Guid:
         return arrayFromQVariant<UA_Guid, QUuid>(value, dt);
+    case QOpcUa::XmlElement:
+        return arrayFromQVariant<UA_XmlElement, QString>(value, dt);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion to Open62541 for typeIndex" << type << " not implemented";
     }
@@ -187,6 +189,8 @@ QVariant toQVariant(const UA_Variant &value)
         return arrayToQVariant<QDateTime, UA_DateTime>(value, QMetaType::QDateTime);
     case UA_TYPES_GUID:
         return arrayToQVariant<QUuid, UA_Guid>(value, QMetaType::QUuid);
+    case UA_TYPES_XMLELEMENT:
+        return arrayToQVariant<QString, UA_XmlElement>(value, QMetaType::QString);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
         return QVariant();

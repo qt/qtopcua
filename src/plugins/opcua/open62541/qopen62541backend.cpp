@@ -182,6 +182,8 @@ QOpcUa::Types Open62541AsyncBackend::readNodeValueType(UA_NodeId id)
         return QOpcUa::Types::DateTime;
     case UA_TYPES_GUID:
         return QOpcUa::Types::Guid;
+    case UA_TYPES_XMLELEMENT:
+        return QOpcUa::Types::XmlElement;
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Type resolution failed for typeIndex:" << value.type->typeIndex;
     }

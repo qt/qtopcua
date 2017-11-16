@@ -109,6 +109,10 @@ public:
 };
 
 const QString readWriteNode = QStringLiteral("ns=3;s=TestNode.ReadWrite");
+const QVector<QString> xmlElements = {
+    QStringLiteral("<?xml version=\"1\" encoding=\"UTF-8\"?>"),
+    QStringLiteral("<?xml version=\"2\" encoding=\"UTF-8\"?>"),
+    QStringLiteral("<?xml version=\"3\" encoding=\"UTF-8\"?>")};
 const int numberOfOperations = 1000;
 
 #define defineDataMethod(name) void name()\
@@ -882,8 +886,17 @@ void Tst_QOpcUaClient::writeArray()
     success = node->setValue(list, QOpcUa::NodeId);
     QVERIFY(success == true);
 
-    QSKIP("XmlElement not available with freeopcua-based test server");
-    // TODO add Static.Arrays.XmlElement test
+    if (opcuaClient->backend() == QLatin1String("freeopcua"))
+        QSKIP("XmlElement support is not yet implemented in the freeopcua library");
+
+    list.clear();
+    list.append(xmlElements[0]);
+    list.append(xmlElements[1]);
+    list.append(xmlElements[2]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XmlElement"));
+    QVERIFY(node != 0);
+    success = node->setValue(list, QOpcUa::XmlElement);
+    QVERIFY(success == true);
 }
 
 void Tst_QOpcUaClient::readArray()
@@ -1059,8 +1072,18 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(nodeIdArray.toList()[1].toString(), QStringLiteral("ns=0;i=1"));
     QCOMPARE(nodeIdArray.toList()[2].toString(), QStringLiteral("ns=0;i=2"));
 
-    QSKIP("XmlElement not available with freeopcua-based test server");
-    // TODO add Static.Arrays.XmlElement test
+    if (opcuaClient->backend() == QLatin1String("freeopcua"))
+        QSKIP("XmlElement support is not yet implemented in the freeopcua backend");
+
+    QScopedPointer<QOpcUaNode> xmlElementArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XmlElement"));
+    QVERIFY(nodeIdArrayNode != 0);
+    QVariant xmlElementArray = xmlElementArrayNode->value();
+    QVERIFY(xmlElementArray.type() == QVariant::List);
+    QVERIFY(xmlElementArray.toList().length() == 3);
+    QCOMPARE(xmlElementArray.toList()[0].type(), QVariant::String);
+    QCOMPARE(xmlElementArray.toList()[0].toString(), xmlElements[0]);
+    QCOMPARE(xmlElementArray.toList()[1].toString(), xmlElements[1]);
+    QCOMPARE(xmlElementArray.toList()[2].toString(), xmlElements[2]);
 }
 
 void Tst_QOpcUaClient::writeScalar()
@@ -1161,14 +1184,12 @@ void Tst_QOpcUaClient::writeScalar()
     success = nodeIdNode->setValue("ns=42;s=Test", QOpcUa::NodeId);
     QVERIFY(success == true);
 
-    if (opcuaClient->backend() == QLatin1String("freeopcua")) {
+    if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("XmlElement support is not yet implemented in the freeopcua backend");
-    }
 
-    QSKIP("XmlElement not available with freeopcua-based test server");
     QScopedPointer<QOpcUaNode> xmlElementNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XmlElement"));
     QVERIFY(xmlElementNode != 0);
-    success = xmlElementNode->setValue("<?xml version=\"42\" encoding=\"UTF-8\"?>", QOpcUa::XmlElement);
+    success = xmlElementNode->setValue(xmlElements[0], QOpcUa::XmlElement);
     QVERIFY(success == true);
 }
 
@@ -1316,8 +1337,16 @@ void Tst_QOpcUaClient::readScalar()
     QCOMPARE(nodeIdScalar.type(), QVariant::String);
     QCOMPARE(nodeIdScalar.toString(), QStringLiteral("ns=42;s=Test"));
 
-    QSKIP("XmlElement not available with freeopcua-based test server");
-    // TODO add Static.Scalar.XmlElement test
+    if (opcuaClient->backend() == QLatin1String("freeopcua"))
+        QSKIP("XmlElement support is not yet implemented in the freeopcua backend");
+
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XmlElement"));
+    QVERIFY(node != 0);
+    QCOMPARE(node->type(), QOpcUa::Types::XmlElement);
+    QVariant xmlElementScalar = node->value();
+    QVERIFY(xmlElementScalar.isValid());
+    QCOMPARE(xmlElementScalar.type(), QVariant::String);
+    QCOMPARE(xmlElementScalar.toString(), xmlElements[0]);
 }
 
 void Tst_QOpcUaClient::stringCharset()
