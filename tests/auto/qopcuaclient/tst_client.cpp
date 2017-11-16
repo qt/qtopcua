@@ -242,7 +242,7 @@ void Tst_QOpcUaClient::initTestCase()
                 ;
         if (!QFile::exists(testServerPath)) {
             qDebug() << "Server Path:" << testServerPath;
-            QSKIP("all auto tests rely on a freeopcua based test-server");
+            QSKIP("all auto tests rely on an open62541-based test-server");
         }
 
         m_serverProcess.start(testServerPath);
@@ -278,9 +278,11 @@ void Tst_QOpcUaClient::connectToInvalid()
 void Tst_QOpcUaClient::secureConnect()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
-    QSKIP("Secure connections are not supported by freeopcua-based testserver");
+    QSKIP("Secure connections are not supported by open62541-based testserver");
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("Secure connections are not supported with the freeopcua backend");
+    if (opcuaClient->backend() == QLatin1String("open62541"))
+        QSKIP("Secure connections are not supported with the open62541 backend");
 
     QVERIFY(opcuaClient != 0);
 
@@ -298,9 +300,11 @@ void Tst_QOpcUaClient::secureConnectToInvalid()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
 
-    QSKIP("Secure connections are not supported by freeopcua-based testserver");
+    QSKIP("Secure connections are not supported by open62541-based testserver");
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("Secure connections are not supported with the freeopcua backend");
+    if (opcuaClient->backend() == QLatin1String("open62541"))
+        QSKIP("Secure connections are not supported with the open62541 backend");
 
     opcuaClient->secureConnectToEndpoint(QUrl("opc.tcp:127.0.0.1:1234"));
     QVERIFY(opcuaClient->state() == QOpcUaClient::Connecting);
@@ -504,7 +508,7 @@ void Tst_QOpcUaClient::methodCall()
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
-    QSKIP("Method calls are not implemented in freeopcua-based testserver");
+    QSKIP("Method calls are not implemented in open62541-based testserver");
     QVector<QOpcUa::TypedVariant> args;
     QVector<QVariant> ret;
     for (int i = 0; i < 2; i++)
@@ -527,9 +531,12 @@ void Tst_QOpcUaClient::eventSubscription()
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
-    QSKIP("Does not reliably work with the testserver");
+    QSKIP("Events are not implemented in the open62541-based testserver");
     if (opcuaClient->backend() == QLatin1String("freeopcua")) {
         QSKIP("Event subscriptions do not yet work with the freeopcua backend");
+    }
+    if (opcuaClient->backend() == QLatin1String("open62541")) {
+        QSKIP("Event subscriptions do not yet work with the open62541 backend");
     }
 
     QScopedPointer<QOpcUaNode> triggerNode(opcuaClient->node("ns=3;s=TriggerNode"));
@@ -578,9 +585,12 @@ void Tst_QOpcUaClient::readRange()
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
-    QSKIP("No ranges supported in freeopcua-based testserver");
+    QSKIP("No ranges supported in open62541-based testserver");
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("Ranges are not yet implemented in the freeopcua backend");
+    if (opcuaClient->backend() == QLatin1String("open62541"))
+        QSKIP("Ranges are not yet implemented in the open62541 backend");
+
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=ACControl.CurrentTemp.EURange"));
     QVERIFY(node != 0);
@@ -593,9 +603,11 @@ void Tst_QOpcUaClient::readEui()
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
-    QSKIP("No engineering unit information supported in freeopcua-based testserver");
+    QSKIP("No engineering unit information supported in open62541-based testserver");
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("Engineering unit information are not yet implemented in the freeopcua backend");
+    if (opcuaClient->backend() == QLatin1String("open62541"))
+        QSKIP("Engineering unit information are not yet implemented in the open62541 backend");
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=ACControl.CurrentTemp.EngineeringUnits"));
     QVERIFY(node != 0);
@@ -609,9 +621,11 @@ void Tst_QOpcUaClient::readHistorical()
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
-    QSKIP("History is not supported in freeopcua-based testserver");
+    QSKIP("History is not supported in open62541-based testserver");
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("History not yet implemented in the freeopcua backend");
+    if (opcuaClient->backend() == QLatin1String("open62541"))
+        QSKIP("History not yet implemented in the open62541 backend");
 
     // TODO test with backend/server that supports this
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=ACControl.CurrentTemp"));
@@ -627,9 +641,11 @@ void Tst_QOpcUaClient::writeHistorical()
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
-    QSKIP("History is not supported in freeopcua-based testserver");
+    QSKIP("History is not supported in open62541-based testserver");
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("History not yet implemented in the freeopcua backend");
+    if (opcuaClient->backend() == QLatin1String("open62541"))
+        QSKIP("History not yet implemented in the open62541 backend");
 
     // TODO test with backend/server that supports this
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=ACControl.CurrentTemp"));
