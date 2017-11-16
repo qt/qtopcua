@@ -105,5 +105,33 @@ QT_BEGIN_NAMESPACE
     The name string of the QQualifiedName.
 */
 
+/*!
+  \class QOpcUa::QLocalizedText
+
+  This is the QtOpcUa representation for the OPC UA LocalizedText type defined in OPC-UA part 3, 8.5.
+  A LocalizedText value contains a text string with associated locale information in a second string (e. g. "en" or "en-US").
+  The format of the locale information string is <language>[-<country/region>]. Language is usually given as ISO 639 two letter code,
+  country/region as ISO 3166 two letter code. Custom codes are also allowed (see OPC-UA part 3, 8.4).
+  It can be used to provide multiple text strings in different languages for a value using an array of LocalizedText elements.
+*/
+
+/*!
+    \fn QOpcUa::QLocalizedText::QLocalizedText(const QString &p_locale, const QString &p_text)
+
+    Constructs an instance of QLocalizedText with the locale given in \a p_locale and the text given in \a p_text.
+*/
+
+/*!
+    \variable QOpcUa::QLocalizedText::text
+
+    The text string of the QLocalizedText.
+*/
+
+/*!
+    \variable QOpcUa::QLocalizedText::locale
+
+    The locale of the QLocalizedText.
+*/
+
 
 QT_END_NAMESPACE

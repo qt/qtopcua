@@ -308,9 +308,11 @@ template<>
 QVariant scalarToQVariant<QString, UA_LocalizedText>(UA_LocalizedText *data, QMetaType::Type type)
 {
     Q_UNUSED(type)
-    UA_LocalizedText *uaLt = static_cast<UA_LocalizedText *>(data);
-    return QVariant(QString::fromUtf8(reinterpret_cast<char *>(uaLt->text.data),
-                                      uaLt->text.length));
+
+    QOpcUa::QLocalizedText lt;
+    lt.locale = scalarToQVariant<QString, UA_String>(&(data->locale), QMetaType::Type::QString).toString();
+    lt.text = scalarToQVariant<QString, UA_String>(&(data->text), QMetaType::Type::QString).toString();
+    return QVariant::fromValue(lt);
 }
 
 template<>
@@ -384,11 +386,9 @@ void scalarFromQVariant<UA_String, QString>(const QVariant &var, UA_String *ptr)
 template<>
 void scalarFromQVariant<UA_LocalizedText, QString>(const QVariant &var, UA_LocalizedText *ptr)
 {
-    UA_LocalizedText tmpValue;
-    UA_String_init(&tmpValue.locale);
-    tmpValue.text = UA_String_fromChars(var.toString().toUtf8().constData());
-    UA_LocalizedText_copy(&tmpValue, ptr);
-    UA_LocalizedText_deleteMembers(&tmpValue);
+    QOpcUa::QLocalizedText lt = var.value<QOpcUa::QLocalizedText>();
+    scalarFromQVariant<UA_String, QString>(lt.locale, &(ptr->locale));
+    scalarFromQVariant<UA_String, QString>(lt.text, &(ptr->text));
 }
 
 template<>

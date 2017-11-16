@@ -104,7 +104,7 @@ QVariant toQVariant(const OpcUa::Variant &variant)
         return arrayToQVariant<QByteArray, OpcUa::ByteString>(variant, QMetaType::QByteArray);
 
     case OpcUa::VariantType::LOCALIZED_TEXT:
-        return arrayToQVariant<QString, OpcUa::LocalizedText>(variant, QMetaType::QString);
+        return arrayToQVariant<QOpcUa::QLocalizedText, OpcUa::LocalizedText>(variant);
 
     case OpcUa::VariantType::NODE_Id:
         return arrayToQVariant<QString, OpcUa::NodeId>(variant, QMetaType::QString);
@@ -276,7 +276,8 @@ OpcUa::ByteString scalarFromQVariant(const QVariant &var)
 template<>
 OpcUa::LocalizedText scalarFromQVariant(const QVariant &var)
 {
-    return OpcUa::LocalizedText(var.toString().toStdString(), std::string("en"));
+    const QOpcUa::QLocalizedText lt = var.value<QOpcUa::QLocalizedText>();
+    return OpcUa::LocalizedText(lt.text.toStdString(), lt.locale.toStdString());
 }
 
 template<>
@@ -362,9 +363,9 @@ QByteArray scalarUaToQt<QByteArray, OpcUa::ByteString>(const OpcUa::ByteString &
 }
 
 template<>
-QString scalarUaToQt<QString, OpcUa::LocalizedText>(const OpcUa::LocalizedText &data)
+QOpcUa::QLocalizedText scalarUaToQt<QOpcUa::QLocalizedText, OpcUa::LocalizedText>(const OpcUa::LocalizedText &data)
 {
-    return QString::fromStdString(data.Text);
+    return QOpcUa::QLocalizedText(QString::fromStdString(data.Locale), QString::fromStdString(data.Text));
 }
 
 template<>

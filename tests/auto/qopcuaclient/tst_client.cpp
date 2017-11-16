@@ -113,6 +113,10 @@ const QVector<QString> xmlElements = {
     QStringLiteral("<?xml version=\"1\" encoding=\"UTF-8\"?>"),
     QStringLiteral("<?xml version=\"2\" encoding=\"UTF-8\"?>"),
     QStringLiteral("<?xml version=\"3\" encoding=\"UTF-8\"?>")};
+const QVector<QOpcUa::QLocalizedText> localizedTexts = {
+    QOpcUa::QLocalizedText("en", "English"),
+    QOpcUa::QLocalizedText("de", "German"),
+    QOpcUa::QLocalizedText("fr", "French")};
 const int numberOfOperations = 1000;
 
 #define defineDataMethod(name) void name()\
@@ -865,9 +869,9 @@ void Tst_QOpcUaClient::writeArray()
     QVERIFY(success == true);
 
     list.clear();
-    list.append("Localized Text 1");
-    list.append("Localized Text 2");
-    list.append("Localized Text 3");
+    list.append(QVariant::fromValue(localizedTexts[0]));
+    list.append(QVariant::fromValue(localizedTexts[1]));
+    list.append(QVariant::fromValue(localizedTexts[2]));
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.LocalizedText"));
     QVERIFY(node != 0);
     success = node->setValue(list, QOpcUa::LocalizedText);
@@ -1001,10 +1005,9 @@ void Tst_QOpcUaClient::readArray()
     QVariant ltArray = ltArrayNode->value();
     QVERIFY(ltArray.type() == QVariant::List);
     QVERIFY(ltArray.toList().length() == 3);
-    QCOMPARE(ltArray.toList()[0].type(), QVariant::String);
-    QCOMPARE(ltArray.toList()[0].toString(), QStringLiteral("Localized Text 1"));
-    QCOMPARE(ltArray.toList()[1].toString(), QStringLiteral("Localized Text 2"));
-    QCOMPARE(ltArray.toList()[2].toString(), QStringLiteral("Localized Text 3"));
+    QVERIFY(ltArray.toList()[0].value<QOpcUa::QLocalizedText>() == localizedTexts[0]);
+    QVERIFY(ltArray.toList()[1].value<QOpcUa::QLocalizedText>() == localizedTexts[1]);
+    QVERIFY(ltArray.toList()[2].value<QOpcUa::QLocalizedText>() == localizedTexts[2]);
 
     QScopedPointer<QOpcUaNode> uint16ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt16"));
     QVERIFY(uint16ArrayNode != 0);
@@ -1193,7 +1196,7 @@ void Tst_QOpcUaClient::writeScalar()
 
     QScopedPointer<QOpcUaNode> ltNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.LocalizedText"));
     QVERIFY(ltNode != 0);
-    success = ltNode->setValue(QStringLiteral("QOpcUaClient Localized Text"), QOpcUa::LocalizedText);
+    success = ltNode->setValue(QVariant::fromValue(localizedTexts[0]), QOpcUa::LocalizedText);
     QVERIFY(success == true);
 
 
@@ -1298,8 +1301,7 @@ void Tst_QOpcUaClient::readScalar()
     QCOMPARE(node->type(), QOpcUa::Types::LocalizedText);
     QVariant ltScalar = node->value();
     QVERIFY(ltScalar.isValid());
-    QCOMPARE(ltScalar.type(), QVariant::String);
-    QCOMPARE(ltScalar.toString(), QStringLiteral("QOpcUaClient Localized Text"));
+    QVERIFY(ltScalar.value<QOpcUa::QLocalizedText>() == localizedTexts[0]);
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt16"));
     QVERIFY(node != 0);
@@ -1412,7 +1414,7 @@ void Tst_QOpcUaClient::stringCharset()
 
     bool success = stringScalarNode->setValue(testString, QOpcUa::String);
     QVERIFY(success == true);
-    success = localizedScalarNode->setValue(testString, QOpcUa::LocalizedText);
+    success = localizedScalarNode->setValue(QVariant::fromValue(localizedTexts[0]), QOpcUa::LocalizedText);
     QVERIFY(success == true);
 
     QVariantList l;
@@ -1421,13 +1423,18 @@ void Tst_QOpcUaClient::stringCharset()
 
     success = stringArrayNode->setValue(l, QOpcUa::String);
     QVERIFY(success == true);
+
+    l.clear();
+    l.append(QVariant::fromValue(localizedTexts[0]));
+    l.append(QVariant::fromValue(localizedTexts[1]));
+
     success = localizedArrayNode->setValue(l, QOpcUa::LocalizedText);
     QVERIFY(success == true);
 
     QVariant result = stringScalarNode->value();
     QVERIFY(result.toString() == testString);
     result = localizedScalarNode->value();
-    QVERIFY(result.toString() == testString);
+    QVERIFY(result.value<QOpcUa::QLocalizedText>() == localizedTexts[0]);
 
     result = stringArrayNode->value();
     QVERIFY(result.type() == QVariant::List);
@@ -1440,10 +1447,8 @@ void Tst_QOpcUaClient::stringCharset()
     result = localizedArrayNode->value();
     QVERIFY(result.type() == QVariant::List);
     QVERIFY(result.toList().length() == 2);
-    QVERIFY(result.toList()[0].type() == QVariant::String);
-    QVERIFY(result.toList()[0].toString() == testString);
-    QVERIFY(result.toList()[1].type() == QVariant::String);
-    QVERIFY(result.toList()[1].toString() == testString);
+    QVERIFY(result.toList()[0].value<QOpcUa::QLocalizedText>() == localizedTexts[0]);
+    QVERIFY(result.toList()[1].value<QOpcUa::QLocalizedText>() == localizedTexts[1]);
 }
 
 void Tst_QOpcUaClient::cleanupTestCase()

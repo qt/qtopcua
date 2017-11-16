@@ -87,6 +87,20 @@ struct QQualifiedName {
                 name == other.name;
     }
 };
+
+struct QLocalizedText {
+    QString locale;
+    QString text;
+    QLocalizedText(const QString &p_locale, const QString &p_text)
+        : locale(p_locale)
+        , text(p_text)
+    {}
+    QLocalizedText() {}
+    bool operator==(const QLocalizedText &other) const
+    {
+        return locale == other.locale && text == other.text;
+    }
+};
 }
 
 QT_END_NAMESPACE
@@ -94,5 +108,6 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(QOpcUa::Types)
 Q_DECLARE_METATYPE(QOpcUa::TypedVariant)
 Q_DECLARE_METATYPE(QOpcUa::QQualifiedName)
+Q_DECLARE_METATYPE(QOpcUa::QLocalizedText)
 
 #endif // QOPCUATYPE
