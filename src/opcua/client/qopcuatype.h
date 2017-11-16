@@ -65,15 +65,34 @@ enum Types
     XmlElement      = 15,
     NodeId          = 16,
     Guid            = 17,
+    QualifiedName   = 18,
     Undefined       = 0xFFFFFFFF
 };
 
 typedef QPair<QVariant, QOpcUa::Types> TypedVariant;
+
+struct QQualifiedName {
+    quint16 namespaceIndex;
+    QString name;
+    QQualifiedName(quint16 p_namespaceIndex, const QString &p_name)
+        : namespaceIndex(p_namespaceIndex)
+        , name(p_name)
+    {}
+    QQualifiedName()
+        : namespaceIndex(0)
+    {}
+    bool operator==(const QQualifiedName &other) const
+    {
+        return namespaceIndex == other.namespaceIndex &&
+                name == other.name;
+    }
+};
 }
 
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QOpcUa::Types)
 Q_DECLARE_METATYPE(QOpcUa::TypedVariant)
+Q_DECLARE_METATYPE(QOpcUa::QQualifiedName)
 
 #endif // QOPCUATYPE

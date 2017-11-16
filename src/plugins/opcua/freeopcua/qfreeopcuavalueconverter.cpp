@@ -116,6 +116,9 @@ QVariant toQVariant(const OpcUa::Variant &variant)
     case OpcUa::VariantType::GUId:
         return arrayToQVariant<QUuid, OpcUa::Guid>(variant, QMetaType::QUuid);
 
+    case OpcUa::VariantType::QUALIFIED_NAME:
+        return arrayToQVariant<QOpcUa::QQualifiedName, OpcUa::QualifiedName>(variant);
+
     default:
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Variant type is not yet supported: %d", static_cast<int>(variant.Type()));
         return QVariant();
@@ -178,6 +181,9 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
 
     case QOpcUa::Guid:
         return arrayFromQVariant<OpcUa::Guid>(variant);
+
+    case QOpcUa::QualifiedName:
+        return arrayFromQVariant<OpcUa::QualifiedName>(variant);
 
     default:
         return toVariant(variant);
@@ -296,6 +302,16 @@ OpcUa::Guid scalarFromQVariant(const QVariant &var)
     return temp;
 }
 
+template<>
+OpcUa::QualifiedName scalarFromQVariant(const QVariant &var)
+{
+    OpcUa::QualifiedName temp;
+    const QOpcUa::QQualifiedName qn = var.value<QOpcUa::QQualifiedName>();
+    temp.Name = qn.name.toStdString();
+    temp.NamespaceIndex = qn.namespaceIndex;
+    return temp;
+}
+
 template<typename QTTYPE, typename UATYPE>
 QVariant arrayToQVariant(const OpcUa::Variant &var, QMetaType::Type type)
 {
@@ -363,6 +379,12 @@ QUuid scalarUaToQt<QUuid, OpcUa::Guid>(const OpcUa::Guid &data)
     return QUuid(data.Data1, data.Data2, data.Data3, data.Data4[0],
             data.Data4[1], data.Data4[2], data.Data4[3], data.Data4[4],
             data.Data4[5], data.Data4[6], data.Data4[7]);
+}
+
+template<>
+QOpcUa::QQualifiedName scalarUaToQt<QOpcUa::QQualifiedName, OpcUa::QualifiedName>(const OpcUa::QualifiedName &data)
+{
+    return QOpcUa::QQualifiedName(data.NamespaceIndex, QString::fromStdString(data.Name));
 }
 
 }

@@ -145,6 +145,8 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
         return arrayFromQVariant<UA_Guid, QUuid>(value, dt);
     case QOpcUa::XmlElement:
         return arrayFromQVariant<UA_XmlElement, QString>(value, dt);
+    case QOpcUa::QualifiedName:
+        return arrayFromQVariant<UA_QualifiedName, QOpcUa::QQualifiedName>(value, dt);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion to Open62541 for typeIndex" << type << " not implemented";
     }
@@ -191,6 +193,8 @@ QVariant toQVariant(const UA_Variant &value)
         return arrayToQVariant<QUuid, UA_Guid>(value, QMetaType::QUuid);
     case UA_TYPES_XMLELEMENT:
         return arrayToQVariant<QString, UA_XmlElement>(value, QMetaType::QString);
+    case UA_TYPES_QUALIFIEDNAME:
+        return arrayToQVariant<QOpcUa::QQualifiedName, UA_QualifiedName>(value);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
         return QVariant();
@@ -265,6 +269,8 @@ const UA_DataType *toDataType(QOpcUa::Types valueType)
         return &UA_TYPES[UA_TYPES_NODEID];
     case QOpcUa::Guid:
         return &UA_TYPES[UA_TYPES_GUID];
+    case QOpcUa::QualifiedName:
+        return &UA_TYPES[UA_TYPES_QUALIFIEDNAME];
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Trying to convert undefined type:" << valueType;
         return nullptr;
@@ -330,6 +336,16 @@ QVariant scalarToQVariant<QUuid, UA_Guid>(UA_Guid *data, QMetaType::Type type)
             data->data4[3], data->data4[4], data->data4[5], data->data4[6], data->data4[7]);
 }
 
+template<>
+QVariant scalarToQVariant<QOpcUa::QQualifiedName, UA_QualifiedName>(UA_QualifiedName *data, QMetaType::Type type)
+{
+    Q_UNUSED(type);
+    QOpcUa::QQualifiedName temp;
+    temp.namespaceIndex = data->namespaceIndex;
+    temp.name = scalarToQVariant<QString, UA_String>(&(data->name), QMetaType::Type::QString).toString();
+    return QVariant::fromValue(temp);
+}
+
 template<typename TARGETTYPE, typename UATYPE>
 QVariant arrayToQVariant(const UA_Variant &var, QMetaType::Type type)
 {
@@ -392,6 +408,14 @@ void scalarFromQVariant<UA_NodeId, QString>(const QVariant &var, UA_NodeId *ptr)
     UA_NodeId tmpValue = Open62541Utils::nodeIdFromQString(var.toString());
     UA_NodeId_copy(&tmpValue, ptr);
     UA_NodeId_deleteMembers(&tmpValue);
+}
+
+template<>
+void scalarFromQVariant<UA_QualifiedName, QOpcUa::QQualifiedName>(const QVariant &var, UA_QualifiedName *ptr)
+{
+    QOpcUa::QQualifiedName temp = var.value<QOpcUa::QQualifiedName>();
+    ptr->namespaceIndex = temp.namespaceIndex;
+    scalarFromQVariant<UA_String, QString>(temp.name, &(ptr->name));
 }
 
 template<>

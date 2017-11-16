@@ -69,6 +69,7 @@ QT_BEGIN_NAMESPACE
     \value XmlElement \warning Currently not supported by the FreeOPCUA backend
     \value NodeId \warning Currently not supported by the FreeOPCUA backend
     \value Guid
+    \value QualifiedName
     \value Undefined
 */
 
@@ -78,5 +79,31 @@ QT_BEGIN_NAMESPACE
     This is QPair<QVariant, QOpcUa::Types>.
 */
 
-QT_END_NAMESPACE
+/*!
+  \class QOpcUa::QQualifiedName
 
+  This is the QtOpcUa representation for the OPC UA QualifiedName type defined in OPC-UA part 3, 8.3.
+  A QualifiedName is a name qualified by a namespace index. The namespace index corresponds to an entry in the server's namespace array.
+  QualifiedName is mainly used to represent the BrowseName attribute of a node.
+*/
+
+/*!
+    \fn QOpcUa::QQualifiedName::QQualifiedName(quint16 idx, QString text)
+
+    Constructs an instance of QQualifiedName with the namespace index given in \a idx and the name given in \a text.
+*/
+
+/*!
+    \variable QOpcUa::QQualifiedName::namespaceIndex
+
+    The namespace index of the QQualifiedName.
+*/
+
+/*!
+    \variable QOpcUa::QQualifiedName::name
+
+    The name string of the QQualifiedName.
+*/
+
+
+QT_END_NAMESPACE

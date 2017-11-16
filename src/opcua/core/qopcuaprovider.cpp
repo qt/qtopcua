@@ -105,6 +105,7 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUa::Types>();
     qRegisterMetaType<QOpcUa::TypedVariant>();
     qRegisterMetaType<QOpcUaNode::NodeClass>();
+    qRegisterMetaType<QOpcUa::QQualifiedName>();
 }
 
 QOpcUaProvider::~QOpcUaProvider()

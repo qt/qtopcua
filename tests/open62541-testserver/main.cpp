@@ -94,6 +94,7 @@ int main(int argc, char **argv)
     server.addVariable<UA_NodeId, QString, UA_TYPES_NODEID>(testFolder, "ns=2;s=Demo.Static.Arrays.NodeId", "NodeIdArrayTest", QString());
     server.addVariable<UA_Guid, QUuid, UA_TYPES_GUID>(testFolder, "ns=2;s=Demo.Static.Arrays.Guid", "GuidArrayTest", QUuid());
     server.addVariable<UA_XmlElement, QString, UA_TYPES_XMLELEMENT>(testFolder, "ns=2;s=Demo.Static.Arrays.XmlElement", "XmlElementArrayTest", QString());
+    server.addVariable<UA_QualifiedName, QPair<quint16, QString>, UA_TYPES_QUALIFIEDNAME>(testFolder, "ns=2;s=Demo.Static.Arrays.QualifiedName", "QualifiedNameArrayTest", QPair<quint16, QString>());
 
     server.addVariable<UA_Boolean, bool, UA_TYPES_BOOLEAN>(testFolder, "ns=2;s=Demo.Static.Scalar.Boolean", "BoolScalarTest", true);
     server.addVariable<UA_Byte, uchar, UA_TYPES_BYTE>(testFolder, "ns=2;s=Demo.Static.Scalar.Byte", "ByteScalarTest", 0);
@@ -115,6 +116,7 @@ int main(int argc, char **argv)
     server.addVariable<UA_String, QString, UA_TYPES_STRING>(testStringIdsFolder, "ns=3;s=theStringId", "theStringId", QString());
     server.addVariable<UA_Guid, QUuid, UA_TYPES_GUID>(testFolder, "ns=2;s=Demo.Static.Scalar.Guid", "GuidScalarTest", QUuid());
     server.addVariable<UA_XmlElement, QString, UA_TYPES_XMLELEMENT>(testFolder, "ns=2;s=Demo.Static.Scalar.XmlElement", "XmlElementScalarTest", QString());
+    server.addVariable<UA_QualifiedName, QPair<quint16, QString>, UA_TYPES_QUALIFIEDNAME>(testFolder, "ns=2;s=Demo.Static.Scalar.QualifiedName", "QualifiedNameScalarTest", QPair<quint16, QString>());
 
     UA_NodeId testGuidIdsFolder = server.addFolder("ns=3;s=testGuidIdsFolder", "testGuidIdsFolder");
     server.addVariable<UA_String, QString, UA_TYPES_STRING>(testGuidIdsFolder, "ns=3;g=08081e75-8e5e-319b-954f-f3a7613dc29b", "theGuidId", QString());
