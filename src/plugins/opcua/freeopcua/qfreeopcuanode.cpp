@@ -152,17 +152,4 @@ bool QFreeOpcUaNode::callMethod(const QString &methodNodeId, const QVector<QOpcU
                                      Q_ARG(QVector<QOpcUa::TypedVariant>, args));
 }
 
-// Support for structures in freeopcua seems to be not implemented yet
-QPair<QString, QString> QFreeOpcUaNode::readEui() const
-{
-    // Return empty QVariant
-    return QPair<QString, QString>();
-}
-
-// Support for structures in freeopcua seems to be not implemented yet
-QPair<double, double> QFreeOpcUaNode::readEuRange() const
-{
-    return QPair<double, double>(qQNaN(), qQNaN());
-}
-
 QT_END_NAMESPACE

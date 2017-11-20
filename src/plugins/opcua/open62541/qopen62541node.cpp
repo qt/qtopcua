@@ -157,14 +157,4 @@ bool QOpen62541Node::callMethod(const QString &methodNodeId, const QVector<QOpcU
                                      Q_ARG(QVector<QOpcUa::TypedVariant>, args));
 }
 
-QPair<QString, QString> QOpen62541Node::readEui() const
-{
-    return QPair<QString, QString>();
-}
-
-QPair<double, double> QOpen62541Node::readEuRange() const
-{
-    return QPair<double, double>();
-}
-
 QT_END_NAMESPACE

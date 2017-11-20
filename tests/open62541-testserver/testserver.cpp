@@ -571,6 +571,259 @@ UA_NodeId TestServer::addMethod(const UA_NodeId &folder, const QString &variable
     return resultId;
 }
 
+template <>
+UA_NodeId TestServer::addVariable<UA_ExtensionObject, QOpcUa::QRange, UA_TYPES_EXTENSIONOBJECT>(const UA_NodeId &folder, const QString &variableNode,
+                                                                                                 const QString &description, QOpcUa::QRange value)
+{
+    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
+
+    UA_VariableAttributes attr = UA_VariableAttributes_default;
+
+    QByteArray range;
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QRange>(value, range);
+
+    UA_ExtensionObject obj;
+    UA_ExtensionObject_init(&obj);
+    obj.encoding = UA_EXTENSIONOBJECT_ENCODED_BYTESTRING;
+    obj.content.encoded.body.data = reinterpret_cast<UA_Byte *>(range.data());
+    obj.content.encoded.body.length = range.size();
+    obj.content.encoded.typeId = UA_NODEID_NUMERIC(0, UA_NS0ID_RANGE_ENCODING_DEFAULTBINARY);
+    UA_Variant_setScalarCopy(&attr.value, &obj, &UA_TYPES[UA_TYPES_EXTENSIONOBJECT]);
+    attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", variableNode.toUtf8().constData());
+    attr.dataType = UA_NODEID_NUMERIC(0, UA_NS0ID_RANGE);
+    attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+
+    UA_QualifiedName variableName = UA_QUALIFIEDNAME_ALLOC(variableNodeId.namespaceIndex, variableNode.toUtf8().constData());
+
+    UA_NodeId resultId;
+    UA_StatusCode result = UA_Server_addVariableNode(m_server,
+                                                     variableNodeId,
+                                                     folder,
+                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                     variableName,
+                                                     UA_NODEID_NULL,
+                                                     attr,
+                                                     NULL,
+                                                     &resultId);
+    if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not add Range node:" << result;
+        return UA_NODEID_NULL;
+    }
+    return resultId;
+}
+
+template <>
+UA_NodeId TestServer::addVariable<UA_ExtensionObject, QOpcUa::QEUInformation, UA_TYPES_EXTENSIONOBJECT>(const UA_NodeId &folder, const QString &variableNode,
+                                                                                                        const QString &description, QOpcUa::QEUInformation value)
+{
+    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
+
+    UA_VariableAttributes attr = UA_VariableAttributes_default;
+
+    QByteArray eui;
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QEUInformation>(value, eui);
+
+    UA_ExtensionObject obj;
+    UA_ExtensionObject_init(&obj);
+    obj.encoding = UA_EXTENSIONOBJECT_ENCODED_BYTESTRING;
+    obj.content.encoded.body.data = reinterpret_cast<UA_Byte *>(eui.data());
+    obj.content.encoded.body.length = eui.length();
+    obj.content.encoded.typeId = UA_NODEID_NUMERIC(0, UA_NS0ID_EUINFORMATION_ENCODING_DEFAULTBINARY);
+    UA_Variant_setScalarCopy(&attr.value, &obj, &UA_TYPES[UA_TYPES_EXTENSIONOBJECT]);
+    attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", variableNode.toUtf8().constData());
+    attr.dataType = UA_NODEID_NUMERIC(0, UA_NS0ID_EUINFORMATION);
+    attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+
+    UA_QualifiedName variableName = UA_QUALIFIEDNAME_ALLOC(variableNodeId.namespaceIndex, variableNode.toUtf8().constData());
+
+    UA_NodeId resultId;
+    UA_StatusCode result = UA_Server_addVariableNode(m_server,
+                                                     variableNodeId,
+                                                     folder,
+                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                     variableName,
+                                                     UA_NODEID_NULL,
+                                                     attr,
+                                                     NULL,
+                                                     &resultId);
+    if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not add EURange node:" << result;
+        return UA_NODEID_NULL;
+    }
+    return resultId;
+}
+
+template <>
+UA_NodeId TestServer::addVariable<UA_ExtensionObject, QOpcUa::QComplexNumber, UA_TYPES_EXTENSIONOBJECT>(const UA_NodeId &folder, const QString &variableNode,
+                                                                                                        const QString &description, QOpcUa::QComplexNumber value)
+{
+    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
+
+    UA_VariableAttributes attr = UA_VariableAttributes_default;
+
+    QByteArray complex;
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QComplexNumber>(value, complex);
+
+    UA_ExtensionObject obj;
+    UA_ExtensionObject_init(&obj);
+    obj.encoding = UA_EXTENSIONOBJECT_ENCODED_BYTESTRING;
+    obj.content.encoded.body.data = reinterpret_cast<UA_Byte *>(complex.data());
+    obj.content.encoded.body.length = complex.length();
+    obj.content.encoded.typeId = UA_NODEID_NUMERIC(0, static_cast<quint32>(QOpcUaBinaryDataEncoding::TypeEncodingId::ComplexNumber));
+    UA_Variant_setScalarCopy(&attr.value, &obj, &UA_TYPES[UA_TYPES_EXTENSIONOBJECT]);
+    attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", variableNode.toUtf8().constData());
+    attr.dataType = UA_NODEID_NUMERIC(0, UA_NS0ID_COMPLEXNUMBERTYPE);
+    attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+
+    UA_QualifiedName variableName = UA_QUALIFIEDNAME_ALLOC(variableNodeId.namespaceIndex, variableNode.toUtf8().constData());
+
+    UA_NodeId resultId;
+    UA_StatusCode result = UA_Server_addVariableNode(m_server,
+                                                     variableNodeId,
+                                                     folder,
+                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                     variableName,
+                                                     UA_NODEID_NULL,
+                                                     attr,
+                                                     NULL,
+                                                     &resultId);
+    if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not add EURange node:" << result;
+        exit(0);
+        return UA_NODEID_NULL;
+    }
+    return resultId;
+}
+
+template <>
+UA_NodeId TestServer::addVariable<UA_ExtensionObject, QOpcUa::QDoubleComplexNumber, UA_TYPES_EXTENSIONOBJECT>(const UA_NodeId &folder, const QString &variableNode,
+                                                                                                              const QString &description, QOpcUa::QDoubleComplexNumber value)
+{
+    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
+
+    UA_VariableAttributes attr = UA_VariableAttributes_default;
+
+    QByteArray complex;
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QDoubleComplexNumber>(value, complex);
+
+    UA_ExtensionObject obj;
+    UA_ExtensionObject_init(&obj);
+    obj.encoding = UA_EXTENSIONOBJECT_ENCODED_BYTESTRING;
+    obj.content.encoded.body.data = reinterpret_cast<UA_Byte *>(complex.data());
+    obj.content.encoded.body.length = complex.length();
+    obj.content.encoded.typeId = UA_NODEID_NUMERIC(0, static_cast<quint32>(QOpcUaBinaryDataEncoding::TypeEncodingId::DoubleComplexNumber));
+    UA_Variant_setScalarCopy(&attr.value, &obj, &UA_TYPES[UA_TYPES_EXTENSIONOBJECT]);
+    attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", variableNode.toUtf8().constData());
+    attr.dataType = UA_NODEID_NUMERIC(0, UA_NS0ID_DOUBLECOMPLEXNUMBERTYPE);
+    attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+
+    UA_QualifiedName variableName = UA_QUALIFIEDNAME_ALLOC(variableNodeId.namespaceIndex, variableNode.toUtf8().constData());
+
+    UA_NodeId resultId;
+    UA_StatusCode result = UA_Server_addVariableNode(m_server,
+                                                     variableNodeId,
+                                                     folder,
+                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                     variableName,
+                                                     UA_NODEID_NULL,
+                                                     attr,
+                                                     NULL,
+                                                     &resultId);
+    if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not add EURange node:" << result;
+        return UA_NODEID_NULL;
+    }
+    return resultId;
+}
+
+template <>
+UA_NodeId TestServer::addVariable<UA_ExtensionObject, QOpcUa::QAxisInformation, UA_TYPES_EXTENSIONOBJECT>(const UA_NodeId &folder, const QString &variableNode,
+                                                                                                          const QString &description, QOpcUa::QAxisInformation value)
+{
+    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
+
+    UA_VariableAttributes attr = UA_VariableAttributes_default;
+
+    QByteArray axisInfo;
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QAxisInformation>(value, axisInfo);
+
+    UA_ExtensionObject obj;
+    UA_ExtensionObject_init(&obj);
+    obj.encoding = UA_EXTENSIONOBJECT_ENCODED_BYTESTRING;
+    obj.content.encoded.body.data = reinterpret_cast<UA_Byte *>(axisInfo.data());
+    obj.content.encoded.body.length = axisInfo.length();
+    obj.content.encoded.typeId = UA_NODEID_NUMERIC(0, UA_NS0ID_AXISINFORMATION_ENCODING_DEFAULTBINARY);
+    UA_Variant_setScalarCopy(&attr.value, &obj, &UA_TYPES[UA_TYPES_EXTENSIONOBJECT]);
+    attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", variableNode.toUtf8().constData());
+    attr.dataType = UA_NODEID_NUMERIC(0, UA_NS0ID_AXISINFORMATION);
+    attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+
+    UA_QualifiedName variableName = UA_QUALIFIEDNAME_ALLOC(variableNodeId.namespaceIndex, variableNode.toUtf8().constData());
+
+    UA_NodeId resultId;
+    UA_StatusCode result = UA_Server_addVariableNode(m_server,
+                                                     variableNodeId,
+                                                     folder,
+                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                     variableName,
+                                                     UA_NODEID_NULL,
+                                                     attr,
+                                                     NULL,
+                                                     &resultId);
+    if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not add EURange node:" << result;
+        return UA_NODEID_NULL;
+    }
+    return resultId;
+}
+
+template <>
+UA_NodeId TestServer::addVariable<UA_ExtensionObject, QOpcUa::QXValue, UA_TYPES_EXTENSIONOBJECT>(const UA_NodeId &folder, const QString &variableNode,
+                                                                                             const QString &description, QOpcUa::QXValue value)
+{
+    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
+
+    UA_VariableAttributes attr = UA_VariableAttributes_default;
+
+    QByteArray xv;
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QXValue>(value, xv);
+
+    UA_ExtensionObject obj;
+    UA_ExtensionObject_init(&obj);
+    obj.encoding = UA_EXTENSIONOBJECT_ENCODED_BYTESTRING;
+    obj.content.encoded.body.data = reinterpret_cast<UA_Byte *>(xv.data());
+    obj.content.encoded.body.length = xv.length();
+    obj.content.encoded.typeId = UA_NODEID_NUMERIC(0, static_cast<quint32>(QOpcUaBinaryDataEncoding::TypeEncodingId::XV));
+    UA_Variant_setScalarCopy(&attr.value, &obj, &UA_TYPES[UA_TYPES_EXTENSIONOBJECT]);
+    attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", variableNode.toUtf8().constData());
+    attr.dataType = UA_NODEID_NUMERIC(0, UA_NS0ID_XVTYPE);
+    attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+
+    UA_QualifiedName variableName = UA_QUALIFIEDNAME_ALLOC(variableNodeId.namespaceIndex, variableNode.toUtf8().constData());
+
+    UA_NodeId resultId;
+    UA_StatusCode result = UA_Server_addVariableNode(m_server,
+                                                     variableNodeId,
+                                                     folder,
+                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                     variableName,
+                                                     UA_NODEID_NULL,
+                                                     attr,
+                                                     NULL,
+                                                     &resultId);
+    if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not add EURange node:" << result;
+        return UA_NODEID_NULL;
+    }
+    return resultId;
+}
+
 template UA_NodeId TestServer::addVariable<UA_Double, double, UA_TYPES_DOUBLE>(const UA_NodeId &, const QString &, const QString &, double);
 template UA_NodeId TestServer::addVariable<UA_Boolean, bool, UA_TYPES_BOOLEAN>(const UA_NodeId &, const QString &, const QString &, bool);
 template UA_NodeId TestServer::addVariable<UA_Byte, uchar, UA_TYPES_BYTE>(const UA_NodeId &, const QString &, const QString &, uchar);

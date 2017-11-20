@@ -63,8 +63,6 @@ public:
     bool writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange) override;
     bool writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType) override;
     bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args) override;
-    QPair<QString, QString> readEui() const override;
-    QPair<double, double> readEuRange() const override;
 
     OpcUa::Node m_node;
     QPointer<QFreeOpcUaClientImpl> m_client;

@@ -115,6 +115,39 @@ const QVector<QOpcUa::QLocalizedText> localizedTexts = {
     QOpcUa::QLocalizedText("en", "English"),
     QOpcUa::QLocalizedText("de", "German"),
     QOpcUa::QLocalizedText("fr", "French")};
+const QVector<QOpcUa::QRange> testRanges = {
+    QOpcUa::QRange(-100, 100),
+    QOpcUa::QRange(0, 100),
+    QOpcUa::QRange(-200, -100)
+};
+const QVector<QOpcUa::QEUInformation> testEUInfos = {
+    QOpcUa::QEUInformation(QLatin1String("http://www.opcfoundation.org/UA/units/un/cefact"),
+        4408652, QOpcUa::QLocalizedText(QString(), QStringLiteral("°C")), QOpcUa::QLocalizedText(QString(), QLatin1String("degree Celsius"))),
+    QOpcUa::QEUInformation(QLatin1String("http://www.opcfoundation.org/UA/units/un/cefact"),
+        4604232, QOpcUa::QLocalizedText(QString(), QStringLiteral("°F")), QOpcUa::QLocalizedText(QString(), QLatin1String("degree Fahrenheit"))),
+    QOpcUa::QEUInformation(QLatin1String("http://www.opcfoundation.org/UA/units/un/cefact"),
+        5067858, QOpcUa::QLocalizedText(QString(), QLatin1String("m")), QOpcUa::QLocalizedText(QString(), QLatin1String("metre"))),
+};
+const QVector<QOpcUa::QComplexNumber> testComplex = {
+    QOpcUa::QComplexNumber(1,2),
+    QOpcUa::QComplexNumber(-1,2),
+    QOpcUa::QComplexNumber(1,-2)
+};
+const QVector<QOpcUa::QDoubleComplexNumber> testDoubleComplex = {
+    QOpcUa::QDoubleComplexNumber(1,2),
+    QOpcUa::QDoubleComplexNumber(-1,2),
+    QOpcUa::QDoubleComplexNumber(1,-2)
+};
+const QVector<QOpcUa::QAxisInformation> testAxisInfo = {
+    QOpcUa::QAxisInformation(testEUInfos[0], testRanges[0], localizedTexts[0], QOpcUa::AxisScale::Linear, QVector<double>({1, 2, 3})),
+    QOpcUa::QAxisInformation(testEUInfos[1], testRanges[1], localizedTexts[1], QOpcUa::AxisScale::Ln, QVector<double>({4, 5, 6})),
+    QOpcUa::QAxisInformation(testEUInfos[2], testRanges[2], localizedTexts[2], QOpcUa::AxisScale::Log, QVector<double>({7, 8, 9}))
+};
+const QVector<QOpcUa::QXValue> testXV = {
+    QOpcUa::QXValue(0, 100),
+    QOpcUa::QXValue(-10, 100.5),
+    QOpcUa::QXValue(10, -100.5)
+};
 const int numberOfOperations = 1000;
 
 #define defineDataMethod(name) void name()\
@@ -177,10 +210,6 @@ private slots:
     void methodCall();
     defineDataMethod(methodCallInvalid_data)
     void methodCallInvalid();
-    defineDataMethod(readRange_data)
-    void readRange();
-    defineDataMethod(readEui_data)
-    void readEui();
     defineDataMethod(malformedNodeString_data)
     void malformedNodeString();
 
@@ -792,43 +821,6 @@ void Tst_QOpcUaClient::methodCallInvalid()
     QCOMPARE(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadArgumentsMissing);
 }
 
-void Tst_QOpcUaClient::readRange()
-{
-    QFETCH(QOpcUaClient *, opcuaClient);
-    OpcuaConnector connector(opcuaClient, m_endpoint);
-
-    QSKIP("No ranges supported in open62541-based testserver");
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("Ranges are not yet implemented in the freeopcua backend");
-    if (opcuaClient->backend() == QLatin1String("open62541"))
-        QSKIP("Ranges are not yet implemented in the open62541 backend");
-
-
-    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=ACControl.CurrentTemp.EURange"));
-    QVERIFY(node != 0);
-    QPair<double, double> range = node->readEuRange();
-    QCOMPARE(range.first, 0);
-    QCOMPARE(range.second, 100);
-}
-
-void Tst_QOpcUaClient::readEui()
-{
-    QFETCH(QOpcUaClient *, opcuaClient);
-    OpcuaConnector connector(opcuaClient, m_endpoint);
-
-    QSKIP("No engineering unit information supported in open62541-based testserver");
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("Engineering unit information are not yet implemented in the freeopcua backend");
-    if (opcuaClient->backend() == QLatin1String("open62541"))
-        QSKIP("Engineering unit information are not yet implemented in the open62541 backend");
-
-    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=ACControl.CurrentTemp.EngineeringUnits"));
-    QVERIFY(node != 0);
-
-    QPair<QString, QString> range = node->readEui();
-    QVERIFY(range.first == QString::fromUtf8("°C") && range.second == "Degree fahrenheit");
-}
-
 void Tst_QOpcUaClient::malformedNodeString()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
@@ -1095,6 +1087,58 @@ void Tst_QOpcUaClient::writeArray()
     QVERIFY(node != 0);
     WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::Types::StatusCode);
 
+    if (opcuaClient->backend() != QLatin1String("freeopcua")) {
+        list.clear();
+        list.append(QVariant::fromValue(testRanges[0]));
+        list.append(QVariant::fromValue(testRanges[1]));
+        list.append(QVariant::fromValue(testRanges[2]));
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Range"));
+        QVERIFY(node != 0);
+        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::Range);
+
+        list.clear();
+        list.append(QVariant::fromValue(testEUInfos[0]));
+        list.append(QVariant::fromValue(testEUInfos[1]));
+        list.append(QVariant::fromValue(testEUInfos[2]));
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EUInformation"));
+        QVERIFY(node != 0);
+        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::EUInformation);
+
+        list.clear();
+        list.append(QVariant::fromValue(testComplex[0]));
+        list.append(QVariant::fromValue(testComplex[1]));
+        list.append(QVariant::fromValue(testComplex[2]));
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ComplexNumber"));
+        QVERIFY(node != 0);
+        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::ComplexNumber);
+
+        list.clear();
+        list.append(QVariant::fromValue(testDoubleComplex[0]));
+        list.append(QVariant::fromValue(testDoubleComplex[1]));
+        list.append(QVariant::fromValue(testDoubleComplex[2]));
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DoubleComplexNumber"));
+        QVERIFY(node != 0);
+        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::DoubleComplexNumber);
+
+        list.clear();
+        list.append(QVariant::fromValue(testAxisInfo[0]));
+        list.append(QVariant::fromValue(testAxisInfo[1]));
+        list.append(QVariant::fromValue(testAxisInfo[2]));
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.AxisInformation"));
+        QVERIFY(node != 0);
+        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::AxisInformation);
+
+        list.clear();
+        list.append(QVariant::fromValue(testXV[0]));
+        list.append(QVariant::fromValue(testXV[1]));
+        list.append(QVariant::fromValue(testXV[2]));
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XV"));
+        QVERIFY(node != 0);
+        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::XV);
+    } else {
+        QWARN("ExtensionObject types are not supported by freeopcua");
+    }
+
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("XmlElement support is not yet implemented in the freeopcua library");
 
@@ -1315,6 +1359,70 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(statusCodeArray.toList()[1].value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadUnexpectedError);
     QCOMPARE(statusCodeArray.toList()[2].value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadInternalError);
 
+    if (opcuaClient->backend() != QLatin1String("freeopcua")) {
+        QScopedPointer<QOpcUaNode> rangeArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Range"));
+        QVERIFY(rangeArrayNode != 0);
+        READ_MANDATORY_VARIABLE_NODE(rangeArrayNode);
+        QVariant rangeArray = rangeArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+        QVERIFY(rangeArray.type() == QVariant::List);
+        QVERIFY(rangeArray.toList().length() == 3);
+        QCOMPARE(rangeArray.toList()[0].value<QOpcUa::QRange>(), testRanges[0]);
+        QCOMPARE(rangeArray.toList()[1].value<QOpcUa::QRange>(), testRanges[1]);
+        QCOMPARE(rangeArray.toList()[2].value<QOpcUa::QRange>(), testRanges[2]);
+
+        QScopedPointer<QOpcUaNode> euiArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EUInformation"));
+        QVERIFY(euiArrayNode != 0);
+        READ_MANDATORY_VARIABLE_NODE(euiArrayNode);
+        QVariant euiArray = euiArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+        QVERIFY(euiArray.type() == QVariant::List);
+        QVERIFY(euiArray.toList().length() == 3);
+        QCOMPARE(euiArray.toList()[0].value<QOpcUa::QEUInformation>(), testEUInfos[0]);
+        QCOMPARE(euiArray.toList()[1].value<QOpcUa::QEUInformation>(), testEUInfos[1]);
+        QCOMPARE(euiArray.toList()[2].value<QOpcUa::QEUInformation>(), testEUInfos[2]);
+
+        QScopedPointer<QOpcUaNode> complexArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ComplexNumber"));
+        QVERIFY(complexArrayNode != 0);
+        READ_MANDATORY_VARIABLE_NODE(complexArrayNode);
+        QVariant complexArray = complexArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+        QVERIFY(complexArray.type() == QVariant::List);
+        QVERIFY(complexArray.toList().length() == 3);
+        QCOMPARE(complexArray.toList()[0].value<QOpcUa::QComplexNumber>(), testComplex[0]);
+        QCOMPARE(complexArray.toList()[1].value<QOpcUa::QComplexNumber>(), testComplex[1]);
+        QCOMPARE(complexArray.toList()[2].value<QOpcUa::QComplexNumber>(), testComplex[2]);
+
+        QScopedPointer<QOpcUaNode> doubleComplexArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DoubleComplexNumber"));
+        QVERIFY(doubleComplexArrayNode != 0);
+        READ_MANDATORY_VARIABLE_NODE(doubleComplexArrayNode);
+        QVariant doubleComplexArray = doubleComplexArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+        QVERIFY(doubleComplexArray.type() == QVariant::List);
+        QVERIFY(doubleComplexArray.toList().length() == 3);
+        QCOMPARE(doubleComplexArray.toList()[0].value<QOpcUa::QDoubleComplexNumber>(), testDoubleComplex[0]);
+        QCOMPARE(doubleComplexArray.toList()[1].value<QOpcUa::QDoubleComplexNumber>(), testDoubleComplex[1]);
+        QCOMPARE(doubleComplexArray.toList()[2].value<QOpcUa::QDoubleComplexNumber>(), testDoubleComplex[2]);
+
+        QScopedPointer<QOpcUaNode> axisInfoArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.AxisInformation"));
+        QVERIFY(axisInfoArrayNode != 0);
+        READ_MANDATORY_VARIABLE_NODE(axisInfoArrayNode);
+        QVariant axisInfoArray = axisInfoArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+        QVERIFY(axisInfoArray.type() == QVariant::List);
+        QVERIFY(axisInfoArray.toList().length() == 3);
+        QCOMPARE(axisInfoArray.toList()[0].value<QOpcUa::QAxisInformation>(), testAxisInfo[0]);
+        QCOMPARE(axisInfoArray.toList()[1].value<QOpcUa::QAxisInformation>(), testAxisInfo[1]);
+        QCOMPARE(axisInfoArray.toList()[2].value<QOpcUa::QAxisInformation>(), testAxisInfo[2]);
+
+        QScopedPointer<QOpcUaNode> xVArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XV"));
+        QVERIFY(xVArrayNode != 0);
+        READ_MANDATORY_VARIABLE_NODE(xVArrayNode);
+        QVariant xVArray = xVArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+        QVERIFY(xVArray.type() == QVariant::List);
+        QVERIFY(xVArray.toList().length() == 3);
+        QCOMPARE(xVArray.toList()[0].value<QOpcUa::QXValue>(), testXV[0]);
+        QCOMPARE(xVArray.toList()[1].value<QOpcUa::QXValue>(), testXV[1]);
+        QCOMPARE(xVArray.toList()[2].value<QOpcUa::QXValue>(), testXV[2]);
+    } else {
+        QWARN("ExtensionObject types are not supported by freeopcua");
+    }
+
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("XmlElement support is not yet implemented in the freeopcua backend");
 
@@ -1417,6 +1525,34 @@ void Tst_QOpcUaClient::writeScalar()
     QScopedPointer<QOpcUaNode> statusCodeNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.StatusCode"));
     QVERIFY(statusCodeNode != 0);
     WRITE_VALUE_ATTRIBUTE(statusCodeNode, QOpcUa::UaStatusCode::BadInternalError, QOpcUa::StatusCode);
+
+    if (opcuaClient->backend() != QLatin1String("freeopcua")) {
+        QScopedPointer<QOpcUaNode> rangeNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Range"));
+        QVERIFY(rangeNode != 0);
+        WRITE_VALUE_ATTRIBUTE(rangeNode, QVariant::fromValue(testRanges[0]), QOpcUa::Range);
+
+        QScopedPointer<QOpcUaNode> euiNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EUInformation"));
+        QVERIFY(euiNode != 0);
+        WRITE_VALUE_ATTRIBUTE(euiNode, QVariant::fromValue(testEUInfos[0]), QOpcUa::EUInformation);
+
+        QScopedPointer<QOpcUaNode> complexNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ComplexNumber"));
+        QVERIFY(complexNode != 0);
+        WRITE_VALUE_ATTRIBUTE(complexNode, QVariant::fromValue(testComplex[0]), QOpcUa::ComplexNumber);
+
+        QScopedPointer<QOpcUaNode> doubleComplexNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DoubleComplexNumber"));
+        QVERIFY(doubleComplexNode != 0);
+        WRITE_VALUE_ATTRIBUTE(doubleComplexNode, QVariant::fromValue(testDoubleComplex[0]), QOpcUa::DoubleComplexNumber);
+
+        QScopedPointer<QOpcUaNode> axisInfoNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.AxisInformation"));
+        QVERIFY(axisInfoNode != 0);
+        WRITE_VALUE_ATTRIBUTE(axisInfoNode, QVariant::fromValue(testAxisInfo[0]), QOpcUa::AxisInformation);
+
+        QScopedPointer<QOpcUaNode> xVNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XV"));
+        QVERIFY(xVNode != 0);
+        WRITE_VALUE_ATTRIBUTE(xVNode, QVariant::fromValue(testXV[0]), QOpcUa::XV);
+    } else {
+        QWARN("ExtensionObject types are not supported by freeopcua");
+    }
 
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("XmlElement support is not yet implemented in the freeopcua backend");
@@ -1580,6 +1716,40 @@ void Tst_QOpcUaClient::readScalar()
     QVariant statusCodeScalar = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(statusCodeScalar.isValid());
     QCOMPARE(statusCodeScalar.value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadInternalError);
+
+    if (opcuaClient->backend() != QLatin1String("freeopcua")) {
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Range"));
+        QVERIFY(node != 0);
+        READ_MANDATORY_VARIABLE_NODE(node);
+        QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QRange>() == testRanges[0]);
+
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EUInformation"));
+        QVERIFY(node != 0);
+        READ_MANDATORY_VARIABLE_NODE(node);
+        QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QEUInformation>() == testEUInfos[0]);
+
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ComplexNumber"));
+        QVERIFY(node != 0);
+        READ_MANDATORY_VARIABLE_NODE(node);
+        QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QComplexNumber>() == testComplex[0]);
+
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DoubleComplexNumber"));
+        QVERIFY(node != 0);
+        READ_MANDATORY_VARIABLE_NODE(node);
+        QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QDoubleComplexNumber>() == testDoubleComplex[0]);
+
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.AxisInformation"));
+        QVERIFY(node != 0);
+        READ_MANDATORY_VARIABLE_NODE(node);
+        QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QAxisInformation>() == testAxisInfo[0]);
+
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XV"));
+        QVERIFY(node != 0);
+        READ_MANDATORY_VARIABLE_NODE(node);
+        QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QXValue>() == testXV[0]);
+    } else {
+        QWARN("ExtensionObject types are not supported by freeopcua");
+    }
 
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("XmlElement support is not yet implemented in the freeopcua backend");

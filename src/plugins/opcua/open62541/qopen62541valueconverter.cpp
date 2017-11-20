@@ -149,6 +149,18 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
         return arrayFromQVariant<UA_QualifiedName, QOpcUa::QQualifiedName>(value, dt);
     case QOpcUa::StatusCode:
         return arrayFromQVariant<UA_StatusCode, QOpcUa::UaStatusCode>(value, dt);
+    case QOpcUa::Range:
+        return arrayFromQVariant<UA_ExtensionObject, QOpcUa::QRange>(value, dt);
+    case QOpcUa::EUInformation:
+        return arrayFromQVariant<UA_ExtensionObject, QOpcUa::QEUInformation>(value, dt);
+    case QOpcUa::ComplexNumber:
+        return arrayFromQVariant<UA_ExtensionObject, QOpcUa::QComplexNumber>(value, dt);
+    case QOpcUa::DoubleComplexNumber:
+        return arrayFromQVariant<UA_ExtensionObject, QOpcUa::QDoubleComplexNumber>(value, dt);
+    case QOpcUa::AxisInformation:
+        return arrayFromQVariant<UA_ExtensionObject, QOpcUa::QAxisInformation>(value, dt);
+    case QOpcUa::XV:
+        return arrayFromQVariant<UA_ExtensionObject, QOpcUa::QXValue>(value, dt);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion to Open62541 for typeIndex" << type << " not implemented";
     }
@@ -204,6 +216,8 @@ QVariant toQVariant(const UA_Variant &value)
         return arrayToQVariant<QOpcUa::QQualifiedName, UA_QualifiedName>(value);
     case UA_TYPES_STATUSCODE:
         return arrayToQVariant<QOpcUa::UaStatusCode, UA_StatusCode>(value, QMetaType::UInt);
+    case UA_TYPES_EXTENSIONOBJECT:
+        return arrayToQVariant<QVariant, UA_ExtensionObject>(value);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
         return QVariant();
@@ -253,6 +267,13 @@ const UA_DataType *toDataType(QOpcUa::Types valueType)
         return &UA_TYPES[UA_TYPES_QUALIFIEDNAME];
     case QOpcUa::StatusCode:
         return &UA_TYPES[UA_TYPES_STATUSCODE];
+    case QOpcUa::Range:
+    case QOpcUa::EUInformation:
+    case QOpcUa::ComplexNumber:
+    case QOpcUa::DoubleComplexNumber:
+    case QOpcUa::AxisInformation:
+    case QOpcUa::XV:
+        return &UA_TYPES[UA_TYPES_EXTENSIONOBJECT];
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Trying to convert undefined type:" << valueType;
         return nullptr;
@@ -323,6 +344,52 @@ QVariant scalarToQVariant<QOpcUa::QQualifiedName, UA_QualifiedName>(UA_Qualified
     temp.namespaceIndex = data->namespaceIndex;
     temp.name = scalarToQVariant<QString, UA_String>(&(data->name), QMetaType::Type::QString).toString();
     return QVariant::fromValue(temp);
+}
+
+template <>
+QVariant scalarToQVariant<QVariant, UA_ExtensionObject>(UA_ExtensionObject *data, QMetaType::Type type)
+{
+    Q_UNUSED(type);
+    if (data->content.encoded.typeId.identifierType != UA_NODEIDTYPE_NUMERIC ||
+            data->content.encoded.typeId.namespaceIndex != 0 ||
+            data->encoding != UA_EXTENSIONOBJECT_ENCODED_BYTESTRING) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Unsupported extension object type");
+        return QVariant();
+    }
+
+    const char *buffer = reinterpret_cast<const char *>(data->content.encoded.body.data);
+    size_t length = data->content.encoded.body.length;
+    bool success;
+    QVariant result;
+    QOpcUaBinaryDataEncoding::TypeEncodingId objType = static_cast<QOpcUaBinaryDataEncoding::TypeEncodingId>(data->content.encoded.typeId.identifier.numeric);
+    switch (objType) {
+    case QOpcUaBinaryDataEncoding::TypeEncodingId::EUInformation:
+        result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QEUInformation>(buffer, length, success));
+        break;
+    case QOpcUaBinaryDataEncoding::TypeEncodingId::Range:
+        result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QRange>(buffer, length, success));
+        break;
+    case QOpcUaBinaryDataEncoding::TypeEncodingId::ComplexNumber:
+        result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QComplexNumber>(buffer, length, success));
+        break;
+    case QOpcUaBinaryDataEncoding::TypeEncodingId::DoubleComplexNumber:
+        result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QDoubleComplexNumber>(buffer, length, success));
+        break;
+    case QOpcUaBinaryDataEncoding::TypeEncodingId::AxisInformation:
+        result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QAxisInformation>(buffer, length, success));
+        break;
+    case QOpcUaBinaryDataEncoding::TypeEncodingId::XV:
+        result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QXValue>(buffer, length, success));
+        break;
+    default:
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Unknown extension object type: ns=0;i=%d", data->content.encoded.typeId.identifier.numeric);
+        return QVariant();
+    }
+
+    if (success)
+        return result;
+    else
+        return QVariant();
 }
 
 template<typename TARGETTYPE, typename UATYPE>
@@ -405,6 +472,60 @@ void scalarFromQVariant<UA_Guid, QUuid>(const QVariant &var, UA_Guid *ptr)
     std::memcpy(ptr->data4, uuid.data4, sizeof(uuid.data4));
 }
 
+template<>
+void scalarFromQVariant<UA_ExtensionObject, QOpcUa::QRange>(const QVariant &var, UA_ExtensionObject *ptr)
+{
+    const QOpcUa::QRange range = var.value<QOpcUa::QRange>();
+    QByteArray temp;
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QRange>(range, temp);
+    return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::Range, ptr);
+}
+
+template<>
+void scalarFromQVariant<UA_ExtensionObject, QOpcUa::QEUInformation>(const QVariant &var, UA_ExtensionObject *ptr)
+{
+    const QOpcUa::QEUInformation info = var.value<QOpcUa::QEUInformation>();
+    QByteArray temp;
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QEUInformation>(info, temp);
+    return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::EUInformation, ptr);
+}
+
+template<>
+void scalarFromQVariant<UA_ExtensionObject, QOpcUa::QComplexNumber>(const QVariant &var, UA_ExtensionObject *ptr)
+{
+    const QOpcUa::QComplexNumber num = var.value<QOpcUa::QComplexNumber>();
+    QByteArray temp;
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QComplexNumber>(num, temp);
+    return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::ComplexNumber, ptr);
+}
+
+template<>
+void scalarFromQVariant<UA_ExtensionObject, QOpcUa::QDoubleComplexNumber>(const QVariant &var, UA_ExtensionObject *ptr)
+{
+    const QOpcUa::QDoubleComplexNumber num = var.value<QOpcUa::QDoubleComplexNumber>();
+    QByteArray temp;
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QDoubleComplexNumber>(num, temp);
+    return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::DoubleComplexNumber, ptr);
+}
+
+template<>
+void scalarFromQVariant<UA_ExtensionObject, QOpcUa::QAxisInformation>(const QVariant &var, UA_ExtensionObject *ptr)
+{
+    const QOpcUa::QAxisInformation num = var.value<QOpcUa::QAxisInformation>();
+    QByteArray temp;
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QAxisInformation>(num, temp);
+    return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::AxisInformation, ptr);
+}
+
+template<>
+void scalarFromQVariant<UA_ExtensionObject, QOpcUa::QXValue>(const QVariant &var, UA_ExtensionObject *ptr)
+{
+    const QOpcUa::QXValue num = var.value<QOpcUa::QXValue>();
+    QByteArray temp;
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QXValue>(num, temp);
+    return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::XV, ptr);
+}
+
 template<typename TARGETTYPE, typename QTTYPE>
 UA_Variant arrayFromQVariant(const QVariant &var, const UA_DataType *type)
 {
@@ -429,6 +550,17 @@ UA_Variant arrayFromQVariant(const QVariant &var, const UA_DataType *type)
     scalarFromQVariant<TARGETTYPE, QTTYPE>(var, temp);
     UA_Variant_setScalar(&open62541value, temp, type);
     return open62541value;
+}
+
+void createExtensionObject(QByteArray &data, QOpcUaBinaryDataEncoding::TypeEncodingId id, UA_ExtensionObject *ptr)
+{
+    UA_ExtensionObject obj;
+    UA_ExtensionObject_init(&obj);
+    obj.encoding = UA_EXTENSIONOBJECT_ENCODED_BYTESTRING;
+    obj.content.encoded.body.data = reinterpret_cast<UA_Byte *>(data.data());
+    obj.content.encoded.body.length = data.length();
+    obj.content.encoded.typeId = UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(id));
+    UA_ExtensionObject_copy(&obj, ptr);
 }
 
 }

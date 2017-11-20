@@ -125,8 +125,13 @@ QT_BEGIN_NAMESPACE
     \value XmlElement \warning Currently not supported by the FreeOPCUA backend
     \value NodeId \warning Currently not supported by the FreeOPCUA backend
     \value Guid
-    \value QualifiedName
+    \value QualifiedName A name qualified by an OPC UA namespace index.
     \value StatusCode
+    \value ExtensionObject A data structure which contains a serialized object.
+    \value Range A range composed from the two double values low and high.
+    \value EUInformation The unit of measurement for an analog value.
+    \value AxisInformation Information about an axis.
+    \value XV A float value with a double precision position on an axis.
     \value Undefined
 */
 
@@ -553,5 +558,167 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 
     return QOpcUa::ErrorCategory::UnspecifiedError;
 }
+
+/*!
+    \class QOpcUa::QRange
+
+    This is the QtOpcUa representation for the OPC UA Range type defined in OPC-UA part 8, 5.6.2.
+    It consists of two double values which mark minimum and maximum of the range.
+    Ranges are mostly used to store information about acceptable values for a node.
+*/
+
+/*!
+    \variable QOpcUa::QRange::low
+    The minimum value of the range.
+*/
+
+/*!
+    \variable QOpcUa::QRange::high
+    The maximum value of the range.
+*/
+
+/*!
+    \class QOpcUa::QEUInformation
+
+    This is the QtOpcUa representation for the OPC UA EUInformation type defined in OPC-UA part 8, 5.6.3.
+    EUInformation values contain information about units and are mostly used as property of a node with a numeric value attribute.
+    The information can e. g. be used to add text and tooltips to GUI elements.
+*/
+
+/*!
+    \variable QOpcUa::QEUInformation::namespaceUri
+
+    The namespace URI of the unit.
+*/
+
+/*!
+    \variable QOpcUa::QEUInformation::unitId
+
+    A machine readable identifier for the unit.
+*/
+
+/*!
+    \variable QOpcUa::QEUInformation::displayName
+
+    The displayName of the unit, e. g. °C
+*/
+
+/*!
+    \variable QOpcUa::QEUInformation::description
+
+    The description of the unit, e. g. "degree Celsius".
+*/
+
+/*!
+    \class QOpcUa::QComplexNumber
+
+    The ComplexNumberType defined in OPC-UA part 8, 5.6.4.
+    It stores a complex number with float precision.
+*/
+
+/*!
+    \variable QOpcUa::QComplexNumber::real
+
+    The real part of the value.
+*/
+
+/*!
+    \variable QOpcUa::QComplexNumber::imaginary
+
+    The imaginary part of the value.
+*/
+
+/*!
+    \class QOpcUa::QDoubleComplexNumber
+
+    The DoubleComplexNumberType defined in OPC-UA part 8, 5.6.5.
+    It stores a complex number with double precision.
+*/
+
+/*!
+    \variable QOpcUa::QDoubleComplexNumber::real
+
+    The real part of the value.
+*/
+
+/*!
+    \variable QOpcUa::QDoubleComplexNumber::imaginary
+
+    The imaginary part of the value.
+*/
+
+
+/*!
+    \enum QOpcUa::AxisScale
+
+    The AxisScale enum as defined by OPC-UA part 8, 5.6.7.
+
+    \value Linear
+    \value Log
+    \value Ln
+*/
+
+/*!
+    \class QOpcUa::QAxisInformation
+
+    This is the QtOpcUa representation for the OPC UA AxisInformation type defined in OPC-UA part 8, 5.6.6.
+    It contains information about an axis which can be used for multiple purposes. A common use case could
+    involve the plotting of display data. The engineering units and the title are used for the text on the plot,
+    range, axisScaleType and axisSteps provide the scaling and the axis ranges of the plot.
+*/
+
+/*!
+    \variable QOpcUa::QAxisInformation::engineeringUnits
+
+    The engineering units of this axis.
+*/
+
+/*!
+    \variable QOpcUa::QAxisInformation::eURange
+
+    The lower and upper values of this axis.
+*/
+
+/*!
+    \variable QOpcUa::QAxisInformation::title
+
+    The title of this axis.
+*/
+
+/*!
+    \variable QOpcUa::QAxisInformation::axisScaleType
+
+    The scaling of this axis, defined by QOpcUa::AxisScale.
+*/
+
+/*!
+    \variable QOpcUa::QAxisInformation::axisSteps
+
+    Specific values for each axis step.
+
+    This value is empty if the points are equally distributed and the step size can be
+    calculated from the number of steps and the range.
+    If the steps are different for each point but constant over a longer time, there is an entry for
+    each data point.
+*/
+
+/*!
+    \class QOpcUa::QXValue
+
+    This is the QtOpcUa representation for the OPC UA XVType type defined in OPC-UA part 8, 5.6.8.
+    This type is used to position values of float precision on an axis with double precision.
+*/
+
+/*!
+    \variable QOpcUa::QXValue::x
+
+    The position of the value on the axis.
+*/
+
+/*!
+    \variable QOpcUa::QXValue::value
+
+    The value for position x.
+*/
 
 QT_END_NAMESPACE

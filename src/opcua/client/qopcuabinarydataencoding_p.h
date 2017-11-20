@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2017 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,39 +34,44 @@
 **
 ****************************************************************************/
 
-#ifndef QOPEN62541NODE_H
-#define QOPEN62541NODE_H
+#ifndef QOPCUABINARYDATAENCODING_H
+#define QOPCUABINARYDATAENCODING_H
 
-#include "qopen62541client.h"
-#include <private/qopcuanodeimpl_p.h>
+#include "qopcuaglobal.h"
+#include "qopcuatype.h"
 
-#include <QPointer>
+#include <QtCore/qmetatype.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpen62541Node : public QOpcUaNodeImpl
+// This class implements a subset of the OPC UA Binary DataEncoding defined in OPC-UA part 6, 5.2.
+// Only the types needed to handle the data types in OPC-UA part 8, 5.6 have been implemented.
+class Q_OPCUA_EXPORT QOpcUaBinaryDataEncoding
 {
 public:
-    explicit QOpen62541Node(const UA_NodeId nodeId, QOpen62541Client *client, const QString nodeIdString);
-    ~QOpen62541Node() override;
 
-    bool readAttributes(QOpcUa::NodeAttributes attr, const QString &indexRange) override;
-    bool enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings) override;
-    bool disableMonitoring(QOpcUa::NodeAttributes attr) override;
-    bool modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value) override;
-    bool browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask) override;
-    QString nodeId() const override;
+    // The Ids in this enum are the numeric ids of the _Encoding_DefaultBinary nodes for the respective types
+    // as listed in https://opcfoundation.org/UA/schemas/1.03/NodeIds.csv
+    enum class TypeEncodingId {
+        Range = 886,
+        EUInformation = 889,
+        ComplexNumber = 12181,
+        DoubleComplexNumber = 12182,
+        AxisInformation = 12089,
+        XV = 12090
+    };
 
-    bool writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange) override;
-    bool writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType) override;
-    bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args) override;
+    template <typename T>
+    static T decode(const char *&ptr, size_t &bufferSize, bool &success);
+    template <typename T>
+    static QVector<T> decodeArray(const char *&ptr, size_t &bufferSize, bool &success);
 
-private:
-    QPointer<QOpen62541Client> m_client;
-    QString m_nodeIdString;
-    UA_NodeId m_nodeId;
+    template <typename T>
+    static void encode(const T &src, QByteArray &dst);
+    template <typename T>
+    static void encodeArray(const QVector<T> &src, QByteArray &dst);
 };
 
 QT_END_NAMESPACE
 
-#endif // QOPEN62541NODE_H
+#endif // QOPCUABINARYDATAENCODING_H

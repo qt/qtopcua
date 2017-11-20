@@ -86,9 +86,6 @@ public:
 
     QString nodeId() const;
 
-    QPair<double, double> readEuRange() const;
-    QPair<QString, QString> readEui() const;
-
     bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args = QVector<QOpcUa::TypedVariant>());
 
 Q_SIGNALS:

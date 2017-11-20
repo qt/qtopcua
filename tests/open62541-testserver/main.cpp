@@ -96,6 +96,16 @@ int main(int argc, char **argv)
     server.addVariable<UA_XmlElement, QString, UA_TYPES_XMLELEMENT>(testFolder, "ns=2;s=Demo.Static.Arrays.XmlElement", "XmlElementArrayTest", QString());
     server.addVariable<UA_QualifiedName, QPair<quint16, QString>, UA_TYPES_QUALIFIEDNAME>(testFolder, "ns=2;s=Demo.Static.Arrays.QualifiedName", "QualifiedNameArrayTest", QPair<quint16, QString>());
     server.addVariable<UA_StatusCode, UA_StatusCode, UA_TYPES_STATUSCODE>(testFolder, "ns=2;s=Demo.Static.Arrays.StatusCode", "StatusCodeArrayTest", UA_STATUSCODE_GOOD);
+    server.addVariable<UA_ExtensionObject, QOpcUa::QRange, UA_TYPES_EXTENSIONOBJECT>(testFolder, "ns=2;s=Demo.Static.Arrays.Range", "RangeArrayTest", QOpcUa::QRange());
+    server.addVariable<UA_ExtensionObject, QOpcUa::QEUInformation, UA_TYPES_EXTENSIONOBJECT>(testFolder, "ns=2;s=Demo.Static.Arrays.EUInformation",
+                                                                                             "EUInformationArrayTest", QOpcUa::QEUInformation());
+    server.addVariable<UA_ExtensionObject, QOpcUa::QComplexNumber, UA_TYPES_EXTENSIONOBJECT>(testFolder, "ns=2;s=Demo.Static.Arrays.ComplexNumber",
+                                                                                             "ComplexNumberArrayTest", QOpcUa::QComplexNumber());
+    server.addVariable<UA_ExtensionObject, QOpcUa::QDoubleComplexNumber, UA_TYPES_EXTENSIONOBJECT>(testFolder, "ns=2;s=Demo.Static.Arrays.DoubleComplexNumber",
+                                                                                                   "DoubleComplexNumberArrayTest", QOpcUa::QDoubleComplexNumber());
+    server.addVariable<UA_ExtensionObject, QOpcUa::QAxisInformation, UA_TYPES_EXTENSIONOBJECT>(testFolder, "ns=2;s=Demo.Static.Arrays.AxisInformation",
+                                                                                               "AxisInformationArrayTest", QOpcUa::QAxisInformation());
+    server.addVariable<UA_ExtensionObject, QOpcUa::QXValue, UA_TYPES_EXTENSIONOBJECT>(testFolder, "ns=2;s=Demo.Static.Arrays.XV", "XVArrayTest", QOpcUa::QXValue());
 
     server.addVariable<UA_Boolean, bool, UA_TYPES_BOOLEAN>(testFolder, "ns=2;s=Demo.Static.Scalar.Boolean", "BoolScalarTest", true);
     server.addVariable<UA_Byte, uchar, UA_TYPES_BYTE>(testFolder, "ns=2;s=Demo.Static.Scalar.Byte", "ByteScalarTest", 0);
@@ -119,6 +129,16 @@ int main(int argc, char **argv)
     server.addVariable<UA_XmlElement, QString, UA_TYPES_XMLELEMENT>(testFolder, "ns=2;s=Demo.Static.Scalar.XmlElement", "XmlElementScalarTest", QString());
     server.addVariable<UA_QualifiedName, QPair<quint16, QString>, UA_TYPES_QUALIFIEDNAME>(testFolder, "ns=2;s=Demo.Static.Scalar.QualifiedName", "QualifiedNameScalarTest", QPair<quint16, QString>());
     server.addVariable<UA_StatusCode, UA_StatusCode, UA_TYPES_STATUSCODE>(testFolder, "ns=2;s=Demo.Static.Scalar.StatusCode", "StatusCodeScalarTest", UA_STATUSCODE_GOOD);
+    server.addVariable<UA_ExtensionObject, QOpcUa::QRange, UA_TYPES_EXTENSIONOBJECT>(testFolder, "ns=2;s=Demo.Static.Scalar.Range", "RangeScalarTest", QOpcUa::QRange());
+    server.addVariable<UA_ExtensionObject, QOpcUa::QEUInformation, UA_TYPES_EXTENSIONOBJECT>(testFolder, "ns=2;s=Demo.Static.Scalar.EUInformation",
+                                                                                             "EUInformationScalarTest", QOpcUa::QEUInformation());
+    server.addVariable<UA_ExtensionObject, QOpcUa::QComplexNumber, UA_TYPES_EXTENSIONOBJECT>(testFolder, "ns=2;s=Demo.Static.Scalar.ComplexNumber",
+                                                                                             "ComplexNumberScalarTest", QOpcUa::QComplexNumber());
+    server.addVariable<UA_ExtensionObject, QOpcUa::QDoubleComplexNumber, UA_TYPES_EXTENSIONOBJECT>(testFolder, "ns=2;s=Demo.Static.Scalar.DoubleComplexNumber",
+                                                                                                   "DoubleComplexNumberScalarTest", QOpcUa::QDoubleComplexNumber());
+    server.addVariable<UA_ExtensionObject, QOpcUa::QAxisInformation, UA_TYPES_EXTENSIONOBJECT>(testFolder, "ns=2;s=Demo.Static.Scalar.AxisInformation",
+                                                                                               "AxisInformationScalarTest", QOpcUa::QAxisInformation());
+    server.addVariable<UA_ExtensionObject, QOpcUa::QXValue, UA_TYPES_EXTENSIONOBJECT>(testFolder, "ns=2;s=Demo.Static.Scalar.XV", "XVScalarTest", QOpcUa::QXValue());
 
     UA_NodeId testGuidIdsFolder = server.addFolder("ns=3;s=testGuidIdsFolder", "testGuidIdsFolder");
     server.addVariable<UA_String, QString, UA_TYPES_STRING>(testGuidIdsFolder, "ns=3;g=08081e75-8e5e-319b-954f-f3a7613dc29b", "theGuidId", QString());

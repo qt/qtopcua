@@ -125,6 +125,12 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUaReferenceDescription>();
     qRegisterMetaType<QVector<QOpcUaReferenceDescription>>();
     qRegisterMetaType<QOpcUa::ReferenceTypeId>();
+    qRegisterMetaType<QOpcUa::QRange>();
+    qRegisterMetaType<QOpcUa::QEUInformation>();
+    qRegisterMetaType<QOpcUa::QComplexNumber>();
+    qRegisterMetaType<QOpcUa::QDoubleComplexNumber>();
+    qRegisterMetaType<QOpcUa::QAxisInformation>();
+    qRegisterMetaType<QOpcUa::QXValue>();
 }
 
 QOpcUaProvider::~QOpcUaProvider()

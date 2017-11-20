@@ -81,9 +81,6 @@ public:
     virtual bool modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item,
                                           const QVariant &value) = 0;
 
-    virtual QPair<double, double> readEuRange() const = 0;
-    virtual QPair<QString, QString> readEui() const = 0;
-
     virtual bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args) = 0;
 
 Q_SIGNALS:

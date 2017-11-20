@@ -430,37 +430,6 @@ QString QOpcUaNode::nodeId() const
 }
 
 /*!
-    Reads value range from the OPC UA node and
-    returns it as a pair of doubles containing the lower and upper limit.
-
-    NaN values are returned if the read has failed or if the plugin does not
-    support reading EURanges from the server.
-
-    \warning Currently not supported by the FreeOPCUA backend
-*/
-QPair<double, double> QOpcUaNode::readEuRange() const
-{
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
-        return QPair<double, double>(qQNaN(), qQNaN());
-
-    return d_func()->m_impl->readEuRange();
-}
-
-/*!
-    Reads Engineering unit information from the OPC UA node and returns it
-    as a pair of strings containing the unit and its description.
-
-    \warning Currently not supported by the FreeOPCUA backend
-*/
-QPair<QString, QString> QOpcUaNode::readEui() const
-{
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
-        return QPair<QString, QString>();
-
-    return d_func()->m_impl->readEui();
-}
-
-/*!
     Calls the OPC UA method \a methodNodeId with the parameters given via \a args. The result is
     returned in the \l methodCallFinished signal.
 

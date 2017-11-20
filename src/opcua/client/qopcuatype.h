@@ -42,6 +42,7 @@
 #include <QtCore/qmetatype.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -156,6 +157,13 @@ enum Types
     Guid            = 17,
     QualifiedName   = 18,
     StatusCode      = 19,
+    ExtensionObject = 20,
+    Range           = 21,
+    EUInformation   = 22,
+    ComplexNumber   = 23,
+    DoubleComplexNumber = 24,
+    AxisInformation = 25,
+    XV              = 26,
     Undefined       = 0xFFFFFFFF
 };
 
@@ -440,6 +448,132 @@ struct QLocalizedText {
     }
 };
 
+struct QRange {
+    double low;
+    double high;
+    constexpr QRange(double p_low, double p_high) noexcept
+        : low(p_low)
+        , high(p_high)
+    {}
+    constexpr QRange() noexcept
+        : low(0)
+        , high(0)
+    {}
+    bool operator==(const QOpcUa::QRange &other) const
+    {
+        return qFloatDistance(low, other.low) == 0 &&
+                qFloatDistance(high, other.high) == 0;
+    }
+};
+
+struct QEUInformation {
+    QString namespaceUri;
+    qint32 unitId;
+    QLocalizedText displayName;
+    QLocalizedText description;
+    QEUInformation()
+        : unitId(0)
+    {}
+    QEUInformation(QString p_namespaceUri, qint32 p_unitId,
+                   QLocalizedText p_displayName, QLocalizedText p_description)
+        : namespaceUri(p_namespaceUri)
+        , unitId(p_unitId)
+        , displayName(p_displayName)
+        , description(p_description)
+    {}
+    bool operator==(const QEUInformation &other) const
+    {
+        return namespaceUri == other.namespaceUri &&
+                unitId == other.unitId &&
+                displayName == other.displayName &&
+                description == other.description;
+    }
+};
+
+struct QComplexNumber {
+    float real;
+    float imaginary;
+    constexpr QComplexNumber() noexcept
+        : real(0)
+        , imaginary(0)
+    {}
+    constexpr QComplexNumber(float p_real, float p_imaginary) noexcept
+        : real(p_real)
+        , imaginary(p_imaginary)
+    {}
+    bool operator==(const QComplexNumber &other) const
+    {
+        return qFloatDistance(real, other.real) == 0 &&
+                qFloatDistance(imaginary, other.imaginary) == 0;
+    }
+};
+
+struct QDoubleComplexNumber {
+    double real;
+    double imaginary;
+    constexpr QDoubleComplexNumber() noexcept
+        : real(0)
+        , imaginary(0)
+    {}
+    constexpr QDoubleComplexNumber(double p_real, double p_imaginary) noexcept
+        : real(p_real)
+        , imaginary(p_imaginary)
+    {}
+    bool operator==(const QDoubleComplexNumber &other) const
+    {
+        return qFloatDistance(real, other.real) == 0 &&
+                qFloatDistance(imaginary, other.imaginary) == 0;
+    }
+};
+
+enum class AxisScale : quint32 {
+    Linear = 0,
+    Log = 1,
+    Ln = 2
+};
+
+struct QAxisInformation {
+    QEUInformation engineeringUnits;
+    QRange eURange;
+    QLocalizedText title;
+    AxisScale axisScaleType;
+    QVector<double> axisSteps;
+    QAxisInformation() {}
+    QAxisInformation(QEUInformation p_engineeringUnits, QRange p_eURange, QLocalizedText p_title,
+                     AxisScale p_axisScaleType, QVector<double> p_axisSteps)
+        : engineeringUnits(p_engineeringUnits)
+        , eURange(p_eURange)
+        , title(p_title)
+        , axisScaleType(p_axisScaleType)
+        , axisSteps(p_axisSteps)
+    {}
+    bool operator==(const QAxisInformation &other) const
+    {
+        return engineeringUnits == other.engineeringUnits &&
+                eURange == other.eURange &&
+                title == other.title &&
+                axisScaleType == other.axisScaleType &&
+                axisSteps == other.axisSteps;
+    }
+};
+
+struct QXValue {
+    double x;
+    float value;
+    constexpr QXValue() noexcept
+        : x(0)
+        , value()
+    {}
+    constexpr QXValue(float p_x, float p_value) noexcept
+        : x(p_x)
+        , value(p_value)
+    {}
+    bool operator==(const QXValue &other) const
+    {
+        return qFloatDistance(x, other.x) == 0 &&
+                qFloatDistance(value, other.value) == 0;
+    }
+};
 }
 
 Q_DECLARE_TYPEINFO(QOpcUa::Types, Q_PRIMITIVE_TYPE);
@@ -465,5 +599,11 @@ Q_DECLARE_METATYPE(QOpcUa::NodeAttribute)
 Q_DECLARE_METATYPE(QOpcUa::NodeAttributes)
 Q_DECLARE_METATYPE(QOpcUa::ReferenceTypeId)
 Q_DECLARE_METATYPE(QOpcUa::NodeClasses)
+Q_DECLARE_METATYPE(QOpcUa::QRange)
+Q_DECLARE_METATYPE(QOpcUa::QEUInformation)
+Q_DECLARE_METATYPE(QOpcUa::QComplexNumber)
+Q_DECLARE_METATYPE(QOpcUa::QDoubleComplexNumber)
+Q_DECLARE_METATYPE(QOpcUa::QAxisInformation)
+Q_DECLARE_METATYPE(QOpcUa::QXValue)
 
 #endif // QOPCUATYPE
