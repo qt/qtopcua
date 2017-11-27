@@ -145,55 +145,14 @@ bool QFreeOpcUaNode::writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QO
                                      Q_ARG(QOpcUa::Types, valueAttributeType));
 }
 
-bool QFreeOpcUaNode::call(const QString &methodNodeId,
-                            QVector<QOpcUa::TypedVariant> *args, QVector<QVariant> *ret)
+bool QFreeOpcUaNode::callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args)
 {
-    OpcUa::NodeId objectId;
-    OpcUa::NodeId methodId;
-
-    if (!m_client)
-        return false;
-
-    try {
-        objectId = m_node.GetId();
-
-        OpcUa::Node methodNode = m_client->m_opcuaWorker->GetNode(methodNodeId.toStdString());
-        methodNode.GetBrowseName();
-        methodId = methodNode.GetId();
-    } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Could not get node for method call";
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << ex.what();
-        return false;
-    }
-
-    try {
-        std::vector<OpcUa::Variant> arguments;
-        if (args) {
-            arguments.reserve(args->size());
-            for (const QOpcUa::TypedVariant &v: qAsConst(*args))
-                arguments.push_back(QFreeOpcUaValueConverter::toTypedVariant(v.first, v.second));
-        }
-        OpcUa::CallMethodRequest myCallRequest;
-        myCallRequest.ObjectId = objectId;
-        myCallRequest.MethodId = methodId;
-        myCallRequest.InputArguments = arguments;
-        std::vector<OpcUa::CallMethodRequest> myCallVector;
-        myCallVector.push_back(myCallRequest);
-
-
-        std::vector<OpcUa::Variant> returnedValues = m_node.CallMethod(methodId, arguments);
-
-        // status code of method call is checked via exception inside the node
-        ret->reserve(returnedValues.size());
-        for (auto it = returnedValues.cbegin(); it != returnedValues.cend(); ++it)
-            ret->push_back(QFreeOpcUaValueConverter::toQVariant(*it));
-
-        return true;
-
-    } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Method call failed: " << ex.what();
-        return false;
-    }
+    return QMetaObject::invokeMethod(m_client->m_opcuaWorker, "callMethod",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(OpcUa::NodeId, m_node.GetId()),
+                                     Q_ARG(OpcUa::NodeId, QFreeOpcUaValueConverter::scalarFromQVariant<OpcUa::NodeId>(methodNodeId)),
+                                     Q_ARG(QVector<QOpcUa::TypedVariant>, args));
 }
 
 // Support for structures in freeopcua seems to be not implemented yet

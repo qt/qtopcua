@@ -37,6 +37,7 @@
 #include "qopen62541.h"
 #include "qopen62541backend.h"
 #include "qopen62541node.h"
+#include "qopen62541utils.h"
 #include "qopen62541valueconverter.h"
 
 #include <QtCore/qdatetime.h>
@@ -136,13 +137,16 @@ bool QOpen62541Node::writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QO
                                      Q_ARG(QOpcUa::Types, valueAttributeType));
 }
 
-bool QOpen62541Node::call(const QString &methodNodeId, QVector<QOpcUa::TypedVariant> *args, QVector<QVariant> *ret)
+bool QOpen62541Node::callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args)
 {
-    Q_UNUSED(methodNodeId);
-    Q_UNUSED(args);
-    Q_UNUSED(ret);
-
-    return false;
+    UA_NodeId obj;
+    UA_NodeId_copy(&m_nodeId, &obj);
+    return QMetaObject::invokeMethod(m_client->m_backend, "callMethod",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(UA_NodeId, obj),
+                                     Q_ARG(UA_NodeId, Open62541Utils::nodeIdFromQString(methodNodeId)),
+                                     Q_ARG(QVector<QOpcUa::TypedVariant>, args));
 }
 
 QPair<QString, QString> QOpen62541Node::readEui() const

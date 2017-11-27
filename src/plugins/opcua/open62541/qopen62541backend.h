@@ -66,6 +66,7 @@ public Q_SLOTS:
     void enableMonitoring(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
     void disableMonitoring(uintptr_t handle, QOpcUaNode::NodeAttributes attr);
     void modifyMonitoring(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
+    void callMethod(uintptr_t handle, UA_NodeId objectId, UA_NodeId methodId, QVector<QOpcUa::TypedVariant> args);
 
     // Subscription
     QOpen62541Subscription *getSubscription(const QOpcUaMonitoringParameters &settings);

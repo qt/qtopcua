@@ -36,6 +36,7 @@
 
 #include "testserver.h"
 #include "qopen62541utils.h"
+#include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/QDebug>
 #include <QtCore/QLoggingCategory>
@@ -488,6 +489,79 @@ UA_NodeId TestServer::addVariable<UA_StatusCode, UA_StatusCode, UA_TYPES_STATUSC
                                                      attr,
                                                      NULL,
                                                      &resultId);
+    if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not add variable:" << result;
+        return UA_NODEID_NULL;
+    }
+    return resultId;
+}
+
+UA_StatusCode TestServer::multiplyMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle, const UA_NodeId *methodId, void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize, const UA_Variant *input, size_t outputSize, UA_Variant *output)
+{
+    Q_UNUSED(server);
+    Q_UNUSED(sessionId);
+    Q_UNUSED(sessionHandle);
+    Q_UNUSED(methodId);
+    Q_UNUSED(methodContext);
+    Q_UNUSED(objectId);
+    Q_UNUSED(objectContext);
+
+    if (inputSize < 2)
+        return QOpcUa::UaStatusCode::BadArgumentsMissing;
+    if (inputSize > 2)
+        return QOpcUa::UaStatusCode::BadTooManyArguments;
+    if (outputSize != 1)
+        return QOpcUa::UaStatusCode::BadInvalidArgument;
+
+    double arg1 = *static_cast<double *>(input[0].data);
+    double arg2 = *static_cast<double *>(input[1].data);
+
+    double temp = arg1 * arg2;
+    UA_Variant_setScalarCopy(output, &temp, &UA_TYPES[UA_TYPES_DOUBLE]);
+
+    return UA_STATUSCODE_GOOD;
+}
+
+UA_NodeId TestServer::addMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description)
+{
+    UA_NodeId methodNodeId = Open62541Utils::nodeIdFromQString(variableNode);
+
+    UA_Argument inputArguments[2];
+    UA_Argument_init(&inputArguments[0]);
+    UA_Argument_init(&inputArguments[1]);
+
+    inputArguments[0].description = UA_LOCALIZEDTEXT_ALLOC("en", "First value");
+    inputArguments[0].name = UA_STRING_ALLOC("The first double");
+    inputArguments[0].dataType = UA_TYPES[UA_TYPES_DOUBLE].typeId;
+    inputArguments[0].valueRank = -1;
+
+    inputArguments[1].description = UA_LOCALIZEDTEXT_ALLOC("en", "Second value");
+    inputArguments[1].name = UA_STRING_ALLOC("The second double");
+    inputArguments[1].dataType = UA_TYPES[UA_TYPES_DOUBLE].typeId;
+    inputArguments[1].valueRank = -1;
+
+    UA_Argument outputArgument;
+    UA_Argument_init(&outputArgument);
+
+    outputArgument.description = UA_LOCALIZEDTEXT_ALLOC("en", "The product of the two arguments");
+    outputArgument.name = UA_STRING_ALLOC("The product of the two arguments");
+    outputArgument.dataType = UA_TYPES[UA_TYPES_DOUBLE].typeId;
+    outputArgument.valueRank = -1;
+
+    UA_MethodAttributes attr = UA_MethodAttributes_default;
+
+    attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", variableNode.toUtf8().constData());
+    attr.executable = true;
+
+    UA_NodeId resultId;
+    UA_StatusCode result = UA_Server_addMethodNode(m_server, methodNodeId, folder,
+                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT),
+                                                     UA_QUALIFIEDNAME_ALLOC(methodNodeId.namespaceIndex, "multiplyArguments"),
+                                                     attr, &multiplyMethod,
+                                                     2, inputArguments,
+                                                     1, &outputArgument,
+                                                     NULL, &resultId);
     if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Could not add variable:" << result;
         return UA_NODEID_NULL;

@@ -92,6 +92,7 @@ private Q_SLOTS:
     void handleMonitoringEnableDisable(uintptr_t handle, QOpcUaNode::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
     void handleMonitoringStatusChanged(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                                  QOpcUaMonitoringParameters param);
+    void handleMethodCallFinished(uintptr_t handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
 
 signals:
     void connected();

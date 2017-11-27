@@ -310,4 +310,43 @@ QFreeOpcUaSubscription *QFreeOpcUaWorker::getSubscriptionForItem(uintptr_t handl
     return subscription.value();
 }
 
+void QFreeOpcUaWorker::callMethod(uintptr_t handle, OpcUa::NodeId objectId, OpcUa::NodeId methodId, QVector<QOpcUa::TypedVariant> args)
+{
+    try {
+        std::vector<OpcUa::Variant> arguments;
+        if (args.size()) {
+            arguments.reserve(args.size());
+            for (const QOpcUa::TypedVariant &v: qAsConst(args))
+                arguments.push_back(QFreeOpcUaValueConverter::toTypedVariant(v.first, v.second));
+        }
+        OpcUa::CallMethodRequest myCallRequest;
+        myCallRequest.ObjectId = objectId;
+        myCallRequest.MethodId = methodId;
+        myCallRequest.InputArguments = arguments;
+        std::vector<OpcUa::CallMethodRequest> myCallVector;
+        myCallVector.push_back(myCallRequest);
+
+        OpcUa::Node object = this->GetNode(objectId);
+        std::vector<OpcUa::Variant> returnedValues = object.CallMethod(methodId, arguments);
+
+        QVariant result;
+
+        if (returnedValues.size() > 1) {
+            QVariantList temp;
+            for (auto it = returnedValues.cbegin(); it != returnedValues.cend(); ++it)
+                temp.append(QFreeOpcUaValueConverter::toQVariant(*it));
+
+            result = temp;
+        } else if (returnedValues.size() == 1) {
+            result = QFreeOpcUaValueConverter::toQVariant(returnedValues[0]);
+        }
+
+        emit methodCallFinished(handle, QFreeOpcUaValueConverter::nodeIdToString(methodId), result, QOpcUa::UaStatusCode::Good);
+
+    } catch (const std::exception &ex) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Method call failed: " << ex.what();
+        emit methodCallFinished(handle, QFreeOpcUaValueConverter::nodeIdToString(methodId), QVariant(), QFreeOpcUaValueConverter::exceptionToStatusCode(ex));
+    }
+}
+
 QT_END_NAMESPACE

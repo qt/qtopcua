@@ -36,6 +36,7 @@
 
 #include "qopen62541backend.h"
 #include "qopen62541node.h"
+#include "qopen62541utils.h"
 #include "qopen62541valueconverter.h"
 #include <private/qopcuaclient_p.h>
 
@@ -266,6 +267,45 @@ bool Open62541AsyncBackend::removeSubscription(UA_UInt32 subscriptionId)
         return true;
     }
     return false;
+}
+
+void Open62541AsyncBackend::callMethod(uintptr_t handle, UA_NodeId objectId, UA_NodeId methodId, QVector<QOpcUa::TypedVariant> args)
+{
+    UA_Variant *inputArgs = nullptr;
+
+    if (args.size()) {
+        inputArgs = static_cast<UA_Variant *>(UA_Array_new(args.size(), &UA_TYPES[UA_TYPES_VARIANT]));
+        for (int i = 0; i < args.size(); ++i)
+            inputArgs[i] = QOpen62541ValueConverter::toOpen62541Variant(args[i].first, args[i].second);
+    }
+
+    size_t outputSize = 0;
+    UA_Variant *outputArguments;
+    UA_StatusCode res = UA_Client_call(m_uaclient, objectId, methodId, args.size(), inputArgs, &outputSize, &outputArguments);
+
+    if (res != UA_STATUSCODE_GOOD)
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Could not call method: 0x%X", res);
+
+    QVariant result;
+
+    if (outputSize > 1 && res == UA_STATUSCODE_GOOD) {
+        QVariantList temp;
+        for (size_t i = 0; i < outputSize; ++i)
+            temp.append(QOpen62541ValueConverter::toQVariant(outputArguments[i]));
+
+        result = temp;
+    } else if (outputSize == 1 && res == UA_STATUSCODE_GOOD) {
+        result = QOpen62541ValueConverter::toQVariant(outputArguments[0]);
+    }
+
+    UA_Array_delete(inputArgs, args.size(), &UA_TYPES[UA_TYPES_VARIANT]);
+    if (outputSize > 0)
+        UA_Array_delete(outputArguments, outputSize, &UA_TYPES[UA_TYPES_VARIANT]);
+
+    emit methodCallFinished(handle, Open62541Utils::nodeIdToQString(methodId), result, static_cast<QOpcUa::UaStatusCode>(res));
+
+    UA_NodeId_deleteMembers(&objectId);
+    UA_NodeId_deleteMembers(&methodId);
 }
 
 static UA_StatusCode nodeIter(UA_NodeId childId, UA_Boolean isInverse, UA_NodeId referenceTypeId, void *pass)

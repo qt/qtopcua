@@ -129,8 +129,7 @@ public:
     QPair<double, double> readEuRange() const;
     QPair<QString, QString> readEui() const;
 
-    bool call(const QString &methodNodeId, QVector<QOpcUa::TypedVariant> *args = nullptr,
-              QVector<QVariant> *ret = nullptr);
+    bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args = QVector<QOpcUa::TypedVariant>());
 
 Q_SIGNALS:
     void readFinished(QOpcUaNode::NodeAttributes attributes);
@@ -141,6 +140,7 @@ Q_SIGNALS:
                            QOpcUa::UaStatusCode statusCode);
     void enableMonitoringFinished(QOpcUaNode::NodeAttribute attr, QOpcUa::UaStatusCode statusCode);
     void disableMonitoringFinished(QOpcUaNode::NodeAttribute attr, QOpcUa::UaStatusCode statusCode);
+    void methodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
 
 private:
     Q_DISABLE_COPY(QOpcUaNode)

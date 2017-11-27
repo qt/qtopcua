@@ -145,6 +145,15 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn void methodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode)
+
+    This signal is emitted after a method call has finished on the server.
+    \a statusCode contains the status code from the method call, \a result contains the output
+    arguments of the method. \a result is empty if the method has no output arguments or \a statusCode
+    is not OpcUa::UaStatusCode::Good.
+*/
+
+/*!
     \internal QOpcUaNodeImpl is an opaque type (as seen from the public API).
     This prevents users of the public API to use this constructor (eventhough
     it is public).
@@ -420,16 +429,17 @@ QPair<QString, QString> QOpcUaNode::readEui() const
 
 /*!
     Calls the OPC UA method \a methodNodeId with the parameters given via \a args. The result is
-    returned in \a ret. The success of the service call is returned by the method.
+    returned in the \l methodCallFinished signal.
+
+    Returns true if the asynchronous call has been successfully dispatched.
 */
-bool QOpcUaNode::call(const QString &methodNodeId,
-        QVector<QOpcUa::TypedVariant> *args, QVector<QVariant> *ret)
+bool QOpcUaNode::callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args)
 {
     Q_D(QOpcUaNode);
     if (d->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return false;
 
-    return d->m_impl->call(methodNodeId, args, ret);
+    return d->m_impl->callMethod(methodNodeId, args);
 }
 
 QDebug operator<<(QDebug dbg, const QOpcUaNode &node)

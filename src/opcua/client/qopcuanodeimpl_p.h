@@ -84,8 +84,7 @@ public:
     virtual QPair<double, double> readEuRange() const = 0;
     virtual QPair<QString, QString> readEui() const = 0;
 
-    virtual bool call(const QString &methodNodeId,
-            QVector<QOpcUa::TypedVariant> *args = nullptr, QVector<QVariant> *ret = nullptr) = 0;
+    virtual bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args) = 0;
 
 Q_SIGNALS:
     void attributesRead(QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
@@ -95,6 +94,7 @@ Q_SIGNALS:
     void monitoringEnableDisable(QOpcUaNode::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
     void monitoringStatusChanged(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                            QOpcUaMonitoringParameters param);
+    void methodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
 };
 
 QT_END_NAMESPACE

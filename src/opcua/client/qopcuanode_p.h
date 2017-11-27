@@ -146,6 +146,14 @@ public:
 
             emit q_func()->monitoringStatusChanged(attr, items, param.statusCode());
         });
+
+
+        m_methodCallFinishedConnection = QObject::connect(impl, &QOpcUaNodeImpl::methodCallFinished,
+            [this](QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode)
+        {
+            emit q_func()->methodCallFinished(methodNodeId, result, statusCode);
+        });
+
     }
 
     ~QOpcUaNodePrivate()
@@ -155,6 +163,7 @@ public:
         QObject::disconnect(m_attributeUpdatedConnection);
         QObject::disconnect(m_monitoringEnableDisableConnection);
         QObject::disconnect(m_monitoringStatusChangedConnection);
+        QObject::disconnect(m_methodCallFinishedConnection);
     }
 
     QScopedPointer<QOpcUaNodeImpl> m_impl;
@@ -172,6 +181,7 @@ public:
     QMetaObject::Connection m_attributeUpdatedConnection;
     QMetaObject::Connection m_monitoringEnableDisableConnection;
     QMetaObject::Connection m_monitoringStatusChangedConnection;
+    QMetaObject::Connection m_methodCallFinishedConnection;
 };
 
 QT_END_NAMESPACE

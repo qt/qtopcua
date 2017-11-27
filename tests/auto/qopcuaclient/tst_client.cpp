@@ -175,6 +175,8 @@ private slots:
     void dataChangeSubscriptionInvalidNode();
     defineDataMethod(methodCall_data)
     void methodCall();
+    defineDataMethod(methodCallInvalid_data)
+    void methodCallInvalid();
     defineDataMethod(readRange_data)
     void readRange();
     defineDataMethod(readEui_data)
@@ -714,7 +716,6 @@ void Tst_QOpcUaClient::methodCall()
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
-    QSKIP("Method calls are not implemented in open62541-based testserver");
     QVector<QOpcUa::TypedVariant> args;
     QVector<QVariant> ret;
     for (int i = 0; i < 2; i++)
@@ -723,13 +724,54 @@ void Tst_QOpcUaClient::methodCall()
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=TestFolder"));
     QVERIFY(node != 0);
 
-    bool success = node->call("ns=0;s=IDoNotExist", &args, &ret);
-    QVERIFY(success == false);
+    QSignalSpy methodSpy(node.data(), &QOpcUaNode::methodCallFinished);
 
-    success = node->call("ns=3;s=Test.Method.Multiply", &args, &ret);
+    bool success = node->callMethod("ns=3;s=Test.Method.Multiply", args);
     QVERIFY(success == true);
-    QVERIFY(ret.size() == 1);
-    QVERIFY(ret[0].type() == QVariant::Double && ret[0].value<double>() == 16);
+
+    methodSpy.wait();
+
+    QCOMPARE(methodSpy.size(), 1);
+    QCOMPARE(methodSpy.at(0).at(0), QStringLiteral("ns=3;s=Test.Method.Multiply"));
+    QCOMPARE(methodSpy.at(0).at(1), double(16));
+    QCOMPARE(QOpcUa::isSuccessStatus(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>()), true);
+}
+
+void Tst_QOpcUaClient::methodCallInvalid()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QVector<QOpcUa::TypedVariant> args;
+    QVector<QVariant> ret;
+    for (int i = 0; i < 3; i++)
+        args.push_back(QOpcUa::TypedVariant(double(4), QOpcUa::Double));
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=TestFolder"));
+    QVERIFY(node != 0);
+
+    QSignalSpy methodSpy(node.data(), &QOpcUaNode::methodCallFinished);
+
+    bool success = node->callMethod("ns=3;s=Test.Method.Divide", args); // Does not exist
+    QVERIFY(success == true);
+    methodSpy.wait();
+    QCOMPARE(methodSpy.size(), 1);
+    QCOMPARE(QOpcUa::errorCategory(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>()), QOpcUa::ErrorCategory::NodeError);
+
+    methodSpy.clear();
+    success = node->callMethod("ns=3;s=Test.Method.Multiply", args); // One excess argument
+    QVERIFY(success == true);
+    methodSpy.wait();
+    QCOMPARE(methodSpy.size(), 1);
+    QCOMPARE(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadInvalidArgument);
+
+    methodSpy.clear();
+    args.resize(1);
+    success = node->callMethod("ns=3;s=Test.Method.Multiply", args); // One argument missing
+    QVERIFY(success == true);
+    methodSpy.wait();
+    QCOMPARE(methodSpy.size(), 1);
+    QCOMPARE(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadArgumentsMissing);
 }
 
 void Tst_QOpcUaClient::readRange()

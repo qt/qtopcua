@@ -73,6 +73,7 @@ public slots:
     void enableMonitoring(uintptr_t handle, OpcUa::Node node, QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
     void disableMonitoring(uintptr_t handle, QOpcUaNode::NodeAttributes attr);
     void modifyMonitoring(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
+    void callMethod(uintptr_t handle, OpcUa::NodeId objectId, OpcUa::NodeId methodId, QVector<QOpcUa::TypedVariant> args);
 
 private:
     QFreeOpcUaSubscription *getSubscriptionForItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr);

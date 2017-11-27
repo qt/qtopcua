@@ -80,6 +80,7 @@ Q_SIGNALS:
                                 QOpcUaClient::ClientError error);
     void attributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attributes, QOpcUa::UaStatusCode serviceResult);
     void attributeWritten(uintptr_t hande, QOpcUaNode::NodeAttribute attribute, QVariant value, QOpcUa::UaStatusCode statusCode);
+    void methodCallFinished(uintptr_t handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
 
     void attributeUpdated(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QVariant value);
     void monitoringEnableDisable(uintptr_t handle, QOpcUaNode::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);

@@ -59,6 +59,14 @@ public:
     template <typename UA_TYPE_VALUE, typename QTYPE, int UA_TYPE_IDENTIFIER>
     UA_NodeId addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &description, QTYPE value);
 
+    UA_NodeId addMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
+
+    static UA_StatusCode multiplyMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle,
+                                            const UA_NodeId *methodId, void *methodContext,
+                                            const UA_NodeId *objectId, void *objectContext,
+                                            size_t inputSize, const UA_Variant *input,
+                                            size_t outputSize, UA_Variant *output);
+
     UA_ServerConfig *m_config{nullptr};
     UA_Server *m_server{nullptr};
     QAtomicInt m_running{false};

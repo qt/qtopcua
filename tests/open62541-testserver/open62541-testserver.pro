@@ -8,6 +8,8 @@ DEPENDPATH += INCLUDEPATH
 
 CONFIG += c++11 console
 
+QT += opcua
+
 QMAKE_USE_PRIVATE += open62541
 win32: DESTDIR = ./
 

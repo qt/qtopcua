@@ -144,6 +144,7 @@ int main(int argc, char **argv)
     });
     tickTimer.start();
 
+    server.addMethod(testFolder, "ns=3;s=Test.Method.Multiply", "MultiplyDoubles");
 
     return app.exec();
 }
