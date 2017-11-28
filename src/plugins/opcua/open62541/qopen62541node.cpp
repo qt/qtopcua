@@ -142,23 +142,6 @@ QPair<double, double> QOpen62541Node::readEuRange() const
     return QPair<double, double>();
 }
 
-QVector<QPair<QVariant, QDateTime> > QOpen62541Node::readHistorical(uint maxCount, const QDateTime &begin, const QDateTime &end) const
-{
-    Q_UNUSED(begin);
-    Q_UNUSED(end);
-    Q_UNUSED(maxCount);
-
-    return QVector<QPair<QVariant, QDateTime>>();
-}
-
-bool QOpen62541Node::writeHistorical(QOpcUa::Types type, const QVector<QPair<QVariant, QDateTime> > data)
-{
-    Q_UNUSED(type);
-    Q_UNUSED(data);
-
-    return false;
-}
-
 UA_NodeId QOpen62541Node::nativeNodeId() const
 {
     return m_nodeId;

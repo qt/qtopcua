@@ -71,11 +71,6 @@ public:
     QPair<QString, QString> readEui() const override;
     QPair<double, double> readEuRange() const override;
 
-    QVector<QPair<QVariant, QDateTime> > readHistorical(uint maxCount,
-            const QDateTime &begin, const QDateTime &end) const override;
-    bool writeHistorical(QOpcUa::Types type,
-            const QVector<QPair<QVariant, QDateTime> > data) override;
-
     OpcUa::Node m_node;
     OpcUa::UaClient *m_client;
 };

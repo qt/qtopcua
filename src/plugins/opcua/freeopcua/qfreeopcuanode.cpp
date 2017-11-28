@@ -278,23 +278,4 @@ QPair<double, double> QFreeOpcUaNode::readEuRange() const
     return QPair<double, double>(qQNaN(), qQNaN());
 }
 
-QVector<QPair<QVariant, QDateTime> > QFreeOpcUaNode::readHistorical(uint maxCount,
-        const QDateTime &begin, const QDateTime &end) const
-{
-    // not supported with freeopcua
-    Q_UNUSED(begin);
-    Q_UNUSED(end);
-    Q_UNUSED(maxCount);
-    return QVector<QPair<QVariant, QDateTime>>();
-}
-
-bool QFreeOpcUaNode::writeHistorical(QOpcUa::Types type,
-            const QVector<QPair<QVariant, QDateTime> > data)
-{
-    // not supported with freeopcua
-    Q_UNUSED(type);
-    Q_UNUSED(data);
-    return false;
-}
-
 QT_END_NAMESPACE

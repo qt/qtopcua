@@ -184,10 +184,6 @@ private slots:
     void readRange();
     defineDataMethod(readEui_data)
     void readEui();
-    defineDataMethod(readHistorical_data)
-    void readHistorical();
-    defineDataMethod(writeHistorical_data)
-    void writeHistorical();
     defineDataMethod(malformedNodeString_data)
     void malformedNodeString();
 
@@ -618,46 +614,6 @@ void Tst_QOpcUaClient::readEui()
 
     QPair<QString, QString> range = node->readEui();
     QVERIFY(range.first == QString::fromUtf8("°C") && range.second == "Degree fahrenheit");
-}
-
-void Tst_QOpcUaClient::readHistorical()
-{
-    QFETCH(QOpcUaClient *, opcuaClient);
-    OpcuaConnector connector(opcuaClient, m_endpoint);
-
-    QSKIP("History is not supported in open62541-based testserver");
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("History not yet implemented in the freeopcua backend");
-    if (opcuaClient->backend() == QLatin1String("open62541"))
-        QSKIP("History not yet implemented in the open62541 backend");
-
-    // TODO test with backend/server that supports this
-    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=ACControl.CurrentTemp"));
-    QVERIFY(node != 0);
-
-    QVector<QPair<QVariant, QDateTime> > result;
-    result = node->readHistorical(5, QDateTime::currentDateTime(), QDateTime::currentDateTime());
-    QVERIFY(result.size() != 0);
-}
-
-void Tst_QOpcUaClient::writeHistorical()
-{
-    QFETCH(QOpcUaClient *, opcuaClient);
-    OpcuaConnector connector(opcuaClient, m_endpoint);
-
-    QSKIP("History is not supported in open62541-based testserver");
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("History not yet implemented in the freeopcua backend");
-    if (opcuaClient->backend() == QLatin1String("open62541"))
-        QSKIP("History not yet implemented in the open62541 backend");
-
-    // TODO test with backend/server that supports this
-    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=ACControl.CurrentTemp"));
-    QVERIFY(node != 0);
-
-    QVector<QPair<QVariant, QDateTime> > data;
-    bool result = node->writeHistorical(QOpcUa::Double, data);
-    QVERIFY(result == true);
 }
 
 void Tst_QOpcUaClient::malformedNodeString()

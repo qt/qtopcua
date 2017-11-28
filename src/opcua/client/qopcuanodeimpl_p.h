@@ -77,11 +77,6 @@ public:
     virtual QPair<double, double> readEuRange() const = 0;
     virtual QPair<QString, QString> readEui() const = 0;
 
-    virtual QVector<QPair<QVariant, QDateTime> > readHistorical(
-            uint maxCount, const QDateTime &begin, const QDateTime &end) const = 0;
-    virtual bool writeHistorical(QOpcUa::Types type,
-            const QVector<QPair<QVariant, QDateTime> > data) = 0;
-
     virtual bool call(const QString &methodNodeId,
             QVector<QOpcUa::TypedVariant> *args = nullptr, QVector<QVariant> *ret = nullptr) = 0;
 };

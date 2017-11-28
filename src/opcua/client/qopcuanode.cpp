@@ -238,38 +238,6 @@ QPair<QString, QString> QOpcUaNode::readEui() const
 }
 
 /*!
-    Reads up to \a maxCount points of historical data from the OPC UA server
-    for the node between the two timestamps \a begin and \a end.
-
-    \sa writeHistorical()
-*/
-QVector<QPair<QVariant, QDateTime> > QOpcUaNode::readHistorical(
-        uint maxCount, const QDateTime &begin, const QDateTime &end) const
-{
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
-        return QVector<QPair<QVariant, QDateTime> >();
-
-    return d_func()->m_impl->readHistorical(maxCount, begin, end);
-}
-
-/*!
-    Write historical \a data from the OPC UA server of \a type QOpcUa::Types.
-
-    Returns whether operation was successful.
-
-    \sa readHistorical()
-*/
-bool QOpcUaNode::writeHistorical(QOpcUa::Types type,
-        const QVector<QPair<QVariant, QDateTime> > data)
-{
-    Q_D(QOpcUaNode);
-    if (d->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
-        return false;
-
-    return d->m_impl->writeHistorical(type, data);
-}
-
-/*!
     Calls the OPC UA method \a methodNodeId with the parameters given via \a args. The result is
     returned in \a ret. The success of the service call is returned by the method.
 */
