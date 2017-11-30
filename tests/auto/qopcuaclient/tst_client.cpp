@@ -595,7 +595,8 @@ void Tst_QOpcUaClient::readRange()
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=ACControl.CurrentTemp.EURange"));
     QVERIFY(node != 0);
     QPair<double, double> range = node->readEuRange();
-    QVERIFY(range.first == 0 && range.second == 100);
+    QCOMPARE(range.first, 0);
+    QCOMPARE(range.second, 100);
 }
 
 void Tst_QOpcUaClient::readEui()
