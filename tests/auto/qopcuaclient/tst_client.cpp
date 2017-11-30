@@ -46,8 +46,8 @@
 #include <QtCore/QThread>
 #include <QtCore/QTimer>
 
-#include <QtTest/QtTest>
 #include <QtTest/QSignalSpy>
+#include <QtTest/QtTest>
 
 class OpcuaConnector
 {
