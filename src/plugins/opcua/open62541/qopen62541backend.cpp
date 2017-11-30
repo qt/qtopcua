@@ -324,57 +324,74 @@ void Open62541AsyncBackend::callMethod(uintptr_t handle, UA_NodeId objectId, UA_
     UA_NodeId_deleteMembers(&methodId);
 }
 
-static UA_StatusCode nodeIter(UA_NodeId childId, UA_Boolean isInverse, UA_NodeId referenceTypeId, void *pass)
+static void convertBrowseResult(UA_BrowseResult *src, quint32 referencesSize, QVector<QOpcUaReferenceDescription> &dst)
 {
-    Q_UNUSED(referenceTypeId);
-    if (isInverse)
-        return UA_STATUSCODE_GOOD;
+    if (!src)
+        return;
 
-    // ### TODO: Question: Is it actually correct to skip these
-    UA_NodeId temp = UA_NODEID_NUMERIC(0, UA_NS0ID_FOLDERTYPE);
-    if (UA_NodeId_equal(&childId, &temp))
-        return UA_STATUSCODE_GOOD;
-
-    temp = UA_NODEID_NUMERIC(0, UA_NS0ID_BASEOBJECTTYPE);
-    if (UA_NodeId_equal(&childId, &temp))
-        return UA_STATUSCODE_GOOD;
-
-    auto back = static_cast<QStringList *>(pass);
-
-    QString childName;
-    if (childId.identifierType == UA_NODEIDTYPE_NUMERIC) {
-        childName = QStringLiteral("ns=%1;i=%2").arg(childId.namespaceIndex).arg(childId.identifier.numeric);
-    } else if (childId.identifierType == UA_NODEIDTYPE_STRING) {
-        childName = QStringLiteral("ns=%1;s=%2").arg(childId.namespaceIndex).arg(
-                    QString::fromUtf8(reinterpret_cast<char *>(childId.identifier.string.data), childId.identifier.string.length));
-    } else if (childId.identifierType == UA_NODEIDTYPE_GUID) {
-        UA_Guid tempId = childId.identifier.guid;
-        const QUuid uuid(tempId.data1, tempId.data2, tempId.data3, tempId.data4[0], tempId.data4[1], tempId.data4[2],
-                tempId.data4[3], tempId.data4[4], tempId.data4[5], tempId.data4[6], tempId.data4[7]);
-        childName = QStringLiteral("ns=%1;g=").arg(childId.namespaceIndex).append(uuid.toString().midRef(1, 36)); // Remove enclosing {...}
-    } else if (childId.identifierType == UA_NODEIDTYPE_BYTESTRING) {
-        const QString base64String = QByteArray(reinterpret_cast<char *>(childId.identifier.byteString.data),
-                                          childId.identifier.byteString.length).toBase64();
-        childName = QStringLiteral("ns=%1;b=").arg(childId.namespaceIndex).append(base64String);
+    for (size_t i = 0; i < referencesSize; ++i) {
+        QOpcUaReferenceDescription temp;
+        temp.setNodeId(Open62541Utils::nodeIdToQString(src->references[i].nodeId.nodeId));
+        temp.setRefType(static_cast<QOpcUa::ReferenceTypeId>(src->references[i].referenceTypeId.identifier.numeric));
+        temp.setNodeClass(static_cast<QOpcUa::NodeClass>(src->references[i].nodeClass));
+        temp.setBrowseName(QOpen62541ValueConverter::scalarToQVariant<QOpcUa::QQualifiedName, UA_QualifiedName>(
+                    &(src->references[i].browseName), QMetaType::Type::UnknownType).value<QOpcUa::QQualifiedName>());
+        temp.setDisplayName(QOpen62541ValueConverter::scalarToQVariant<QOpcUa::QLocalizedText, UA_LocalizedText>(
+                    &(src->references[i].displayName), QMetaType::Type::UnknownType).value<QOpcUa::QLocalizedText>());
+        dst.push_back(temp);
     }
-    else {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Skipping child with unsupported nodeid type";
-    }
-
-    if (!childName.isEmpty())
-        back->append(childName);
-
-    return UA_STATUSCODE_GOOD;
 }
 
-QStringList Open62541AsyncBackend::childrenIds(const UA_NodeId *parentNode)
+void Open62541AsyncBackend::browseChildren(uintptr_t handle, UA_NodeId id, QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
 {
-    QStringList result;
-    UA_StatusCode sc = UA_Client_forEachChildNodeCall(m_uaclient, *parentNode, nodeIter, &result);
-    if (sc != UA_STATUSCODE_GOOD)
-        return QStringList();
+    UA_BrowseRequest request;
+    UA_BrowseRequest_init(&request);
+    request.nodesToBrowse = UA_BrowseDescription_new();
+    request.nodesToBrowseSize = 1;
+    request.nodesToBrowse->browseDirection = UA_BROWSEDIRECTION_FORWARD;
+    request.nodesToBrowse->includeSubtypes = true;
+    request.nodesToBrowse->nodeClassMask = static_cast<quint32>(nodeClassMask);
+    request.nodesToBrowse->nodeId = id;
+    request.nodesToBrowse->resultMask = UA_BROWSERESULTMASK_BROWSENAME | UA_BROWSERESULTMASK_DISPLAYNAME |
+            UA_BROWSERESULTMASK_REFERENCETYPEID | UA_BROWSERESULTMASK_NODECLASS;
+    request.nodesToBrowse->referenceTypeId = UA_NODEID_NUMERIC(0, static_cast<quint32>(referenceType));
+    request.requestedMaxReferencesPerNode = 0; // Let the server choose a maximum value
 
-    return result;
+    UA_BrowseResponse *response = UA_BrowseResponse_new();
+    *response = UA_Client_Service_browse(m_uaclient, request);
+    UA_BrowseRequest_deleteMembers(&request);
+
+    QVector<QOpcUaReferenceDescription> ret;
+
+    QOpcUa::UaStatusCode statusCode = QOpcUa::UaStatusCode::Good;
+
+    while (response->resultsSize && statusCode == QOpcUa::UaStatusCode::Good) {
+        UA_BrowseResponse *res = static_cast<UA_BrowseResponse *>(response);
+
+        if (res->responseHeader.serviceResult != UA_STATUSCODE_GOOD || res->results->statusCode != UA_STATUSCODE_GOOD) {
+            statusCode = static_cast<QOpcUa::UaStatusCode>(res->results->statusCode);
+            break;
+        }
+
+        convertBrowseResult(res->results, res->results->referencesSize, ret);
+
+        if (res->results->continuationPoint.length) {
+            UA_BrowseNextRequest nextReq;
+            UA_BrowseNextRequest_init(&nextReq);
+            nextReq.continuationPoints = UA_ByteString_new();
+            UA_ByteString_copy(&(res->results->continuationPoint), nextReq.continuationPoints);
+            nextReq.continuationPointsSize = 1;
+            UA_BrowseResponse_deleteMembers(res);
+            *reinterpret_cast<UA_BrowseNextResponse *>(response) = UA_Client_Service_browseNext(m_uaclient, nextReq);
+            UA_BrowseNextRequest_deleteMembers(&nextReq);
+        } else {
+            break;
+        }
+    }
+
+    emit browseFinished(handle, ret, statusCode);
+
+    UA_BrowseResponse_delete(static_cast<UA_BrowseResponse *>(response));
 }
 
 void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)

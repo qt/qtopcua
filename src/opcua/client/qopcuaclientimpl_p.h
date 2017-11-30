@@ -93,6 +93,7 @@ private Q_SLOTS:
     void handleMonitoringStatusChanged(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                                  QOpcUaMonitoringParameters param);
     void handleMethodCallFinished(uintptr_t handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
+    void handleBrowseFinished(uintptr_t handle, const QVector<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode);
 
 signals:
     void connected();

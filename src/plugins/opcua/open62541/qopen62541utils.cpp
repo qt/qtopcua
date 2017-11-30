@@ -154,8 +154,18 @@ QString Open62541Utils::nodeIdToQString(UA_NodeId id)
         result.append(QString::fromLocal8Bit(reinterpret_cast<char *>(id.identifier.string.data),
                                              id.identifier.string.length));
         break;
-    case UA_NODEIDTYPE_GUID:
-    case UA_NODEIDTYPE_BYTESTRING:
+    case UA_NODEIDTYPE_GUID: {
+        const UA_Guid &src = id.identifier.guid;
+        const QUuid uuid(src.data1, src.data2, src.data3, src.data4[0], src.data4[1], src.data4[2],
+                src.data4[3], src.data4[4], src.data4[5], src.data4[6], src.data4[7]);
+        result.append(QStringLiteral("g=")).append(uuid.toString().midRef(1, 36)); // Remove enclosing {...}
+        break;
+    }
+    case UA_NODEIDTYPE_BYTESTRING: {
+        const QByteArray temp(reinterpret_cast<char *>(id.identifier.byteString.data), id.identifier.byteString.length);
+        result.append(QStringLiteral("b=")).append(temp.toBase64());
+        break;
+    }
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Open62541 Utils: Could not convert UA_NodeId to QString");
         result.clear();

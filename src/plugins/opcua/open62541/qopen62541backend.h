@@ -56,7 +56,7 @@ public Q_SLOTS:
     void disconnectFromEndpoint();
 
     // Node functions
-    QStringList childrenIds(const UA_NodeId *parentNode);
+    void browseChildren(uintptr_t handle, UA_NodeId id, QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask);
     void readAttributes(uintptr_t handle, UA_NodeId id, QOpcUa::NodeAttributes attr, QString indexRange);
 
     void writeAttribute(uintptr_t handle, UA_NodeId id, QOpcUa::NodeAttribute attrId, QVariant value, QOpcUa::Types type, QString indexRange);

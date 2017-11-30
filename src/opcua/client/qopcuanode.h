@@ -39,6 +39,7 @@
 
 #include <QtOpcUa/qopcuaglobal.h>
 #include <QtOpcUa/qopcuamonitoringparameters.h>
+#include <QtOpcUa/qopcuareferencedescription.h>
 #include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/qdatetime.h>
@@ -80,7 +81,9 @@ public:
     bool modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value);
     QOpcUaMonitoringParameters monitoringStatus(QOpcUa::NodeAttribute attr);
 
-    QStringList childrenIds() const;
+    bool browseChildren(QOpcUa::ReferenceTypeId referenceType = QOpcUa::ReferenceTypeId::HierarchicalReferences,
+                        QOpcUa::NodeClasses nodeClassMask = QOpcUa::NodeClass::Undefined);
+
     QString nodeId() const;
 
     QPair<double, double> readEuRange() const;
@@ -98,6 +101,7 @@ Q_SIGNALS:
     void enableMonitoringFinished(QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode);
     void disableMonitoringFinished(QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode);
     void methodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
+    void browseFinished(QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
 
 private:
     Q_DISABLE_COPY(QOpcUaNode)

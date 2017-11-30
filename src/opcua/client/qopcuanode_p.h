@@ -154,6 +154,11 @@ public:
             emit q_func()->methodCallFinished(methodNodeId, result, statusCode);
         });
 
+        m_browseFinishedConnection = QObject::connect(impl, &QOpcUaNodeImpl::browseFinished,
+                [this](QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode)
+        {
+            emit q_func()->browseFinished(children, statusCode);
+        });
     }
 
     ~QOpcUaNodePrivate()
@@ -164,6 +169,7 @@ public:
         QObject::disconnect(m_monitoringEnableDisableConnection);
         QObject::disconnect(m_monitoringStatusChangedConnection);
         QObject::disconnect(m_methodCallFinishedConnection);
+        QObject::disconnect(m_browseFinishedConnection);
     }
 
     QScopedPointer<QOpcUaNodeImpl> m_impl;
@@ -182,6 +188,7 @@ public:
     QMetaObject::Connection m_monitoringEnableDisableConnection;
     QMetaObject::Connection m_monitoringStatusChangedConnection;
     QMetaObject::Connection m_methodCallFinishedConnection;
+    QMetaObject::Connection m_browseFinishedConnection;
 };
 
 QT_END_NAMESPACE

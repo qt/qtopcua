@@ -73,7 +73,7 @@ public:
     virtual bool readAttributes(QOpcUa::NodeAttributes attr, const QString &indexRange) = 0;
     virtual bool enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings) = 0;
     virtual bool disableMonitoring(QOpcUa::NodeAttributes attr) = 0;
-    virtual QStringList childrenIds() const = 0;
+    virtual bool browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask) = 0;
     virtual QString nodeId() const = 0;
 
     virtual bool writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange) = 0;
@@ -89,6 +89,7 @@ public:
 Q_SIGNALS:
     void attributesRead(QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
     void attributeWritten(QOpcUa::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode);
+    void browseFinished(QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
 
     void attributeUpdated(QOpcUa::NodeAttribute attr, QVariant value);
     void monitoringEnableDisable(QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);

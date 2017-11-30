@@ -100,21 +100,6 @@ bool QFreeOpcUaNode::modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitori
                                      Q_ARG(QVariant, value));
 }
 
-QStringList QFreeOpcUaNode::childrenIds() const
-{
-    QStringList result;
-    try {
-        std::vector<OpcUa::Node> tmp = m_node.GetChildren();
-        result.reserve(tmp.size());
-        for (std::vector<OpcUa::Node>::const_iterator it = tmp.cbegin(); it != tmp.end(); ++it)
-            result.append(QFreeOpcUaValueConverter::nodeIdToString(it->GetId()));
-    } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Failed to get child ids for node:" << ex.what();
-    }
-
-    return result;
-}
-
 QString QFreeOpcUaNode::nodeId() const
 {
     try {
@@ -123,6 +108,16 @@ QString QFreeOpcUaNode::nodeId() const
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Failed to get id for node:" << ex.what();
         return QString();
     }
+}
+
+bool QFreeOpcUaNode::browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
+{
+    return QMetaObject::invokeMethod(m_client->m_opcuaWorker, "browseChildren",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(OpcUa::NodeId, m_node.GetId()),
+                                     Q_ARG(QOpcUa::ReferenceTypeId, referenceType),
+                                     Q_ARG(QOpcUa::NodeClasses, nodeClassMask));
 }
 
 bool QFreeOpcUaNode::writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange)

@@ -64,6 +64,7 @@ public slots:
     void readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUa::NodeAttributes attr, QString indexRange);
     void writeAttribute(uintptr_t handle, OpcUa::Node node, QOpcUa::NodeAttribute attr, QVariant value, QOpcUa::Types type, QString indexRange);
     void writeAttributes(uintptr_t handle, OpcUa::Node node, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType);
+    void browseChildren(uintptr_t handle, OpcUa::NodeId id, QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask);
 
     QFreeOpcUaSubscription *getSubscription(const QOpcUaMonitoringParameters &settings);
     bool removeSubscription(quint32 subscriptionId);

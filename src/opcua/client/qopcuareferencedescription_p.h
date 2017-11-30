@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
+** Copyright (C) 2017 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,42 +34,36 @@
 **
 ****************************************************************************/
 
-#ifndef QFREEOPCUANODE_H
-#define QFREEOPCUANODE_H
+#ifndef QOPCUAREFERENCEDESCRIPTION_P_H
+#define QOPCUAREFERENCEDESCRIPTION_P_H
 
-#include <private/qopcuanodeimpl_p.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include <QtCore/qpointer.h>
+#include <QtOpcUa/qopcuatype.h>
 
-#include <opc/ua/node.h>
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
 
-class QFreeOpcUaClientImpl;
-
-class QFreeOpcUaNode : public QOpcUaNodeImpl
+class QOpcUaReferenceDescriptionPrivate : public QSharedData
 {
 public:
-    explicit QFreeOpcUaNode(OpcUa::Node node, QFreeOpcUaClientImpl *client);
-    ~QFreeOpcUaNode() override;
-
-    bool readAttributes(QOpcUa::NodeAttributes attr, const QString &indexRange) override;
-    bool enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
-    bool disableMonitoring(QOpcUa::NodeAttributes attr);
-    bool modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value);
-    bool browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask) override;
-    QString nodeId() const override;
-
-    bool writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange) override;
-    bool writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType) override;
-    bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args) override;
-    QPair<QString, QString> readEui() const override;
-    QPair<double, double> readEuRange() const override;
-
-    OpcUa::Node m_node;
-    QPointer<QFreeOpcUaClientImpl> m_client;
+    QOpcUa::ReferenceTypeId refType;
+    QString nodeId;
+    QOpcUa::QQualifiedName browseName;
+    QOpcUa::QLocalizedText displayName;
+    QOpcUa::NodeClass nodeClass;
 };
 
 QT_END_NAMESPACE
 
-#endif // QFREEOPCUANODE_H
+#endif // QOPCUAREFERENCEDESCRIPTION_P_H

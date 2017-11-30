@@ -136,6 +136,17 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn void browseFinished(QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode)
+
+    This signal is emitted after a \l browseChildren() operation has finished.
+
+    \a children contains information about all nodes which matched the criteria in \l browseChildren().
+    \a statusCode contains the service result of the browse operation. If \a statusCode is not QOpcUa::UaAttributeId::Good,
+    \a children is empty.
+    \sa QOpcUaReferenceDescription
+*/
+
+/*!
     \internal QOpcUaNodeImpl is an opaque type (as seen from the public API).
     This prevents users of the public API to use this constructor (eventhough
     it is public).
@@ -389,14 +400,22 @@ bool QOpcUaNode::disableMonitoring(QOpcUa::NodeAttributes attr)
 }
 
 /*!
-   QStringList filled with the node IDs of all child nodes of the OPC UA node.
+    Executes a forward browse call starting from the node this method is called on.
+    The browse operation collects information about child nodes connected to the node
+    and delivers the results in the \l browseFinished() signal.
+
+    Returns \c true if the asynchronous call has been successfully dispatched.
+
+    To request only children connected to the node by a certain type of reference, \a referenceType must be set to that reference type.
+    For example, this can be  used to get all properties of a node by passing QOpcUa::ReferenceTypeId::HasProperty in \a referenceType.
+    The results can be filtered to contain only nodes with certain node classes by setting them in \a nodeClassMask.
 */
-QStringList QOpcUaNode::childrenIds() const
+bool QOpcUaNode::browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
 {
     if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
-        return QStringList();
+        return false;
 
-    return d_func()->m_impl->childrenIds();
+    return d_func()->m_impl->browseChildren(referenceType, nodeClassMask);
 }
 
 /*!

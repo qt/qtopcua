@@ -66,6 +66,7 @@ void QOpcUaClientImpl::connectBackendWithClient(QOpcUaBackend *backend)
     connect(backend, &QOpcUaBackend::monitoringEnableDisable, this, &QOpcUaClientImpl::handleMonitoringEnableDisable);
     connect(backend, &QOpcUaBackend::monitoringStatusChanged, this, &QOpcUaClientImpl::handleMonitoringStatusChanged);
     connect(backend, &QOpcUaBackend::methodCallFinished, this, &QOpcUaClientImpl::handleMethodCallFinished);
+    connect(backend, &QOpcUaBackend::browseFinished, this, &QOpcUaClientImpl::handleBrowseFinished);
 }
 
 void QOpcUaClientImpl::handleAttributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
@@ -108,6 +109,13 @@ void QOpcUaClientImpl::handleMethodCallFinished(uintptr_t handle, QString method
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
         emit (*it)->methodCallFinished(methodNodeId, result, statusCode);
+}
+
+void QOpcUaClientImpl::handleBrowseFinished(uintptr_t handle, const QVector<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode)
+{
+    auto it = m_handles.constFind(handle);
+    if (it != m_handles.constEnd() && !it->isNull())
+        emit (*it)->browseFinished(children, statusCode);
 }
 
 QT_END_NAMESPACE

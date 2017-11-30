@@ -102,15 +102,21 @@ bool QOpen62541Node::modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitori
                                      Q_ARG(QVariant, value));
 }
 
-QStringList QOpen62541Node::childrenIds() const
-{
-    QStringList result = m_client->m_backend->childrenIds(&m_nodeId);
-    return result;
-}
-
 QString QOpen62541Node::nodeId() const
 {
     return m_nodeIdString;
+}
+
+bool QOpen62541Node::browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
+{
+    UA_NodeId tempId;
+    UA_NodeId_copy(&m_nodeId, &tempId);
+    return QMetaObject::invokeMethod(m_client->m_backend, "browseChildren",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(UA_NodeId, tempId),
+                                     Q_ARG(QOpcUa::ReferenceTypeId, referenceType),
+                                     Q_ARG(QOpcUa::NodeClasses, nodeClassMask));
 }
 
 bool QOpen62541Node::writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange)

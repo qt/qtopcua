@@ -85,6 +85,7 @@ Q_SIGNALS:
     void monitoringEnableDisable(uintptr_t handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
     void monitoringStatusChanged(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                            QOpcUaMonitoringParameters param);
+    void browseFinished(uintptr_t handle, QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
 
 private:
     Q_DISABLE_COPY(QOpcUaBackend)

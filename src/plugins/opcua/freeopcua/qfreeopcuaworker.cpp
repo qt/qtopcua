@@ -106,6 +106,53 @@ void QFreeOpcUaWorker::asyncDisconnectFromEndpoint()
     emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
 }
 
+void QFreeOpcUaWorker::browseChildren(uintptr_t handle, OpcUa::NodeId id, QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
+{
+    OpcUa::BrowseDescription description;
+    description.NodeToBrowse = id;
+    description.Direction = OpcUa::BrowseDirection::Forward;
+    description.IncludeSubtypes = true;
+    description.NodeClasses = static_cast<OpcUa::NodeClass>(static_cast<quint32>(nodeClassMask));
+    description.ResultMask = OpcUa::BrowseResultMask::BrowseName | OpcUa::BrowseResultMask::DisplayName |
+            OpcUa::BrowseResultMask::ReferenceTypeId | OpcUa::BrowseResultMask::NodeClass;
+    description.ReferenceTypeId = static_cast<OpcUa::ReferenceId>(referenceType);
+
+    OpcUa::NodesQuery query;
+    query.NodesToBrowse.push_back(description);
+    query.MaxReferenciesPerNode = 0; // Let the server choose a maximum value
+
+    QOpcUa::UaStatusCode statusCode = QOpcUa::UaStatusCode::Good;
+    QVector<QOpcUaReferenceDescription> ret;
+
+    try {
+        std::vector<OpcUa::BrowseResult> results = Server->Views()->Browse(query);
+
+        while (!results.empty()) {
+            if (results[0].Status != OpcUa::StatusCode::Good) {
+                statusCode = static_cast<QOpcUa::UaStatusCode>(results[0].Status);
+                break;
+            }
+
+            for (std::vector<OpcUa::ReferenceDescription>::const_iterator it  = results[0].Referencies.begin(); it != results[0].Referencies.end(); ++it) {
+                QOpcUaReferenceDescription temp;
+                temp.setNodeId(QFreeOpcUaValueConverter::nodeIdToString(it->TargetNodeId));
+                temp.setRefType(static_cast<QOpcUa::ReferenceTypeId>(it->ReferenceTypeId.GetIntegerIdentifier()));
+                temp.setNodeClass(static_cast<QOpcUa::NodeClass>(it->TargetNodeClass));
+                temp.setBrowseName(QFreeOpcUaValueConverter::scalarUaToQt<QOpcUa::QQualifiedName>(it->BrowseName));
+                temp.setDisplayName(QFreeOpcUaValueConverter::scalarUaToQt<QOpcUa::QLocalizedText>(it->DisplayName));
+                ret.push_back(temp);
+            }
+
+            results = Server->Views()->BrowseNext();
+        }
+    } catch (const std::exception &ex) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Browse error:" << ex.what();
+        statusCode = QFreeOpcUaValueConverter::exceptionToStatusCode(ex);
+    }
+
+    emit browseFinished(handle, ret, statusCode);
+}
+
 void QFreeOpcUaWorker::readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUa::NodeAttributes attr, QString indexRange)
 {
     QVector<QOpcUaReadResult> vec;

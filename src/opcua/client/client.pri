@@ -13,7 +13,8 @@ SOURCES += \
     client/qopcuanodeimpl.cpp \
     client/qopcuaclientprivate.cpp \
     client/qopcuabackend.cpp \
-    client/qopcuamonitoringparameters.cpp
+    client/qopcuamonitoringparameters.cpp \
+    client/qopcuareferencedescription.cpp
 
 HEADERS += \
     client/qopcuaclient_p.h \
@@ -22,4 +23,6 @@ HEADERS += \
     client/qopcuanodeimpl_p.h \
     client/qopcuabackend_p.h \
     client/qopcuamonitoringparameters.h \
-    client/qopcuamonitoringparameters_p.h
+    client/qopcuamonitoringparameters_p.h \
+    client/qopcuareferencedescription.h \
+    client/qopcuareferencedescription_p.h

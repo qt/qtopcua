@@ -66,6 +66,43 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QOpcUa::ReferenceTypeId
+
+    This enum contains the reference types specified in OPC-UA part 3, 7.
+    They are used to filter for a certain reference type in \l QOpcUaNode::browseChildren
+    and for the reference type information in \a QOpcUaReferenceDescription.
+
+    \value Unspecified Not a valid reference type.
+    \value References The abstract base type for all references.
+    \value NonHierarchicalReferences The abstract base type for all non-hierarchical references.
+    \value HierarchicalReferences The abstract base type for all hierarchical references.
+    \value HasChild The abstract base type for all non-looping hierarchical references.
+    \value Organizes The type for hierarchical references that are used to organize nodes.
+    \value HasEventSource The type for non-looping hierarchical references that are used to organize event sources.
+    \value HasModellingRule The type for references from instance declarations to modelling rule nodes.
+    \value HasEncoding The type for references from data type nodes to to data type encoding nodes.
+    \value HasDescription The type for references from data type encoding nodes to data type description nodes.
+    \value HasTypeDefinition The type for references from a instance node to its type definition node.
+    \value GeneratesEvent The type for references from a node to an event type that is raised by node.
+    \value Aggregates The type for non-looping hierarchical references that are used to aggregate nodes into complex types.
+    \value HasSubtype The type for non-looping hierarchical references that are used to define sub types.
+    \value HasProperty The type for non-looping hierarchical reference from a node to its property.
+    \value HasComponent The type for non-looping hierarchical reference from a node to its component.
+    \value HasNotifier The type for non-looping hierarchical references that are used to indicate how events propagate from node to node.
+    \value HasOrderedComponent The type for non-looping hierarchical reference from a node to its component when the order of references matters.
+    \value FromState The type for a reference to the state before a transition.
+    \value ToState The type for a reference to the state after a transition.
+    \value HasCause The type for a reference to a method that can cause a transition to occur.
+    \value HasEffect The type for a reference to an event that may be raised when a transition occurs.
+    \value HasHistoricalConfiguration The type for a reference to the historical configuration for a data variable.
+    \value HasSubStateMachine The type for a reference to a substate for a state.
+    \value AlwaysGeneratesEvent The type for references from a node to an event type that is always raised by node.
+    \value HasTrueSubState The type for references from a TRUE super state node to a subordinate state node.
+    \value HasFalseSubState The type for references from a FALSE super state node to a subordinate state node.
+    \value HasCondition The type for references from a ConditionSource node to a Condition.
+*/
+
+/*!
     \enum QOpcUa::Types
 
     Enumerates the types supported by Qt OpcUa.

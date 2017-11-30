@@ -515,9 +515,12 @@ void Tst_QOpcUaClient::getChildren()
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=1;s=Large.Folder"));
     QVERIFY(node != 0);
-    READ_MANDATORY_BASE_NODE(node)
-    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text, QLatin1String("Large_Folder"));
-    QCOMPARE(node->childrenIds().size(), 1001);
+    QSignalSpy spy(node.data(), &QOpcUaNode::browseFinished);
+    node->browseChildren(QOpcUa::ReferenceTypeId::HierarchicalReferences, QOpcUa::NodeClass::Object);
+    spy.wait();
+    QCOMPARE(spy.size(), 1);
+    QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
+    QCOMPARE(ref.size(), 1001);
 }
 
 void Tst_QOpcUaClient::childrenIdsString()
@@ -527,9 +530,13 @@ void Tst_QOpcUaClient::childrenIdsString()
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=testStringIdsFolder"));
     QVERIFY(node != 0);
-    QStringList childrenIds = node->childrenIds();
-    QCOMPARE(childrenIds.size(), 1);
-    QCOMPARE(childrenIds.at(0), "ns=3;s=theStringId");
+    QSignalSpy spy(node.data(), &QOpcUaNode::browseFinished);
+    node->browseChildren(QOpcUa::ReferenceTypeId::Organizes, QOpcUa::NodeClass::Variable);
+    spy.wait();
+    QCOMPARE(spy.size(), 1);
+    QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
+    QCOMPARE(ref.size(), 1);
+    QCOMPARE(ref.at(0).nodeId(), "ns=3;s=theStringId");
 }
 
 void Tst_QOpcUaClient::childrenIdsGuidNodeId()
@@ -539,9 +546,13 @@ void Tst_QOpcUaClient::childrenIdsGuidNodeId()
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=testGuidIdsFolder"));
     QVERIFY(node != 0);
-    const QStringList childrenIds = node->childrenIds();
-    QCOMPARE(childrenIds.size(), 1);
-    QCOMPARE(childrenIds.at(0), "ns=3;g=08081e75-8e5e-319b-954f-f3a7613dc29b");
+    QSignalSpy spy(node.data(), &QOpcUaNode::browseFinished);
+    node->browseChildren(QOpcUa::ReferenceTypeId::Organizes, QOpcUa::NodeClass::Variable);
+    spy.wait();
+    QCOMPARE(spy.size(), 1);
+    QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
+    QCOMPARE(ref.size(), 1);
+    QCOMPARE(ref.at(0).nodeId(), "ns=3;g=08081e75-8e5e-319b-954f-f3a7613dc29b");
 }
 
 void Tst_QOpcUaClient::childrenIdsOpaqueNodeId()
@@ -551,9 +562,13 @@ void Tst_QOpcUaClient::childrenIdsOpaqueNodeId()
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=testOpaqueIdsFolder"));
     QVERIFY(node != 0);
-    const QStringList childrenIds = node->childrenIds();
-    QCOMPARE(childrenIds.size(), 1);
-    QCOMPARE(childrenIds.at(0), "ns=3;b=UXQgZnR3IQ==");
+    QSignalSpy spy(node.data(), &QOpcUaNode::browseFinished);
+    node->browseChildren(QOpcUa::ReferenceTypeId::Organizes, QOpcUa::NodeClass::Variable);
+    spy.wait();
+    QCOMPARE(spy.size(), 1);
+    QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
+    QCOMPARE(ref.size(), 1);
+    QCOMPARE(ref.at(0).nodeId(), "ns=3;b=UXQgZnR3IQ==");
 }
 
 void Tst_QOpcUaClient::dataChangeSubscription()

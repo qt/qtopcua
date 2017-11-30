@@ -61,6 +61,7 @@ enum class NodeClass {
     View = 128,
 };
 Q_ENUM_NS(NodeClass)
+Q_DECLARE_FLAGS(NodeClasses, NodeClass)
 
 enum class NodeAttribute {
     None = 0,
@@ -98,6 +99,40 @@ inline uint qHash(const QOpcUa::NodeAttribute& attr)
 {
     return ::qHash(static_cast<uint>(attr));
 }
+
+// The reference types are nodes in namespace 0, the enum value is their numeric identifier.
+// Identifiers are specified in https://opcfoundation.org/UA/schemas/1.03/NodeIds.csv
+enum class ReferenceTypeId : quint32 {
+    Unspecified = 0,
+    References = 31,
+    NonHierarchicalReferences = 32,
+    HierarchicalReferences = 33,
+    HasChild = 34,
+    Organizes = 35,
+    HasEventSource = 36,
+    HasModellingRule = 37,
+    HasEncoding = 38,
+    HasDescription = 39,
+    HasTypeDefinition = 40,
+    GeneratesEvent = 41,
+    Aggregates = 44,
+    HasSubtype = 45,
+    HasProperty = 46,
+    HasComponent = 47,
+    HasNotifier = 48,
+    HasOrderedComponent = 49,
+    FromState = 51,
+    ToState = 52,
+    HasCause = 53,
+    HasEffect = 54,
+    HasHistoricalConfiguration = 56,
+    HasSubStateMachine = 117,
+    AlwaysGeneratesEvent = 3065,
+    HasTrueSubState = 9004,
+    HasFalseSubState = 9005,
+    HasCondition = 9006
+};
+Q_ENUM_NS(ReferenceTypeId)
 
 enum Types
 {
@@ -404,6 +439,7 @@ struct QLocalizedText {
         return locale == other.locale && text == other.text;
     }
 };
+
 }
 
 Q_DECLARE_TYPEINFO(QOpcUa::Types, Q_PRIMITIVE_TYPE);
@@ -413,6 +449,8 @@ Q_DECLARE_TYPEINFO(QOpcUa::ErrorCategory, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QOpcUa::NodeClass, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QOpcUa::NodeAttribute, Q_PRIMITIVE_TYPE);
 Q_DECLARE_OPERATORS_FOR_FLAGS(QOpcUa::NodeAttributes)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QOpcUa::NodeClasses)
+Q_DECLARE_TYPEINFO(QOpcUa::ReferenceTypeId, Q_PRIMITIVE_TYPE);
 
 QT_END_NAMESPACE
 
@@ -425,5 +463,7 @@ Q_DECLARE_METATYPE(QOpcUa::ErrorCategory)
 Q_DECLARE_METATYPE(QOpcUa::NodeClass)
 Q_DECLARE_METATYPE(QOpcUa::NodeAttribute)
 Q_DECLARE_METATYPE(QOpcUa::NodeAttributes)
+Q_DECLARE_METATYPE(QOpcUa::ReferenceTypeId)
+Q_DECLARE_METATYPE(QOpcUa::NodeClasses)
 
 #endif // QOPCUATYPE
