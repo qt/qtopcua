@@ -224,7 +224,7 @@ Tst_QOpcUaClient::Tst_QOpcUaClient()
 
 void Tst_QOpcUaClient::initTestCase()
 {
-    for (const auto backend: m_backends) {
+    for (const auto &backend: m_backends) {
         QOpcUaClient *client = m_opcUa.createClient(backend);
         QVERIFY2(client != nullptr,
                  QString("Loading backend failed: %1").arg(backend).toLatin1().data());
