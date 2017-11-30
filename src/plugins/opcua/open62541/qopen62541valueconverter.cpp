@@ -199,7 +199,6 @@ QVariant toQVariant(const UA_Variant &value)
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
         return QVariant();
     }
-    return QVariant();
 }
 
 QOpcUa::Types toQOpcUaVariantType(quint8 typeIndex)
@@ -227,7 +226,6 @@ QOpcUa::Types toQOpcUaVariantType(quint8 typeIndex)
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion to Qt type " << typeIndex << " not implemented";
         return QOpcUa::Undefined;
     }
-    return QOpcUa::Undefined;
 }
 
 const UA_DataType *toDataType(QOpcUa::Types valueType)
