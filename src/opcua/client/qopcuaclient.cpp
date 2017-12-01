@@ -128,7 +128,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
     it is public).
 */
 QOpcUaClient::QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent)
-    : QObject(*(new QOpcUaClientPrivate(impl, this)), parent)
+    : QObject(*(new QOpcUaClientPrivate(impl)), parent)
 {
     impl->m_client = this;
 }

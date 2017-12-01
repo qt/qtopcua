@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 class Q_OPCUA_EXPORT QOpcUaClientPrivate : public QObjectPrivate
 {
 public:
-    QOpcUaClientPrivate(QOpcUaClientImpl *impl, QOpcUaClient *parent);
+    QOpcUaClientPrivate(QOpcUaClientImpl *impl);
     ~QOpcUaClientPrivate() override;
 
     void connectToEndpoint(const QUrl &url);
@@ -81,7 +81,6 @@ public:
 
 private:
     Q_DECLARE_PUBLIC(QOpcUaClient)
-    QOpcUaClient * const q_ptr;
 };
 
 QT_END_NAMESPACE

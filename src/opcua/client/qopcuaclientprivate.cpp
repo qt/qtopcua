@@ -42,12 +42,11 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 
-QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl, QOpcUaClient *parent)
+QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
     : QObjectPrivate()
     , m_impl(impl)
     , m_state(QOpcUaClient::Disconnected)
     , m_error(QOpcUaClient::NoError)
-    , q_ptr(parent)
 {
     // callback from client implementation
     QObject::connect(m_impl.data(), &QOpcUaClientImpl::stateAndOrErrorChanged,
