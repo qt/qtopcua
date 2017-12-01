@@ -67,7 +67,6 @@ public:
     enum ClientError {
         NoError,
         InvalidUrl,
-        SecureConnectionError,
         AccessDenied,
         ConnectionError,
         UnknownError
@@ -78,7 +77,6 @@ public:
     ~QOpcUaClient();
 
     Q_INVOKABLE void connectToEndpoint(const QUrl &url);
-    Q_INVOKABLE void secureConnectToEndpoint(const QUrl &url);
     Q_INVOKABLE void disconnectFromEndpoint();
     QOpcUaNode *node(const QString &nodeId);
 
@@ -87,7 +85,6 @@ public:
     ClientState state() const;
     ClientError error() const;
 
-    bool isSecureConnectionSupported() const;
     QString backend() const;
 
 Q_SIGNALS:

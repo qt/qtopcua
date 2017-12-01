@@ -55,11 +55,9 @@ public:
     ~QFreeOpcUaClientImpl() override;
 
     void connectToEndpoint(const QUrl &url) override;
-    void secureConnectToEndpoint(const QUrl &url) override;
     void disconnectFromEndpoint() override;
     QOpcUaNode *node(const QString &nodeId) override;
 
-    bool isSecureConnectionSupported() const override { return false; }
     QString backend() const override { return QStringLiteral("freeopcua"); }
 
     QFreeOpcUaWorker *m_opcuaWorker{};

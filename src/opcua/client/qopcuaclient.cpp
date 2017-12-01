@@ -84,8 +84,6 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
            No error occurred.
     \value InvalidUrl
            The url to connect to has been wrongly specified or a connection to this url failed.
-    \value SecureConnectionError
-           An attempt to connect to a server with a secure connection failed.
     \value AccessDenied
            An attempt to connect to a server using username/password failed due to wrong credentials.
     \value ConnectionError
@@ -145,23 +143,6 @@ void QOpcUaClient::connectToEndpoint(const QUrl &url)
 }
 
 /*!
-    Connects to an endpoint given by \a url using the highest security level
-    supported by client and server.
-    true is returned in case of success, false is returned when the connection
-    fails.
-    User name and password must be set on \a url before connectToEndpoint
-    is called.
-
-    \warning Currently not supported by any backend.
-    \sa disconnectFromEndpoint()
-*/
-void QOpcUaClient::secureConnectToEndpoint(const QUrl &url)
-{
-    Q_D(QOpcUaClient);
-    d->secureConnectToEndpoint(url);
-}
-
-/*!
     Disconnects from the server.
     \sa connectToEndpoint()
 */
@@ -194,16 +175,6 @@ QOpcUaClient::ClientError QOpcUaClient::error() const
 {
     Q_D(const QOpcUaClient);
     return d->m_error;
-}
-
-/*! Returns \c true if the backend supports a connection over an encrypted channel.
-
-    \sa secureConnectToEndpoint
-*/
-bool QOpcUaClient::isSecureConnectionSupported() const
-{
-    Q_D(const QOpcUaClient);
-    return d->m_impl->isSecureConnectionSupported();
 }
 
 /*!

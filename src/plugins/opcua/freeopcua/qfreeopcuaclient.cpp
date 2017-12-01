@@ -69,11 +69,6 @@ void QFreeOpcUaClientImpl::connectToEndpoint(const QUrl &url)
                               Q_ARG(QUrl, url));
 }
 
-void QFreeOpcUaClientImpl::secureConnectToEndpoint(const QUrl &)
-{
-    // No need to do something, never reached
-}
-
 void QFreeOpcUaClientImpl::disconnectFromEndpoint()
 {
     QMetaObject::invokeMethod(m_opcuaWorker, "asyncDisconnectFromEndpoint", Qt::QueuedConnection);

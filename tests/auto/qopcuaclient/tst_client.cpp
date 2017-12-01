@@ -171,10 +171,6 @@ private slots:
     // connect & disconnect
     defineDataMethod(connectToInvalid_data)
     void connectToInvalid();
-    defineDataMethod(secureConnect_data)
-    void secureConnect();
-    defineDataMethod(secureConnectToInvalid_data)
-    void secureConnectToInvalid();
     defineDataMethod(connectAndDisconnect_data)
     void connectAndDisconnect();
 
@@ -333,53 +329,6 @@ void Tst_QOpcUaClient::connectToInvalid()
     opcuaClient->connectToEndpoint(QUrl("opc.tcp:127.0.0.1:1234"));
     // Depending on the event loop the client might have switched to Disconnected already
     QVERIFY(opcuaClient->state() == QOpcUaClient::Connecting || opcuaClient->state() == QOpcUaClient::Disconnected);
-
-    for (int i = 0; i < 10; ++i) {
-        QTest::qWait(50);
-        if (opcuaClient->state() == QOpcUaClient::Disconnected)
-            break;
-        QVERIFY(opcuaClient->state() == QOpcUaClient::Connecting);
-    }
-    QVERIFY(opcuaClient->state() == QOpcUaClient::Connected ||
-            opcuaClient->state() == QOpcUaClient::Disconnected);
-
-    QUrl url = opcuaClient->url();
-    QVERIFY(url == QUrl("opc.tcp:127.0.0.1:1234"));
-}
-
-void Tst_QOpcUaClient::secureConnect()
-{
-    QFETCH(QOpcUaClient *, opcuaClient);
-    QSKIP("Secure connections are not supported by open62541-based testserver");
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("Secure connections are not supported with the freeopcua backend");
-    if (opcuaClient->backend() == QLatin1String("open62541"))
-        QSKIP("Secure connections are not supported with the open62541 backend");
-
-    QVERIFY(opcuaClient != 0);
-
-    opcuaClient->secureConnectToEndpoint(QUrl(m_endpoint));
-    QVERIFY(opcuaClient->state() == QOpcUaClient::Connecting);
-    QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
-
-    QVERIFY(opcuaClient->url() == QUrl(m_endpoint));
-
-    opcuaClient->disconnectFromEndpoint();
-    QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Disconnected, "Could not disconnect from server");
-}
-
-void Tst_QOpcUaClient::secureConnectToInvalid()
-{
-    QFETCH(QOpcUaClient *, opcuaClient);
-
-    QSKIP("Secure connections are not supported by open62541-based testserver");
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("Secure connections are not supported with the freeopcua backend");
-    if (opcuaClient->backend() == QLatin1String("open62541"))
-        QSKIP("Secure connections are not supported with the open62541 backend");
-
-    opcuaClient->secureConnectToEndpoint(QUrl("opc.tcp:127.0.0.1:1234"));
-    QVERIFY(opcuaClient->state() == QOpcUaClient::Connecting);
 
     for (int i = 0; i < 10; ++i) {
         QTest::qWait(50);

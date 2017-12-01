@@ -70,23 +70,6 @@ void QOpcUaClientPrivate::connectToEndpoint(const QUrl &url)
     }
 }
 
-void QOpcUaClientPrivate::secureConnectToEndpoint(const QUrl &url)
-{
-    if (!m_impl->isSecureConnectionSupported()) {
-        qCWarning(QT_OPCUA) << "Backend does not support secure connections. Cancelling connection";
-        setStateAndError(m_state, QOpcUaClient::SecureConnectionError);
-        return;
-    }
-
-    bool result = checkAndSetUrl(url);
-    if (result) {
-        setStateAndError(QOpcUaClient::Connecting);
-        m_impl->secureConnectToEndpoint(url);
-    } else {
-        setStateAndError(QOpcUaClient::Disconnected, QOpcUaClient::InvalidUrl);
-    }
-}
-
 void QOpcUaClientPrivate::disconnectFromEndpoint()
 {
     if (m_state != QOpcUaClient::Connected) {
