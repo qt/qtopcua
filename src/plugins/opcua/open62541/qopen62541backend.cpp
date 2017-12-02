@@ -78,15 +78,13 @@ void Open62541AsyncBackend::readAttributes(uintptr_t handle, UA_NodeId id, QOpcU
 
     QVector<QOpcUaReadResult> vec;
 
-    for (uint i = 0; i < nodeAttributeEnumBits(); ++i) {
-        if (attr & (1 << i)) {
-            readId.attributeId = QOpen62541ValueConverter::toUaAttributeId(static_cast<QOpcUaNode::NodeAttribute>(1 << i));
-            valueIds.push_back(readId);
-            QOpcUaReadResult temp;
-            temp.attributeId = static_cast<QOpcUaNode::NodeAttribute>(1 << i);
-            vec.push_back(temp);
-        }
-    }
+    qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attribute){
+        readId.attributeId = QOpen62541ValueConverter::toUaAttributeId(attribute);
+        valueIds.push_back(readId);
+        QOpcUaReadResult temp;
+        temp.attributeId = attribute;
+        vec.push_back(temp);
+    });
 
     UA_ReadResponse res;
     UA_ReadResponse_init(&res);

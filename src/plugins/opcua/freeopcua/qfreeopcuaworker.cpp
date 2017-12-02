@@ -111,15 +111,13 @@ void QFreeOpcUaWorker::readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUa
         OpcUa::ReadValueId attribute;
         attribute.NodeId = id;
 
-        for (uint i = 0; i < nodeAttributeEnumBits(); ++i) {
-            if (attr & (1 << i)) {
-                attribute.AttributeId = QFreeOpcUaValueConverter::toUaAttributeId(static_cast<QOpcUaNode::NodeAttribute>(1 << i));
-                params.AttributesToRead.push_back(attribute);
-                QOpcUaReadResult temp;
-                temp.attributeId = static_cast<QOpcUaNode::NodeAttribute>(1 << i);
-                vec.push_back(temp);
-            }
-        }
+        qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attr) {
+            attribute.AttributeId = QFreeOpcUaValueConverter::toUaAttributeId(attr);
+            params.AttributesToRead.push_back(attribute);
+            QOpcUaReadResult temp;
+            temp.attributeId = attr;
+            vec.push_back(temp);
+        });
 
         std::vector<OpcUa::DataValue> res = GetRootNode().GetServices()->Attributes()->Read(params);
 

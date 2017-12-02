@@ -53,6 +53,8 @@
 
 #include <QtCore/qobject.h>
 
+#include <functional>
+
 QT_BEGIN_NAMESPACE
 
 class QOpcUaNodeImpl;
@@ -78,6 +80,16 @@ Q_SIGNALS:
 private:
     Q_DISABLE_COPY(QOpcUaBackend)
 };
+
+static inline void qt_forEachAttribute(QOpcUaNode::NodeAttributes attributes, const std::function<void(QOpcUaNode::NodeAttribute attribute)> &f)
+{
+    for (uint i = 0; i < QOpcUaBackend::nodeAttributeEnumBits(); ++i) {
+        if (!(attributes & (1 << i)))
+            continue;
+        QOpcUaNode::NodeAttribute currentAttribute = static_cast<QOpcUaNode::NodeAttribute>(1 << i);
+        f(currentAttribute);
+    }
+}
 
 QT_END_NAMESPACE
 
