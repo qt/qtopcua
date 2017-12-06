@@ -136,7 +136,7 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
     case QOpcUa::String:
         return arrayFromQVariant<UA_String, QString>(value, dt);
     case QOpcUa::LocalizedText:
-        return arrayFromQVariant<UA_LocalizedText, QString>(value, dt);
+        return arrayFromQVariant<UA_LocalizedText, QOpcUa::QLocalizedText>(value, dt);
     case QOpcUa::ByteString:
         return arrayFromQVariant<UA_ByteString, QByteArray>(value, dt);
     case QOpcUa::NodeId:
@@ -186,7 +186,7 @@ QVariant toQVariant(const UA_Variant &value)
     case UA_TYPES_BYTESTRING:
         return arrayToQVariant<QByteArray, UA_ByteString>(value, QMetaType::QByteArray);
     case UA_TYPES_LOCALIZEDTEXT:
-        return arrayToQVariant<QString, UA_LocalizedText>(value, QMetaType::QString);
+        return arrayToQVariant<QOpcUa::QLocalizedText, UA_LocalizedText>(value, QMetaType::QString);
     case UA_TYPES_NODEID:
         return arrayToQVariant<QString, UA_NodeId>(value, QMetaType::QString);
     case UA_TYPES_DATETIME:
@@ -309,7 +309,7 @@ QVariant scalarToQVariant<QByteArray, UA_ByteString>(UA_ByteString *data, QMetaT
 }
 
 template<>
-QVariant scalarToQVariant<QString, UA_LocalizedText>(UA_LocalizedText *data, QMetaType::Type type)
+QVariant scalarToQVariant<QOpcUa::QLocalizedText, UA_LocalizedText>(UA_LocalizedText *data, QMetaType::Type type)
 {
     Q_UNUSED(type)
 
@@ -388,7 +388,7 @@ void scalarFromQVariant<UA_String, QString>(const QVariant &var, UA_String *ptr)
 }
 
 template<>
-void scalarFromQVariant<UA_LocalizedText, QString>(const QVariant &var, UA_LocalizedText *ptr)
+void scalarFromQVariant<UA_LocalizedText, QOpcUa::QLocalizedText>(const QVariant &var, UA_LocalizedText *ptr)
 {
     QOpcUa::QLocalizedText lt = var.value<QOpcUa::QLocalizedText>();
     scalarFromQVariant<UA_String, QString>(lt.locale, &(ptr->locale));
