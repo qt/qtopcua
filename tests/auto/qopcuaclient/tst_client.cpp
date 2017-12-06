@@ -638,7 +638,8 @@ void Tst_QOpcUaClient::dataChangeSubscription()
 
     QVector<QOpcUa::NodeAttribute> attrs;
 
-    if (opcuaClient->backend() == QLatin1String("open62541")) {
+    if (opcuaClient->backend() == QLatin1String("open62541") ||
+            opcuaClient->backend() == QLatin1String("uacpp")) {
         QSignalSpy monitoringModifiedSpy(node.data(), &QOpcUaNode::monitoringStatusChanged);
         node->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::PublishingInterval, 200);
 
@@ -670,7 +671,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
         QVERIFY(monitoringModifiedSpy.size() == 1);
         QVERIFY(monitoringModifiedSpy.at(0).at(0).value<QOpcUa::NodeAttribute>() == QOpcUa::NodeAttribute::Value);
         QVERIFY(monitoringModifiedSpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>() & QOpcUaMonitoringParameters::Parameter::Filter);
-        QEXPECT_FAIL("", "Modifying monitored items is not yet supported by open62541", Continue);
+        QEXPECT_FAIL("", "Modifying monitored items is not yet supported by open62541/uacpp", Continue);
         QVERIFY(monitoringModifiedSpy.at(0).at(2).value<QOpcUa::UaStatusCode>() == QOpcUa::UaStatusCode::Good);
 
     } else {

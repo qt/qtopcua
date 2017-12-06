@@ -1,0 +1,7 @@
+{
+    "Keys" : [ "UnifiedAutomationCPPSDK" ],
+    "Provider" : "UnifiedAutomationCPPSDK",
+    "Version" : "1.0",
+    "Features" : [ "client" ],
+    "stability" : 1
+}
