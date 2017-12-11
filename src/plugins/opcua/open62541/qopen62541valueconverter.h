@@ -48,9 +48,14 @@ QT_BEGIN_NAMESPACE
 namespace QOpen62541ValueConverter {
     QOpcUa::Types qvariantTypeToQOpcUaType(QVariant::Type type);
 
-    constexpr UA_AttributeId toUaAttributeId(QOpcUaNode::NodeAttribute attr)
+    inline UA_AttributeId toUaAttributeId(QOpcUaNode::NodeAttribute attr)
     {
-        return static_cast<UA_AttributeId>(std::log2(static_cast<std::underlying_type<QOpcUaNode::NodeAttribute>::type>(attr)) + 1);
+        const int attributeIdUsedBits = 22;
+        for (int i = 0; i < attributeIdUsedBits; ++i)
+            if (static_cast<int>(attr) == (1 << i))
+                return static_cast<UA_AttributeId>(i + 1);
+
+        return static_cast<UA_AttributeId>(0);
     }
 
     UA_Variant toOpen62541Variant(const QVariant&, QOpcUa::Types);

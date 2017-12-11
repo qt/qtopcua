@@ -49,11 +49,6 @@ static void compileTimeEnforceEnumMappings(void)
                   "FreeOPCUA and QOpcUa values for NodeClasses must be the same");
     static_assert(static_cast<QOpcUaNode::NodeClass>(OpcUa::NodeClass::Variable) == QOpcUaNode::NodeClass::Variable,
                   "FreeOPCUA and QOpcUa values for NodeClasses must be the same");
-
-    static_assert(OpcUa::AttributeId::NodeId == QFreeOpcUaValueConverter::toUaAttributeId(QOpcUaNode::NodeAttribute::NodeId),
-                  "FreeOPCUA and QOpcUa values for AttributeId must be the same");
-    static_assert(OpcUa::AttributeId::UserExecutable == QFreeOpcUaValueConverter::toUaAttributeId(QOpcUaNode::NodeAttribute::UserExecutable),
-                  "FreeOPCUA and QOpcUa values for AttributeId must be the same");
 }
 
 QFreeOpcUaPlugin::QFreeOpcUaPlugin(QObject *parent)

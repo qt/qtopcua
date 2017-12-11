@@ -50,11 +50,6 @@ static void compileTimeEnforceEnumMappings(void)
                   "open62541 and QOpcUa values for NodeClasses must be the same");
     static_assert(static_cast<QOpcUaNode::NodeClass>(UA_NODECLASS_VARIABLE) == QOpcUaNode::NodeClass::Variable,
                   "open62541 and QOpcUa values for NodeClasses must be the same");
-
-    static_assert(UA_ATTRIBUTEID_NODEID == QOpen62541ValueConverter::toUaAttributeId(QOpcUaNode::NodeAttribute::NodeId),
-                  "open62541 and QOpcUa values for AttributeId must be the same");
-    static_assert(UA_ATTRIBUTEID_USEREXECUTABLE == QOpen62541ValueConverter::toUaAttributeId(QOpcUaNode::NodeAttribute::UserExecutable),
-                  "open62541 and QOpcUa values for AttributeId must be the same");
 }
 
 QOpen62541Plugin::QOpen62541Plugin(QObject *parent)
