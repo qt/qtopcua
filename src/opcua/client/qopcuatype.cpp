@@ -47,6 +47,25 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QOpcUa::NodeClass
+
+    This enum specifies the class a node belongs to. OPC-UA specifies a fixed
+    set of eight different classes.
+
+    \value Undefined     The node class is not known. This is the case before
+                         the NodeClass attribute has been read on the server.
+
+    \value Object        An Object node.
+    \value Variable      A Variable node.
+    \value Method        A Method node.
+    \value ObjectType    An ObjectType node.
+    \value VariableType  A VariableType node.
+    \value ReferenceType A ReferenceType node.
+    \value DataType      A DataType node.
+    \value View          A View node.
+*/
+
+/*!
     \enum QOpcUa::Types
 
     Enumerates the types supported by Qt OpcUa.

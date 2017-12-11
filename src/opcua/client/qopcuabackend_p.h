@@ -69,33 +69,33 @@ public:
 
     static Q_DECL_CONSTEXPR size_t nodeAttributeEnumBits()
     {
-        return sizeof(std::underlying_type<QOpcUaNode::NodeAttribute>::type) * CHAR_BIT;
+        return sizeof(std::underlying_type<QOpcUa::NodeAttribute>::type) * CHAR_BIT;
     }
 
-    QOpcUa::Types attributeIdToTypeId(QOpcUaNode::NodeAttribute attr);
+    QOpcUa::Types attributeIdToTypeId(QOpcUa::NodeAttribute attr);
 
 Q_SIGNALS:
     void stateAndOrErrorChanged(QOpcUaClient::ClientState state,
                                 QOpcUaClient::ClientError error);
     void attributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attributes, QOpcUa::UaStatusCode serviceResult);
-    void attributeWritten(uintptr_t hande, QOpcUaNode::NodeAttribute attribute, QVariant value, QOpcUa::UaStatusCode statusCode);
+    void attributeWritten(uintptr_t hande, QOpcUa::NodeAttribute attribute, QVariant value, QOpcUa::UaStatusCode statusCode);
     void methodCallFinished(uintptr_t handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
 
-    void attributeUpdated(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QVariant value);
-    void monitoringEnableDisable(uintptr_t handle, QOpcUaNode::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
-    void monitoringStatusChanged(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
+    void attributeUpdated(uintptr_t handle, QOpcUa::NodeAttribute attr, QVariant value);
+    void monitoringEnableDisable(uintptr_t handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
+    void monitoringStatusChanged(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                            QOpcUaMonitoringParameters param);
 
 private:
     Q_DISABLE_COPY(QOpcUaBackend)
 };
 
-static inline void qt_forEachAttribute(QOpcUaNode::NodeAttributes attributes, const std::function<void(QOpcUaNode::NodeAttribute attribute)> &f)
+static inline void qt_forEachAttribute(QOpcUa::NodeAttributes attributes, const std::function<void(QOpcUa::NodeAttribute attribute)> &f)
 {
     for (uint i = 0; i < QOpcUaBackend::nodeAttributeEnumBits(); ++i) {
         if (!(attributes & (1 << i)))
             continue;
-        QOpcUaNode::NodeAttribute currentAttribute = static_cast<QOpcUaNode::NodeAttribute>(1 << i);
+        QOpcUa::NodeAttribute currentAttribute = static_cast<QOpcUa::NodeAttribute>(1 << i);
         f(currentAttribute);
     }
 }

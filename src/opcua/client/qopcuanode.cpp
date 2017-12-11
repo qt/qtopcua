@@ -80,25 +80,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QOpcUaNode::NodeClass
-
-    This enum specifies the class a node belongs to. OPC-UA specifies a fixed
-    set of eight different classes.
-
-    \value Undefined     The node class is not known. This is the case before
-                         the NodeClass attribute has been read on the server.
-
-    \value Object        An Object node.
-    \value Variable      A Variable node.
-    \value Method        A Method node.
-    \value ObjectType    An ObjectType node.
-    \value VariableType  A VariableType node.
-    \value ReferenceType A ReferenceType node.
-    \value DataType      A DataType node.
-    \value View          A View node.
-*/
-
-/*!
     \typedef QOpcUaNode::AttributeMap
 
     This type is used by \l writeAttributes() to write more than one attribute at a time.
@@ -106,14 +87,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QOpcUaNode::readFinished(QOpcUaNode::NodeAttributes attributes)
+    \fn void QOpcUaNode::readFinished(QOpcUa::NodeAttributes attributes)
 
     This signal is emitted after a \l readAttributes() or \l readAttributeRange() operation has finished.
     The receiver has to check the status code for the attributes contained in \a attributes.
 */
 
 /*!
-    \fn QOpcUaNode::attributeWritten(QOpcUaNode::NodeAttribute attribute, QOpcUa::UaStatusCode statusCode)
+    \fn QOpcUaNode::attributeWritten(QOpcUa::NodeAttribute attribute, QOpcUa::UaStatusCode statusCode)
 
     This signal is emitted after a \l writeAttribute(), \l writeAttributes() or \l writeAttributeRange()
     operation has finished.
@@ -123,14 +104,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void enableMonitoringFinished(QOpcUaNode::NodeAttribute attr, QOpcUa::UaStatusCode statusCode)
+    \fn void enableMonitoringFinished(QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode)
 
     This signal is emitted after an asynchronous call to \l enableMonitoring() has finished.
     After this signal has been emitted, \l monitoringStatus() returns valid information for \a attr.
 */
 
 /*!
-    \fn void disableMonitoringFinished(QOpcUaNode::NodeAttribute attr, QOpcUa::UaStatusCode statusCode)
+    \fn void disableMonitoringFinished(QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode)
 
     This signal is emitted after an asynchronous call to \l disableMonitoring() has finished.
     After this signal has been emitted, monitoringStatus returns a default constructed value with
@@ -138,7 +119,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QOpcUaNode::monitoringStatusChanged(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value, QOpcUa::UaStatusCode statusCode);
+    \fn void QOpcUaNode::monitoringStatusChanged(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value, QOpcUa::UaStatusCode statusCode);
 
     This signal is emitted after an asynchronous call to \l modifyMonitoring() has finished.
     The node attribute for which the operation was requested is returned in \a attr. \a item contains the parameters that have been modified.
@@ -178,12 +159,12 @@ QOpcUaNode::~QOpcUaNode()
 
     Attribute values only contain valid information after the \l readFinished signal has been emitted.
 */
-bool QOpcUaNode::readAttributeRange(QOpcUaNode::NodeAttribute attribute, const QString &indexRange)
+bool QOpcUaNode::readAttributeRange(QOpcUa::NodeAttribute attribute, const QString &indexRange)
 {
     if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return false;
 
-    return d_func()->m_impl->readAttributes(QOpcUaNode::NodeAttributes() | attribute, indexRange);
+    return d_func()->m_impl->readAttributes(QOpcUa::NodeAttributes() | attribute, indexRange);
 }
 
 /*!
@@ -192,7 +173,7 @@ bool QOpcUaNode::readAttributeRange(QOpcUaNode::NodeAttribute attribute, const Q
 
     Attribute values only contain valid information after the \l readFinished signal has been emitted.
 */
-bool QOpcUaNode::readAttributes(QOpcUaNode::NodeAttributes attributes)
+bool QOpcUaNode::readAttributes(QOpcUa::NodeAttributes attributes)
 {
     if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return false;
@@ -206,7 +187,7 @@ bool QOpcUaNode::readAttributes(QOpcUaNode::NodeAttributes attributes)
     The value is only valid after the \l readFinished signal has been emitted.
     An empty QVariant is returned if there is no cached value for the attribute.
  */
-QVariant QOpcUaNode::attribute(QOpcUaNode::NodeAttribute attribute) const
+QVariant QOpcUaNode::attribute(QOpcUa::NodeAttribute attribute) const
 {
     auto it = d_func()->m_nodeAttributes.constFind(attribute);
     if (it == d_func()->m_nodeAttributes.constEnd())
@@ -222,7 +203,7 @@ QVariant QOpcUaNode::attribute(QOpcUaNode::NodeAttribute attribute) const
 
     \sa QOpcUa::errorCategory
  */
-QOpcUa::UaStatusCode QOpcUaNode::attributeError(QOpcUaNode::NodeAttribute attribute) const
+QOpcUa::UaStatusCode QOpcUaNode::attributeError(QOpcUa::NodeAttribute attribute) const
 {
     auto it = d_func()->m_nodeAttributes.constFind(attribute);
     if (it == d_func()->m_nodeAttributes.constEnd())
@@ -305,7 +286,7 @@ QOpcUa::UaStatusCode QOpcUaNode::attributeError(QOpcUaNode::NodeAttribute attrib
     the node does not exist on the server, the node does not have the requested attribute or the maximum number of monitored items for
     the server is reached.
  */
-bool QOpcUaNode::enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
+bool QOpcUaNode::enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
 {
     if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return false;
@@ -323,7 +304,7 @@ bool QOpcUaNode::enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaM
     A Bad status code is generated if there is no monitored item associated with the requested attribute, revising the requested
     parameter is not implemented or if the server has rejected the requested value.
 */
-bool QOpcUaNode::modifyMonitoring(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value)
+bool QOpcUaNode::modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value)
 {
     if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return false;
@@ -336,7 +317,7 @@ bool QOpcUaNode::modifyMonitoring(QOpcUaNode::NodeAttribute attr, QOpcUaMonitori
     or if parameters have been revised.
     The returned values are only valid after \l enableMonitoringFinished or \l monitoringStatusChanged have been emitted for \a attr.
 */
-QOpcUaMonitoringParameters QOpcUaNode::monitoringStatus(QOpcUaNode::NodeAttribute attr)
+QOpcUaMonitoringParameters QOpcUaNode::monitoringStatus(QOpcUa::NodeAttribute attr)
 {
     auto it = d_func()->m_monitoringStatus.constFind(attr);
     if (it == d_func()->m_monitoringStatus.constEnd()) {
@@ -353,7 +334,7 @@ QOpcUaMonitoringParameters QOpcUaNode::monitoringStatus(QOpcUaNode::NodeAttribut
 
     Returns true if the write operation has been dispatched successfully.
  */
-bool QOpcUaNode::writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type)
+bool QOpcUaNode::writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type)
 {
     if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return false;
@@ -367,7 +348,7 @@ bool QOpcUaNode::writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVari
 
     Returns true if the asynchronous call has been successfully dispatched.
 */
-bool QOpcUaNode::writeAttributeRange(QOpcUaNode::NodeAttribute attribute, const QVariant &value, const QString &indexRange, QOpcUa::Types type)
+bool QOpcUaNode::writeAttributeRange(QOpcUa::NodeAttribute attribute, const QVariant &value, const QString &indexRange, QOpcUa::Types type)
 {
     if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return false;
@@ -399,7 +380,7 @@ bool QOpcUaNode::writeAttributes(const AttributeMap &toWrite, QOpcUa::Types valu
     After the call is finished, the \l disableMonitoringFinished signal is emitted and monitoringStatus returns a default constructed value with
     status code BadMonitoredItemIdIinvalid for \a attr.
 */
-bool QOpcUaNode::disableMonitoring(QOpcUaNode::NodeAttributes attr)
+bool QOpcUaNode::disableMonitoring(QOpcUa::NodeAttributes attr)
 {
   if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
       return false;
@@ -478,9 +459,9 @@ bool QOpcUaNode::callMethod(const QString &methodNodeId, const QVector<QOpcUa::T
 QDebug operator<<(QDebug dbg, const QOpcUaNode &node)
 {
     dbg << "QOpcUaNode {"
-        << "DisplayName:" << node.attribute(QOpcUaNode::NodeAttribute::DisplayName)
-        << "Id:" << node.attribute(QOpcUaNode::NodeAttribute::NodeId)
-        << "Class:" << node.attribute(QOpcUaNode::NodeAttribute::NodeClass)
+        << "DisplayName:" << node.attribute(QOpcUa::NodeAttribute::DisplayName)
+        << "Id:" << node.attribute(QOpcUa::NodeAttribute::NodeId)
+        << "Class:" << node.attribute(QOpcUa::NodeAttribute::NodeClass)
         << "}";
     return dbg;
 }

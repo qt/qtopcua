@@ -106,7 +106,7 @@ void QFreeOpcUaWorker::asyncDisconnectFromEndpoint()
     emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
 }
 
-void QFreeOpcUaWorker::readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUaNode::NodeAttributes attr, QString indexRange)
+void QFreeOpcUaWorker::readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUa::NodeAttributes attr, QString indexRange)
 {
     QVector<QOpcUaReadResult> vec;
 
@@ -115,7 +115,7 @@ void QFreeOpcUaWorker::readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUa
         OpcUa::ReadValueId attribute;
         attribute.NodeId = id;
 
-        qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attr) {
+        qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attr) {
             attribute.AttributeId = QFreeOpcUaValueConverter::toUaAttributeId(attr);
             attribute.IndexRange = indexRange.toStdString();
             params.AttributesToRead.push_back(attribute);
@@ -140,12 +140,12 @@ void QFreeOpcUaWorker::readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUa
     }
 }
 
-void QFreeOpcUaWorker::writeAttribute(uintptr_t handle, OpcUa::Node node, QOpcUaNode::NodeAttribute attr, QVariant value, QOpcUa::Types type, QString indexRange)
+void QFreeOpcUaWorker::writeAttribute(uintptr_t handle, OpcUa::Node node, QOpcUa::NodeAttribute attr, QVariant value, QOpcUa::Types type, QString indexRange)
 {
     std::vector<OpcUa::StatusCode> res;
 
     try {
-        if (type == QOpcUa::Types::Undefined && attr != QOpcUaNode::NodeAttribute::Value)
+        if (type == QOpcUa::Types::Undefined && attr != QOpcUa::NodeAttribute::Value)
             type = attributeIdToTypeId(attr);
         OpcUa::Variant toWrite = QFreeOpcUaValueConverter::toTypedVariant(value, type);
 
@@ -170,7 +170,7 @@ void QFreeOpcUaWorker::writeAttributes(uintptr_t handle, OpcUa::Node node, QOpcU
 {
     if (toWrite.size() == 0) {
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "No values to be written");
-        emit attributeWritten(handle, QOpcUaNode::NodeAttribute::None, QVariant(), QOpcUa::UaStatusCode::BadNothingToDo);
+        emit attributeWritten(handle, QOpcUa::NodeAttribute::None, QVariant(), QOpcUa::UaStatusCode::BadNothingToDo);
         return;
     }
 
@@ -183,7 +183,7 @@ void QFreeOpcUaWorker::writeAttributes(uintptr_t handle, OpcUa::Node node, QOpcU
             OpcUa::WriteValue val;
             val.NodeId = node.GetId();
             val.AttributeId = QFreeOpcUaValueConverter::toUaAttributeId(it.key());
-            QOpcUa::Types type = it.key() == QOpcUaNode::NodeAttribute::Value ? valueAttributeType : attributeIdToTypeId(it.key());
+            QOpcUa::Types type = it.key() == QOpcUa::NodeAttribute::Value ? valueAttributeType : attributeIdToTypeId(it.key());
             val.Value = OpcUa::DataValue(QFreeOpcUaValueConverter::toTypedVariant(it.value(), type));
             req.push_back(val);
         }
@@ -233,7 +233,7 @@ bool QFreeOpcUaWorker::removeSubscription(quint32 subscriptionId)
     return false;
 }
 
-void QFreeOpcUaWorker::enableMonitoring(uintptr_t handle, OpcUa::Node node, QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
+void QFreeOpcUaWorker::enableMonitoring(uintptr_t handle, OpcUa::Node node, QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
 {
     QFreeOpcUaSubscription *usedSubscription = nullptr;
 
@@ -241,7 +241,7 @@ void QFreeOpcUaWorker::enableMonitoring(uintptr_t handle, OpcUa::Node node, QOpc
     if (settings.subscriptionId()) {
         if (!m_subscriptions.contains(settings.subscriptionId())) {
             qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "There is no subscription with id %u", settings.subscriptionId());
-            qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attr) {
+            qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attr) {
                 QOpcUaMonitoringParameters s;
                 s.setStatusCode(QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
                 emit monitoringEnableDisable(handle, attr, true, s);
@@ -255,7 +255,7 @@ void QFreeOpcUaWorker::enableMonitoring(uintptr_t handle, OpcUa::Node node, QOpc
 
     if (!usedSubscription) {
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Could not create subscription with interval %f", settings.publishingInterval());
-        qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attr) {
+        qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attr) {
             QOpcUaMonitoringParameters s;
             s.setStatusCode(QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
             emit monitoringEnableDisable(handle, attr, true, s);
@@ -263,7 +263,7 @@ void QFreeOpcUaWorker::enableMonitoring(uintptr_t handle, OpcUa::Node node, QOpc
         return;
     }
 
-    qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attr) {
+    qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attr) {
         bool success = usedSubscription->addAttributeMonitoredItem(handle, attr, node, settings);
         if (success)
             m_attributeMapping[handle][attr] = usedSubscription;
@@ -273,9 +273,9 @@ void QFreeOpcUaWorker::enableMonitoring(uintptr_t handle, OpcUa::Node node, QOpc
         removeSubscription(usedSubscription->subscriptionId()); // No items were added
 }
 
-void QFreeOpcUaWorker::disableMonitoring(uintptr_t handle, QOpcUaNode::NodeAttributes attr)
+void QFreeOpcUaWorker::disableMonitoring(uintptr_t handle, QOpcUa::NodeAttributes attr)
 {
-    qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attr) {
+    qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attr) {
         QFreeOpcUaSubscription *sub = getSubscriptionForItem(handle, attr);
         if (sub) {
             sub->removeAttributeMonitoredItem(handle, attr);
@@ -285,7 +285,7 @@ void QFreeOpcUaWorker::disableMonitoring(uintptr_t handle, QOpcUaNode::NodeAttri
     });
 }
 
-void QFreeOpcUaWorker::modifyMonitoring(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
+void QFreeOpcUaWorker::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
 {
     QFreeOpcUaSubscription *subscription = getSubscriptionForItem(handle, attr);
     if (!subscription) {
@@ -299,7 +299,7 @@ void QFreeOpcUaWorker::modifyMonitoring(uintptr_t handle, QOpcUaNode::NodeAttrib
     subscription->modifyMonitoring(handle, attr, item, value);
 }
 
-QFreeOpcUaSubscription *QFreeOpcUaWorker::getSubscriptionForItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr)
+QFreeOpcUaSubscription *QFreeOpcUaWorker::getSubscriptionForItem(uintptr_t handle, QOpcUa::NodeAttribute attr)
 {
     auto nodeEntry = m_attributeMapping.find(handle);
     if (nodeEntry == m_attributeMapping.end())

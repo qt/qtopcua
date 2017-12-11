@@ -48,6 +48,57 @@ QT_BEGIN_NAMESPACE
 namespace QOpcUa {
 Q_OPCUA_EXPORT Q_NAMESPACE
 
+// see OPC-UA Part 3, 5.2.3 & 8.30
+enum class NodeClass {
+    Undefined = 0,
+    Object = 1,
+    Variable = 2,
+    Method = 4,
+    ObjectType = 8,
+    VariableType = 16,
+    ReferenceType = 32,
+    DataType = 64,
+    View = 128,
+};
+Q_ENUM_NS(NodeClass)
+
+enum class NodeAttribute {
+    None = 0,
+    NodeId = (1 << 0),
+    NodeClass = (1 << 1),
+    BrowseName = (1 << 2),
+    DisplayName = (1 << 3),
+    Description = (1 << 4),
+    WriteMask = (1 << 5),
+    UserWriteMask = (1 << 6), // Base attributes, see part 4, 5.2.1
+    IsAbstract = (1 << 7),
+    Symmetric = (1 << 8),
+    InverseName = (1 << 9),   // Reference attributes, see part 4, 5.3.1
+    ContainsNoLoops = (1 << 10),
+    EventNotifier = (1 << 11), // View attributes, see part 4, 5.4
+    // Objects also add the EventNotifier attribute, see part 4, 5.5.1
+    // ObjectType also add the IsAbstract attribute, see part 4, 5.5.2
+    Value = (1 << 12),
+    DataType = (1 << 13),
+    ValueRank = (1 << 14),
+    ArrayDimensions = (1 << 15),
+    AccessLevel = (1 << 16),
+    UserAccessLevel = (1 << 17),
+    MinimumSamplingInterval = (1 << 18),
+    Historizing = (1 << 19),   // Value attributes, see part 4, 5.6.2
+    // VariableType also adds the Value, DataType, ValueRank, ArrayDimensions
+    // and isAbstract attributes, see part 4, 5.6.5
+    Executable = (1 << 20),
+    UserExecutable = (1 << 21), // Method attributes, see part 4, 5.7
+};
+Q_ENUM_NS(NodeAttribute)
+Q_DECLARE_FLAGS(NodeAttributes, NodeAttribute)
+
+inline uint qHash(const QOpcUa::NodeAttribute& attr)
+{
+    return ::qHash(static_cast<uint>(attr));
+}
+
 enum Types
 {
     Boolean         = 0,
@@ -359,6 +410,10 @@ Q_DECLARE_TYPEINFO(QOpcUa::Types, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QOpcUa::UaStatusCode, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QOpcUa::ErrorCategory, Q_PRIMITIVE_TYPE);
 
+Q_DECLARE_TYPEINFO(QOpcUa::NodeClass, Q_PRIMITIVE_TYPE);
+Q_DECLARE_TYPEINFO(QOpcUa::NodeAttribute, Q_PRIMITIVE_TYPE);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QOpcUa::NodeAttributes)
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QOpcUa::Types)
@@ -367,5 +422,8 @@ Q_DECLARE_METATYPE(QOpcUa::QQualifiedName)
 Q_DECLARE_METATYPE(QOpcUa::QLocalizedText)
 Q_DECLARE_METATYPE(QOpcUa::UaStatusCode)
 Q_DECLARE_METATYPE(QOpcUa::ErrorCategory)
+Q_DECLARE_METATYPE(QOpcUa::NodeClass)
+Q_DECLARE_METATYPE(QOpcUa::NodeAttribute)
+Q_DECLARE_METATYPE(QOpcUa::NodeAttributes)
 
 #endif // QOPCUATYPE

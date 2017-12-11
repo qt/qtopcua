@@ -87,10 +87,10 @@ public:
 
 private Q_SLOTS:
     void handleAttributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
-    void handleAttributeWritten(uintptr_t handle, QOpcUaNode::NodeAttribute attr, const QVariant &value, QOpcUa::UaStatusCode statusCode);
-    void handleAttributeUpdated(uintptr_t handle, QOpcUaNode::NodeAttribute attr, const QVariant &value);
-    void handleMonitoringEnableDisable(uintptr_t handle, QOpcUaNode::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
-    void handleMonitoringStatusChanged(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
+    void handleAttributeWritten(uintptr_t handle, QOpcUa::NodeAttribute attr, const QVariant &value, QOpcUa::UaStatusCode statusCode);
+    void handleAttributeUpdated(uintptr_t handle, QOpcUa::NodeAttribute attr, const QVariant &value);
+    void handleMonitoringEnableDisable(uintptr_t handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
+    void handleMonitoringStatusChanged(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                                  QOpcUaMonitoringParameters param);
     void handleMethodCallFinished(uintptr_t handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
 
@@ -107,11 +107,6 @@ private:
 inline uint qHash(const QPointer<QOpcUaNodeImpl>& n)
 {
     return ::qHash(n.data());
-}
-
-inline uint qHash(const QOpcUaNode::NodeAttribute& attr)
-{
-    return ::qHash(static_cast<uint>(attr));
 }
 
 QT_END_NAMESPACE

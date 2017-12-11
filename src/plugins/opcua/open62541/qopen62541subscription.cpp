@@ -100,7 +100,7 @@ bool QOpen62541Subscription::removeOnServer()
     return (res == UA_STATUSCODE_GOOD) ? true : false;
 }
 
-void QOpen62541Subscription::modifyMonitoring(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
+void QOpen62541Subscription::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
 {
     QOpcUaMonitoringParameters p;
     p.setStatusCode(QOpcUa::UaStatusCode::BadNotImplemented);
@@ -217,7 +217,7 @@ void QOpen62541Subscription::modifyMonitoring(uintptr_t handle, QOpcUaNode::Node
     emit m_backend->monitoringStatusChanged(handle, attr, item, p);
 }
 
-bool QOpen62541Subscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr, const UA_NodeId &id, QOpcUaMonitoringParameters settings)
+bool QOpen62541Subscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUa::NodeAttribute attr, const UA_NodeId &id, QOpcUaMonitoringParameters settings)
 {
     Q_UNUSED(settings); // This is for later applications like including parameters for the monitored item into settings
     UA_UInt32 monitoredItemId = 0;
@@ -249,7 +249,7 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUaN
     return true;
 }
 
-bool QOpen62541Subscription::removeAttributeMonitoredItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr)
+bool QOpen62541Subscription::removeAttributeMonitoredItem(uintptr_t handle, QOpcUa::NodeAttribute attr)
 {
     MonitoredItem *item = getItemForAttribute(handle, attr);
     if (!item) {
@@ -308,7 +308,7 @@ QOpcUaMonitoringParameters::SubscriptionType QOpen62541Subscription::shared() co
     return m_shared;
 }
 
-QOpen62541Subscription::MonitoredItem *QOpen62541Subscription::getItemForAttribute(uintptr_t handle, QOpcUaNode::NodeAttribute attr)
+QOpen62541Subscription::MonitoredItem *QOpen62541Subscription::getItemForAttribute(uintptr_t handle, QOpcUa::NodeAttribute attr)
 {
     auto nodeEntry = m_handleToItemMapping.constFind(handle);
 

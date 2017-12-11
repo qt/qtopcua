@@ -50,14 +50,14 @@ public:
     explicit QOpen62541Node(const UA_NodeId nodeId, QOpen62541Client *client, const QString nodeIdString);
     ~QOpen62541Node() override;
 
-    bool readAttributes(QOpcUaNode::NodeAttributes attr, const QString &indexRange) override;
-    bool enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings) override;
-    bool disableMonitoring(QOpcUaNode::NodeAttributes attr) override;
-    bool modifyMonitoring(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value) override;
+    bool readAttributes(QOpcUa::NodeAttributes attr, const QString &indexRange) override;
+    bool enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings) override;
+    bool disableMonitoring(QOpcUa::NodeAttributes attr) override;
+    bool modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value) override;
     QStringList childrenIds() const override;
     QString nodeId() const override;
 
-    bool writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange) override;
+    bool writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange) override;
     bool writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType) override;
     bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args) override;
     QPair<QString, QString> readEui() const override;

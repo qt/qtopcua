@@ -59,72 +59,26 @@ class Q_OPCUA_EXPORT QOpcUaNode : public QObject
 public:
     Q_DECLARE_PRIVATE(QOpcUaNode)
 
-    // see OPC-UA Part 3, 5.2.3 & 8.30
-    enum class NodeClass {
-        Undefined = 0,
-        Object = 1,
-        Variable = 2,
-        Method = 4,
-        ObjectType = 8,
-        VariableType = 16,
-        ReferenceType = 32,
-        DataType = 64,
-        View = 128,
-    };
-    Q_ENUM(NodeClass)
-
-    enum class NodeAttribute {
-        None = 0,
-        NodeId = (1 << 0),
-        NodeClass = (1 << 1),
-        BrowseName = (1 << 2),
-        DisplayName = (1 << 3),
-        Description = (1 << 4),
-        WriteMask = (1 << 5),
-        UserWriteMask = (1 << 6), // Base attributes, see part 4, 5.2.1
-        IsAbstract = (1 << 7),
-        Symmetric = (1 << 8),
-        InverseName = (1 << 9),   // Reference attributes, see part 4, 5.3.1
-        ContainsNoLoops = (1 << 10),
-        EventNotifier = (1 << 11), // View attributes, see part 4, 5.4
-        // Objects also add the EventNotifier attribute, see part 4, 5.5.1
-        // ObjectType also add the IsAbstract attribute, see part 4, 5.5.2
-        Value = (1 << 12),
-        DataType = (1 << 13),
-        ValueRank = (1 << 14),
-        ArrayDimensions = (1 << 15),
-        AccessLevel = (1 << 16),
-        UserAccessLevel = (1 << 17),
-        MinimumSamplingInterval = (1 << 18),
-        Historizing = (1 << 19),   // Value attributes, see part 4, 5.6.2
-        // VariableType also adds the Value, DataType, ValueRank, ArrayDimensions
-        // and isAbstract attributes, see part 4, 5.6.5
-        Executable = (1 << 20),
-        UserExecutable = (1 << 21), // Method attributes, see part 4, 5.7
-    };
-    Q_ENUM(NodeAttribute)
-    Q_DECLARE_FLAGS(NodeAttributes, NodeAttribute)
-
-    static Q_DECL_CONSTEXPR QOpcUaNode::NodeAttributes mandatoryBaseAttributes();
-    static Q_DECL_CONSTEXPR QOpcUaNode::NodeAttributes allBaseAttributes();
-    typedef QMap<QOpcUaNode::NodeAttribute, QVariant> AttributeMap;
+    static Q_DECL_CONSTEXPR QOpcUa::NodeAttributes mandatoryBaseAttributes();
+    static Q_DECL_CONSTEXPR QOpcUa::NodeAttributes allBaseAttributes();
+    typedef QMap<QOpcUa::NodeAttribute, QVariant> AttributeMap;
 
     QOpcUaNode(QOpcUaNodeImpl *impl, QOpcUaClient *client, QObject *parent = nullptr);
     virtual ~QOpcUaNode();
 
-    bool readAttributes(QOpcUaNode::NodeAttributes attributes = mandatoryBaseAttributes());
-    bool readAttributeRange(QOpcUaNode::NodeAttribute attribute, const QString &indexRange);
-    QVariant attribute(QOpcUaNode::NodeAttribute attribute) const;
-    QOpcUa::UaStatusCode attributeError(QOpcUaNode::NodeAttribute attribute) const;
-    bool writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type = QOpcUa::Types::Undefined);
-    bool writeAttributeRange(QOpcUaNode::NodeAttribute attribute, const QVariant &value,
+    bool readAttributes(QOpcUa::NodeAttributes attributes = mandatoryBaseAttributes());
+    bool readAttributeRange(QOpcUa::NodeAttribute attribute, const QString &indexRange);
+    QVariant attribute(QOpcUa::NodeAttribute attribute) const;
+    QOpcUa::UaStatusCode attributeError(QOpcUa::NodeAttribute attribute) const;
+    bool writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type = QOpcUa::Types::Undefined);
+    bool writeAttributeRange(QOpcUa::NodeAttribute attribute, const QVariant &value,
                         const QString &indexRange, QOpcUa::Types type = QOpcUa::Types::Undefined);
     bool writeAttributes(const AttributeMap &toWrite, QOpcUa::Types valueAttributeType = QOpcUa::Types::Undefined);
 
-    bool enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
-    bool disableMonitoring(QOpcUaNode::NodeAttributes attr);
-    bool modifyMonitoring(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value);
-    QOpcUaMonitoringParameters monitoringStatus(QOpcUaNode::NodeAttribute attr);
+    bool enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
+    bool disableMonitoring(QOpcUa::NodeAttributes attr);
+    bool modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value);
+    QOpcUaMonitoringParameters monitoringStatus(QOpcUa::NodeAttribute attr);
 
     QStringList childrenIds() const;
     QString nodeId() const;
@@ -135,14 +89,14 @@ public:
     bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args = QVector<QOpcUa::TypedVariant>());
 
 Q_SIGNALS:
-    void readFinished(QOpcUaNode::NodeAttributes attributes);
-    void attributeWritten(QOpcUaNode::NodeAttribute attribute, QOpcUa::UaStatusCode statusCode);
-    void attributeUpdated(QOpcUaNode::NodeAttribute attr, QVariant value);
+    void readFinished(QOpcUa::NodeAttributes attributes);
+    void attributeWritten(QOpcUa::NodeAttribute attribute, QOpcUa::UaStatusCode statusCode);
+    void attributeUpdated(QOpcUa::NodeAttribute attr, QVariant value);
 
-    void monitoringStatusChanged(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
+    void monitoringStatusChanged(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                            QOpcUa::UaStatusCode statusCode);
-    void enableMonitoringFinished(QOpcUaNode::NodeAttribute attr, QOpcUa::UaStatusCode statusCode);
-    void disableMonitoringFinished(QOpcUaNode::NodeAttribute attr, QOpcUa::UaStatusCode statusCode);
+    void enableMonitoringFinished(QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode);
+    void disableMonitoringFinished(QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode);
     void methodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
 
 private:
@@ -151,28 +105,21 @@ private:
 
 Q_OPCUA_EXPORT QDebug operator<<(QDebug dbg, const QOpcUaNode &node);
 
-Q_DECLARE_TYPEINFO(QOpcUaNode::NodeClass, Q_PRIMITIVE_TYPE);
-Q_DECLARE_TYPEINFO(QOpcUaNode::NodeAttribute, Q_PRIMITIVE_TYPE);
-Q_DECLARE_OPERATORS_FOR_FLAGS(QOpcUaNode::NodeAttributes)
-
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QOpcUaNode::NodeClass)
-Q_DECLARE_METATYPE(QOpcUaNode::NodeAttribute)
-Q_DECLARE_METATYPE(QOpcUaNode::NodeAttributes)
 Q_DECLARE_METATYPE(QOpcUaNode::AttributeMap)
 
-inline Q_DECL_CONSTEXPR QOpcUaNode::NodeAttributes QOpcUaNode::mandatoryBaseAttributes()
+inline Q_DECL_CONSTEXPR QOpcUa::NodeAttributes QOpcUaNode::mandatoryBaseAttributes()
 {
-    return QOpcUaNode::NodeAttribute::NodeId | QOpcUaNode::NodeAttribute::NodeClass |
-            QOpcUaNode::NodeAttribute::BrowseName | QOpcUaNode::NodeAttribute::DisplayName;
+    return QOpcUa::NodeAttribute::NodeId | QOpcUa::NodeAttribute::NodeClass |
+            QOpcUa::NodeAttribute::BrowseName | QOpcUa::NodeAttribute::DisplayName;
 }
 
-inline Q_DECL_CONSTEXPR QOpcUaNode::NodeAttributes QOpcUaNode::allBaseAttributes()
+inline Q_DECL_CONSTEXPR QOpcUa::NodeAttributes QOpcUaNode::allBaseAttributes()
 {
-    return NodeAttribute::NodeId | NodeAttribute::NodeClass | NodeAttribute::BrowseName |
-            NodeAttribute::DisplayName | NodeAttribute::Description | NodeAttribute::WriteMask |
-            NodeAttribute::UserWriteMask;
+    return QOpcUa::NodeAttribute::NodeId | QOpcUa::NodeAttribute::NodeClass | QOpcUa::NodeAttribute::BrowseName |
+            QOpcUa::NodeAttribute::DisplayName | QOpcUa::NodeAttribute::Description | QOpcUa::NodeAttribute::WriteMask |
+            QOpcUa::NodeAttribute::UserWriteMask;
 }
 
 #endif // QOPCUANODE_H

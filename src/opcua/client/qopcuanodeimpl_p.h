@@ -58,7 +58,7 @@
 QT_BEGIN_NAMESPACE
 
 struct QOpcUaReadResult {
-    QOpcUaNode::NodeAttribute attributeId;
+    QOpcUa::NodeAttribute attributeId;
     QOpcUa::UaStatusCode statusCode;
     QVariant value;
 };
@@ -70,15 +70,15 @@ public:
     QOpcUaNodeImpl();
     virtual ~QOpcUaNodeImpl();
 
-    virtual bool readAttributes(QOpcUaNode::NodeAttributes attr, const QString &indexRange) = 0;
-    virtual bool enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings) = 0;
-    virtual bool disableMonitoring(QOpcUaNode::NodeAttributes attr) = 0;
+    virtual bool readAttributes(QOpcUa::NodeAttributes attr, const QString &indexRange) = 0;
+    virtual bool enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings) = 0;
+    virtual bool disableMonitoring(QOpcUa::NodeAttributes attr) = 0;
     virtual QStringList childrenIds() const = 0;
     virtual QString nodeId() const = 0;
 
-    virtual bool writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange) = 0;
+    virtual bool writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange) = 0;
     virtual bool writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType) = 0;
-    virtual bool modifyMonitoring(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item,
+    virtual bool modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item,
                                           const QVariant &value) = 0;
 
     virtual QPair<double, double> readEuRange() const = 0;
@@ -88,11 +88,11 @@ public:
 
 Q_SIGNALS:
     void attributesRead(QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
-    void attributeWritten(QOpcUaNode::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode);
+    void attributeWritten(QOpcUa::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode);
 
-    void attributeUpdated(QOpcUaNode::NodeAttribute attr, QVariant value);
-    void monitoringEnableDisable(QOpcUaNode::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
-    void monitoringStatusChanged(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
+    void attributeUpdated(QOpcUa::NodeAttribute attr, QVariant value);
+    void monitoringEnableDisable(QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
+    void monitoringStatusChanged(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                            QOpcUaMonitoringParameters param);
     void methodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
 };

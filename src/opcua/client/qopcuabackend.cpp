@@ -47,37 +47,37 @@ QOpcUaBackend::~QOpcUaBackend()
 
 // All attributes except Value have a fixed type.
 // A mapping between attribute id and type can be used to simplify the API for writing multiple attributes at once.
-QOpcUa::Types QOpcUaBackend::attributeIdToTypeId(QOpcUaNode::NodeAttribute attr)
+QOpcUa::Types QOpcUaBackend::attributeIdToTypeId(QOpcUa::NodeAttribute attr)
 {
     switch (attr) {
-    case QOpcUaNode::NodeAttribute::NodeId:
-    case QOpcUaNode::NodeAttribute::DataType:
+    case QOpcUa::NodeAttribute::NodeId:
+    case QOpcUa::NodeAttribute::DataType:
         return QOpcUa::Types::NodeId;
-//    case QOpcUaNode::NodeAttribute::NodeClass: TODO: Add support for the NodeClass type
+//    case QOpcUa::NodeAttribute::NodeClass: TODO: Add support for the NodeClass type
 //        return QOpcUa::Types::NodeClass;
-    case QOpcUaNode::NodeAttribute::BrowseName:
+    case QOpcUa::NodeAttribute::BrowseName:
         return QOpcUa::Types::QualifiedName;
-    case QOpcUaNode::NodeAttribute::DisplayName:
-    case QOpcUaNode::NodeAttribute::Description:
-    case QOpcUaNode::NodeAttribute::InverseName:
+    case QOpcUa::NodeAttribute::DisplayName:
+    case QOpcUa::NodeAttribute::Description:
+    case QOpcUa::NodeAttribute::InverseName:
         return QOpcUa::Types::LocalizedText;
-    case QOpcUaNode::NodeAttribute::WriteMask:
-    case QOpcUaNode::NodeAttribute::UserWriteMask:
-    case QOpcUaNode::NodeAttribute::ValueRank:
-    case QOpcUaNode::NodeAttribute::ArrayDimensions:
+    case QOpcUa::NodeAttribute::WriteMask:
+    case QOpcUa::NodeAttribute::UserWriteMask:
+    case QOpcUa::NodeAttribute::ValueRank:
+    case QOpcUa::NodeAttribute::ArrayDimensions:
         return QOpcUa::Types::UInt32;
-    case QOpcUaNode::NodeAttribute::IsAbstract:
-    case QOpcUaNode::NodeAttribute::Symmetric:
-    case QOpcUaNode::NodeAttribute::ContainsNoLoops:
-    case QOpcUaNode::NodeAttribute::Historizing:
-    case QOpcUaNode::NodeAttribute::Executable:
-    case QOpcUaNode::NodeAttribute::UserExecutable:
+    case QOpcUa::NodeAttribute::IsAbstract:
+    case QOpcUa::NodeAttribute::Symmetric:
+    case QOpcUa::NodeAttribute::ContainsNoLoops:
+    case QOpcUa::NodeAttribute::Historizing:
+    case QOpcUa::NodeAttribute::Executable:
+    case QOpcUa::NodeAttribute::UserExecutable:
         return QOpcUa::Types::Boolean;
-    case QOpcUaNode::NodeAttribute::EventNotifier:
-    case QOpcUaNode::NodeAttribute::AccessLevel:
-    case QOpcUaNode::NodeAttribute::UserAccessLevel:
+    case QOpcUa::NodeAttribute::EventNotifier:
+    case QOpcUa::NodeAttribute::AccessLevel:
+    case QOpcUa::NodeAttribute::UserAccessLevel:
         return QOpcUa::Types::Byte;
-    case QOpcUaNode::NodeAttribute::MinimumSamplingInterval:
+    case QOpcUa::NodeAttribute::MinimumSamplingInterval:
         return QOpcUa::Types::Double;
      default:
         return QOpcUa::Types::Undefined;

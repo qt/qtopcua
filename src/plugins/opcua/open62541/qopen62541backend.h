@@ -57,13 +57,13 @@ public Q_SLOTS:
 
     // Node functions
     QStringList childrenIds(const UA_NodeId *parentNode);
-    void readAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttributes attr, QString indexRange);
+    void readAttributes(uintptr_t handle, UA_NodeId id, QOpcUa::NodeAttributes attr, QString indexRange);
 
-    void writeAttribute(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttribute attrId, QVariant value, QOpcUa::Types type, QString indexRange);
+    void writeAttribute(uintptr_t handle, UA_NodeId id, QOpcUa::NodeAttribute attrId, QVariant value, QOpcUa::Types type, QString indexRange);
     void writeAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType);
-    void enableMonitoring(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
-    void disableMonitoring(uintptr_t handle, QOpcUaNode::NodeAttributes attr);
-    void modifyMonitoring(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
+    void enableMonitoring(uintptr_t handle, UA_NodeId id, QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
+    void disableMonitoring(uintptr_t handle, QOpcUa::NodeAttributes attr);
+    void modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
     void callMethod(uintptr_t handle, UA_NodeId objectId, UA_NodeId methodId, QVector<QOpcUa::TypedVariant> args);
 
     // Subscription
@@ -76,14 +76,14 @@ public:
     UA_Client *m_uaclient;
 
 private:
-    QOpen62541Subscription *getSubscriptionForItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr);
+    QOpen62541Subscription *getSubscriptionForItem(uintptr_t handle, QOpcUa::NodeAttribute attr);
 
     QOpen62541Client *m_clientImpl;
     QTimer m_subscriptionTimer;
 
     QHash<quint32, QOpen62541Subscription *> m_subscriptions;
 
-    QHash<uintptr_t, QHash<QOpcUaNode::NodeAttribute, QOpen62541Subscription *>> m_attributeMapping; // Handle -> Attribute -> Subscription
+    QHash<uintptr_t, QHash<QOpcUa::NodeAttribute, QOpen62541Subscription *>> m_attributeMapping; // Handle -> Attribute -> Subscription
 
     bool m_sendPublishRequests;
     qint32 m_shortestInterval;

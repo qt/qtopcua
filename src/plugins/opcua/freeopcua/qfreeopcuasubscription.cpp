@@ -95,7 +95,7 @@ bool QFreeOpcUaSubscription::removeOnServer()
     return success;
 }
 
-void QFreeOpcUaSubscription::modifyMonitoring(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
+void QFreeOpcUaSubscription::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
 {
     Q_UNUSED(item);
     Q_UNUSED(value);
@@ -113,7 +113,7 @@ void QFreeOpcUaSubscription::modifyMonitoring(uintptr_t handle, QOpcUaNode::Node
     emit m_backend->monitoringEnableDisable(handle, attr, true, s);
 }
 
-bool QFreeOpcUaSubscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr, const OpcUa::Node &node, QOpcUaMonitoringParameters settings)
+bool QFreeOpcUaSubscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUa::NodeAttribute attr, const OpcUa::Node &node, QOpcUaMonitoringParameters settings)
 {
     Q_UNUSED(settings); // Setting these options is not yet supported
 
@@ -153,7 +153,7 @@ bool QFreeOpcUaSubscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUaN
     return true;
 }
 
-bool QFreeOpcUaSubscription::removeAttributeMonitoredItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr)
+bool QFreeOpcUaSubscription::removeAttributeMonitoredItem(uintptr_t handle, QOpcUa::NodeAttribute attr)
 {
     QScopedPointer<MonitoredItem> item(getItemForAttribute(handle, attr));
 
@@ -209,7 +209,7 @@ int QFreeOpcUaSubscription::monitoredItemsCount() const
     return m_itemIdToItemMapping.size();
 }
 
-QFreeOpcUaSubscription::MonitoredItem *QFreeOpcUaSubscription::getItemForAttribute(uintptr_t handle, QOpcUaNode::NodeAttribute attr)
+QFreeOpcUaSubscription::MonitoredItem *QFreeOpcUaSubscription::getItemForAttribute(uintptr_t handle, QOpcUa::NodeAttribute attr)
 {
     auto nodeEntry = m_handleToItemMapping.find(handle);
 

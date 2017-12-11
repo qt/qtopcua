@@ -78,7 +78,7 @@ public:
                     m_nodeAttributes[entry.attributeId] = { QVariant(), serviceResult };
             }
 
-            QOpcUaNode::NodeAttributes updatedAttributes;
+            QOpcUa::NodeAttributes updatedAttributes;
             for (auto &entry : qAsConst(attr))
                 updatedAttributes |= entry.attributeId;
 
@@ -86,7 +86,7 @@ public:
         });
 
         m_attributeWrittenConnection = QObject::connect(impl, &QOpcUaNodeImpl::attributeWritten,
-                [this](QOpcUaNode::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode)
+                [this](QOpcUa::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode)
         {
             m_nodeAttributes[attr].statusCode = statusCode;
             if (statusCode == QOpcUa::UaStatusCode::Good)
@@ -96,14 +96,14 @@ public:
         });
 
         m_attributeUpdatedConnection = QObject::connect(impl, &QOpcUaNodeImpl::attributeUpdated,
-                [this](QOpcUaNode::NodeAttribute attr, QVariant value)
+                [this](QOpcUa::NodeAttribute attr, QVariant value)
         {
             this->m_nodeAttributes[attr] = {value, QOpcUa::UaStatusCode::Good};
             emit q_func()->attributeUpdated(attr, value);
         });
 
         m_monitoringEnableDisableConnection = QObject::connect(impl, &QOpcUaNodeImpl::monitoringEnableDisable,
-                [this](QOpcUaNode::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status)
+                [this](QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status)
         {
             if (subscribe == true) {
                 m_monitoringStatus[attr] = status;
@@ -116,7 +116,7 @@ public:
         });
 
         m_monitoringStatusChangedConnection = QObject::connect(impl, &QOpcUaNodeImpl::monitoringStatusChanged,
-                [this](QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items, QOpcUaMonitoringParameters param)
+                [this](QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items, QOpcUaMonitoringParameters param)
         {
             auto it = m_monitoringStatus.find(attr);
             if (param.statusCode() == QOpcUa::UaStatusCode::Good && it != m_monitoringStatus.end()) {
@@ -173,8 +173,8 @@ public:
         QVariant attribute;
         QOpcUa::UaStatusCode statusCode;
     };
-    QHash<QOpcUaNode::NodeAttribute, AttributeWithStatus> m_nodeAttributes;
-    QHash<QOpcUaNode::NodeAttribute, QOpcUaMonitoringParameters> m_monitoringStatus;
+    QHash<QOpcUa::NodeAttribute, AttributeWithStatus> m_nodeAttributes;
+    QHash<QOpcUa::NodeAttribute, QOpcUaMonitoringParameters> m_monitoringStatus;
 
     QMetaObject::Connection m_attributesReadConnection;
     QMetaObject::Connection m_attributeWrittenConnection;

@@ -46,9 +46,9 @@ QT_BEGIN_NAMESPACE
 
 static void compileTimeEnforceEnumMappings(void)
 {
-    static_assert(static_cast<QOpcUaNode::NodeClass>(UA_NODECLASS_UNSPECIFIED) == QOpcUaNode::NodeClass::Undefined,
+    static_assert(static_cast<QOpcUa::NodeClass>(UA_NODECLASS_UNSPECIFIED) == QOpcUa::NodeClass::Undefined,
                   "open62541 and QOpcUa values for NodeClasses must be the same");
-    static_assert(static_cast<QOpcUaNode::NodeClass>(UA_NODECLASS_VARIABLE) == QOpcUaNode::NodeClass::Variable,
+    static_assert(static_cast<QOpcUa::NodeClass>(UA_NODECLASS_VARIABLE) == QOpcUa::NodeClass::Variable,
                   "open62541 and QOpcUa values for NodeClasses must be the same");
 }
 

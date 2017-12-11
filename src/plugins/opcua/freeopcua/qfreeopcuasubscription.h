@@ -60,10 +60,10 @@ public:
     quint32 createOnServer();
     bool removeOnServer();
 
-    void modifyMonitoring(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
+    void modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
 
-    bool addAttributeMonitoredItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr, const OpcUa::Node &node, QOpcUaMonitoringParameters settings);
-    bool removeAttributeMonitoredItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr);
+    bool addAttributeMonitoredItem(uintptr_t handle, QOpcUa::NodeAttribute attr, const OpcUa::Node &node, QOpcUaMonitoringParameters settings);
+    bool removeAttributeMonitoredItem(uintptr_t handle, QOpcUa::NodeAttribute attr);
 
     double interval() const;
     QOpcUaMonitoringParameters::SubscriptionType shared() const;
@@ -72,9 +72,9 @@ public:
 
     struct MonitoredItem {
         uintptr_t handle;
-        QOpcUaNode::NodeAttribute attr;
+        QOpcUa::NodeAttribute attr;
         quint32 monitoredItemId;
-        MonitoredItem(uintptr_t h, QOpcUaNode::NodeAttribute a, quint32 id)
+        MonitoredItem(uintptr_t h, QOpcUa::NodeAttribute a, quint32 id)
             : handle(h)
             , attr(a)
             , monitoredItemId(id)
@@ -86,7 +86,7 @@ public:
     };
 
 private:
-    MonitoredItem *getItemForAttribute(uintptr_t handle, QOpcUaNode::NodeAttribute attr);
+    MonitoredItem *getItemForAttribute(uintptr_t handle, QOpcUa::NodeAttribute attr);
 
     double m_interval;
     QOpcUaMonitoringParameters::SubscriptionType m_shared;
@@ -95,7 +95,7 @@ private:
     QFreeOpcUaWorker *m_backend;
 
     QHash<quint32, MonitoredItem *> m_itemIdToItemMapping;
-    QHash<uintptr_t, QHash<QOpcUaNode::NodeAttribute, MonitoredItem *>> m_handleToItemMapping;
+    QHash<uintptr_t, QHash<QOpcUa::NodeAttribute, MonitoredItem *>> m_handleToItemMapping;
 };
 
 QT_END_NAMESPACE

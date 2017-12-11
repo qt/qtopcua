@@ -107,10 +107,10 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUa::Types>();
     qRegisterMetaType<QOpcUa::TypedVariant>();
     qRegisterMetaType<QOpcUa::UaStatusCode>();
-    qRegisterMetaType<QOpcUaNode::NodeClass>();
+    qRegisterMetaType<QOpcUa::NodeClass>();
     qRegisterMetaType<QOpcUa::QQualifiedName>();
-    qRegisterMetaType<QOpcUaNode::NodeAttribute>();
-    qRegisterMetaType<QOpcUaNode::NodeAttributes>();
+    qRegisterMetaType<QOpcUa::NodeAttribute>();
+    qRegisterMetaType<QOpcUa::NodeAttributes>();
     qRegisterMetaType<QOpcUaNode::AttributeMap>();
     qRegisterMetaType<QVector<QOpcUaReadResult>>();
     qRegisterMetaType<QOpcUaClient::ClientState>();

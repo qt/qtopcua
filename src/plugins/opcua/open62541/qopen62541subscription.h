@@ -53,18 +53,18 @@ public:
     UA_UInt32 createOnServer();
     bool removeOnServer();
 
-    void modifyMonitoring(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
+    void modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
 
-    bool addAttributeMonitoredItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr, const UA_NodeId &id, QOpcUaMonitoringParameters settings);
-    bool removeAttributeMonitoredItem(uintptr_t handle, QOpcUaNode::NodeAttribute attr);
+    bool addAttributeMonitoredItem(uintptr_t handle, QOpcUa::NodeAttribute attr, const UA_NodeId &id, QOpcUaMonitoringParameters settings);
+    bool removeAttributeMonitoredItem(uintptr_t handle, QOpcUa::NodeAttribute attr);
 
     void monitoredValueUpdated(UA_UInt32 monId, UA_DataValue *value);
 
     struct MonitoredItem {
         uintptr_t handle;
-        QOpcUaNode::NodeAttribute attr;
+        QOpcUa::NodeAttribute attr;
         UA_UInt32 monitoredItemId;
-        MonitoredItem(uintptr_t h, QOpcUaNode::NodeAttribute a, UA_UInt32 id)
+        MonitoredItem(uintptr_t h, QOpcUa::NodeAttribute a, UA_UInt32 id)
             : handle(h)
             , attr(a)
             , monitoredItemId(id)
@@ -82,7 +82,7 @@ public:
     QOpcUaMonitoringParameters::SubscriptionType shared() const;
 
 private:
-    MonitoredItem *getItemForAttribute(uintptr_t handle, QOpcUaNode::NodeAttribute attr);
+    MonitoredItem *getItemForAttribute(uintptr_t handle, QOpcUa::NodeAttribute attr);
 
     Open62541AsyncBackend *m_backend;
     double m_interval;
@@ -92,7 +92,7 @@ private:
     QOpcUaMonitoringParameters::SubscriptionType m_shared;
     quint8 m_priority;
 
-    QHash<uintptr_t, QHash<QOpcUaNode::NodeAttribute, MonitoredItem *>> m_handleToItemMapping; // Handle -> Attribute -> MonitoredItem
+    QHash<uintptr_t, QHash<QOpcUa::NodeAttribute, MonitoredItem *>> m_handleToItemMapping; // Handle -> Attribute -> MonitoredItem
     QHash<UA_UInt32, MonitoredItem *> m_itemIdToItemMapping; // ItemId -> Item for fast lookup on data change
 };
 

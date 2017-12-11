@@ -75,28 +75,28 @@ void QOpcUaClientImpl::handleAttributesRead(uintptr_t handle, QVector<QOpcUaRead
         emit (*it)->attributesRead(attr, serviceResult);
 }
 
-void QOpcUaClientImpl::handleAttributeWritten(uintptr_t handle, QOpcUaNode::NodeAttribute attr, const QVariant &value, QOpcUa::UaStatusCode statusCode)
+void QOpcUaClientImpl::handleAttributeWritten(uintptr_t handle, QOpcUa::NodeAttribute attr, const QVariant &value, QOpcUa::UaStatusCode statusCode)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
         emit (*it)->attributeWritten(attr, value, statusCode);
 }
 
-void QOpcUaClientImpl::handleAttributeUpdated(uintptr_t handle, QOpcUaNode::NodeAttribute attr, const QVariant &value)
+void QOpcUaClientImpl::handleAttributeUpdated(uintptr_t handle, QOpcUa::NodeAttribute attr, const QVariant &value)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
         emit (*it)->attributeUpdated(attr, value);
 }
 
-void QOpcUaClientImpl::handleMonitoringEnableDisable(uintptr_t handle, QOpcUaNode::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status)
+void QOpcUaClientImpl::handleMonitoringEnableDisable(uintptr_t handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
         emit (*it)->monitoringEnableDisable(attr, subscribe, status);
 }
 
-void QOpcUaClientImpl::handleMonitoringStatusChanged(uintptr_t handle, QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items, QOpcUaMonitoringParameters param)
+void QOpcUaClientImpl::handleMonitoringStatusChanged(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items, QOpcUaMonitoringParameters param)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())

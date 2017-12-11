@@ -62,7 +62,7 @@ QOpen62541Node::~QOpen62541Node()
     UA_NodeId_deleteMembers(&m_nodeId);
 }
 
-bool QOpen62541Node::readAttributes(QOpcUaNode::NodeAttributes attr, const QString &indexRange)
+bool QOpen62541Node::readAttributes(QOpcUa::NodeAttributes attr, const QString &indexRange)
 {
     UA_NodeId tempId;
     UA_NodeId_copy(&m_nodeId, &tempId);
@@ -70,34 +70,34 @@ bool QOpen62541Node::readAttributes(QOpcUaNode::NodeAttributes attr, const QStri
                                      Qt::QueuedConnection,
                                      Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
                                      Q_ARG(UA_NodeId, tempId),
-                                     Q_ARG(QOpcUaNode::NodeAttributes, attr),
+                                     Q_ARG(QOpcUa::NodeAttributes, attr),
                                      Q_ARG(QString, indexRange));
 }
 
-bool QOpen62541Node::enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
+bool QOpen62541Node::enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
 {
     return QMetaObject::invokeMethod(m_client->m_backend, "enableMonitoring",
                                      Qt::QueuedConnection,
                                      Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
                                      Q_ARG(UA_NodeId, m_nodeId),
-                                     Q_ARG(QOpcUaNode::NodeAttributes, attr),
+                                     Q_ARG(QOpcUa::NodeAttributes, attr),
                                      Q_ARG(QOpcUaMonitoringParameters, settings));
 }
 
-bool QOpen62541Node::disableMonitoring(QOpcUaNode::NodeAttributes attr)
+bool QOpen62541Node::disableMonitoring(QOpcUa::NodeAttributes attr)
 {
     return QMetaObject::invokeMethod(m_client->m_backend, "disableMonitoring",
                                      Qt::QueuedConnection,
                                      Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
-                                     Q_ARG(QOpcUaNode::NodeAttributes, attr));
+                                     Q_ARG(QOpcUa::NodeAttributes, attr));
 }
 
-bool QOpen62541Node::modifyMonitoring(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value)
+bool QOpen62541Node::modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value)
 {
     return QMetaObject::invokeMethod(m_client->m_backend, "modifyMonitoring",
                                      Qt::QueuedConnection,
                                      Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
-                                     Q_ARG(QOpcUaNode::NodeAttribute, attr),
+                                     Q_ARG(QOpcUa::NodeAttribute, attr),
                                      Q_ARG(QOpcUaMonitoringParameters::Parameter, item),
                                      Q_ARG(QVariant, value));
 }
@@ -113,7 +113,7 @@ QString QOpen62541Node::nodeId() const
     return m_nodeIdString;
 }
 
-bool QOpen62541Node::writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange)
+bool QOpen62541Node::writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange)
 {
     UA_NodeId tempId;
     UA_NodeId_copy(&m_nodeId, &tempId);
@@ -121,7 +121,7 @@ bool QOpen62541Node::writeAttribute(QOpcUaNode::NodeAttribute attribute, const Q
                                      Qt::QueuedConnection,
                                      Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
                                      Q_ARG(UA_NodeId, tempId),
-                                     Q_ARG(QOpcUaNode::NodeAttribute, attribute),
+                                     Q_ARG(QOpcUa::NodeAttribute, attribute),
                                      Q_ARG(QVariant, value),
                                      Q_ARG(QOpcUa::Types, type),
                                      Q_ARG(QString, indexRange));

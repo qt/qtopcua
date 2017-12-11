@@ -62,7 +62,7 @@ namespace QFreeOpcUaValueConverter
     template <typename UATYPE, typename QTTYPE=UATYPE>
     OpcUa::Variant arrayFromQVariant(const QVariant &var);
 
-    inline OpcUa::AttributeId toUaAttributeId(QOpcUaNode::NodeAttribute attr)
+    inline OpcUa::AttributeId toUaAttributeId(QOpcUa::NodeAttribute attr)
     {
         const int attributeIdUsedBits = 22;
         for (int i = 0; i < attributeIdUsedBits; ++i)
