@@ -62,13 +62,14 @@ QFreeOpcUaNode::~QFreeOpcUaNode()
         m_client->unregisterNode(this);
 }
 
-bool QFreeOpcUaNode::readAttributes(QOpcUaNode::NodeAttributes attr)
+bool QFreeOpcUaNode::readAttributes(QOpcUaNode::NodeAttributes attr, const QString &indexRange)
 {
     return QMetaObject::invokeMethod(m_client->m_opcuaWorker, "readAttributes",
                                      Qt::QueuedConnection,
                                      Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
                                      Q_ARG(OpcUa::NodeId, m_node.GetId()),
-                                     Q_ARG(QOpcUaNode::NodeAttributes, attr));
+                                     Q_ARG(QOpcUaNode::NodeAttributes, attr),
+                                     Q_ARG(QString, indexRange));
 }
 
 bool QFreeOpcUaNode::enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
@@ -124,7 +125,7 @@ QString QFreeOpcUaNode::nodeId() const
     }
 }
 
-bool QFreeOpcUaNode::writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type)
+bool QFreeOpcUaNode::writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange)
 {
     return QMetaObject::invokeMethod(m_client->m_opcuaWorker, "writeAttribute",
                                      Qt::QueuedConnection,
@@ -132,7 +133,8 @@ bool QFreeOpcUaNode::writeAttribute(QOpcUaNode::NodeAttribute attribute, const Q
                                      Q_ARG(OpcUa::Node, m_node),
                                      Q_ARG(QOpcUaNode::NodeAttribute, attribute),
                                      Q_ARG(QVariant, value),
-                                     Q_ARG(QOpcUa::Types, type));
+                                     Q_ARG(QOpcUa::Types, type),
+                                     Q_ARG(QString, indexRange));
 }
 
 bool QFreeOpcUaNode::writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType)

@@ -61,8 +61,8 @@ public slots:
     void asyncConnectToEndpoint(const QUrl &url);
     void asyncDisconnectFromEndpoint();
 
-    void readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUaNode::NodeAttributes attr);
-    void writeAttribute(uintptr_t handle, OpcUa::Node node, QOpcUaNode::NodeAttribute attr, QVariant value, QOpcUa::Types type);
+    void readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUaNode::NodeAttributes attr, QString indexRange);
+    void writeAttribute(uintptr_t handle, OpcUa::Node node, QOpcUaNode::NodeAttribute attr, QVariant value, QOpcUa::Types type, QString indexRange);
     void writeAttributes(uintptr_t handle, OpcUa::Node node, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType);
 
     QFreeOpcUaSubscription *getSubscription(const QOpcUaMonitoringParameters &settings);

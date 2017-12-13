@@ -106,7 +106,7 @@ void QFreeOpcUaWorker::asyncDisconnectFromEndpoint()
     emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
 }
 
-void QFreeOpcUaWorker::readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUaNode::NodeAttributes attr)
+void QFreeOpcUaWorker::readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUaNode::NodeAttributes attr, QString indexRange)
 {
     QVector<QOpcUaReadResult> vec;
 
@@ -117,6 +117,7 @@ void QFreeOpcUaWorker::readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUa
 
         qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attr) {
             attribute.AttributeId = QFreeOpcUaValueConverter::toUaAttributeId(attr);
+            attribute.IndexRange = indexRange.toStdString();
             params.AttributesToRead.push_back(attribute);
             QOpcUaReadResult temp;
             temp.attributeId = attr;
@@ -139,7 +140,7 @@ void QFreeOpcUaWorker::readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUa
     }
 }
 
-void QFreeOpcUaWorker::writeAttribute(uintptr_t handle, OpcUa::Node node, QOpcUaNode::NodeAttribute attr, QVariant value, QOpcUa::Types type)
+void QFreeOpcUaWorker::writeAttribute(uintptr_t handle, OpcUa::Node node, QOpcUaNode::NodeAttribute attr, QVariant value, QOpcUa::Types type, QString indexRange)
 {
     std::vector<OpcUa::StatusCode> res;
 
@@ -152,6 +153,7 @@ void QFreeOpcUaWorker::writeAttribute(uintptr_t handle, OpcUa::Node node, QOpcUa
         val.NodeId = node.GetId();
         val.AttributeId = QFreeOpcUaValueConverter::toUaAttributeId(attr);
         val.Value = OpcUa::DataValue(toWrite);
+        val.IndexRange = indexRange.toStdString();
         std::vector<OpcUa::WriteValue> req;
         req.push_back(val);
 

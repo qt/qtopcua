@@ -62,7 +62,7 @@ QOpen62541Node::~QOpen62541Node()
     UA_NodeId_deleteMembers(&m_nodeId);
 }
 
-bool QOpen62541Node::readAttributes(QOpcUaNode::NodeAttributes attr)
+bool QOpen62541Node::readAttributes(QOpcUaNode::NodeAttributes attr, const QString &indexRange)
 {
     UA_NodeId tempId;
     UA_NodeId_copy(&m_nodeId, &tempId);
@@ -70,7 +70,8 @@ bool QOpen62541Node::readAttributes(QOpcUaNode::NodeAttributes attr)
                                      Qt::QueuedConnection,
                                      Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
                                      Q_ARG(UA_NodeId, tempId),
-                                     Q_ARG(QOpcUaNode::NodeAttributes, attr));
+                                     Q_ARG(QOpcUaNode::NodeAttributes, attr),
+                                     Q_ARG(QString, indexRange));
 }
 
 bool QOpen62541Node::enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
@@ -112,7 +113,7 @@ QString QOpen62541Node::nodeId() const
     return m_nodeIdString;
 }
 
-bool QOpen62541Node::writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type)
+bool QOpen62541Node::writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange)
 {
     UA_NodeId tempId;
     UA_NodeId_copy(&m_nodeId, &tempId);
@@ -122,7 +123,8 @@ bool QOpen62541Node::writeAttribute(QOpcUaNode::NodeAttribute attribute, const Q
                                      Q_ARG(UA_NodeId, tempId),
                                      Q_ARG(QOpcUaNode::NodeAttribute, attribute),
                                      Q_ARG(QVariant, value),
-                                     Q_ARG(QOpcUa::Types, type));
+                                     Q_ARG(QOpcUa::Types, type),
+                                     Q_ARG(QString, indexRange));
 }
 
 bool QOpen62541Node::writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType)

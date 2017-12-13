@@ -57,9 +57,9 @@ public Q_SLOTS:
 
     // Node functions
     QStringList childrenIds(const UA_NodeId *parentNode);
-    void readAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttributes attr);
+    void readAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttributes attr, QString indexRange);
 
-    void writeAttribute(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttribute attrId, QVariant value, QOpcUa::Types type);
+    void writeAttribute(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttribute attrId, QVariant value, QOpcUa::Types type, QString indexRange);
     void writeAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType);
     void enableMonitoring(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
     void disableMonitoring(uintptr_t handle, QOpcUaNode::NodeAttributes attr);

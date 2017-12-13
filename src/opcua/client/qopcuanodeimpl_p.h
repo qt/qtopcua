@@ -70,13 +70,13 @@ public:
     QOpcUaNodeImpl();
     virtual ~QOpcUaNodeImpl();
 
-    virtual bool readAttributes(QOpcUaNode::NodeAttributes attr) = 0;
+    virtual bool readAttributes(QOpcUaNode::NodeAttributes attr, const QString &indexRange) = 0;
     virtual bool enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings) = 0;
     virtual bool disableMonitoring(QOpcUaNode::NodeAttributes attr) = 0;
     virtual QStringList childrenIds() const = 0;
     virtual QString nodeId() const = 0;
 
-    virtual bool writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type) = 0;
+    virtual bool writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange) = 0;
     virtual bool writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType) = 0;
     virtual bool modifyMonitoring(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item,
                                           const QVariant &value) = 0;

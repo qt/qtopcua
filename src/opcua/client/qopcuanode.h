@@ -113,9 +113,12 @@ public:
     virtual ~QOpcUaNode();
 
     bool readAttributes(QOpcUaNode::NodeAttributes attributes = mandatoryBaseAttributes());
+    bool readAttributeRange(QOpcUaNode::NodeAttribute attribute, const QString &indexRange);
     QVariant attribute(QOpcUaNode::NodeAttribute attribute) const;
     QOpcUa::UaStatusCode attributeError(QOpcUaNode::NodeAttribute attribute) const;
     bool writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type = QOpcUa::Types::Undefined);
+    bool writeAttributeRange(QOpcUaNode::NodeAttribute attribute, const QVariant &value,
+                        const QString &indexRange, QOpcUa::Types type = QOpcUa::Types::Undefined);
     bool writeAttributes(const AttributeMap &toWrite, QOpcUa::Types valueAttributeType = QOpcUa::Types::Undefined);
 
     bool enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);

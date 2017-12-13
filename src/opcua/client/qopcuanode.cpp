@@ -108,14 +108,15 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn void QOpcUaNode::readFinished(QOpcUaNode::NodeAttributes attributes)
 
-    This signal is emitted after a \l readAttributes() operation has finished.
+    This signal is emitted after a \l readAttributes() or \l readAttributeRange() operation has finished.
     The receiver has to check the status code for the attributes contained in \a attributes.
 */
 
 /*!
     \fn QOpcUaNode::attributeWritten(QOpcUaNode::NodeAttribute attribute, QOpcUa::UaStatusCode statusCode)
 
-    This signal is emitted after a \l writeAttribute() or \l writeAttributes()  operation has finished.
+    This signal is emitted after a \l writeAttribute(), \l writeAttributes() or \l writeAttributeRange()
+    operation has finished.
 
     Before this signal is emitted, the attribute cache is updated in case of a successful write.
     For \l writeAttributes() a signal is emitted for each attribute in the write call.
@@ -168,6 +169,24 @@ QOpcUaNode::~QOpcUaNode()
 }
 
 /*!
+    Starts an asynchronous read operation for the node attribute \a attribute.
+    \a indexRange is a string which can be used to select a part of an array. It is defined in OPC-UA part 4, 7.22.
+    The first element in an array is 0, "1" returns the second element, "0:9" returns the first 10 elements,
+    "0,1" returns the second element of the first row in a two-dimensional array.
+
+    Returns true if the asynchronous call has been successfully dispatched.
+
+    Attribute values only contain valid information after the \l readFinished signal has been emitted.
+*/
+bool QOpcUaNode::readAttributeRange(QOpcUaNode::NodeAttribute attribute, const QString &indexRange)
+{
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+        return false;
+
+    return d_func()->m_impl->readAttributes(QOpcUaNode::NodeAttributes() | attribute, indexRange);
+}
+
+/*!
     Starts an asynchronous read operation for the node attributes in \a attributes.
     Returns true if the asynchronous call has been successfully dispatched.
 
@@ -178,7 +197,7 @@ bool QOpcUaNode::readAttributes(QOpcUaNode::NodeAttributes attributes)
     if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return false;
 
-    return d_func()->m_impl->readAttributes(attributes);
+    return d_func()->m_impl->readAttributes(attributes, QString());
 }
 
 /*!
@@ -339,7 +358,21 @@ bool QOpcUaNode::writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVari
     if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
         return false;
 
-    return d_func()->m_impl->writeAttribute(attribute, value, type);
+    return d_func()->m_impl->writeAttribute(attribute, value, type, QString());
+}
+
+/*!
+    Writes \a value to the attribute given in \a attribute using the type information from \a type.
+    For \a indexRange, see \l readAttributeRange().
+
+    Returns true if the asynchronous call has been successfully dispatched.
+*/
+bool QOpcUaNode::writeAttributeRange(QOpcUaNode::NodeAttribute attribute, const QVariant &value, const QString &indexRange, QOpcUa::Types type)
+{
+    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+        return false;
+
+    return d_func()->m_impl->writeAttribute(attribute, value, type, indexRange);
 }
 
 /*!
@@ -348,7 +381,7 @@ bool QOpcUaNode::writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVari
 
     The \a valueAttributeType parameter can be used to supply type information for the value attribute.
     All other attributes have known types.
-    \sa writeAttribute
+    \sa writeAttribute()
 */
 bool QOpcUaNode::writeAttributes(const AttributeMap &toWrite, QOpcUa::Types valueAttributeType)
 {

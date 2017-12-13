@@ -53,14 +53,14 @@ public:
     explicit QFreeOpcUaNode(OpcUa::Node node, QFreeOpcUaClientImpl *client);
     ~QFreeOpcUaNode() override;
 
-    bool readAttributes(QOpcUaNode::NodeAttributes attr) override;
+    bool readAttributes(QOpcUaNode::NodeAttributes attr, const QString &indexRange) override;
     bool enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
     bool disableMonitoring(QOpcUaNode::NodeAttributes attr);
     bool modifyMonitoring(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value);
     QStringList childrenIds() const override;
     QString nodeId() const override;
 
-    bool writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type) override;
+    bool writeAttribute(QOpcUaNode::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange) override;
     bool writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType) override;
     bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args) override;
     QPair<QString, QString> readEui() const override;

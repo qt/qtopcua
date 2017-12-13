@@ -195,6 +195,10 @@ private slots:
     void writeScalar();
     defineDataMethod(readScalar_data)
     void readScalar();
+    defineDataMethod(indexRange_data)
+    void indexRange();
+    defineDataMethod(invalidIndexRange_data)
+    void invalidIndexRange();
 
     defineDataMethod(stringCharset_data)
     void stringCharset();
@@ -1572,6 +1576,56 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(xmlElementScalar.isValid());
     QCOMPARE(xmlElementScalar.type(), QVariant::String);
     QCOMPARE(xmlElementScalar.toString(), xmlElements[0]);
+}
+
+void Tst_QOpcUaClient::indexRange()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int32"));
+
+    QVariantList list({0, 1, 2, 3, 4, 5, 6, 7});
+
+    WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::Types::Int32);
+
+    QSignalSpy writeFinishedSpy(node.data(), &QOpcUaNode::attributeWritten);
+
+    node->writeAttributeRange(QOpcUaNode::NodeAttribute::Value, QVariantList({10, 11, 12, 13}), "0:3", QOpcUa::Types::Int32);
+    writeFinishedSpy.wait();
+    QCOMPARE(writeFinishedSpy.size(), 1);
+    QCOMPARE(writeFinishedSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    QSignalSpy readFinishedSpy(node.data(), &QOpcUaNode::readFinished);
+    node->readAttributeRange(QOpcUaNode::NodeAttribute::Value, "0:6");
+    readFinishedSpy.wait();
+    QCOMPARE(readFinishedSpy.count(), 1);
+    QCOMPARE(node->attribute(QOpcUaNode::NodeAttribute::Value), QVariantList({10, 11, 12, 13, 4, 5, 6}));
+}
+
+void Tst_QOpcUaClient::invalidIndexRange()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int32"));
+
+    QVariantList list({0, 1, 2, 3, 4, 5, 6, 7});
+
+    WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::Types::Int32);
+
+    QSignalSpy writeFinishedSpy(node.data(), &QOpcUaNode::attributeWritten);
+
+    node->writeAttributeRange(QOpcUaNode::NodeAttribute::Value, QVariantList({10, 11, 12, 13}), "notavalidrange", QOpcUa::Types::Int32);
+    writeFinishedSpy.wait();
+    QCOMPARE(writeFinishedSpy.size(), 1);
+    QCOMPARE(writeFinishedSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadIndexRangeInvalid);
+
+    QSignalSpy readFinishedSpy(node.data(), &QOpcUaNode::readFinished);
+    node->readAttributeRange(QOpcUaNode::NodeAttribute::Value, "notavalidrange");
+    readFinishedSpy.wait();
+    QCOMPARE(readFinishedSpy.count(), 1);
+    QCOMPARE(node->attributeError(QOpcUaNode::NodeAttribute::Value), QOpcUa::UaStatusCode::BadIndexRangeInvalid);
 }
 
 void Tst_QOpcUaClient::stringCharset()

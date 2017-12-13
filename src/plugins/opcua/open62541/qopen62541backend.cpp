@@ -77,7 +77,7 @@ Open62541AsyncBackend::~Open62541AsyncBackend()
     qDeleteAll(m_subscriptions);
 }
 
-void Open62541AsyncBackend::readAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttributes attr)
+void Open62541AsyncBackend::readAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttributes attr, QString indexRange)
 {
     UA_ReadRequest req;
     UA_ReadRequest_init(&req);
@@ -91,6 +91,8 @@ void Open62541AsyncBackend::readAttributes(uintptr_t handle, UA_NodeId id, QOpcU
 
     qt_forEachAttribute(attr, [&](QOpcUaNode::NodeAttribute attribute){
         readId.attributeId = QOpen62541ValueConverter::toUaAttributeId(attribute);
+        if (indexRange.length())
+            readId.indexRange = UA_STRING_ALLOC(indexRange.toUtf8().data());
         valueIds.push_back(readId);
         QOpcUaReadResult temp;
         temp.attributeId = attribute;
@@ -113,23 +115,37 @@ void Open62541AsyncBackend::readAttributes(uintptr_t handle, UA_NodeId id, QOpcU
                 vec[i].value = QOpen62541ValueConverter::toQVariant(res.results[i].value);
     }
     emit attributesRead(handle, vec, static_cast<QOpcUa::UaStatusCode>(res.responseHeader.serviceResult));
+    UA_ReadValueId_deleteMembers(&readId);
     UA_ReadResponse_deleteMembers(&res);
-    UA_NodeId_deleteMembers(&id);
 }
 
-void Open62541AsyncBackend::writeAttribute(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttribute attrId, QVariant value, QOpcUa::Types type)
+void Open62541AsyncBackend::writeAttribute(uintptr_t handle, UA_NodeId id, QOpcUaNode::NodeAttribute attrId, QVariant value, QOpcUa::Types type, QString indexRange)
 {
     if (type == QOpcUa::Types::Undefined && attrId != QOpcUaNode::NodeAttribute::Value)
         type = attributeIdToTypeId(attrId);
-    UA_Variant temp = QOpen62541ValueConverter::toOpen62541Variant(value, type);
-    UA_StatusCode res = __UA_Client_writeAttribute(m_uaclient, &id,
-                                                   QOpen62541ValueConverter::toUaAttributeId(attrId),
-                                                   &temp,
-                                                   &UA_TYPES[UA_TYPES_VARIANT]);
-    UA_Variant_deleteMembers(&temp);
 
-    emit attributeWritten(handle, attrId, res == UA_STATUSCODE_GOOD ? value : QVariant(), static_cast<QOpcUa::UaStatusCode>(res));
-    UA_NodeId_deleteMembers(&id);
+    UA_WriteRequest req;
+    UA_WriteRequest_init(&req);
+    req.nodesToWriteSize = 1;
+    req.nodesToWrite = UA_WriteValue_new();
+
+    UA_WriteValue_init(req.nodesToWrite);
+    req.nodesToWrite->attributeId = QOpen62541ValueConverter::toUaAttributeId(attrId);
+    req.nodesToWrite->nodeId = id;
+    req.nodesToWrite->value.value = QOpen62541ValueConverter::toOpen62541Variant(value, type);
+    req.nodesToWrite->value.hasValue = true;
+    if (indexRange.length())
+        req.nodesToWrite->indexRange = UA_STRING_ALLOC(indexRange.toUtf8().data());
+
+    UA_WriteResponse res = UA_Client_Service_write(m_uaclient, req);
+
+    QOpcUa::UaStatusCode status = res.resultsSize ?
+                static_cast<QOpcUa::UaStatusCode>(res.results[0]) : static_cast<QOpcUa::UaStatusCode>(res.responseHeader.serviceResult);
+
+    emit attributeWritten(handle, attrId, value, status);
+
+    UA_WriteRequest_deleteMembers(&req);
+    UA_WriteResponse_deleteMembers(&res);
 }
 
 void Open62541AsyncBackend::writeAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType)
