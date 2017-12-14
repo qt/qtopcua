@@ -44,6 +44,8 @@
 #include <QtCore/QTimer>
 #include <QtCore/QVariant>
 
+QT_BEGIN_NAMESPACE
+
 class TestServer : public QObject
 {
     Q_OBJECT
@@ -77,5 +79,7 @@ public slots:
     void processServerEvents();
     void shutdown();
 };
+
+QT_END_NAMESPACE
 
 #endif // TESTSERVER_H
