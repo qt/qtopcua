@@ -43,14 +43,8 @@
 
 #include <opc/ua/subscription.h>
 
-namespace OpcUa {
-    class Event;
-    class UaClient;
-}
-
 QT_BEGIN_NAMESPACE
 
-class QOpcUaNode;
 class QFreeOpcUaWorker;
 
 class QFreeOpcUaSubscription : public OpcUa::SubscriptionHandler

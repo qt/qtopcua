@@ -47,7 +47,6 @@
 
 QT_BEGIN_NAMESPACE
 class QFreeOpcUaWorker;
-class QOpcUaSubscription;
 class QOpcUaNode;
 class QFreeOpcUaClientImpl : public QOpcUaClientImpl
 {

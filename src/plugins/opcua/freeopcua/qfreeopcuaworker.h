@@ -48,8 +48,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFreeOpcUaNode;
-class QOpcUaNode;
 class QFreeOpcUaClientImpl;
 
 class QFreeOpcUaWorker : public QOpcUaBackend, public OpcUa::UaClient

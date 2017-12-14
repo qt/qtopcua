@@ -42,7 +42,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QOpen62541Client;
 class Open62541AsyncBackend;
 
 class QOpen62541Subscription

@@ -44,8 +44,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QOpen62541Node;
-
 class Open62541AsyncBackend : public QOpcUaBackend
 {
     Q_OBJECT

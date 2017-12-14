@@ -57,7 +57,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaNodeImpl;
 class QOpcUaMonitoringParameters;
 
 class Q_OPCUA_EXPORT QOpcUaBackend : public QObject

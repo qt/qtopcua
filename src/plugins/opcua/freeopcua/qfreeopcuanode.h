@@ -43,11 +43,6 @@
 
 #include <opc/ua/node.h>
 
-namespace OpcUa
-{
-    class UaClient;
-}
-
 QT_BEGIN_NAMESPACE
 
 class QFreeOpcUaClientImpl;
