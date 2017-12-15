@@ -251,8 +251,6 @@ private:
 
 Tst_QOpcUaClient::Tst_QOpcUaClient()
 {
-    qRegisterMetaType<QOpcUaClient::ClientState>("ClientState");
-
     m_backends = QOpcUaProvider::availableBackends();
 }
 

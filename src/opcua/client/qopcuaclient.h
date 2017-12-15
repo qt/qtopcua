@@ -92,8 +92,8 @@ public:
 Q_SIGNALS:
     void connected();
     void disconnected();
-    void stateChanged(ClientState state);
-    void errorChanged(ClientError error);
+    void stateChanged(QOpcUaClient::ClientState state);
+    void errorChanged(QOpcUaClient::ClientError error);
 
 private:
     Q_DISABLE_COPY(QOpcUaClient)
