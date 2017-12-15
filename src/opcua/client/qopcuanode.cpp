@@ -47,8 +47,8 @@ QT_BEGIN_NAMESPACE
     \class QOpcUaNode
     \inmodule QtOpcUa
 
-    \brief QOpcUaNode is a base class for plugin specific node objects which\
-    allows access to attributes of an OPC UA node.
+    \brief QOpcUaNode allows interaction with an OPC UA node.
+
 
     The node is the basic building block of the OPC UA address space.
     It has attributes like browse name, value, associated properties and can have
@@ -61,22 +61,52 @@ QT_BEGIN_NAMESPACE
     identifier 42, the string is \c ns=0;i=42, a node with a string
     identifier can be addressed via \c ns=0;s=myStringIdentifier.
 
-    The node attributes are read from the server when the getter methods are
-    called.
-
     Objects of this type are owned by the user and must be deleted when they are
     no longer needed.
 
-    \section1 Working with Subscriptions
-    Subscriptions are a concept in OPC UA to enable updating values by data
-    changes or events instead of polling.
-    The subscription has an interval in which it checks for value changes and
-    sends updates to the client. For an event monitored item, there is no interval.
+    \section1 Reading and writing of attributes
 
-    Monitored Items are used to assign the node and the node's attribute or the
-    event we want to keep up with to the subscription.
+    The node attributes are read from the server when \l readAttributes() or \l readAttributeRange()
+    is called. The results are cached locally and can be retrieved using \l attribute()
+    after the \l readFinished signal has been received.
+
+    Attributes can be written using \l writeAttribute(), \l writeAttributes() and \l writeAttributeRange()
+    if the user has the necessary rights.
+    Success of the write operation is reported using the \l attributeWritten signal.
+
+    \l attributeError() contains a status code associated with the last read or write operation
+    on the attribute. This is the low level status code returned by the OPC UA service.
+    This status code can be simplified by converting it to a \l QOpcUa::ErrorCategory using
+    \l QOpcUa::errorCategory).
+
+    \section1 Subscribing to data changes
+    Subscriptions are a concept in OPC UA which allows receiving of notifications for changes in data
+    or in case of events instead of continuously polling a node for changes.
+    Monitored items define how attributes of a node are watched for changes. They are added to a
+    subscription and any notifications they generate are forwarded to the user via the subscription.
+    The interval of the updates as well as many other options of the monitored items and subscriptions
+    can be configured by the user.
+
+    \l QOpcUaNode offers an abstraction to interact with subscriptions and monitored items.
+    \l enableMonitoring() enables data change notifications for one or more attributes.
+    The \l attributeUpdated signal contains new values, the local cache is updated.
+    \l disableMonitoring() disables the data change notifications.
+    The \l monitoringStatusChanged signal notifies about changes of the monitoring status, e. g. after
+    manual enable and disable or a status change on the server.
+
+    Settings of the subscription and monitored item can be modified at runtime using \l modifyMonitoring().
 
     \image subscriptions.png
+
+    \section1 Browsing the address space
+    The OPC UA address space consists of nodes connected by references.
+    \l browseChildren follows these references in forward direction and returns attributes from all
+    nodes connected to the node behind an instance of \l QOpcUaNode in the \l browseFinished signal.
+
+    \section1 Method calls
+    OPC UA specifies methods on the server which can be called by the user.
+    \l QOpcUaNode supports this via \l callMethod which takes parameters and returns the results of
+    the call in the \l methodCallFinished signal.
 */
 
 /*!

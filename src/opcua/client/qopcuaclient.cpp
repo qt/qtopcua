@@ -52,19 +52,12 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
     \chapter QOpcUaClient
 
     QOpcUaClient implements basic client capabilities to communicate with
-    OPC UA enabled devices and applications.
+    OPC UA enabled devices and applications. This includes connecting,
+    disconnecting and getting \l QOpcUaNode objects for a node on the server.
 
     \section1 Addressing Nodes
 
-    For an introduction to nodes, see QOpcUaNode.
-
-    Addressing nodes on the OPC UA server using QOpcUaClient is done via a
-    text format.
-    A node is identified by its namespace ID and an identifier which can e. g.
-    be numeric or a string.
-    The identifier of a node residing in namespace 0 and having the numeric
-    identifier 42, the string is \c ns=0;i=42, a node with a string
-    identifier can be addressed via \c ns=0;s=myStringIdentifier.
+    For an introduction to nodes and node ids, see \l QOpcUaNode.
 */
 
 /*!
@@ -157,7 +150,7 @@ void QOpcUaClient::connectToEndpoint(const QUrl &url)
     User name and password must be set on \a url before connectToEndpoint
     is called.
 
-    \warning Currently not supported by the FreeOPCUA backend.
+    \warning Currently not supported by any backend.
     \sa disconnectFromEndpoint()
 */
 void QOpcUaClient::secureConnectToEndpoint(const QUrl &url)
@@ -201,7 +194,7 @@ QOpcUaClient::ClientError QOpcUaClient::error() const
     return d->m_error;
 }
 
-/*! Return if the backend is supported a connection over a secured channel.
+/*! Returns \c true if the backend supports a connection over an encrypted channel.
 
     \sa secureConnectToEndpoint
 */
@@ -212,10 +205,8 @@ bool QOpcUaClient::isSecureConnectionSupported() const
 }
 
 /*!
-    Returns an QOpcUaNode object containing the information about
-    the OPC UA node identified by \a nodeId. The caller becomes the owner
-    of the node object. For this method to work the client needs to be
-    connected to the server. A null pointer is returned on error.
+    Returns a \l QOpcUaNode object associated with the OPC UA node identified
+    by \a nodeId. The caller becomes owner of the node object.
 */
 QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 {

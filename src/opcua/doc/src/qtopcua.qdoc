@@ -47,17 +47,11 @@
     \brief Implements OPC UA connectivity through a Qt API.
 
     The Qt \l{Qt OPC UA#A short introduction to OPC UA}{OPC UA} module
-    implements a Qt API to interact with OPC UA on top an external
+    implements a Qt API to interact with OPC UA on top of a 3rd party
     OPC UA stack.
 
-    The stacks are connected via plugins and can be selected/switched at
-    runtime.
-    Currently, only the LGPL v3 implementation FreeOPCUA is provided.
-    Other SDKs can be wrapped in additional plugins.
-
-    An HMI focused subset of functionality is implemented in
-    QOpcUaClient, which can be used to visualize data present on an OPC UA
-    server.
+    The stacks are connected via plugins and can be selected/switched at runtime.
+    Currently, the LGPL v3 implementation FreeOPCUA and the MPLv2 implementation Open62541 are supported.
 
     \section1 A short introduction to OPC UA
     OPC UA is a protocol for data modelling and secure exchange of data in
@@ -69,127 +63,165 @@
 
     \section1 Implemented features from the OPC UA protocol
 
-    Not all features offered by the plugins can be used with all
-    backends. The following table shows the current status of implementation.
+    Following features of OPC UA are supported by QtOpcUa:
 
     \table
     \header
     \li Feature
-    \li FreeOPCUA
-    \li Others to come...
+    \li Open62541 plugin
+    \li FreeOPCUA plugin
     \row
-    \li Reading and writing of values as array/scalar
+    \li Read
     \li X
-    \li ?
-    \row
-    \li Reading of value ranges
-    \li
-    \li ?
-    \row
-    \li Reading of engineering units
-    \li
-    \li ?
-    \row
-    \li Browsing and reading attributes of nodes
     \li X
-    \li ?
     \row
-    \li Secure connection
-    \li
-    \li ?
-    \row
-    \li User/password auth
+    \li Write
     \li X
-    \li ?
+    \li X
     \row
-    \li Data change subscription
-    \li Unstable implementation in FreeOPCUA
-    \li ?
+    \li Browse
+    \li X
+    \li X
     \row
-    \li Event subscription
-    \li Callback is not called inside FreeOPCUA, so no signal is emitted
-    \li ?
+    \li Data change subscriptions
+    \li X
+    \li X
+    \row
+    \li Modify subscriptions / monitored Items
+    \li X
+    \li
     \row
     \li Method calls
-    \li Low performance
-    \li ?
-    \row
-    \li Historical access
-    \li
-    \li ?
+    \li X
+    \li X
     \endtable
 
-    Asynchronous operations, reading and writing of multiple nodes using one
-    method call, filters for subscriptions, aggregates and write access for
-    historical data are not implemented yet.
-
     \section1 Data types
-    A subset of OPC UA data types are currently supported in QOpcUaClient, most
-    of them are available with all backends. When writing data to the server,
-    the type of the value must be specified using the QOpcUaType enum.
+    A subset of the OPC UA data types is currently supported in QtOpcUa.
+    Most of them are available with both backends.
 
     \table
     \header
     \li Data type
-    \li FreeOPCUA
-    \li Others to come...
-    \li Mapping
+    \li Open62541 plugin
+    \li FreeOPCUA plugin
+    \li QtOpcUa data type
     \row
-    \li Int8/16/32
+    \li Int16 / Int32 / Int64
     \li X
-    \li
+    \li X
     \li Directly used
     \row
-    \li UInt8/16/32
+    \li UInt16, UInt32, UInt64
     \li X
-    \li
+    \li X
+    \li Directly used
+    \row
+    \li Byte
+    \li X
+    \li X
+    \li quint8
+    \row
+    \li SByte
+    \li X
+    \li X
+    \li qint8
+    \row
+    \li Boolean
+    \li X
+    \li X
     \li Directly used
     \row
     \li Double
     \li X
-    \li
+    \li X
     \li Directly used
     \row
     \li Float
     \li X
-    \li
-    \li Directly used
-    \row
-    \li Byte String
     \li X
-    \li
-    \li QByteArray
+    \li Directly used
     \row
     \li String
     \li X
-    \li
+    \li X
     \li QString
     \row
-    \li Date Time
+    \li LocalizedText
     \li X
-    \li
+    \li X
+    \li \l QOpcUa::QLocalizedText
+    \row
+    \li DateTime
+    \li X
+    \li X
     \li QDateTime
     \row
-    \li Localized Text
+    \li ByteString
     \li X
-    \li
-    \li QString
-    \row
-    \li Node ID
     \li X
-    \li
-    \li QString
-    \row
-    \li XML Element
-    \li Not available in FreeOPCUA
-    \li
     \li QByteArray
+    \row
+    \li XmlElement
+    \li X
+    \li
+    \li QString
+    \row
+    \li NodeId
+    \li X
+    \li X
+    \li QString
+    \row
+    \li GUID
+    \li X
+    \li X
+    \li QUuid
+    \row
+    \li QualifiedName
+    \li X
+    \li X
+    \li \l QOpcUa::QQualifiedName
+    \row
+    \li StatusCode
+    \li X
+    \li X
+    \li \l QOpcUa::UaStatusCode
+    \row
+    \li Range
+    \li X
+    \li
+    \li \l QOpcUa::QRange
+    \row
+    \li EUInformation
+    \li X
+    \li
+    \li \l QOpcUa::QEUInformation
+    \row
+    \li ComplexNumer
+    \li X
+    \li
+    \li \l QOpcUa::QComplexNumber
+    \row
+    \li DoubleComplexNumber
+    \li X
+    \li
+    \li \l QOpcUa::QDoubleComplexNumber
+    \row
+    \li AxisInformation
+    \li X
+    \li
+    \li \l QOpcUa::QAxisInformation
+    \row
+    \li XV
+    \li X
+    \li
+    \li \l QOpcUa::QXValue
     \endtable
 
     \section1 Classes and ownership
     Two important classes are exposed to the user: QOpcUaClient and QOpcUaNode.
 
-    Objects of the type QOpcUaNode are owned by the user and must be deleted when they are no longer needed.
+    Objects of both classes are owned by the user and must be deleted when they are no longer needed.
 
     \section1 Related Information
 
