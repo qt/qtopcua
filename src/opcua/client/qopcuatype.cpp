@@ -103,6 +103,36 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+\enum QOpcUa::NodeAttribute
+
+    This enum contains the 22 node attributes defined in OPC-UA part 4, 5.
+
+    \value None No node attribute.
+    \value NodeId Mandatory for all nodes. Contains the node's id in the OPC UA address space.
+    \value NodeClass Mandatory for all nodes. Contains the node id describing the node class of the node.
+    \value BrowseName Mandatory for all nodes. Contains a non-localized human readable name of the node.
+    \value DisplayName Mandatory for all nodes. Contains a localized human readable name for display purposes.
+    \value Description Contains a localized human readable description of the node.
+    \value WriteMask Contains a bit mask. Each bit corresponds to a writable attribute (OPC-UA part 3, Table 3).
+    \value UserWriteMask Same as WriteMask but for the current user.
+    \value IsAbstract True if the node is an abstract type which means that no nodes of this type shall exist.
+    \value Symmetric True if a reference's meaning is the same seen from both ends.
+    \value InverseName The localized inverse name of a reference (for example "HasSubtype" has the InverseName "SubtypeOf").
+    \value ContainsNoLoops True if there is no way to get back to a node following forward references in the current view.
+    \value EventNotifier Contains a bit mask used to indicate if subscribing to events and access to historic events is supported (OPC-UA part 3, Table 5).
+    \value Value The value of a Variable node.
+    \value DataType The NodeId of the Value attribute's data type (for example "ns=0;i=13" for DateTime, see https://opcfoundation.org/UA/schemas/1.03/NodeIds.csv).
+    \value ValueRank Contains information about the structure of the Value attribute (scalar/array) (OPC-UA part 3, Table 8).
+    \value ArrayDimensions An array containing the length for each dimension of a multi-dimensional array.
+    \value AccessLevel Contains a bit mask. Each bit corresponds to an access capability (OPC-UA part 3, Table 8).
+    \value UserAccessLevel Same as AccessLevel, but for the current user.
+    \value MinimumSamplingInterval Contains the shortest possible interval in which the server is able to sample the value.
+    \value Historizing True if historical data is collected.
+    \value Executable True if the node is currently executable. Only relevant for Method nodes.
+    \value UserExecutable Same as Executable, but for the current user.
+*/
+
+/*!
     \enum QOpcUa::Types
 
     Enumerates the types supported by Qt OpcUa.
