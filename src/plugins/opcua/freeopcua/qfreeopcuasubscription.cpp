@@ -80,11 +80,18 @@ bool QFreeOpcUaSubscription::removeOnServer()
     try {
         if (m_subscription) {
             m_subscription->Delete();
-            m_subscription.reset();
             success = true;
         }
     } catch (const std::exception &ex) {
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "RemoveOnServer caught:" << ex.what();
+    }
+
+    m_subscription.reset();
+
+    for (auto it : qAsConst(m_itemIdToItemMapping)) {
+        QOpcUaMonitoringParameters s;
+        s.setStatusCode(QOpcUa::UaStatusCode::BadDisconnect);
+        emit m_backend->monitoringEnableDisable(it->handle, it->attr, false, s);
     }
 
     qDeleteAll(m_itemIdToItemMapping);
@@ -93,6 +100,12 @@ bool QFreeOpcUaSubscription::removeOnServer()
     m_handleToItemMapping.clear();
 
     return success;
+}
+
+void QFreeOpcUaSubscription::StatusChange(OpcUa::StatusCode status)
+{
+    if (status == OpcUa::StatusCode::BadDisconnect)
+        removeOnServer();
 }
 
 void QFreeOpcUaSubscription::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)

@@ -246,6 +246,7 @@ void Open62541AsyncBackend::disableMonitoring(uintptr_t handle, QOpcUa::NodeAttr
         QOpen62541Subscription *sub = getSubscriptionForItem(handle, attribute);
         if (sub) {
             sub->removeAttributeMonitoredItem(handle, attribute);
+            m_attributeMapping[handle].remove(attribute);
             if (sub->monitoredItemsCount() == 0)
                 removeSubscription(sub->subscriptionId());
         }
@@ -446,6 +447,11 @@ void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
 
 void Open62541AsyncBackend::disconnectFromEndpoint()
 {
+    m_subscriptionTimer.stop();
+    qDeleteAll(m_subscriptions);
+    m_subscriptions.clear();
+    m_attributeMapping.clear();
+
     UA_StatusCode ret = UA_Client_disconnect(m_uaclient);
     if (ret != UA_STATUSCODE_GOOD) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to disconnect";
@@ -454,7 +460,6 @@ void Open62541AsyncBackend::disconnectFromEndpoint()
 
     UA_Client_delete(m_uaclient);
     m_uaclient = nullptr;
-    m_subscriptionTimer.stop();
     emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
 }
 
@@ -467,9 +472,13 @@ void Open62541AsyncBackend::sendPublishRequest()
         return;
     }
 
+    // If BADSERVERNOTCONNECTED is returned, the subscriptions are gone and local information can be deleted.
     if (UA_Client_Subscriptions_manuallySendPublishRequest(m_uaclient) == UA_STATUSCODE_BADSERVERNOTCONNECTED) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unable to send publish request";
         m_sendPublishRequests = false;
+        qDeleteAll(m_subscriptions);
+        m_subscriptions.clear();
+        m_attributeMapping.clear();
         checkAndUpdateClientState();
         return;
     }

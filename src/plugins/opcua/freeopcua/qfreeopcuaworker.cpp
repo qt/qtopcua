@@ -102,6 +102,9 @@ void QFreeOpcUaWorker::asyncDisconnectFromEndpoint()
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Could not disconnect from endpoint:" << ex.what();
     }
 
+    qDeleteAll(m_subscriptions);
+    m_subscriptions.clear();
+
     emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
 }
 
@@ -325,6 +328,7 @@ void QFreeOpcUaWorker::disableMonitoring(uintptr_t handle, QOpcUa::NodeAttribute
         QFreeOpcUaSubscription *sub = getSubscriptionForItem(handle, attr);
         if (sub) {
             sub->removeAttributeMonitoredItem(handle, attr);
+            m_attributeMapping[handle].remove(attr);
             if (sub->monitoredItemsCount() == 0)
                 removeSubscription(sub->subscriptionId());
         }

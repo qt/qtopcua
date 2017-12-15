@@ -67,7 +67,6 @@ QOpen62541Subscription::QOpen62541Subscription(Open62541AsyncBackend *backend, c
 QOpen62541Subscription::~QOpen62541Subscription()
 {
     removeOnServer();
-    qDeleteAll(m_itemIdToItemMapping);
 }
 
 UA_UInt32 QOpen62541Subscription::createOnServer()
@@ -96,6 +95,17 @@ bool QOpen62541Subscription::removeOnServer()
 
     UA_StatusCode res = UA_Client_Subscriptions_remove(m_backend->m_uaclient, m_subscriptionId);
     m_subscriptionId = 0;
+
+    for (auto it : qAsConst(m_itemIdToItemMapping)) {
+        QOpcUaMonitoringParameters s;
+        s.setStatusCode(QOpcUa::UaStatusCode::BadDisconnect);
+        emit m_backend->monitoringEnableDisable(it->handle, it->attr, false, s);
+    }
+
+    qDeleteAll(m_itemIdToItemMapping);
+
+    m_itemIdToItemMapping.clear();
+    m_handleToItemMapping.clear();
 
     return (res == UA_STATUSCODE_GOOD) ? true : false;
 }
