@@ -51,9 +51,9 @@ public:
     ~QOpen62541Node() override;
 
     bool readAttributes(QOpcUaNode::NodeAttributes attr) override;
-    bool enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
-    bool disableMonitoring(QOpcUaNode::NodeAttributes attr);
-    bool modifyMonitoring(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value);
+    bool enableMonitoring(QOpcUaNode::NodeAttributes attr, const QOpcUaMonitoringParameters &settings) override;
+    bool disableMonitoring(QOpcUaNode::NodeAttributes attr) override;
+    bool modifyMonitoring(QOpcUaNode::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value) override;
     QStringList childrenIds() const override;
     QString nodeId() const override;
 
