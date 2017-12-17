@@ -107,7 +107,7 @@ UA_NodeId Open62541Utils::nodeIdFromQString(const QString &name)
     }
     case 's': {
         if (identifierString.length() > 0)
-            return UA_NODEID_STRING_ALLOC(index, identifierString.toUtf8().data());
+            return UA_NODEID_STRING_ALLOC(index, identifierString.toUtf8().constData());
         else
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "%s does not contain a valid string identifier", qUtf8Printable(name));
         break;
