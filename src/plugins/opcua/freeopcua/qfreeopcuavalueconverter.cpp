@@ -61,7 +61,7 @@ QVariant toQVariant(const OpcUa::Variant &variant)
 
     switch (variant.Type()) {
     case OpcUa::VariantType::NUL:
-        return QVariant::fromValue(static_cast<QObject *>(0));
+        return QVariant::fromValue(static_cast<QObject *>(nullptr));
 
     case OpcUa::VariantType::BOOLEAN:
         return arrayToQVariant<bool, bool>(variant);

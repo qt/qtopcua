@@ -50,7 +50,7 @@ class QOpen62541Plugin : public QOpcUaPlugin
     Q_INTERFACES(QOpcUaPlugin)
 
 public:
-    explicit QOpen62541Plugin(QObject *parent = 0);
+    explicit QOpen62541Plugin(QObject *parent = nullptr);
     ~QOpen62541Plugin() override;
 
     QOpcUaClient *createClient() override;
