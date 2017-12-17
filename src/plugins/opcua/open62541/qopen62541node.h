@@ -63,8 +63,6 @@ public:
     QPair<QString, QString> readEui() const override;
     QPair<double, double> readEuRange() const override;
 
-    UA_NodeId nativeNodeId() const;
-
 private:
     QPointer<QOpen62541Client> m_client;
     QString m_nodeIdString;

@@ -159,9 +159,4 @@ QPair<double, double> QOpen62541Node::readEuRange() const
     return QPair<double, double>();
 }
 
-UA_NodeId QOpen62541Node::nativeNodeId() const
-{
-    return m_nodeId;
-}
-
 QT_END_NAMESPACE
