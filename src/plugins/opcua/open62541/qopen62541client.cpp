@@ -87,6 +87,8 @@ void QOpen62541Client::disconnectFromEndpoint()
 QOpcUaNode *QOpen62541Client::node(const QString &nodeId)
 {
     UA_NodeId uaNodeId = Open62541Utils::nodeIdFromQString(nodeId);
+    if (UA_NodeId_isNull(&uaNodeId))
+        return nullptr;
 
     return new QOpcUaNode(new QOpen62541Node(uaNodeId, this, nodeId), m_client);
 }

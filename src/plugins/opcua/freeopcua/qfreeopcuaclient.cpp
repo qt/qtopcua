@@ -82,7 +82,7 @@ void QFreeOpcUaClientImpl::disconnectFromEndpoint()
 QOpcUaNode *QFreeOpcUaClientImpl::node(const QString &nodeId)
 {
     if (!m_opcuaWorker)
-        return new QOpcUaNode(new QFreeOpcUaNode(OpcUa::Node(), nullptr), m_client);
+        return nullptr;
 
     try {
         OpcUa::Node node = m_opcuaWorker->GetNode(nodeId.toStdString());
@@ -90,7 +90,7 @@ QOpcUaNode *QFreeOpcUaClientImpl::node(const QString &nodeId)
         return new QOpcUaNode(n, m_client);
     } catch (const std::exception &ex) {
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Could not get node: %s %s", qUtf8Printable(nodeId), ex.what());
-        return new QOpcUaNode(new QFreeOpcUaNode(OpcUa::Node(), this), m_client);
+        return nullptr;
     }
 }
 
