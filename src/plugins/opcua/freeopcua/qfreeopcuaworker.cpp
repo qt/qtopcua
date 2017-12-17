@@ -204,7 +204,7 @@ void QFreeOpcUaWorker::writeAttributes(uintptr_t handle, OpcUa::Node node, QOpcU
 QFreeOpcUaSubscription *QFreeOpcUaWorker::getSubscription(const QOpcUaMonitoringParameters &settings)
 {
     if (settings.shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared) {
-        for (auto entry : m_subscriptions)
+        for (auto entry : qAsConst(m_subscriptions))
             if (entry->interval() == settings.publishingInterval() && entry->shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared)
                 return entry;
     }
