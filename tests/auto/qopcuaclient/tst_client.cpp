@@ -645,13 +645,13 @@ void Tst_QOpcUaClient::dataChangeSubscription()
             QVERIFY(attrs.contains(temp));
             QVERIFY(it.at(1).value<QOpcUaMonitoringParameters::Parameters>() &  QOpcUaMonitoringParameters::Parameter::PublishingInterval);
             QVERIFY(it.at(2) == QOpcUa::UaStatusCode::Good);
-            QVERIFY(node->monitoringStatus(temp).publishingInterval() == double(200));
+            QCOMPARE(node->monitoringStatus(temp).publishingInterval(), 200);
             attrs.remove(attrs.indexOf(temp));
         }
         QVERIFY(attrs.size() == 0);
 
-        QVERIFY(node->monitoringStatus(QOpcUaNode::NodeAttribute::Value).publishingInterval() == 200);
-        QVERIFY(node->monitoringStatus(QOpcUaNode::NodeAttribute::DisplayName).publishingInterval() == 200);
+        QCOMPARE(node->monitoringStatus(QOpcUaNode::NodeAttribute::Value).publishingInterval(),  200);
+        QCOMPARE(node->monitoringStatus(QOpcUaNode::NodeAttribute::DisplayName).publishingInterval(), 200);
 
         monitoringModifiedSpy.clear();
         QOpcUaMonitoringParameters::DataChangeFilter filter;
