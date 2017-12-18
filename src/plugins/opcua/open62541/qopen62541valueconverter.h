@@ -60,11 +60,8 @@ namespace QOpen62541ValueConverter {
 
     UA_Variant toOpen62541Variant(const QVariant&, QOpcUa::Types);
     QVariant toQVariant(const UA_Variant&);
-    QOpcUa::Types toQOpcUaVariantType(quint8 typeIndex);
     const UA_DataType *toDataType(QOpcUa::Types valueType);
     QOpcUa::Types qvariantTypeToQOpcUaType(QMetaType::Type type);
-
-    QString toQString(UA_String value);
 
     template<typename TARGETTYPE, typename UATYPE>
     QVariant scalarToQVariant(UATYPE *data, QMetaType::Type type = QMetaType::UnknownType);

@@ -98,9 +98,4 @@ QString QOpen62541Client::backend() const
     return QStringLiteral("open62541");
 }
 
-UA_Client *QOpen62541Client::nativeClient() const
-{
-    return m_backend->m_uaclient;
-}
-
 QT_END_NAMESPACE

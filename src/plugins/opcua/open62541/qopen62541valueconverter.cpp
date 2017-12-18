@@ -205,33 +205,6 @@ QVariant toQVariant(const UA_Variant &value)
     }
 }
 
-QOpcUa::Types toQOpcUaVariantType(quint8 typeIndex)
-{
-    switch (typeIndex) {
-    case UA_TYPES_BOOLEAN:
-        return QOpcUa::Boolean;
-    case UA_TYPES_SBYTE:
-        return QOpcUa::SByte;
-    case UA_TYPES_BYTE:
-        return QOpcUa::Byte;
-    case UA_TYPES_INT16:
-        return QOpcUa::Int16;
-    case UA_TYPES_UINT16:
-        return QOpcUa::UInt16;
-    case UA_TYPES_INT32:
-        return QOpcUa::Int32;
-    case UA_TYPES_UINT32:
-        return QOpcUa::UInt32;
-    case UA_TYPES_INT64:
-        return QOpcUa::Int64;
-    case UA_TYPES_UINT64:
-        return QOpcUa::UInt64;
-    default:
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion to Qt type " << typeIndex << " not implemented";
-        return QOpcUa::Undefined;
-    }
-}
-
 const UA_DataType *toDataType(QOpcUa::Types valueType)
 {
     switch (valueType) {
@@ -279,11 +252,6 @@ const UA_DataType *toDataType(QOpcUa::Types valueType)
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Trying to convert undefined type:" << valueType;
         return nullptr;
     }
-}
-
-QString toQString(UA_String value)
-{
-    return QString::fromUtf8((const char *)value.data, value.length);
 }
 
 template<typename TARGETTYPE, typename UATYPE>
