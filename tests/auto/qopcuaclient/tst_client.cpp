@@ -246,7 +246,7 @@ private:
     resultSpy.wait(); \
     QCOMPARE(resultSpy.size(), 1); \
     QCOMPARE(resultSpy.at(0).at(0).value<QOpcUaNode::NodeAttribute>(), QOpcUaNode::NodeAttribute::Value); \
-    QCOMPARE(resultSpy.at(0).at(1).toUInt(), (uint)0); \
+    QCOMPARE(resultSpy.at(0).at(1).toUInt(), uint(0)); \
 }
 
 Tst_QOpcUaClient::Tst_QOpcUaClient()
