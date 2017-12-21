@@ -268,7 +268,7 @@ std::string scalarFromQVariant(const QVariant &var)
 template<>
 OpcUa::DateTime scalarFromQVariant(const QVariant &var)
 {
-    return OpcUa::DateTime::FromTimeT(var.value<QDateTime>().toTime_t());
+    return OpcUa::DateTime::FromTimeT(var.toDateTime().toTime_t());
 }
 
 template<>
