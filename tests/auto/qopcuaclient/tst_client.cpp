@@ -294,7 +294,8 @@ void Tst_QOpcUaClient::connectToInvalid()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
     opcuaClient->connectToEndpoint(QUrl("opc.tcp:127.0.0.1:1234"));
-    QVERIFY(opcuaClient->state() == QOpcUaClient::Connecting);
+    // Depending on the event loop the client might have switched to Disconnected already
+    QVERIFY(opcuaClient->state() == QOpcUaClient::Connecting || opcuaClient->state() == QOpcUaClient::Disconnected);
 
     for (int i = 0; i < 10; ++i) {
         QTest::qWait(50);

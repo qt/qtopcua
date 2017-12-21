@@ -52,7 +52,7 @@ Q_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541, "qt.opcua.testserver")
 
 TestServer::TestServer(QObject *parent) : QObject(parent)
 {
-    m_timer.setInterval(0);
+    m_timer.setInterval(30);
     m_timer.setSingleShot(false);
     connect(&m_timer, &QTimer::timeout, this, &TestServer::processServerEvents);
 }
