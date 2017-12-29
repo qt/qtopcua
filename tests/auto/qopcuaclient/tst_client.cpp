@@ -768,7 +768,7 @@ void Tst_QOpcUaClient::methodCallInvalid()
     QVERIFY(success == true);
     methodSpy.wait();
     QCOMPARE(methodSpy.size(), 1);
-    QCOMPARE(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadInvalidArgument);
+    QCOMPARE(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadTooManyArguments);
 
     methodSpy.clear();
     args.resize(1);

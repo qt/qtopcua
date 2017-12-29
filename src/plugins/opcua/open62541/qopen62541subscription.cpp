@@ -47,8 +47,9 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541)
 
-static void monitoredValueHandler(UA_UInt32 monId, UA_DataValue *value, void *context)
+static void monitoredValueHandler(UA_Client *client, UA_UInt32 monId, UA_DataValue *value, void *context)
 {
+    Q_UNUSED(client)
     QOpen62541Subscription *subscription = static_cast<QOpen62541Subscription *>(context);
     subscription->monitoredValueUpdated(monId, value);
 }
@@ -187,7 +188,7 @@ void QOpen62541Subscription::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttr
         }
 
         if (match) {
-            UA_ModifySubscriptionResponse res = UA_Client_Service_modifySubscription(m_backend->m_uaclient, req);
+            UA_ModifySubscriptionResponse res = UA_Client_Subscriptions_modify(m_backend->m_uaclient, req);
 
             if (res.responseHeader.serviceResult != UA_STATUSCODE_GOOD) {
                 p.setStatusCode(static_cast<QOpcUa::UaStatusCode>(res.responseHeader.serviceResult));
@@ -233,7 +234,8 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUa:
     UA_UInt32 monitoredItemId = 0;
     UA_StatusCode ret = UA_Client_Subscriptions_addMonitoredItem(m_backend->m_uaclient, m_subscriptionId, id,
                                                                  QOpen62541ValueConverter::toUaAttributeId(attr),
-                                                                 monitoredValueHandler, this, &monitoredItemId);
+                                                                 monitoredValueHandler, this, &monitoredItemId,
+                                                                 qFuzzyCompare(settings.samplingInterval(), 0.0) ? m_interval : settings.samplingInterval());
 
     if (ret != UA_STATUSCODE_GOOD) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not add monitored item to subscription" << m_subscriptionId << ":" << ret;
