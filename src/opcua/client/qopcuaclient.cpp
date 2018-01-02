@@ -88,6 +88,8 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
            An attempt to connect to a server with a secure connection failed.
     \value AccessDenied
            An attempt to connect to a server using username/password failed due to wrong credentials.
+    \value ConnectionError
+           An error occurred with the connection.
     \value UnknownError
            An unknown error occurred.
 */

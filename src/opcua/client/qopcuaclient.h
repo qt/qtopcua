@@ -69,6 +69,7 @@ public:
         InvalidUrl,
         SecureConnectionError,
         AccessDenied,
+        ConnectionError,
         UnknownError
     };
     Q_ENUM(ClientError)

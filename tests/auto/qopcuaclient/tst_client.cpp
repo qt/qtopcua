@@ -232,6 +232,11 @@ private slots:
     defineDataMethod(stringCharset_data)
     void stringCharset();
 
+    // This test case restarts the server. It must be run last to avoid
+    // destroying state required by other test cases.
+    defineDataMethod(connectionLost_data)
+    void connectionLost();
+
 private:
     QString envOrDefault(const char *env, QString def)
     {
@@ -243,6 +248,7 @@ private:
     QStringList m_backends;
     QVector<QOpcUaClient *> m_clients;
     QProcess m_serverProcess;
+    QString m_testServerPath;
 };
 
 #define READ_MANDATORY_BASE_NODE(NODE) \
@@ -299,18 +305,18 @@ void Tst_QOpcUaClient::initTestCase()
     }
 
     if (qEnvironmentVariableIsEmpty("OPCUA_HOST") && qEnvironmentVariableIsEmpty("OPCUA_PORT")) {
-        const QString testServerPath = QDir::currentPath()
+        m_testServerPath = QDir::currentPath()
                                      + QLatin1String("/../../open62541-testserver/open62541-testserver")
 #ifdef Q_OS_WIN
                                      + QLatin1String(".exe")
 #endif
                 ;
-        if (!QFile::exists(testServerPath)) {
-            qDebug() << "Server Path:" << testServerPath;
+        if (!QFile::exists(m_testServerPath)) {
+            qDebug() << "Server Path:" << m_testServerPath;
             QSKIP("all auto tests rely on an open62541-based test-server");
         }
 
-        m_serverProcess.start(testServerPath);
+        m_serverProcess.start(m_testServerPath);
         QVERIFY2(m_serverProcess.waitForStarted(), qPrintable(m_serverProcess.errorString()));
         // Let the server come up
         QTest::qSleep(2000);
@@ -1872,6 +1878,43 @@ void Tst_QOpcUaClient::stringCharset()
     QVERIFY(result.toList().length() == 2);
     QVERIFY(result.toList()[0].value<QOpcUa::QLocalizedText>() == lt1);
     QVERIFY(result.toList()[1].value<QOpcUa::QLocalizedText>() == lt2);
+}
+
+void Tst_QOpcUaClient::connectionLost()
+{
+    // Restart the test server if necessary
+    if (m_serverProcess.state() != QProcess::ProcessState::Running) {
+        m_serverProcess.start(m_testServerPath);
+        QVERIFY2(m_serverProcess.waitForStarted(), qPrintable(m_serverProcess.errorString()));
+        QTest::qSleep(2000);
+    }
+
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    if (opcuaClient->backend() == QLatin1String("freeopcua"))
+        QSKIP("State change on connection loss is not implemented in the freeopcua plugin");
+
+    QCOMPARE(opcuaClient->state(), QOpcUaClient::ClientState::Connected);
+
+    QScopedPointer<QOpcUaNode> stringNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.String"));
+
+    QSignalSpy stateSpy(opcuaClient, &QOpcUaClient::stateChanged);
+    QSignalSpy readSpy(stringNode.data(), &QOpcUaNode::attributeRead);
+
+    m_serverProcess.kill();
+    m_serverProcess.waitForFinished();
+    QCOMPARE(m_serverProcess.state(), QProcess::ProcessState::NotRunning);
+
+    stringNode->readAttributes(QOpcUa::NodeAttribute::BrowseName);
+
+    readSpy.wait();
+    stateSpy.wait();
+    QCOMPARE(readSpy.size(), 1);
+    QVERIFY(readSpy.at(0).at(0).value<QOpcUa::NodeAttributes>() & QOpcUa::NodeAttribute::BrowseName);
+    QCOMPARE(stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName), QOpcUa::UaStatusCode::BadConnectionClosed);
+    QCOMPARE(stateSpy.size(), 1);
+    QCOMPARE(stateSpy.at(0).at(0), QOpcUaClient::ClientState::Disconnected);
 }
 
 void Tst_QOpcUaClient::cleanupTestCase()

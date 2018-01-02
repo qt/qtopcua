@@ -77,6 +77,7 @@ public:
 
 private:
     QOpen62541Subscription *getSubscriptionForItem(uintptr_t handle, QOpcUa::NodeAttribute attr);
+    bool checkAndUpdateClientState();
 
     QOpen62541Client *m_clientImpl;
     QTimer m_subscriptionTimer;
