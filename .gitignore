@@ -11,6 +11,8 @@
 
 tests/open62541-testserver/open62541-testserver
 
+examples/opcua/waterpump/simulationserver/simulationserver
+examples/opcua/waterpump/qml-hmi/qml-hmi
 
 tst_*
 !tst_*.*
