@@ -82,7 +82,7 @@ public:
             for (auto &entry : qAsConst(attr))
                 updatedAttributes |= entry.attributeId;
 
-            emit q_func()->readFinished(updatedAttributes);
+            emit q_func()->attributeRead(updatedAttributes);
         });
 
         m_attributeWrittenConnection = QObject::connect(impl, &QOpcUaNodeImpl::attributeWritten,

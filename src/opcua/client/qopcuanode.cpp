@@ -68,7 +68,7 @@ QT_BEGIN_NAMESPACE
 
     The node attributes are read from the server when \l readAttributes() or \l readAttributeRange()
     is called. The results are cached locally and can be retrieved using \l attribute()
-    after the \l readFinished signal has been received.
+    after the \l attributeRead signal has been received.
 
     Attributes can be written using \l writeAttribute(), \l writeAttributes() and \l writeAttributeRange()
     if the user has the necessary rights.
@@ -117,7 +117,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QOpcUaNode::readFinished(QOpcUa::NodeAttributes attributes)
+    \fn void QOpcUaNode::attributeRead(QOpcUa::NodeAttributes attributes)
 
     This signal is emitted after a \l readAttributes() or \l readAttributeRange() operation has finished.
     The receiver has to check the status code for the attributes contained in \a attributes.
@@ -198,7 +198,7 @@ QOpcUaNode::~QOpcUaNode()
 
     Returns true if the asynchronous call has been successfully dispatched.
 
-    Attribute values only contain valid information after the \l readFinished signal has been emitted.
+    Attribute values only contain valid information after the \l attributeRead signal has been emitted.
 */
 bool QOpcUaNode::readAttributeRange(QOpcUa::NodeAttribute attribute, const QString &indexRange)
 {
@@ -212,7 +212,7 @@ bool QOpcUaNode::readAttributeRange(QOpcUa::NodeAttribute attribute, const QStri
     Starts an asynchronous read operation for the node attributes in \a attributes.
     Returns true if the asynchronous call has been successfully dispatched.
 
-    Attribute values only contain valid information after the \l readFinished signal has been emitted.
+    Attribute values only contain valid information after the \l attributeRead signal has been emitted.
 */
 bool QOpcUaNode::readAttributes(QOpcUa::NodeAttributes attributes)
 {
@@ -225,7 +225,7 @@ bool QOpcUaNode::readAttributes(QOpcUa::NodeAttributes attributes)
 /*!
     Returns the value of the attribute given in \a attribute.
 
-    The value is only valid after the \l readFinished signal has been emitted.
+    The value is only valid after the \l attributeRead signal has been emitted.
     An empty QVariant is returned if there is no cached value for the attribute.
  */
 QVariant QOpcUaNode::attribute(QOpcUa::NodeAttribute attribute) const
@@ -240,7 +240,7 @@ QVariant QOpcUaNode::attribute(QOpcUa::NodeAttribute attribute) const
 /*!
     Returns the error code for the attribute given in \a attribute.
 
-    The error code is only valid after the \l readFinished signal has been emitted.
+    The error code is only valid after the \l attributeRead signal has been emitted.
 
     \sa QOpcUa::errorCategory
  */

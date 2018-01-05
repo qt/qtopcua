@@ -89,7 +89,7 @@ public:
     bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args = QVector<QOpcUa::TypedVariant>());
 
 Q_SIGNALS:
-    void readFinished(QOpcUa::NodeAttributes attributes);
+    void attributeRead(QOpcUa::NodeAttributes attributes);
     void attributeWritten(QOpcUa::NodeAttribute attribute, QOpcUa::UaStatusCode statusCode);
     void attributeUpdated(QOpcUa::NodeAttribute attr, QVariant value);
 

@@ -247,11 +247,11 @@ private:
 
 #define READ_MANDATORY_BASE_NODE(NODE) \
     { \
-    QSignalSpy readFinishedSpy(NODE.data(), &QOpcUaNode::readFinished);\
+    QSignalSpy attributeReadSpy(NODE.data(), &QOpcUaNode::attributeRead);\
     NODE->readAttributes(QOpcUaNode::mandatoryBaseAttributes()); \
-    readFinishedSpy.wait(); \
-    QCOMPARE(readFinishedSpy.count(), 1); \
-    QVERIFY(readFinishedSpy.at(0).at(0).value<QOpcUa::NodeAttributes>() == QOpcUaNode::mandatoryBaseAttributes()); \
+    attributeReadSpy.wait(); \
+    QCOMPARE(attributeReadSpy.count(), 1); \
+    QVERIFY(attributeReadSpy.at(0).at(0).value<QOpcUa::NodeAttributes>() == QOpcUaNode::mandatoryBaseAttributes()); \
     QVERIFY(QOpcUa::isSuccessStatus(NODE->attributeError(QOpcUa::NodeAttribute::NodeId)) == true); \
     QVERIFY(QOpcUa::isSuccessStatus(NODE->attributeError(QOpcUa::NodeAttribute::NodeClass)) == true); \
     QVERIFY(QOpcUa::isSuccessStatus(NODE->attributeError(QOpcUa::NodeAttribute::BrowseName)) == true); \
@@ -260,11 +260,11 @@ private:
 
 #define READ_MANDATORY_VARIABLE_NODE(NODE) \
     { \
-    QSignalSpy readFinishedSpy(NODE.data(), &QOpcUaNode::readFinished);\
+    QSignalSpy attributeReadSpy(NODE.data(), &QOpcUaNode::attributeRead);\
     NODE->readAttributes(QOpcUaNode::mandatoryBaseAttributes() | QOpcUa::NodeAttribute::Value); \
-    readFinishedSpy.wait(); \
-    QCOMPARE(readFinishedSpy.count(), 1); \
-    QVERIFY(readFinishedSpy.at(0).at(0).value<QOpcUa::NodeAttributes>() == (QOpcUaNode::mandatoryBaseAttributes() | QOpcUa::NodeAttribute::Value)); \
+    attributeReadSpy.wait(); \
+    QCOMPARE(attributeReadSpy.count(), 1); \
+    QVERIFY(attributeReadSpy.at(0).at(0).value<QOpcUa::NodeAttributes>() == (QOpcUaNode::mandatoryBaseAttributes() | QOpcUa::NodeAttribute::Value)); \
     QVERIFY(QOpcUa::isSuccessStatus(NODE->attributeError(QOpcUa::NodeAttribute::NodeId)) == true); \
     QVERIFY(QOpcUa::isSuccessStatus(NODE->attributeError(QOpcUa::NodeAttribute::NodeClass)) == true); \
     QVERIFY(QOpcUa::isSuccessStatus(NODE->attributeError(QOpcUa::NodeAttribute::BrowseName)) == true); \
@@ -453,13 +453,13 @@ void Tst_QOpcUaClient::readInvalidNode()
     QVERIFY(node != 0);
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text, QString());
 
-    QSignalSpy readFinishedSpy(node.data(), &QOpcUaNode::readFinished);
+    QSignalSpy attributeReadSpy(node.data(), &QOpcUaNode::attributeRead);
 
     node->readAttributes(QOpcUaNode::mandatoryBaseAttributes());
-    readFinishedSpy.wait();
+    attributeReadSpy.wait();
 
-    QCOMPARE(readFinishedSpy.count(), 1);
-    QCOMPARE(readFinishedSpy.at(0).at(0).value<QOpcUa::NodeAttributes>(), QOpcUaNode::mandatoryBaseAttributes());
+    QCOMPARE(attributeReadSpy.count(), 1);
+    QCOMPARE(attributeReadSpy.at(0).at(0).value<QOpcUa::NodeAttributes>(), QOpcUaNode::mandatoryBaseAttributes());
 
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName), QVariant());
     QCOMPARE(node->attributeError(QOpcUa::NodeAttribute::DisplayName), QOpcUa::UaStatusCode::BadNodeIdUnknown);
@@ -1774,17 +1774,18 @@ void Tst_QOpcUaClient::indexRange()
 
     WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::Types::Int32);
 
-    QSignalSpy writeFinishedSpy(node.data(), &QOpcUaNode::attributeWritten);
+    QSignalSpy attributeWrittenSpy(node.data(), &QOpcUaNode::attributeWritten);
 
     node->writeAttributeRange(QOpcUa::NodeAttribute::Value, QVariantList({10, 11, 12, 13}), "0:3", QOpcUa::Types::Int32);
-    writeFinishedSpy.wait();
-    QCOMPARE(writeFinishedSpy.size(), 1);
-    QCOMPARE(writeFinishedSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    attributeWrittenSpy.wait();
+    QVERIFY(attributeWrittenSpy.size() == 1);
+    QVERIFY(attributeWrittenSpy.at(0).at(1).value<QOpcUa::UaStatusCode>() == QOpcUa::UaStatusCode::Good);
 
-    QSignalSpy readFinishedSpy(node.data(), &QOpcUaNode::readFinished);
+    QSignalSpy attributeReadSpy(node.data(), &QOpcUaNode::attributeRead);
     node->readAttributeRange(QOpcUa::NodeAttribute::Value, "0:6");
-    readFinishedSpy.wait();
-    QCOMPARE(readFinishedSpy.count(), 1);
+    attributeReadSpy.wait();
+    QCOMPARE(attributeReadSpy.count(), 1);
+
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value), QVariantList({10, 11, 12, 13, 4, 5, 6}));
 }
 
@@ -1799,17 +1800,18 @@ void Tst_QOpcUaClient::invalidIndexRange()
 
     WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::Types::Int32);
 
-    QSignalSpy writeFinishedSpy(node.data(), &QOpcUaNode::attributeWritten);
+    QSignalSpy attributeWrittenSpy(node.data(), &QOpcUaNode::attributeWritten);
 
     node->writeAttributeRange(QOpcUa::NodeAttribute::Value, QVariantList({10, 11, 12, 13}), "notavalidrange", QOpcUa::Types::Int32);
-    writeFinishedSpy.wait();
-    QCOMPARE(writeFinishedSpy.size(), 1);
-    QCOMPARE(writeFinishedSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadIndexRangeInvalid);
+    attributeWrittenSpy.wait();
+    QVERIFY(attributeWrittenSpy.size() == 1);
+    QVERIFY(attributeWrittenSpy.at(0).at(1).value<QOpcUa::UaStatusCode>() == QOpcUa::UaStatusCode::BadIndexRangeInvalid);
 
-    QSignalSpy readFinishedSpy(node.data(), &QOpcUaNode::readFinished);
+    QSignalSpy attributeReadSpy(node.data(), &QOpcUaNode::attributeRead);
     node->readAttributeRange(QOpcUa::NodeAttribute::Value, "notavalidrange");
-    readFinishedSpy.wait();
-    QCOMPARE(readFinishedSpy.count(), 1);
+    attributeReadSpy.wait();
+    QCOMPARE(attributeReadSpy.count(), 1);
+
     QCOMPARE(node->attributeError(QOpcUa::NodeAttribute::Value), QOpcUa::UaStatusCode::BadIndexRangeInvalid);
 }
 
