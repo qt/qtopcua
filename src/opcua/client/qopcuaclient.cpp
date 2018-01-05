@@ -213,7 +213,8 @@ QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
     if (state() != QOpcUaClient::Connected)
        return nullptr;
 
-    return d_func()->m_impl->node(nodeId);
+    Q_D(QOpcUaClient);
+    return d->m_impl->node(nodeId);
 }
 
 /*!
@@ -222,7 +223,8 @@ QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 */
 QString QOpcUaClient::backend() const
 {
-    return d_func()->m_impl->backend();
+    Q_D(const QOpcUaClient);
+    return d->m_impl->backend();
 }
 
 QT_END_NAMESPACE

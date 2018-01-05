@@ -82,7 +82,8 @@ public:
             for (auto &entry : qAsConst(attr))
                 updatedAttributes |= entry.attributeId;
 
-            emit q_func()->attributeRead(updatedAttributes);
+            Q_Q(QOpcUaNode);
+            emit q->attributeRead(updatedAttributes);
         });
 
         m_attributeWrittenConnection = QObject::connect(impl, &QOpcUaNodeImpl::attributeWritten,
@@ -92,14 +93,16 @@ public:
             if (statusCode == QOpcUa::UaStatusCode::Good)
                 m_nodeAttributes[attr].attribute = value;
 
-            emit q_func()->attributeWritten(attr, statusCode);
+            Q_Q(QOpcUaNode);
+            emit q->attributeWritten(attr, statusCode);
         });
 
         m_attributeUpdatedConnection = QObject::connect(impl, &QOpcUaNodeImpl::attributeUpdated,
                 [this](QOpcUa::NodeAttribute attr, QVariant value)
         {
             this->m_nodeAttributes[attr] = {value, QOpcUa::UaStatusCode::Good};
-            emit q_func()->attributeUpdated(attr, value);
+            Q_Q(QOpcUaNode);
+            emit q->attributeUpdated(attr, value);
         });
 
         m_monitoringEnableDisableConnection = QObject::connect(impl, &QOpcUaNodeImpl::monitoringEnableDisable,
@@ -107,11 +110,13 @@ public:
         {
             if (subscribe == true) {
                 m_monitoringStatus[attr] = status;
-                emit q_func()->enableMonitoringFinished(attr, status.statusCode());
+                Q_Q(QOpcUaNode);
+                emit q->enableMonitoringFinished(attr, status.statusCode());
             }
             else {
                 m_monitoringStatus.remove(attr);
-                emit q_func()->disableMonitoringFinished(attr, status.statusCode());
+                Q_Q(QOpcUaNode);
+                emit q->disableMonitoringFinished(attr, status.statusCode());
             }
         });
 
@@ -144,20 +149,23 @@ public:
                     it->setMonitoringMode(param.monitoringMode());
             }
 
-            emit q_func()->monitoringStatusChanged(attr, items, param.statusCode());
+            Q_Q(QOpcUaNode);
+            emit q->monitoringStatusChanged(attr, items, param.statusCode());
         });
 
 
         m_methodCallFinishedConnection = QObject::connect(impl, &QOpcUaNodeImpl::methodCallFinished,
             [this](QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode)
         {
-            emit q_func()->methodCallFinished(methodNodeId, result, statusCode);
+            Q_Q(QOpcUaNode);
+            emit q->methodCallFinished(methodNodeId, result, statusCode);
         });
 
         m_browseFinishedConnection = QObject::connect(impl, &QOpcUaNodeImpl::browseFinished,
                 [this](QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode)
         {
-            emit q_func()->browseFinished(children, statusCode);
+            Q_Q(QOpcUaNode);
+            emit q->browseFinished(children, statusCode);
         });
     }
 

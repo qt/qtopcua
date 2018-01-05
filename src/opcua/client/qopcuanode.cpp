@@ -202,10 +202,11 @@ QOpcUaNode::~QOpcUaNode()
 */
 bool QOpcUaNode::readAttributeRange(QOpcUa::NodeAttribute attribute, const QString &indexRange)
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+    Q_D(QOpcUaNode);
+    if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
         return false;
 
-    return d_func()->m_impl->readAttributes(QOpcUa::NodeAttributes() | attribute, indexRange);
+    return d->m_impl->readAttributes(QOpcUa::NodeAttributes() | attribute, indexRange);
 }
 
 /*!
@@ -216,10 +217,11 @@ bool QOpcUaNode::readAttributeRange(QOpcUa::NodeAttribute attribute, const QStri
 */
 bool QOpcUaNode::readAttributes(QOpcUa::NodeAttributes attributes)
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+    Q_D(QOpcUaNode);
+    if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
         return false;
 
-    return d_func()->m_impl->readAttributes(attributes, QString());
+    return d->m_impl->readAttributes(attributes, QString());
 }
 
 /*!
@@ -230,8 +232,9 @@ bool QOpcUaNode::readAttributes(QOpcUa::NodeAttributes attributes)
  */
 QVariant QOpcUaNode::attribute(QOpcUa::NodeAttribute attribute) const
 {
-    auto it = d_func()->m_nodeAttributes.constFind(attribute);
-    if (it == d_func()->m_nodeAttributes.constEnd())
+    Q_D(const QOpcUaNode);
+    auto it = d->m_nodeAttributes.constFind(attribute);
+    if (it == d->m_nodeAttributes.constEnd())
         return QVariant();
 
     return it->attribute;
@@ -246,8 +249,9 @@ QVariant QOpcUaNode::attribute(QOpcUa::NodeAttribute attribute) const
  */
 QOpcUa::UaStatusCode QOpcUaNode::attributeError(QOpcUa::NodeAttribute attribute) const
 {
-    auto it = d_func()->m_nodeAttributes.constFind(attribute);
-    if (it == d_func()->m_nodeAttributes.constEnd())
+    Q_D(const QOpcUaNode);
+    auto it = d->m_nodeAttributes.constFind(attribute);
+    if (it == d->m_nodeAttributes.constEnd())
         return QOpcUa::UaStatusCode::BadNotFound;
 
     return it->statusCode;
@@ -329,10 +333,11 @@ QOpcUa::UaStatusCode QOpcUaNode::attributeError(QOpcUa::NodeAttribute attribute)
  */
 bool QOpcUaNode::enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+    Q_D(QOpcUaNode);
+    if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
         return false;
 
-    return d_func()->m_impl->enableMonitoring(attr, settings);
+    return d->m_impl->enableMonitoring(attr, settings);
 }
 
 /*!
@@ -347,10 +352,11 @@ bool QOpcUaNode::enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonit
 */
 bool QOpcUaNode::modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value)
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+    Q_D(QOpcUaNode);
+    if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
         return false;
 
-    return d_func()->m_impl->modifyMonitoring(attr, item, value);
+    return d->m_impl->modifyMonitoring(attr, item, value);
 }
 
 /*!
@@ -360,8 +366,9 @@ bool QOpcUaNode::modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringPa
 */
 QOpcUaMonitoringParameters QOpcUaNode::monitoringStatus(QOpcUa::NodeAttribute attr)
 {
-    auto it = d_func()->m_monitoringStatus.constFind(attr);
-    if (it == d_func()->m_monitoringStatus.constEnd()) {
+    Q_D(QOpcUaNode);
+    auto it = d->m_monitoringStatus.constFind(attr);
+    if (it == d->m_monitoringStatus.constEnd()) {
         QOpcUaMonitoringParameters p;
         p.setStatusCode(QOpcUa::UaStatusCode::BadAttributeIdInvalid);
         return p;
@@ -377,10 +384,11 @@ QOpcUaMonitoringParameters QOpcUaNode::monitoringStatus(QOpcUa::NodeAttribute at
  */
 bool QOpcUaNode::writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type)
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+    Q_D(QOpcUaNode);
+    if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
         return false;
 
-    return d_func()->m_impl->writeAttribute(attribute, value, type, QString());
+    return d->m_impl->writeAttribute(attribute, value, type, QString());
 }
 
 /*!
@@ -391,10 +399,11 @@ bool QOpcUaNode::writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant 
 */
 bool QOpcUaNode::writeAttributeRange(QOpcUa::NodeAttribute attribute, const QVariant &value, const QString &indexRange, QOpcUa::Types type)
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+    Q_D(QOpcUaNode);
+    if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
         return false;
 
-    return d_func()->m_impl->writeAttribute(attribute, value, type, indexRange);
+    return d->m_impl->writeAttribute(attribute, value, type, indexRange);
 }
 
 /*!
@@ -407,10 +416,11 @@ bool QOpcUaNode::writeAttributeRange(QOpcUa::NodeAttribute attribute, const QVar
 */
 bool QOpcUaNode::writeAttributes(const AttributeMap &toWrite, QOpcUa::Types valueAttributeType)
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+    Q_D(QOpcUaNode);
+    if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
         return false;
 
-    return d_func()->m_impl->writeAttributes(toWrite, valueAttributeType);
+    return d->m_impl->writeAttributes(toWrite, valueAttributeType);
 }
 
 /*!
@@ -423,10 +433,11 @@ bool QOpcUaNode::writeAttributes(const AttributeMap &toWrite, QOpcUa::Types valu
 */
 bool QOpcUaNode::disableMonitoring(QOpcUa::NodeAttributes attr)
 {
-  if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+  Q_D(QOpcUaNode);
+  if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
       return false;
 
-  return d_func()->m_impl->disableMonitoring(attr);
+  return d->m_impl->disableMonitoring(attr);
 }
 
 /*!
@@ -442,10 +453,11 @@ bool QOpcUaNode::disableMonitoring(QOpcUa::NodeAttributes attr)
 */
 bool QOpcUaNode::browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+    Q_D(QOpcUaNode);
+    if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
         return false;
 
-    return d_func()->m_impl->browseChildren(referenceType, nodeClassMask);
+    return d->m_impl->browseChildren(referenceType, nodeClassMask);
 }
 
 /*!
@@ -453,10 +465,11 @@ bool QOpcUaNode::browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::N
 */
 QString QOpcUaNode::nodeId() const
 {
-    if (d_func()->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+    Q_D(const QOpcUaNode);
+    if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
         return QString();
 
-    return d_func()->m_impl->nodeId();
+    return d->m_impl->nodeId();
 }
 
 /*!
@@ -468,7 +481,7 @@ QString QOpcUaNode::nodeId() const
 bool QOpcUaNode::callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args)
 {
     Q_D(QOpcUaNode);
-    if (d->m_client.isNull() || d_func()->m_client->state() != QOpcUaClient::Connected)
+    if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
         return false;
 
     return d->m_impl->callMethod(methodNodeId, args);
