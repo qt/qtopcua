@@ -277,6 +277,7 @@ void QOpcUaMonitoringParameters::setLifetimeCount(quint32 lifetimeCount)
 
 /*!
     Returns the publishing interval of the subscription.
+    The interval is expressed in milliseconds.
 */
 double QOpcUaMonitoringParameters::publishingInterval() const
 {
@@ -285,6 +286,7 @@ double QOpcUaMonitoringParameters::publishingInterval() const
 
 /*!
     Request \a publishingInterval as publishing interval for the subscription.
+    The interval is expressed in milliseconds.
 */
 void QOpcUaMonitoringParameters::setPublishingInterval(double publishingInterval)
 {
@@ -373,6 +375,7 @@ void QOpcUaMonitoringParameters::setFilter(const QVariant &filter)
 
 /*!
     Returns the revised sampling interval of the monitored item.
+    The interval is expressed in milliseconds.
 */
 double QOpcUaMonitoringParameters::samplingInterval() const
 {
@@ -381,6 +384,7 @@ double QOpcUaMonitoringParameters::samplingInterval() const
 
 /*!
     Request \a samplingInterval as sampling interval for the monitored item.
+    The interval is expressed in milliseconds.
 */
 void QOpcUaMonitoringParameters::setSamplingInterval(double samplingInterval)
 {
