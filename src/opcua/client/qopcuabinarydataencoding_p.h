@@ -72,6 +72,31 @@ public:
     static void encodeArray(const QVector<T> &src, QByteArray &dst);
 };
 
+template <>
+Q_OPCUA_EXPORT QOpcUa::QEUInformation QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success);
+template <>
+Q_OPCUA_EXPORT QOpcUa::QRange QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success);
+template <>
+Q_OPCUA_EXPORT QOpcUa::QComplexNumber QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success);
+template <>
+Q_OPCUA_EXPORT QOpcUa::QDoubleComplexNumber QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success);
+template <>
+Q_OPCUA_EXPORT QOpcUa::QAxisInformation QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success);
+template <>
+Q_OPCUA_EXPORT QOpcUa::QXValue QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success);
+template <>
+Q_OPCUA_EXPORT void QOpcUaBinaryDataEncoding::encode(const QOpcUa::QEUInformation &src, QByteArray &dst);
+template <>
+Q_OPCUA_EXPORT void QOpcUaBinaryDataEncoding::encode(const QOpcUa::QRange &src, QByteArray &dst);
+template <>
+Q_OPCUA_EXPORT void QOpcUaBinaryDataEncoding::encode(const QOpcUa::QComplexNumber &src, QByteArray &dst);
+template <>
+Q_OPCUA_EXPORT void QOpcUaBinaryDataEncoding::encode(const QOpcUa::QDoubleComplexNumber &src, QByteArray &dst);
+template <>
+Q_OPCUA_EXPORT void QOpcUaBinaryDataEncoding::encode(const QOpcUa::QAxisInformation &src, QByteArray &dst);
+template <>
+Q_OPCUA_EXPORT void QOpcUaBinaryDataEncoding::encode(const QOpcUa::QXValue &src, QByteArray &dst);
+
 QT_END_NAMESPACE
 
 #endif // QOPCUABINARYDATAENCODING_H
