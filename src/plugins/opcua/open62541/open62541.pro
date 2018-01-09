@@ -6,7 +6,7 @@ PLUGIN_CLASS_NAME = QOpen62541Plugin
 load(qt_plugin)
 
 QMAKE_USE_PRIVATE += open62541
-win32: LIBS += open62541.lib ws2_32.lib
+win32-msvc: LIBS += open62541.lib ws2_32.lib
 
 HEADERS += \
     qopen62541backend.h \
