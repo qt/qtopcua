@@ -65,7 +65,6 @@ Open62541AsyncBackend::Open62541AsyncBackend(QOpen62541Client *parent)
     , m_clientImpl(parent)
     , m_subscriptionTimer(this)
     , m_sendPublishRequests(false)
-    , m_shortestInterval(std::numeric_limits<qint32>::max())
 {
     m_subscriptionTimer.setSingleShot(true);
     QObject::connect(&m_subscriptionTimer, &QTimer::timeout,
@@ -419,7 +418,8 @@ void Open62541AsyncBackend::browseChildren(uintptr_t handle, UA_NodeId id, QOpcU
 
 void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
 {
-    m_uaclient = UA_Client_new(UA_ClientConfig_default);
+    UA_ClientConfig conf = UA_ClientConfig_default;
+    m_uaclient = UA_Client_new(conf);
     UA_StatusCode ret;
 
     if (url.userName().length()) {
@@ -473,7 +473,7 @@ void Open62541AsyncBackend::sendPublishRequest()
     }
 
     // If BADSERVERNOTCONNECTED is returned, the subscriptions are gone and local information can be deleted.
-    if (UA_Client_Subscriptions_manuallySendPublishRequest(m_uaclient) == UA_STATUSCODE_BADSERVERNOTCONNECTED) {
+    if (UA_Client_runAsync(m_uaclient, 1) == UA_STATUSCODE_BADSERVERNOTCONNECTED) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unable to send publish request";
         m_sendPublishRequests = false;
         qDeleteAll(m_subscriptions);
@@ -483,7 +483,7 @@ void Open62541AsyncBackend::sendPublishRequest()
         return;
     }
 
-    m_subscriptionTimer.start(m_shortestInterval);
+    m_subscriptionTimer.start(0);
 }
 
 void Open62541AsyncBackend::modifyPublishRequests()
@@ -491,13 +491,8 @@ void Open62541AsyncBackend::modifyPublishRequests()
     if (m_subscriptions.count() == 0) {
         m_subscriptionTimer.stop();
         m_sendPublishRequests = false;
-        m_shortestInterval = std::numeric_limits<qint32>::max();
         return;
     }
-
-    for (auto it : qAsConst(m_subscriptions))
-        if (it->interval() < m_shortestInterval)
-            m_shortestInterval = it->interval();
 
     m_subscriptionTimer.stop();
     m_sendPublishRequests = true;

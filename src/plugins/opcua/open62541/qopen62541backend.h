@@ -87,7 +87,6 @@ private:
     QHash<uintptr_t, QHash<QOpcUa::NodeAttribute, QOpen62541Subscription *>> m_attributeMapping; // Handle -> Attribute -> Subscription
 
     bool m_sendPublishRequests;
-    qint32 m_shortestInterval;
 };
 
 QT_END_NAMESPACE
