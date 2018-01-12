@@ -9,7 +9,6 @@
 /config.tests/*/*
 /config.log
 
-examples/opcua/accontrol/accontrol
 tests/open62541-testserver/open62541-testserver
 
 
