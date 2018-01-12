@@ -145,25 +145,6 @@ int main(int argc, char **argv)
     UA_NodeId testOpaqueIdsFolder = server.addFolder("ns=3;s=testOpaqueIdsFolder", "testOpaqueIdsFolder");
     server.addVariable<UA_String, QString, UA_TYPES_STRING>(testOpaqueIdsFolder, "ns=3;b=UXQgZnR3IQ==", "theOpaqueId", QString());
 
-    UA_NodeId demoFolder = server.addFolder("ns=3;s=DemoFolder", "DemoFolder");
-    UA_NodeId timeTickerNode = server.addVariable<UA_DateTime, QDateTime, UA_TYPES_DATETIME>(demoFolder, "ns=2;s=DemoFolder.TimeTicker", "TimeTicker", QDateTime());
-
-    QTimer tickTimer;
-    tickTimer.setInterval(1000);
-    QObject::connect(&tickTimer, &QTimer::timeout, [&server, &timeTickerNode](){
-        QDateTime current = QDateTime::currentDateTime();
-
-        UA_Variant val;
-        UA_DateTime tmpValue = UA_MSEC_TO_DATETIME * current.toMSecsSinceEpoch();
-        UA_Variant_setScalarCopy(&val, &tmpValue, &UA_TYPES[UA_TYPES_DATETIME]);
-
-        UA_StatusCode ret = UA_Server_writeValue(server.m_server, timeTickerNode, val);
-        if (ret != UA_STATUSCODE_GOOD) {
-            qWarning() << "Open62541 Server: Could not write Current DateTime:" << ret;
-        }
-    });
-    tickTimer.start();
-
     server.addMethod(testFolder, "ns=3;s=Test.Method.Multiply", "MultiplyDoubles");
 
     return app.exec();
