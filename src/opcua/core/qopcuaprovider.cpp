@@ -153,7 +153,7 @@ static QOpcUaPlugin *loadPlugin(const QString &key)
 /*!
     Returns a pointer to a QOpcUaClient object by loading the selected \a backend
     as a plugin and creating a client object.
-    If the plugin loading fails, 0 is returned instead.
+    If the plugin loading fails, nullptr is returned instead.
 
     The user is responsible for deleting the returned \l QOpcUaClient object
     when it is no longer needed.

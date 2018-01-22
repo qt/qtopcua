@@ -209,6 +209,9 @@ bool QOpcUaClient::isSecureConnectionSupported() const
 /*!
     Returns a \l QOpcUaNode object associated with the OPC UA node identified
     by \a nodeId. The caller becomes owner of the node object.
+
+    If the client is not connected, nullptr is returned. The backends may also
+    return nullptr for other error cases (for example for a malformed node id).
 */
 QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 {
