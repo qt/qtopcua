@@ -69,9 +69,9 @@ QT_BEGIN_NAMESPACE
 /*!
     \enum QOpcUaMonitoringParameters::Parameter
 
-    Enumerates parameters that can be modified at runtime using \l modifyMonitoring().
+    Enumerates parameters that can be modified at runtime using \l QOpcUaNode::modifyMonitoring().
     Not all values are guaranteed to be supported by all plugins. Lack of support will be reported
-    in the \l monitoringStatusChanged signal.
+    in the \l QOpcUaNode::monitoringStatusChanged signal.
 
     \value PublishingEnabled
     \value PublishingInterval
@@ -302,7 +302,7 @@ quint32 QOpcUaMonitoringParameters::subscriptionId() const
 }
 
 /*!
-    Request the monitored items to be created on a known subscription with subscriptionId \a value.
+    Request the monitored items to be created on a known subscription with \a subscriptionId.
 */
 void QOpcUaMonitoringParameters::setSubscriptionId(quint32 subscriptionId)
 {

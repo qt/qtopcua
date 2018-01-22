@@ -56,14 +56,14 @@ QOpcUaReferenceDescription::QOpcUaReferenceDescription()
 {}
 
 /*!
-    Creates a copy of another QOpcUaReferenceDescription object
+    Creates a copy of the QOpcUaReferenceDescription object \a other.
 */
 QOpcUaReferenceDescription::QOpcUaReferenceDescription(const QOpcUaReferenceDescription &other)
     : d_ptr(other.d_ptr)
 {}
 
 /*!
-    Compares this object to another QOpcUaReferenceDescription object
+    Compares this object to QOpcUaReferenceDescription object \a other.
 */
 QOpcUaReferenceDescription &QOpcUaReferenceDescription::operator=(const QOpcUaReferenceDescription &other)
 {
@@ -86,7 +86,7 @@ QOpcUa::NodeClass QOpcUaReferenceDescription::nodeClass() const
 }
 
 /*!
-    Sets the node class of the node.
+    Sets the node class of the node to \a nodeClass.
 */
 void QOpcUaReferenceDescription::setNodeClass(QOpcUa::NodeClass nodeClass)
 {
@@ -103,7 +103,7 @@ QOpcUa::QLocalizedText QOpcUaReferenceDescription::displayName() const
 }
 
 /*!
-    Sets the display name of the node.
+    Sets the display name of the node to \a displayName.
 */
 void QOpcUaReferenceDescription::setDisplayName(const QOpcUa::QLocalizedText &displayName)
 {
@@ -119,7 +119,7 @@ QOpcUa::QQualifiedName QOpcUaReferenceDescription::browseName() const
 }
 
 /*!
-    Sets the browse name of the node.
+    Sets the browse name of the node to \a browseName.
 */
 void QOpcUaReferenceDescription::setBrowseName(const QOpcUa::QQualifiedName &browseName)
 {
@@ -135,7 +135,7 @@ QString QOpcUaReferenceDescription::nodeId() const
 }
 
 /*!
-    Sets the node id of the node.
+    Sets the node id of the node to \a nodeId.
 */
 void QOpcUaReferenceDescription::setNodeId(const QString &nodeId)
 {
@@ -151,7 +151,7 @@ QOpcUa::ReferenceTypeId QOpcUaReferenceDescription::refType() const
 }
 
 /*!
-    Sets the reference type of the node.
+    Sets the reference type of the node to \a refType.
 */
 void QOpcUaReferenceDescription::setRefType(QOpcUa::ReferenceTypeId refType)
 {

@@ -160,6 +160,8 @@ QT_BEGIN_NAMESPACE
     \value ExtensionObject A data structure which contains a serialized object.
     \value Range A range composed from the two double values low and high.
     \value EUInformation The unit of measurement for an analog value.
+    \value ComplexNumber The OPC UA ComplexNumber type.
+    \value DoubleComplexNumber The OPC UA DoubleComplexNumber type.
     \value AxisInformation Information about an axis.
     \value XV A float value with a double precision position on an axis.
     \value Undefined
@@ -440,9 +442,15 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
 */
 
 /*!
-    \fn QOpcUa::QQualifiedName::QQualifiedName(quint16 idx, QString text)
+    \fn QOpcUa::QQualifiedName::QQualifiedName(quint16 p_namespaceIndex, const QString &p_name)
 
-    Constructs an instance of QQualifiedName with the namespace index given in \a idx and the name given in \a text.
+    Constructs an instance of QQualifiedName with the namespace index given in \a p_namespaceIndex and the name given in \a p_name.
+*/
+
+/*!
+    \fn bool QOpcUa::QQualifiedName::operator==(const QQualifiedName &other) const
+
+    Compares this QQualifiedName to \a other.
 */
 
 /*!
@@ -471,6 +479,12 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
     \fn QOpcUa::QLocalizedText::QLocalizedText(const QString &p_locale, const QString &p_text)
 
     Constructs an instance of QLocalizedText with the locale given in \a p_locale and the text given in \a p_text.
+*/
+
+/*!
+    \fn bool QOpcUa::QLocalizedText::operator==(const QLocalizedText &other) const
+
+    Compares this QLocalizedText to \a other.
 */
 
 /*!
@@ -616,6 +630,12 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 */
 
 /*!
+    \fn bool QOpcUa::QEUInformation::operator==(const QEUInformation &other) const
+
+    Compares this QEUInformation to \a other.
+*/
+
+/*!
     \variable QOpcUa::QEUInformation::namespaceUri
 
     The namespace URI of the unit.
@@ -695,6 +715,12 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
     It contains information about an axis which can be used for multiple purposes. A common use case could
     involve the plotting of display data. The engineering units and the title are used for the text on the plot,
     range, axisScaleType and axisSteps provide the scaling and the axis ranges of the plot.
+*/
+
+/*!
+    \fn bool QOpcUa::QAxisInformation::operator==(const QAxisInformation &other) const
+
+    Compares this QAxisInformation to \a other.
 */
 
 /*!
