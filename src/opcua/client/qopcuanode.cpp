@@ -96,8 +96,6 @@ QT_BEGIN_NAMESPACE
 
     Settings of the subscription and monitored item can be modified at runtime using \l modifyMonitoring().
 
-    \image subscriptions.png
-
     \section1 Browsing the address space
     The OPC UA address space consists of nodes connected by references.
     \l browseChildren follows these references in forward direction and returns attributes from all
