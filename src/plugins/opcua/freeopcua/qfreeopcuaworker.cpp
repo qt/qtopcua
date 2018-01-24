@@ -182,7 +182,7 @@ void QFreeOpcUaWorker::readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUa
 
         emit attributesRead(handle, vec, QOpcUa::UaStatusCode::Good);
     } catch(const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Batch read of node attributes failed: %s", ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Batch read of node attributes failed:" << ex.what();
         emit attributesRead(handle, vec, QFreeOpcUaValueConverter::exceptionToStatusCode(ex));
     }
 }
@@ -208,7 +208,7 @@ void QFreeOpcUaWorker::writeAttribute(uintptr_t handle, OpcUa::Node node, QOpcUa
 
         emit attributeWritten(handle, attr, res[0] == OpcUa::StatusCode::Good ? value : QVariant(), static_cast<QOpcUa::UaStatusCode>(res[0]));
     } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Could not write value to node: %s: %s", OpcUa::ToString(node.GetId()).c_str(), ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Could not write value to node:" << OpcUa::ToString(node.GetId()).c_str() << ex.what();
         emit attributeWritten(handle, attr, QVariant(), QFreeOpcUaValueConverter::exceptionToStatusCode(ex));
     }
 }
@@ -216,7 +216,7 @@ void QFreeOpcUaWorker::writeAttribute(uintptr_t handle, OpcUa::Node node, QOpcUa
 void QFreeOpcUaWorker::writeAttributes(uintptr_t handle, OpcUa::Node node, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType)
 {
     if (toWrite.size() == 0) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "No values to be written");
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "No values to be written";
         emit attributeWritten(handle, QOpcUa::NodeAttribute::None, QVariant(), QOpcUa::UaStatusCode::BadNothingToDo);
         return;
     }
@@ -243,7 +243,7 @@ void QFreeOpcUaWorker::writeAttributes(uintptr_t handle, OpcUa::Node node, QOpcU
         }
 
     } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Could not write attributes: %s", ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Could not write attributes:" << ex.what();
         for (auto it = toWrite.constBegin(); it != toWrite.constEnd(); ++it) {
             emit attributeWritten(handle, it.key(), QVariant(), QFreeOpcUaValueConverter::exceptionToStatusCode(ex));
         }
@@ -287,7 +287,7 @@ void QFreeOpcUaWorker::enableMonitoring(uintptr_t handle, OpcUa::Node node, QOpc
     // Create a new subscription if necessary
     if (settings.subscriptionId()) {
         if (!m_subscriptions.contains(settings.subscriptionId())) {
-            qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "There is no subscription with id %u", settings.subscriptionId());
+            qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "There is no subscription with id" << settings.subscriptionId();
             qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attr) {
                 QOpcUaMonitoringParameters s;
                 s.setStatusCode(QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
@@ -301,7 +301,7 @@ void QFreeOpcUaWorker::enableMonitoring(uintptr_t handle, OpcUa::Node node, QOpc
     }
 
     if (!usedSubscription) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Could not create subscription with interval %f", settings.publishingInterval());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Could not create subscription with interval" << settings.publishingInterval();
         qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attr) {
             QOpcUaMonitoringParameters s;
             s.setStatusCode(QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
@@ -336,7 +336,7 @@ void QFreeOpcUaWorker::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute 
 {
     QFreeOpcUaSubscription *subscription = getSubscriptionForItem(handle, attr);
     if (!subscription) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Could not modify parameter for %lu, the monitored item does not exist", handle);
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Could not modify parameter for" << handle << ", the monitored item does not exist";
         QOpcUaMonitoringParameters p;
         p.setStatusCode(QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
         emit monitoringStatusChanged(handle, attr, item, p);

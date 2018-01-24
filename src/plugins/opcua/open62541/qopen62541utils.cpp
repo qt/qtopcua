@@ -51,13 +51,13 @@ UA_NodeId Open62541Utils::nodeIdFromQString(const QString &name)
     const int semicolonIndex = name.indexOf(';');
 
     if (semicolonIndex <= 0) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Unable to split node id string: %s", qUtf8Printable(name));
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unable to split node id string:" << qUtf8Printable(name);
         return UA_NODEID_NULL;
     }
 
     QStringRef namespaceString = name.leftRef(semicolonIndex);
     if (namespaceString.length() <= 3 || !namespaceString.startsWith(QLatin1String("ns="))) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Not a valid index string in node id string: %s", qUtf8Printable(name));
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Not a valid index string in node id string:" << name;
         return UA_NODEID_NULL;
     }
     namespaceString = namespaceString.mid(3); // Remove "ns="
@@ -65,7 +65,7 @@ UA_NodeId Open62541Utils::nodeIdFromQString(const QString &name)
     QStringRef identifierString = name.midRef(semicolonIndex + 1);
 
     if (identifierString.length() <= 2) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541,"There is no identifier in node id string: %s", qUtf8Printable(name));
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "There is no identifier in node id string:" << name;
         return UA_NODEID_NULL;
     }
 
@@ -79,7 +79,7 @@ UA_NodeId Open62541Utils::nodeIdFromQString(const QString &name)
     else if (identifierString.startsWith(QLatin1String("b=")))
         identifierType = 'b';
     else {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "There is no valid identifier type in node id string: %s", qUtf8Printable(name));
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "There is no valid identifier type in node id string:" << qUtf8Printable(name);
         return UA_NODEID_NULL;
     }
     identifierString = identifierString.mid(2); // Remove identifier type
@@ -91,7 +91,7 @@ UA_NodeId Open62541Utils::nodeIdFromQString(const QString &name)
     UA_UInt16 index = static_cast<UA_UInt16>(namespaceString.toUInt(&ok));
 
     if (!ok) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Not a valid namespace index in node id string: %s", qUtf8Printable(name));
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Not a valid namespace index in node id string:" << qUtf8Printable(name);
         return UA_NODEID_NULL;
     }
 
@@ -102,21 +102,21 @@ UA_NodeId Open62541Utils::nodeIdFromQString(const QString &name)
         if (isNumber)
             return UA_NODEID_NUMERIC(index, identifier);
         else
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "%s does not contain a valid numeric identifier", qUtf8Printable(name));
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << name << "does not contain a valid numeric identifier";
         break;
     }
     case 's': {
         if (identifierString.length() > 0)
             return UA_NODEID_STRING_ALLOC(index, identifierString.toUtf8().constData());
         else
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "%s does not contain a valid string identifier", qUtf8Printable(name));
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << name << "does not contain a valid string identifier";
         break;
     }
     case 'g': {
         QUuid uuid(identifierString.toString());
 
         if (uuid.isNull()) {
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "%s does not contain a valid guid identifier", qUtf8Printable(name));
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << name << "does not contain a valid guid identifier";
         }
 
         UA_Guid guid;
@@ -132,11 +132,11 @@ UA_NodeId Open62541Utils::nodeIdFromQString(const QString &name)
             return UA_NODEID_BYTESTRING_ALLOC(index, temp.data());
         }
         else
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "%s does not contain a valid byte string identifier", qUtf8Printable(name));
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << name << "does not contain a valid byte string identifier";
         break;
     }
     default:
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Could not parse node id: %s", qUtf8Printable(name));
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not parse node id:" << name;
     }
     return UA_NODEID_NULL;
 }
@@ -167,7 +167,7 @@ QString Open62541Utils::nodeIdToQString(UA_NodeId id)
         break;
     }
     default:
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Open62541 Utils: Could not convert UA_NodeId to QString");
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541 Utils: Could not convert UA_NodeId to QString";
         result.clear();
     }
     return result;

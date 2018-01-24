@@ -68,7 +68,7 @@ quint32 QFreeOpcUaSubscription::createOnServer()
         m_subscription = m_backend->CreateSubscription(m_interval, *this);
         m_interval = m_subscription->GetData().RevisedPublishingInterval;
     } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "CreateOnServer caught: %s", ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "CreateOnServer caught:" << ex.what();
         return 0;
     }
     return m_subscription->GetId();
@@ -84,7 +84,7 @@ bool QFreeOpcUaSubscription::removeOnServer()
             success = true;
         }
     } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "RemoveOnServer caught: %s", ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "RemoveOnServer caught:" << ex.what();
     }
 
     qDeleteAll(m_itemIdToItemMapping);
@@ -101,7 +101,7 @@ void QFreeOpcUaSubscription::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttr
     Q_UNUSED(value);
 
     if (!getItemForAttribute(handle, attr)) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Could not modify parameter for %lu, there are no monitored items", handle);
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Could not modify parameter for" << handle << ", there are no monitored items";
         QOpcUaMonitoringParameters p;
         p.setStatusCode(QOpcUa::UaStatusCode::BadAttributeIdInvalid);
         emit m_backend->monitoringStatusChanged(handle, attr, item, p);
@@ -130,7 +130,7 @@ bool QFreeOpcUaSubscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUa:
             return false;
         }
     } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "addAttributeMonitoredItem caught: %s", ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "addAttributeMonitoredItem caught:" << ex.what();
         QOpcUaMonitoringParameters s;
         s.setStatusCode(QFreeOpcUaValueConverter::exceptionToStatusCode(ex));
         emit m_backend->monitoringEnableDisable(handle, attr, true, s);
@@ -158,7 +158,7 @@ bool QFreeOpcUaSubscription::removeAttributeMonitoredItem(uintptr_t handle, QOpc
     QScopedPointer<MonitoredItem> item(getItemForAttribute(handle, attr));
 
     if (!item) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "There is no monitored item for this attribute");
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "There is no monitored item for this attribute";
         QOpcUaMonitoringParameters s;
         s.setStatusCode(QOpcUa::UaStatusCode::BadMonitoredItemIdInvalid);
         emit m_backend->monitoringEnableDisable(handle, attr, false, s);
@@ -171,7 +171,7 @@ bool QFreeOpcUaSubscription::removeAttributeMonitoredItem(uintptr_t handle, QOpc
         m_subscription->UnSubscribe(item->monitoredItemId);
         s.setStatusCode(QOpcUa::UaStatusCode::Good);
     } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "removeAttributeMonitoredItem caught: %s", ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "removeAttributeMonitoredItem caught:" << ex.what();
         s.setStatusCode(QFreeOpcUaValueConverter::exceptionToStatusCode(ex));
     }
 
