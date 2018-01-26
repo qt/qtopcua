@@ -180,6 +180,23 @@ void QOpcUaMonitoringParameters::setShared(SubscriptionType shared)
 }
 
 /*!
+    Returns the index range for the monitored item.
+*/
+QString QOpcUaMonitoringParameters::indexRange() const
+{
+    return d_ptr->indexRange;
+}
+
+/*!
+    Requests \a indexRange as index range for the monitored item.
+    For details on the index range string, see QOpcUaNode::readAttributeRange().
+*/
+void QOpcUaMonitoringParameters::setIndexRange(const QString &indexRange)
+{
+    d_ptr->indexRange = indexRange;
+}
+
+/*!
     Returns the status code of the monitored item creation.
 */
 QOpcUa::UaStatusCode QOpcUaMonitoringParameters::statusCode() const

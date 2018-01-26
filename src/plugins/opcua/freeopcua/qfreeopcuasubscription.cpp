@@ -134,7 +134,14 @@ bool QFreeOpcUaSubscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUa:
 
     try {
         if (m_subscription) {
-            monitoredItemId = m_subscription->SubscribeDataChange(node, QFreeOpcUaValueConverter::toUaAttributeId(attr));
+            std::vector<OpcUa::ReadValueId> ids;
+            OpcUa::ReadValueId rvid;
+            rvid.NodeId = node.GetId();
+            rvid.AttributeId = QFreeOpcUaValueConverter::toUaAttributeId(attr);
+            rvid.IndexRange = settings.indexRange().toStdString();
+            ids.push_back(rvid);
+            std::vector<uint32_t> monitoredItemIds = m_subscription->SubscribeDataChange(ids);
+            monitoredItemId = monitoredItemIds.size() ? monitoredItemIds[0] : 0;
         }
         else {
             QOpcUaMonitoringParameters s;
