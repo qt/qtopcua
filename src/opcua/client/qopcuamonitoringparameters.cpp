@@ -40,6 +40,104 @@
 QT_BEGIN_NAMESPACE
 
 /*!
+    \class QOpcUaMonitoringParameters
+    \inmodule QtOpcUa
+
+    \brief QOpcUaMonitoringParameters provides a way to set and retrieve parameters for subscriptions and monitored items.
+
+    This class is used in \l QOpcUaNode::enableMonitoring() requests
+    and as return value for \l QOpcUaNode::monitoringStatus() in which case it contains
+    the revised values from the server.
+
+    \section1 Usage
+    For most use cases, only the publishing interval is required
+    \code
+    QOpcUaMonitoringParameters p(100); // Set a publishing interval of 100ms and share the subscription
+    node->enableMonitoring(QOpcUa::NodeAttribute::Value, p);
+    \endcode
+    If an \l {QOpcUaMonitoringParameters::SubscriptionType} {exclusive} subscription is required, use the second parameter
+    \code
+    QOpcUaMonitoringParameters p(100, QOpcUaMonitoringParameters::SubscriptionType::Exclusive); // Create a new subscription
+    \endcode
+    To add additional items to an existing subscription, use the third parameter for the next calls to QOpcUaNode::enableMonitoring().
+    \code
+    quint32 subscriptionId = node->monitoringStatus(QOpcUa::NodeAttribute::Value).subscriptionId();
+    QOpcUaMonitoringParameters p(100, QOpcUaMonitoringParameters::SubscriptionType::Shared, subscriptionId); // Add the monitored item to this subscription
+    \endcode
+
+    If other parameters are required, they must be set using the setter methods.
+
+    \section1 Backend support
+    Not all parameters in this class are supported by all backends.
+    \table
+    \header
+    \li Parameter
+    \li Open62541 plugin
+    \li FreeOPCUA plugin
+    \row
+    \li PublishingInterval
+    \li X
+    \li X
+    \row
+    \li SamplingInterval
+    \li X
+    \li
+    \row
+    \li LifetimeCount
+    \li X
+    \li
+    \row
+    \li MaxKeepAliveCount
+    \li X
+    \li
+    \row
+    \li Priority
+    \li X
+    \li
+    \row
+    \li IndexRange
+    \li
+    \li X
+    \row
+    \li Shared
+    \li X
+    \li X
+    \row
+    \li SubscriptionId
+    \li X
+    \li X
+    \row
+    \li PublishingEnabled
+    \li
+    \li
+    \row
+    \li Filter
+    \li
+    \li
+    \row
+    \li QueueSize
+    \li
+    \li
+    \row
+    \li DiscardOldest
+    \li
+    \li
+    \row
+    \li MonitoringMode
+    \li
+    \li
+    \row
+    \li IndexRange
+    \li
+    \li
+    \row
+    \li MaxNotificationsPerPublish
+    \li
+    \li
+    \endtable
+*/
+
+/*!
     \enum QOpcUaMonitoringParameters::MonitoringMode
 
     This enum is used to set the monitoring mode for a monitored item.
@@ -54,16 +152,6 @@ QT_BEGIN_NAMESPACE
 
     \value Shared Share subscription with other monitored items with the same interval
     \value Exclusive Request a new subscription for this attribute
-*/
-
-/*!
-    \class QOpcUaMonitoringParameters
-
-    This struct contains parameters for the creation of the subscription and monitored items for
-    a enableMonitoring request.
-
-    The same struct is used as return value for monitoringStatus and contains
-    the revised values from the server.
 */
 
 /*!
@@ -88,6 +176,8 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QOpcUaMonitoringParameters::DataChangeFilter
+    \inmodule QtOpcUa
+    \brief Defines a DataChangeFilter for a monitored item
 
     This struct is used to set up filtering for a DataChange monitored item.
     It is defined in OPC-UA part 4, 7.12.2.
@@ -133,10 +223,16 @@ QT_BEGIN_NAMESPACE
            of the difference between the last cached value and the current value is greater than value percent of the EURange.
 */
 
+/*!
+    The default constructor for QOpcUaMonitoringParameters.
+*/
 QOpcUaMonitoringParameters::QOpcUaMonitoringParameters()
     : d_ptr(new QOpcUaMonitoringParametersPrivate())
 {}
 
+/*!
+    The destructor for QOpcUaMonitoringParameters.
+*/
 QOpcUaMonitoringParameters::~QOpcUaMonitoringParameters()
 {}
 
@@ -153,10 +249,16 @@ QOpcUaMonitoringParameters::QOpcUaMonitoringParameters(double publishingInterval
 
 }
 
+/*!
+    Constructs a QOpcuaMonitoringParameters object from the value of \a other.
+*/
 QOpcUaMonitoringParameters::QOpcUaMonitoringParameters(const QOpcUaMonitoringParameters &other)
     : d_ptr(other.d_ptr)
 {}
 
+/*!
+    Assigns the value of \a other to this object.
+*/
 QOpcUaMonitoringParameters &QOpcUaMonitoringParameters::operator=(const QOpcUaMonitoringParameters &other)
 {
     d_ptr = other.d_ptr;

@@ -420,7 +420,7 @@ QT_BEGIN_NAMESPACE
 /*!
     This method can be used to check if a call has successfully finished.
 
-    Returns true if \a statusCode's serverity field is Good.
+    Returns \c true if \a statusCode's serverity field is Good.
 */
 bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
 {
@@ -435,6 +435,8 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
 
 /*!
   \class QOpcUa::QQualifiedName
+  \inmodule QtOpcUa
+  \brief The OPC UA QualifiedName type
 
   This is the QtOpcUa representation for the OPC UA QualifiedName type defined in OPC-UA part 3, 8.3.
   A QualifiedName is a name qualified by a namespace index. The namespace index corresponds to an entry in the server's namespace array.
@@ -450,7 +452,7 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
 /*!
     \fn bool QOpcUa::QQualifiedName::operator==(const QQualifiedName &other) const
 
-    Compares this QQualifiedName to \a other.
+    Returns \c true if this QQualifiedName has the same value as \a other.
 */
 
 /*!
@@ -467,6 +469,8 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
 
 /*!
   \class QOpcUa::QLocalizedText
+  \inmodule QtOpcUa
+  \brief The OPC UA LocalizedText type
 
   This is the QtOpcUa representation for the OPC UA LocalizedText type defined in OPC-UA part 3, 8.5.
   A LocalizedText value contains a text string with associated locale information in a second string (e. g. "en" or "en-US").
@@ -484,7 +488,7 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
 /*!
     \fn bool QOpcUa::QLocalizedText::operator==(const QLocalizedText &other) const
 
-    Compares this QLocalizedText to \a other.
+    Returns \c true if this QLocalizedText has the same value as \a other.
 */
 
 /*!
@@ -605,6 +609,8 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 
 /*!
     \class QOpcUa::QRange
+    \inmodule QtOpcUa
+    \brief The OPC UA Range type
 
     This is the QtOpcUa representation for the OPC UA Range type defined in OPC-UA part 8, 5.6.2.
     It consists of two double values which mark minimum and maximum of the range.
@@ -622,7 +628,14 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 */
 
 /*!
+    \fn bool QOpcUa::QRange::operator==(const QOpcUa::QRange &other) const
+    Returns \c true if this QRange has the same value as \a other.
+*/
+
+/*!
     \class QOpcUa::QEUInformation
+    \inmodule QtOpcUa
+    \brief The OPC UA EURange type
 
     This is the QtOpcUa representation for the OPC UA EUInformation type defined in OPC-UA part 8, 5.6.3.
     EUInformation values contain information about units and are mostly used as property of a node with a numeric value attribute.
@@ -631,8 +644,7 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 
 /*!
     \fn bool QOpcUa::QEUInformation::operator==(const QEUInformation &other) const
-
-    Compares this QEUInformation to \a other.
+    Returns \c true if this QEUInformation has the same value as \a other.
 */
 
 /*!
@@ -661,6 +673,8 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 
 /*!
     \class QOpcUa::QComplexNumber
+    \inmodule QtOpcUa
+    \brief The OPC UA ComplexNumber type
 
     The ComplexNumberType defined in OPC-UA part 8, 5.6.4.
     It stores a complex number with float precision.
@@ -679,7 +693,14 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 */
 
 /*!
+    \fn bool QOpcUa::QComplexNumber::operator==(const QOpcUa::QComplexNumber &other) const
+    Returns \c true if this QComplexNumber has the same value as \a other.
+*/
+
+/*!
     \class QOpcUa::QDoubleComplexNumber
+    \inmodule QtOpcUa
+    \brief The OPC UA DoubleComplexNumber type
 
     The DoubleComplexNumberType defined in OPC-UA part 8, 5.6.5.
     It stores a complex number with double precision.
@@ -697,6 +718,10 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
     The imaginary part of the value.
 */
 
+/*!
+    \fn bool QOpcUa::QDoubleComplexNumber::operator==(const QOpcUa::QDoubleComplexNumber &other) const
+    Returns \c true if this QDoubleComplexNumber has the same value as \a other.
+*/
 
 /*!
     \enum QOpcUa::AxisScale
@@ -710,6 +735,8 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 
 /*!
     \class QOpcUa::QAxisInformation
+    \inmodule QtOpcUa
+    \brief The OPC UA AxisInformation type
 
     This is the QtOpcUa representation for the OPC UA AxisInformation type defined in OPC-UA part 8, 5.6.6.
     It contains information about an axis which can be used for multiple purposes. A common use case could
@@ -719,8 +746,7 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 
 /*!
     \fn bool QOpcUa::QAxisInformation::operator==(const QAxisInformation &other) const
-
-    Compares this QAxisInformation to \a other.
+    Returns \c true if this QAxisInformation has the same value as \a other.
 */
 
 /*!
@@ -760,6 +786,8 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 
 /*!
     \class QOpcUa::QXValue
+    \inmodule QtOpcUa
+    \brief The OPC UA XVType
 
     This is the QtOpcUa representation for the OPC UA XVType type defined in OPC-UA part 8, 5.6.8.
     This type is used to position values of float precision on an axis with double precision.
@@ -775,6 +803,11 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
     \variable QOpcUa::QXValue::value
 
     The value for position x.
+*/
+
+/*!
+    \fn bool QOpcUa::QXValue::operator==(const QOpcUa::QXValue &other) const
+    Returns \c true if this QXValue has the same value as \a other.
 */
 
 QT_END_NAMESPACE

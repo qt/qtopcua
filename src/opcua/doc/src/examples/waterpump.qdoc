@@ -144,7 +144,7 @@
 
     \quotefromfile opcua/waterpump/qml-hmi/opcuamachinebackend.cpp
     \dots
-    \skipto QOpcUaProvider pro
+    \skipto QOpcUaProvider provider
     \printuntil QObject
     \dots
 
@@ -153,7 +153,8 @@
     are filled with node objects.
 
     \dots
-    \skipto if (state == QOpcUaClient::ClientState::Connected)
+    \quotefromfile opcua/waterpump/qml-hmi/opcuamachinebackend.cpp
+    \skipto if (state == QOpcUaClient::ClientState::Connected) {
     \printuntil m_machineDesignationNode
     \dots
 
