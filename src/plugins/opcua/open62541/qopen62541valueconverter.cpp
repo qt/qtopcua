@@ -171,7 +171,7 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
 QVariant toQVariant(const UA_Variant &value)
 {
     if (value.type == nullptr) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Null variant received, unable to convert");
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Null variant received, unable to convert";
         return QVariant();
     }
 

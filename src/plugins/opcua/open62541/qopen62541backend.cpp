@@ -437,7 +437,7 @@ void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
         m_uaclient = nullptr;
         QOpcUaClient::ClientError error = ret == UA_STATUSCODE_BADUSERACCESSDENIED ? QOpcUaClient::AccessDenied : QOpcUaClient::UnknownError;
         emit m_clientImpl->stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to connect.";
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to connect";
         return;
     }
 
@@ -448,7 +448,7 @@ void Open62541AsyncBackend::disconnectFromEndpoint()
 {
     UA_StatusCode ret = UA_Client_disconnect(m_uaclient);
     if (ret != UA_STATUSCODE_GOOD) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to disconnect.";
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to disconnect";
         // Fall through intentionally
     }
 

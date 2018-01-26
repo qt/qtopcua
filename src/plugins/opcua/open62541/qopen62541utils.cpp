@@ -79,7 +79,7 @@ UA_NodeId Open62541Utils::nodeIdFromQString(const QString &name)
     else if (identifierString.startsWith(QLatin1String("b=")))
         identifierType = 'b';
     else {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "There is no valid identifier type in node id string:" << qUtf8Printable(name);
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "There is no valid identifier type in node id string:" << name;
         return UA_NODEID_NULL;
     }
     identifierString = identifierString.mid(2); // Remove identifier type
@@ -91,7 +91,7 @@ UA_NodeId Open62541Utils::nodeIdFromQString(const QString &name)
     UA_UInt16 index = static_cast<UA_UInt16>(namespaceString.toUInt(&ok));
 
     if (!ok) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Not a valid namespace index in node id string:" << qUtf8Printable(name);
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Not a valid namespace index in node id string:" << name;
         return UA_NODEID_NULL;
     }
 

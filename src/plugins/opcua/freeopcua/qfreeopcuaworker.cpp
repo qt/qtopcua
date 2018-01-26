@@ -84,8 +84,7 @@ void QFreeOpcUaWorker::asyncConnectToEndpoint(const QUrl &url)
             qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Disconnect failed";
             qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << e.what();
         }
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Client could not connect to endpoint" << url;
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << e.what();
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Client could not connect to endpoint" << url << e.what();
         emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
         return;
     }
@@ -100,7 +99,7 @@ void QFreeOpcUaWorker::asyncDisconnectFromEndpoint()
         emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
         return;
     } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Could not disconnect from endpoint: " << ex.what();
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Could not disconnect from endpoint:" << ex.what();
     }
 
     emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);

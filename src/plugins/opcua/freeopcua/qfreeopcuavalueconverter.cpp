@@ -215,7 +215,7 @@ QString nodeIdToString(const OpcUa::NodeId &id)
                                           id.GetBinaryIdentifier().size()).toBase64();
         nodeId += QStringLiteral("b=").append(base64String);
     } else {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Unknown nodeId type!";
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Unknown nodeId type";
         nodeId = QString();
     }
     return nodeId;
