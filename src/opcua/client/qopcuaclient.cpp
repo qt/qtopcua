@@ -149,7 +149,7 @@ QOpcUaClient::QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent)
 
 /*!
     Destroys the \l QOpcUaClient instance.
- */
+*/
 QOpcUaClient::~QOpcUaClient()
 {
 }

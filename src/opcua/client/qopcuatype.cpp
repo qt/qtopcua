@@ -434,13 +434,13 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
 */
 
 /*!
-  \class QOpcUa::QQualifiedName
-  \inmodule QtOpcUa
-  \brief The OPC UA QualifiedName type
+    \class QOpcUa::QQualifiedName
+    \inmodule QtOpcUa
+    \brief The OPC UA QualifiedName type
 
-  This is the QtOpcUa representation for the OPC UA QualifiedName type defined in OPC-UA part 3, 8.3.
-  A QualifiedName is a name qualified by a namespace index. The namespace index corresponds to an entry in the server's namespace array.
-  QualifiedName is mainly used to represent the BrowseName attribute of a node.
+    This is the QtOpcUa representation for the OPC UA QualifiedName type defined in OPC-UA part 3, 8.3.
+    A QualifiedName is a name qualified by a namespace index. The namespace index corresponds to an entry in the server's namespace array.
+    QualifiedName is mainly used to represent the BrowseName attribute of a node.
 */
 
 /*!
@@ -468,15 +468,15 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
 */
 
 /*!
-  \class QOpcUa::QLocalizedText
-  \inmodule QtOpcUa
-  \brief The OPC UA LocalizedText type
+    \class QOpcUa::QLocalizedText
+    \inmodule QtOpcUa
+    \brief The OPC UA LocalizedText type
 
-  This is the QtOpcUa representation for the OPC UA LocalizedText type defined in OPC-UA part 3, 8.5.
-  A LocalizedText value contains a text string with associated locale information in a second string (e. g. "en" or "en-US").
-  The format of the locale information string is <language>[-<country/region>]. Language is usually given as ISO 639 two letter code,
-  country/region as ISO 3166 two letter code. Custom codes are also allowed (see OPC-UA part 3, 8.4).
-  It can be used to provide multiple text strings in different languages for a value using an array of LocalizedText elements.
+    This is the QtOpcUa representation for the OPC UA LocalizedText type defined in OPC-UA part 3, 8.5.
+    A LocalizedText value contains a text string with associated locale information in a second string (e. g. "en" or "en-US").
+    The format of the locale information string is <language>[-<country/region>]. Language is usually given as ISO 639 two letter code,
+    country/region as ISO 3166 two letter code. Custom codes are also allowed (see OPC-UA part 3, 8.4).
+    It can be used to provide multiple text strings in different languages for a value using an array of LocalizedText elements.
 */
 
 /*!

@@ -268,7 +268,7 @@ bool QOpcUaNode::readAttributes(QOpcUa::NodeAttributes attributes)
 
     The value is only valid after the \l attributeRead signal has been emitted.
     An empty QVariant is returned if there is no cached value for the attribute.
- */
+*/
 QVariant QOpcUaNode::attribute(QOpcUa::NodeAttribute attribute) const
 {
     Q_D(const QOpcUaNode);
