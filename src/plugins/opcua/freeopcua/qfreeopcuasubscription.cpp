@@ -121,6 +121,7 @@ void QFreeOpcUaSubscription::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttr
         return;
     }
 
+    qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Modifying" << item << "is not implemented";
     QOpcUaMonitoringParameters s;
     s.setStatusCode(QOpcUa::UaStatusCode::BadNotImplemented);
     emit m_backend->monitoringEnableDisable(handle, attr, true, s);

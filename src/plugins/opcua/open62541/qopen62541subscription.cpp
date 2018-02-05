@@ -222,7 +222,7 @@ void QOpen62541Subscription::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttr
         // TODO: Add support as soon as Open62541 supports this.
     }
 
-    qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Revising attribute is not implemented:" << item;
+    qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Modifying" << item << "is not implemented";
     p.setStatusCode(QOpcUa::UaStatusCode::BadNotImplemented);
     emit m_backend->monitoringStatusChanged(handle, attr, item, p);
 }
