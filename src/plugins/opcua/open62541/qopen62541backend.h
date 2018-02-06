@@ -74,12 +74,12 @@ public Q_SLOTS:
 
 public:
     UA_Client *m_uaclient;
+    QOpen62541Client *m_clientImpl;
+    bool m_useStateCallback;
 
 private:
     QOpen62541Subscription *getSubscriptionForItem(uintptr_t handle, QOpcUa::NodeAttribute attr);
-    bool checkAndUpdateClientState();
 
-    QOpen62541Client *m_clientImpl;
     QTimer m_subscriptionTimer;
 
     QHash<quint32, QOpen62541Subscription *> m_subscriptions;

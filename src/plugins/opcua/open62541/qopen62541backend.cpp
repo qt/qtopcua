@@ -63,6 +63,7 @@ Open62541AsyncBackend::Open62541AsyncBackend(QOpen62541Client *parent)
     : QOpcUaBackend()
     , m_uaclient(nullptr)
     , m_clientImpl(parent)
+    , m_useStateCallback(false)
     , m_subscriptionTimer(this)
     , m_sendPublishRequests(false)
 {
@@ -127,8 +128,6 @@ void Open62541AsyncBackend::readAttributes(uintptr_t handle, UA_NodeId id, QOpcU
     emit attributesRead(handle, vec, static_cast<QOpcUa::UaStatusCode>(res.responseHeader.serviceResult));
     UA_ReadValueId_deleteMembers(&readId);
     UA_ReadResponse_deleteMembers(&res);
-
-    checkAndUpdateClientState();
 }
 
 void Open62541AsyncBackend::writeAttribute(uintptr_t handle, UA_NodeId id, QOpcUa::NodeAttribute attrId, QVariant value, QOpcUa::Types type, QString indexRange)
@@ -158,8 +157,6 @@ void Open62541AsyncBackend::writeAttribute(uintptr_t handle, UA_NodeId id, QOpcU
 
     UA_WriteRequest_deleteMembers(&req);
     UA_WriteResponse_deleteMembers(&res);
-
-    checkAndUpdateClientState();
 }
 
 void Open62541AsyncBackend::writeAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType)
@@ -194,8 +191,6 @@ void Open62541AsyncBackend::writeAttributes(uintptr_t handle, UA_NodeId id, QOpc
     UA_WriteRequest_deleteMembers(&req);
     UA_WriteResponse_deleteMembers(&res);
     UA_NodeId_deleteMembers(&id);
-
-    checkAndUpdateClientState();
 }
 
 void Open62541AsyncBackend::enableMonitoring(uintptr_t handle, UA_NodeId id, QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
@@ -240,8 +235,6 @@ void Open62541AsyncBackend::enableMonitoring(uintptr_t handle, UA_NodeId id, QOp
         removeSubscription(usedSubscription->subscriptionId()); // No items were added
 
     modifyPublishRequests();
-
-    checkAndUpdateClientState();
 }
 
 void Open62541AsyncBackend::disableMonitoring(uintptr_t handle, QOpcUa::NodeAttributes attr)
@@ -256,8 +249,6 @@ void Open62541AsyncBackend::disableMonitoring(uintptr_t handle, QOpcUa::NodeAttr
         }
     });
     modifyPublishRequests();
-
-    checkAndUpdateClientState();
 }
 
 void Open62541AsyncBackend::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
@@ -273,8 +264,6 @@ void Open62541AsyncBackend::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttri
 
     subscription->modifyMonitoring(handle, attr, item, value);
     modifyPublishRequests();
-
-    checkAndUpdateClientState();
 }
 
 QOpen62541Subscription *Open62541AsyncBackend::getSubscription(const QOpcUaMonitoringParameters &settings)
@@ -345,8 +334,6 @@ void Open62541AsyncBackend::callMethod(uintptr_t handle, UA_NodeId objectId, UA_
 
     UA_NodeId_deleteMembers(&objectId);
     UA_NodeId_deleteMembers(&methodId);
-
-    checkAndUpdateClientState();
 }
 
 static void convertBrowseResult(UA_BrowseResult *src, quint32 referencesSize, QVector<QOpcUaReferenceDescription> &dst)
@@ -417,13 +404,25 @@ void Open62541AsyncBackend::browseChildren(uintptr_t handle, UA_NodeId id, QOpcU
     emit browseFinished(handle, ret, statusCode);
 
     UA_BrowseResponse_delete(static_cast<UA_BrowseResponse *>(response));
+}
 
-    checkAndUpdateClientState();
+static void clientStateCallback(UA_Client *client, UA_ClientState state)
+{
+    Open62541AsyncBackend *backend = static_cast<Open62541AsyncBackend *>(UA_Client_getContext(client));
+    if (!backend || !backend->m_useStateCallback)
+        return;
+
+    if (state == UA_CLIENTSTATE_DISCONNECTED) {
+        emit backend->m_clientImpl->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ConnectionError);
+        backend->m_useStateCallback = false;
+    }
 }
 
 void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
 {
     UA_ClientConfig conf = UA_ClientConfig_default;
+    conf.clientContext = this;
+    conf.stateCallback = &clientStateCallback;
     m_uaclient = UA_Client_new(conf);
     UA_StatusCode ret;
 
@@ -442,6 +441,7 @@ void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
         return;
     }
 
+    m_useStateCallback = true;
     emit stateAndOrErrorChanged(QOpcUaClient::Connected, QOpcUaClient::NoError);
 }
 
@@ -479,7 +479,6 @@ void Open62541AsyncBackend::sendPublishRequest()
         qDeleteAll(m_subscriptions);
         m_subscriptions.clear();
         m_attributeMapping.clear();
-        checkAndUpdateClientState();
         return;
     }
 
@@ -511,15 +510,6 @@ QOpen62541Subscription *Open62541AsyncBackend::getSubscriptionForItem(uintptr_t 
     }
 
     return subscription.value();
-}
-
-bool Open62541AsyncBackend::checkAndUpdateClientState()
-{
-    if (UA_Client_getState(m_uaclient) < UA_CLIENTSTATE_SESSION) {
-        emit m_clientImpl->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ConnectionError);
-        return false;
-    }
-    return true;
 }
 
 QT_END_NAMESPACE
