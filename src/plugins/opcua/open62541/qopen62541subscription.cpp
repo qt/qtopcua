@@ -67,7 +67,6 @@ QOpen62541Subscription::QOpen62541Subscription(Open62541AsyncBackend *backend, c
 QOpen62541Subscription::~QOpen62541Subscription()
 {
     removeOnServer();
-    qDeleteAll(m_itemIdToItemMapping);
 }
 
 UA_UInt32 QOpen62541Subscription::createOnServer()
@@ -81,7 +80,7 @@ UA_UInt32 QOpen62541Subscription::createOnServer()
     UA_StatusCode res = UA_Client_Subscriptions_new(m_backend->m_uaclient, settings, &subscriptionId);
 
     if (res != UA_STATUSCODE_GOOD) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Could not create subscription with interval %f: 0x%X", m_interval, res);
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not create subscription with interval" << m_interval << res;
         return 0;
     }
 
@@ -97,6 +96,17 @@ bool QOpen62541Subscription::removeOnServer()
     UA_StatusCode res = UA_Client_Subscriptions_remove(m_backend->m_uaclient, m_subscriptionId);
     m_subscriptionId = 0;
 
+    for (auto it : qAsConst(m_itemIdToItemMapping)) {
+        QOpcUaMonitoringParameters s;
+        s.setStatusCode(QOpcUa::UaStatusCode::BadDisconnect);
+        emit m_backend->monitoringEnableDisable(it->handle, it->attr, false, s);
+    }
+
+    qDeleteAll(m_itemIdToItemMapping);
+
+    m_itemIdToItemMapping.clear();
+    m_handleToItemMapping.clear();
+
     return (res == UA_STATUSCODE_GOOD) ? true : false;
 }
 
@@ -106,7 +116,7 @@ void QOpen62541Subscription::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttr
     p.setStatusCode(QOpcUa::UaStatusCode::BadNotImplemented);
 
     if (!getItemForAttribute(handle, attr)) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Could not modify parameter for %lu, there are no monitored items", handle);
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify parameter for" << handle << ", there are no monitored items";
         p.setStatusCode(QOpcUa::UaStatusCode::BadAttributeIdInvalid);
         emit m_backend->monitoringStatusChanged(handle, attr, item, p);
         return;
@@ -140,7 +150,7 @@ void QOpen62541Subscription::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttr
             bool ok;
             req.requestedPublishingInterval = value.toDouble(&ok);
             if (!ok) {
-                qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Could not modify PublishingInterval for %lu, value is not a double", handle);
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify PublishingInterval for" << handle << ", value is not a double";
                 p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
                 emit m_backend->monitoringStatusChanged(handle, attr, item, p);
                 return;
@@ -152,7 +162,7 @@ void QOpen62541Subscription::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttr
             bool ok;
             req.requestedLifetimeCount = value.toUInt(&ok);
             if (!ok) {
-                qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Could not modify LifetimeCount for %lu, value is not an integer", handle);
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify LifetimeCount for" << handle << ", value is not an integer";
                 p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
                 emit m_backend->monitoringStatusChanged(handle, attr, item, p);
                 return;
@@ -164,7 +174,7 @@ void QOpen62541Subscription::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttr
             bool ok;
             req.requestedMaxKeepAliveCount = value.toUInt(&ok);
             if (!ok) {
-                qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Could not modify MaxKeepAliveCount for %lu, value is not an integer", handle);
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify MaxKeepAliveCount for" << handle << ", value is not an integer";
                 p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
                 emit m_backend->monitoringStatusChanged(handle, attr, item, p);
                 return;
@@ -212,7 +222,7 @@ void QOpen62541Subscription::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttr
         // TODO: Add support as soon as Open62541 supports this.
     }
 
-    qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Revising attribute is not implemented:" << item;
+    qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Modifying" << item << "is not implemented";
     p.setStatusCode(QOpcUa::UaStatusCode::BadNotImplemented);
     emit m_backend->monitoringStatusChanged(handle, attr, item, p);
 }
@@ -226,7 +236,7 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUa:
                                                                  monitoredValueHandler, this, &monitoredItemId);
 
     if (ret != UA_STATUSCODE_GOOD) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Could not add monitored item to subscription %u: 0x%X", m_subscriptionId, ret);
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not add monitored item to subscription" << m_subscriptionId << ":" << ret;
         QOpcUaMonitoringParameters s;
         s.setStatusCode(static_cast<QOpcUa::UaStatusCode>(ret));
         emit m_backend->monitoringEnableDisable(handle, attr, true, s);
@@ -253,7 +263,7 @@ bool QOpen62541Subscription::removeAttributeMonitoredItem(uintptr_t handle, QOpc
 {
     MonitoredItem *item = getItemForAttribute(handle, attr);
     if (!item) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "There is no monitored item for this attribute");
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "There is no monitored item for this attribute";
         QOpcUaMonitoringParameters s;
         s.setStatusCode(QOpcUa::UaStatusCode::BadMonitoredItemIdInvalid);
         emit m_backend->monitoringEnableDisable(handle, attr, false, s);
@@ -262,8 +272,7 @@ bool QOpen62541Subscription::removeAttributeMonitoredItem(uintptr_t handle, QOpc
 
     UA_StatusCode res = UA_Client_Subscriptions_removeMonitoredItem(m_backend->m_uaclient, m_subscriptionId, item->monitoredItemId);
     if (res != UA_STATUSCODE_GOOD)
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Could not remove monitored item %u from subscription %u: 0x%X",
-                  item->monitoredItemId, m_subscriptionId, res);
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not remove monitored item" << item->monitoredItemId << "from subscription" << m_subscriptionId << ":" << res;
 
     m_itemIdToItemMapping.remove(item->monitoredItemId);
     auto it = m_handleToItemMapping.find(handle);

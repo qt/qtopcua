@@ -80,6 +80,7 @@ public:
     quint32 queueSize;
     bool discardOldest;
     QOpcUaMonitoringParameters::MonitoringMode monitoringMode;
+    QString indexRange;
 
     // Subscription
     quint32 subscriptionId;

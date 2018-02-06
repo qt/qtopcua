@@ -142,6 +142,8 @@ public:
     void setStatusCode(QOpcUa::UaStatusCode statusCode);
     QOpcUaMonitoringParameters::SubscriptionType shared() const;
     void setShared(SubscriptionType subscriptionType);
+    QString indexRange() const;
+    void setIndexRange(const QString &indexRange);
 
 private:
     QSharedDataPointer<QOpcUaMonitoringParametersPrivate> d_ptr;

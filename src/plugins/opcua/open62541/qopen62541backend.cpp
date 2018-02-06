@@ -161,7 +161,7 @@ void Open62541AsyncBackend::writeAttribute(uintptr_t handle, UA_NodeId id, QOpcU
 void Open62541AsyncBackend::writeAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType)
 {
     if (toWrite.size() == 0) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "No values to be written");
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "No values to be written";
         emit attributeWritten(handle, QOpcUa::NodeAttribute::None, QVariant(), QOpcUa::UaStatusCode::BadNothingToDo);
         return;
     }
@@ -202,7 +202,7 @@ void Open62541AsyncBackend::enableMonitoring(uintptr_t handle, UA_NodeId id, QOp
     if (settings.subscriptionId()) {
         auto sub = m_subscriptions.find(settings.subscriptionId());
         if (sub == m_subscriptions.end()) {
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "There is no subscription with id %u", settings.subscriptionId());
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "There is no subscription with id" << settings.subscriptionId();
 
             qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attribute){
                 QOpcUaMonitoringParameters s;
@@ -217,7 +217,7 @@ void Open62541AsyncBackend::enableMonitoring(uintptr_t handle, UA_NodeId id, QOp
     }
 
     if (!usedSubscription) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Could not create subscription with interval %f", settings.publishingInterval());
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not create subscription with interval" << settings.publishingInterval();
         qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attribute){
             QOpcUaMonitoringParameters s;
             s.setStatusCode(QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
@@ -246,6 +246,7 @@ void Open62541AsyncBackend::disableMonitoring(uintptr_t handle, QOpcUa::NodeAttr
         QOpen62541Subscription *sub = getSubscriptionForItem(handle, attribute);
         if (sub) {
             sub->removeAttributeMonitoredItem(handle, attribute);
+            m_attributeMapping[handle].remove(attribute);
             if (sub->monitoredItemsCount() == 0)
                 removeSubscription(sub->subscriptionId());
         }
@@ -259,7 +260,7 @@ void Open62541AsyncBackend::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttri
 {
     QOpen62541Subscription *subscription = getSubscriptionForItem(handle, attr);
     if (!subscription) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Could not modify parameter for %lu, the monitored item does not exist", handle);
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify parameter for" << handle << ", the monitored item does not exist";
         QOpcUaMonitoringParameters p;
         p.setStatusCode(QOpcUa::UaStatusCode::BadMonitoredItemIdInvalid);
         emit monitoringStatusChanged(handle, attr, item, p);
@@ -318,7 +319,7 @@ void Open62541AsyncBackend::callMethod(uintptr_t handle, UA_NodeId objectId, UA_
     UA_StatusCode res = UA_Client_call(m_uaclient, objectId, methodId, args.size(), inputArgs, &outputSize, &outputArguments);
 
     if (res != UA_STATUSCODE_GOOD)
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Could not call method: 0x%X", res);
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not call method:" << res;
 
     QVariant result;
 
@@ -437,7 +438,7 @@ void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
         m_uaclient = nullptr;
         QOpcUaClient::ClientError error = ret == UA_STATUSCODE_BADUSERACCESSDENIED ? QOpcUaClient::AccessDenied : QOpcUaClient::UnknownError;
         emit m_clientImpl->stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Open62541: Failed to connect.");
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to connect";
         return;
     }
 
@@ -446,15 +447,19 @@ void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
 
 void Open62541AsyncBackend::disconnectFromEndpoint()
 {
+    m_subscriptionTimer.stop();
+    qDeleteAll(m_subscriptions);
+    m_subscriptions.clear();
+    m_attributeMapping.clear();
+
     UA_StatusCode ret = UA_Client_disconnect(m_uaclient);
     if (ret != UA_STATUSCODE_GOOD) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Open62541: Failed to disconnect.");
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to disconnect";
         // Fall through intentionally
     }
 
     UA_Client_delete(m_uaclient);
     m_uaclient = nullptr;
-    m_subscriptionTimer.stop();
     emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
 }
 
@@ -467,9 +472,13 @@ void Open62541AsyncBackend::sendPublishRequest()
         return;
     }
 
+    // If BADSERVERNOTCONNECTED is returned, the subscriptions are gone and local information can be deleted.
     if (UA_Client_Subscriptions_manuallySendPublishRequest(m_uaclient) == UA_STATUSCODE_BADSERVERNOTCONNECTED) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Unable to send publish request");
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unable to send publish request";
         m_sendPublishRequests = false;
+        qDeleteAll(m_subscriptions);
+        m_subscriptions.clear();
+        m_attributeMapping.clear();
         checkAndUpdateClientState();
         return;
     }

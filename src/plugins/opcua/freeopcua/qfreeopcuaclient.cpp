@@ -89,7 +89,7 @@ QOpcUaNode *QFreeOpcUaClientImpl::node(const QString &nodeId)
         QFreeOpcUaNode *n = new QFreeOpcUaNode(node, this);
         return new QOpcUaNode(n, m_client);
     } catch (const std::exception &ex) {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Could not get node: %s %s", qUtf8Printable(nodeId), ex.what());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Could not get node:" << nodeId << ex.what();
         return nullptr;
     }
 }

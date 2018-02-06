@@ -112,7 +112,7 @@ QVariant toQVariant(const OpcUa::Variant &variant)
         return arrayToQVariant<QString, OpcUa::NodeId>(variant, QMetaType::QString);
 
     case OpcUa::VariantType::XML_ELEMENT:
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Type XMLElement is not yet supported in FreeOPCUA");
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Type XMLElement is not yet supported in FreeOPCUA";
         return QVariant();
 
     case OpcUa::VariantType::GUId:
@@ -125,7 +125,7 @@ QVariant toQVariant(const OpcUa::Variant &variant)
         return arrayToQVariant<QOpcUa::UaStatusCode, OpcUa::StatusCode>(variant);
 
     default:
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Variant type is not yet supported: %d", static_cast<int>(variant.Type()));
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Variant type is not yet supported:" << static_cast<int>(variant.Type());
         return QVariant();
     }
 }
@@ -181,7 +181,7 @@ OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type)
         return arrayFromQVariant<OpcUa::NodeId>(variant);
 
     case QOpcUa::XmlElement:
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Type XMLElement is not yet supported in FreeOPCUA");
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Type XMLElement is not yet supported in FreeOPCUA";
         return OpcUa::Variant();
 
     case QOpcUa::Guid:
@@ -215,7 +215,7 @@ QString nodeIdToString(const OpcUa::NodeId &id)
                                           id.GetBinaryIdentifier().size()).toBase64();
         nodeId += QStringLiteral("b=").append(base64String);
     } else {
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Unknown nodeId type!");
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Unknown nodeId type";
         nodeId = QString();
     }
     return nodeId;
@@ -235,7 +235,7 @@ OpcUa::Variant toVariant(const QVariant &variant)
     case QMetaType::QString:
         return arrayFromQVariant<std::string>(variant);
     default:
-        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA, "Variant type is not yet supported: %d", variant.type());
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Variant type is not yet supported:" << variant.type();
         return OpcUa::Variant();
     }
 }

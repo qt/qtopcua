@@ -171,7 +171,7 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
 QVariant toQVariant(const UA_Variant &value)
 {
     if (value.type == nullptr) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Null variant received, unable to convert");
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Null variant received, unable to convert";
         return QVariant();
     }
 
@@ -355,7 +355,7 @@ QVariant scalarToQVariant<QVariant, UA_ExtensionObject>(UA_ExtensionObject *data
     if (data->content.encoded.typeId.identifierType != UA_NODEIDTYPE_NUMERIC ||
             data->content.encoded.typeId.namespaceIndex != 0 ||
             data->encoding != UA_EXTENSIONOBJECT_ENCODED_BYTESTRING) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Unsupported extension object type");
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unsupported extension object type";
         return QVariant();
     }
 
@@ -384,7 +384,7 @@ QVariant scalarToQVariant<QVariant, UA_ExtensionObject>(UA_ExtensionObject *data
         result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QXValue>(buffer, length, success));
         break;
     default:
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541, "Unknown extension object type: ns=0;i=%d", data->content.encoded.typeId.identifier.numeric);
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unknown extension object type: ns=0;i=" << data->content.encoded.typeId.identifier.numeric;
         return QVariant();
     }
 
