@@ -226,6 +226,8 @@ private slots:
     void indexRange();
     defineDataMethod(invalidIndexRange_data)
     void invalidIndexRange();
+    defineDataMethod(subscriptionIndexRange_data)
+    void subscriptionIndexRange();
 
     defineDataMethod(stringCharset_data)
     void stringCharset();
@@ -1786,6 +1788,58 @@ void Tst_QOpcUaClient::invalidIndexRange()
     QCOMPARE(attributeReadSpy.count(), 1);
 
     QCOMPARE(node->attributeError(QOpcUa::NodeAttribute::Value), QOpcUa::UaStatusCode::BadIndexRangeInvalid);
+}
+
+void Tst_QOpcUaClient::subscriptionIndexRange()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> integerArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int32"));
+    QVERIFY(integerArrayNode != 0);
+
+    QOpcUaMonitoringParameters p(100);
+    p.setIndexRange(QStringLiteral("1"));
+    QSignalSpy monitoringEnabledSpy(integerArrayNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QSignalSpy monitoringDisabledSpy(integerArrayNode.data(), &QOpcUaNode::disableMonitoringFinished);
+    QSignalSpy writeSpy(integerArrayNode.data(), &QOpcUaNode::attributeWritten);
+    QSignalSpy dataChangeSpy(integerArrayNode.data(), &QOpcUaNode::attributeUpdated);
+
+    QVariantList l({0, 1});
+    WRITE_VALUE_ATTRIBUTE(integerArrayNode, l, QOpcUa::Types::Int32);
+    writeSpy.clear();
+
+    integerArrayNode->enableMonitoring(QOpcUa::NodeAttribute::Value, p);
+    monitoringEnabledSpy.wait();
+    QCOMPARE(monitoringEnabledSpy.size(), 1);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    dataChangeSpy.wait(); // Wait for the initial data change
+    dataChangeSpy.clear();
+    integerArrayNode->writeAttributeRange(QOpcUa::NodeAttribute::Value, 10, "0", QOpcUa::Types::Int32); // Write the first element of the array
+    writeSpy.wait();
+    QCOMPARE(writeSpy.size(), 1);
+    QCOMPARE(writeSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(writeSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 0);
+
+    writeSpy.clear();
+    integerArrayNode->writeAttributeRange(QOpcUa::NodeAttribute::Value, 10, "1", QOpcUa::Types::Int32); // Write the second element of the array
+    writeSpy.wait();
+    QCOMPARE(writeSpy.size(), 1);
+    QCOMPARE(writeSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(writeSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 1);
+    QCOMPARE(integerArrayNode->attribute(QOpcUa::NodeAttribute::Value), 10);
+
+    integerArrayNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
+    monitoringDisabledSpy.wait();
+    QCOMPARE(monitoringDisabledSpy.size(), 1);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
 }
 
 void Tst_QOpcUaClient::stringCharset()

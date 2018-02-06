@@ -47,10 +47,12 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541)
 
-static void monitoredValueHandler(UA_Client *client, UA_UInt32 monId, UA_DataValue *value, void *context)
+static void monitoredValueHandler(UA_Client *client, UA_UInt32 subId, void *subContext, UA_UInt32 monId, void *monContext, UA_DataValue *value)
 {
     Q_UNUSED(client)
-    QOpen62541Subscription *subscription = static_cast<QOpen62541Subscription *>(context);
+    Q_UNUSED(subId)
+    Q_UNUSED(subContext)
+    QOpen62541Subscription *subscription = static_cast<QOpen62541Subscription *>(monContext);
     subscription->monitoredValueUpdated(monId, value);
 }
 
@@ -229,31 +231,39 @@ void QOpen62541Subscription::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttr
 
 bool QOpen62541Subscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUa::NodeAttribute attr, const UA_NodeId &id, QOpcUaMonitoringParameters settings)
 {
-    Q_UNUSED(settings); // This is for later applications like including parameters for the monitored item into settings
-    UA_UInt32 monitoredItemId = 0;
-    UA_StatusCode ret = UA_Client_Subscriptions_addMonitoredItem(m_backend->m_uaclient, m_subscriptionId, id,
-                                                                 QOpen62541ValueConverter::toUaAttributeId(attr),
-                                                                 monitoredValueHandler, this, &monitoredItemId,
-                                                                 qFuzzyCompare(settings.samplingInterval(), 0.0) ? m_interval : settings.samplingInterval());
+    UA_MonitoredItemCreateRequest req;
+    UA_MonitoredItemCreateRequest_init(&req);
+    req.itemToMonitor.attributeId = QOpen62541ValueConverter::toUaAttributeId(attr);
+    UA_NodeId_copy(&id, &(req.itemToMonitor.nodeId));
+    if (settings.indexRange().size())
+        req.itemToMonitor.indexRange = UA_STRING_ALLOC(settings.indexRange().toUtf8().data());
+    req.monitoringMode = static_cast<UA_MonitoringMode>(settings.monitoringMode());
+    req.requestedParameters.samplingInterval = qFuzzyCompare(settings.samplingInterval(), 0.0) ? m_interval : settings.samplingInterval();
+    req.requestedParameters.queueSize = settings.queueSize() == 0 ? 1 : settings.queueSize();
+    req.requestedParameters.discardOldest = settings.discardOldest();
 
-    if (ret != UA_STATUSCODE_GOOD) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not add monitored item to subscription" << m_subscriptionId << ":" << UA_StatusCode_name(ret);
+    UA_MonitoredItemCreateResult res = UA_Client_MonitoredItems_createDataChange(m_backend->m_uaclient, m_subscriptionId, UA_TIMESTAMPSTORETURN_BOTH, req, this, monitoredValueHandler, nullptr);
+
+    UA_MonitoredItemCreateRequest_deleteMembers(&req);
+
+    if (res.statusCode != UA_STATUSCODE_GOOD) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not add monitored item to subscription" << m_subscriptionId << ":" << UA_StatusCode_name(res.statusCode);
         QOpcUaMonitoringParameters s;
-        s.setStatusCode(static_cast<QOpcUa::UaStatusCode>(ret));
+        s.setStatusCode(static_cast<QOpcUa::UaStatusCode>(res.statusCode));
         emit m_backend->monitoringEnableDisable(handle, attr, true, s);
         return false;
     }
 
-    MonitoredItem *temp = new MonitoredItem(handle, attr, monitoredItemId);
+    MonitoredItem *temp = new MonitoredItem(handle, attr, res.monitoredItemId);
     m_handleToItemMapping[handle][attr] = temp;
-    m_itemIdToItemMapping[monitoredItemId] = temp;
+    m_itemIdToItemMapping[res.monitoredItemId] = temp;
 
     QOpcUaMonitoringParameters s;
     s.setSubscriptionId(m_subscriptionId);
     s.setPublishingInterval(m_interval);
     s.setMaxKeepAliveCount(m_maxKeepaliveCount);
     s.setLifetimeCount(m_lifetimeCount);
-    s.setStatusCode(static_cast<QOpcUa::UaStatusCode>(ret));
+    s.setStatusCode(QOpcUa::UaStatusCode::Good);
     s.setSamplingInterval(m_interval);
     emit m_backend->monitoringEnableDisable(handle, attr, true, s);
 

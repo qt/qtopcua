@@ -335,7 +335,10 @@ QVariant arrayToQVariant(const OpcUa::Variant &var, QMetaType::Type type)
             else
                 list.append(QVariant(type, &data));
         }
-        return list;
+        if (list.size() == 1)
+            return list.at(0);
+        else
+            return list;
 
     } else if (var.IsScalar()) {
         QTTYPE data = scalarUaToQt<QTTYPE, UATYPE>(var.As<UATYPE>());
