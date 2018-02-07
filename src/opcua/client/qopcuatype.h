@@ -702,6 +702,203 @@ public:
 private:
     QSharedDataPointer<QOpcUa::QBrowsePathTargetData> data;
 };
+
+// OPC-UA part 4, 7.4.4.2
+class QElementOperandData;
+class Q_OPCUA_EXPORT QElementOperand
+{
+public:
+    QElementOperand();
+    QElementOperand(const QElementOperand &);
+    QElementOperand(quint32 index);
+    QElementOperand &operator=(const QElementOperand &);
+    operator QVariant() const;
+    ~QElementOperand();
+
+    quint32 index() const;
+    void setIndex(const quint32 &value);
+
+private:
+    QSharedDataPointer<QOpcUa::QElementOperandData> data;
+};
+
+// OPC-UA part 4, 7.4.4.3
+class QLiteralOperandData;
+class Q_OPCUA_EXPORT QLiteralOperand
+{
+public:
+    QLiteralOperand();
+    QLiteralOperand(const QOpcUa::QLiteralOperand &);
+    QLiteralOperand(const QVariant &value, QOpcUa::Types type = QOpcUa::Types::Undefined);
+    QLiteralOperand &operator=(const QOpcUa::QLiteralOperand &);
+    operator QVariant() const;
+    ~QLiteralOperand();
+
+    QVariant value() const;
+    void setValue(const QVariant &value);
+
+    QOpcUa::Types type() const;
+    void setType(QOpcUa::Types value);
+
+private:
+    QSharedDataPointer<QOpcUa::QLiteralOperandData> data;
+};
+
+// OPC-UA part 4, 7.4.4.5
+class QSimpleAttributeOperandData;
+class Q_OPCUA_EXPORT QSimpleAttributeOperand
+{
+public:
+    QSimpleAttributeOperand();
+    QSimpleAttributeOperand(const QOpcUa::QSimpleAttributeOperand &);
+    QSimpleAttributeOperand(const QString &name, quint16 namespaceIndex = 0,
+                            const QString &typeId = QStringLiteral("ns=0;i=2041"), // BaseEventType
+                            QOpcUa::NodeAttribute attributeId = QOpcUa::NodeAttribute::Value);
+    QSimpleAttributeOperand &operator=(const QOpcUa::QSimpleAttributeOperand &);
+    operator QVariant() const;
+    ~QSimpleAttributeOperand();
+
+    QString typeId() const;
+    void setTypeId(const QString &value);
+
+    QVector<QOpcUa::QQualifiedName> browsePath() const;
+    QVector<QOpcUa::QQualifiedName> &browsePathRef();
+    void setBrowsePath(const QVector<QOpcUa::QQualifiedName> &value);
+
+    QOpcUa::NodeAttribute attributeId() const;
+    void setAttributeId(const QOpcUa::NodeAttribute &value);
+
+    QString indexRange() const;
+    void setIndexRange(const QString &value);
+
+private:
+    QSharedDataPointer<QOpcUa::QSimpleAttributeOperandData> data;
+};
+
+// OPC-UA part 4, 7.4.4.4
+class QAttributeOperandData;
+class Q_OPCUA_EXPORT QAttributeOperand
+{
+public:
+    QAttributeOperand();
+    QAttributeOperand(const QOpcUa::QAttributeOperand &);
+    QAttributeOperand &operator=(const QOpcUa::QAttributeOperand &);
+    operator QVariant() const;
+    ~QAttributeOperand();
+
+    QString nodeId() const;
+    void setNodeId(const QString &value);
+
+    QString alias() const;
+    void setAlias(const QString &value);
+
+    QVector<QOpcUa::QRelativePathElement> browsePath() const;
+    QVector<QOpcUa::QRelativePathElement> &browsePathRef();
+    void setBrowsePath(const QVector<QOpcUa::QRelativePathElement> &value);
+
+    QOpcUa::NodeAttribute attributeId() const;
+    void setAttributeId(const QOpcUa::NodeAttribute &value);
+
+    QString indexRange() const;
+    void setIndexRange(const QString &value);
+
+private:
+    QSharedDataPointer<QOpcUa::QAttributeOperandData> data;
+};
+
+class QContentFilterElementData;
+class Q_OPCUA_EXPORT QContentFilterElement
+{
+public:
+    QContentFilterElement();
+    QContentFilterElement(const QContentFilterElement &);
+    QContentFilterElement &operator=(const QContentFilterElement &);
+    operator QVariant() const;
+    ~QContentFilterElement();
+
+    // Specified in OPC-UA part 4, Tables 115 and 116
+    enum FilterOperator : quint32 {
+        Equals = 0,
+        IsNull = 1,
+        GreaterThan = 2,
+        LessThan = 3,
+        GreaterThanOrEqual = 4,
+        LessThanOrEqual = 5,
+        Like = 6,
+        Not = 7,
+        Between = 8,
+        InList = 9,
+        And = 10,
+        Or = 11,
+        Cast = 12,
+        InView = 13,
+        OfType = 14,
+        RelatedTo = 15,
+        BitwiseAnd = 16,
+        BitwiseOr = 17
+    };
+
+    QContentFilterElement &operator<<(FilterOperator op);
+    QContentFilterElement &operator<<(const QSimpleAttributeOperand &op);
+    QContentFilterElement &operator<<(const QAttributeOperand &op);
+    QContentFilterElement &operator<<(const QLiteralOperand &op);
+    QContentFilterElement &operator<<(const QElementOperand &op);
+
+
+    QOpcUa::QContentFilterElement::FilterOperator filterOperator() const;
+    void setFilterOperator(const QOpcUa::QContentFilterElement::FilterOperator &value);
+
+    QVector<QVariant> filterOperands() const;
+    QVector<QVariant> &filterOperandsRef();
+    void setFilterOperands(const QVector<QVariant> &value);
+
+private:
+    QSharedDataPointer<QOpcUa::QContentFilterElementData> data;
+};
+
+class QContentFilterElementResultData;
+class Q_OPCUA_EXPORT QContentFilterElementResult
+{
+public:
+    QContentFilterElementResult();
+    QContentFilterElementResult(const QOpcUa::QContentFilterElementResult &);
+    QContentFilterElementResult &operator=(const QOpcUa::QContentFilterElementResult &);
+    ~QContentFilterElementResult();
+
+    QOpcUa::UaStatusCode statusCode() const;
+    void setStatusCode(const QOpcUa::UaStatusCode &value);
+
+    QVector<QOpcUa::UaStatusCode> operandStatusCodes() const;
+    QVector<QOpcUa::UaStatusCode> &operandStatusCodesRef();
+    void setOperandStatusCodes(const QVector<QOpcUa::UaStatusCode> &value);
+
+private:
+    QSharedDataPointer<QOpcUa::QContentFilterElementResultData> data;
+};
+
+class QEventFilterResultData;
+class Q_OPCUA_EXPORT QEventFilterResult
+{
+public:
+    QEventFilterResult();
+    QEventFilterResult(const QOpcUa::QEventFilterResult &);
+    QEventFilterResult &operator=(const QOpcUa::QEventFilterResult &);
+    ~QEventFilterResult();
+
+    bool isGood() const;
+
+    QVector<QOpcUa::UaStatusCode> selectClauseResults() const;
+    QVector<QOpcUa::UaStatusCode> &selectClauseResultsRef();
+    void setSelectClauseResults(const QVector<QOpcUa::UaStatusCode> &value);
+
+    QVector<QOpcUa::QContentFilterElementResult> whereClauseResults() const;
+    QVector<QOpcUa::QContentFilterElementResult> &whereClauseResultsRef();
+    void setWhereClauseResults(const QVector<QOpcUa::QContentFilterElementResult> &value);
+
+private:
+    QSharedDataPointer<QEventFilterResultData> data;
+};
+
 }
 
 Q_DECLARE_TYPEINFO(QOpcUa::Types, Q_PRIMITIVE_TYPE);
@@ -736,5 +933,12 @@ Q_DECLARE_METATYPE(QOpcUa::QXValue)
 Q_DECLARE_METATYPE(QOpcUa::QExpandedNodeId)
 Q_DECLARE_METATYPE(QOpcUa::QRelativePathElement)
 Q_DECLARE_METATYPE(QOpcUa::QBrowsePathTarget)
+Q_DECLARE_METATYPE(QOpcUa::QContentFilterElement)
+Q_DECLARE_METATYPE(QOpcUa::QElementOperand)
+Q_DECLARE_METATYPE(QOpcUa::QLiteralOperand)
+Q_DECLARE_METATYPE(QOpcUa::QSimpleAttributeOperand)
+Q_DECLARE_METATYPE(QOpcUa::QAttributeOperand)
+Q_DECLARE_METATYPE(QOpcUa::QContentFilterElementResult)
+Q_DECLARE_METATYPE(QOpcUa::QEventFilterResult)
 
 #endif // QOPCUATYPE

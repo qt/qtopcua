@@ -82,6 +82,7 @@ public:
     bool disableMonitoring(QOpcUa::NodeAttributes attr);
     bool modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value);
     QOpcUaMonitoringParameters monitoringStatus(QOpcUa::NodeAttribute attr);
+    bool modifyEventFilter(const QOpcUaMonitoringParameters::EventFilter &eventFilter);
     bool modifyDataChangeFilter(QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::DataChangeFilter &filter);
 
     bool browseChildren(QOpcUa::ReferenceTypeId referenceType = QOpcUa::ReferenceTypeId::HierarchicalReferences,
@@ -98,6 +99,7 @@ Q_SIGNALS:
     void attributeRead(QOpcUa::NodeAttributes attributes);
     void attributeWritten(QOpcUa::NodeAttribute attribute, QOpcUa::UaStatusCode statusCode);
     void attributeUpdated(QOpcUa::NodeAttribute attr, QVariant value);
+    void eventOccurred(QVariantList eventFields);
 
     void monitoringStatusChanged(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                            QOpcUa::UaStatusCode statusCode);

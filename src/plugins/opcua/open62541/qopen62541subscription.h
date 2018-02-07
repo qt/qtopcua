@@ -61,6 +61,8 @@ public:
     bool removeAttributeMonitoredItem(quint64 handle, QOpcUa::NodeAttribute attr);
 
     void monitoredValueUpdated(UA_UInt32 monId, UA_DataValue *value);
+    void eventReceived(UA_UInt32 monId, QVariantList list);
+
     void sendTimeoutNotification();
 
     struct MonitoredItem {
@@ -92,9 +94,15 @@ signals:
 private:
     MonitoredItem *getItemForAttribute(quint64 handle, QOpcUa::NodeAttribute attr);
     UA_ExtensionObject createFilter(const QVariant &filterData);
+    void createDataChangeFilter(const QOpcUaMonitoringParameters::DataChangeFilter &filter, UA_ExtensionObject *out);
+    void createEventFilter(const QOpcUaMonitoringParameters::EventFilter &filter, UA_ExtensionObject *out);
+    bool convertSelectClause(const QOpcUaMonitoringParameters::EventFilter &filter,
+                             UA_SimpleAttributeOperand **selectClauses, size_t *size);
+    bool convertWhereClause(const QOpcUaMonitoringParameters::EventFilter &filter, UA_ContentFilter *result);
 
     bool modifySubscriptionParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
     bool modifyMonitoredItemParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
+    QOpcUa::QEventFilterResult convertEventFilterResult(UA_ExtensionObject *obj);
 
     Open62541AsyncBackend *m_backend;
     double m_interval;

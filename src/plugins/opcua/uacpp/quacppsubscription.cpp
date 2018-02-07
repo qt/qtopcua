@@ -21,11 +21,13 @@
 
 #include "quacppsubscription.h"
 #include "quacppclient.h"
+#include "quacpputils.h"
 #include "quacppvalueconverter.h"
 
 #include <QtCore/QLoggingCategory>
 
 #include <uaclient/uasession.h>
+#include <uaeventfilterresult.h>
 
 using namespace UaClientSdk;
 
@@ -111,8 +113,16 @@ bool QUACppSubscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::NodeA
     createRequests[0].RequestedParameters.QueueSize = 1;
     createRequests[0].RequestedParameters.DiscardOldest = OpcUa_True;
     createRequests[0].MonitoringMode = static_cast<OpcUa_MonitoringMode>(parameters.monitoringMode());
-    if (parameters.filter().type() == QVariant::UserType && parameters.filter().userType() == QMetaType::type("QOpcUaMonitoringParameters::DataChangeFilter"))
+    if (parameters.filter().isValid()) {
         createRequests[0].RequestedParameters.Filter = createFilter(parameters.filter());
+        if (!createRequests[0].RequestedParameters.Filter.Body.EncodeableObject.Object) {
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Unable to create the monitored item, filter creation failed";
+            QOpcUaMonitoringParameters s;
+            s.setStatusCode(QOpcUa::UaStatusCode::BadInternalError);
+            emit m_backend->monitoringEnableDisable(handle, attr, true, s);
+            return false;
+        }
+    }
 
     result = m_nativeSubscription->createMonitoredItems(settings, OpcUa_TimestampsToReturn_Both,
                                                         createRequests, createResults);
@@ -142,7 +152,10 @@ bool QUACppSubscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::NodeA
     m_monitoredIds.insert(monitorId, key);
     monitorId++;
 
-    s.setFilter(QVariant());
+    if (UaNodeId(createResults[0].FilterResult.TypeId.NodeId) == UaNodeId(OpcUaId_EventFilterResult_Encoding_DefaultBinary, 0))
+        s.setFilter(QVariant::fromValue(convertEventFilterResult(createResults[0].FilterResult)));
+    else
+        s.setFilter(QVariant()); // The server did not return an EventFilterResult
     emit m_backend->monitoringEnableDisable(handle, attr, true, s);
 
     return true;
@@ -316,9 +329,20 @@ void QUACppSubscription::dataChange(OpcUa_UInt32 clientSubscriptionHandle, const
 void QUACppSubscription::newEvents(OpcUa_UInt32 clientSubscriptionHandle, UaEventFieldLists &eventFieldList)
 {
     Q_UNUSED(clientSubscriptionHandle);
-    Q_UNUSED(eventFieldList);
-    Q_UNIMPLEMENTED();
-    qCWarning(QT_OPCUA_PLUGINS_UACPP) << "eventsChange unhandled";
+
+    for (quint32 i = 0; i < eventFieldList.length(); ++i) {
+        const quint32 monitorId = eventFieldList[i].ClientHandle;
+
+        if (!m_monitoredIds.contains(monitorId))
+            continue;
+
+        QVariantList eventFields;
+
+        for (int j = 0; j < eventFieldList[i].NoOfEventFields; ++j)
+            eventFields.append(QUACppValueConverter::toQVariant(eventFieldList[i].EventFields[j]));
+
+        emit m_backend->eventOccurred(m_monitoredIds[monitorId].first, eventFields);
+    }
 }
 
 OpcUa_ExtensionObject QUACppSubscription::createFilter(const QVariant &filterData)
@@ -326,23 +350,13 @@ OpcUa_ExtensionObject QUACppSubscription::createFilter(const QVariant &filterDat
     OpcUa_ExtensionObject obj;
     OpcUa_ExtensionObject_Initialize(&obj);
 
-    if (filterData.type() == QVariant::UserType && filterData.userType() == QMetaType::type("QOpcUaMonitoringParameters::DataChangeFilter")) {
-        const QOpcUaMonitoringParameters::DataChangeFilter temp = filterData.value<QOpcUaMonitoringParameters::DataChangeFilter>();
+    if (filterData.canConvert<QOpcUaMonitoringParameters::DataChangeFilter>()) {
+        createDataChangeFilter(filterData.value<QOpcUaMonitoringParameters::DataChangeFilter>(), &obj);
+        return obj;
+    }
 
-        OpcUa_DataChangeFilter *filter = nullptr;
-
-        OpcUa_EncodeableObject_CreateExtension(&OpcUa_DataChangeFilter_EncodeableType,
-                                               &obj,
-                                               reinterpret_cast<OpcUa_Void **>(&filter));
-
-        if (!filter) {
-            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not create DataChangeFilter";
-            return obj;
-        }
-        filter->DeadbandType = static_cast<OpcUa_UInt32>(temp.deadbandType());
-        filter->DeadbandValue = static_cast<OpcUa_Double>(temp.deadbandValue());
-        filter->Trigger = static_cast<OpcUa_DataChangeTrigger>(temp.trigger());
-
+    if (filterData.canConvert<QOpcUaMonitoringParameters::EventFilter>()) {
+        createEventFilter(filterData.value<QOpcUaMonitoringParameters::EventFilter>(), &obj);
         return obj;
     }
 
@@ -350,6 +364,180 @@ OpcUa_ExtensionObject QUACppSubscription::createFilter(const QVariant &filterDat
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not create filter, invalid input.";
 
     return obj;
+}
+
+void QUACppSubscription::createDataChangeFilter(const QOpcUaMonitoringParameters::DataChangeFilter &filter, OpcUa_ExtensionObject *out)
+{
+    OpcUa_DataChangeFilter *uaFilter = nullptr;
+    OpcUa_EncodeableObject_CreateExtension(&OpcUa_DataChangeFilter_EncodeableType,
+                                           out, reinterpret_cast<OpcUa_Void **>(&uaFilter));
+    if (!uaFilter) {
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not create DataChangeFilter";
+        return;
+    }
+
+    uaFilter->DeadbandType = static_cast<OpcUa_UInt32>(filter.deadbandType());
+    uaFilter->DeadbandValue = static_cast<OpcUa_Double>(filter.deadbandValue());
+    uaFilter->Trigger = static_cast<OpcUa_DataChangeTrigger>(filter.trigger());
+}
+
+void QUACppSubscription::createEventFilter(const QOpcUaMonitoringParameters::EventFilter &filter, OpcUa_ExtensionObject *out)
+{
+    OpcUa_EventFilter *uaFilter = nullptr; // Use the stack structures because the C++ layer does not support AttributeOperand
+    OpcUa_EncodeableObject_CreateExtension(&OpcUa_EventFilter_EncodeableType,
+                                           out, reinterpret_cast<OpcUa_Void **>(&uaFilter));
+    if (!uaFilter) {
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not create EventFilter";
+        return;
+    }
+
+    // Select clause
+    if (filter.selectClauses().size()) {
+        UaSimpleAttributeOperands select;
+        select.create(filter.selectClauses().size());
+
+        for (int i = 0; i < filter.selectClauses().size(); ++i) {
+            if (!filter.selectClauses()[i].typeId().isEmpty())
+                UACppUtils::nodeIdFromQString(filter.selectClauses()[i].typeId()).copyTo(&select[i].TypeDefinitionId);
+            UaString(filter.selectClauses()[i].indexRange().toUtf8().constData()).copyTo(&select[i].IndexRange);
+            select[i].AttributeId = QUACppValueConverter::toUaAttributeId(filter.selectClauses()[i].attributeId());
+            UaQualifiedNameArray path;
+            path.create(filter.selectClauses()[i].browsePathRef().size());
+            for (int j = 0; j < filter.selectClauses()[i].browsePathRef().size(); ++j) {
+                UaQualifiedName(UaString(filter.selectClauses()[i].browsePathRef()[j].name().toUtf8().constData()),
+                                filter.selectClauses()[i].browsePathRef()[j].namespaceIndex()).copyTo(&path[j]);
+            }
+            select[i].NoOfBrowsePath = filter.selectClauses()[i].browsePathRef().size();
+            select[i].BrowsePath = path.detach();
+        }
+        uaFilter->NoOfSelectClauses = filter.selectClauses().size();
+        uaFilter->SelectClauses = select.detach();
+    }
+
+    // Where clause
+    if (filter.whereClause().size()) {
+        uaFilter->WhereClause.NoOfElements = filter.whereClause().size();
+        uaFilter->WhereClause.Elements = static_cast<OpcUa_ContentFilterElement *>(malloc(filter.whereClause().size()*sizeof(OpcUa_ContentFilterElement)));
+
+        for (int i = 0; i < filter.whereClause().size(); ++i) {
+            uaFilter->WhereClause.Elements[i].FilterOperator = static_cast<OpcUa_FilterOperator>(filter.whereClause()[i].filterOperator());
+            uaFilter->WhereClause.Elements[i].NoOfFilterOperands = filter.whereClause()[i].filterOperandsRef().size();
+            UaExtensionObjectArray operands;
+            operands.create(filter.whereClause()[i].filterOperandsRef().size());
+
+            for (int j = 0; j < filter.whereClause()[i].filterOperandsRef().size(); ++j) {
+                if (filter.whereClause()[i].filterOperandsRef()[j].canConvert<QOpcUa::QElementOperand>()) {
+                    OpcUa_ElementOperand *op;
+                    OpcUa_EncodeableObject_CreateExtension(&OpcUa_ElementOperand_EncodeableType,
+                                                           &operands[j],
+                                                           reinterpret_cast<OpcUa_Void **>(&op));
+                    if (!op) {
+                        OpcUa_ExtensionObject_Clear(out);
+                        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not allocate an ElementOperand for the event filter";
+                        return;
+                    }
+                    op->Index = filter.whereClause()[i].filterOperandsRef()[j].value<QOpcUa::QElementOperand>().index();
+                } else if (filter.whereClause()[i].filterOperandsRef()[j].canConvert<QOpcUa::QLiteralOperand>()) {
+                    OpcUa_LiteralOperand *op;
+                    OpcUa_EncodeableObject_CreateExtension(&OpcUa_LiteralOperand_EncodeableType,
+                                                           &operands[j],
+                                                           reinterpret_cast<OpcUa_Void **>(&op));
+                    if (!op) {
+                        OpcUa_ExtensionObject_Clear(out);
+                        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not allocate a LiteralOperand for the event filter";
+                        return ;
+                    }
+                    QOpcUa::QLiteralOperand litOp = filter.whereClause()[i].filterOperandsRef()[j].value<QOpcUa::QLiteralOperand>();
+                    op->Value = QUACppValueConverter::toUACppVariant(litOp.value(), litOp.type());
+                } else if (filter.whereClause()[i].filterOperandsRef()[j].canConvert<QOpcUa::QSimpleAttributeOperand>()) {
+                    OpcUa_SimpleAttributeOperand *op;
+                    OpcUa_EncodeableObject_CreateExtension(&OpcUa_SimpleAttributeOperand_EncodeableType,
+                                                           &operands[j],
+                                                           reinterpret_cast<OpcUa_Void **>(&op));
+                    if (!op) {
+                        OpcUa_ExtensionObject_Clear(out);
+                        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not allocate a SimpleAttributeOperand for the event filter";
+                        return;
+                    }
+                    QOpcUa::QSimpleAttributeOperand operand = filter.whereClause()[i].filterOperandsRef()[j].value<QOpcUa::QSimpleAttributeOperand>();
+                    op->AttributeId = QUACppValueConverter::toUaAttributeId(operand.attributeId());
+                    UaString(operand.indexRange().toUtf8().constData()).copyTo(&op->IndexRange);
+                    if (!operand.typeId().isEmpty())
+                        UACppUtils::nodeIdFromQString(operand.typeId()).copyTo(&op->TypeDefinitionId);
+                    UaQualifiedNameArray path;
+                    path.create(operand.browsePathRef().size());
+                    for (int k = 0; k < operand.browsePathRef().size(); ++k) {
+                        UaQualifiedName(UaString(operand.browsePathRef()[k].name().toUtf8().constData()), operand.browsePathRef()[k].namespaceIndex()).copyTo(&path[k]);
+                    }
+                    op->NoOfBrowsePath = operand.browsePathRef().size();
+                    op->BrowsePath = path.detach();
+                } else if (filter.whereClause()[i].filterOperandsRef()[j].canConvert<QOpcUa::QAttributeOperand>()) {
+                    OpcUa_AttributeOperand *op;
+                    OpcUa_EncodeableObject_CreateExtension(&OpcUa_AttributeOperand_EncodeableType,
+                                                           &operands[j],
+                                                           reinterpret_cast<OpcUa_Void **>(&op));
+                    if (!op) {
+                        OpcUa_ExtensionObject_Clear(out);
+                        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not allocate an AttributeOperand for the event filter";
+                        return;
+                    }
+                    QOpcUa::QAttributeOperand operand = filter.whereClause()[i].filterOperandsRef()[j].value<QOpcUa::QAttributeOperand>();
+                    op->AttributeId = QUACppValueConverter::toUaAttributeId(operand.attributeId());
+                    UaString(operand.indexRange().toUtf8().constData()).copyTo(&op->IndexRange);
+                    if (!operand.nodeId().isEmpty())
+                        UACppUtils::nodeIdFromQString(operand.nodeId()).copyTo(&op->NodeId);
+                    UaString(operand.alias().toUtf8().constData()).copyTo(&op->Alias);
+                    UaRelativePathElements path;
+                    path.create(operand.browsePathRef().size());
+                    op->BrowsePath.NoOfElements = operand.browsePathRef().size();
+                    for (int k = 0; k < operand.browsePathRef().size(); ++k) {
+                        path[k].IncludeSubtypes = operand.browsePathRef()[k].includeSubtypes();
+                        path[k].IsInverse = operand.browsePathRef()[k].isInverse();
+                        if (!operand.browsePathRef()[k].referenceTypeId().isEmpty())
+                            UACppUtils::nodeIdFromQString(operand.browsePathRef()[k].referenceTypeId()).copyTo(&path[k].ReferenceTypeId);
+                        UaQualifiedName(UaString(operand.browsePathRef()[k].targetName().name().toUtf8().constData()),
+                                        operand.browsePathRef()[k].targetName().namespaceIndex()).copyTo(&path[k].TargetName);
+                    }
+                    op->BrowsePath.Elements = path.detach();
+
+                } else {
+                    qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Unknown filter operand type for event filter" << filter.whereClause()[i].filterOperands()[j].typeName();
+                    OpcUa_ExtensionObject_Clear(out);
+                    return;
+                }
+            }
+            uaFilter->WhereClause.Elements[i].FilterOperands = operands.detach();
+        }
+    }
+}
+
+QOpcUa::QEventFilterResult QUACppSubscription::convertEventFilterResult(const OpcUa_ExtensionObject &obj)
+{
+    QOpcUa::QEventFilterResult result;
+
+    if (UaNodeId(obj.TypeId.NodeId) == UaNodeId(OpcUaId_EventFilterResult_Encoding_DefaultBinary, 0)) {
+        UaEventFilterResult filterResult(obj);
+
+        UaStatusCodeArray arr;
+        filterResult.getSelectClauseResults(arr);
+        for (size_t i = 0; i < arr.length(); ++i)
+            result.selectClauseResultsRef().append(static_cast<QOpcUa::UaStatusCode>(arr[i]));
+
+        UaContentFilterResult contentFilterResult = filterResult.getWhereClauseResult();
+
+        UaContentFilterElementResults elementResults;
+        contentFilterResult.getElementResults(elementResults);
+
+        for (size_t i = 0; i < elementResults.length(); ++i) {
+            QOpcUa::QContentFilterElementResult temp;
+            temp.setStatusCode(static_cast<QOpcUa::UaStatusCode>(elementResults[i].StatusCode));
+            for (int j = 0; j < elementResults[i].NoOfOperandStatusCodes; ++j)
+                temp.operandStatusCodesRef().append(static_cast<QOpcUa::UaStatusCode>(elementResults[i].OperandStatusCodes[j]));
+            result.whereClauseResultsRef().append(temp);
+        }
+    }
+
+    return result;
 }
 
 bool QUACppSubscription::modifySubscriptionParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value)
@@ -459,9 +647,6 @@ bool QUACppSubscription::modifyMonitoredItemParameters(quint64 handle, QOpcUa::N
     modifyRequest.RequestedParameters.ClientHandle = m_monitoredIds.key(key);
     QOpcUaMonitoringParameters p = valuePair.second;
 
-    if (item != QOpcUaMonitoringParameters::Parameter::Filter)
-        modifyRequest.RequestedParameters.Filter = createFilter(valuePair.second.filter());
-
     bool match = true;
 
     switch (item) {
@@ -497,6 +682,12 @@ bool QUACppSubscription::modifyMonitoredItemParameters(quint64 handle, QOpcUa::N
     }
     case QOpcUaMonitoringParameters::Parameter::Filter: {
         modifyRequest.RequestedParameters.Filter = createFilter(value);
+        if (!modifyRequest.RequestedParameters.Filter.Body.EncodeableObject.Object) {
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not modify the filter, filter creation failed";
+            p.setStatusCode(QOpcUa::UaStatusCode::BadInternalError);
+            emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+            return true;
+        }
         break;
     }
     default:
@@ -505,6 +696,16 @@ bool QUACppSubscription::modifyMonitoredItemParameters(quint64 handle, QOpcUa::N
     }
 
     if (match) {
+        if (item != QOpcUaMonitoringParameters::Parameter::Filter && valuePair.second.filter().isValid()) {
+            modifyRequest.RequestedParameters.Filter = createFilter(valuePair.second.filter());
+            if (!modifyRequest.RequestedParameters.Filter.Body.EncodeableObject.Object) {
+                qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Unable to modify the monitored item, filter creation failed";
+                p.setStatusCode(QOpcUa::UaStatusCode::BadInternalError);
+                emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+                return true;
+            }
+        }
+
         ServiceSettings service;
         UaMonitoredItemModifyRequests requests(1, &modifyRequest);
         UaMonitoredItemModifyResults results;
@@ -532,8 +733,15 @@ bool QUACppSubscription::modifyMonitoredItemParameters(quint64 handle, QOpcUa::N
                 p.setDiscardOldest(value.toBool());
                 changed | QOpcUaMonitoringParameters::Parameter::DiscardOldest;
             }
+            if (item == QOpcUaMonitoringParameters::Parameter::Filter &&
+                    UaNodeId(results[0].FilterResult.TypeId.NodeId) == UaNodeId(OpcUaId_EventFilterResult_Encoding_DefaultBinary, 0)) {
+                p.setFilter(QVariant::fromValue(convertEventFilterResult(results[0].FilterResult)));
+                changed | QOpcUaMonitoringParameters::Parameter::Filter;
+            }
 
             emit m_backend->monitoringStatusChanged(handle, attr, changed, p);
+            if (item == QOpcUaMonitoringParameters::Parameter::Filter)
+                p.setFilter(m_monitoredItems[key].second.filter()); // Don't overwrite the filter
             m_monitoredItems[key].second = p;
         }
         return true;

@@ -96,6 +96,8 @@ private Q_SLOTS:
     void handleResolveBrowsePathFinished(quint64 handle, QVector<QOpcUa::QBrowsePathTarget> targets,
                                            QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode status);
 
+    void handleNewEvent(quint64 handle, QVariantList eventFields);
+
 signals:
     void connected();
     void disconnected();

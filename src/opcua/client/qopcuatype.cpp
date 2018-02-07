@@ -1923,4 +1923,869 @@ void QOpcUa::QBrowsePathTarget::setTargetId(const QOpcUa::QExpandedNodeId &value
     data->targetId = value;
 }
 
+/*!
+    \class QOpcUa::QContentFilterElement
+    \inmodule QtOpcUa
+    \inheaderfile QtOpcUa/qopcuatype.h
+    \brief The OPC UA ContentFilterElement
+
+    A content filter element contains an operator and a list of operands.
+    There are four different operator types which contain literal values, references to
+    attributes of nodes or to other content filter elements.
+
+    A combination of one or more content filter elements makes a content filter which is used
+    by the server to filter data for the criteria defined by the content filter elements.
+    For example, the where clause of an event filter is a content filter which is used to decide
+    if a notification is generated for an event.
+*/
+
+/*!
+    \enum QContentFilterElement::FilterOperator
+
+    FilterOperator enumerates all possible operators for a ContentFilterElement that are specified in
+    OPC-UA part 4, Tables 115 and 116.
+
+    \value Equals
+    \value IsNull
+    \value GreaterThan
+    \value LessThan
+    \value GreaterThanOrEqual
+    \value LessThanOrEqual
+    \value Like
+    \value Not
+    \value Between
+    \value InList
+    \value And
+    \value Or
+    \value Cast
+    \value InView
+    \value OfType
+    \value RelatedTo
+    \value BitwiseAnd
+    \value BitwiseOr
+*/
+
+class QOpcUa::QContentFilterElementData : public QSharedData
+{
+public:
+    QOpcUa::QContentFilterElement::FilterOperator filterOperator;
+    QVector<QVariant> filterOperands;
+};
+
+QOpcUa::QContentFilterElement::QContentFilterElement()
+    : data(new QContentFilterElementData)
+{
+}
+
+/*!
+    Constructs a content filter element from \a rhs.
+*/
+QOpcUa::QContentFilterElement::QContentFilterElement(const QOpcUa::QContentFilterElement &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Sets the values from \a rhs in this content filter element.
+*/
+QOpcUa::QContentFilterElement &QOpcUa::QContentFilterElement::operator=(const QOpcUa::QContentFilterElement &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+/*!
+    Converts this content filter element to \l QVariant.
+*/
+QOpcUa::QContentFilterElement::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
+
+/*!
+    Returns the operands of the filter element.
+*/
+QVector<QVariant> QOpcUa::QContentFilterElement::filterOperands() const
+{
+    return data->filterOperands;
+}
+
+/*!
+    Returns a reference to the filter operands.
+
+    \sa filterOperands()
+*/
+QVector<QVariant> &QOpcUa::QContentFilterElement::filterOperandsRef()
+{
+   return data->filterOperands;
+}
+
+/*!
+    Sets the filter operands for this content filter element to \a value.
+    Supported classes are \l QOpcUa::QElementOperand, \l QOpcUa::QLiteralOperand,
+    \l QOpcUa::QSimpleAttributeOperand and \l QOpcUa::QAttributeOperand.
+*/
+void QOpcUa::QContentFilterElement::setFilterOperands(const QVector<QVariant> &value)
+{
+    data->filterOperands = value;
+}
+
+/*!
+    Returns the filter operator.
+*/
+QOpcUa::QContentFilterElement::FilterOperator QOpcUa::QContentFilterElement::filterOperator() const
+{
+    return data->filterOperator;
+}
+
+/*!
+    Sets the operator that is applied to the filter operands to \a value.
+*/
+void QOpcUa::QContentFilterElement::setFilterOperator(const QOpcUa::QContentFilterElement::FilterOperator &value)
+{
+    data->filterOperator = value;
+}
+
+QOpcUa::QContentFilterElement::~QContentFilterElement()
+{
+}
+
+/*!
+    Sets filter operator \a op in this content filter element.
+    If multiple operators are streamed into one content filter element, only the last operator is used.
+    All others are discarded.
+*/
+QOpcUa::QContentFilterElement &QOpcUa::QContentFilterElement::operator<<(QOpcUa::QContentFilterElement::FilterOperator op)
+{
+    setFilterOperator(op);
+    return *this;
+}
+
+/*!
+    Adds the simple attribute operand \a op to the operands list of this content filter element.
+*/
+QOpcUa::QContentFilterElement &QOpcUa::QContentFilterElement::operator<<(const QOpcUa::QSimpleAttributeOperand &op)
+{
+    filterOperandsRef().append(op);
+    return *this;
+}
+
+/*!
+    Adds the attribute operand \a op to the operands list of this content filter element.
+*/
+QOpcUa::QContentFilterElement &QOpcUa::QContentFilterElement::operator<<(const QOpcUa::QAttributeOperand &op)
+{
+    filterOperandsRef().append(op);
+    return *this;
+}
+
+/*!
+    Adds the literal operand \a op to the operands list of this content filter element.
+*/
+QOpcUa::QContentFilterElement &QOpcUa::QContentFilterElement::operator<<(const QOpcUa::QLiteralOperand &op)
+{
+    filterOperandsRef().append(op);
+    return *this;
+}
+
+/*!
+    Adds the element operand \a op to the operands list of this content filter element.
+*/
+QOpcUa::QContentFilterElement &QOpcUa::QContentFilterElement::operator<<(const QOpcUa::QElementOperand &op)
+{
+    filterOperandsRef().append(op);
+    return *this;
+}
+
+/*!
+    \class QOpcUa::QElementOperand
+    \inmodule QtOpcUa
+    \inheaderfile QtOpcUa/qopcuatype.h
+    \brief The OPC UA ElementOperand type
+
+    The ElementOperand is defined in OPC-UA part 4, 7.4.4.2.
+    It is used to identify another element in the filter by its index
+    (the first element has the index 0).
+
+    This is required to create complex filters, for example to reference
+    the two operands of the AND operation in ((Severity > 500) AND (Message == "TestString")).
+    The first step is to create content filter elements for the two conditions (Severity > 500)
+    and (Message == "TestString"). A third content filter element is required to create an AND
+    combination of the two conditions. It consists of the AND operator and two element operands
+    with the indices of the two conditions created before:
+
+    \code
+    QOpcUaMonitoringParameters::EventFilter filter;
+    ...
+    // setup select clauses
+    ...
+    QOpcUa::QContentFilterElement condition1;
+    QOpcUa::QContentFilterElement condition2;
+    QOpcUa::QContentFilterElement condition3;
+    condition1 << QOpcUa::QContentFilterElement::FilterOperator::GreaterThan << QOpcUa::QSimpleAttributeOperand("Severity") <<
+                    QOpcUa::QLiteralOperand(quint16(500), QOpcUa::Types::UInt16);
+    condition2 << QOpcUa::QContentFilterElement::FilterOperator::Equals << QOpcUa::QSimpleAttributeOperand("Message") <<
+                    QOpcUa::QLiteralOperand("TestString", QOpcUa::Types::String);
+    condition3 << QOpcUa::QContentFilterElement::FilterOperator::And << QOpcUa::QElementOperand(0) << QOpcUa::QElementOperand(1);
+    filter << condition1 << condition2 << condition3;
+    \endcode
+*/
+
+class QOpcUa::QElementOperandData : public QSharedData
+{
+public:
+    quint32 index;
+};
+
+QOpcUa::QElementOperand::QElementOperand()
+    : data(new QOpcUa::QElementOperandData)
+{
+}
+
+/*!
+    Constructs an element operand from \a rhs.
+*/
+QOpcUa::QElementOperand::QElementOperand(const QOpcUa::QElementOperand &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Constructs an element operand with index \a index.
+*/
+QOpcUa::QElementOperand::QElementOperand(quint32 index)
+    : data(new QOpcUa::QElementOperandData)
+{
+    setIndex(index);
+}
+
+/*!
+    Sets the values from \a rhs in this element operand.
+*/
+QOpcUa::QElementOperand &QOpcUa::QElementOperand::operator=(const QOpcUa::QElementOperand &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+/*!
+    Converts this element operand to \l QVariant.
+*/
+QOpcUa::QElementOperand::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
+
+QOpcUa::QElementOperand::~QElementOperand()
+{
+}
+
+/*!
+    Returns the index of the filter element that is going to be used as operand.
+*/
+quint32 QOpcUa::QElementOperand::index() const
+{
+    return data->index;
+}
+
+/*!
+    Sets the index of the filter element that is going to be used as operand to \a value.
+*/
+void QOpcUa::QElementOperand::setIndex(const quint32 &value)
+{
+    data->index = value;
+}
+
+/*!
+    \class QOpcUa::QLiteralOperand
+    \inmodule QtOpcUa
+    \inheaderfile QtOpcUa/qopcuatype.h
+    \brief The OPC UA LiteralOperand type
+
+    The LiteralOperand is defined in OPC-UA part 4, 7.4.4.3.
+    It contains a literal value that is to be used as operand.
+*/
+class QOpcUa::QLiteralOperandData : public QSharedData
+{
+public:
+    QVariant value;
+    QOpcUa::Types type;
+};
+
+QOpcUa::QLiteralOperand::QLiteralOperand()
+    : data(new QOpcUa::QLiteralOperandData)
+{
+    data->type = QOpcUa::Types::Undefined;
+}
+
+/*!
+    Constructs a literal operand from \a rhs.
+*/
+QOpcUa::QLiteralOperand::QLiteralOperand(const QLiteralOperand &rhs)
+    : data(rhs.data)
+{
+    data->type = QOpcUa::Types::Undefined;
+}
+
+/*!
+    Constructs a literal operand of value \a value and type \a type.
+*/
+QOpcUa::QLiteralOperand::QLiteralOperand(const QVariant &value, QOpcUa::Types type)
+    : data(new QOpcUa::QLiteralOperandData)
+{
+    setValue(value);
+    setType(type);
+}
+
+/*!
+    Sets the values from \a rhs in this \l QLiteralOperand.
+*/
+QOpcUa::QLiteralOperand &QOpcUa::QLiteralOperand::operator=(const QOpcUa::QLiteralOperand &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+/*!
+    Converts this literal operand to \l QVariant.
+*/
+QOpcUa::QLiteralOperand::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
+
+QOpcUa::QLiteralOperand::~QLiteralOperand()
+{
+}
+
+/*!
+    Returns the type of the value of the literal operand.
+*/
+QOpcUa::Types QOpcUa::QLiteralOperand::type() const
+{
+    return data->type;
+}
+
+/*!
+    Sets the type of the value of the literal operand to \a value.
+*/
+void QOpcUa::QLiteralOperand::setType(QOpcUa::Types value)
+{
+    data->type = value;
+}
+
+/*!
+    Returns the value of the literal operand.
+*/
+QVariant QOpcUa::QLiteralOperand::value() const
+{
+    return data->value;
+}
+
+/*!
+    Sets the value of the literal operand to \a value.
+*/
+void QOpcUa::QLiteralOperand::setValue(const QVariant &value)
+{
+    data->value = value;
+}
+
+/*!
+    \class QOpcUa::QSimpleAttributeOperand
+    \inmodule QtOpcUa
+    \inheaderfile QtOpcUa/qopcuatype.h
+    \brief The OPC UA SimpleAttributeOperand type
+
+    The SimpleAttributeOperand is specified in OPC-UA part 4, 7.4.4.5.
+    It is used when a node attribute is required as operand.
+
+    For example, the following simple attribute operand represents the value
+    of the "Severity" field of the base event type:
+    \code
+        QOpcUa::QSimpleAttributeOperand("Severity");
+    \endcode
+*/
+class QOpcUa::QSimpleAttributeOperandData : public QSharedData
+{
+public:
+    QString typeId{QStringLiteral("ns=0;i=2041")}; // BaseEventType
+    QVector<QOpcUa::QQualifiedName> browsePath;
+    QOpcUa::NodeAttribute attributeId;
+    QString indexRange;
+};
+
+QOpcUa::QSimpleAttributeOperand::QSimpleAttributeOperand()
+    : data(new QSimpleAttributeOperandData)
+{
+}
+
+/*!
+    Constructs a simple attribute operand from \a rhs.
+*/
+QOpcUa::QSimpleAttributeOperand::QSimpleAttributeOperand(const QOpcUa::QSimpleAttributeOperand &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Constructs a simple attribute operand for attribute \a attribute of the direct child with the browse name
+    \a name in namespace \a namespaceIndex. \a typeId is the node id of a type definition node. The operand will
+    be restricted to instances of type \a typeId or a subtype.
+*/
+QOpcUa::QSimpleAttributeOperand::QSimpleAttributeOperand(const QString &name, quint16 namespaceIndex, const QString &typeId, QOpcUa::NodeAttribute attributeId)
+    : data(new QOpcUa::QSimpleAttributeOperandData)
+{
+    browsePathRef().append(QOpcUa::QQualifiedName(namespaceIndex, name));
+    setTypeId(typeId);
+    setAttributeId(attributeId);
+}
+
+/*!
+    Sets the values from \a rhs in this simple attribute operand.
+*/
+QOpcUa::QSimpleAttributeOperand &QOpcUa::QSimpleAttributeOperand::operator=(const QOpcUa::QSimpleAttributeOperand &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+/*!
+    Converts this simple attribute operand to \l QVariant.
+*/
+QOpcUa::QSimpleAttributeOperand::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
+
+QOpcUa::QSimpleAttributeOperand::~QSimpleAttributeOperand()
+{
+}
+
+/*!
+    Returns the index range string.
+*/
+QString QOpcUa::QSimpleAttributeOperand::indexRange() const
+{
+    return data->indexRange;
+}
+
+/*!
+    Sets the index range string used to identify a single value or subset of the attribute's value to \a value.
+*/
+void QOpcUa::QSimpleAttributeOperand::setIndexRange(const QString &value)
+{
+    data->indexRange = value;
+}
+
+/*!
+    Returns the attribute of the node \l browsePath is pointing to.
+*/
+QOpcUa::NodeAttribute QOpcUa::QSimpleAttributeOperand::attributeId() const
+{
+    return data->attributeId;
+}
+
+/*!
+    Sets the attribute id to \a value.
+*/
+void QOpcUa::QSimpleAttributeOperand::setAttributeId(const QOpcUa::NodeAttribute &value)
+{
+    data->attributeId = value;
+}
+
+/*!
+    Returns the relative path to a node starting from \l typeId.
+*/
+QVector<QOpcUa::QQualifiedName> QOpcUa::QSimpleAttributeOperand::browsePath() const
+{
+    return data->browsePath;
+}
+
+/*!
+    Returns a reference to the browse path.
+
+    \sa browsePath().
+*/
+QVector<QOpcUa::QQualifiedName> &QOpcUa::QSimpleAttributeOperand::browsePathRef()
+{
+    return data->browsePath;
+}
+
+/*!
+    Sets the browse path to the node holding the attribute to \a value.
+*/
+void QOpcUa::QSimpleAttributeOperand::setBrowsePath(const QVector<QOpcUa::QQualifiedName> &value)
+{
+    data->browsePath = value;
+}
+
+/*!
+    Returns the node id of a type definition node.
+*/
+QString QOpcUa::QSimpleAttributeOperand::typeId() const
+{
+    return data->typeId;
+}
+
+/*!
+    Sets the node id of the type definition node to \a value. The operand will be of the type or one of its subtypes.
+*/
+void QOpcUa::QSimpleAttributeOperand::setTypeId(const QString &value)
+{
+    data->typeId = value;
+}
+
+/*!
+    \class QOpcUa::QAttributeOperand
+    \inmodule QtOpcUa
+    \inheaderfile QtOpcUa/qopcuatype.h
+    \brief The OPC UA AttributeOperand type
+
+    The AttributeOperand is defined in OPC-UA part 4, 7.4.4.4.
+    It has the same purpose as \l QSimpleAttributeOperand but has more configurable options.
+*/
+
+class QOpcUa::QAttributeOperandData : public QSharedData
+{
+public:
+    QString nodeId;
+    QString alias;
+    QVector<QOpcUa::QRelativePathElement> browsePath;
+    QOpcUa::NodeAttribute attributeId;
+    QString indexRange;
+};
+
+QOpcUa::QAttributeOperand::QAttributeOperand()
+    : data(new QAttributeOperandData)
+{
+}
+
+/*!
+    Constructs an attribute operand from \a rhs.
+*/
+QOpcUa::QAttributeOperand::QAttributeOperand(const QOpcUa::QAttributeOperand &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Sets the values from \a rhs in this attribute operand.
+*/
+QOpcUa::QAttributeOperand &QOpcUa::QAttributeOperand::operator=(const QOpcUa::QAttributeOperand &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+/*!
+    Converts this attribute operand to \l QVariant.
+*/
+QOpcUa::QAttributeOperand::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
+
+QOpcUa::QAttributeOperand::~QAttributeOperand()
+{
+}
+
+/*!
+    Returns the index range string.
+*/
+QString QOpcUa::QAttributeOperand::indexRange() const
+{
+    return data->indexRange;
+}
+
+/*!
+    Sets the index range string used to identify a single value or subset of the attribute's value to \a value.
+*/
+void QOpcUa::QAttributeOperand::setIndexRange(const QString &value)
+{
+    data->indexRange = value;
+}
+
+/*!
+    Returns the attribute id for an attribute of the node \l browsePath is pointing to.
+*/
+QOpcUa::NodeAttribute QOpcUa::QAttributeOperand::attributeId() const
+{
+    return data->attributeId;
+}
+
+/*!
+    Sets the attribute id to \a value.
+*/
+void QOpcUa::QAttributeOperand::setAttributeId(const QOpcUa::NodeAttribute &value)
+{
+    data->attributeId = value;
+}
+
+/*!
+    Returns the browse path.
+*/
+QVector<QOpcUa::QRelativePathElement> QOpcUa::QAttributeOperand::browsePath() const
+{
+    return data->browsePath;
+}
+
+/*!
+    Returns a reference to the browse path.
+
+    \sa browsePath()
+*/
+QVector<QOpcUa::QRelativePathElement> &QOpcUa::QAttributeOperand::browsePathRef()
+{
+    return data->browsePath;
+}
+
+/*!
+    Sets the relative path to a node starting from \l nodeId() to \a value.
+*/
+void QOpcUa::QAttributeOperand::setBrowsePath(const QVector<QOpcUa::QRelativePathElement> &value)
+{
+    data->browsePath = value;
+}
+
+/*!
+    Returns the alias for this QAttributeOperand.
+*/
+QString QOpcUa::QAttributeOperand::alias() const
+{
+    return data->alias;
+}
+
+/*!
+    Sets the alias to \a value. This allows using this instance
+    as operand for other operations in the filter.
+*/
+void QOpcUa::QAttributeOperand::setAlias(const QString &value)
+{
+    data->alias = value;
+}
+
+/*!
+    Returns the node id of the type definition node.
+*/
+QString QOpcUa::QAttributeOperand::nodeId() const
+{
+    return data->nodeId;
+}
+
+/*!
+    Sets the node id of the type definition node to \a value.
+*/
+void QOpcUa::QAttributeOperand::setNodeId(const QString &value)
+{
+    data->nodeId = value;
+}
+
+/*!
+    \class QOpcUa::QContentFilterElementResult
+    \inmodule QtOPcUa
+    \inheaderfile QtOpcUa/qopcuatype.h
+    \brief The OPC UA ContentFilterElementResult
+
+    QContentFilterElementResult contains the status code for a
+    filter element and all its operands.
+*/
+
+class QOpcUa::QContentFilterElementResultData : public QSharedData
+{
+public:
+    QOpcUa::UaStatusCode statusCode;
+    QVector<QOpcUa::UaStatusCode> operandStatusCodes;
+};
+
+QOpcUa::QContentFilterElementResult::QContentFilterElementResult()
+    : data(new QOpcUa::QContentFilterElementResultData)
+{
+}
+
+/*!
+    Constructs a content filter element result from \a rhs.
+*/
+QOpcUa::QContentFilterElementResult::QContentFilterElementResult(const QOpcUa::QContentFilterElementResult &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Sets the values from \a rhs in this content filter element result.
+*/
+QOpcUa::QContentFilterElementResult &QOpcUa::QContentFilterElementResult::operator=(const QOpcUa::QContentFilterElementResult &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+QOpcUa::QContentFilterElementResult::~QContentFilterElementResult()
+{
+}
+
+/*!
+    Returns the status code for the filter element.
+*/
+QOpcUa::UaStatusCode QOpcUa::QContentFilterElementResult::statusCode() const
+{
+    return data->statusCode;
+}
+
+/*!
+    Sets the status code for the filter element to \a value.
+*/
+void QOpcUa::QContentFilterElementResult::setStatusCode(const QOpcUa::UaStatusCode &value)
+{
+    data->statusCode = value;
+}
+
+/*!
+    Returns the status codes for all filter operands in the order that was used in the filter.
+*/
+QVector<QOpcUa::UaStatusCode> QOpcUa::QContentFilterElementResult::operandStatusCodes() const
+{
+    return data->operandStatusCodes;
+}
+
+/*!
+    Sets the status codes for all filter operands to \a value.
+*/
+void QOpcUa::QContentFilterElementResult::setOperandStatusCodes(const QVector<QOpcUa::UaStatusCode> &value)
+{
+    data->operandStatusCodes = value;
+}
+
+/*!
+    Returns a reference to the operand status codes.
+
+    \sa operandStatusCodes()
+*/
+QVector<QOpcUa::UaStatusCode> &QOpcUa::QContentFilterElementResult::operandStatusCodesRef()
+{
+    return data->operandStatusCodes;
+}
+
+/*!
+    \class QOpcUa::QEventFilterResult
+    \inmodule QtOpcUa
+    \inheaderfile QtOpcUa/qopcuatype.h
+    \brief The OPCUA EventFilterResult
+
+    The EventFilterResult contains status codes for all elements of the \c select clauses
+    and all elements of the \c where clause.
+*/
+
+class QOpcUa::QEventFilterResultData : public QSharedData
+{
+public:
+    QVector<QOpcUa::UaStatusCode> selectClauseResults;
+    QVector<QOpcUa::QContentFilterElementResult> whereClauseResults;
+};
+
+QOpcUa::QEventFilterResult::QEventFilterResult()
+    : data(new QOpcUa::QEventFilterResultData)
+{
+}
+
+/*!
+    Constructs an event filter result from \a rhs.
+*/
+QOpcUa::QEventFilterResult::QEventFilterResult(const QOpcUa::QEventFilterResult &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Sets the values from \a rhs in this event filter result.
+*/
+QOpcUa::QEventFilterResult &QOpcUa::QEventFilterResult::operator=(const QOpcUa::QEventFilterResult &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+QOpcUa::QEventFilterResult::~QEventFilterResult()
+{
+}
+
+/*!
+    Returns \c true if this event filter result is good.
+*/
+bool QOpcUa::QEventFilterResult::isGood() const
+{
+    for (auto status : qAsConst(data->selectClauseResults)) {
+        if (status != QOpcUa::UaStatusCode::Good)
+            return false;
+    }
+    for (QOpcUa::QContentFilterElementResult element : qAsConst(data->whereClauseResults)) {
+        if (element.statusCode() != QOpcUa::UaStatusCode::Good)
+            return false;
+        for (auto status : qAsConst(element.operandStatusCodesRef())) {
+            if (status != QOpcUa::UaStatusCode::Good)
+                return false;
+        }
+    }
+
+    return true;
+}
+
+/*!
+    Returns the status codes for all elements of the \c where clause in the order that was used in the filter.
+*/
+QVector<QOpcUa::QContentFilterElementResult> QOpcUa::QEventFilterResult::whereClauseResults() const
+{
+    return data->whereClauseResults;
+}
+
+/*!
+    Returns a reference to the \c where clause results.
+
+    \sa whereClauseResults()
+*/
+QVector<QOpcUa::QContentFilterElementResult> &QOpcUa::QEventFilterResult::whereClauseResultsRef()
+{
+    return data->whereClauseResults;
+}
+
+/*!
+    Sets the where clause results to \a value.
+*/
+void QOpcUa::QEventFilterResult::setWhereClauseResults(const QVector<QOpcUa::QContentFilterElementResult> &value)
+{
+    data->whereClauseResults = value;
+}
+
+/*!
+    Returns the status codes for all elements of the \c select clauses in the order that was used in the filter.
+*/
+QVector<QOpcUa::UaStatusCode> QOpcUa::QEventFilterResult::selectClauseResults() const
+{
+    return data->selectClauseResults;
+}
+
+/*!
+    Returns a reference to the \c select clause results.
+
+    \sa selectClauseResults()
+*/
+QVector<QOpcUa::UaStatusCode> &QOpcUa::QEventFilterResult::selectClauseResultsRef()
+{
+    return data->selectClauseResults;
+}
+
+/*!
+    Sets the \¢ select clause results to \a value.
+*/
+void QOpcUa::QEventFilterResult::setSelectClauseResults(const QVector<QOpcUa::UaStatusCode> &value)
+{
+    data->selectClauseResults = value;
+}
+
 QT_END_NAMESPACE

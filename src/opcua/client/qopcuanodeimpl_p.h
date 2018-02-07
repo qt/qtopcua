@@ -99,6 +99,7 @@ Q_SIGNALS:
     void browseFinished(QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
 
     void attributeUpdated(QOpcUa::NodeAttribute attr, QOpcUaReadResult value);
+    void eventOccurred(QVariantList eventFields);
     void monitoringEnableDisable(QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
     void monitoringStatusChanged(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                            QOpcUaMonitoringParameters param);

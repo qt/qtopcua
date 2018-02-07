@@ -1,5 +1,6 @@
 TEMPLATE = subdirs
-SUBDIRS += auto
+SUBDIRS += auto \
+           manual
 
 QT_FOR_CONFIG += opcua-private
 

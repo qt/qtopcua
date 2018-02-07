@@ -116,6 +116,30 @@ public:
         QSharedDataPointer<DataChangeFilterData> data;
     };
 
+    class EventFilterData;
+    class Q_OPCUA_EXPORT EventFilter
+    {
+    public:
+        EventFilter();
+        EventFilter(const EventFilter &);
+        EventFilter &operator=(const EventFilter &);
+        operator QVariant const();
+        EventFilter &operator<<(const QOpcUa::QContentFilterElement &whereClauseElement);
+        EventFilter &operator<<(const QOpcUa::QSimpleAttributeOperand &selectClauseElement);
+        ~EventFilter();
+
+        QVector<QOpcUa::QSimpleAttributeOperand> selectClauses() const;
+        QVector<QOpcUa::QSimpleAttributeOperand> &selectClausesRef();
+        void setSelectClauses(const QVector<QOpcUa::QSimpleAttributeOperand> &value);
+
+        QVector<QOpcUa::QContentFilterElement> whereClause() const;
+        QVector<QOpcUa::QContentFilterElement> &whereClauseRef();
+        void setWhereClause(const QVector<QOpcUa::QContentFilterElement> &value);
+
+    private:
+        QSharedDataPointer<QOpcUaMonitoringParameters::EventFilterData> data;
+    };
+
     QOpcUaMonitoringParameters();
     ~QOpcUaMonitoringParameters();
     QOpcUaMonitoringParameters(double publishingInterval, SubscriptionType shared = SubscriptionType::Shared, quint32 subscriptionId = 0);
@@ -126,6 +150,7 @@ public:
     void setSamplingInterval(double samplingInterval);
     QVariant filter() const;
     void setDataChangeFilter(const QOpcUaMonitoringParameters::DataChangeFilter &filter);
+    void setEventFilter(const QOpcUaMonitoringParameters::EventFilter &eventFilter);
     void setFilter(const QVariant &filter);
     quint32 queueSize() const;
     void setQueueSize(quint32 queueSize);
@@ -173,5 +198,6 @@ Q_DECLARE_METATYPE(QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType)
 Q_DECLARE_METATYPE(QOpcUaMonitoringParameters::Parameter)
 Q_DECLARE_METATYPE(QOpcUaMonitoringParameters::Parameters)
 Q_DECLARE_METATYPE(QOpcUaMonitoringParameters::MonitoringMode)
+Q_DECLARE_METATYPE(QOpcUaMonitoringParameters::EventFilter)
 
 #endif // QOPCUAMONITORINGPARAMETERS_H

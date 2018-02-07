@@ -80,6 +80,7 @@ void QOpcUaClientImpl::connectBackendWithClient(QOpcUaBackend *backend)
     connect(backend, &QOpcUaBackend::methodCallFinished, this, &QOpcUaClientImpl::handleMethodCallFinished);
     connect(backend, &QOpcUaBackend::browseFinished, this, &QOpcUaClientImpl::handleBrowseFinished);
     connect(backend, &QOpcUaBackend::resolveBrowsePathFinished, this, &QOpcUaClientImpl::handleResolveBrowsePathFinished);
+    connect(backend, &QOpcUaBackend::eventOccurred, this, &QOpcUaClientImpl::handleNewEvent);
 }
 
 void QOpcUaClientImpl::handleAttributesRead(quint64 handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
@@ -137,6 +138,13 @@ void QOpcUaClientImpl::handleResolveBrowsePathFinished(quint64 handle, QVector<Q
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
         emit (*it)->resolveBrowsePathFinished(targets, path, status);
+}
+
+void QOpcUaClientImpl::handleNewEvent(quint64 handle, QVariantList eventFields)
+{
+    auto it = m_handles.constFind(handle);
+    if (it != m_handles.constEnd() && !it->isNull())
+        emit (*it)->eventOccurred(eventFields);
 }
 
 QT_END_NAMESPACE

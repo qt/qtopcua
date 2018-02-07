@@ -84,6 +84,7 @@ Q_SIGNALS:
     void methodCallFinished(quint64 handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
 
     void attributeUpdated(quint64 handle, QOpcUaReadResult res);
+    void eventOccurred(quint64 handle, QVariantList fields);
     void monitoringEnableDisable(quint64 handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
     void monitoringStatusChanged(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                            QOpcUaMonitoringParameters param);

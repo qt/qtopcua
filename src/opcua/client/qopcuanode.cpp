@@ -214,6 +214,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn void QOpcUaNode::eventOccurred(QVariantList eventFields)
+
+    This signal is emitted after a new event has been received.
+
+    \a eventFields contains the values of the event fields in the order specified in the \c select clause of the event filter.
+*/
+
+/*!
     \fn QOpcUa::NodeAttributes QOpcUaNode::mandatoryBaseAttributes()
 
     Contains all mandatory attributes of the OPC UA base node class.
@@ -348,6 +356,14 @@ QDateTime QOpcUaNode::serverTimestamp(QOpcUa::NodeAttribute attribute) const
     There are multiple error cases in which a bad status code is generated: A subscription with the subscription id specified in \a settings does not exist,
     the node does not exist on the server, the node does not have the requested attribute or the maximum number of monitored items for
     the server is reached.
+
+    The same method is used to enable event monitoring. Events are special objects in the OPC UA address space which contain information
+    about an event that has occurred. If an event is triggered on the server, an event monitored item collects selected values of
+    node attributes of the event object and its child nodes.
+    Every node that has an event source can be monitored for events.
+    To monitor a node for events, the attribute \l {QOpcUa::NodeAttribute} {EventNotifier} must be monitored using an EventFilter which contains the event fields
+    the user needs and optionally a where clause which is used to filter events by criteria (for more details, see \l QOpcUaMonitoringParameters::EventFilter).
+
  */
 bool QOpcUaNode::enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
 {
@@ -393,6 +409,18 @@ QOpcUaMonitoringParameters QOpcUaNode::monitoringStatus(QOpcUa::NodeAttribute at
     }
 
     return *it;
+}
+
+/*!
+    Modifies an existing event monitoring to use \a eventFilter as event filter.
+
+    Returns \c true if the filter modification request has been successfully dispatched to the backend.
+
+    \l monitoringStatusChanged for \l {QOpcUa::NodeAttribute} {EventNotifier} is emitted after the operation has finished.
+*/
+bool QOpcUaNode::modifyEventFilter(const QOpcUaMonitoringParameters::EventFilter &eventFilter)
+{
+    return modifyMonitoring(QOpcUa::NodeAttribute::EventNotifier, QOpcUaMonitoringParameters::Parameter::Filter, QVariant::fromValue(eventFilter));
 }
 
 /*!
