@@ -102,6 +102,7 @@ void Open62541AsyncBackend::readAttributes(uintptr_t handle, UA_NodeId id, QOpcU
     UA_ReadResponse_init(&res);
     req.nodesToRead = valueIds.data();
     req.nodesToReadSize = valueIds.size();
+    req.timestampsToReturn = UA_TIMESTAMPSTORETURN_BOTH;
 
     res = UA_Client_Service_read(m_uaclient, req);
 
@@ -118,6 +119,10 @@ void Open62541AsyncBackend::readAttributes(uintptr_t handle, UA_NodeId id, QOpcU
             vec[i].statusCode = QOpcUa::UaStatusCode::Good;
         if (res.results[i].hasValue && res.results[i].value.data)
                 vec[i].value = QOpen62541ValueConverter::toQVariant(res.results[i].value);
+        if (res.results[i].hasServerTimestamp)
+            vec[i].sourceTimestamp = QOpen62541ValueConverter::uaDateTimeToQDateTime(res.results[i].sourceTimestamp);
+        if (res.results[i].hasSourceTimestamp)
+            vec[i].serverTimestamp = QOpen62541ValueConverter::uaDateTimeToQDateTime(res.results[i].serverTimestamp);
     }
     emit attributesRead(handle, vec, static_cast<QOpcUa::UaStatusCode>(res.responseHeader.serviceResult));
     UA_ReadValueId_deleteMembers(&readId);

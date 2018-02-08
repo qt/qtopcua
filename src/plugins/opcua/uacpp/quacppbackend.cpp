@@ -260,6 +260,8 @@ void UACppAsyncBackend::readAttributes(uintptr_t handle, const UaNodeId &id, QOp
         for (int i = 0; i < vec.size(); ++i) {
             vec[i].statusCode = static_cast<QOpcUa::UaStatusCode>(values[i].StatusCode);
             vec[i].value = QUACppValueConverter::toQVariant(values[i].Value);
+            vec[i].serverTimestamp = QUACppValueConverter::toQDateTime(&values[i].ServerTimestamp);
+            vec[i].sourceTimestamp = QUACppValueConverter::toQDateTime(&values[i].SourceTimestamp);
         }
     }
 

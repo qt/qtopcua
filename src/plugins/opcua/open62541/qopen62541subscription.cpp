@@ -305,7 +305,15 @@ void QOpen62541Subscription::monitoredValueUpdated(UA_UInt32 monId, UA_DataValue
     auto item = m_itemIdToItemMapping.constFind(monId);
     if (item == m_itemIdToItemMapping.constEnd())
         return;
-    emit m_backend->attributeUpdated(item.value()->handle, item.value()->attr, QOpen62541ValueConverter::toQVariant(value->value));
+    QOpcUaReadResult res;
+    res.value = QOpen62541ValueConverter::toQVariant(value->value);
+    res.attributeId = item.value()->attr;
+    if (value->hasServerTimestamp)
+        res.serverTimestamp = QOpen62541ValueConverter::uaDateTimeToQDateTime(value->serverTimestamp);
+    if (value->hasSourceTimestamp)
+        res.sourceTimestamp = QOpen62541ValueConverter::uaDateTimeToQDateTime(value->sourceTimestamp);
+    res.statusCode = QOpcUa::UaStatusCode::Good;
+    emit m_backend->attributeUpdated(item.value()->handle, res);
 }
 
 double QOpen62541Subscription::interval() const

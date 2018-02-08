@@ -238,6 +238,8 @@ private slots:
 
     defineDataMethod(dateTimeConversion_data)
     void dateTimeConversion();
+    defineDataMethod(timeStamps_data)
+    void timeStamps();
 
     // This test case restarts the server. It must be run last to avoid
     // destroying state required by other test cases.
@@ -1946,6 +1948,58 @@ void Tst_QOpcUaClient::dateTimeConversion()
 
     QDateTime result = dateTimeScalarNode->attribute(QOpcUa::NodeAttribute::Value).toDateTime();
     QVERIFY(dt == result);
+}
+
+void Tst_QOpcUaClient::timeStamps()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> stringScalarNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.String"));
+
+    QVERIFY(stringScalarNode != 0);
+
+    QCOMPARE(stringScalarNode->sourceTimestamp(QOpcUa::NodeAttribute::Value).isValid(), false);
+    QCOMPARE(stringScalarNode->serverTimestamp(QOpcUa::NodeAttribute::Value).isValid(), false);
+
+    READ_MANDATORY_VARIABLE_NODE(stringScalarNode);
+
+    const QDateTime sourceRead = stringScalarNode->sourceTimestamp(QOpcUa::NodeAttribute::Value);
+    const QDateTime serverRead = stringScalarNode->serverTimestamp(QOpcUa::NodeAttribute::Value);
+
+    QVERIFY(sourceRead.isValid());
+    QVERIFY(serverRead.isValid());
+
+    QOpcUaMonitoringParameters p(100);
+    QSignalSpy monitoringEnabledSpy(stringScalarNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QSignalSpy monitoringDisabledSpy(stringScalarNode.data(), &QOpcUaNode::disableMonitoringFinished);
+    QSignalSpy dataChangeSpy(stringScalarNode.data(), &QOpcUaNode::attributeUpdated);
+
+    QTest::qWait(10); // Make sure the timestamp has a chance to change
+
+    WRITE_VALUE_ATTRIBUTE(stringScalarNode, "Reset", QOpcUa::Types::String);
+
+    stringScalarNode->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(100));
+
+    monitoringEnabledSpy.wait();
+    QCOMPARE(monitoringEnabledSpy.size(), 1);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    dataChangeSpy.wait();
+    const QDateTime sourceDataChange = stringScalarNode->sourceTimestamp(QOpcUa::NodeAttribute::Value);
+    const QDateTime serverDataChange = stringScalarNode->serverTimestamp(QOpcUa::NodeAttribute::Value);
+
+    QVERIFY(sourceDataChange.isValid());
+    QVERIFY(serverDataChange.isValid());
+    QVERIFY(sourceRead < sourceDataChange);
+    QVERIFY(serverRead < serverDataChange);
+
+    stringScalarNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
+    monitoringDisabledSpy.wait();
+    QCOMPARE(monitoringDisabledSpy.size(), 1);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
 }
 
 void Tst_QOpcUaClient::connectionLost()

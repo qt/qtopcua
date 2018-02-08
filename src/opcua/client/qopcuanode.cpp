@@ -276,7 +276,7 @@ QVariant QOpcUaNode::attribute(QOpcUa::NodeAttribute attribute) const
     if (it == d->m_nodeAttributes.constEnd())
         return QVariant();
 
-    return it->attribute;
+    return it->value;
 }
 
 /*!
@@ -294,6 +294,37 @@ QOpcUa::UaStatusCode QOpcUaNode::attributeError(QOpcUa::NodeAttribute attribute)
         return QOpcUa::UaStatusCode::BadNotFound;
 
     return it->statusCode;
+}
+
+/*!
+    Returns the source timestamp from the last read or data change of \a attribute.
+    Before at least one \l attributeRead or \l attributeUpdated signal has been emitted,
+    a null datetime is returned.
+
+*/
+QDateTime QOpcUaNode::sourceTimestamp(QOpcUa::NodeAttribute attribute) const
+{
+    Q_D(const QOpcUaNode);
+    auto it = d->m_nodeAttributes.constFind(attribute);
+    if (it == d->m_nodeAttributes.constEnd())
+        return QDateTime();
+
+    return it->sourceTimestamp;
+}
+
+/*!
+    Returns the server timestamp from the last read or data change of \a attribute.
+    Before at least one \l attributeRead or \l attributeUpdated signal has been emitted,
+    a null datetime is returned.
+*/
+QDateTime QOpcUaNode::serverTimestamp(QOpcUa::NodeAttribute attribute) const
+{
+    Q_D(const QOpcUaNode);
+    auto it = d->m_nodeAttributes.constFind(attribute);
+    if (it == d->m_nodeAttributes.constEnd())
+        return QDateTime();
+
+    return it->serverTimestamp;
 }
 
 /*!

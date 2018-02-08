@@ -334,9 +334,15 @@ void QUACppSubscription::dataChange(OpcUa_UInt32 clientSubscriptionHandle, const
         const QVariant var = QUACppValueConverter::toQVariant(dataNotifications[i].Value.Value);
         if (!m_monitoredIds.contains(monitorId))
             continue;
-        emit m_backend->attributeUpdated(m_monitoredIds[monitorId].first,
-                                         m_monitoredIds[monitorId].second,
-                                         var);
+
+        QOpcUaReadResult temp;
+        temp.value = var;
+        temp.serverTimestamp = QUACppValueConverter::toQDateTime(&dataNotifications[i].Value.ServerTimestamp);
+        temp.sourceTimestamp = QUACppValueConverter::toQDateTime(&dataNotifications[i].Value.SourceTimestamp);
+        temp.attributeId = m_monitoredIds[monitorId].second;
+        temp.statusCode = QOpcUa::UaStatusCode::Good;
+
+        emit m_backend->attributeUpdated(m_monitoredIds[monitorId].first, temp);
     }
 }
 

@@ -83,11 +83,11 @@ void QOpcUaClientImpl::handleAttributeWritten(uintptr_t handle, QOpcUa::NodeAttr
         emit (*it)->attributeWritten(attr, value, statusCode);
 }
 
-void QOpcUaClientImpl::handleAttributeUpdated(uintptr_t handle, QOpcUa::NodeAttribute attr, const QVariant &value)
+void QOpcUaClientImpl::handleAttributeUpdated(uintptr_t handle, const QOpcUaReadResult &value)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
-        emit (*it)->attributeUpdated(attr, value);
+        emit (*it)->attributeUpdated(value.attributeId, value);
 }
 
 void QOpcUaClientImpl::handleMonitoringEnableDisable(uintptr_t handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status)

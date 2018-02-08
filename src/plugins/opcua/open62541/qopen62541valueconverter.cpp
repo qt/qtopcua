@@ -325,9 +325,9 @@ template<>
 QVariant scalarToQVariant<QDateTime, UA_DateTime>(UA_DateTime *data, QMetaType::Type type)
 {
     Q_UNUSED(type)
-    // OPC-UA part 3, Table C.9
-    const QDateTime epochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
-    return QVariant(epochStart.addMSecs(*static_cast<UA_DateTime *>(data) * UA_DATETIME_TO_MSEC).toLocalTime());
+    if (!data)
+        return QVariant();
+    return QVariant(uaDateTimeToQDateTime(*data));
 }
 
 template<>
@@ -566,6 +566,16 @@ void createExtensionObject(QByteArray &data, QOpcUaBinaryDataEncoding::TypeEncod
     obj.content.encoded.body.length = data.length();
     obj.content.encoded.typeId = UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(id));
     UA_ExtensionObject_copy(&obj, ptr);
+}
+
+QDateTime uaDateTimeToQDateTime(UA_DateTime dt)
+{
+    if (!dt)
+        return QDateTime();
+
+    // OPC-UA part 3, Table C.9
+    const QDateTime epochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
+    return epochStart.addMSecs(dt * UA_DATETIME_TO_MSEC).toLocalTime();
 }
 
 }
