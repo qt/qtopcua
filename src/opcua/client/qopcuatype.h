@@ -415,6 +415,12 @@ Q_ENUM_NS(ErrorCategory)
 Q_OPCUA_EXPORT bool isSuccessStatus(QOpcUa::UaStatusCode statusCode);
 Q_OPCUA_EXPORT QOpcUa::ErrorCategory errorCategory(QOpcUa::UaStatusCode statusCode);
 
+// NodeId helpers
+Q_OPCUA_EXPORT QString nodeIdFromString(quint16 ns, const QString &identifier);
+Q_OPCUA_EXPORT QString nodeIdFromByteString(quint16 ns, const QByteArray &identifier);
+Q_OPCUA_EXPORT QString nodeIdFromGuid(quint16 ns, const QUuid &identifier);
+Q_OPCUA_EXPORT QString nodeIdFromInteger(quint16 ns, quint32 identifier);
+
 typedef QPair<QVariant, QOpcUa::Types> TypedVariant;
 
 struct QQualifiedName {

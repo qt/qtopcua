@@ -208,6 +208,8 @@ private slots:
     void methodCallInvalid();
     defineDataMethod(malformedNodeString_data)
     void malformedNodeString();
+    defineDataMethod(nodeIdGeneration_data)
+    void nodeIdGeneration();
 
     void multipleClients();
     defineDataMethod(nodeClass_data)
@@ -801,6 +803,18 @@ void Tst_QOpcUaClient::malformedNodeString()
 
     invalidNode.reset(opcuaClient->node("ns:0;i:31;"));
     QVERIFY(invalidNode == 0);
+}
+
+void Tst_QOpcUaClient::nodeIdGeneration()
+{
+    QString nodeId = QOpcUa::nodeIdFromString(1, QStringLiteral("TestString"));
+    QCOMPARE(nodeId, QStringLiteral("ns=1;s=TestString"));
+    nodeId = QOpcUa::nodeIdFromInteger(1, 10);
+    QCOMPARE(nodeId, QStringLiteral("ns=1;i=10"));
+    nodeId = QOpcUa::nodeIdFromGuid(1, QUuid("08081e75-8e5e-319b-954f-f3a7613dc29b"));
+    QCOMPARE(nodeId, QStringLiteral("ns=1;g=08081e75-8e5e-319b-954f-f3a7613dc29b"));
+    nodeId = QOpcUa::nodeIdFromByteString(1, QByteArray::fromBase64("UXQgZnR3IQ=="));
+    QCOMPARE(nodeId, QStringLiteral("ns=1;b=UXQgZnR3IQ=="));
 }
 
 void Tst_QOpcUaClient::multipleClients()
@@ -1851,8 +1865,7 @@ void Tst_QOpcUaClient::namespaceArray()
     int nsIndex = namespaces.indexOf("http://qt-project.org");
     QVERIFY(nsIndex > 0);
 
-    QString nodeId = QStringLiteral("ns=%1;s=Demo.Static.Scalar.String").arg(nsIndex);
-    QScopedPointer<QOpcUaNode> node(opcuaClient->node(nodeId));
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node(QOpcUa::nodeIdFromString(nsIndex, QStringLiteral("Demo.Static.Scalar.String"))));
     READ_MANDATORY_BASE_NODE(node);
 
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text, "ns=2;s=Demo.Static.Scalar.String");

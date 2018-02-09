@@ -36,6 +36,8 @@
 
 #include "qopcuatype.h"
 
+#include <QUuid>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -605,6 +607,42 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
         return QOpcUa::ErrorCategory::ConnectionError;
 
     return QOpcUa::ErrorCategory::UnspecifiedError;
+}
+
+/*!
+    Creates a node id string from a namespace index and a string identifier.
+    \sa QOpcUaNode
+*/
+QString QOpcUa::nodeIdFromString(quint16 ns, const QString &identifier)
+{
+    return QStringLiteral("ns=%1;s=%2").arg(ns).arg(identifier);
+}
+
+/*!
+    Creates a node id string from a namespace index and a byte string identifier.
+    \sa QOpcUaNode
+*/
+QString QOpcUa::nodeIdFromByteString(quint16 ns, const QByteArray &identifier)
+{
+    return QStringLiteral("ns=%1;b=%2").arg(ns).arg(QString::fromUtf8(identifier.toBase64()));
+}
+
+/*!
+    Creates a node id string from a namespace index and a GUID identifier.
+    \sa QOpcUaNode
+*/
+QString QOpcUa::nodeIdFromGuid(quint16 ns, const QUuid &identifier)
+{
+    return QStringLiteral("ns=%1;g=%2").arg(ns).arg(identifier.toString().midRef(1, 36)); // Remove enclosing {...};
+}
+
+/*!
+    Creates a node id string from a namespace index and a numeric identifier.
+    \sa QOpcUaNode
+*/
+QString QOpcUa::nodeIdFromInteger(quint16 ns, quint32 identifier)
+{
+    return QStringLiteral("ns=%1;i=%2").arg(ns).arg(identifier);
 }
 
 /*!
