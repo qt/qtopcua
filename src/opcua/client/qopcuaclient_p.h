@@ -77,8 +77,14 @@ public:
     void setStateAndError(QOpcUaClient::ClientState state,
                           QOpcUaClient::ClientError error = QOpcUaClient::NoError);
 
+    bool updateNamespaceArray();
+    QStringList namespaceArray() const;
+    void namespaceArrayUpdated(QOpcUa::NodeAttributes attr);
+
 private:
     Q_DECLARE_PUBLIC(QOpcUaClient)
+    QStringList m_namespaceArray;
+    QScopedPointer<QOpcUaNode> m_namespaceArrayNode;
 };
 
 QT_END_NAMESPACE

@@ -137,6 +137,12 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
+    \fn void QOpcUaClient::namespaceArrayUpdated(QStringList namespaces)
+
+    This signal is emitted after a updateNamespaceArray operation has finished.
+*/
+
+/*!
     \internal QOpcUaClientImpl is an opaque type (as seen from the public API).
     This prevents users of the public API to use this constructor (eventhough
     it is public).
@@ -213,6 +219,36 @@ QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 
     Q_D(QOpcUaClient);
     return d->m_impl->node(nodeId);
+}
+
+/*!
+    Requests an update of the namespace array from the server.
+    Returns \c true if the operation has been successfully dispatched.
+
+    The \l namespaceArrayUpdated() signal is emitted after the operation is finished.
+
+    \sa namespaceArray() namespaceArrayUpdated()
+*/
+bool QOpcUaClient::updateNamespaceArray()
+{
+    if (state() != QOpcUaClient::Connected)
+       return false;
+
+    Q_D(QOpcUaClient);
+    return d->updateNamespaceArray();
+}
+
+/*!
+    Returns the cached value of the namespace array.
+
+    The value is only valid after the \l namespaceArrayUpdated() signal has been emitted.
+
+    \sa updateNamespaceArray() namespaceArrayUpdated()
+*/
+QStringList QOpcUaClient::namespaceArray() const
+{
+    Q_D(const QOpcUaClient);
+    return d->namespaceArray();
 }
 
 /*!

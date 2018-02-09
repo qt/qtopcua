@@ -80,6 +80,9 @@ public:
     Q_INVOKABLE void disconnectFromEndpoint();
     QOpcUaNode *node(const QString &nodeId);
 
+    bool updateNamespaceArray();
+    QStringList namespaceArray() const;
+
     QUrl url() const;
 
     ClientState state() const;
@@ -92,6 +95,7 @@ Q_SIGNALS:
     void disconnected();
     void stateChanged(QOpcUaClient::ClientState state);
     void errorChanged(QOpcUaClient::ClientError error);
+    void namespaceArrayUpdated(QStringList namespaces);
 
 private:
     Q_DISABLE_COPY(QOpcUaClient)

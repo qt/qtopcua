@@ -228,6 +228,9 @@ private slots:
     defineDataMethod(stringCharset_data)
     void stringCharset();
 
+    defineDataMethod(namespaceArray_data)
+    void namespaceArray();
+
     // This test case restarts the server. It must be run last to avoid
     // destroying state required by other test cases.
     defineDataMethod(connectionLost_data)
@@ -1827,6 +1830,32 @@ void Tst_QOpcUaClient::stringCharset()
     QVERIFY(result.toList().length() == 2);
     QVERIFY(result.toList()[0].value<QOpcUa::QLocalizedText>() == lt1);
     QVERIFY(result.toList()[1].value<QOpcUa::QLocalizedText>() == lt2);
+}
+
+void Tst_QOpcUaClient::namespaceArray()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QCOMPARE(opcuaClient->namespaceArray().size(), 0);
+
+    QSignalSpy spy(opcuaClient, &QOpcUaClient::namespaceArrayUpdated);
+    QCOMPARE(opcuaClient->updateNamespaceArray(), true);
+
+    spy.wait();
+    QCOMPARE(spy.size(), 1);
+
+    QStringList namespaces = opcuaClient->namespaceArray();
+    QVERIFY(namespaces.size() == 4);
+
+    int nsIndex = namespaces.indexOf("http://qt-project.org");
+    QVERIFY(nsIndex > 0);
+
+    QString nodeId = QStringLiteral("ns=%1;s=Demo.Static.Scalar.String").arg(nsIndex);
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node(nodeId));
+    READ_MANDATORY_BASE_NODE(node);
+
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text, "ns=2;s=Demo.Static.Scalar.String");
 }
 
 void Tst_QOpcUaClient::connectionLost()
