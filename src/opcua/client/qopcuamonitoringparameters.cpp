@@ -485,7 +485,20 @@ QVariant QOpcUaMonitoringParameters::filter() const
 }
 
 /*!
+    Request \l DataChangeFilter \a filter as filter for the monitored item.
+    \sa setFilter()
+*/
+void QOpcUaMonitoringParameters::setDataChangeFilter(const QOpcUaMonitoringParameters::DataChangeFilter &filter)
+{
+    d_ptr->filter = QVariant::fromValue(filter);
+}
+
+/*!
     Request \a filter as filter for for the monitored item.
+
+    For general use, the type-safe versions that are listed below are preferred.
+
+    \sa setDataChangeFilter()
 */
 void QOpcUaMonitoringParameters::setFilter(const QVariant &filter)
 {

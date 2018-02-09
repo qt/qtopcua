@@ -242,6 +242,9 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUa:
     req.requestedParameters.queueSize = settings.queueSize() == 0 ? 1 : settings.queueSize();
     req.requestedParameters.discardOldest = settings.discardOldest();
 
+    if (settings.filter().type() == QVariant::Type::UserType && settings.filter().userType() == QMetaType::type("QOpcUaMonitoringParameters::DataChangeFilter"))
+        req.requestedParameters.filter = createFilter(settings.filter());
+
     UA_MonitoredItemCreateResult res = UA_Client_MonitoredItems_createDataChange(m_backend->m_uaclient, m_subscriptionId, UA_TIMESTAMPSTORETURN_BOTH, req, this, monitoredValueHandler, nullptr);
 
     UA_MonitoredItemCreateRequest_deleteMembers(&req);
@@ -348,6 +351,29 @@ QOpen62541Subscription::MonitoredItem *QOpen62541Subscription::getItemForAttribu
         return nullptr;
 
     return item.value();
+}
+
+UA_ExtensionObject QOpen62541Subscription::createFilter(const QVariant &filterData)
+{
+    UA_ExtensionObject obj;
+    UA_ExtensionObject_init(&obj);
+
+    if (filterData.type() == QVariant::UserType && filterData.userType() == QMetaType::type("QOpcUaMonitoringParameters::DataChangeFilter")) {
+        QOpcUaMonitoringParameters::DataChangeFilter temp = filterData.value<QOpcUaMonitoringParameters::DataChangeFilter>();
+        UA_DataChangeFilter *filter = UA_DataChangeFilter_new();
+        filter->deadbandType = static_cast<UA_UInt32>(temp.deadbandType);
+        filter->deadbandValue = temp.deadbandValue;
+        filter->trigger = static_cast<UA_DataChangeTrigger>(temp.trigger);
+        obj.encoding = UA_EXTENSIONOBJECT_DECODED;
+        obj.content.decoded.type = &UA_TYPES[UA_TYPES_DATACHANGEFILTER];
+        obj.content.decoded.data = filter;
+        return obj;
+    }
+
+    if (filterData.isValid())
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not create filter, invalid input.";
+
+    return obj;
 }
 
 QT_END_NAMESPACE

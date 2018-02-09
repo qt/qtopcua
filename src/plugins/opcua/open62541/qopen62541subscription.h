@@ -83,6 +83,7 @@ public:
 
 private:
     MonitoredItem *getItemForAttribute(uintptr_t handle, QOpcUa::NodeAttribute attr);
+    UA_ExtensionObject createFilter(const QVariant &filterData);
 
     Open62541AsyncBackend *m_backend;
     double m_interval;
