@@ -43,7 +43,7 @@ QT_BEGIN_NAMESPACE
     \ingroup modules
     \inmodule QtOpcua
 
-    \brief The QOpcUa namespace contains miscellaneous identifiers used throughout the Qt OpcUa library.
+    \brief The QOpcUa namespace contains miscellaneous identifiers used throughout the Qt OPC UA library.
 */
 
 /*!
@@ -135,7 +135,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \enum QOpcUa::Types
 
-    Enumerates the types supported by Qt OpcUa.
+    Enumerates the types supported by Qt OPC UA.
 
     \value Boolean
     \value Int32
@@ -438,7 +438,7 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
     \inmodule QtOpcUa
     \brief The OPC UA QualifiedName type
 
-    This is the QtOpcUa representation for the OPC UA QualifiedName type defined in OPC-UA part 3, 8.3.
+    This is the Qt OPC UA representation for the OPC UA QualifiedName type defined in OPC-UA part 3, 8.3.
     A QualifiedName is a name qualified by a namespace index. The namespace index corresponds to an entry in the server's namespace array.
     QualifiedName is mainly used to represent the BrowseName attribute of a node.
 */
@@ -472,7 +472,7 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
     \inmodule QtOpcUa
     \brief The OPC UA LocalizedText type
 
-    This is the QtOpcUa representation for the OPC UA LocalizedText type defined in OPC-UA part 3, 8.5.
+    This is the Qt OPC UA representation for the OPC UA LocalizedText type defined in OPC-UA part 3, 8.5.
     A LocalizedText value contains a text string with associated locale information in a second string (e. g. "en" or "en-US").
     The format of the locale information string is <language>[-<country/region>]. Language is usually given as ISO 639 two letter code,
     country/region as ISO 3166 two letter code. Custom codes are also allowed (see OPC-UA part 3, 8.4).
@@ -612,7 +612,7 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
     \inmodule QtOpcUa
     \brief The OPC UA Range type
 
-    This is the QtOpcUa representation for the OPC UA Range type defined in OPC-UA part 8, 5.6.2.
+    This is the Qt OPC UA representation for the OPC UA Range type defined in OPC-UA part 8, 5.6.2.
     It consists of two double values which mark minimum and maximum of the range.
     Ranges are mostly used to store information about acceptable values for a node.
 */
@@ -637,7 +637,7 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
     \inmodule QtOpcUa
     \brief The OPC UA EURange type
 
-    This is the QtOpcUa representation for the OPC UA EUInformation type defined in OPC-UA part 8, 5.6.3.
+    This is the Qt OPC UA representation for the OPC UA EUInformation type defined in OPC-UA part 8, 5.6.3.
     EUInformation values contain information about units and are mostly used as property of a node with a numeric value attribute.
     The information can e. g. be used to add text and tooltips to GUI elements.
 */
@@ -738,7 +738,7 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
     \inmodule QtOpcUa
     \brief The OPC UA AxisInformation type
 
-    This is the QtOpcUa representation for the OPC UA AxisInformation type defined in OPC-UA part 8, 5.6.6.
+    This is the Qt OPC UA representation for the OPC UA AxisInformation type defined in OPC-UA part 8, 5.6.6.
     It contains information about an axis which can be used for multiple purposes. A common use case could
     involve the plotting of display data. The engineering units and the title are used for the text on the plot,
     range, axisScaleType and axisSteps provide the scaling and the axis ranges of the plot.
@@ -789,7 +789,7 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
     \inmodule QtOpcUa
     \brief The OPC UA XVType
 
-    This is the QtOpcUa representation for the OPC UA XVType type defined in OPC-UA part 8, 5.6.8.
+    This is the Qt OPC UA representation for the OPC UA XVType type defined in OPC-UA part 8, 5.6.8.
     This type is used to position values of float precision on an axis with double precision.
 */
 

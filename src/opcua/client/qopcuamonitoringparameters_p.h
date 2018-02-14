@@ -91,7 +91,7 @@ public:
     quint8 priority;
     bool publishingEnabled;
 
-    // QtOpcUa specific
+    // Qt OPC UA specific
     QOpcUa::UaStatusCode statusCode;
     QOpcUaMonitoringParameters::SubscriptionType shared;
 };

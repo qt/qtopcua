@@ -237,7 +237,7 @@ QOpcUaMonitoringParameters::~QOpcUaMonitoringParameters()
 {}
 
 /*!
-    This is the constructor which covers most use cases for the QtOpcUa user.
+    This is the constructor which covers most use cases for the Qt OPC UA user.
     \a publishingInterval must be supplied, \a shared and \a subscriptionId are optional.
 */
 QOpcUaMonitoringParameters::QOpcUaMonitoringParameters(double publishingInterval, QOpcUaMonitoringParameters::SubscriptionType shared, quint32 subscriptionId)

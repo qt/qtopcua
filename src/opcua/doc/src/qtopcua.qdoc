@@ -59,12 +59,12 @@
     \code
         QT += opcua
     \endcode
-    and include the QtOpcUa headers into your files using
+    and include the Qt OPC UA headers into your files using
     \code
        #include <QtOpcUa>
     \endcode
 
-    The \l{Qt OPC UA Examples}{examples} demonstrate how to use QtOpcUa API to interact with an OPC UA server.
+    The \l{Qt OPC UA Examples}{examples} demonstrate how to use Qt OPC UA API to interact with an OPC UA server.
 
     \section1 A short introduction to OPC UA
     OPC UA is a protocol for data modelling and secure exchange of data in
@@ -76,7 +76,7 @@
 
     \section1 Implemented features from the OPC UA protocol
 
-    Following features of OPC UA are supported by QtOpcUa:
+    Following features of OPC UA are supported by Qt OPC UA:
 
     \table
     \header
@@ -110,7 +110,7 @@
     \endtable
 
     \section1 Data types
-    A subset of the OPC UA data types is currently supported in QtOpcUa.
+    A subset of the OPC UA data types is currently supported in Qt OPC UA.
     Most of them are available with both backends.
 
     \table
@@ -118,7 +118,7 @@
     \li Data type
     \li Open62541 plugin
     \li FreeOPCUA plugin
-    \li QtOpcUa data type
+    \li Qt OPC UA data type
     \row
     \li Int16 / Int32 / Int64
     \li X
@@ -237,7 +237,7 @@
     Objects of both classes are owned by the user and must be deleted when they are no longer needed.
 
     \section1 Logging categories
-    The following logging categories are used by Qt OpcUa
+    The following logging categories are used by Qt OPC UA
     \table
     \header
     \li Logging Category
