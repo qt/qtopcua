@@ -810,4 +810,10 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
     Returns \c true if this QXValue has the same value as \a other.
 */
 
+/*!
+    \fn inline uint QOpcUa::qHash(const QOpcUa::NodeAttribute& attr)
+
+    Returns a \l QHash key for \a attr.
+*/
+
 QT_END_NAMESPACE

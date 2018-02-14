@@ -99,7 +99,7 @@ static QHash<QString, QJsonObject> loadPluginMetadata()
 /*!
     \fn static QHash<QString, QJsonObject> plugins()
 
-    Returns a QHash mapping names to JSON objects containing the meta data of
+    Returns a \l QHash mapping names to JSON objects containing the meta data of
     available plugins.
 */
 static QHash<QString, QJsonObject> plugins()

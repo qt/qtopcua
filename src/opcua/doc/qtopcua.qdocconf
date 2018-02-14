@@ -47,7 +47,9 @@ examplesinstallpath = qtopcua/opcua
 depends += \
    qtcore \
    qtqml \
-   qtquick
+   qtquick \
+   qtdoc \
+   qmake
 
 Cpp.ignoretokens   += \
    Q_OPCUA_EXPORT

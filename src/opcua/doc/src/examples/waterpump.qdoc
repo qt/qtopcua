@@ -80,8 +80,8 @@
             \li Call this method to flush tank 2
     \endtable
 
-    All methods return \l QOpcUa::UaStatusCode::Good in case of success and
-    \l QOpcUa::UaStatusCode::BadUserAccessDenied if the operation is illegal
+    All methods return \l {QOpcUa::UaStatusCode} {Good} in case of success and
+    \l {QOpcUa::UaStatusCode} {BadUserAccessDenied} if the operation is illegal
     (e. g. trying to start the pump if the first tank is empty).
 
     \section1 Used features of \l QOpcUaClient

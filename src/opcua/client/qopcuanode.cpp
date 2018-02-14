@@ -189,7 +189,7 @@ QT_BEGIN_NAMESPACE
     This signal is emitted after a method call for \a methodNodeId has finished on the server.
     \a statusCode contains the status code from the method call, \a result contains the output
     arguments of the method. \a result is empty if the method has no output arguments or \a statusCode
-    is not OpcUa::UaStatusCode::Good.
+    is not \l {QOpcUa::UaStatusCode} {Good}.
 */
 
 /*!
@@ -198,8 +198,8 @@ QT_BEGIN_NAMESPACE
     This signal is emitted after a \l browseChildren() operation has finished.
 
     \a children contains information about all nodes which matched the criteria in \l browseChildren().
-    \a statusCode contains the service result of the browse operation. If \a statusCode is not QOpcUa::UaAttributeId::Good,
-    \a children is empty.
+    \a statusCode contains the service result of the browse operation. If \a statusCode is not \l {QOpcUa::UaStatusCode} {Good},
+    the passed \a children vector is empty.
     \sa QOpcUaReferenceDescription
 */
 
@@ -323,7 +323,7 @@ bool QOpcUaNode::enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonit
     Returns \c true if the asynchronous call has been successfully dispatched.
 
     After the call has finished, the \l monitoringStatusChanged signal is emitted. This signal contains the modified parameters and the status code.
-    A bad status code is generated if there is no monitored item associated with the requested attribute, revising the requested
+    A bad status code is generated if there is no monitored item associated with the requested attribute, modifying the requested
     parameter is not implemented or if the server has rejected the requested value.
 */
 bool QOpcUaNode::modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value)
@@ -476,7 +476,7 @@ bool QOpcUaNode::disableMonitoring(QOpcUa::NodeAttributes attr)
     Returns \c true if the asynchronous call has been successfully dispatched.
 
     To request only children connected to the node by a certain type of reference, \a referenceType must be set to that reference type.
-    For example, this can be  used to get all properties of a node by passing QOpcUa::ReferenceTypeId::HasProperty in \a referenceType.
+    For example, this can be  used to get all properties of a node by passing \l {QOpcUa::ReferenceTypeId} {HasProperty} in \a referenceType.
     The results can be filtered to contain only nodes with certain node classes by setting them in \a nodeClassMask.
 */
 bool QOpcUaNode::browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
