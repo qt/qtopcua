@@ -72,21 +72,20 @@ QOpen62541Subscription::~QOpen62541Subscription()
 
 UA_UInt32 QOpen62541Subscription::createOnServer()
 {
-    UA_UInt32 subscriptionId = 0;
-    UA_SubscriptionSettings settings = UA_SubscriptionSettings_default;
-    settings.requestedPublishingInterval = m_interval;
-    settings.requestedLifetimeCount = m_lifetimeCount;
-    settings.requestedMaxKeepAliveCount = m_maxKeepaliveCount;
-    settings.priority = m_priority;
-    UA_StatusCode res = UA_Client_Subscriptions_new(m_backend->m_uaclient, settings, &subscriptionId);
+    UA_CreateSubscriptionRequest req = UA_CreateSubscriptionRequest_default();
+    req.requestedPublishingInterval = m_interval;
+    req.requestedLifetimeCount = m_lifetimeCount;
+    req.requestedMaxKeepAliveCount = m_maxKeepaliveCount;
+    req.priority = m_priority;
+    UA_CreateSubscriptionResponse res = UA_Client_Subscriptions_create(m_backend->m_uaclient, req, this, NULL, NULL);
 
-    if (res != UA_STATUSCODE_GOOD) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not create subscription with interval" << m_interval << res;
+    if (res.responseHeader.serviceResult != UA_STATUSCODE_GOOD) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not create subscription with interval" << m_interval << res.responseHeader.serviceResult;
         return 0;
     }
 
-    m_subscriptionId = subscriptionId;
-    return subscriptionId;
+    m_subscriptionId = res.subscriptionId;
+    return m_subscriptionId;
 }
 
 bool QOpen62541Subscription::removeOnServer()
@@ -94,7 +93,7 @@ bool QOpen62541Subscription::removeOnServer()
     if (m_subscriptionId == 0)
         return false;
 
-    UA_StatusCode res = UA_Client_Subscriptions_remove(m_backend->m_uaclient, m_subscriptionId);
+    UA_StatusCode res = UA_Client_Subscriptions_deleteSingle(m_backend->m_uaclient, m_subscriptionId);
     m_subscriptionId = 0;
 
     for (auto it : qAsConst(m_itemIdToItemMapping)) {
@@ -272,7 +271,7 @@ bool QOpen62541Subscription::removeAttributeMonitoredItem(uintptr_t handle, QOpc
         return false;
     }
 
-    UA_StatusCode res = UA_Client_Subscriptions_removeMonitoredItem(m_backend->m_uaclient, m_subscriptionId, item->monitoredItemId);
+    UA_StatusCode res = UA_Client_MonitoredItems_deleteSingle(m_backend->m_uaclient, m_subscriptionId, item->monitoredItemId);
     if (res != UA_STATUSCODE_GOOD)
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not remove monitored item" << item->monitoredItemId << "from subscription" << m_subscriptionId << ":" << res;
 
