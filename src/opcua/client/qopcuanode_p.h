@@ -172,6 +172,14 @@ public:
             Q_Q(QOpcUaNode);
             emit q->browseFinished(children, statusCode);
         });
+
+        m_resolveBrowsePathFinishedConnection = QObject::connect(impl, &QOpcUaNodeImpl::resolveBrowsePathFinished,
+                [this](QVector<QOpcUa::QBrowsePathTarget> targets, QVector<QOpcUa::QRelativePathElement> path,
+                                                                   QOpcUa::UaStatusCode status)
+        {
+            Q_Q(QOpcUaNode);
+            emit q->resolveBrowsePathFinished(targets, path, status);
+        });
     }
 
     ~QOpcUaNodePrivate()
@@ -183,6 +191,7 @@ public:
         QObject::disconnect(m_monitoringStatusChangedConnection);
         QObject::disconnect(m_methodCallFinishedConnection);
         QObject::disconnect(m_browseFinishedConnection);
+        QObject::disconnect(m_resolveBrowsePathFinishedConnection);
     }
 
     QScopedPointer<QOpcUaNodeImpl> m_impl;
@@ -198,6 +207,7 @@ public:
     QMetaObject::Connection m_monitoringStatusChangedConnection;
     QMetaObject::Connection m_methodCallFinishedConnection;
     QMetaObject::Connection m_browseFinishedConnection;
+    QMetaObject::Connection m_resolveBrowsePathFinishedConnection;
 };
 
 QT_END_NAMESPACE

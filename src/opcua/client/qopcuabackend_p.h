@@ -89,6 +89,9 @@ Q_SIGNALS:
                            QOpcUaMonitoringParameters param);
     void browseFinished(uintptr_t handle, QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
 
+    void resolveBrowsePathFinished(uintptr_t handle, const QVector<QOpcUa::QBrowsePathTarget> &targets,
+                                     const QVector<QOpcUa::QRelativePathElement> &path, QOpcUa::UaStatusCode status);
+
 private:
     Q_DISABLE_COPY(QOpcUaBackend)
 };

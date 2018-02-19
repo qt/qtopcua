@@ -34,6 +34,7 @@ QUACppNode::QUACppNode(const UaNodeId nodeId, QUACppClient *client, const QStrin
     : m_client(client)
     , m_nodeIdString(nodeIdString)
     , m_nodeId(nodeId)
+    , m_handle(0)
 {
     m_client->registerNode(this);
 }
@@ -131,6 +132,15 @@ bool QUACppNode::callMethod(const QString &methodNodeId, const QVector<QOpcUa::T
                                      Q_ARG(UaNodeId, m_nodeId),
                                      Q_ARG(UaNodeId, methodId),
                                      Q_ARG(QVector<QOpcUa::TypedVariant>, args));
+}
+
+bool QUACppNode::resolveBrowsePath(const QVector<QOpcUa::QRelativePathElement> &path)
+{
+    return QMetaObject::invokeMethod(m_client->m_backend, "resolveBrowsePath",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(UaNodeId, m_nodeId),
+                                     Q_ARG(QVector<QOpcUa::QRelativePathElement>, path));
 }
 
 QT_END_NAMESPACE

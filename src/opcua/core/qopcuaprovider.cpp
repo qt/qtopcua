@@ -149,6 +149,10 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUa::QAxisInformation>();
     qRegisterMetaType<QOpcUa::QXValue>();
     qRegisterMetaType<QOpcUa::QExpandedNodeId>();
+    qRegisterMetaType<QOpcUa::QRelativePathElement>();
+    qRegisterMetaType<QVector<QOpcUa::QRelativePathElement>>();
+    qRegisterMetaType<QOpcUa::QBrowsePathTarget>();
+    qRegisterMetaType<QVector<QOpcUa::QBrowsePathTarget>>();
 }
 
 QOpcUaProvider::~QOpcUaProvider()

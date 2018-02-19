@@ -50,10 +50,13 @@ public:
     bool writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType) override;
     bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args) override;
 
+    bool resolveBrowsePath(const QVector<QOpcUa::QRelativePathElement> &path) override;
+
 private:
     QPointer<QUACppClient> m_client;
     QString m_nodeIdString;
     UaNodeId m_nodeId;
+    quint32 m_handle;
 };
 
 QT_END_NAMESPACE

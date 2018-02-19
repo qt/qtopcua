@@ -791,6 +791,14 @@ QString QOpcUa::nodeIdFromInteger(quint16 ns, quint32 identifier)
 }
 
 /*!
+    Creates a node id string for the reference type id \a referenceType.
+*/
+QString QOpcUa::nodeIdFromReferenceType(QOpcUa::ReferenceTypeId referenceType)
+{
+    return QStringLiteral("ns=0;i=%1").arg(static_cast<quint32>(referenceType));
+}
+
+/*!
     \class QOpcUa::QRange
     \inmodule QtOpcUa
     \brief The OPC UA Range type
@@ -1645,6 +1653,261 @@ QString QOpcUa::QExpandedNodeId::nodeId() const
 void QOpcUa::QExpandedNodeId::setNodeId(const QString &value)
 {
     data->nodeId = value;
+}
+
+/*!
+    \class QOpcUa::QRelativePathElement
+    \inmodule QtOpcUa
+    \brief The OPC UA RelativePathElement
+
+    QRelativePathElement defines an element of a relative path on an OPC UA server.
+    This is needed for resolution of browse paths to node ids in \l QOpcUaNode::resolveBrowsePath().
+*/
+
+class QOpcUa::QRelativePathElementData : public QSharedData
+{
+public:
+    QString referenceTypeId;
+    bool isInverse{false};
+    bool includeSubtypes{false};
+    QOpcUa::QQualifiedName targetName;
+};
+
+/*!
+    Constructs a relative path element with both flags set to \c false.
+*/
+QOpcUa::QRelativePathElement::QRelativePathElement()
+    : data(new QOpcUa::QRelativePathElementData())
+{
+}
+
+/*!
+    Constructs a relative path element with targetName \a target, reference type node id \a refType and both flags set to \c false.
+*/
+QOpcUa::QRelativePathElement::QRelativePathElement(const QOpcUa::QQualifiedName &target, const QString &refType)
+    : data(new QOpcUa::QRelativePathElementData())
+{
+    data->referenceTypeId = refType;
+    data->targetName = target;
+}
+
+/*!
+    Constructs a relative path element with targetName \a target, \l QOpcUa::ReferenceTypeId \a refType and both flags set to \c false.
+*/
+QOpcUa::QRelativePathElement::QRelativePathElement(const QOpcUa::QQualifiedName &target, QOpcUa::ReferenceTypeId refType)
+    : data(new QOpcUa::QRelativePathElementData())
+{
+    data->referenceTypeId = QOpcUa::nodeIdFromReferenceType(refType);
+    data->targetName = target;
+}
+
+/*!
+    Constructs a relative path element from \a rhs.
+*/
+QOpcUa::QRelativePathElement::QRelativePathElement(const QOpcUa::QRelativePathElement &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Sets the values of \a rhs in this relative path element.
+*/
+QOpcUa::QRelativePathElement &QOpcUa::QRelativePathElement::operator=(const QOpcUa::QRelativePathElement &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+/*!
+    Returns \c true if this relative path element has the same value as \a rhs.
+*/
+bool QOpcUa::QRelativePathElement::operator==(const QOpcUa::QRelativePathElement &rhs) const
+{
+    return data->includeSubtypes == rhs.includeSubtypes() &&
+            data->isInverse == rhs.isInverse() &&
+            data->referenceTypeId == rhs.referenceTypeId() &&
+            data->targetName == rhs.targetName();
+}
+
+QOpcUa::QRelativePathElement::~QRelativePathElement()
+{
+}
+
+/*!
+    Returns the qualified name of the reference's target.
+*/
+QOpcUa::QQualifiedName QOpcUa::QRelativePathElement::targetName() const
+{
+    return data->targetName;
+}
+
+/*!
+    Sets the target name to \a value, for example QOpcUa::QQualifiedName(0, "DataTypes").
+*/
+void QOpcUa::QRelativePathElement::setTargetName(const QOpcUa::QQualifiedName &value)
+{
+    data->targetName = value;
+}
+
+/*!
+    Returns the value of the includeSubtypes flag.
+*/
+bool QOpcUa::QRelativePathElement::includeSubtypes() const
+{
+    return data->includeSubtypes;
+}
+
+/*!
+    Sets the includeSubtypes flag to \a value.
+    If the flag is \c true, the lookup also follows references with subtypes of \l referenceTypeId().
+*/
+void QOpcUa::QRelativePathElement::setIncludeSubtypes(bool value)
+{
+    data->includeSubtypes = value;
+}
+
+/*!
+    Returns the value of the isInverse flag.
+*/
+bool QOpcUa::QRelativePathElement::isInverse() const
+{
+    return data->isInverse;
+}
+
+/*!
+    Sets the isInverse flag to \a value.
+    If the flag is \c true, the lookup follows the reverse reference.
+*/
+void QOpcUa::QRelativePathElement::setIsInverse(bool value)
+{
+    data->isInverse = value;
+}
+
+/*!
+    Returns the type id of the reference connecting this node to the previous node.
+*/
+QString QOpcUa::QRelativePathElement::referenceTypeId() const
+{
+    return data->referenceTypeId;
+}
+
+/*!
+    Sets the reference type id to \a value.
+*/
+void QOpcUa::QRelativePathElement::setReferenceTypeId(const QString &value)
+{
+    data->referenceTypeId = value;
+}
+
+/*!
+    Sets the reference type id to \a value.
+*/
+void QOpcUa::QRelativePathElement::setReferenceTypeId(QOpcUa::ReferenceTypeId value)
+{
+    data->referenceTypeId = QOpcUa::nodeIdFromReferenceType(value);
+}
+
+/*!
+    \class QOpcUa::QBrowsePathTarget
+    \inmodule QtOpcUa
+    \brief The OPC UA BrowsePathTarget
+
+    A BrowsePathTarget contains a target of a browse path and information about the completeness of the node id resolution.
+*/
+class QOpcUa::QBrowsePathTargetData : public QSharedData
+{
+public:
+    QOpcUa::QExpandedNodeId targetId;
+    quint32 remainingPathIndex{std::numeric_limits<quint32>::max()};
+};
+
+QOpcUa::QBrowsePathTarget::QBrowsePathTarget()
+    : data(new QOpcUa::QBrowsePathTargetData)
+{
+}
+
+/*!
+    Constructs a browse path target from \a rhs.
+*/
+QOpcUa::QBrowsePathTarget::QBrowsePathTarget(const QOpcUa::QBrowsePathTarget &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Sets the values of \a rhs in this browse path target.
+*/
+QOpcUa::QBrowsePathTarget &QOpcUa::QBrowsePathTarget::operator=(const QOpcUa::QBrowsePathTarget &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+/*!
+    Returns \c true if this browse path target has the same value as \a rhs.
+*/
+bool QOpcUa::QBrowsePathTarget::operator==(const QOpcUa::QBrowsePathTarget &rhs) const
+{
+    return data->targetId == rhs.targetId() &&
+            data->remainingPathIndex == rhs.remainingPathIndex();
+}
+
+QOpcUa::QBrowsePathTarget::~QBrowsePathTarget()
+{
+}
+
+/*!
+    Returns the index of the first unprocessed element in the browse path.
+    If the path was followed to the end, remainingPathIndex has the maximum value of quint32.
+    \sa QOpcUa::QBrowsePathTarget::targetId()
+*/
+quint32 QOpcUa::QBrowsePathTarget::remainingPathIndex() const
+{
+    return data->remainingPathIndex;
+}
+
+/*!
+    Sets the remaining path index to \a value.
+*/
+void QOpcUa::QBrowsePathTarget::setRemainingPathIndex(const quint32 &value)
+{
+    data->remainingPathIndex = value;
+}
+
+/*!
+    Returns \c true if the browse path has been fully resolved.
+*/
+bool QOpcUa::QBrowsePathTarget::isFullyResolved() const
+{
+    return (data->remainingPathIndex == std::numeric_limits<quint32>::max());
+}
+
+/*!
+    Returns the target of the last reference the server was able to follow.
+    If the reference leads to an external server, \e targetId is the id of the first node on that server.
+    \sa QOpcUa::QBrowsePathTarget::remainingPathIndex
+*/
+QOpcUa::QExpandedNodeId QOpcUa::QBrowsePathTarget::targetId() const
+{
+    return data->targetId;
+}
+
+/*!
+    Returns a reference to the target id.
+*/
+QOpcUa::QExpandedNodeId &QOpcUa::QBrowsePathTarget::targetIdRef()
+{
+    return data->targetId;
+}
+
+/*!
+    Sets the node id of the target node to \a value.
+*/
+void QOpcUa::QBrowsePathTarget::setTargetId(const QOpcUa::QExpandedNodeId &value)
+{
+    data->targetId = value;
 }
 
 QT_END_NAMESPACE

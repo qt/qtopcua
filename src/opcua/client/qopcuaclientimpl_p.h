@@ -93,6 +93,9 @@ private Q_SLOTS:
     void handleMethodCallFinished(uintptr_t handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
     void handleBrowseFinished(uintptr_t handle, const QVector<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode);
 
+    void handleResolveBrowsePathFinished(uintptr_t handle, QVector<QOpcUa::QBrowsePathTarget> targets,
+                                           QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode status);
+
 signals:
     void connected();
     void disconnected();

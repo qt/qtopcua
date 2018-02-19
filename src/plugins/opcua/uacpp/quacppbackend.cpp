@@ -454,6 +454,48 @@ void UACppAsyncBackend::callMethod(uintptr_t handle, const UaNodeId &objectId, c
     emit methodCallFinished(handle, UACppUtils::nodeIdToQString(methodId), result, static_cast<QOpcUa::UaStatusCode>(status.statusCode()));
 }
 
+void UACppAsyncBackend::resolveBrowsePath(uintptr_t handle, const UaNodeId &startNode, const QVector<QOpcUa::QRelativePathElement> &path)
+{
+    ServiceSettings settings;
+    UaDiagnosticInfos diagnosticInfos;
+    UaBrowsePaths paths;
+    UaBrowsePathResults result;
+    UaRelativePathElements pathElements;
+
+    paths.create(1);
+    startNode.copyTo(&paths[0].StartingNode);
+    pathElements.create(path.size());
+
+    for (int i = 0; i < path.size(); ++i) {
+        pathElements[i].IncludeSubtypes = path[i].includeSubtypes();
+        pathElements[i].IsInverse = path[i].isInverse();
+        UaNodeId(UACppUtils::nodeIdFromQString(path[i].referenceTypeId())).copyTo(&pathElements[i].ReferenceTypeId);
+        UaQualifiedName(UaString(path[i].targetName().name().toUtf8().constData()), path[i].targetName().namespaceIndex()).copyTo(&pathElements[i].TargetName);
+    }
+
+    paths[0].RelativePath.Elements = pathElements.detach();
+    paths[0].RelativePath.NoOfElements = path.size();
+
+    UaStatusCode serviceResult = m_nativeSession->translateBrowsePathsToNodeIds(settings, paths, result, diagnosticInfos);
+    QOpcUa::UaStatusCode status = static_cast<QOpcUa::UaStatusCode>(serviceResult.code());
+
+    QVector<QOpcUa::QBrowsePathTarget> ret;
+
+    if (status == QOpcUa::UaStatusCode::Good && result.length()) {
+        status = static_cast<QOpcUa::UaStatusCode>(result[0].StatusCode);
+        for (int i = 0; i < result[0].NoOfTargets; ++i) {
+            QOpcUa::QBrowsePathTarget temp;
+            temp.setRemainingPathIndex(result[0].Targets[i].RemainingPathIndex);
+            temp.targetIdRef().setNamespaceUri(QString::fromUtf8(UaString(result[0].Targets[i].TargetId.NamespaceUri).toUtf8()));
+            temp.targetIdRef().setServerIndex(result[0].Targets[i].TargetId.ServerIndex);
+            temp.targetIdRef().setNodeId(UACppUtils::nodeIdToQString(result[0].Targets[i].TargetId.NodeId));
+            ret.append(temp);
+        }
+    }
+
+    emit resolveBrowsePathFinished(handle, ret, path, status);
+}
+
 QUACppSubscription *UACppAsyncBackend::getSubscription(const QOpcUaMonitoringParameters &settings)
 {
     if (settings.shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared) {

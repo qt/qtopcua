@@ -421,6 +421,7 @@ Q_OPCUA_EXPORT QString nodeIdFromString(quint16 ns, const QString &identifier);
 Q_OPCUA_EXPORT QString nodeIdFromByteString(quint16 ns, const QByteArray &identifier);
 Q_OPCUA_EXPORT QString nodeIdFromGuid(quint16 ns, const QUuid &identifier);
 Q_OPCUA_EXPORT QString nodeIdFromInteger(quint16 ns, quint32 identifier);
+Q_OPCUA_EXPORT QString nodeIdFromReferenceType(QOpcUa::ReferenceTypeId referenceType);
 
 typedef QPair<QVariant, QOpcUa::Types> TypedVariant;
 
@@ -648,6 +649,59 @@ public:
 private:
     QSharedDataPointer<QOpcUa::QExpandedNodeIdData> data;
 };
+
+class QRelativePathElementData;
+class Q_OPCUA_EXPORT QRelativePathElement
+{
+public:
+    QRelativePathElement();
+    QRelativePathElement(const QOpcUa::QQualifiedName &target, const QString &refType);
+    QRelativePathElement(const QOpcUa::QQualifiedName &target, QOpcUa::ReferenceTypeId refType);
+    QRelativePathElement(const QOpcUa::QRelativePathElement &);
+    QRelativePathElement &operator=(const QOpcUa::QRelativePathElement &);
+    bool operator==(const QOpcUa::QRelativePathElement &rhs) const;
+    ~QRelativePathElement();
+
+    QString referenceTypeId() const;
+    void setReferenceTypeId(const QString &value);
+    void setReferenceTypeId(QOpcUa::ReferenceTypeId value);
+
+    bool isInverse() const;
+    void setIsInverse(bool value);
+
+    bool includeSubtypes() const;
+    void setIncludeSubtypes(bool value);
+
+    QOpcUa::QQualifiedName targetName() const;
+    void setTargetName(const QOpcUa::QQualifiedName &value);
+
+private:
+    QSharedDataPointer<QOpcUa::QRelativePathElementData> data;
+};
+
+class QBrowsePathTargetData;
+class Q_OPCUA_EXPORT QBrowsePathTarget
+{
+public:
+    QBrowsePathTarget();
+    QBrowsePathTarget(const QOpcUa::QBrowsePathTarget &);
+    QBrowsePathTarget &operator=(const QOpcUa::QBrowsePathTarget &);
+    bool operator==(const QOpcUa::QBrowsePathTarget &rhs) const;
+    ~QBrowsePathTarget();
+
+    QOpcUa::QExpandedNodeId targetId() const;
+    QOpcUa::QExpandedNodeId &targetIdRef();
+    void setTargetId(const QOpcUa::QExpandedNodeId &value);
+
+    quint32 remainingPathIndex() const;
+    void setRemainingPathIndex(const quint32 &value);
+
+    bool isFullyResolved() const;
+
+
+private:
+    QSharedDataPointer<QOpcUa::QBrowsePathTargetData> data;
+};
 }
 
 Q_DECLARE_TYPEINFO(QOpcUa::Types, Q_PRIMITIVE_TYPE);
@@ -680,5 +734,7 @@ Q_DECLARE_METATYPE(QOpcUa::QDoubleComplexNumber)
 Q_DECLARE_METATYPE(QOpcUa::QAxisInformation)
 Q_DECLARE_METATYPE(QOpcUa::QXValue)
 Q_DECLARE_METATYPE(QOpcUa::QExpandedNodeId)
+Q_DECLARE_METATYPE(QOpcUa::QRelativePathElement)
+Q_DECLARE_METATYPE(QOpcUa::QBrowsePathTarget)
 
 #endif // QOPCUATYPE

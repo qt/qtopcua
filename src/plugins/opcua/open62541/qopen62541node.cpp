@@ -159,4 +159,15 @@ bool QOpen62541Node::callMethod(const QString &methodNodeId, const QVector<QOpcU
                                      Q_ARG(QVector<QOpcUa::TypedVariant>, args));
 }
 
+bool QOpen62541Node::resolveBrowsePath(const QVector<QOpcUa::QRelativePathElement> &path)
+{
+    UA_NodeId start;
+    UA_NodeId_copy(&m_nodeId, &start);
+
+    return QMetaObject::invokeMethod(m_client->m_backend, "resolveBrowsePath", Qt::QueuedConnection,
+                                             Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                             Q_ARG(UA_NodeId, start),
+                                             Q_ARG(QVector<QOpcUa::QRelativePathElement>, path));
+}
+
 QT_END_NAMESPACE

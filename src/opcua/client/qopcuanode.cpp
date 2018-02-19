@@ -204,6 +204,16 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn void QOpcUaNode::resolveBrowsePathFinished(QVector<QOpcUa::QBrowsePathTarget> targets, QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode status)
+
+    This signal is emitted after a \l resolveBrowsePath() call has finished.
+
+    \l QOpcUa::QBrowsePathTarget \a targets contains the matches, \a status is the status code of the operation.
+    If \a status is not \l {QOpcUa::UaStatusCode} {Good}, \a targets is empty.
+    The browse path \a path is the browse path from the request. It can be used to associate results with requests.
+*/
+
+/*!
     \fn QOpcUa::NodeAttributes QOpcUaNode::mandatoryBaseAttributes()
 
     Contains all mandatory attributes of the OPC UA base node class.
@@ -567,6 +577,62 @@ bool QOpcUaNode::callMethod(const QString &methodNodeId, const QVector<QOpcUa::T
         return false;
 
     return d->m_impl->callMethod(methodNodeId, args);
+}
+
+/*!
+    Resolves the browse path \a path to one or more node ids starting from this node
+    using the TranslateBrowsePathsToNodeIds service specified in OPC-UA part 4, 5.8.4.
+
+    Returns \c true if the asynchronous call has been successfully dispatched.
+
+    TranslateBrowsePathsToNodeIds is mainly used to program against type definitions instead of a concrete set of
+    nodes in the OPC UA address space.
+    For example, a type definition for a machine model could consist of a starting node with browse name "Machine"
+    which has a component with browse name "Fan". Fan has a component with browse name "RPM" which is a Variable node
+    holding the current RPM value of the fan. There are multiple machines of that type and each of these machines is
+    mapped into the OPC UA address space as an object of the machine type.
+    For each of these machine objects, the path from the machine node to the "RPM" node is the same. If a client wants
+    to read the current RPM value, it needs to call \l resolveBrowsePath() with the machine node as starting node
+    and the browse path from the machine to the "RPM" node:
+
+    \code
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=1;s=machine1"));
+
+    QVector<QOpcUa::QRelativePathElement> path;
+    path.append(QOpcUa::QRelativePathElement(QOpcUa::QQualifiedName(1, "Fan"), QOpcUa::ReferenceTypeId::HasComponent));
+    path.append(QOpcUa::QRelativePathElement(QOpcUa::QQualifiedName(1, "RPM"), QOpcUa::ReferenceTypeId::HasComponent));
+    node->resolveBrowsePath(path);
+    \endcode
+
+    The result returned in \l resolveBrowsePathFinished() contains the node id of the "RPM" node which can be
+    used to access the node's attributes:
+
+    \code
+    if (!results.size()) {
+        qWarning() << "Browse path resolution failed";
+        return;
+    }
+
+    if (results.at(0).isFullyResolved()) {
+       QOpcUaNode *rpmNode = client->node(results.at(0).targetId());
+       if (!rpmNode) {
+           qWarning() << "Failed to create node";
+           return;
+       }
+       // Connect slots, call methods
+    } else {
+        qWarning() << "Browse path could not be fully resolved, the target node is on another server";
+        return;
+    }
+    \endcode
+*/
+bool QOpcUaNode::resolveBrowsePath(const QVector<QOpcUa::QRelativePathElement> &path)
+{
+    Q_D(QOpcUaNode);
+    if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
+        return 0;
+
+    return d->m_impl->resolveBrowsePath(path);
 }
 
 QDebug operator<<(QDebug dbg, const QOpcUaNode &node)

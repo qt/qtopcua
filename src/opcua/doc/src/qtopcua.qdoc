@@ -124,6 +124,10 @@
     \li Method calls
     \li X
     \li X
+    \row
+    \li Browse path resolution
+    \li X
+    \li X
     \endtable
 
     \section1 Data types

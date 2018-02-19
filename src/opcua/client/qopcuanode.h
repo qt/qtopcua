@@ -92,6 +92,8 @@ public:
 
     bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args = QVector<QOpcUa::TypedVariant>());
 
+    bool resolveBrowsePath(const QVector<QOpcUa::QRelativePathElement> &path);
+
 Q_SIGNALS:
     void attributeRead(QOpcUa::NodeAttributes attributes);
     void attributeWritten(QOpcUa::NodeAttribute attribute, QOpcUa::UaStatusCode statusCode);
@@ -103,6 +105,8 @@ Q_SIGNALS:
     void disableMonitoringFinished(QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode);
     void methodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
     void browseFinished(QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
+    void resolveBrowsePathFinished(QVector<QOpcUa::QBrowsePathTarget> targets,
+                                     QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode status);
 
 private:
     Q_DISABLE_COPY(QOpcUaNode)

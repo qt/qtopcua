@@ -355,6 +355,51 @@ void Open62541AsyncBackend::callMethod(uintptr_t handle, UA_NodeId objectId, UA_
     UA_NodeId_deleteMembers(&methodId);
 }
 
+void Open62541AsyncBackend::resolveBrowsePath(uintptr_t handle, UA_NodeId startNode, const QVector<QOpcUa::QRelativePathElement> &path)
+{
+    UA_TranslateBrowsePathsToNodeIdsRequest req;
+    UA_TranslateBrowsePathsToNodeIdsRequest_init(&req);
+    req.browsePathsSize = 1;
+    req.browsePaths = UA_BrowsePath_new();
+    UA_BrowsePath_init(req.browsePaths);
+    req.browsePaths->startingNode = startNode;
+    req.browsePaths->relativePath.elementsSize = path.size();
+    req.browsePaths->relativePath.elements = static_cast<UA_RelativePathElement *>(UA_Array_new(path.size(), &UA_TYPES[UA_TYPES_RELATIVEPATHELEMENT]));
+
+    for (int i = 0 ; i < path.size(); ++i) {
+        req.browsePaths->relativePath.elements[i].includeSubtypes = path[i].includeSubtypes();
+        req.browsePaths->relativePath.elements[i].isInverse = path[i].isInverse();
+        req.browsePaths->relativePath.elements[i].referenceTypeId = Open62541Utils::nodeIdFromQString(path[i].referenceTypeId());
+        req.browsePaths->relativePath.elements[i].targetName = UA_QUALIFIEDNAME_ALLOC(path[i].targetName().namespaceIndex(),
+                                                                                      path[i].targetName().name().toUtf8().constData());
+    }
+
+    UA_TranslateBrowsePathsToNodeIdsResponse res = UA_Client_Service_translateBrowsePathsToNodeIds(m_uaclient, req);
+
+    UA_TranslateBrowsePathsToNodeIdsRequest_deleteMembers(&req);
+
+    if (res.responseHeader.serviceResult != UA_STATUSCODE_GOOD || res.resultsSize != 1) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Translate browse path failed:" << UA_StatusCode_name(res.responseHeader.serviceResult);
+        emit resolveBrowsePathFinished(handle, QVector<QOpcUa::QBrowsePathTarget>(), path,
+                                         static_cast<QOpcUa::UaStatusCode>(res.responseHeader.serviceResult));
+        return;
+    }
+
+    QVector<QOpcUa::QBrowsePathTarget> ret;
+    for (size_t i = 0; i < res.results[0].targetsSize ; ++i) {
+        QOpcUa::QBrowsePathTarget temp;
+        temp.setRemainingPathIndex(res.results[0].targets[i].remainingPathIndex);
+        temp.targetIdRef().setNamespaceUri(QString::fromUtf8(reinterpret_cast<char *>(res.results[0].targets[i].targetId.namespaceUri.data)));
+        temp.targetIdRef().setServerIndex(res.results[0].targets[i].targetId.serverIndex);
+        temp.targetIdRef().setNodeId(Open62541Utils::nodeIdToQString(res.results[0].targets[i].targetId.nodeId));
+        ret.append(temp);
+    }
+
+    emit resolveBrowsePathFinished(handle, ret, path, static_cast<QOpcUa::UaStatusCode>(res.results[0].statusCode));
+
+    UA_TranslateBrowsePathsToNodeIdsResponse_deleteMembers(&res);
+}
+
 static void convertBrowseResult(UA_BrowseResult *src, quint32 referencesSize, QVector<QOpcUaReferenceDescription> &dst)
 {
     if (!src)

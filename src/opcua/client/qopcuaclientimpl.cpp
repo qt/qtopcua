@@ -67,6 +67,7 @@ void QOpcUaClientImpl::connectBackendWithClient(QOpcUaBackend *backend)
     connect(backend, &QOpcUaBackend::monitoringStatusChanged, this, &QOpcUaClientImpl::handleMonitoringStatusChanged);
     connect(backend, &QOpcUaBackend::methodCallFinished, this, &QOpcUaClientImpl::handleMethodCallFinished);
     connect(backend, &QOpcUaBackend::browseFinished, this, &QOpcUaClientImpl::handleBrowseFinished);
+    connect(backend, &QOpcUaBackend::resolveBrowsePathFinished, this, &QOpcUaClientImpl::handleResolveBrowsePathFinished);
 }
 
 void QOpcUaClientImpl::handleAttributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
@@ -116,6 +117,14 @@ void QOpcUaClientImpl::handleBrowseFinished(uintptr_t handle, const QVector<QOpc
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
         emit (*it)->browseFinished(children, statusCode);
+}
+
+void QOpcUaClientImpl::handleResolveBrowsePathFinished(uintptr_t handle, QVector<QOpcUa::QBrowsePathTarget> targets,
+                                                         QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode status)
+{
+    auto it = m_handles.constFind(handle);
+    if (it != m_handles.constEnd() && !it->isNull())
+        emit (*it)->resolveBrowsePathFinished(targets, path, status);
 }
 
 QT_END_NAMESPACE

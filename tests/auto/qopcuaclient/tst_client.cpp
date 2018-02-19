@@ -261,6 +261,8 @@ private slots:
 
     defineDataMethod(createNodeFromExpandedId_data)
     void createNodeFromExpandedId();
+    defineDataMethod(resolveBrowsePath_data)
+    void resolveBrowsePath();
 
     // This test case restarts the server. It must be run last to avoid
     // destroying state required by other test cases.
@@ -920,6 +922,8 @@ void Tst_QOpcUaClient::nodeIdGeneration()
     QCOMPARE(nodeId, QStringLiteral("ns=1;g=08081e75-8e5e-319b-954f-f3a7613dc29b"));
     nodeId = QOpcUa::nodeIdFromByteString(1, QByteArray::fromBase64("UXQgZnR3IQ=="));
     QCOMPARE(nodeId, QStringLiteral("ns=1;b=UXQgZnR3IQ=="));
+    nodeId = QOpcUa::nodeIdFromReferenceType(QOpcUa::ReferenceTypeId::HasComponent);
+    QCOMPARE(nodeId, QStringLiteral("ns=0;i=47"));
 }
 
 void Tst_QOpcUaClient::multipleClients()
@@ -2365,6 +2369,35 @@ void Tst_QOpcUaClient::createNodeFromExpandedId()
     id.setNamespaceUri(QStringLiteral("InvalidNamespace"));
     node.reset(opcuaClient->node(id));
     QVERIFY(node == nullptr);
+}
+
+void Tst_QOpcUaClient::resolveBrowsePath()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> typesNode(opcuaClient->node("ns=0;i=86"));
+    QVERIFY(typesNode != 0);
+
+    QSignalSpy spy(typesNode.data(), &QOpcUaNode::resolveBrowsePathFinished);
+
+    QVector<QOpcUa::QRelativePathElement> path;
+    const QString referenceTypeId = QOpcUa::nodeIdFromReferenceType(QOpcUa::ReferenceTypeId::Organizes);
+    path.append(QOpcUa::QRelativePathElement(QOpcUa::QQualifiedName(0, "DataTypes"), referenceTypeId));
+    path.append(QOpcUa::QRelativePathElement(QOpcUa::QQualifiedName(0, "BaseDataType"), referenceTypeId));
+    bool success = typesNode->resolveBrowsePath(path);
+    QVERIFY(success == true);
+
+    spy.wait();
+    QCOMPARE(spy.size(), 1);
+    QVector<QOpcUa::QBrowsePathTarget> results = spy.at(0).at(0).value<QVector<QOpcUa::QBrowsePathTarget>>();
+    QCOMPARE(results.size(), 1);
+    QCOMPARE(results.at(0).remainingPathIndex(), std::numeric_limits<quint32>::max());
+    QCOMPARE(results.at(0).targetId().nodeId(), QStringLiteral("ns=0;i=24"));
+    QVERIFY(results.at(0).targetId().namespaceUri().isEmpty());
+    QCOMPARE(results.at(0).targetId().serverIndex(), 0U);
+    QCOMPARE(spy.at(0).at(1).value<QVector<QOpcUa::QRelativePathElement>>(), path);
+    QCOMPARE(spy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
 }
 
 void Tst_QOpcUaClient::connectionLost()

@@ -85,6 +85,8 @@ public:
 
     virtual bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args) = 0;
 
+    virtual bool resolveBrowsePath(const QVector<QOpcUa::QRelativePathElement> &path) = 0;
+
 Q_SIGNALS:
     void attributesRead(QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
     void attributeWritten(QOpcUa::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode);
@@ -95,6 +97,8 @@ Q_SIGNALS:
     void monitoringStatusChanged(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                            QOpcUaMonitoringParameters param);
     void methodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
+    void resolveBrowsePathFinished(QVector<QOpcUa::QBrowsePathTarget> targets,
+                                     QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode status);
 };
 
 QT_END_NAMESPACE
