@@ -385,6 +385,18 @@ QOpcUaMonitoringParameters QOpcUaNode::monitoringStatus(QOpcUa::NodeAttribute at
 }
 
 /*!
+    Modifies an existing data change monitoring to use \a filter as data change filter.
+
+    Returns \c true if the filter modification request has been successfully dispatched to the backend.
+
+    \l monitoringStatusChanged for \a attr is emitted after the operation has finished.
+*/
+bool QOpcUaNode::modifyDataChangeFilter(QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::DataChangeFilter &filter)
+{
+    return modifyMonitoring(attr, QOpcUaMonitoringParameters::Parameter::Filter, QVariant::fromValue(filter));
+}
+
+/*!
     Writes \a value to the attribute given in \a attribute using the type information from \a type.
     Returns \c true if the asynchronous call has been successfully dispatched.
 

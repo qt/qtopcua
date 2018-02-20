@@ -82,6 +82,7 @@ public:
     bool disableMonitoring(QOpcUa::NodeAttributes attr);
     bool modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value);
     QOpcUaMonitoringParameters monitoringStatus(QOpcUa::NodeAttribute attr);
+    bool modifyDataChangeFilter(QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::DataChangeFilter &filter);
 
     bool browseChildren(QOpcUa::ReferenceTypeId referenceType = QOpcUa::ReferenceTypeId::HierarchicalReferences,
                         QOpcUa::NodeClasses nodeClassMask = QOpcUa::NodeClass::Undefined);

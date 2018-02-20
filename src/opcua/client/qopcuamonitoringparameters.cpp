@@ -108,31 +108,31 @@ QT_BEGIN_NAMESPACE
     \li X
     \row
     \li PublishingEnabled
-    \li
+    \li X
     \li
     \row
     \li Filter
-    \li
+    \li X
     \li
     \row
     \li QueueSize
-    \li
+    \li X
     \li
     \row
     \li DiscardOldest
-    \li
+    \li X
     \li
     \row
     \li MonitoringMode
-    \li
+    \li X
     \li
     \row
     \li IndexRange
-    \li
+    \li X
     \li
     \row
     \li MaxNotificationsPerPublish
-    \li
+    \li X
     \li
     \endtable
 */

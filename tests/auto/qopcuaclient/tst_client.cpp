@@ -231,6 +231,13 @@ private slots:
     void subscriptionIndexRange();
     defineDataMethod(subscriptionDataChangeFilter_data)
     void subscriptionDataChangeFilter();
+    defineDataMethod(modifyPublishingMode_data)
+    void modifyPublishingMode();
+    defineDataMethod(modifyMonitoringMode_data)
+    void modifyMonitoringMode();
+    defineDataMethod(modifyMonitoredItem_data)
+    void modifyMonitoredItem();
+
 
     defineDataMethod(stringCharset_data)
     void stringCharset();
@@ -670,20 +677,6 @@ void Tst_QOpcUaClient::dataChangeSubscription()
 
         QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::Value).publishingInterval(),  200.0);
         QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::DisplayName).publishingInterval(), 200.0);
-
-        monitoringModifiedSpy.clear();
-        QOpcUaMonitoringParameters::DataChangeFilter filter;
-        filter.deadbandType = QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType::Absolute;
-        filter.trigger = QOpcUaMonitoringParameters::DataChangeFilter::DataChangeTrigger::StatusValue;
-        filter.deadbandValue = 10;
-        node->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::Filter, QVariant::fromValue(filter));
-        monitoringModifiedSpy.wait();
-        QVERIFY(monitoringModifiedSpy.size() == 1);
-        QVERIFY(monitoringModifiedSpy.at(0).at(0).value<QOpcUa::NodeAttribute>() == QOpcUa::NodeAttribute::Value);
-        QVERIFY(monitoringModifiedSpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>() & QOpcUaMonitoringParameters::Parameter::Filter);
-        QEXPECT_FAIL("", "Modifying monitored items is not yet supported by open62541/uacpp", Continue);
-        QVERIFY(monitoringModifiedSpy.at(0).at(2).value<QOpcUa::UaStatusCode>() == QOpcUa::UaStatusCode::Good);
-
     } else {
         qDebug() << "Modifying monitoring settings is not supported by the freeopcua backend";
     }
@@ -1869,15 +1862,11 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
     QVERIFY(doubleNode != 0);
 
     QOpcUaMonitoringParameters p(100);
-    QOpcUaMonitoringParameters::DataChangeFilter filter;
-    filter.deadbandType = QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType::Absolute;
-    filter.trigger = QOpcUaMonitoringParameters::DataChangeFilter::DataChangeTrigger::StatusValue;
-    filter.deadbandValue = 1.0;
-    p.setDataChangeFilter(filter);
 
     QSignalSpy monitoringEnabledSpy(doubleNode.data(), &QOpcUaNode::enableMonitoringFinished);
     QSignalSpy monitoringDisabledSpy(doubleNode.data(), &QOpcUaNode::disableMonitoringFinished);
     QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::attributeUpdated);
+    QSignalSpy monitoringModifiedSpy(doubleNode.data(), &QOpcUaNode::monitoringStatusChanged);
 
     WRITE_VALUE_ATTRIBUTE(doubleNode, 1.0, QOpcUa::Types::Double);
 
@@ -1894,13 +1883,201 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
     WRITE_VALUE_ATTRIBUTE(doubleNode, 1.5, QOpcUa::Types::Double);
 
     dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 1); // Data change without filter
+    QCOMPARE(doubleNode->attribute(QOpcUa::NodeAttribute::Value), 1.5);
+    dataChangeSpy.clear();
+
+    QOpcUaMonitoringParameters::DataChangeFilter filter;
+    filter.deadbandType = QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType::Absolute;
+    filter.trigger = QOpcUaMonitoringParameters::DataChangeFilter::DataChangeTrigger::StatusValue;
+    filter.deadbandValue = 1.0;
+    doubleNode->modifyDataChangeFilter(QOpcUa::NodeAttribute::Value, filter);
+    monitoringModifiedSpy.wait();
+    QVERIFY(monitoringModifiedSpy.size() == 1);
+    QVERIFY(monitoringModifiedSpy.at(0).at(0).value<QOpcUa::NodeAttribute>() == QOpcUa::NodeAttribute::Value);
+    QVERIFY(monitoringModifiedSpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>() & QOpcUaMonitoringParameters::Parameter::Filter);
+    QVERIFY(monitoringModifiedSpy.at(0).at(2).value<QOpcUa::UaStatusCode>() == QOpcUa::UaStatusCode::Good);
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 2.0, QOpcUa::Types::Double);
+
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 0); // Filter is active and delta is < 1
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 3.0, QOpcUa::Types::Double);
+
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 1); // delta == 1, a data change is expected
+    QCOMPARE(doubleNode->attribute(QOpcUa::NodeAttribute::Value), 3.0);
+
+    doubleNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
+    monitoringDisabledSpy.wait();
+    QCOMPARE(monitoringDisabledSpy.size(), 1);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+}
+
+void Tst_QOpcUaClient::modifyPublishingMode()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    if (opcuaClient->backend() == QLatin1String("freeopcua"))
+        QSKIP("Modification of monitoring is not supported in the freeopcua plugin");
+    if (opcuaClient->backend() == QLatin1String("uacpp"))
+        QSKIP("Modification of monitoring is not supported in the unified automation plugin");
+
+    QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
+    QVERIFY(doubleNode != 0);
+
+    QOpcUaMonitoringParameters p(100);
+
+    QSignalSpy monitoringEnabledSpy(doubleNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QSignalSpy monitoringDisabledSpy(doubleNode.data(), &QOpcUaNode::disableMonitoringFinished);
+    QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::attributeUpdated);
+    QSignalSpy monitoringStatusSpy(doubleNode.data(), &QOpcUaNode::monitoringStatusChanged);
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 1.0, QOpcUa::Types::Double);
+
+    doubleNode->enableMonitoring(QOpcUa::NodeAttribute::Value, p);
+    monitoringEnabledSpy.wait();
+    QCOMPARE(monitoringEnabledSpy.size(), 1);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    dataChangeSpy.wait(); // Wait for the initial data change
+    QCOMPARE(dataChangeSpy.size(), 1);
+    dataChangeSpy.clear();
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 1.5, QOpcUa::Types::Double);
+
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 1);
+    dataChangeSpy.clear();
+
+    doubleNode->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::PublishingEnabled, false);
+    monitoringStatusSpy.wait();
+    QCOMPARE(monitoringStatusSpy.size(), 1);
+    QCOMPARE(monitoringStatusSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 3.0, QOpcUa::Types::Double);
+
+    dataChangeSpy.wait();
     QCOMPARE(dataChangeSpy.size(), 0);
+
+    doubleNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
+    monitoringDisabledSpy.wait();
+    QCOMPARE(monitoringDisabledSpy.size(), 1);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+}
+
+void Tst_QOpcUaClient::modifyMonitoringMode()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    if (opcuaClient->backend() == QLatin1String("freeopcua"))
+        QSKIP("Modification of monitoring is not supported in the freeopcua plugin");
+    if (opcuaClient->backend() == QLatin1String("uacpp"))
+        QSKIP("Modification of monitoring is not supported in the unified automation plugin");
+
+    QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
+    QVERIFY(doubleNode != 0);
+
+    QOpcUaMonitoringParameters p(100);
+
+    QSignalSpy monitoringEnabledSpy(doubleNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QSignalSpy monitoringDisabledSpy(doubleNode.data(), &QOpcUaNode::disableMonitoringFinished);
+    QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::attributeUpdated);
+    QSignalSpy monitoringStatusSpy(doubleNode.data(), &QOpcUaNode::monitoringStatusChanged);
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 1.0, QOpcUa::Types::Double);
+
+    doubleNode->enableMonitoring(QOpcUa::NodeAttribute::Value, p);
+    monitoringEnabledSpy.wait();
+    QCOMPARE(monitoringEnabledSpy.size(), 1);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    dataChangeSpy.wait(); // Wait for the initial data change
+    QCOMPARE(dataChangeSpy.size(), 1);
+    dataChangeSpy.clear();
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 1.5, QOpcUa::Types::Double);
+
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 1);
+    dataChangeSpy.clear();
+
+    doubleNode->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::MonitoringMode,
+                                 QVariant::fromValue(QOpcUaMonitoringParameters::MonitoringMode::Disabled));
+    monitoringStatusSpy.wait();
+    QCOMPARE(monitoringStatusSpy.size(), 1);
+    QCOMPARE(monitoringStatusSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 3.0, QOpcUa::Types::Double);
+
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 0);
+
+    doubleNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
+    monitoringDisabledSpy.wait();
+    QCOMPARE(monitoringDisabledSpy.size(), 1);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+}
+
+void Tst_QOpcUaClient::modifyMonitoredItem()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    if (opcuaClient->backend() == QLatin1String("freeopcua"))
+        QSKIP("Modification of monitoring is not supported in the freeopcua plugin");
+    if (opcuaClient->backend() == QLatin1String("uacpp"))
+        QSKIP("Modification of monitoring is not supported in the unified automation plugin");
+
+
+    QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
+    QVERIFY(doubleNode != 0);
+
+    QOpcUaMonitoringParameters p(100);
+
+    QSignalSpy monitoringEnabledSpy(doubleNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QSignalSpy monitoringDisabledSpy(doubleNode.data(), &QOpcUaNode::disableMonitoringFinished);
+    QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::attributeUpdated);
+    QSignalSpy monitoringStatusSpy(doubleNode.data(), &QOpcUaNode::monitoringStatusChanged);
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 1.0, QOpcUa::Types::Double);
+
+    doubleNode->enableMonitoring(QOpcUa::NodeAttribute::Value, p);
+    monitoringEnabledSpy.wait();
+    QCOMPARE(monitoringEnabledSpy.size(), 1);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    dataChangeSpy.wait(); // Wait for the initial data change
+    QCOMPARE(dataChangeSpy.size(), 1);
+    dataChangeSpy.clear();
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 1.5, QOpcUa::Types::Double);
+
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 1);
+    QCOMPARE(dataChangeSpy.at(0).at(1).value<double>(), 1.5);
+    dataChangeSpy.clear();
+
+    doubleNode->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::SamplingInterval, 50.0);
+    monitoringStatusSpy.wait();
+    QCOMPARE(monitoringStatusSpy.size(), 1);
+    QCOMPARE(monitoringStatusSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(monitoringStatusSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QVERIFY(monitoringStatusSpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>() & QOpcUaMonitoringParameters::Parameter::SamplingInterval);
 
     WRITE_VALUE_ATTRIBUTE(doubleNode, 3.0, QOpcUa::Types::Double);
 
     dataChangeSpy.wait();
     QCOMPARE(dataChangeSpy.size(), 1);
-    QCOMPARE(doubleNode->attribute(QOpcUa::NodeAttribute::Value), 3.0);
 
     doubleNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
     monitoringDisabledSpy.wait();

@@ -164,5 +164,6 @@ Q_DECLARE_METATYPE(QOpcUaMonitoringParameters::DataChangeFilter::DataChangeTrigg
 Q_DECLARE_METATYPE(QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType)
 Q_DECLARE_METATYPE(QOpcUaMonitoringParameters::Parameter)
 Q_DECLARE_METATYPE(QOpcUaMonitoringParameters::Parameters)
+Q_DECLARE_METATYPE(QOpcUaMonitoringParameters::MonitoringMode)
 
 #endif // QOPCUAMONITORINGPARAMETERS_H
