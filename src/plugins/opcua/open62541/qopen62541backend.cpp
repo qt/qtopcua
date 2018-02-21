@@ -226,9 +226,16 @@ void Open62541AsyncBackend::enableMonitoring(uintptr_t handle, UA_NodeId id, QOp
     }
 
     qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attribute){
-        bool success = usedSubscription->addAttributeMonitoredItem(handle, attribute, id, settings);
-        if (success)
-            m_attributeMapping[handle][attribute] = usedSubscription;
+        if (getSubscriptionForItem(handle, attribute)) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Monitored item for" << attribute << "has already been created";
+            QOpcUaMonitoringParameters s;
+            s.setStatusCode(QOpcUa::UaStatusCode::BadEntryExists);
+            emit monitoringEnableDisable(handle, attribute, true, s);
+        } else {
+            bool success = usedSubscription->addAttributeMonitoredItem(handle, attribute, id, settings);
+            if (success)
+                m_attributeMapping[handle][attribute] = usedSubscription;
+        }
     });
 
     if (usedSubscription->monitoredItemsCount() == 0)

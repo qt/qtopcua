@@ -316,9 +316,16 @@ void QFreeOpcUaWorker::enableMonitoring(uintptr_t handle, OpcUa::Node node, QOpc
     }
 
     qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attr) {
-        bool success = usedSubscription->addAttributeMonitoredItem(handle, attr, node, settings);
-        if (success)
-            m_attributeMapping[handle][attr] = usedSubscription;
+        if (getSubscriptionForItem(handle, attr)) {
+            qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Monitored item for" << attr << "has already been created";
+            QOpcUaMonitoringParameters s;
+            s.setStatusCode(QOpcUa::UaStatusCode::BadEntryExists);
+            emit monitoringEnableDisable(handle, attr, true, s);
+        } else {
+            bool success = usedSubscription->addAttributeMonitoredItem(handle, attr, node, settings);
+            if (success)
+                m_attributeMapping[handle][attr] = usedSubscription;
+        }
     });
 
     if (usedSubscription->monitoredItemsCount() == 0)

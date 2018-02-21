@@ -372,9 +372,16 @@ void UACppAsyncBackend::enableMonitoring(uintptr_t handle, const UaNodeId &id, Q
     }
 
     qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attribute){
-        bool success = usedSubscription->addAttributeMonitoredItem(handle, attribute, id, settings);
-        if (success)
-            m_attributeMapping[handle][attribute] = usedSubscription;
+        if (getSubscriptionForItem(handle, attribute)) {
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Monitored item for" << attribute << "has already been created";
+            QOpcUaMonitoringParameters s;
+            s.setStatusCode(QOpcUa::UaStatusCode::BadEntryExists);
+            emit monitoringEnableDisable(handle, attribute, true, s);
+        } else {
+            bool success = usedSubscription->addAttributeMonitoredItem(handle, attribute, id, settings);
+            if (success)
+                m_attributeMapping[handle][attribute] = usedSubscription;
+        }
     });
 
     if (usedSubscription->monitoredItemsCount() == 0)

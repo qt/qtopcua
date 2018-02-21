@@ -113,7 +113,8 @@ public:
                 [this](QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status)
         {
             if (subscribe == true) {
-                m_monitoringStatus[attr] = status;
+                if (status.statusCode() != QOpcUa::UaStatusCode::BadEntryExists) // Don't overwrite a valid entry
+                    m_monitoringStatus[attr] = status;
                 Q_Q(QOpcUaNode);
                 emit q->enableMonitoringFinished(attr, status.statusCode());
             }
