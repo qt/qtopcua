@@ -269,6 +269,7 @@ QFreeOpcUaSubscription *QFreeOpcUaWorker::getSubscription(const QOpcUaMonitoring
         delete sub;
         return nullptr;
     }
+    QObject::connect(sub, &QFreeOpcUaSubscription::timeout, this, &QFreeOpcUaWorker::handleSubscriptionTimeout, Qt::QueuedConnection);
     m_subscriptions[id] = sub;
     return sub;
 }
@@ -409,6 +410,18 @@ void QFreeOpcUaWorker::callMethod(uintptr_t handle, OpcUa::NodeId objectId, OpcU
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Method call failed: " << ex.what();
         emit methodCallFinished(handle, QFreeOpcUaValueConverter::nodeIdToString(methodId), QVariant(), QFreeOpcUaValueConverter::exceptionToStatusCode(ex));
     }
+}
+
+void QFreeOpcUaWorker::handleSubscriptionTimeout(QFreeOpcUaSubscription *sub, QVector<QPair<uintptr_t, QOpcUa::NodeAttribute> > items)
+{
+    for (auto it : items) {
+        auto item = m_attributeMapping.find(it.first);
+        if (item == m_attributeMapping.end())
+            continue;
+        item->remove(it.second);
+    }
+    m_subscriptions.remove(sub->subscriptionId());
+    delete sub;
 }
 
 QT_END_NAMESPACE

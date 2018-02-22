@@ -50,6 +50,7 @@ QFreeOpcUaSubscription::QFreeOpcUaSubscription(QFreeOpcUaWorker *backend, const 
     : m_interval(settings.publishingInterval())
     , m_shared(settings.shared())
     , m_backend(backend)
+    , m_timeout(false)
 {
     Q_ASSERT(m_backend);
 }
@@ -90,7 +91,7 @@ bool QFreeOpcUaSubscription::removeOnServer()
 
     for (auto it : qAsConst(m_itemIdToItemMapping)) {
         QOpcUaMonitoringParameters s;
-        s.setStatusCode(QOpcUa::UaStatusCode::BadDisconnect);
+        s.setStatusCode(m_timeout ? QOpcUa::UaStatusCode::BadTimeout : QOpcUa::UaStatusCode::BadDisconnect);
         emit m_backend->monitoringEnableDisable(it->handle, it->attr, false, s);
     }
 
@@ -104,8 +105,17 @@ bool QFreeOpcUaSubscription::removeOnServer()
 
 void QFreeOpcUaSubscription::StatusChange(OpcUa::StatusCode status)
 {
-    if (status == OpcUa::StatusCode::BadDisconnect)
-        removeOnServer();
+    if (status != OpcUa::StatusCode::BadTimeout)
+        return;
+
+    QVector<QPair<uintptr_t, QOpcUa::NodeAttribute>> items;
+    for (auto it : qAsConst(m_handleToItemMapping)) {
+        for (auto item : it) {
+            items.push_back({item->handle, item->attr});
+        }
+    }
+    m_timeout = true;
+    emit timeout(this, items);
 }
 
 void QFreeOpcUaSubscription::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
