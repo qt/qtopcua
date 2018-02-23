@@ -58,6 +58,8 @@
 
 #include <cstring>
 
+QT_BEGIN_NAMESPACE
+
 // Node ID conversion is included from the open62541 plugin but warnings from there should be logged
 // using qt.opcua.testserver instead of qt.opcua.plugins.open62541 for usage in the test server
 Q_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541, "qt.opcua.demoserver")
@@ -440,3 +442,5 @@ template UA_NodeId DemoServer::addVariable<UA_Int64, qint64, UA_TYPES_INT64>(con
 template UA_NodeId DemoServer::addVariable<UA_UInt16, quint16, UA_TYPES_UINT16>(const UA_NodeId &, const QString &, const QString &, quint16);
 template UA_NodeId DemoServer::addVariable<UA_UInt32, quint32, UA_TYPES_UINT32>(const UA_NodeId &, const QString &, const QString &, quint32);
 template UA_NodeId DemoServer::addVariable<UA_UInt64, quint64, UA_TYPES_UINT64>(const UA_NodeId &, const QString &, const QString &, quint64);
+
+QT_END_NAMESPACE
