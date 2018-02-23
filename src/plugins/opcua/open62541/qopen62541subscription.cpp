@@ -80,7 +80,7 @@ UA_UInt32 QOpen62541Subscription::createOnServer()
     UA_CreateSubscriptionResponse res = UA_Client_Subscriptions_create(m_backend->m_uaclient, req, this, NULL, NULL);
 
     if (res.responseHeader.serviceResult != UA_STATUSCODE_GOOD) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not create subscription with interval" << m_interval << res.responseHeader.serviceResult;
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not create subscription with interval" << m_interval << UA_StatusCode_name(res.responseHeader.serviceResult);
         return 0;
     }
 
@@ -237,7 +237,7 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUa:
                                                                  qFuzzyCompare(settings.samplingInterval(), 0.0) ? m_interval : settings.samplingInterval());
 
     if (ret != UA_STATUSCODE_GOOD) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not add monitored item to subscription" << m_subscriptionId << ":" << ret;
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not add monitored item to subscription" << m_subscriptionId << ":" << UA_StatusCode_name(ret);
         QOpcUaMonitoringParameters s;
         s.setStatusCode(static_cast<QOpcUa::UaStatusCode>(ret));
         emit m_backend->monitoringEnableDisable(handle, attr, true, s);
@@ -273,7 +273,7 @@ bool QOpen62541Subscription::removeAttributeMonitoredItem(uintptr_t handle, QOpc
 
     UA_StatusCode res = UA_Client_MonitoredItems_deleteSingle(m_backend->m_uaclient, m_subscriptionId, item->monitoredItemId);
     if (res != UA_STATUSCODE_GOOD)
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not remove monitored item" << item->monitoredItemId << "from subscription" << m_subscriptionId << ":" << res;
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not remove monitored item" << item->monitoredItemId << "from subscription" << m_subscriptionId << ":" << UA_StatusCode_name(res);
 
     m_itemIdToItemMapping.remove(item->monitoredItemId);
     auto it = m_handleToItemMapping.find(handle);

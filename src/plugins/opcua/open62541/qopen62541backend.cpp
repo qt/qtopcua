@@ -318,7 +318,7 @@ void Open62541AsyncBackend::callMethod(uintptr_t handle, UA_NodeId objectId, UA_
     UA_StatusCode res = UA_Client_call(m_uaclient, objectId, methodId, args.size(), inputArgs, &outputSize, &outputArguments);
 
     if (res != UA_STATUSCODE_GOOD)
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not call method:" << res;
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not call method:" << UA_StatusCode_name(res);
 
     QVariant result;
 
