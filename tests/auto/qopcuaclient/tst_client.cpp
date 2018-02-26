@@ -626,7 +626,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
     dataChangeSpy.wait();
     QVERIFY(dataChangeSpy.size() == 1);
     QVERIFY(dataChangeSpy.at(0).at(0).value<QOpcUa::NodeAttribute>() == QOpcUa::NodeAttribute::DisplayName);
-    QVERIFY(dataChangeSpy.at(0).at(1).value<QOpcUa::QLocalizedText>().text == QLatin1String("ns=3;s=TestNode.ReadWrite"));
+    QVERIFY(dataChangeSpy.at(0).at(1).value<QOpcUa::QLocalizedText>().text == QLatin1String("TestNode.ReadWrite"));
 
     monitoringEnabledSpy.clear();
     dataChangeSpy.clear();
@@ -1990,7 +1990,7 @@ void Tst_QOpcUaClient::namespaceArray()
     QScopedPointer<QOpcUaNode> node(opcuaClient->node(QOpcUa::nodeIdFromString(nsIndex, QStringLiteral("Demo.Static.Scalar.String"))));
     READ_MANDATORY_BASE_NODE(node);
 
-    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text, QStringLiteral("ns=2;s=Demo.Static.Scalar.String"));
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text, QStringLiteral("StringScalarTest"));
 }
 
 void Tst_QOpcUaClient::dateTimeConversion()
