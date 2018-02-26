@@ -67,12 +67,24 @@
     The \l{Qt OPC UA Examples}{examples} demonstrate how to use Qt OPC UA API to interact with an OPC UA server.
 
     \section1 A short introduction to OPC UA
-    OPC UA is a protocol for data modelling and secure exchange of data in
-    industrial applications.
-    The protocol offers built-in transport security based on certificates and
-    established cryptographic algorithms.
-    The data modelling system is object oriented and offers support for
-    pre-made models which can be extended to fit special needs.
+    OPC UA is a protocol for data modelling and exchange of data in industrial applications.
+
+    An OPC UA server offers access to data which is organized in a mesh of nodes connected by references.
+    The use of different reference types and nodes containing metadata enable a client to navigate and interpret
+    the data without knowing their structure in advance.
+
+    All nodes have a unique identifier and attributes that can be read and written.
+    Among others, there are Variable nodes which store values and callable Method nodes with attached nodes describing
+    parameters and return values. Notifications in case of events and monitoring of Variable nodes for value changes are offered too.
+
+    Complex objects can be created by combining nodes using references, inheritance is also possible.
+    OPC UA offers support for pre-made models which can be extended to fit special needs.
+
+    OPC UA is the platform independent successor of OPC Classic intended for usage on all levels,
+    from embedded sensors up to manufacturing execution and enterprise resource planning systems.
+    It has a service oriented architecture based on standardized messages for service requests and responses.
+    There are different ways for these messages to be encoded and transported over the network. The most common way
+    is binary encoding over TCP.
 
     \section1 Implemented features from the OPC UA protocol
 
