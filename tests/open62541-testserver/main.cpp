@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 
     const UA_NodeId largeTestFolder = server.addFolder("ns=1;s=Large.Folder", "Large_Folder");
 
-    for (int x = 0; x <= 1000; x++)
+    for (int x = 0; x < 100; ++x)
         server.addObject(largeTestFolder, idx, "");
 
     const UA_NodeId testFolder = server.addFolder("ns=3;s=TestFolder", "TestFolder");

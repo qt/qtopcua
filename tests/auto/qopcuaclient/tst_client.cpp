@@ -509,7 +509,7 @@ void Tst_QOpcUaClient::getChildren()
     spy.wait();
     QCOMPARE(spy.size(), 1);
     QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
-    QCOMPARE(ref.size(), 1001);
+    QCOMPARE(ref.size(), 100);
 }
 
 void Tst_QOpcUaClient::childrenIdsString()
