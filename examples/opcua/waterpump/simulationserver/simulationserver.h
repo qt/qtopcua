@@ -53,6 +53,8 @@
 
 #include <open62541.h>
 
+#include <qopcuatype.h>
+
 #include <QtCore/QDateTime>
 #include <QtCore/QObject>
 #include <QtCore/QTimer>
@@ -70,8 +72,7 @@ public:
 
     UA_NodeId addFolder(const QString &parent, const QString &nodeString, const QString &displayName, const QString &description = QString());
 
-    template <typename UA_TYPE_VALUE, typename QTYPE, int UA_TYPE_IDENTIFIER>
-    UA_NodeId addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &description, QTYPE value);
+    UA_NodeId addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value, QOpcUa::Types type);
 
     UA_NodeId addMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description, const QString &browseName, UA_MethodCallback cb);
 

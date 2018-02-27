@@ -50,6 +50,7 @@
 
 #include "simulationserver.h"
 #include <qopen62541utils.h>
+#include <qopen62541valueconverter.h>
 #include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/QDebug>
@@ -139,23 +140,19 @@ UA_NodeId DemoServer::addFolder(const QString &parent, const QString &nodeString
     return resultNode;
 }
 
-template <typename UA_TYPE_VALUE, typename QTYPE, int UA_TYPE_IDENTIFIER>
-UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variableNode,
-                                  const QString &description, QTYPE value)
+UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value, QOpcUa::Types type)
 {
     UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
     UA_VariableAttributes attr = UA_VariableAttributes_default;
-    UA_TYPE_VALUE uaValue = static_cast<UA_TYPE_VALUE>(value);
-    UA_Variant_setScalarCopy(&attr.value, &uaValue, &UA_TYPES[UA_TYPE_IDENTIFIER]);
-    attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
-    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", variableNode.toUtf8().constData());
-    attr.dataType = UA_TYPES[UA_TYPE_IDENTIFIER].typeId;
+    attr.value = QOpen62541ValueConverter::toOpen62541Variant(value, type);
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", name.toUtf8().constData());
+    attr.dataType = attr.value.type ? attr.value.type->typeId : UA_TYPES[UA_TYPES_BOOLEAN].typeId;
     attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
 
     UA_QualifiedName variableName;
     variableName.namespaceIndex = variableNodeId.namespaceIndex;
-    UA_String_copy(&variableNodeId.identifier.string, &variableName.name);
+    variableName.name = attr.displayName.text;
 
     UA_NodeId resultId;
     UA_StatusCode result = UA_Server_addVariableNode(m_server,
@@ -172,39 +169,7 @@ UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variab
         qWarning() << "Could not add variable:" << result;
         return UA_NODEID_NULL;
     }
-    return resultId;
-}
 
-template <>
-UA_NodeId DemoServer::addVariable<UA_String, QString, UA_TYPES_STRING>(const UA_NodeId &folder, const QString &variableNode,
-                                  const QString &description, QString value)
-{
-    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
-
-    UA_VariableAttributes attr = UA_VariableAttributes_default;
-    UA_String uaValue = UA_String_fromChars(value.toUtf8().constData());
-    UA_Variant_setScalar(&attr.value, &uaValue, &UA_TYPES[UA_TYPES_STRING]);
-    attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
-    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", variableNode.toUtf8().constData());
-    attr.dataType = UA_TYPES[UA_TYPES_STRING].typeId;
-    attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
-
-    UA_QualifiedName variableName = UA_QUALIFIEDNAME_ALLOC(variableNodeId.namespaceIndex, variableNode.toUtf8().constData());
-
-    UA_NodeId resultId;
-    UA_StatusCode result = UA_Server_addVariableNode(m_server,
-                                                     variableNodeId,
-                                                     folder,
-                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
-                                                     variableName,
-                                                     UA_NODEID_NULL,
-                                                     attr,
-                                                     NULL,
-                                                     &resultId);
-    if (result != UA_STATUSCODE_GOOD) {
-        qWarning() << "Could not add variable:" << result;
-        return UA_NODEID_NULL;
-    }
     return resultId;
 }
 
@@ -398,12 +363,12 @@ void DemoServer::launch()
      const UA_NodeId tank1Folder = addFolder("ns=2;s=Machine", "ns=2;s=Machine.Tank1", "Machine.Tank1");
      const UA_NodeId tank2Folder = addFolder("ns=2;s=Machine", "ns=2;s=Machine.Tank2", "Machine.Tank2");
 
-     m_percentFilledTank1Node = addVariable<UA_Double, double, UA_TYPES_DOUBLE>(tank1Folder, "ns=2;s=Machine.Tank1.PercentFilled", "Machine.Tank1.PercentFilled", 100.0);
-     m_percentFilledTank2Node = addVariable<UA_Double, double, UA_TYPES_DOUBLE>(tank2Folder, "ns=2;s=Machine.Tank2.PercentFilled", "Machine.Tank2.PercentFilled", 0.0);
-     m_tank2TargetPercentNode = addVariable<UA_Double, double, UA_TYPES_DOUBLE>(tank2Folder, "ns=2;s=Machine.Tank2.TargetPercent", "Machine.Tank2.TargetPercent", 0.0);
-     m_tank2ValveStateNode = addVariable<UA_Boolean, bool, UA_TYPES_BOOLEAN>(tank2Folder, "ns=2;s=Machine.Tank2.ValveState", "Machine.Tank2.ValveState", false);
-     m_machineStateNode = addVariable<UA_Double, quint32, UA_TYPES_UINT32>(machineFolder, "ns=2;s=Machine.State", "Machine.State", 0);
-     addVariable<UA_String, QString, UA_TYPES_STRING>(machineFolder, "ns=2;s=Machine.Designation", "Machine.Designation", "TankExample");
+     m_percentFilledTank1Node = addVariable(tank1Folder, "ns=2;s=Machine.Tank1.PercentFilled", "Machine.Tank1.PercentFilled", 100.0, QOpcUa::Types::Double);
+     m_percentFilledTank2Node = addVariable(tank2Folder, "ns=2;s=Machine.Tank2.PercentFilled", "Machine.Tank2.PercentFilled", 0.0, QOpcUa::Types::Double);
+     m_tank2TargetPercentNode = addVariable(tank2Folder, "ns=2;s=Machine.Tank2.TargetPercent", "Machine.Tank2.TargetPercent", 0.0, QOpcUa::Types::Double);
+     m_tank2ValveStateNode = addVariable(tank2Folder, "ns=2;s=Machine.Tank2.ValveState", "Machine.Tank2.ValveState", false, QOpcUa::Types::Boolean);
+     m_machineStateNode = addVariable(machineFolder, "ns=2;s=Machine.State", "Machine.State", static_cast<quint32>(MachineState::Idle), QOpcUa::Types::UInt32);
+     addVariable(machineFolder, "ns=2;s=Machine.Designation", "Machine.Designation", "TankExample", QOpcUa::Types::String);
 
      addMethod(machineFolder, "ns=2;s=Machine.Start", "Start", "Machine.Start", &startPumpMethod);
      addMethod(machineFolder, "ns=2;s=Machine.Stop", "Stop", "Machine.Start", &stopPumpMethod);
@@ -430,17 +395,5 @@ void DemoServer::launch()
          }
      });
 }
-
-template UA_NodeId DemoServer::addVariable<UA_Double, double, UA_TYPES_DOUBLE>(const UA_NodeId &, const QString &, const QString &, double);
-template UA_NodeId DemoServer::addVariable<UA_Boolean, bool, UA_TYPES_BOOLEAN>(const UA_NodeId &, const QString &, const QString &, bool);
-template UA_NodeId DemoServer::addVariable<UA_Byte, uchar, UA_TYPES_BYTE>(const UA_NodeId &, const QString &, const QString &, uchar);
-template UA_NodeId DemoServer::addVariable<UA_SByte, char, UA_TYPES_SBYTE>(const UA_NodeId &, const QString &, const QString &, char);
-template UA_NodeId DemoServer::addVariable<UA_Float, float, UA_TYPES_FLOAT>(const UA_NodeId &, const QString &, const QString &, float);
-template UA_NodeId DemoServer::addVariable<UA_Int16, qint16, UA_TYPES_INT16>(const UA_NodeId &, const QString &, const QString &, qint16);
-template UA_NodeId DemoServer::addVariable<UA_Int32, qint32, UA_TYPES_INT32>(const UA_NodeId &, const QString &, const QString &, qint32);
-template UA_NodeId DemoServer::addVariable<UA_Int64, qint64, UA_TYPES_INT64>(const UA_NodeId &, const QString &, const QString &, qint64);
-template UA_NodeId DemoServer::addVariable<UA_UInt16, quint16, UA_TYPES_UINT16>(const UA_NodeId &, const QString &, const QString &, quint16);
-template UA_NodeId DemoServer::addVariable<UA_UInt32, quint32, UA_TYPES_UINT32>(const UA_NodeId &, const QString &, const QString &, quint32);
-template UA_NodeId DemoServer::addVariable<UA_UInt64, quint64, UA_TYPES_UINT64>(const UA_NodeId &, const QString &, const QString &, quint64);
 
 QT_END_NAMESPACE
