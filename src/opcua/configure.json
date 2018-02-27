@@ -58,7 +58,7 @@
                     "condition": "config.win32 && var.QT_EDITION != 'OpenSource'"
                 },
                 {
-                    "libs": "-luaclient -luamodule -luamodels -lcoremodule -luabase -luastack -lxmlparser -luapki -lcry",
+                    "libs": "-luaclient -luamodule -luamodels -lcoremodule -luabase -luastack -lxmlparser -luapki -lcrypto -lssl -lxml2",
                     "condition": "var.QT_EDITION != 'OpenSource'"
                 }
             ]
