@@ -132,7 +132,7 @@
     \li FreeOPCUA plugin
     \li Qt OPC UA data type
     \row
-    \li Int16 / Int32 / Int64
+    \li Int16, Int32, Int64
     \li X
     \li X
     \li Directly used
