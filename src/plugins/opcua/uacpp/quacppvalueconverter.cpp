@@ -509,16 +509,13 @@ void scalarFromQVariant<OpcUa_Guid, QUuid>(const QVariant &var, OpcUa_Guid *ptr)
 
 void createExtensionObject(QByteArray &data, QOpcUaBinaryDataEncoding::TypeEncodingId id, OpcUa_ExtensionObject *ptr)
 {
-    OpcUa_ExtensionObject *opcuaObj;
-    OpcUa_ExtensionObject_Create(&opcuaObj);
-    opcuaObj->Encoding = OpcUa_ExtensionObjectEncoding_Binary;
-    opcuaObj->Body.Binary.Data = reinterpret_cast<OpcUa_Byte *>(data.data());
-    opcuaObj->Body.Binary.Length = data.size();
-    opcuaObj->BodySize = data.length();
+    OpcUa_ExtensionObject_Initialize(ptr);
+    UaByteArray arr(data.data(), data.length());
+    arr.copyTo(&ptr->Body.Binary);
+    ptr->Encoding = OpcUa_ExtensionObjectEncoding_Binary;
+    ptr->BodySize = data.length();
     const UaNodeId temp(static_cast<OpcUa_UInt32>(id));
-    temp.copyTo(&opcuaObj->TypeId.NodeId);
-    OpcUa_ExtensionObject_CopyTo(opcuaObj, ptr);
-    //OpcUa_ExtensionObject_Clear(opcuaObj);
+    temp.copyTo(&ptr->TypeId.NodeId);
 }
 
 template<>
@@ -589,8 +586,9 @@ OpcUa_Variant arrayFromQVariant(const QVariant &var, const OpcUa_BuiltInType typ
         opcuavariant.Datatype = type;
         opcuavariant.ArrayType = OpcUa_True;
         opcuavariant.Value.Array.Length = list.size();
-        TARGETTYPE *arr = new TARGETTYPE[list.size()];
-        opcuavariant.Value.Array.Value.Array = static_cast<OpcUa_Void *>(arr);
+        // Use malloc() instead of new because the OPC UA stack uses free() internally when clearing the data
+        TARGETTYPE *arr = static_cast<TARGETTYPE *>(malloc(sizeof(TARGETTYPE) * list.size()));
+        opcuavariant.Value.Array.Value.Array = arr;
 
         for (int i = 0; i < list.size(); ++i)
             scalarFromQVariant<TARGETTYPE, QTTYPE>(list[i], &arr[i]);
@@ -598,7 +596,7 @@ OpcUa_Variant arrayFromQVariant(const QVariant &var, const OpcUa_BuiltInType typ
         return opcuavariant;
     }
 
-    TARGETTYPE *temp = (TARGETTYPE*)&opcuavariant.Value;
+    TARGETTYPE *temp = reinterpret_cast<TARGETTYPE *>(&opcuavariant.Value);
     scalarFromQVariant<TARGETTYPE, QTTYPE>(var, temp);
     opcuavariant.Datatype = type;
     return opcuavariant;
@@ -621,7 +619,9 @@ OpcUa_Variant arrayFromQVariantPointer(const QVariant &var, const OpcUa_BuiltInT
         opcuavariant.Datatype = type;
         opcuavariant.ArrayType = OpcUa_True;
         opcuavariant.Value.Array.Length = list.size();
-        TARGETTYPE *arr = new TARGETTYPE[list.size()];
+        // Use malloc() instead of new because the OPC UA stack uses free() internally when clearing the data
+        TARGETTYPE *arr = static_cast<TARGETTYPE *>(malloc(sizeof(TARGETTYPE) * list.size()));
+
         opcuavariant.Value.Array.Value.Array = arr;
 
         for (int i = 0; i < list.size(); ++i)
@@ -633,7 +633,8 @@ OpcUa_Variant arrayFromQVariantPointer(const QVariant &var, const OpcUa_BuiltInT
     // Taking one pointer for all as it is union
     TARGETTYPE **temp = reinterpret_cast<TARGETTYPE **>(&opcuavariant.Value.Guid);
     // We have to allocate, otherwise copyTo() will not do any action
-    *temp = new TARGETTYPE;
+    // Use malloc() instead of new because the OPC UA stack uses free() internally when clearing the data
+    *temp = static_cast<TARGETTYPE *>(malloc(sizeof(TARGETTYPE)));
     scalarFromQVariant<TARGETTYPE, QTTYPE>(var, *temp);
     opcuavariant.Datatype = type;
     return opcuavariant;

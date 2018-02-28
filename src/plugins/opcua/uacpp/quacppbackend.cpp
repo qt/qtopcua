@@ -216,13 +216,12 @@ void UACppAsyncBackend::readAttributes(uintptr_t handle, const UaNodeId &id, QOp
 
     QVector<QOpcUaReadResult> vec;
 
-    OpcUa_NodeId *nativeId = id.copy();
     int attributeSize = 0;
 
     qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attribute){
         attributeSize++;
         nodeToRead.resize(attributeSize);
-        OpcUa_NodeId_CopyTo(nativeId, &nodeToRead[attributeSize - 1].NodeId);
+        id.copyTo(&nodeToRead[attributeSize - 1].NodeId);
         nodeToRead[attributeSize - 1].AttributeId = toUaAttributeId(attribute);
         if (indexRange.size()) {
             UaString ir(indexRange.toUtf8().constData());
@@ -275,7 +274,8 @@ void UACppAsyncBackend::writeAttribute(uintptr_t handle, const UaNodeId &id, QOp
     if (result.isBad())
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Writing attribute failed:" << result.toString().toUtf8();
 
-    emit attributeWritten(handle, attrId, result.isGood() ? value : QVariant(), static_cast<QOpcUa::UaStatusCode>(writeResults[0]));
+    emit attributeWritten(handle, attrId, result.isGood() ? value : QVariant(), writeResults.length() ?
+                              static_cast<QOpcUa::UaStatusCode>(writeResults[0]) : static_cast<QOpcUa::UaStatusCode>(result.statusCode()));
 }
 
 void UACppAsyncBackend::writeAttributes(uintptr_t handle, const UaNodeId &id, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types /*valueAttributeType*/)
