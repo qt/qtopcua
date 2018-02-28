@@ -60,10 +60,12 @@ public Q_SLOTS:
     void disableMonitoring(uintptr_t handle, QOpcUa::NodeAttributes attr);
     void callMethod(uintptr_t handle, const UaNodeId &objectId, const UaNodeId &methodId, QVector<QOpcUa::TypedVariant> args);
 
-    QUACppSubscription *getSubscription(const QOpcUaMonitoringParameters &settings);
     bool removeSubscription(quint32 subscriptionId);
 
 public:
+    QUACppSubscription *getSubscription(const QOpcUaMonitoringParameters &settings);
+    QUACppSubscription *getSubscriptionForItem(uintptr_t handle, QOpcUa::NodeAttribute attr);
+
     Q_DISABLE_COPY(UACppAsyncBackend);
     UaClientSdk::UaSession *m_nativeSession;
     QUACppClient *m_clientImpl;

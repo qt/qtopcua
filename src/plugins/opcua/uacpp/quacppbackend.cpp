@@ -358,7 +358,7 @@ void UACppAsyncBackend::enableMonitoring(uintptr_t handle, const UaNodeId &id, Q
 
 void UACppAsyncBackend::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
 {
-    QUACppSubscription *subscription = m_attributeMapping[handle][attr];
+    QUACppSubscription *subscription = getSubscriptionForItem(handle, attr);
     if (!subscription) {
         qCWarning(QT_OPCUA_PLUGINS_UACPP, "Could not modify parameter for %lu, the monitored item does not exist", handle);
         QOpcUaMonitoringParameters p;
@@ -373,7 +373,7 @@ void UACppAsyncBackend::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute
 void UACppAsyncBackend::disableMonitoring(uintptr_t handle, QOpcUa::NodeAttributes attr)
 {
     qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attribute){
-        QUACppSubscription *sub = m_attributeMapping[handle][attribute];
+        QUACppSubscription *sub = getSubscriptionForItem(handle, attribute);
         if (sub) {
             sub->removeAttributeMonitoredItem(handle, attribute);
             if (sub->monitoredItemsCount() == 0)
@@ -436,6 +436,18 @@ QUACppSubscription *UACppAsyncBackend::getSubscription(const QOpcUaMonitoringPar
     }
     m_subscriptions[id] = sub;
     return sub;
+}
+
+QUACppSubscription *UACppAsyncBackend::getSubscriptionForItem(uintptr_t handle, QOpcUa::NodeAttribute attr)
+{
+    auto entriesForHandle = m_attributeMapping.find(handle);
+    if (entriesForHandle == m_attributeMapping.end())
+        return nullptr;
+    auto subscription = entriesForHandle->find(attr);
+    if (subscription == entriesForHandle->end())
+        return nullptr;
+
+    return subscription.value();
 }
 
 bool UACppAsyncBackend::removeSubscription(quint32 subscriptionId)
