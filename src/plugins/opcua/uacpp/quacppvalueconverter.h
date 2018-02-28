@@ -51,6 +51,8 @@ namespace QUACppValueConverter {
 
     template<typename TARGETTYPE, typename QTTYPE>
     OpcUa_Variant arrayFromQVariant(const QVariant &var, const OpcUa_BuiltInType type);
+
+    QDateTime toQDateTime(const OpcUa_DateTime *dt);
 }
 
 QT_END_NAMESPACE

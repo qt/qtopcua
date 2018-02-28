@@ -235,6 +235,9 @@ private slots:
     defineDataMethod(namespaceArray_data)
     void namespaceArray();
 
+    defineDataMethod(dateTimeConversion_data)
+    void dateTimeConversion();
+
     // This test case restarts the server. It must be run last to avoid
     // destroying state required by other test cases.
     defineDataMethod(connectionLost_data)
@@ -1924,6 +1927,24 @@ void Tst_QOpcUaClient::namespaceArray()
     READ_MANDATORY_BASE_NODE(node);
 
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text, "ns=2;s=Demo.Static.Scalar.String");
+}
+
+void Tst_QOpcUaClient::dateTimeConversion()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> dateTimeScalarNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DateTime"));
+
+    QVERIFY(dateTimeScalarNode != 0);
+
+    QDateTime dt = QDateTime::currentDateTime();
+
+    WRITE_VALUE_ATTRIBUTE(dateTimeScalarNode, dt, QOpcUa::Types::DateTime);
+    READ_MANDATORY_VARIABLE_NODE(dateTimeScalarNode);
+
+    QDateTime result = dateTimeScalarNode->attribute(QOpcUa::NodeAttribute::Value).toDateTime();
+    QVERIFY(dt == result);
 }
 
 void Tst_QOpcUaClient::connectionLost()
