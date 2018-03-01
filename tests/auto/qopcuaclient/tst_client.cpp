@@ -211,6 +211,7 @@ private slots:
     defineDataMethod(nodeIdGeneration_data)
     void nodeIdGeneration();
 
+    defineDataMethod(multipleClients_data)
     void multipleClients();
     defineDataMethod(nodeClass_data)
     void nodeClass();
@@ -825,19 +826,19 @@ void Tst_QOpcUaClient::nodeIdGeneration()
 
 void Tst_QOpcUaClient::multipleClients()
 {
-    QScopedPointer<QOpcUaClient> a(m_opcUa.createClient(m_backends[0]));
-    a->connectToEndpoint(m_endpoint);
-    QTRY_VERIFY2(a->state() == QOpcUaClient::Connected, "Could not connect to server");
-    QScopedPointer<QOpcUaNode> node(a->node(readWriteNode));
+    QFETCH(QOpcUaClient *, opcuaClient);
+    opcuaClient->connectToEndpoint(m_endpoint);
+    QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
     READ_MANDATORY_VARIABLE_NODE(node);
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value).toDouble(), 42.0);
-    QScopedPointer<QOpcUaClient> b(m_opcUa.createClient(m_backends[0]));
+    QScopedPointer<QOpcUaClient> b(m_opcUa.createClient(opcuaClient->backend()));
     b->connectToEndpoint(m_endpoint);
     QTRY_VERIFY2(b->state() == QOpcUaClient::Connected, "Could not connect to server");
     node.reset(b->node(readWriteNode));
     READ_MANDATORY_VARIABLE_NODE(node);
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value).toDouble(), 42.0);
-    QScopedPointer<QOpcUaClient> d(m_opcUa.createClient(m_backends[0]));
+    QScopedPointer<QOpcUaClient> d(m_opcUa.createClient(opcuaClient->backend()));
     d->connectToEndpoint(m_endpoint);
     QTRY_VERIFY2(d->state() == QOpcUaClient::Connected, "Could not connect to server");
     node.reset(d->node(readWriteNode));
@@ -845,8 +846,8 @@ void Tst_QOpcUaClient::multipleClients()
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value).toDouble(), 42.0);
     d->disconnectFromEndpoint();
     QTRY_VERIFY2(d->state() == QOpcUaClient::Disconnected, "Could not disconnect from server");
-    a->disconnectFromEndpoint();
-    QTRY_VERIFY2(a->state() == QOpcUaClient::Disconnected, "Could not disconnect from server");
+    opcuaClient->disconnectFromEndpoint();
+    QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Disconnected, "Could not disconnect from server");
     b->disconnectFromEndpoint();
     QTRY_VERIFY2(b->state() == QOpcUaClient::Disconnected, "Could not disconnect from server");
 }
