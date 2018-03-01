@@ -41,7 +41,6 @@ public:
 
     QOpcUaClient *createClient() override;
 private:
-    bool m_initialized{false};
 };
 
 QT_END_NAMESPACE

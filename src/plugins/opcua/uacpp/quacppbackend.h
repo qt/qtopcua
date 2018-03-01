@@ -24,6 +24,7 @@
 
 #include <private/qopcuabackend_p.h>
 
+#include <QtCore/QMutex>
 #include <QtCore/QSet>
 #include <QtCore/QString>
 #include <QtCore/QTimer>
@@ -71,6 +72,9 @@ public:
     QUACppClient *m_clientImpl;
     QHash<quint32, QUACppSubscription *> m_subscriptions;
     QHash<uintptr_t, QHash<QOpcUa::NodeAttribute, QUACppSubscription *>> m_attributeMapping; // Handle -> Attribute -> Subscription
+    static quint32 m_numClients;
+    static bool m_platformLayerInitialized;
+    QMutex m_lifecycleMutex;
 };
 
 QT_END_NAMESPACE

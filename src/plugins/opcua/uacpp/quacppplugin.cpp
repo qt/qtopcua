@@ -24,8 +24,6 @@
 
 #include <QtCore/QLoggingCategory>
 
-#include <uaplatformlayer.h>
-
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_UACPP, "qt.opcua.plugins.uacpp")
@@ -38,17 +36,11 @@ QUACppPlugin::QUACppPlugin(QObject *parent)
 
 QUACppPlugin::~QUACppPlugin()
 {
-    if (m_initialized)
-        UaPlatformLayer::cleanup();
 }
 
 QOpcUaClient *QUACppPlugin::createClient()
 {
-    if (!m_initialized) {
-        UaPlatformLayer::init();
-        m_initialized = true;
-    }
-    return new QOpcUaClient(new QUACppClient);
+    return new QOpcUaClient(new QUACppClient());
 }
 
 QT_END_NAMESPACE

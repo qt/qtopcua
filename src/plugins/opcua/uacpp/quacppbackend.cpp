@@ -34,6 +34,7 @@
 
 #include <QtNetwork/QHostInfo>
 
+#include <uaplatformlayer.h>
 #include <uasession.h>
 #include <uastring.h>
 
@@ -44,6 +45,9 @@
 #undef max
 #endif
 
+quint32 UACppAsyncBackend::m_numClients = 0;
+bool UACppAsyncBackend::m_platformLayerInitialized = false;
+
 using namespace UaClientSdk;
 
 QT_BEGIN_NAMESPACE
@@ -52,9 +56,15 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_UACPP)
 
 UACppAsyncBackend::UACppAsyncBackend(QUACppClient *parent)
     : QOpcUaBackend()
-    , m_nativeSession(new UaSession)
     , m_clientImpl(parent)
 {
+    QMutexLocker locker(&m_lifecycleMutex);
+    if (!m_platformLayerInitialized) {
+        UaPlatformLayer::init();
+        m_platformLayerInitialized = true;
+    }
+    m_numClients++;
+    m_nativeSession = new UaSession();
 }
 
 UACppAsyncBackend::~UACppAsyncBackend()
@@ -67,6 +77,12 @@ UACppAsyncBackend::~UACppAsyncBackend()
         }
         qCDebug(QT_OPCUA_PLUGINS_UACPP) << "UACPP: Deleting session";
         delete m_nativeSession;
+    }
+    QMutexLocker locker(&m_lifecycleMutex);
+    m_numClients--;
+    if (!m_numClients && m_platformLayerInitialized) {
+        UaPlatformLayer::cleanup();
+        m_platformLayerInitialized = false;
     }
 }
 
