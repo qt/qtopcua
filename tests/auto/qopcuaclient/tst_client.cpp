@@ -450,7 +450,7 @@ void Tst_QOpcUaClient::writeInvalidNode()
 
     QCOMPARE(responseSpy.count(), 1);
     QCOMPARE(responseSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
-    QCOMPARE(responseSpy.at(0).at(1).value<quint32>(), QOpcUa::UaStatusCode::BadNodeIdUnknown);
+    QCOMPARE(responseSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadNodeIdUnknown);
 }
 
 void Tst_QOpcUaClient::writeMultipleAttributes()
@@ -530,7 +530,7 @@ void Tst_QOpcUaClient::childrenIdsString()
     QCOMPARE(spy.size(), 1);
     QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
     QCOMPARE(ref.size(), 1);
-    QCOMPARE(ref.at(0).nodeId(), "ns=3;s=theStringId");
+    QCOMPARE(ref.at(0).nodeId(), QStringLiteral("ns=3;s=theStringId"));
 }
 
 void Tst_QOpcUaClient::childrenIdsGuidNodeId()
@@ -546,7 +546,7 @@ void Tst_QOpcUaClient::childrenIdsGuidNodeId()
     QCOMPARE(spy.size(), 1);
     QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
     QCOMPARE(ref.size(), 1);
-    QCOMPARE(ref.at(0).nodeId(), "ns=3;g=08081e75-8e5e-319b-954f-f3a7613dc29b");
+    QCOMPARE(ref.at(0).nodeId(), QStringLiteral("ns=3;g=08081e75-8e5e-319b-954f-f3a7613dc29b"));
 }
 
 void Tst_QOpcUaClient::childrenIdsOpaqueNodeId()
@@ -562,7 +562,7 @@ void Tst_QOpcUaClient::childrenIdsOpaqueNodeId()
     QCOMPARE(spy.size(), 1);
     QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
     QCOMPARE(ref.size(), 1);
-    QCOMPARE(ref.at(0).nodeId(), "ns=3;b=UXQgZnR3IQ==");
+    QCOMPARE(ref.at(0).nodeId(), QStringLiteral("ns=3;b=UXQgZnR3IQ=="));
 }
 
 void Tst_QOpcUaClient::dataChangeSubscription()
@@ -574,7 +574,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
     QVERIFY(node != 0);
     WRITE_VALUE_ATTRIBUTE(node, QVariant(double(0)), QOpcUa::Types::Double);
     READ_MANDATORY_VARIABLE_NODE(node);
-    QTRY_COMPARE(node->attribute(QOpcUa::NodeAttribute::Value), 0);
+    QTRY_COMPARE(node->attribute(QOpcUa::NodeAttribute::Value).toDouble(), 0.0);
 
     WRITE_VALUE_ATTRIBUTE(node, QVariant(double(0)), QOpcUa::Types::Double);
 
@@ -658,13 +658,13 @@ void Tst_QOpcUaClient::dataChangeSubscription()
             QVERIFY(attrs.contains(temp));
             QVERIFY(it.at(1).value<QOpcUaMonitoringParameters::Parameters>() &  QOpcUaMonitoringParameters::Parameter::PublishingInterval);
             QVERIFY(it.at(2) == QOpcUa::UaStatusCode::Good);
-            QCOMPARE(node->monitoringStatus(temp).publishingInterval(), 200);
+            QCOMPARE(node->monitoringStatus(temp).publishingInterval(), 200.0);
             attrs.remove(attrs.indexOf(temp));
         }
         QVERIFY(attrs.size() == 0);
 
-        QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::Value).publishingInterval(),  200);
-        QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::DisplayName).publishingInterval(), 200);
+        QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::Value).publishingInterval(),  200.0);
+        QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::DisplayName).publishingInterval(), 200.0);
 
         monitoringModifiedSpy.clear();
         QOpcUaMonitoringParameters::DataChangeFilter filter;
@@ -745,8 +745,8 @@ void Tst_QOpcUaClient::methodCall()
     methodSpy.wait();
 
     QCOMPARE(methodSpy.size(), 1);
-    QCOMPARE(methodSpy.at(0).at(0), QStringLiteral("ns=3;s=Test.Method.Multiply"));
-    QCOMPARE(methodSpy.at(0).at(1), double(16));
+    QCOMPARE(methodSpy.at(0).at(0).value<QString>(), QStringLiteral("ns=3;s=Test.Method.Multiply"));
+    QCOMPARE(methodSpy.at(0).at(1).value<double>(), 16.0);
     QCOMPARE(QOpcUa::isSuccessStatus(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>()), true);
 }
 
@@ -1292,8 +1292,8 @@ void Tst_QOpcUaClient::readArray()
     QVariant guidArray = guidArrayNode->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(guidArray.type() == QVariant::List);
     QVERIFY(guidArray.toList().length() == 2);
-    QCOMPARE(guidArray.toList()[0], QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216}"));
-    QCOMPARE(guidArray.toList()[1], QUuid("460ebe04-89d8-42f3-a0e0-7b45940f1a4e4"));
+    QCOMPARE(guidArray.toList()[0].toUuid(), QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216}"));
+    QCOMPARE(guidArray.toList()[1].toUuid(), QUuid("460ebe04-89d8-42f3-a0e0-7b45940f1a4e4"));
 
     QScopedPointer<QOpcUaNode> sbyteArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.SByte"));
     QVERIFY(sbyteArrayNode != 0);
@@ -1672,7 +1672,7 @@ void Tst_QOpcUaClient::readScalar()
     QVariant guidScalar = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(guidScalar.isValid());
     QVERIFY(guidScalar.userType() == QMetaType::QUuid);
-    QCOMPARE(guidScalar, QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216"));
+    QCOMPARE(guidScalar.toUuid(), QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216"));
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.NodeId"));
     QVERIFY(node != 0);
@@ -1764,7 +1764,7 @@ void Tst_QOpcUaClient::indexRange()
     attributeReadSpy.wait();
     QCOMPARE(attributeReadSpy.count(), 1);
 
-    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value), QVariantList({10, 11, 12, 13, 4, 5, 6}));
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value).toList(), QVariantList({10, 11, 12, 13, 4, 5, 6}));
 }
 
 void Tst_QOpcUaClient::invalidIndexRange()
@@ -1836,7 +1836,7 @@ void Tst_QOpcUaClient::subscriptionIndexRange()
     QCOMPARE(writeSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
     dataChangeSpy.wait();
     QCOMPARE(dataChangeSpy.size(), 1);
-    QCOMPARE(integerArrayNode->attribute(QOpcUa::NodeAttribute::Value), 10);
+    QCOMPARE(integerArrayNode->attribute(QOpcUa::NodeAttribute::Value).toDouble(), 10.0);
 
     integerArrayNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
     monitoringDisabledSpy.wait();
@@ -1926,7 +1926,7 @@ void Tst_QOpcUaClient::namespaceArray()
     QScopedPointer<QOpcUaNode> node(opcuaClient->node(QOpcUa::nodeIdFromString(nsIndex, QStringLiteral("Demo.Static.Scalar.String"))));
     READ_MANDATORY_BASE_NODE(node);
 
-    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text, "ns=2;s=Demo.Static.Scalar.String");
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text, QStringLiteral("ns=2;s=Demo.Static.Scalar.String"));
 }
 
 void Tst_QOpcUaClient::dateTimeConversion()
@@ -1981,7 +1981,7 @@ void Tst_QOpcUaClient::connectionLost()
     QVERIFY(readSpy.at(0).at(0).value<QOpcUa::NodeAttributes>() & QOpcUa::NodeAttribute::BrowseName);
     QCOMPARE(stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName), QOpcUa::UaStatusCode::BadConnectionClosed);
     QCOMPARE(stateSpy.size(), 1);
-    QCOMPARE(stateSpy.at(0).at(0), QOpcUaClient::ClientState::Disconnected);
+    QCOMPARE(stateSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::ClientState::Disconnected);
 }
 
 void Tst_QOpcUaClient::cleanupTestCase()

@@ -122,6 +122,7 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
 {
     qRegisterMetaType<QOpcUa::Types>();
     qRegisterMetaType<QOpcUa::TypedVariant>();
+    qRegisterMetaType<QVector<QOpcUa::TypedVariant>>();
     qRegisterMetaType<QOpcUa::UaStatusCode>();
     qRegisterMetaType<QOpcUa::NodeClass>();
     qRegisterMetaType<QOpcUa::NodeClasses>();
