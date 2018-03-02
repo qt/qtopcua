@@ -633,7 +633,7 @@ QString QOpcUa::nodeIdFromByteString(quint16 ns, const QByteArray &identifier)
 */
 QString QOpcUa::nodeIdFromGuid(quint16 ns, const QUuid &identifier)
 {
-    return QStringLiteral("ns=%1;g=%2").arg(ns).arg(identifier.toString().midRef(1, 36)); // Remove enclosing {...};
+    return QStringLiteral("ns=%1;g=").arg(ns).append(identifier.toString().midRef(1, 36)); // Remove enclosing {...};
 }
 
 /*!
