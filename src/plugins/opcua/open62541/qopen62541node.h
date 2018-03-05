@@ -54,7 +54,7 @@ public:
     bool enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings) override;
     bool disableMonitoring(QOpcUa::NodeAttributes attr) override;
     bool modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value) override;
-    bool browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask) override;
+    bool browse(const QOpcUaBrowseRequest &request);
     QString nodeId() const override;
 
     bool writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange) override;

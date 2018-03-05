@@ -86,7 +86,7 @@ TreeItem::TreeItem(QOpcUaNode *node, OpcUaModel *model, const QOpcUaReferenceDes
 {
     mNodeBrowseName = browsingData.browseName().name();
     mNodeClass = browsingData.nodeClass();
-    mNodeId = browsingData.nodeId();
+    mNodeId = browsingData.targetNodeId().nodeId();
     mNodeDisplayName = browsingData.displayName().text();
 }
 
@@ -245,12 +245,12 @@ void TreeItem::browseFinished(QVector<QOpcUaReferenceDescription> children, QOpc
     auto index = mModel->createIndex(row(), 0, this);
 
     for (const auto &item : children) {
-        if (hasChildNodeItem(item.nodeId()))
+        if (hasChildNodeItem(item.targetNodeId().nodeId()))
             continue;
 
-        auto node = mModel->opcUaClient()->node(item.nodeId());
+        auto node = mModel->opcUaClient()->node(item.targetNodeId());
         if (!node) {
-            qWarning() << "Failed to instantiate node:" << item.nodeId();
+            qWarning() << "Failed to instantiate node:" << item.targetNodeId().nodeId();
             continue;
         }
 

@@ -39,7 +39,7 @@
 
 #include <QtOpcUa/qopcuaglobal.h>
 #include <QtOpcUa/qopcuamonitoringparameters.h>
-#include <QtOpcUa/qopcuareferencedescription.h>
+#include <QtOpcUa/qopcuabrowsing.h>
 #include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/qdatetime.h>
@@ -94,6 +94,8 @@ public:
     bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args = QVector<QOpcUa::TypedVariant>());
 
     bool resolveBrowsePath(const QVector<QOpcUa::QRelativePathElement> &path);
+
+    bool browse(const QOpcUaBrowseRequest &request);
 
 Q_SIGNALS:
     void attributeRead(QOpcUa::NodeAttributes attributes);

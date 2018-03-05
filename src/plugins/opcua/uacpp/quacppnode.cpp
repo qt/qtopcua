@@ -96,18 +96,16 @@ bool QUACppNode::modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringPa
                                      Q_ARG(QVariant, value));
 }
 
-bool QUACppNode::browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
+bool QUACppNode::browse(const QOpcUaBrowseRequest &request)
 {
     if (!m_client)
         return false;
 
-    return QMetaObject::invokeMethod(m_client->m_backend, "browseChildren",
+    return QMetaObject::invokeMethod(m_client->m_backend, "browse",
                                      Qt::QueuedConnection,
                                      Q_ARG(quint64, handle()),
                                      Q_ARG(UaNodeId, m_nodeId),
-                                     Q_ARG(QOpcUa::ReferenceTypeId, referenceType),
-                                     Q_ARG(QOpcUa::NodeClasses, nodeClassMask));
-
+                                     Q_ARG(QOpcUaBrowseRequest, request));
 }
 
 QString QUACppNode::nodeId() const

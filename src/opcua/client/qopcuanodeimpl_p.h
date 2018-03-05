@@ -75,7 +75,7 @@ public:
     virtual bool readAttributes(QOpcUa::NodeAttributes attr, const QString &indexRange) = 0;
     virtual bool enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings) = 0;
     virtual bool disableMonitoring(QOpcUa::NodeAttributes attr) = 0;
-    virtual bool browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask) = 0;
+    virtual bool browse(const QOpcUaBrowseRequest &request) = 0;
     virtual QString nodeId() const = 0;
 
     virtual bool writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange) = 0;

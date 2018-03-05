@@ -122,19 +122,18 @@ QString QOpen62541Node::nodeId() const
     return m_nodeIdString;
 }
 
-bool QOpen62541Node::browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
+bool QOpen62541Node::browse(const QOpcUaBrowseRequest &request)
 {
     if (!m_client)
         return false;
 
     UA_NodeId tempId;
     UA_NodeId_copy(&m_nodeId, &tempId);
-    return QMetaObject::invokeMethod(m_client->m_backend, "browseChildren",
+    return QMetaObject::invokeMethod(m_client->m_backend, "browse",
                                      Qt::QueuedConnection,
                                      Q_ARG(quint64, handle()),
                                      Q_ARG(UA_NodeId, tempId),
-                                     Q_ARG(QOpcUa::ReferenceTypeId, referenceType),
-                                     Q_ARG(QOpcUa::NodeClasses, nodeClassMask));
+                                     Q_ARG(QOpcUaBrowseRequest, request));
 }
 
 bool QOpen62541Node::writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange)

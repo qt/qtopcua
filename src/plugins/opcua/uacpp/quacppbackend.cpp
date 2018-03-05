@@ -122,7 +122,7 @@ void UACppAsyncBackend::connectionStatusChanged(OpcUa_UInt32 clientConnectionId,
     }
 }
 
-void UACppAsyncBackend::browseChildren(quint64 handle, const UaNodeId &id, QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
+void UACppAsyncBackend::browse(quint64 handle, const UaNodeId &id, const QOpcUaBrowseRequest &request)
 {
     UaStatus status;
     ServiceSettings serviceSettings;
@@ -130,8 +130,10 @@ void UACppAsyncBackend::browseChildren(quint64 handle, const UaNodeId &id, QOpcU
     UaByteString continuationPoint;
     UaReferenceDescriptions referenceDescriptions;
 
-    browseContext.referenceTypeId = UaNodeId(static_cast<OpcUa_UInt32>(referenceType));
-    browseContext.nodeClassMask = nodeClassMask;
+    browseContext.referenceTypeId = UACppUtils::nodeIdFromQString(request.referenceTypeId());
+    browseContext.nodeClassMask = request.nodeClassMask();
+    browseContext.includeSubtype = request.includeSubtypes();
+    browseContext.browseDirection = static_cast<OpcUa_BrowseDirection>(request.browseDirection());
 
     QStringList result;
     QVector<QOpcUaReferenceDescription> ret;
@@ -155,13 +157,22 @@ void UACppAsyncBackend::browseChildren(quint64 handle, const UaNodeId &id, QOpcU
             result.append(QString::fromUtf8(uastr.toUtf8(), uastr.size()));
 
             QOpcUaReferenceDescription temp;
-            temp.setNodeId(UACppUtils::nodeIdToQString(referenceDescriptions[i].NodeId.NodeId));
-            temp.setRefType(static_cast<QOpcUa::ReferenceTypeId>(UaNodeId(referenceDescriptions[i].ReferenceTypeId).identifierNumeric()));
+            QOpcUa::QExpandedNodeId expandedId;
+            expandedId.setNamespaceUri(QString::fromUtf8(UaString(referenceDescriptions[i].NodeId.NamespaceUri).toUtf8()));
+            expandedId.setServerIndex(referenceDescriptions[i].NodeId.ServerIndex);
+            expandedId.setNodeId(UACppUtils::nodeIdToQString(referenceDescriptions[i].NodeId.NodeId));
+            temp.setTargetNodeId(expandedId);
+            expandedId.setNamespaceUri(QString::fromUtf8(UaString(referenceDescriptions[i].TypeDefinition.NamespaceUri).toUtf8()));
+            expandedId.setServerIndex(referenceDescriptions[i].TypeDefinition.ServerIndex);
+            expandedId.setNodeId(UACppUtils::nodeIdToQString(referenceDescriptions[i].TypeDefinition.NodeId));
+            temp.setTypeDefinition(expandedId);
+            temp.setRefTypeId(UACppUtils::nodeIdToQString(UaNodeId(referenceDescriptions[i].ReferenceTypeId)));
             temp.setNodeClass(static_cast<QOpcUa::NodeClass>(referenceDescriptions[i].NodeClass));
             temp.setBrowseName(QUACppValueConverter::scalarToQVariant<QOpcUa::QQualifiedName, OpcUa_QualifiedName>(
                                    &referenceDescriptions[i].BrowseName, QMetaType::Type::UnknownType).value<QOpcUa::QQualifiedName>());
             temp.setDisplayName(QUACppValueConverter::scalarToQVariant<QOpcUa::QLocalizedText, OpcUa_LocalizedText>(
                                     &referenceDescriptions[i].DisplayName, QMetaType::Type::UnknownType).value<QOpcUa::QLocalizedText>());
+            temp.setIsForward(referenceDescriptions[i].IsForward);
             ret.append(temp);
         }
     } while (continuationPoint.length() > 0);

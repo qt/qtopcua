@@ -361,6 +361,8 @@ private slots:
     void childrenIdsGuidNodeId();
     defineDataMethod(childrenIdsOpaqueNodeId_data)
     void childrenIdsOpaqueNodeId();
+    defineDataMethod(inverseBrowse_data)
+    void inverseBrowse();
 
     defineDataMethod(dataChangeSubscription_data)
     void dataChangeSubscription();
@@ -790,7 +792,7 @@ void Tst_QOpcUaClient::childrenIdsString()
     QCOMPARE(spy.size(), 1);
     QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
     QCOMPARE(ref.size(), 1);
-    QCOMPARE(ref.at(0).nodeId(), QStringLiteral("ns=3;s=theStringId"));
+    QCOMPARE(ref.at(0).targetNodeId().nodeId(), QStringLiteral("ns=3;s=theStringId"));
 }
 
 void Tst_QOpcUaClient::childrenIdsGuidNodeId()
@@ -806,7 +808,7 @@ void Tst_QOpcUaClient::childrenIdsGuidNodeId()
     QCOMPARE(spy.size(), 1);
     QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
     QCOMPARE(ref.size(), 1);
-    QCOMPARE(ref.at(0).nodeId(), QStringLiteral("ns=3;g=08081e75-8e5e-319b-954f-f3a7613dc29b"));
+    QCOMPARE(ref.at(0).targetNodeId().nodeId(), QStringLiteral("ns=3;g=08081e75-8e5e-319b-954f-f3a7613dc29b"));
 }
 
 void Tst_QOpcUaClient::childrenIdsOpaqueNodeId()
@@ -822,7 +824,34 @@ void Tst_QOpcUaClient::childrenIdsOpaqueNodeId()
     QCOMPARE(spy.size(), 1);
     QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
     QCOMPARE(ref.size(), 1);
-    QCOMPARE(ref.at(0).nodeId(), QStringLiteral("ns=3;b=UXQgZnR3IQ=="));
+    QCOMPARE(ref.at(0).targetNodeId().nodeId(), QStringLiteral("ns=3;b=UXQgZnR3IQ=="));
+}
+
+void Tst_QOpcUaClient::inverseBrowse()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=0;i=1")); // Boolean DataType
+    QVERIFY(node != nullptr);
+    QSignalSpy spy(node.data(), &QOpcUaNode::browseFinished);
+
+    QOpcUaBrowseRequest request;
+    request.setReferenceTypeId(QOpcUa::ReferenceTypeId::References);
+    request.setIncludeSubtypes(true);
+    request.setNodeClassMask(QOpcUa::NodeClass::Undefined);
+    request.setBrowseDirection(QOpcUaBrowseRequest::BrowseDirection::Inverse);
+    node->browse(request);
+    spy.wait();
+    QCOMPARE(spy.size(), 1);
+    QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
+    QCOMPARE(ref.size(), 1);
+    QCOMPARE(ref.at(0).targetNodeId().nodeId(), QStringLiteral("ns=0;i=24"));
+    QCOMPARE(ref.at(0).isForward(), false);
+    QCOMPARE(ref.at(0).browseName().name(), QStringLiteral("BaseDataType"));
+    QCOMPARE(ref.at(0).displayName().text(), QStringLiteral("BaseDataType"));
+    QCOMPARE(ref.at(0).refTypeId(), QOpcUa::nodeIdFromReferenceType(QOpcUa::ReferenceTypeId::HasSubtype));
+    QCOMPARE(ref.at(0).nodeClass(), QOpcUa::NodeClass::DataType);
 }
 
 void Tst_QOpcUaClient::dataChangeSubscription()

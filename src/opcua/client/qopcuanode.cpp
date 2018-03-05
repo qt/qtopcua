@@ -100,6 +100,7 @@ QT_BEGIN_NAMESPACE
     The OPC UA address space consists of nodes connected by references.
     \l browseChildren follows these references in forward direction and returns attributes from all
     nodes connected to the node behind an instance of \l QOpcUaNode in the \l browseFinished signal.
+    \l browse() is similar to \l browseChildren() but offers more options to configure the browse call.
 
     \section1 Method calls
     OPC UA specifies methods on the server which can be called by the user.
@@ -195,7 +196,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn void QOpcUaNode::browseFinished(QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode)
 
-    This signal is emitted after a \l browseChildren() operation has finished.
+    This signal is emitted after a \l browseChildren() or \l browse() operation has finished.
 
     \a children contains information about all nodes which matched the criteria in \l browseChildren().
     \a statusCode contains the service result of the browse operation. If \a statusCode is not \l {QOpcUa::UaStatusCode} {Good},
@@ -568,7 +569,12 @@ bool QOpcUaNode::browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::N
     if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
         return false;
 
-    return d->m_impl->browseChildren(referenceType, nodeClassMask);
+    QOpcUaBrowseRequest request;
+    request.setReferenceTypeId(referenceType);
+    request.setNodeClassMask(nodeClassMask);
+    request.setBrowseDirection(QOpcUaBrowseRequest::BrowseDirection::Forward);
+    request.setIncludeSubtypes(true);
+    return d->m_impl->browse(request);
 }
 
 /*!
@@ -661,6 +667,30 @@ bool QOpcUaNode::resolveBrowsePath(const QVector<QOpcUa::QRelativePathElement> &
         return 0;
 
     return d->m_impl->resolveBrowsePath(path);
+}
+
+/*!
+    Starts a browse call from this node.
+
+    Returns \c true if the asynchronous call has been successfully dispatched.
+
+    All references matching the criteria specified in \a request are returned in the \l browseFinished() signal.
+
+    For example, an inverse browse call can be used to find the parent node of a property node:
+    \code
+    QOpcUaBrowseRequest request;
+    request.setBrowseDirection(QOpcUaBrowseRequest::BrowseDirection::Inverse);
+    request.setReferenceTypeId(QOpcUa::ReferenceTypeId::HasProperty);
+    propertyNode->browse(request);
+    \endcode
+*/
+bool QOpcUaNode::browse(const QOpcUaBrowseRequest &request)
+{
+  Q_D(QOpcUaNode);
+  if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
+      return false;
+
+  return d->m_impl->browse(request);
 }
 
 QDebug operator<<(QDebug dbg, const QOpcUaNode &node)

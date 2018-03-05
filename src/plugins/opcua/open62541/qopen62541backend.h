@@ -57,7 +57,7 @@ public Q_SLOTS:
     void requestEndpoints(const QUrl &url);
 
     // Node functions
-    void browseChildren(quint64 handle, UA_NodeId id, QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask);
+    void browse(quint64 handle, UA_NodeId id, const QOpcUaBrowseRequest &request);
     void readAttributes(quint64 handle, UA_NodeId id, QOpcUa::NodeAttributes attr, QString indexRange);
 
     void writeAttribute(quint64 handle, UA_NodeId id, QOpcUa::NodeAttribute attrId, QVariant value, QOpcUa::Types type, QString indexRange);

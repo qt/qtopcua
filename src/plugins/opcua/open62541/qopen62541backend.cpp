@@ -407,33 +407,34 @@ static void convertBrowseResult(UA_BrowseResult *src, quint32 referencesSize, QV
 
     for (size_t i = 0; i < referencesSize; ++i) {
         QOpcUaReferenceDescription temp;
-        temp.setNodeId(Open62541Utils::nodeIdToQString(src->references[i].nodeId.nodeId));
-        temp.setRefType(static_cast<QOpcUa::ReferenceTypeId>(src->references[i].referenceTypeId.identifier.numeric));
+        temp.setTargetNodeId(QOpen62541ValueConverter::scalarToQt<QOpcUa::QExpandedNodeId>(&src->references[i].nodeId));
+        temp.setTypeDefinition(QOpen62541ValueConverter::scalarToQt<QOpcUa::QExpandedNodeId>(&src->references[i].typeDefinition));
+        temp.setRefTypeId(Open62541Utils::nodeIdToQString(src->references[i].referenceTypeId));
         temp.setNodeClass(static_cast<QOpcUa::NodeClass>(src->references[i].nodeClass));
         temp.setBrowseName(QOpen62541ValueConverter::scalarToQt<QOpcUa::QQualifiedName, UA_QualifiedName>(&src->references[i].browseName));
         temp.setDisplayName(QOpen62541ValueConverter::scalarToQt<QOpcUa::QLocalizedText, UA_LocalizedText>(&src->references[i].displayName));
+        temp.setIsForward(src->references[i].isForward);
         dst.push_back(temp);
     }
 }
 
-void Open62541AsyncBackend::browseChildren(quint64 handle, UA_NodeId id, QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
+void Open62541AsyncBackend::browse(quint64 handle, UA_NodeId id, const QOpcUaBrowseRequest &request)
 {
-    UA_BrowseRequest request;
-    UA_BrowseRequest_init(&request);
-    request.nodesToBrowse = UA_BrowseDescription_new();
-    request.nodesToBrowseSize = 1;
-    request.nodesToBrowse->browseDirection = UA_BROWSEDIRECTION_FORWARD;
-    request.nodesToBrowse->includeSubtypes = true;
-    request.nodesToBrowse->nodeClassMask = static_cast<quint32>(nodeClassMask);
-    request.nodesToBrowse->nodeId = id;
-    request.nodesToBrowse->resultMask = UA_BROWSERESULTMASK_BROWSENAME | UA_BROWSERESULTMASK_DISPLAYNAME |
-            UA_BROWSERESULTMASK_REFERENCETYPEID | UA_BROWSERESULTMASK_NODECLASS;
-    request.nodesToBrowse->referenceTypeId = UA_NODEID_NUMERIC(0, static_cast<quint32>(referenceType));
-    request.requestedMaxReferencesPerNode = 0; // Let the server choose a maximum value
+    UA_BrowseRequest uaRequest;
+    UA_BrowseRequest_init(&uaRequest);
+    uaRequest.nodesToBrowse = UA_BrowseDescription_new();
+    uaRequest.nodesToBrowseSize = 1;
+    uaRequest.nodesToBrowse->browseDirection = static_cast<UA_BrowseDirection>(request.browseDirection());
+    uaRequest.nodesToBrowse->includeSubtypes = request.includeSubtypes();
+    uaRequest.nodesToBrowse->nodeClassMask = static_cast<quint32>(request.nodeClassMask());
+    uaRequest.nodesToBrowse->nodeId = id;
+    uaRequest.nodesToBrowse->resultMask = UA_BROWSERESULTMASK_ALL;
+    uaRequest.nodesToBrowse->referenceTypeId = Open62541Utils::nodeIdFromQString(request.referenceTypeId());
+    uaRequest.requestedMaxReferencesPerNode = 0; // Let the server choose a maximum value
 
     UA_BrowseResponse *response = UA_BrowseResponse_new();
-    *response = UA_Client_Service_browse(m_uaclient, request);
-    UA_BrowseRequest_deleteMembers(&request);
+    *response = UA_Client_Service_browse(m_uaclient, uaRequest);
+    UA_BrowseRequest_deleteMembers(&uaRequest);
 
     QVector<QOpcUaReferenceDescription> ret;
 

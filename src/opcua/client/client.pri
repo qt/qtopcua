@@ -14,8 +14,8 @@ SOURCES += \
     client/qopcuaclientprivate.cpp \
     client/qopcuabackend.cpp \
     client/qopcuamonitoringparameters.cpp \
-    client/qopcuareferencedescription.cpp \
-    client/qopcuabinarydataencoding.cpp
+    client/qopcuabinarydataencoding.cpp \
+    client/qopcuabrowsing.cpp
 
 HEADERS += \
     client/qopcuaclient_p.h \
@@ -25,6 +25,5 @@ HEADERS += \
     client/qopcuabackend_p.h \
     client/qopcuamonitoringparameters.h \
     client/qopcuamonitoringparameters_p.h \
-    client/qopcuareferencedescription.h \
-    client/qopcuareferencedescription_p.h \
-    client/qopcuabinarydataencoding.h
+    client/qopcuabinarydataencoding.h \
+    client/qopcuabrowsing.h

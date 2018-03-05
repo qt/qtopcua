@@ -34,14 +34,47 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAREFERENCEDESCRIPTION_H
-#define QOPCUAREFERENCEDESCRIPTION_H
+#ifndef QOPCUABROWSING_H
+#define QOPCUABROWSING_H
 
 #include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
+
+class QOpcUaBrowseRequestData;
+class Q_OPCUA_EXPORT QOpcUaBrowseRequest
+{
+public:
+
+    enum class BrowseDirection : quint32 {
+        Forward = 0,
+        Inverse = 1,
+        Both = 2
+    };
+
+    QOpcUaBrowseRequest();
+    QOpcUaBrowseRequest(const QOpcUaBrowseRequest &other);
+    QOpcUaBrowseRequest &operator=(const QOpcUaBrowseRequest &rhs);
+    ~QOpcUaBrowseRequest();
+
+    QOpcUaBrowseRequest::BrowseDirection browseDirection() const;
+    void setBrowseDirection(const QOpcUaBrowseRequest::BrowseDirection &browseDirection);
+
+    QString referenceTypeId() const;
+    void setReferenceTypeId(const QString &referenceTypeId);
+    void setReferenceTypeId(QOpcUa::ReferenceTypeId referenceTypeId);
+
+    bool includeSubtypes() const;
+    void setIncludeSubtypes(bool includeSubtypes);
+
+    QOpcUa::NodeClasses nodeClassMask() const;
+    void setNodeClassMask(const QOpcUa::NodeClasses &nodeClassMask);
+
+private:
+    QSharedDataPointer<QOpcUaBrowseRequestData> data;
+};
 
 class QOpcUaReferenceDescriptionPrivate;
 
@@ -54,16 +87,20 @@ public:
 
     ~QOpcUaReferenceDescription();
 
-    QOpcUa::ReferenceTypeId refType() const;
-    void setRefType(QOpcUa::ReferenceTypeId refType);
-    QString nodeId() const;
-    void setNodeId(const QString &nodeId);
+    QString refTypeId() const;
+    void setRefTypeId(const QString &refTypeId);
+    QOpcUa::QExpandedNodeId targetNodeId() const;
+    void setTargetNodeId(const QOpcUa::QExpandedNodeId &targetNodeId);
     QOpcUa::QQualifiedName browseName() const;
     void setBrowseName(const QOpcUa::QQualifiedName &browseName);
     QOpcUa::QLocalizedText displayName() const;
     void setDisplayName(const QOpcUa::QLocalizedText &displayName);
     QOpcUa::NodeClass nodeClass() const;
     void setNodeClass(QOpcUa::NodeClass nodeClass);
+    void setIsForward(bool isForward);
+    bool isForward() const;
+    void setTypeDefinition(const QOpcUa::QExpandedNodeId &typeDefinition);
+    QOpcUa::QExpandedNodeId typeDefinition() const;
 
 private:
     QSharedDataPointer<QOpcUaReferenceDescriptionPrivate> d_ptr;
@@ -74,5 +111,6 @@ Q_DECLARE_TYPEINFO(QOpcUaReferenceDescription, Q_MOVABLE_TYPE);
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QOpcUaReferenceDescription)
+Q_DECLARE_METATYPE(QOpcUaBrowseRequest)
 
-#endif // QOPCUAREFERENCEDESCRIPTION_H
+#endif // QOPCUABROWSING_H
