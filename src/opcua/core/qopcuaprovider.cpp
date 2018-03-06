@@ -60,7 +60,7 @@ Q_LOGGING_CATEGORY(QT_OPCUA, "qt.opcua")
     loading a QOpcUaPlugin using the Qt plugin system.
 
     For the available plugins and their capabilities please refer to the
-    \l QOpcUaClient documentation.
+    \l {Qt OPC UA} {introduction}.
 
     \section1 Example
     This code creates a client using the first available backend:

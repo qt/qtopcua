@@ -610,7 +610,7 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 }
 
 /*!
-    Creates a node id string from a namespace index and a string identifier.
+    Creates a node id string from the namespace index \a ns and the string \a identifier.
     \sa QOpcUaNode
 */
 QString QOpcUa::nodeIdFromString(quint16 ns, const QString &identifier)
@@ -619,7 +619,7 @@ QString QOpcUa::nodeIdFromString(quint16 ns, const QString &identifier)
 }
 
 /*!
-    Creates a node id string from a namespace index and a byte string identifier.
+    Creates a node id string from the namespace index \a ns and the byte string \a identifier.
     \sa QOpcUaNode
 */
 QString QOpcUa::nodeIdFromByteString(quint16 ns, const QByteArray &identifier)
@@ -628,7 +628,7 @@ QString QOpcUa::nodeIdFromByteString(quint16 ns, const QByteArray &identifier)
 }
 
 /*!
-    Creates a node id string from a namespace index and a GUID identifier.
+    Creates a node id string from the namespace index \a ns and the GUID \a identifier.
     \sa QOpcUaNode
 */
 QString QOpcUa::nodeIdFromGuid(quint16 ns, const QUuid &identifier)
@@ -637,7 +637,7 @@ QString QOpcUa::nodeIdFromGuid(quint16 ns, const QUuid &identifier)
 }
 
 /*!
-    Creates a node id string from a namespace index and a numeric identifier.
+    Creates a node id string from the namespace index \a ns and the integer \a identifier.
     \sa QOpcUaNode
 */
 QString QOpcUa::nodeIdFromInteger(quint16 ns, quint32 identifier)
