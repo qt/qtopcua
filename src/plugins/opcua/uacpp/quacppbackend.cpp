@@ -73,7 +73,8 @@ UACppAsyncBackend::~UACppAsyncBackend()
 
     if (m_nativeSession) {
         if (m_nativeSession->isConnected() != OpcUa_False) {
-            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "UACPP: Deleting backend while still connected";
+            if (m_nativeSession->serverStatus() != UaClient::ConnectionErrorApiReconnect)
+                qCWarning(QT_OPCUA_PLUGINS_UACPP) << "UACPP: Deleting backend while still connected";
             ServiceSettings serviceSettings;
             m_nativeSession->disconnect(serviceSettings, OpcUa_True);
         }
@@ -180,6 +181,7 @@ void UACppAsyncBackend::connectToEndpoint(const QUrl &url)
     sessionConnectInfo.sProductUri      = "urn:Qt:OpcUAClient";
     sessionConnectInfo.sSessionName     = sessionConnectInfo.sApplicationUri;
     sessionConnectInfo.applicationType = OpcUa_ApplicationType_Client;
+    sessionConnectInfo.bAutomaticReconnect = OpcUa_False;
 
     SessionSecurityInfo sessionSecurityInfo;
     if (url.userName().length()) {

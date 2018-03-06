@@ -2031,10 +2031,11 @@ void Tst_QOpcUaClient::connectionLost()
     stringNode->readAttributes(QOpcUa::NodeAttribute::BrowseName);
 
     readSpy.wait();
-    stateSpy.wait();
+    stateSpy.wait(10000); // uacpp and open62541 use a timeout of 5 seconds for service calls, better be safe.
     QCOMPARE(readSpy.size(), 1);
     QVERIFY(readSpy.at(0).at(0).value<QOpcUa::NodeAttributes>() & QOpcUa::NodeAttribute::BrowseName);
     QCOMPARE(stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName), QOpcUa::UaStatusCode::BadConnectionClosed);
+
     QCOMPARE(stateSpy.size(), 1);
     QCOMPARE(stateSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::ClientState::Disconnected);
 }
