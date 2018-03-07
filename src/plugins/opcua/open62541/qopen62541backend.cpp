@@ -422,16 +422,11 @@ void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
     m_uaclient = UA_Client_new(conf);
     UA_StatusCode ret;
 
-    if (url.userName().length()) {
-        QUrl temp = url;
-        const QString userName = temp.userName();
-        const QString password = temp.password();
-        temp.setPassword(QString());
-        temp.setUserName(QString());
-        ret = UA_Client_connect_username(m_uaclient, temp.toString().toUtf8().constData(), userName.toUtf8().constData(), password.toUtf8().constData());
-    } else {
+    if (url.userName().length())
+        ret = UA_Client_connect_username(m_uaclient, url.toString(QUrl::RemoveUserInfo).toUtf8().constData(),
+                                         url.userName().toUtf8().constData(), url.password().toUtf8().constData());
+    else
         ret = UA_Client_connect(m_uaclient, url.toString().toUtf8().constData());
-    }
 
     if (ret != UA_STATUSCODE_GOOD) {
         UA_Client_delete(m_uaclient);
