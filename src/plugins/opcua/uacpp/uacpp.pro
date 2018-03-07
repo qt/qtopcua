@@ -14,6 +14,8 @@ win32 {
     # The UA SDK bundles hardcoded builds of libxml and openssl. Preferably we should get rid of
     # this at some point.
     LIBS += libeay32.lib libxml2.lib
+
+    DEFINES += _UA_STACK_USE_DLL
 }
 unix {
     LIBS += -luaclient -luamodule -luamodels -lcoremodule -luabase -luastack -lxmlparser -luapki -lcrypto -lssl -lxml2

@@ -54,10 +54,16 @@ public:
     void dataChange(OpcUa_UInt32 clientSubscriptionHandle, const UaMonitoredItemNotifications &dataNotifications, const UaDiagnosticInfos &diagnosticInfos) override;
     void newEvents(OpcUa_UInt32 clientSubscriptionHandle, UaEventFieldLists &eventFieldList) override;
 private:
+    OpcUa_ExtensionObject createFilter(const QVariant &filterData);
+
+    bool modifySubscriptionParameters(uintptr_t handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
+    bool modifyMonitoredItemParameters(uintptr_t handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
+
     UACppAsyncBackend *m_backend;
-    QOpcUaMonitoringParameters m_parameters;
+    QOpcUaMonitoringParameters m_subscriptionParameters;
     UaClientSdk::UaSubscription *m_nativeSubscription;
-    QHash<QPair<uintptr_t, QOpcUa::NodeAttribute>, OpcUa_MonitoredItemCreateResult> m_monitoredItems;
+    QHash<QPair<uintptr_t, QOpcUa::NodeAttribute>,
+        QPair<OpcUa_MonitoredItemCreateResult, QOpcUaMonitoringParameters>> m_monitoredItems;
     QHash<quint32, QPair<uintptr_t, QOpcUa::NodeAttribute>> m_monitoredIds;
 };
 

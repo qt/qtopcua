@@ -1854,9 +1854,6 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
 
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("DataChangeFilter support is not implemented in the freeopcua plugin");
-    if (opcuaClient->backend() == QLatin1String("uacpp"))
-        QSKIP("DataChangeFilter support is not implemented in the unified automation plugin");
-
 
     QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
     QVERIFY(doubleNode != 0);
@@ -1923,8 +1920,6 @@ void Tst_QOpcUaClient::modifyPublishingMode()
 
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("Modification of monitoring is not supported in the freeopcua plugin");
-    if (opcuaClient->backend() == QLatin1String("uacpp"))
-        QSKIP("Modification of monitoring is not supported in the unified automation plugin");
 
     QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
     QVERIFY(doubleNode != 0);
@@ -1978,8 +1973,6 @@ void Tst_QOpcUaClient::modifyMonitoringMode()
 
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("Modification of monitoring is not supported in the freeopcua plugin");
-    if (opcuaClient->backend() == QLatin1String("uacpp"))
-        QSKIP("Modification of monitoring is not supported in the unified automation plugin");
 
     QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
     QVERIFY(doubleNode != 0);
@@ -2034,9 +2027,6 @@ void Tst_QOpcUaClient::modifyMonitoredItem()
 
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("Modification of monitoring is not supported in the freeopcua plugin");
-    if (opcuaClient->backend() == QLatin1String("uacpp"))
-        QSKIP("Modification of monitoring is not supported in the unified automation plugin");
-
 
     QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
     QVERIFY(doubleNode != 0);
