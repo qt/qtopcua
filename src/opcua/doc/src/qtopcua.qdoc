@@ -222,7 +222,7 @@
     \li
     \li \l QOpcUa::QEUInformation
     \row
-    \li ComplexNumer
+    \li ComplexNumber
     \li X
     \li
     \li \l QOpcUa::QComplexNumber
