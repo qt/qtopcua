@@ -149,6 +149,6 @@ private:
     QStringList m_backends;
 };
 
-#endif // OPCUAMACHINEBACKEND_H
-
 Q_DECLARE_METATYPE(OpcUaMachineBackend::MachineState)
+
+#endif // OPCUAMACHINEBACKEND_H
