@@ -69,6 +69,8 @@ UACppAsyncBackend::UACppAsyncBackend(QUACppClient *parent)
 
 UACppAsyncBackend::~UACppAsyncBackend()
 {
+    cleanupSubscriptions();
+
     if (m_nativeSession) {
         if (m_nativeSession->isConnected() != OpcUa_False) {
             qCWarning(QT_OPCUA_PLUGINS_UACPP) << "UACPP: Deleting backend while still connected";
@@ -94,6 +96,7 @@ void UACppAsyncBackend::connectionStatusChanged(OpcUa_UInt32 clientConnectionId,
     case UaClient::Disconnected:
         qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Connection closed";
         emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
+        cleanupSubscriptions();
         break;
     case UaClient::Connected:
         qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Connection established";
@@ -105,6 +108,7 @@ void UACppAsyncBackend::connectionStatusChanged(OpcUa_UInt32 clientConnectionId,
     case UaClient::ConnectionErrorApiReconnect:
         qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Connection status changed to ConnectionErrorApiReconnect";
         emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ConnectionError);
+        cleanupSubscriptions();
         break;
     case UaClient::ServerShutdown:
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Unimplemented: Connection status changed to ServerShutdown";
@@ -196,8 +200,9 @@ void UACppAsyncBackend::connectToEndpoint(const QUrl &url)
 
 void UACppAsyncBackend::disconnectFromEndpoint()
 {
-    UaStatus result;
+    cleanupSubscriptions();
 
+    UaStatus result;
     ServiceSettings serviceSettings; // Default settings
     const OpcUa_Boolean deleteSubscriptions{OpcUa_True};
 
@@ -466,6 +471,13 @@ QUACppSubscription *UACppAsyncBackend::getSubscriptionForItem(uintptr_t handle, 
         return nullptr;
 
     return subscription.value();
+}
+
+void UACppAsyncBackend::cleanupSubscriptions()
+{
+    qDeleteAll(m_subscriptions);
+    m_subscriptions.clear();
+    m_attributeMapping.clear();
 }
 
 bool UACppAsyncBackend::removeSubscription(quint32 subscriptionId)

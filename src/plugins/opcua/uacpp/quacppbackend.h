@@ -66,7 +66,7 @@ public Q_SLOTS:
 public:
     QUACppSubscription *getSubscription(const QOpcUaMonitoringParameters &settings);
     QUACppSubscription *getSubscriptionForItem(uintptr_t handle, QOpcUa::NodeAttribute attr);
-
+    void cleanupSubscriptions();
     Q_DISABLE_COPY(UACppAsyncBackend);
     UaClientSdk::UaSession *m_nativeSession;
     QUACppClient *m_clientImpl;
