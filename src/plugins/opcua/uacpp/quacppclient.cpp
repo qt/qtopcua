@@ -84,4 +84,9 @@ QString QUACppClient::backend() const
     return QStringLiteral("uacpp");
 }
 
+bool QUACppClient::requestEndpoints(const QUrl &url)
+{
+    return QMetaObject::invokeMethod(m_backend, "requestEndpoints", Qt::QueuedConnection, Q_ARG(QUrl, url));
+}
+
 QT_END_NAMESPACE

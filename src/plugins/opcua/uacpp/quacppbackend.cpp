@@ -37,6 +37,7 @@
 #include <uabase/uaplatformlayer.h>
 #include <uaclient/uasession.h>
 #include <uabase/uastring.h>
+#include <uaclient/uadiscovery.h>
 
 #include <limits>
 
@@ -217,6 +218,52 @@ void UACppAsyncBackend::disconnectFromEndpoint()
     }
 
     emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, err);
+}
+
+void UACppAsyncBackend::requestEndpoints(const QUrl &url)
+{
+    UaDiscovery discovery;
+    ServiceSettings ServiceSettings;
+    ClientSecurityInfo clientSecurityInfo;
+    UaEndpointDescriptions endpoints;
+    QVector<QOpcUa::QEndpointDescription> ret;
+
+    UaStatus res = discovery.getEndpoints(ServiceSettings, UaString(url.toString(QUrl::RemoveUserInfo).toUtf8().data()), clientSecurityInfo, endpoints);
+
+    if (res.isGood() && endpoints.length()) {
+        for (size_t i = 0; i < endpoints.length() ; ++i) {
+            QOpcUa::QEndpointDescription temp;
+            temp.setEndpointUrl(QString::fromUtf8(UaString(endpoints[i].EndpointUrl).toUtf8()));
+            temp.serverRef().setApplicationUri(QString::fromUtf8(UaString(endpoints[i].Server.ApplicationUri).toUtf8()));
+            temp.serverRef().setProductUri(QString::fromUtf8(UaString(endpoints[i].Server.ProductUri).toUtf8()));
+            temp.serverRef().setApplicationName(QOpcUa::QLocalizedText(QString::fromUtf8(UaString(endpoints[i].Server.ApplicationName.Locale).toUtf8()),
+                                                                 QString::fromUtf8(UaString(endpoints[i].Server.ApplicationName.Text).toUtf8())));
+            temp.serverRef().setApplicationType(static_cast<QOpcUa::QApplicationDescription::ApplicationType>(endpoints[i].Server.ApplicationType));
+            temp.serverRef().setGatewayServerUri(QString::fromUtf8(UaString(endpoints[i].Server.GatewayServerUri).toUtf8()));
+            temp.serverRef().setDiscoveryProfileUri(QString::fromUtf8(UaString(endpoints[i].Server.DiscoveryProfileUri).toUtf8()));
+            for (int j = 0; j < endpoints[i].Server.NoOfDiscoveryUrls; ++j) {
+                QString url = QString::fromUtf8(UaString(endpoints[i].Server.DiscoveryUrls[j]).toUtf8());
+                temp.serverRef().discoveryUrlsRef().append(url);
+            }
+            temp.setServerCertificate(QByteArray(reinterpret_cast<char *>(endpoints[i].ServerCertificate.Data), endpoints[i].ServerCertificate.Length));
+            temp.setSecurityMode(static_cast<QOpcUa::QEndpointDescription::MessageSecurityMode>(endpoints[i].SecurityMode));
+            temp.setSecurityPolicyUri(QString::fromUtf8(UaString(endpoints[i].SecurityPolicyUri).toUtf8()));
+            for (int j = 0; j < endpoints[i].NoOfUserIdentityTokens; ++j) {
+                QOpcUa::QUserTokenPolicy policy;
+                policy.setPolicyId(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].PolicyId).toUtf8()));
+                policy.setTokenType(static_cast<QOpcUa::QUserTokenPolicy::TokenType>(endpoints[i].UserIdentityTokens[j].TokenType));
+                policy.setIssuedTokenType(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].IssuedTokenType).toUtf8()));
+                policy.setIssuerEndpointUrl(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].IssuerEndpointUrl).toUtf8()));
+                policy.setSecurityPolicyUri(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].SecurityPolicyUri).toUtf8()));
+                temp.userIdentityTokensRef().append(policy);
+            }
+            temp.setTransportProfileUri(QString::fromUtf8(UaString(endpoints[i].TransportProfileUri).toUtf8()));
+            temp.setSecurityLevel(endpoints[i].SecurityLevel);
+            ret.append(temp);
+        }
+    }
+
+    emit endpointsRequestFinished(ret, static_cast<QOpcUa::UaStatusCode>(res.code()));
 }
 
 inline OpcUa_UInt32 toUaAttributeId(QOpcUa::NodeAttribute attr)

@@ -183,6 +183,10 @@ private slots:
     defineDataMethod(connectAndDisconnectPassword_data)
     void connectAndDisconnectPassword();
 
+    // Endpoint discovery
+    defineDataMethod(requestEndpoints_data)
+    void requestEndpoints();
+
     defineDataMethod(readInvalidNode_data)
     void readInvalidNode();
     defineDataMethod(writeInvalidNode_data)
@@ -461,6 +465,38 @@ void Tst_QOpcUaClient::connectAndDisconnectPassword()
     QVERIFY(connectSpy.count() == 2);
     QVERIFY(connectSpy.at(0).at(0) == QOpcUaClient::Closing);
     QVERIFY(connectSpy.at(1).at(0) == QOpcUaClient::Disconnected);
+}
+
+void Tst_QOpcUaClient::requestEndpoints()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    QSignalSpy endpointSpy(opcuaClient, &QOpcUaClient::endpointsRequestFinished);
+
+    opcuaClient->requestEndpoints(m_endpoint);
+    endpointSpy.wait();
+    QCOMPARE(endpointSpy.size(), 1);
+
+    QVector<QOpcUa::QEndpointDescription> desc = endpointSpy.at(0).at(0).value<QVector<QOpcUa::QEndpointDescription>>();
+    QVERIFY(desc.size() > 0);
+
+    QCOMPARE(QUrl(desc[0].endpointUrl()).port(), 43344);
+    QCOMPARE(desc[0].securityPolicyUri(), QStringLiteral("http://opcfoundation.org/UA/SecurityPolicy#None"));
+    QCOMPARE(desc[0].transportProfileUri(), QStringLiteral("http://opcfoundation.org/UA-Profile/Transport/uatcp-uasc-uabinary"));
+    QCOMPARE(desc[0].securityLevel(), 0);
+    QCOMPARE(desc[0].securityMode(), QOpcUa::QEndpointDescription::MessageSecurityMode::None);
+    QCOMPARE(desc[0].serverCertificate(), QByteArray());
+
+    QVERIFY(desc[0].userIdentityTokens().size() == 2);
+    QCOMPARE(desc[0].userIdentityTokens()[0].policyId(), QStringLiteral("open62541-anonymous-policy"));
+    QCOMPARE(desc[0].userIdentityTokens()[0].tokenType(), QOpcUa::QUserTokenPolicy::TokenType::Anonymous);
+    QCOMPARE(desc[0].userIdentityTokens()[1].policyId(), QStringLiteral("open62541-username-policy"));
+    QCOMPARE(desc[0].userIdentityTokens()[1].tokenType(), QOpcUa::QUserTokenPolicy::TokenType::Username);
+
+    QCOMPARE(desc[0].serverRef().applicationName().text(), QStringLiteral("open62541-based OPC UA Application"));
+    QCOMPARE(desc[0].serverRef().applicationType(), QOpcUa::QApplicationDescription::ApplicationType::Server);
+    QCOMPARE(desc[0].serverRef().applicationUri(), QStringLiteral("urn:unconfigured:application"));
+    QCOMPARE(desc[0].serverRef().productUri(), QStringLiteral("http://open62541.org"));
 }
 
 void Tst_QOpcUaClient::readInvalidNode()

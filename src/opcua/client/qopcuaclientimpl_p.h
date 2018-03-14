@@ -75,6 +75,8 @@ public:
     virtual void disconnectFromEndpoint() = 0;
     virtual QOpcUaNode *node(const QString &nodeId) = 0;
     virtual QString backend() const = 0;
+    virtual bool requestEndpoints(const QUrl &url) = 0;
+
 
     bool registerNode(QPointer<QOpcUaNodeImpl> obj);
     void unregisterNode(QPointer<QOpcUaNodeImpl> obj);
@@ -103,6 +105,7 @@ signals:
     void disconnected();
     void stateAndOrErrorChanged(QOpcUaClient::ClientState state,
                                 QOpcUaClient::ClientError error);
+    void endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
 private:
     Q_DISABLE_COPY(QOpcUaClientImpl)
     QHash<quint64, QPointer<QOpcUaNodeImpl>> m_handles;

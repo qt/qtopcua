@@ -536,6 +536,57 @@ void Open62541AsyncBackend::disconnectFromEndpoint()
     emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
 }
 
+void Open62541AsyncBackend::requestEndpoints(const QUrl &url)
+{
+    UA_Client *tmpClient = UA_Client_new(UA_ClientConfig_default);
+    size_t numEndpoints = 0;
+    UA_EndpointDescription *endpoints;
+    UA_StatusCode res = UA_Client_getEndpoints(tmpClient, url.toString(QUrl::RemoveUserInfo).toUtf8().constData(), &numEndpoints, &endpoints);
+    QVector<QOpcUa::QEndpointDescription> ret;
+
+    namespace vc = QOpen62541ValueConverter;
+    using namespace QOpcUa;
+    if (res == UA_STATUSCODE_GOOD && numEndpoints) {
+        for (size_t i = 0; i < numEndpoints ; ++i) {
+            QOpcUa::QEndpointDescription epd;
+            QOpcUa::QApplicationDescription &apd = epd.serverRef();
+
+            apd.setApplicationUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].server.applicationUri));
+            apd.setProductUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].server.productUri));
+            apd.setApplicationName(vc::scalarToQt<QLocalizedText, UA_LocalizedText>(&endpoints[i].server.applicationName));
+            apd.setApplicationType(static_cast<QApplicationDescription::ApplicationType>(endpoints[i].server.applicationType));
+            apd.setGatewayServerUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].server.gatewayServerUri));
+            apd.setDiscoveryProfileUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].server.discoveryProfileUri));
+            for (size_t j = 0; j < endpoints[i].server.discoveryUrlsSize; ++j)
+                apd.discoveryUrlsRef().append(vc::scalarToQt<QString, UA_String>(&endpoints[i].server.discoveryUrls[j]));
+
+            epd.setEndpointUrl(vc::scalarToQt<QString, UA_String>(&endpoints[i].endpointUrl));
+            epd.setServerCertificate(vc::scalarToQt<QByteArray, UA_ByteString>(&endpoints[i].serverCertificate));
+            epd.setSecurityMode(static_cast<QEndpointDescription::MessageSecurityMode>(endpoints[i].securityMode));
+            epd.setSecurityPolicyUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].securityPolicyUri));
+            for (size_t j = 0; j < endpoints[i].userIdentityTokensSize; ++j) {
+                QUserTokenPolicy policy;
+                UA_UserTokenPolicy *policySrc = &endpoints[i].userIdentityTokens[j];
+                policy.setPolicyId(vc::scalarToQt<QString, UA_String>(&policySrc->policyId));
+                policy.setTokenType(static_cast<QUserTokenPolicy::TokenType>(endpoints[i].userIdentityTokens[j].tokenType));
+                policy.setIssuedTokenType(vc::scalarToQt<QString, UA_String>(&endpoints[i].userIdentityTokens[j].issuedTokenType));
+                policy.setIssuerEndpointUrl(vc::scalarToQt<QString, UA_String>(&endpoints[i].userIdentityTokens[j].issuerEndpointUrl));
+                policy.setSecurityPolicyUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].userIdentityTokens[j].securityPolicyUri));
+                epd.userIdentityTokensRef().append(policy);
+            }
+
+            epd.setTransportProfileUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].transportProfileUri));
+            epd.setSecurityLevel(endpoints[i].securityLevel);
+            ret.append(epd);
+        }
+        UA_Array_delete(endpoints, numEndpoints, &UA_TYPES[UA_TYPES_ENDPOINTDESCRIPTION]);
+    }
+
+    emit endpointsRequestFinished(ret, static_cast<QOpcUa::UaStatusCode>(res));
+
+    UA_Client_delete(tmpClient);
+}
+
 void Open62541AsyncBackend::sendPublishRequest()
 {
     if (!m_uaclient)

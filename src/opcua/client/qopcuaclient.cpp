@@ -145,6 +145,14 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
+    \fn void QOpcUaClient::endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode)
+
+    This signal is emitted after a \l requestEndpoints() operation has finished.
+    \a statusCode contains the result of the operation. If the result is \l {QOpcUa::UaStatusCode} {Good},
+    \a endpoints contains the descriptions of all endpoints that are available on the server.
+*/
+
+/*!
     \internal QOpcUaClientImpl is an opaque type (as seen from the public API).
     This prevents users of the public API to use this constructor (eventhough
     it is public).
@@ -359,6 +367,19 @@ QOpcUa::QQualifiedName QOpcUaClient::qualifiedNameFromNamespaceUri(const QString
         *ok = true;
 
     return QOpcUa::QQualifiedName(index, name);
+}
+
+/*!
+    Starts an asynchronous \c GetEndpoints request to read a list of available endpoints
+    from the server at \a url.
+    Returns \c true if the asynchronous call has been successfully dispatched.
+
+    The endpoint information is returned in the \l endpointsRequestFinished() signal.
+*/
+bool QOpcUaClient::requestEndpoints(const QUrl &url)
+{
+    Q_D(QOpcUaClient);
+    return d->m_impl->requestEndpoints(url);
 }
 
 /*!

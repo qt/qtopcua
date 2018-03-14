@@ -899,6 +899,129 @@ private:
     QSharedDataPointer<QEventFilterResultData> data;
 };
 
+class QUserTokenPolicyData;
+class Q_OPCUA_EXPORT QUserTokenPolicy
+{
+public:
+    QUserTokenPolicy();
+    QUserTokenPolicy(const QUserTokenPolicy &);
+    QUserTokenPolicy &operator=(const QUserTokenPolicy &);
+    ~QUserTokenPolicy();
+
+    enum TokenType {
+        Anonymous = 0,
+        Username = 1,
+        Certificate = 2,
+        IssuedToken = 3
+    };
+
+    QString policyId() const;
+    void setPolicyId(const QString &value);
+
+    TokenType tokenType() const;
+    void setTokenType(QOpcUa::QUserTokenPolicy::TokenType value);
+
+    QString issuedTokenType() const;
+    void setIssuedTokenType(const QString &value);
+
+    QString issuerEndpointUrl() const;
+    void setIssuerEndpointUrl(const QString &value);
+
+    QString securityPolicyUri() const;
+    void setSecurityPolicyUri(const QString &value);
+
+private:
+    QSharedDataPointer<QUserTokenPolicyData> data;
+};
+
+class QApplicationDescriptionData;
+class Q_OPCUA_EXPORT QApplicationDescription
+{
+public:
+    QApplicationDescription();
+    QApplicationDescription(const QApplicationDescription &);
+    QApplicationDescription &operator=(const QApplicationDescription &);
+    ~QApplicationDescription();
+
+    enum ApplicationType {
+        Server = 0,
+        Client = 1,
+        ClientAndServer = 2,
+        DiscoveryServer = 3
+    };
+
+    QString applicationUri() const;
+    void setApplicationUri(const QString &value);
+
+    QString productUri() const;
+    void setProductUri(const QString &value);
+
+    QOpcUa::QLocalizedText applicationName() const;
+    void setApplicationName(const QOpcUa::QLocalizedText &value);
+
+    QOpcUa::QApplicationDescription::ApplicationType applicationType() const;
+    void setApplicationType(QOpcUa::QApplicationDescription::ApplicationType value);
+
+    QString gatewayServerUri() const;
+    void setGatewayServerUri(const QString &value);
+
+    QString discoveryProfileUri() const;
+    void setDiscoveryProfileUri(const QString &value);
+
+    QVector<QString> discoveryUrls() const;
+    QVector<QString> &discoveryUrlsRef();
+    void setDiscoveryUrls(const QVector<QString> &value);
+
+private:
+    QSharedDataPointer<QApplicationDescriptionData> data;
+};
+
+class QEndpointDescriptionData;
+class Q_OPCUA_EXPORT QEndpointDescription
+{
+public:
+    QEndpointDescription();
+    QEndpointDescription(const QEndpointDescription &);
+    QEndpointDescription &operator=(const QEndpointDescription &);
+    ~QEndpointDescription();
+
+    enum MessageSecurityMode {
+        Invalid = 0,
+        None = 1,
+        Sign = 2,
+        SignAndEncrypt = 3
+    };
+
+    QString endpointUrl() const;
+    void setEndpointUrl(const QString &value);
+
+    QOpcUa::QApplicationDescription server() const;
+    QOpcUa::QApplicationDescription &serverRef();
+    void setServer(const QOpcUa::QApplicationDescription &value);
+
+    QByteArray serverCertificate() const;
+    void setServerCertificate(const QByteArray &value);
+
+    QOpcUa::QEndpointDescription::MessageSecurityMode securityMode() const;
+    void setSecurityMode(const QOpcUa::QEndpointDescription::MessageSecurityMode &value);
+
+    QString securityPolicyUri() const;
+    void setSecurityPolicyUri(const QString &value);
+
+    QVector<QOpcUa::QUserTokenPolicy> userIdentityTokens() const;
+    QVector<QOpcUa::QUserTokenPolicy> &userIdentityTokensRef();
+    void setUserIdentityTokens(const QVector<QOpcUa::QUserTokenPolicy> &value);
+
+    QString transportProfileUri() const;
+    void setTransportProfileUri(const QString &value);
+
+    quint8 securityLevel() const;
+    void setSecurityLevel(const quint8 &value);
+
+private:
+    QSharedDataPointer<QEndpointDescriptionData> data;
+};
+
 }
 
 Q_DECLARE_TYPEINFO(QOpcUa::Types, Q_PRIMITIVE_TYPE);
@@ -940,5 +1063,8 @@ Q_DECLARE_METATYPE(QOpcUa::QSimpleAttributeOperand)
 Q_DECLARE_METATYPE(QOpcUa::QAttributeOperand)
 Q_DECLARE_METATYPE(QOpcUa::QContentFilterElementResult)
 Q_DECLARE_METATYPE(QOpcUa::QEventFilterResult)
+Q_DECLARE_METATYPE(QOpcUa::QUserTokenPolicy)
+Q_DECLARE_METATYPE(QOpcUa::QApplicationDescription)
+Q_DECLARE_METATYPE(QOpcUa::QEndpointDescription)
 
 #endif // QOPCUATYPE

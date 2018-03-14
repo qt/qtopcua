@@ -45,6 +45,8 @@ public:
 
     QString backend() const override;
 
+    bool requestEndpoints(const QUrl &url) override;
+
 private:
     friend class QUACppNode;
     QThread *m_thread;

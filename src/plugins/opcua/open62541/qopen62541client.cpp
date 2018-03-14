@@ -99,4 +99,9 @@ QString QOpen62541Client::backend() const
     return QStringLiteral("open62541");
 }
 
+bool QOpen62541Client::requestEndpoints(const QUrl &url)
+{
+    return QMetaObject::invokeMethod(m_backend, "requestEndpoints", Qt::QueuedConnection, Q_ARG(QUrl, url));
+}
+
 QT_END_NAMESPACE

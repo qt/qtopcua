@@ -133,6 +133,10 @@
     \li Browse path resolution
     \li X
     \li X
+    \row
+    \li GetEndpoints
+    \li X
+    \li X
     \endtable
 
     \section1 Data types

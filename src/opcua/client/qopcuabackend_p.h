@@ -92,6 +92,7 @@ Q_SIGNALS:
 
     void resolveBrowsePathFinished(quint64 handle, const QVector<QOpcUa::QBrowsePathTarget> &targets,
                                      const QVector<QOpcUa::QRelativePathElement> &path, QOpcUa::UaStatusCode status);
+    void endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
 
 private:
     Q_DISABLE_COPY(QOpcUaBackend)

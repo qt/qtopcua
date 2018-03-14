@@ -61,6 +61,7 @@ public Q_SLOTS:
     void disableMonitoring(quint64 handle, QOpcUa::NodeAttributes attr);
     void callMethod(quint64 handle, const UaNodeId &objectId, const UaNodeId &methodId, QVector<QOpcUa::TypedVariant> args);
     void resolveBrowsePath(quint64 handle, const UaNodeId &startNode, const QVector<QOpcUa::QRelativePathElement> &path);
+    void requestEndpoints(const QUrl &url);
 
     bool removeSubscription(quint32 subscriptionId);
 

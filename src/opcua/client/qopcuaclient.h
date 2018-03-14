@@ -87,6 +87,8 @@ public:
     QString resolveExpandedNodeId(const QOpcUa::QExpandedNodeId &expandedNodeId, bool *ok = nullptr) const;
     QOpcUa::QQualifiedName qualifiedNameFromNamespaceUri(const QString &namespaceUri, const QString &name, bool *ok = nullptr) const;
 
+    bool requestEndpoints(const QUrl &url);
+
     QUrl url() const;
 
     ClientState state() const;
@@ -100,6 +102,7 @@ Q_SIGNALS:
     void stateChanged(QOpcUaClient::ClientState state);
     void errorChanged(QOpcUaClient::ClientError error);
     void namespaceArrayUpdated(QStringList namespaces);
+    void endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
 
 private:
     Q_DISABLE_COPY(QOpcUaClient)

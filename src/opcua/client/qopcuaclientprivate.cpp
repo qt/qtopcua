@@ -55,6 +55,12 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
         if (state == QOpcUaClient::ClientState::Connected)
             updateNamespaceArray();
     });
+
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::endpointsRequestFinished, m_impl.data(),
+                     [this](const QVector<QOpcUa::QEndpointDescription> &e, QOpcUa::UaStatusCode s) {
+        Q_Q(QOpcUaClient);
+        emit q->endpointsRequestFinished(e, s);
+    });
 }
 
 QOpcUaClientPrivate::~QOpcUaClientPrivate()

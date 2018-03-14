@@ -54,6 +54,7 @@ public:
 public Q_SLOTS:
     void connectToEndpoint(const QUrl &url);
     void disconnectFromEndpoint();
+    void requestEndpoints(const QUrl &url);
 
     // Node functions
     void browseChildren(quint64 handle, UA_NodeId id, QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask);

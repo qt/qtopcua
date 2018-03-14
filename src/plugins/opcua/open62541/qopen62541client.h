@@ -61,6 +61,8 @@ public:
 
     QString backend() const override;
 
+    bool requestEndpoints(const QUrl &url) override;
+
 private slots:
 
 private:

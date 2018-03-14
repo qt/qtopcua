@@ -2788,4 +2788,524 @@ void QOpcUa::QEventFilterResult::setSelectClauseResults(const QVector<QOpcUa::Ua
     data->selectClauseResults = value;
 }
 
+/*!
+    \class QOpcUa::QUserTokenPolicy
+    \inmodule QtOpcUa
+    \inheaderfile QtOpcUa/qopcuatype.h
+    \brief The OPC UA UserTokenPolicy
+
+    The user token policy contains information about an user token accepted by the server.
+*/
+
+/*!
+    \enum QOpcUa::QUserTokenPolicy::TokenType
+
+    \value Anonymous No token required.
+    \value Username Username and password are required.
+    \value Certificate A client certificate is required.
+    \value IssuedToken Any Web Services Security (WS-Security) defined token.
+*/
+
+class QOpcUa::QUserTokenPolicyData : public QSharedData
+{
+public:
+    QString policyId;
+    QOpcUa::QUserTokenPolicy::TokenType tokenType{QOpcUa::QUserTokenPolicy::TokenType::Anonymous};
+    QString issuedTokenType;
+    QString issuerEndpointUrl;
+    QString securityPolicyUri;
+};
+
+QOpcUa::QUserTokenPolicy::QUserTokenPolicy()
+    : data(new QOpcUa::QUserTokenPolicyData)
+{
+}
+
+/*!
+    Constructs an user token policy from \a rhs.
+*/
+QOpcUa::QUserTokenPolicy::QUserTokenPolicy(const QUserTokenPolicy &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Sets the values from \a rhs in this user token policy.
+*/
+QOpcUa::QUserTokenPolicy &QOpcUa::QUserTokenPolicy::operator=(const QOpcUa::QUserTokenPolicy &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+QOpcUa::QUserTokenPolicy::~QUserTokenPolicy()
+{
+}
+
+/*!
+    Returns the URI of the security policy required when encrypting or signing the token for ActivateSession.
+*/
+QString QOpcUa::QUserTokenPolicy::securityPolicyUri() const
+{
+    return data->securityPolicyUri;
+}
+
+/*!
+    Sets the URI of the security policy to \a value.
+*/
+void QOpcUa::QUserTokenPolicy::setSecurityPolicyUri(const QString &value)
+{
+    data->securityPolicyUri = value;
+}
+
+/*!
+    Returns the URL of a token issuing service.
+*/
+QString QOpcUa::QUserTokenPolicy::issuerEndpointUrl() const
+{
+    return data->issuerEndpointUrl;
+}
+
+/*!
+    Sets the URL of the token issuing service to \a value.
+*/
+void QOpcUa::QUserTokenPolicy::setIssuerEndpointUrl(const QString &value)
+{
+    data->issuerEndpointUrl = value;
+}
+
+/*!
+    Returns the URI for the token type.
+*/
+QString QOpcUa::QUserTokenPolicy::issuedTokenType() const
+{
+    return data->issuedTokenType;
+}
+
+/*!
+    Sets the URI for the token type to \a value.
+*/
+void QOpcUa::QUserTokenPolicy::setIssuedTokenType(const QString &value)
+{
+    data->issuedTokenType = value;
+}
+
+/*!
+    Returns the type of the required user identity token.
+*/
+QOpcUa::QUserTokenPolicy::TokenType QOpcUa::QUserTokenPolicy::tokenType() const
+{
+    return data->tokenType;
+}
+
+/*!
+    Sets the type of the required user identity token to \a value.
+*/
+void QOpcUa::QUserTokenPolicy::setTokenType(TokenType value)
+{
+    data->tokenType = value;
+}
+
+/*!
+    Returns a server assigned identifier for this policy.
+*/
+QString QOpcUa::QUserTokenPolicy::policyId() const
+{
+    return data->policyId;
+}
+
+/*!
+    Sets the identifier for this policy to \a value.
+*/
+void QOpcUa::QUserTokenPolicy::setPolicyId(const QString &value)
+{
+    data->policyId = value;
+}
+
+/*!
+    \class QOpcUa::QApplicationDescription
+    \inmodule QtOpcUa
+    \inheaderfile QtOpcUa/qopcuatype.h
+    \brief The OPC UA ApplicationDescription
+
+    The application description contains information about an OPC UA application.
+*/
+
+/*!
+    \enum QOpcUa::QApplicationDescription::ApplicationType
+
+    \value Server This application is a server.
+    \value Client This application is a client.
+    \value ClientAndServer This application is a client and a server.
+    \value DiscoveryServer This application is a discovery server.
+*/
+
+class QOpcUa::QApplicationDescriptionData : public QSharedData
+{
+public:
+    QString applicationUri;
+    QString productUri;
+    QOpcUa::QLocalizedText applicationName;
+    QOpcUa::QApplicationDescription::ApplicationType applicationType{QOpcUa::QApplicationDescription::ApplicationType::Server};
+    QString gatewayServerUri;
+    QString discoveryProfileUri;
+    QVector<QString> discoveryUrls;
+};
+
+QOpcUa::QApplicationDescription::QApplicationDescription()
+    : data(new QOpcUa::QApplicationDescriptionData)
+{
+}
+
+/*!
+    Constructs an application description from \a other.
+*/
+QOpcUa::QApplicationDescription::QApplicationDescription(const QOpcUa::QApplicationDescription &other)
+    : data(other.data)
+{
+}
+
+/*!
+    Sets the values from \a other in this application description.
+*/
+QOpcUa::QApplicationDescription &QOpcUa::QApplicationDescription::operator=(const QOpcUa::QApplicationDescription &other)
+{
+    this->data = other.data;
+    return *this;
+}
+
+QOpcUa::QApplicationDescription::~QApplicationDescription()
+{
+}
+
+/*!
+    Returns a list of URLs of discovery endpoints.
+*/
+QVector<QString> QOpcUa::QApplicationDescription::discoveryUrls() const
+{
+    return data->discoveryUrls;
+}
+
+/*!
+    Returns a reference to a list of URLs of discovery endpoints.
+*/
+QVector<QString> &QOpcUa::QApplicationDescription::discoveryUrlsRef()
+{
+    return data->discoveryUrls;
+}
+
+/*!
+    Sets the discovery URLs to \a value.
+*/
+void QOpcUa::QApplicationDescription::setDiscoveryUrls(const QVector<QString> &value)
+{
+    data->discoveryUrls = value;
+}
+
+/*!
+    Returns the URI of the supported discovery profile.
+*/
+QString QOpcUa::QApplicationDescription::discoveryProfileUri() const
+{
+    return data->discoveryProfileUri;
+}
+
+/*!
+    Sets the discovery profile URI to \a value.
+*/
+void QOpcUa::QApplicationDescription::setDiscoveryProfileUri(const QString &value)
+{
+    data->discoveryProfileUri = value;
+}
+
+/*!
+    Returns the URI of the gateway server.
+*/
+QString QOpcUa::QApplicationDescription::gatewayServerUri() const
+{
+    return data->gatewayServerUri;
+}
+
+/*!
+    Sets the URI of the gateway server to \a value.
+*/
+void QOpcUa::QApplicationDescription::setGatewayServerUri(const QString &value)
+{
+    data->gatewayServerUri = value;
+}
+
+/*!
+    Returns the application's type (server, client, both, discovery server).
+*/
+QOpcUa::QApplicationDescription::ApplicationType QOpcUa::QApplicationDescription::applicationType() const
+{
+    return data->applicationType;
+}
+
+/*!
+    Sets the application type to \a value.
+*/
+void QOpcUa::QApplicationDescription::setApplicationType(ApplicationType value)
+{
+    data->applicationType = value;
+}
+
+/*!
+    Returns a name describing the application.
+*/
+QOpcUa::QLocalizedText QOpcUa::QApplicationDescription::applicationName() const
+{
+    return data->applicationName;
+}
+
+/*!
+    Sets the application name to \a value.
+*/
+void QOpcUa::QApplicationDescription::setApplicationName(const QOpcUa::QLocalizedText &value)
+{
+    data->applicationName = value;
+}
+
+/*!
+    Returns the globally unique identifier for this product.
+*/
+QString QOpcUa::QApplicationDescription::productUri() const
+{
+    return data->productUri;
+}
+
+/*!
+    Sets the globally unique identifier for this product to \a value.
+*/
+void QOpcUa::QApplicationDescription::setProductUri(const QString &value)
+{
+    data->productUri = value;
+}
+
+/*!
+    Returns the globally unique identifier for this application instance.
+*/
+QString QOpcUa::QApplicationDescription::applicationUri() const
+{
+    return data->applicationUri;
+}
+
+/*!
+    Sets the globally unique identifier for this application instance to \a value.
+*/
+void QOpcUa::QApplicationDescription::setApplicationUri(const QString &value)
+{
+    data->applicationUri = value;
+}
+
+/*!
+    \class QOpcUa::QEndpointDescription
+    \inmodule QtOpcUa
+    \inheaderfile QtOpcUa/qopcuatype.h
+    \brief The OPC UA EndpointDescription
+
+    An endpoint description contains information about an endpoint and how to connect to it.
+*/
+
+/*!
+    \enum QOpcUa::QEndpointDescription::MessageSecurityMode
+
+    \value Invalid The default value, will be rejected by the server.
+    \value None No security.
+    \value Sign Messages are signed but not encrypted.
+    \value SignAndEncrypt Messages are signed and encrypted.
+*/
+
+class QOpcUa::QEndpointDescriptionData : public QSharedData
+{
+public:
+    QString endpointUrl;
+    QOpcUa::QApplicationDescription server;
+    QByteArray serverCertificate;
+    QOpcUa::QEndpointDescription::MessageSecurityMode securityMode{QOpcUa::QEndpointDescription::MessageSecurityMode::None};
+    QString securityPolicyUri;
+    QVector<QOpcUa::QUserTokenPolicy> userIdentityTokens;
+    QString transportProfileUri;
+    quint8 securityLevel{0};
+};
+
+QOpcUa::QEndpointDescription::QEndpointDescription()
+    : data(new QOpcUa::QEndpointDescriptionData)
+{
+}
+
+/*!
+    Constructs an endpoint description from \a rhs.
+*/
+QOpcUa::QEndpointDescription::QEndpointDescription(const QOpcUa::QEndpointDescription &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Sets the values from \a rhs in this endpoint description.
+*/
+QOpcUa::QEndpointDescription &QOpcUa::QEndpointDescription::operator=(const QOpcUa::QEndpointDescription &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+QOpcUa::QEndpointDescription::~QEndpointDescription()
+{
+}
+
+/*!
+    Returns a relative index assigned by the server. It describes how secure this
+    endpoint is compared to other endpoints of the same server. An endpoint with strong
+    security measures has a higher security level than one with weaker or no security
+    measures.
+
+    Security level 0 indicates an endpoint for backward compatibility purposes which
+    should only be used if the client does not support the security measures required
+    by more secure endpoints.
+*/
+quint8 QOpcUa::QEndpointDescription::securityLevel() const
+{
+    return data->securityLevel;
+}
+
+/*!
+    Sets the security level to \a value.
+*/
+void QOpcUa::QEndpointDescription::setSecurityLevel(const quint8 &value)
+{
+    data->securityLevel = value;
+}
+
+/*!
+    Returns the URI of the transport profile supported by the endpoint.
+*/
+QString QOpcUa::QEndpointDescription::transportProfileUri() const
+{
+    return data->transportProfileUri;
+}
+
+/*!
+    Sets the URI of the transport profile supported by the endpoint to \a value.
+*/
+void QOpcUa::QEndpointDescription::setTransportProfileUri(const QString &value)
+{
+    data->transportProfileUri = value;
+}
+
+/*!
+    Returns a list of user identity tokens the endpoint will accept.
+*/
+QVector<QOpcUa::QUserTokenPolicy> QOpcUa::QEndpointDescription::userIdentityTokens() const
+{
+    return data->userIdentityTokens;
+}
+
+/*!
+    Returns a reference to a list of user identity tokens the endpoint will accept.
+*/
+QVector<QOpcUa::QUserTokenPolicy> &QOpcUa::QEndpointDescription::userIdentityTokensRef()
+{
+    return data->userIdentityTokens;
+}
+
+/*!
+    Sets the user identity tokens to \a value.
+*/
+void QOpcUa::QEndpointDescription::setUserIdentityTokens(const QVector<QOpcUa::QUserTokenPolicy> &value)
+{
+    data->userIdentityTokens = value;
+}
+
+/*!
+    Returns the URI of the security policy.
+*/
+QString QOpcUa::QEndpointDescription::securityPolicyUri() const
+{
+    return data->securityPolicyUri;
+}
+
+/*!
+    Sets the URI of the security policy to \a value.
+*/
+void QOpcUa::QEndpointDescription::setSecurityPolicyUri(const QString &value)
+{
+    data->securityPolicyUri = value;
+}
+
+/*!
+    Returns the security mode supported by this endpoint.
+*/
+QOpcUa::QEndpointDescription::MessageSecurityMode QOpcUa::QEndpointDescription::securityMode() const
+{
+    return data->securityMode;
+}
+
+/*!
+    Sets the security mode supported by this endpoint to \a value.
+*/
+void QOpcUa::QEndpointDescription::setSecurityMode(const MessageSecurityMode &value)
+{
+    data->securityMode = value;
+}
+
+/*!
+    Returns the application instance certificate of the server.
+*/
+QByteArray QOpcUa::QEndpointDescription::serverCertificate() const
+{
+    return data->serverCertificate;
+}
+
+/*!
+    Sets the application instance certificate of the server to \a value.
+*/
+void QOpcUa::QEndpointDescription::setServerCertificate(const QByteArray &value)
+{
+    data->serverCertificate = value;
+}
+
+/*!
+    Returns the application description of the server.
+*/
+QOpcUa::QApplicationDescription QOpcUa::QEndpointDescription::server() const
+{
+    return data->server;
+}
+
+/*!
+    Returns a reference to the application description of the server.
+*/
+QOpcUa::QApplicationDescription &QOpcUa::QEndpointDescription::serverRef()
+{
+    return data->server;
+}
+
+/*!
+    Sets the application description of the server to \a value.
+*/
+void QOpcUa::QEndpointDescription::setServer(const QOpcUa::QApplicationDescription &value)
+{
+    data->server = value;
+}
+
+/*!
+    Returns the URL for the endpoint.
+*/
+QString QOpcUa::QEndpointDescription::endpointUrl() const
+{
+    return data->endpointUrl;
+}
+
+/*!
+    Sets the URL for the endpoint to \a value.
+*/
+void QOpcUa::QEndpointDescription::setEndpointUrl(const QString &value)
+{
+    data->endpointUrl = value;
+}
+
 QT_END_NAMESPACE
