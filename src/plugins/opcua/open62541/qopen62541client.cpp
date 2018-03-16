@@ -71,14 +71,6 @@ void QOpen62541Client::connectToEndpoint(const QUrl &url)
     QMetaObject::invokeMethod(m_backend, "connectToEndpoint", Qt::QueuedConnection, Q_ARG(QUrl, url));
 }
 
-void QOpen62541Client::secureConnectToEndpoint(const QUrl &url)
-{
-    Q_UNIMPLEMENTED();
-    Q_UNUSED(url)
-    emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::SecureConnectionError);
-    return;
-}
-
 void QOpen62541Client::disconnectFromEndpoint()
 {
     QMetaObject::invokeMethod(m_backend, "disconnectFromEndpoint", Qt::QueuedConnection);

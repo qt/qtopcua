@@ -72,10 +72,8 @@ public:
     virtual ~QOpcUaClientImpl();
 
     virtual void connectToEndpoint(const QUrl &url) = 0;
-    virtual void secureConnectToEndpoint(const QUrl &url) = 0;
     virtual void disconnectFromEndpoint() = 0;
     virtual QOpcUaNode *node(const QString &nodeId) = 0;
-    virtual bool isSecureConnectionSupported() const = 0;
     virtual QString backend() const = 0;
 
     void registerNode(QPointer<QOpcUaNodeImpl> obj);
@@ -88,7 +86,7 @@ public:
 private Q_SLOTS:
     void handleAttributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
     void handleAttributeWritten(uintptr_t handle, QOpcUa::NodeAttribute attr, const QVariant &value, QOpcUa::UaStatusCode statusCode);
-    void handleAttributeUpdated(uintptr_t handle, QOpcUa::NodeAttribute attr, const QVariant &value);
+    void handleAttributeUpdated(uintptr_t handle, const QOpcUaReadResult &value);
     void handleMonitoringEnableDisable(uintptr_t handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
     void handleMonitoringStatusChanged(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                                  QOpcUaMonitoringParameters param);

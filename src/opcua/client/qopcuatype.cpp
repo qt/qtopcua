@@ -36,6 +36,8 @@
 
 #include "qopcuatype.h"
 
+#include <QUuid>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -43,7 +45,7 @@ QT_BEGIN_NAMESPACE
     \ingroup modules
     \inmodule QtOpcua
 
-    \brief The QOpcUa namespace contains miscellaneous identifiers used throughout the Qt OpcUa library.
+    \brief The QOpcUa namespace contains miscellaneous identifiers used throughout the Qt OPC UA library.
 */
 
 /*!
@@ -135,7 +137,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \enum QOpcUa::Types
 
-    Enumerates the types supported by Qt OpcUa.
+    Enumerates the types supported by Qt OPC UA.
 
     \value Boolean
     \value Int32
@@ -420,7 +422,7 @@ QT_BEGIN_NAMESPACE
 /*!
     This method can be used to check if a call has successfully finished.
 
-    Returns true if \a statusCode's serverity field is Good.
+    Returns \c true if \a statusCode's serverity field is Good.
 */
 bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
 {
@@ -434,11 +436,13 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
 */
 
 /*!
-  \class QOpcUa::QQualifiedName
+    \class QOpcUa::QQualifiedName
+    \inmodule QtOpcUa
+    \brief The OPC UA QualifiedName type
 
-  This is the QtOpcUa representation for the OPC UA QualifiedName type defined in OPC-UA part 3, 8.3.
-  A QualifiedName is a name qualified by a namespace index. The namespace index corresponds to an entry in the server's namespace array.
-  QualifiedName is mainly used to represent the BrowseName attribute of a node.
+    This is the Qt OPC UA representation for the OPC UA QualifiedName type defined in OPC-UA part 3, 8.3.
+    A QualifiedName is a name qualified by a namespace index. The namespace index corresponds to an entry in the server's namespace array.
+    QualifiedName is mainly used to represent the BrowseName attribute of a node.
 */
 
 /*!
@@ -450,7 +454,7 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
 /*!
     \fn bool QOpcUa::QQualifiedName::operator==(const QQualifiedName &other) const
 
-    Compares this QQualifiedName to \a other.
+    Returns \c true if this QQualifiedName has the same value as \a other.
 */
 
 /*!
@@ -466,13 +470,15 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
 */
 
 /*!
-  \class QOpcUa::QLocalizedText
+    \class QOpcUa::QLocalizedText
+    \inmodule QtOpcUa
+    \brief The OPC UA LocalizedText type
 
-  This is the QtOpcUa representation for the OPC UA LocalizedText type defined in OPC-UA part 3, 8.5.
-  A LocalizedText value contains a text string with associated locale information in a second string (e. g. "en" or "en-US").
-  The format of the locale information string is <language>[-<country/region>]. Language is usually given as ISO 639 two letter code,
-  country/region as ISO 3166 two letter code. Custom codes are also allowed (see OPC-UA part 3, 8.4).
-  It can be used to provide multiple text strings in different languages for a value using an array of LocalizedText elements.
+    This is the Qt OPC UA representation for the OPC UA LocalizedText type defined in OPC-UA part 3, 8.5.
+    A LocalizedText value contains a text string with associated locale information in a second string (e. g. "en" or "en-US").
+    The format of the locale information string is <language>[-<country/region>]. Language is usually given as ISO 639 two letter code,
+    country/region as ISO 3166 two letter code. Custom codes are also allowed (see OPC-UA part 3, 8.4).
+    It can be used to provide multiple text strings in different languages for a value using an array of LocalizedText elements.
 */
 
 /*!
@@ -484,7 +490,7 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
 /*!
     \fn bool QOpcUa::QLocalizedText::operator==(const QLocalizedText &other) const
 
-    Compares this QLocalizedText to \a other.
+    Returns \c true if this QLocalizedText has the same value as \a other.
 */
 
 /*!
@@ -604,9 +610,47 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 }
 
 /*!
-    \class QOpcUa::QRange
+    Creates a node id string from the namespace index \a ns and the string \a identifier.
+    \sa QOpcUaNode
+*/
+QString QOpcUa::nodeIdFromString(quint16 ns, const QString &identifier)
+{
+    return QStringLiteral("ns=%1;s=%2").arg(ns).arg(identifier);
+}
 
-    This is the QtOpcUa representation for the OPC UA Range type defined in OPC-UA part 8, 5.6.2.
+/*!
+    Creates a node id string from the namespace index \a ns and the byte string \a identifier.
+    \sa QOpcUaNode
+*/
+QString QOpcUa::nodeIdFromByteString(quint16 ns, const QByteArray &identifier)
+{
+    return QStringLiteral("ns=%1;b=%2").arg(ns).arg(QString::fromUtf8(identifier.toBase64()));
+}
+
+/*!
+    Creates a node id string from the namespace index \a ns and the GUID \a identifier.
+    \sa QOpcUaNode
+*/
+QString QOpcUa::nodeIdFromGuid(quint16 ns, const QUuid &identifier)
+{
+    return QStringLiteral("ns=%1;g=").arg(ns).append(identifier.toString().midRef(1, 36)); // Remove enclosing {...};
+}
+
+/*!
+    Creates a node id string from the namespace index \a ns and the integer \a identifier.
+    \sa QOpcUaNode
+*/
+QString QOpcUa::nodeIdFromInteger(quint16 ns, quint32 identifier)
+{
+    return QStringLiteral("ns=%1;i=%2").arg(ns).arg(identifier);
+}
+
+/*!
+    \class QOpcUa::QRange
+    \inmodule QtOpcUa
+    \brief The OPC UA Range type
+
+    This is the Qt OPC UA representation for the OPC UA Range type defined in OPC-UA part 8, 5.6.2.
     It consists of two double values which mark minimum and maximum of the range.
     Ranges are mostly used to store information about acceptable values for a node.
 */
@@ -622,17 +666,23 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 */
 
 /*!
-    \class QOpcUa::QEUInformation
+    \fn bool QOpcUa::QRange::operator==(const QOpcUa::QRange &other) const
+    Returns \c true if this QRange has the same value as \a other.
+*/
 
-    This is the QtOpcUa representation for the OPC UA EUInformation type defined in OPC-UA part 8, 5.6.3.
+/*!
+    \class QOpcUa::QEUInformation
+    \inmodule QtOpcUa
+    \brief The OPC UA EURange type
+
+    This is the Qt OPC UA representation for the OPC UA EUInformation type defined in OPC-UA part 8, 5.6.3.
     EUInformation values contain information about units and are mostly used as property of a node with a numeric value attribute.
     The information can e. g. be used to add text and tooltips to GUI elements.
 */
 
 /*!
     \fn bool QOpcUa::QEUInformation::operator==(const QEUInformation &other) const
-
-    Compares this QEUInformation to \a other.
+    Returns \c true if this QEUInformation has the same value as \a other.
 */
 
 /*!
@@ -661,6 +711,8 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 
 /*!
     \class QOpcUa::QComplexNumber
+    \inmodule QtOpcUa
+    \brief The OPC UA ComplexNumber type
 
     The ComplexNumberType defined in OPC-UA part 8, 5.6.4.
     It stores a complex number with float precision.
@@ -679,7 +731,14 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 */
 
 /*!
+    \fn bool QOpcUa::QComplexNumber::operator==(const QOpcUa::QComplexNumber &other) const
+    Returns \c true if this QComplexNumber has the same value as \a other.
+*/
+
+/*!
     \class QOpcUa::QDoubleComplexNumber
+    \inmodule QtOpcUa
+    \brief The OPC UA DoubleComplexNumber type
 
     The DoubleComplexNumberType defined in OPC-UA part 8, 5.6.5.
     It stores a complex number with double precision.
@@ -697,6 +756,10 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
     The imaginary part of the value.
 */
 
+/*!
+    \fn bool QOpcUa::QDoubleComplexNumber::operator==(const QOpcUa::QDoubleComplexNumber &other) const
+    Returns \c true if this QDoubleComplexNumber has the same value as \a other.
+*/
 
 /*!
     \enum QOpcUa::AxisScale
@@ -710,8 +773,10 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 
 /*!
     \class QOpcUa::QAxisInformation
+    \inmodule QtOpcUa
+    \brief The OPC UA AxisInformation type
 
-    This is the QtOpcUa representation for the OPC UA AxisInformation type defined in OPC-UA part 8, 5.6.6.
+    This is the Qt OPC UA representation for the OPC UA AxisInformation type defined in OPC-UA part 8, 5.6.6.
     It contains information about an axis which can be used for multiple purposes. A common use case could
     involve the plotting of display data. The engineering units and the title are used for the text on the plot,
     range, axisScaleType and axisSteps provide the scaling and the axis ranges of the plot.
@@ -719,8 +784,7 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 
 /*!
     \fn bool QOpcUa::QAxisInformation::operator==(const QAxisInformation &other) const
-
-    Compares this QAxisInformation to \a other.
+    Returns \c true if this QAxisInformation has the same value as \a other.
 */
 
 /*!
@@ -760,8 +824,10 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 
 /*!
     \class QOpcUa::QXValue
+    \inmodule QtOpcUa
+    \brief The OPC UA XVType
 
-    This is the QtOpcUa representation for the OPC UA XVType type defined in OPC-UA part 8, 5.6.8.
+    This is the Qt OPC UA representation for the OPC UA XVType type defined in OPC-UA part 8, 5.6.8.
     This type is used to position values of float precision on an axis with double precision.
 */
 
@@ -775,6 +841,17 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
     \variable QOpcUa::QXValue::value
 
     The value for position x.
+*/
+
+/*!
+    \fn bool QOpcUa::QXValue::operator==(const QOpcUa::QXValue &other) const
+    Returns \c true if this QXValue has the same value as \a other.
+*/
+
+/*!
+    \fn inline uint QOpcUa::qHash(const QOpcUa::NodeAttribute& attr)
+
+    Returns a \l QHash key for \a attr.
 */
 
 QT_END_NAMESPACE

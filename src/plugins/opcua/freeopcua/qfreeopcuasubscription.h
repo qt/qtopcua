@@ -56,6 +56,8 @@ public:
     // FreeOPC-UA callbacks
     void DataChange(uint32_t handle, const OpcUa::Node &node, const OpcUa::Variant &val,
                     OpcUa::AttributeId attr) override;
+    void DataValueChange(uint32_t handle, const OpcUa::Node &node, const OpcUa::DataValue &val,
+                    OpcUa::AttributeId attr) override;
     void StatusChange(OpcUa::StatusCode status) override;
 
     quint32 createOnServer();

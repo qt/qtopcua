@@ -65,8 +65,8 @@ public:
         , monitoringMode(QOpcUaMonitoringParameters::MonitoringMode::Reporting)
         , subscriptionId(0)
         , publishingInterval(0)
-        , lifetimeCount(0)
-        , maxKeepAliveCount(0)
+        , lifetimeCount(150) // Must be at least three times the maxKeepAliveCount (OPC-UA part 4, page 76).
+        , maxKeepAliveCount(50) // Allow 50 publishing intervals before a keepalive is expected to reduce the network traffic.
         , maxNotificationsPerPublish(0)
         , priority(0)
         , publishingEnabled(true)
@@ -91,7 +91,7 @@ public:
     quint8 priority;
     bool publishingEnabled;
 
-    // QtOpcUa specific
+    // Qt OPC UA specific
     QOpcUa::UaStatusCode statusCode;
     QOpcUaMonitoringParameters::SubscriptionType shared;
 };

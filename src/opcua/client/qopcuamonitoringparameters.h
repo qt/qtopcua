@@ -117,6 +117,7 @@ public:
     double samplingInterval() const;
     void setSamplingInterval(double samplingInterval);
     QVariant filter() const;
+    void setDataChangeFilter(const DataChangeFilter &filter);
     void setFilter(const QVariant &filter);
     quint32 queueSize() const;
     void setQueueSize(quint32 queueSize);
@@ -163,5 +164,6 @@ Q_DECLARE_METATYPE(QOpcUaMonitoringParameters::DataChangeFilter::DataChangeTrigg
 Q_DECLARE_METATYPE(QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType)
 Q_DECLARE_METATYPE(QOpcUaMonitoringParameters::Parameter)
 Q_DECLARE_METATYPE(QOpcUaMonitoringParameters::Parameters)
+Q_DECLARE_METATYPE(QOpcUaMonitoringParameters::MonitoringMode)
 
 #endif // QOPCUAMONITORINGPARAMETERS_H

@@ -49,7 +49,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 
     \brief QOpcUaClient allows interaction with an OPC UA server.
 
-    \chapter QOpcUaClient
+    \section1 QOpcUaClient
 
     QOpcUaClient implements basic client capabilities to communicate with
     OPC UA enabled devices and applications. This includes connecting,
@@ -58,6 +58,28 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
     \section1 Addressing Nodes
 
     For an introduction to nodes and node ids, see \l QOpcUaNode.
+
+    \section1 Usage
+    Create a \l QOpcUaClient using \l QOpcUaProvider and call \l connectToEndpoint() to connect to a server.
+    After the connection is established, a \l QOpcUaNode object for the root node is requested.
+    \code
+    QOpcUaProvider provider;
+    if (provider.isEmpty())
+        return;
+    QOpcUaClient *client = provider.createClient(provider.availableBackends()[0]);
+    if (!client)
+        return;
+    // Connect to the stateChanged signal. Compatible slots of QObjects can be used instead of a lambda.
+    QObject::connect(client, &QOpcUaClient::stateChanged, [client](QOpcUaClient::ClientState state) {
+        qDebug() << "Client state changed:" << state;
+        if (state == QOpcUaClient::ClientState::Connected) {
+            QOpcUaNode *node = client->node("ns=0;i=84");
+            if (node)
+                qDebug() << "A node object has been created";
+        }
+    });
+    client->connectToEndpoint(QUrl("opc.tcp://127.0.0.1:4840"); // Connect the client to the server
+    \endcode
 */
 
 /*!
@@ -84,8 +106,6 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
            No error occurred.
     \value InvalidUrl
            The url to connect to has been wrongly specified or a connection to this url failed.
-    \value SecureConnectionError
-           An attempt to connect to a server with a secure connection failed.
     \value AccessDenied
            An attempt to connect to a server using username/password failed due to wrong credentials.
     \value ConnectionError
@@ -117,6 +137,14 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
+    \fn void QOpcUaClient::namespaceArrayUpdated(QStringList namespaces)
+
+    This signal is emitted after a updateNamespaceArray operation has finished.
+    \a namespaces contains the content of the server's namespace table. The index
+    of an entry in \a namespaces corresponds to the namespace index used in the node id.
+*/
+
+/*!
     \internal QOpcUaClientImpl is an opaque type (as seen from the public API).
     This prevents users of the public API to use this constructor (eventhough
     it is public).
@@ -129,7 +157,7 @@ QOpcUaClient::QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent)
 
 /*!
     Destroys the \l QOpcUaClient instance.
- */
+*/
 QOpcUaClient::~QOpcUaClient()
 {
 }
@@ -142,23 +170,6 @@ void QOpcUaClient::connectToEndpoint(const QUrl &url)
 {
     Q_D(QOpcUaClient);
     d->connectToEndpoint(url);
-}
-
-/*!
-    Connects to an endpoint given by \a url using the highest security level
-    supported by client and server.
-    true is returned in case of success, false is returned when the connection
-    fails.
-    User name and password must be set on \a url before connectToEndpoint
-    is called.
-
-    \warning Currently not supported by any backend.
-    \sa disconnectFromEndpoint()
-*/
-void QOpcUaClient::secureConnectToEndpoint(const QUrl &url)
-{
-    Q_D(QOpcUaClient);
-    d->secureConnectToEndpoint(url);
 }
 
 /*!
@@ -196,16 +207,6 @@ QOpcUaClient::ClientError QOpcUaClient::error() const
     return d->m_error;
 }
 
-/*! Returns \c true if the backend supports a connection over an encrypted channel.
-
-    \sa secureConnectToEndpoint
-*/
-bool QOpcUaClient::isSecureConnectionSupported() const
-{
-    Q_D(const QOpcUaClient);
-    return d->m_impl->isSecureConnectionSupported();
-}
-
 /*!
     Returns a \l QOpcUaNode object associated with the OPC UA node identified
     by \a nodeId. The caller becomes owner of the node object.
@@ -223,8 +224,38 @@ QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 }
 
 /*!
+    Requests an update of the namespace array from the server.
+    Returns \c true if the operation has been successfully dispatched.
+
+    The \l namespaceArrayUpdated() signal is emitted after the operation is finished.
+
+    \sa namespaceArray() namespaceArrayUpdated()
+*/
+bool QOpcUaClient::updateNamespaceArray()
+{
+    if (state() != QOpcUaClient::Connected)
+       return false;
+
+    Q_D(QOpcUaClient);
+    return d->updateNamespaceArray();
+}
+
+/*!
+    Returns the cached value of the namespace array.
+
+    The value is only valid after the \l namespaceArrayUpdated() signal has been emitted.
+
+    \sa updateNamespaceArray() namespaceArrayUpdated()
+*/
+QStringList QOpcUaClient::namespaceArray() const
+{
+    Q_D(const QOpcUaClient);
+    return d->namespaceArray();
+}
+
+/*!
     Returns the name of the backend used by this instance of QOpcUaClient,
-    e.g. "freeopcua".
+    e.g. "open62541".
 */
 QString QOpcUaClient::backend() const
 {

@@ -161,6 +161,7 @@ void QFreeOpcUaWorker::readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUa
 
     try {
         OpcUa::ReadParameters params;
+        params.TimestampsToReturn = OpcUa::TimestampsToReturn::Both;
         OpcUa::ReadValueId attribute;
         attribute.NodeId = id;
 
@@ -180,6 +181,8 @@ void QFreeOpcUaWorker::readAttributes(uintptr_t handle, OpcUa::NodeId id, QOpcUa
             if (res[i].Status == OpcUa::StatusCode::Good) {
                 vec[i].value = QFreeOpcUaValueConverter::toQVariant(res[i].Value);
             }
+            vec[i].sourceTimestamp = QFreeOpcUaValueConverter::scalarUaToQt<QDateTime, OpcUa::DateTime>(res[i].SourceTimestamp);
+            vec[i].serverTimestamp = QFreeOpcUaValueConverter::scalarUaToQt<QDateTime, OpcUa::DateTime>(res[i].ServerTimestamp);
         }
 
         emit attributesRead(handle, vec, QOpcUa::UaStatusCode::Good);

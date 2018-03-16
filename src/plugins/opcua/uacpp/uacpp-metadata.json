@@ -1,0 +1,7 @@
+{
+    "Keys" : [ "uacpp" ],
+    "Provider" : "uacpp",
+    "Version" : "1.0",
+    "Features" : [ "client" ],
+    "stability" : 1
+}

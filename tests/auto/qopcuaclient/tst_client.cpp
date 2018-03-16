@@ -171,10 +171,6 @@ private slots:
     // connect & disconnect
     defineDataMethod(connectToInvalid_data)
     void connectToInvalid();
-    defineDataMethod(secureConnect_data)
-    void secureConnect();
-    defineDataMethod(secureConnectToInvalid_data)
-    void secureConnectToInvalid();
     defineDataMethod(connectAndDisconnect_data)
     void connectAndDisconnect();
 
@@ -212,7 +208,10 @@ private slots:
     void methodCallInvalid();
     defineDataMethod(malformedNodeString_data)
     void malformedNodeString();
+    defineDataMethod(nodeIdGeneration_data)
+    void nodeIdGeneration();
 
+    defineDataMethod(multipleClients_data)
     void multipleClients();
     defineDataMethod(nodeClass_data)
     void nodeClass();
@@ -228,9 +227,28 @@ private slots:
     void indexRange();
     defineDataMethod(invalidIndexRange_data)
     void invalidIndexRange();
+    defineDataMethod(subscriptionIndexRange_data)
+    void subscriptionIndexRange();
+    defineDataMethod(subscriptionDataChangeFilter_data)
+    void subscriptionDataChangeFilter();
+    defineDataMethod(modifyPublishingMode_data)
+    void modifyPublishingMode();
+    defineDataMethod(modifyMonitoringMode_data)
+    void modifyMonitoringMode();
+    defineDataMethod(modifyMonitoredItem_data)
+    void modifyMonitoredItem();
+
 
     defineDataMethod(stringCharset_data)
     void stringCharset();
+
+    defineDataMethod(namespaceArray_data)
+    void namespaceArray();
+
+    defineDataMethod(dateTimeConversion_data)
+    void dateTimeConversion();
+    defineDataMethod(timeStamps_data)
+    void timeStamps();
 
     // This test case restarts the server. It must be run last to avoid
     // destroying state required by other test cases.
@@ -347,53 +365,6 @@ void Tst_QOpcUaClient::connectToInvalid()
     QVERIFY(url == QUrl("opc.tcp:127.0.0.1:1234"));
 }
 
-void Tst_QOpcUaClient::secureConnect()
-{
-    QFETCH(QOpcUaClient *, opcuaClient);
-    QSKIP("Secure connections are not supported by open62541-based testserver");
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("Secure connections are not supported with the freeopcua backend");
-    if (opcuaClient->backend() == QLatin1String("open62541"))
-        QSKIP("Secure connections are not supported with the open62541 backend");
-
-    QVERIFY(opcuaClient != 0);
-
-    opcuaClient->secureConnectToEndpoint(QUrl(m_endpoint));
-    QVERIFY(opcuaClient->state() == QOpcUaClient::Connecting);
-    QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
-
-    QVERIFY(opcuaClient->url() == QUrl(m_endpoint));
-
-    opcuaClient->disconnectFromEndpoint();
-    QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Disconnected, "Could not disconnect from server");
-}
-
-void Tst_QOpcUaClient::secureConnectToInvalid()
-{
-    QFETCH(QOpcUaClient *, opcuaClient);
-
-    QSKIP("Secure connections are not supported by open62541-based testserver");
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("Secure connections are not supported with the freeopcua backend");
-    if (opcuaClient->backend() == QLatin1String("open62541"))
-        QSKIP("Secure connections are not supported with the open62541 backend");
-
-    opcuaClient->secureConnectToEndpoint(QUrl("opc.tcp:127.0.0.1:1234"));
-    QVERIFY(opcuaClient->state() == QOpcUaClient::Connecting);
-
-    for (int i = 0; i < 10; ++i) {
-        QTest::qWait(50);
-        if (opcuaClient->state() == QOpcUaClient::Disconnected)
-            break;
-        QVERIFY(opcuaClient->state() == QOpcUaClient::Connecting);
-    }
-    QVERIFY(opcuaClient->state() == QOpcUaClient::Connected ||
-            opcuaClient->state() == QOpcUaClient::Disconnected);
-
-    QUrl url = opcuaClient->url();
-    QVERIFY(url == QUrl("opc.tcp:127.0.0.1:1234"));
-}
-
 void Tst_QOpcUaClient::connectAndDisconnect()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
@@ -491,7 +462,7 @@ void Tst_QOpcUaClient::writeInvalidNode()
 
     QCOMPARE(responseSpy.count(), 1);
     QCOMPARE(responseSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
-    QCOMPARE(responseSpy.at(0).at(1).value<quint32>(), QOpcUa::UaStatusCode::BadNodeIdUnknown);
+    QCOMPARE(responseSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadNodeIdUnknown);
 }
 
 void Tst_QOpcUaClient::writeMultipleAttributes()
@@ -555,7 +526,7 @@ void Tst_QOpcUaClient::getChildren()
     spy.wait();
     QCOMPARE(spy.size(), 1);
     QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
-    QCOMPARE(ref.size(), 1001);
+    QCOMPARE(ref.size(), 100);
 }
 
 void Tst_QOpcUaClient::childrenIdsString()
@@ -571,7 +542,7 @@ void Tst_QOpcUaClient::childrenIdsString()
     QCOMPARE(spy.size(), 1);
     QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
     QCOMPARE(ref.size(), 1);
-    QCOMPARE(ref.at(0).nodeId(), "ns=3;s=theStringId");
+    QCOMPARE(ref.at(0).nodeId(), QStringLiteral("ns=3;s=theStringId"));
 }
 
 void Tst_QOpcUaClient::childrenIdsGuidNodeId()
@@ -587,7 +558,7 @@ void Tst_QOpcUaClient::childrenIdsGuidNodeId()
     QCOMPARE(spy.size(), 1);
     QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
     QCOMPARE(ref.size(), 1);
-    QCOMPARE(ref.at(0).nodeId(), "ns=3;g=08081e75-8e5e-319b-954f-f3a7613dc29b");
+    QCOMPARE(ref.at(0).nodeId(), QStringLiteral("ns=3;g=08081e75-8e5e-319b-954f-f3a7613dc29b"));
 }
 
 void Tst_QOpcUaClient::childrenIdsOpaqueNodeId()
@@ -603,7 +574,7 @@ void Tst_QOpcUaClient::childrenIdsOpaqueNodeId()
     QCOMPARE(spy.size(), 1);
     QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
     QCOMPARE(ref.size(), 1);
-    QCOMPARE(ref.at(0).nodeId(), "ns=3;b=UXQgZnR3IQ==");
+    QCOMPARE(ref.at(0).nodeId(), QStringLiteral("ns=3;b=UXQgZnR3IQ=="));
 }
 
 void Tst_QOpcUaClient::dataChangeSubscription()
@@ -615,7 +586,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
     QVERIFY(node != 0);
     WRITE_VALUE_ATTRIBUTE(node, QVariant(double(0)), QOpcUa::Types::Double);
     READ_MANDATORY_VARIABLE_NODE(node);
-    QTRY_COMPARE(node->attribute(QOpcUa::NodeAttribute::Value), 0);
+    QTRY_COMPARE(node->attribute(QOpcUa::NodeAttribute::Value).toDouble(), 0.0);
 
     WRITE_VALUE_ATTRIBUTE(node, QVariant(double(0)), QOpcUa::Types::Double);
 
@@ -662,7 +633,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
     dataChangeSpy.wait();
     QVERIFY(dataChangeSpy.size() == 1);
     QVERIFY(dataChangeSpy.at(0).at(0).value<QOpcUa::NodeAttribute>() == QOpcUa::NodeAttribute::DisplayName);
-    QVERIFY(dataChangeSpy.at(0).at(1).value<QOpcUa::QLocalizedText>().text == QLatin1String("ns=3;s=TestNode.ReadWrite"));
+    QVERIFY(dataChangeSpy.at(0).at(1).value<QOpcUa::QLocalizedText>().text == QLatin1String("TestNode.ReadWrite"));
 
     monitoringEnabledSpy.clear();
     dataChangeSpy.clear();
@@ -684,7 +655,8 @@ void Tst_QOpcUaClient::dataChangeSubscription()
 
     QVector<QOpcUa::NodeAttribute> attrs;
 
-    if (opcuaClient->backend() == QLatin1String("open62541")) {
+    if (opcuaClient->backend() == QLatin1String("open62541") ||
+            opcuaClient->backend() == QLatin1String("uacpp")) {
         QSignalSpy monitoringModifiedSpy(node.data(), &QOpcUaNode::monitoringStatusChanged);
         node->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::PublishingInterval, 200);
 
@@ -698,27 +670,13 @@ void Tst_QOpcUaClient::dataChangeSubscription()
             QVERIFY(attrs.contains(temp));
             QVERIFY(it.at(1).value<QOpcUaMonitoringParameters::Parameters>() &  QOpcUaMonitoringParameters::Parameter::PublishingInterval);
             QVERIFY(it.at(2) == QOpcUa::UaStatusCode::Good);
-            QCOMPARE(node->monitoringStatus(temp).publishingInterval(), 200);
+            QCOMPARE(node->monitoringStatus(temp).publishingInterval(), 200.0);
             attrs.remove(attrs.indexOf(temp));
         }
         QVERIFY(attrs.size() == 0);
 
-        QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::Value).publishingInterval(),  200);
-        QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::DisplayName).publishingInterval(), 200);
-
-        monitoringModifiedSpy.clear();
-        QOpcUaMonitoringParameters::DataChangeFilter filter;
-        filter.deadbandType = QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType::Absolute;
-        filter.trigger = QOpcUaMonitoringParameters::DataChangeFilter::DataChangeTrigger::StatusValue;
-        filter.deadbandValue = 10;
-        node->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::Filter, QVariant::fromValue(filter));
-        monitoringModifiedSpy.wait();
-        QVERIFY(monitoringModifiedSpy.size() == 1);
-        QVERIFY(monitoringModifiedSpy.at(0).at(0).value<QOpcUa::NodeAttribute>() == QOpcUa::NodeAttribute::Value);
-        QVERIFY(monitoringModifiedSpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>() & QOpcUaMonitoringParameters::Parameter::Filter);
-        QEXPECT_FAIL("", "Modifying monitored items is not yet supported by open62541", Continue);
-        QVERIFY(monitoringModifiedSpy.at(0).at(2).value<QOpcUa::UaStatusCode>() == QOpcUa::UaStatusCode::Good);
-
+        QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::Value).publishingInterval(),  200.0);
+        QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::DisplayName).publishingInterval(), 200.0);
     } else {
         qDebug() << "Modifying monitoring settings is not supported by the freeopcua backend";
     }
@@ -785,8 +743,8 @@ void Tst_QOpcUaClient::methodCall()
     methodSpy.wait();
 
     QCOMPARE(methodSpy.size(), 1);
-    QCOMPARE(methodSpy.at(0).at(0), QStringLiteral("ns=3;s=Test.Method.Multiply"));
-    QCOMPARE(methodSpy.at(0).at(1), double(16));
+    QCOMPARE(methodSpy.at(0).at(0).value<QString>(), QStringLiteral("ns=3;s=Test.Method.Multiply"));
+    QCOMPARE(methodSpy.at(0).at(1).value<double>(), 16.0);
     QCOMPARE(QOpcUa::isSuccessStatus(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>()), true);
 }
 
@@ -816,7 +774,7 @@ void Tst_QOpcUaClient::methodCallInvalid()
     QVERIFY(success == true);
     methodSpy.wait();
     QCOMPARE(methodSpy.size(), 1);
-    QCOMPARE(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadInvalidArgument);
+    QCOMPARE(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadTooManyArguments);
 
     methodSpy.clear();
     args.resize(1);
@@ -851,21 +809,33 @@ void Tst_QOpcUaClient::malformedNodeString()
     QVERIFY(invalidNode == 0);
 }
 
+void Tst_QOpcUaClient::nodeIdGeneration()
+{
+    QString nodeId = QOpcUa::nodeIdFromString(1, QStringLiteral("TestString"));
+    QCOMPARE(nodeId, QStringLiteral("ns=1;s=TestString"));
+    nodeId = QOpcUa::nodeIdFromInteger(1, 10);
+    QCOMPARE(nodeId, QStringLiteral("ns=1;i=10"));
+    nodeId = QOpcUa::nodeIdFromGuid(1, QUuid("08081e75-8e5e-319b-954f-f3a7613dc29b"));
+    QCOMPARE(nodeId, QStringLiteral("ns=1;g=08081e75-8e5e-319b-954f-f3a7613dc29b"));
+    nodeId = QOpcUa::nodeIdFromByteString(1, QByteArray::fromBase64("UXQgZnR3IQ=="));
+    QCOMPARE(nodeId, QStringLiteral("ns=1;b=UXQgZnR3IQ=="));
+}
+
 void Tst_QOpcUaClient::multipleClients()
 {
-    QScopedPointer<QOpcUaClient> a(m_opcUa.createClient(m_backends[0]));
-    a->connectToEndpoint(m_endpoint);
-    QTRY_VERIFY2(a->state() == QOpcUaClient::Connected, "Could not connect to server");
-    QScopedPointer<QOpcUaNode> node(a->node(readWriteNode));
+    QFETCH(QOpcUaClient *, opcuaClient);
+    opcuaClient->connectToEndpoint(m_endpoint);
+    QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
     READ_MANDATORY_VARIABLE_NODE(node);
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value).toDouble(), 42.0);
-    QScopedPointer<QOpcUaClient> b(m_opcUa.createClient(m_backends[0]));
+    QScopedPointer<QOpcUaClient> b(m_opcUa.createClient(opcuaClient->backend()));
     b->connectToEndpoint(m_endpoint);
     QTRY_VERIFY2(b->state() == QOpcUaClient::Connected, "Could not connect to server");
     node.reset(b->node(readWriteNode));
     READ_MANDATORY_VARIABLE_NODE(node);
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value).toDouble(), 42.0);
-    QScopedPointer<QOpcUaClient> d(m_opcUa.createClient(m_backends[0]));
+    QScopedPointer<QOpcUaClient> d(m_opcUa.createClient(opcuaClient->backend()));
     d->connectToEndpoint(m_endpoint);
     QTRY_VERIFY2(d->state() == QOpcUaClient::Connected, "Could not connect to server");
     node.reset(d->node(readWriteNode));
@@ -873,8 +843,8 @@ void Tst_QOpcUaClient::multipleClients()
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value).toDouble(), 42.0);
     d->disconnectFromEndpoint();
     QTRY_VERIFY2(d->state() == QOpcUaClient::Disconnected, "Could not disconnect from server");
-    a->disconnectFromEndpoint();
-    QTRY_VERIFY2(a->state() == QOpcUaClient::Disconnected, "Could not disconnect from server");
+    opcuaClient->disconnectFromEndpoint();
+    QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Disconnected, "Could not disconnect from server");
     b->disconnectFromEndpoint();
     QTRY_VERIFY2(b->state() == QOpcUaClient::Disconnected, "Could not disconnect from server");
 }
@@ -1320,8 +1290,8 @@ void Tst_QOpcUaClient::readArray()
     QVariant guidArray = guidArrayNode->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(guidArray.type() == QVariant::List);
     QVERIFY(guidArray.toList().length() == 2);
-    QCOMPARE(guidArray.toList()[0], QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216}"));
-    QCOMPARE(guidArray.toList()[1], QUuid("460ebe04-89d8-42f3-a0e0-7b45940f1a4e4"));
+    QCOMPARE(guidArray.toList()[0].toUuid(), QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216}"));
+    QCOMPARE(guidArray.toList()[1].toUuid(), QUuid("460ebe04-89d8-42f3-a0e0-7b45940f1a4e4"));
 
     QScopedPointer<QOpcUaNode> sbyteArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.SByte"));
     QVERIFY(sbyteArrayNode != 0);
@@ -1700,7 +1670,7 @@ void Tst_QOpcUaClient::readScalar()
     QVariant guidScalar = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(guidScalar.isValid());
     QVERIFY(guidScalar.userType() == QMetaType::QUuid);
-    QCOMPARE(guidScalar, QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216"));
+    QCOMPARE(guidScalar.toUuid(), QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216"));
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.NodeId"));
     QVERIFY(node != 0);
@@ -1792,7 +1762,7 @@ void Tst_QOpcUaClient::indexRange()
     attributeReadSpy.wait();
     QCOMPARE(attributeReadSpy.count(), 1);
 
-    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value), QVariantList({10, 11, 12, 13, 4, 5, 6}));
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value).toList(), QVariantList({10, 11, 12, 13, 4, 5, 6}));
 }
 
 void Tst_QOpcUaClient::invalidIndexRange()
@@ -1819,6 +1789,291 @@ void Tst_QOpcUaClient::invalidIndexRange()
     QCOMPARE(attributeReadSpy.count(), 1);
 
     QCOMPARE(node->attributeError(QOpcUa::NodeAttribute::Value), QOpcUa::UaStatusCode::BadIndexRangeInvalid);
+}
+
+void Tst_QOpcUaClient::subscriptionIndexRange()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> integerArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int32"));
+    QVERIFY(integerArrayNode != 0);
+
+    QOpcUaMonitoringParameters p(100);
+    p.setIndexRange(QStringLiteral("1"));
+    QSignalSpy monitoringEnabledSpy(integerArrayNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QSignalSpy monitoringDisabledSpy(integerArrayNode.data(), &QOpcUaNode::disableMonitoringFinished);
+    QSignalSpy writeSpy(integerArrayNode.data(), &QOpcUaNode::attributeWritten);
+    QSignalSpy dataChangeSpy(integerArrayNode.data(), &QOpcUaNode::attributeUpdated);
+
+    QVariantList l({0, 1});
+    WRITE_VALUE_ATTRIBUTE(integerArrayNode, l, QOpcUa::Types::Int32);
+    writeSpy.clear();
+
+    integerArrayNode->enableMonitoring(QOpcUa::NodeAttribute::Value, p);
+    monitoringEnabledSpy.wait();
+    QCOMPARE(monitoringEnabledSpy.size(), 1);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    dataChangeSpy.wait(); // Wait for the initial data change
+    dataChangeSpy.clear();
+    integerArrayNode->writeAttributeRange(QOpcUa::NodeAttribute::Value, 10, "0", QOpcUa::Types::Int32); // Write the first element of the array
+    writeSpy.wait();
+    QCOMPARE(writeSpy.size(), 1);
+    QCOMPARE(writeSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(writeSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 0);
+
+    writeSpy.clear();
+    integerArrayNode->writeAttributeRange(QOpcUa::NodeAttribute::Value, 10, "1", QOpcUa::Types::Int32); // Write the second element of the array
+    writeSpy.wait();
+    QCOMPARE(writeSpy.size(), 1);
+    QCOMPARE(writeSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(writeSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 1);
+    QCOMPARE(integerArrayNode->attribute(QOpcUa::NodeAttribute::Value).toDouble(), 10.0);
+
+    integerArrayNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
+    monitoringDisabledSpy.wait();
+    QCOMPARE(monitoringDisabledSpy.size(), 1);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+}
+
+void Tst_QOpcUaClient::subscriptionDataChangeFilter()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QSKIP("DataChangeFilter is not supported by the open62541 test server");
+    // To run this test case, change the url for connector to the URL of a Prosys simulation server
+    // and use ns=3;s=Double as node id for doubleNode.
+
+    if (opcuaClient->backend() == QLatin1String("freeopcua"))
+        QSKIP("DataChangeFilter support is not implemented in the freeopcua plugin");
+
+    QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
+    QVERIFY(doubleNode != 0);
+
+    QOpcUaMonitoringParameters p(100);
+
+    QSignalSpy monitoringEnabledSpy(doubleNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QSignalSpy monitoringDisabledSpy(doubleNode.data(), &QOpcUaNode::disableMonitoringFinished);
+    QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::attributeUpdated);
+    QSignalSpy monitoringModifiedSpy(doubleNode.data(), &QOpcUaNode::monitoringStatusChanged);
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 1.0, QOpcUa::Types::Double);
+
+    doubleNode->enableMonitoring(QOpcUa::NodeAttribute::Value, p);
+    monitoringEnabledSpy.wait();
+    QCOMPARE(monitoringEnabledSpy.size(), 1);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    dataChangeSpy.wait(); // Wait for the initial data change
+    QCOMPARE(dataChangeSpy.size(), 1);
+    dataChangeSpy.clear();
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 1.5, QOpcUa::Types::Double);
+
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 1); // Data change without filter
+    QCOMPARE(doubleNode->attribute(QOpcUa::NodeAttribute::Value), 1.5);
+    dataChangeSpy.clear();
+
+    QOpcUaMonitoringParameters::DataChangeFilter filter;
+    filter.deadbandType = QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType::Absolute;
+    filter.trigger = QOpcUaMonitoringParameters::DataChangeFilter::DataChangeTrigger::StatusValue;
+    filter.deadbandValue = 1.0;
+    doubleNode->modifyDataChangeFilter(QOpcUa::NodeAttribute::Value, filter);
+    monitoringModifiedSpy.wait();
+    QVERIFY(monitoringModifiedSpy.size() == 1);
+    QVERIFY(monitoringModifiedSpy.at(0).at(0).value<QOpcUa::NodeAttribute>() == QOpcUa::NodeAttribute::Value);
+    QVERIFY(monitoringModifiedSpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>() & QOpcUaMonitoringParameters::Parameter::Filter);
+    QVERIFY(monitoringModifiedSpy.at(0).at(2).value<QOpcUa::UaStatusCode>() == QOpcUa::UaStatusCode::Good);
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 2.0, QOpcUa::Types::Double);
+
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 0); // Filter is active and delta is < 1
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 3.0, QOpcUa::Types::Double);
+
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 1); // delta == 1, a data change is expected
+    QCOMPARE(doubleNode->attribute(QOpcUa::NodeAttribute::Value), 3.0);
+
+    doubleNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
+    monitoringDisabledSpy.wait();
+    QCOMPARE(monitoringDisabledSpy.size(), 1);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+}
+
+void Tst_QOpcUaClient::modifyPublishingMode()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    if (opcuaClient->backend() == QLatin1String("freeopcua"))
+        QSKIP("Modification of monitoring is not supported in the freeopcua plugin");
+
+    QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
+    QVERIFY(doubleNode != 0);
+
+    QOpcUaMonitoringParameters p(100);
+
+    QSignalSpy monitoringEnabledSpy(doubleNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QSignalSpy monitoringDisabledSpy(doubleNode.data(), &QOpcUaNode::disableMonitoringFinished);
+    QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::attributeUpdated);
+    QSignalSpy monitoringStatusSpy(doubleNode.data(), &QOpcUaNode::monitoringStatusChanged);
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 1.0, QOpcUa::Types::Double);
+
+    doubleNode->enableMonitoring(QOpcUa::NodeAttribute::Value, p);
+    monitoringEnabledSpy.wait();
+    QCOMPARE(monitoringEnabledSpy.size(), 1);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    dataChangeSpy.wait(); // Wait for the initial data change
+    QCOMPARE(dataChangeSpy.size(), 1);
+    dataChangeSpy.clear();
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 1.5, QOpcUa::Types::Double);
+
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 1);
+    dataChangeSpy.clear();
+
+    doubleNode->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::PublishingEnabled, false);
+    monitoringStatusSpy.wait();
+    QCOMPARE(monitoringStatusSpy.size(), 1);
+    QCOMPARE(monitoringStatusSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 3.0, QOpcUa::Types::Double);
+
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 0);
+
+    doubleNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
+    monitoringDisabledSpy.wait();
+    QCOMPARE(monitoringDisabledSpy.size(), 1);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+}
+
+void Tst_QOpcUaClient::modifyMonitoringMode()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    if (opcuaClient->backend() == QLatin1String("freeopcua"))
+        QSKIP("Modification of monitoring is not supported in the freeopcua plugin");
+
+    QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
+    QVERIFY(doubleNode != 0);
+
+    QOpcUaMonitoringParameters p(100);
+
+    QSignalSpy monitoringEnabledSpy(doubleNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QSignalSpy monitoringDisabledSpy(doubleNode.data(), &QOpcUaNode::disableMonitoringFinished);
+    QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::attributeUpdated);
+    QSignalSpy monitoringStatusSpy(doubleNode.data(), &QOpcUaNode::monitoringStatusChanged);
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 1.0, QOpcUa::Types::Double);
+
+    doubleNode->enableMonitoring(QOpcUa::NodeAttribute::Value, p);
+    monitoringEnabledSpy.wait();
+    QCOMPARE(monitoringEnabledSpy.size(), 1);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    dataChangeSpy.wait(); // Wait for the initial data change
+    QCOMPARE(dataChangeSpy.size(), 1);
+    dataChangeSpy.clear();
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 1.5, QOpcUa::Types::Double);
+
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 1);
+    dataChangeSpy.clear();
+
+    doubleNode->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::MonitoringMode,
+                                 QVariant::fromValue(QOpcUaMonitoringParameters::MonitoringMode::Disabled));
+    monitoringStatusSpy.wait();
+    QCOMPARE(monitoringStatusSpy.size(), 1);
+    QCOMPARE(monitoringStatusSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 3.0, QOpcUa::Types::Double);
+
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 0);
+
+    doubleNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
+    monitoringDisabledSpy.wait();
+    QCOMPARE(monitoringDisabledSpy.size(), 1);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+}
+
+void Tst_QOpcUaClient::modifyMonitoredItem()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    if (opcuaClient->backend() == QLatin1String("freeopcua"))
+        QSKIP("Modification of monitoring is not supported in the freeopcua plugin");
+
+    QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
+    QVERIFY(doubleNode != 0);
+
+    QOpcUaMonitoringParameters p(100);
+
+    QSignalSpy monitoringEnabledSpy(doubleNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QSignalSpy monitoringDisabledSpy(doubleNode.data(), &QOpcUaNode::disableMonitoringFinished);
+    QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::attributeUpdated);
+    QSignalSpy monitoringStatusSpy(doubleNode.data(), &QOpcUaNode::monitoringStatusChanged);
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 1.0, QOpcUa::Types::Double);
+
+    doubleNode->enableMonitoring(QOpcUa::NodeAttribute::Value, p);
+    monitoringEnabledSpy.wait();
+    QCOMPARE(monitoringEnabledSpy.size(), 1);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    dataChangeSpy.wait(); // Wait for the initial data change
+    QCOMPARE(dataChangeSpy.size(), 1);
+    dataChangeSpy.clear();
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 1.5, QOpcUa::Types::Double);
+
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 1);
+    QCOMPARE(dataChangeSpy.at(0).at(1).value<double>(), 1.5);
+    dataChangeSpy.clear();
+
+    doubleNode->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::SamplingInterval, 50.0);
+    monitoringStatusSpy.wait();
+    QCOMPARE(monitoringStatusSpy.size(), 1);
+    QCOMPARE(monitoringStatusSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(monitoringStatusSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QVERIFY(monitoringStatusSpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>() & QOpcUaMonitoringParameters::Parameter::SamplingInterval);
+
+    WRITE_VALUE_ATTRIBUTE(doubleNode, 3.0, QOpcUa::Types::Double);
+
+    dataChangeSpy.wait();
+    QCOMPARE(dataChangeSpy.size(), 1);
+
+    doubleNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
+    monitoringDisabledSpy.wait();
+    QCOMPARE(monitoringDisabledSpy.size(), 1);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
 }
 
 void Tst_QOpcUaClient::stringCharset()
@@ -1880,6 +2135,101 @@ void Tst_QOpcUaClient::stringCharset()
     QVERIFY(result.toList()[1].value<QOpcUa::QLocalizedText>() == lt2);
 }
 
+void Tst_QOpcUaClient::namespaceArray()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QCOMPARE(opcuaClient->namespaceArray().size(), 0);
+
+    QSignalSpy spy(opcuaClient, &QOpcUaClient::namespaceArrayUpdated);
+    QCOMPARE(opcuaClient->updateNamespaceArray(), true);
+
+    spy.wait();
+    QCOMPARE(spy.size(), 1);
+
+    QStringList namespaces = opcuaClient->namespaceArray();
+    QVERIFY(namespaces.size() == 4);
+
+    int nsIndex = namespaces.indexOf("http://qt-project.org");
+    QVERIFY(nsIndex > 0);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node(QOpcUa::nodeIdFromString(nsIndex, QStringLiteral("Demo.Static.Scalar.String"))));
+    READ_MANDATORY_BASE_NODE(node);
+
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text, QStringLiteral("StringScalarTest"));
+}
+
+void Tst_QOpcUaClient::dateTimeConversion()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> dateTimeScalarNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DateTime"));
+
+    QVERIFY(dateTimeScalarNode != 0);
+
+    QDateTime dt = QDateTime::currentDateTime();
+
+    WRITE_VALUE_ATTRIBUTE(dateTimeScalarNode, dt, QOpcUa::Types::DateTime);
+    READ_MANDATORY_VARIABLE_NODE(dateTimeScalarNode);
+
+    QDateTime result = dateTimeScalarNode->attribute(QOpcUa::NodeAttribute::Value).toDateTime();
+    QVERIFY(dt == result);
+}
+
+void Tst_QOpcUaClient::timeStamps()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> stringScalarNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.String"));
+
+    QVERIFY(stringScalarNode != 0);
+
+    QCOMPARE(stringScalarNode->sourceTimestamp(QOpcUa::NodeAttribute::Value).isValid(), false);
+    QCOMPARE(stringScalarNode->serverTimestamp(QOpcUa::NodeAttribute::Value).isValid(), false);
+
+    READ_MANDATORY_VARIABLE_NODE(stringScalarNode);
+
+    const QDateTime sourceRead = stringScalarNode->sourceTimestamp(QOpcUa::NodeAttribute::Value);
+    const QDateTime serverRead = stringScalarNode->serverTimestamp(QOpcUa::NodeAttribute::Value);
+
+    QVERIFY(sourceRead.isValid());
+    QVERIFY(serverRead.isValid());
+
+    QOpcUaMonitoringParameters p(100);
+    QSignalSpy monitoringEnabledSpy(stringScalarNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QSignalSpy monitoringDisabledSpy(stringScalarNode.data(), &QOpcUaNode::disableMonitoringFinished);
+    QSignalSpy dataChangeSpy(stringScalarNode.data(), &QOpcUaNode::attributeUpdated);
+
+    QTest::qWait(10); // Make sure the timestamp has a chance to change
+
+    WRITE_VALUE_ATTRIBUTE(stringScalarNode, "Reset", QOpcUa::Types::String);
+
+    stringScalarNode->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(100));
+
+    monitoringEnabledSpy.wait();
+    QCOMPARE(monitoringEnabledSpy.size(), 1);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    dataChangeSpy.wait();
+    const QDateTime sourceDataChange = stringScalarNode->sourceTimestamp(QOpcUa::NodeAttribute::Value);
+    const QDateTime serverDataChange = stringScalarNode->serverTimestamp(QOpcUa::NodeAttribute::Value);
+
+    QVERIFY(sourceDataChange.isValid());
+    QVERIFY(serverDataChange.isValid());
+    QVERIFY(sourceRead < sourceDataChange);
+    QVERIFY(serverRead < serverDataChange);
+
+    stringScalarNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
+    monitoringDisabledSpy.wait();
+    QCOMPARE(monitoringDisabledSpy.size(), 1);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringDisabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+}
+
 void Tst_QOpcUaClient::connectionLost()
 {
     // Restart the test server if necessary
@@ -1909,12 +2259,13 @@ void Tst_QOpcUaClient::connectionLost()
     stringNode->readAttributes(QOpcUa::NodeAttribute::BrowseName);
 
     readSpy.wait();
-    stateSpy.wait();
+    stateSpy.wait(10000); // uacpp and open62541 use a timeout of 5 seconds for service calls, better be safe.
     QCOMPARE(readSpy.size(), 1);
     QVERIFY(readSpy.at(0).at(0).value<QOpcUa::NodeAttributes>() & QOpcUa::NodeAttribute::BrowseName);
     QCOMPARE(stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName), QOpcUa::UaStatusCode::BadConnectionClosed);
+
     QCOMPARE(stateSpy.size(), 1);
-    QCOMPARE(stateSpy.at(0).at(0), QOpcUaClient::ClientState::Disconnected);
+    QCOMPARE(stateSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::ClientState::Disconnected);
 }
 
 void Tst_QOpcUaClient::cleanupTestCase()

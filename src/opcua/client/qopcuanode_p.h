@@ -73,9 +73,13 @@ public:
         {
             for (auto &entry : qAsConst(attr)) {
                 if (serviceResult == QOpcUa::UaStatusCode::Good)
-                    m_nodeAttributes[entry.attributeId] = { entry.value, entry.statusCode };
-                else
-                    m_nodeAttributes[entry.attributeId] = { QVariant(), serviceResult };
+                    m_nodeAttributes[entry.attributeId] = entry;
+                else {
+                    QOpcUaReadResult temp = entry;
+                    temp.statusCode = serviceResult;
+                    temp.value = QVariant();
+                    m_nodeAttributes[entry.attributeId] = temp;
+                }
             }
 
             QOpcUa::NodeAttributes updatedAttributes;
@@ -91,18 +95,18 @@ public:
         {
             m_nodeAttributes[attr].statusCode = statusCode;
             if (statusCode == QOpcUa::UaStatusCode::Good)
-                m_nodeAttributes[attr].attribute = value;
+                m_nodeAttributes[attr].value = value;
 
             Q_Q(QOpcUaNode);
             emit q->attributeWritten(attr, statusCode);
         });
 
         m_attributeUpdatedConnection = QObject::connect(impl, &QOpcUaNodeImpl::attributeUpdated,
-                [this](QOpcUa::NodeAttribute attr, QVariant value)
+                [this](QOpcUa::NodeAttribute attr, QOpcUaReadResult value)
         {
-            this->m_nodeAttributes[attr] = {value, QOpcUa::UaStatusCode::Good};
+            this->m_nodeAttributes[attr] = value;
             Q_Q(QOpcUaNode);
-            emit q->attributeUpdated(attr, value);
+            emit q->attributeUpdated(attr, value.value);
         });
 
         m_monitoringEnableDisableConnection = QObject::connect(impl, &QOpcUaNodeImpl::monitoringEnableDisable,
@@ -183,11 +187,7 @@ public:
     QScopedPointer<QOpcUaNodeImpl> m_impl;
     QPointer<QOpcUaClient> m_client;
 
-    struct AttributeWithStatus {
-        QVariant attribute;
-        QOpcUa::UaStatusCode statusCode;
-    };
-    QHash<QOpcUa::NodeAttribute, AttributeWithStatus> m_nodeAttributes;
+    QHash<QOpcUa::NodeAttribute, QOpcUaReadResult> m_nodeAttributes;
     QHash<QOpcUa::NodeAttribute, QOpcUaMonitoringParameters> m_monitoringStatus;
 
     QMetaObject::Connection m_attributesReadConnection;

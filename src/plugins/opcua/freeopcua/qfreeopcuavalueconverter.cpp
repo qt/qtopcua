@@ -268,7 +268,9 @@ std::string scalarFromQVariant(const QVariant &var)
 template<>
 OpcUa::DateTime scalarFromQVariant(const QVariant &var)
 {
-    return OpcUa::DateTime::FromTimeT(var.toDateTime().toTime_t());
+    // OPC-UA part 3, Table C.9
+    const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
+    return OpcUa::DateTime(var.toDateTime().toMSecsSinceEpoch() - uaEpochStart.toMSecsSinceEpoch());
 }
 
 template<>
@@ -335,7 +337,10 @@ QVariant arrayToQVariant(const OpcUa::Variant &var, QMetaType::Type type)
             else
                 list.append(QVariant(type, &data));
         }
-        return list;
+        if (list.size() == 1)
+            return list.at(0);
+        else
+            return list;
 
     } else if (var.IsScalar()) {
         QTTYPE data = scalarUaToQt<QTTYPE, UATYPE>(var.As<UATYPE>());
@@ -361,7 +366,9 @@ QString scalarUaToQt<QString, std::string>(const std::string &data)
 template<>
 QDateTime scalarUaToQt<QDateTime, OpcUa::DateTime>(const OpcUa::DateTime &data)
 {
-    return QDateTime::fromTime_t(OpcUa::DateTime::ToTimeT(data));
+    // OPC-UA part 3, Table C.9
+    const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
+    return uaEpochStart.addMSecs(data.Value).toLocalTime();
 }
 
 template<>

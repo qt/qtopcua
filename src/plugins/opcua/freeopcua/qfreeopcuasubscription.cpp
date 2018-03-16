@@ -244,9 +244,17 @@ QFreeOpcUaSubscription::MonitoredItem *QFreeOpcUaSubscription::getItemForAttribu
     return item.value();
 }
 
-void QFreeOpcUaSubscription::DataChange(quint32 handle, const OpcUa::Node &node,
-                                        const OpcUa::Variant &val,
-                                        OpcUa::AttributeId attr)
+// Override the "default dc" message the default implementation writes to std::cout.
+void QFreeOpcUaSubscription::DataChange(uint32_t handle, const OpcUa::Node &node, const OpcUa::Variant &val, OpcUa::AttributeId attr)
+{
+    Q_UNUSED(handle);
+    Q_UNUSED(node);
+    Q_UNUSED(val);
+    Q_UNUSED(attr)
+}
+
+void QFreeOpcUaSubscription::DataValueChange(uint32_t handle, const OpcUa::Node &node,
+                                             const OpcUa::DataValue &val, OpcUa::AttributeId attr)
 {
     OPCUA_UNUSED(node);
     OPCUA_UNUSED(attr);
@@ -254,7 +262,13 @@ void QFreeOpcUaSubscription::DataChange(quint32 handle, const OpcUa::Node &node,
     auto item = m_itemIdToItemMapping.find(handle);
     if (item == m_itemIdToItemMapping.end())
         return;
-    emit m_backend->attributeUpdated(item.value()->handle, item.value()->attr, QFreeOpcUaValueConverter::toQVariant(val));
+
+    QOpcUaReadResult res;
+    res.attributeId = item.value()->attr;
+    res.sourceTimestamp = QFreeOpcUaValueConverter::scalarUaToQt<QDateTime, OpcUa::DateTime>(val.SourceTimestamp);
+    res.serverTimestamp = QFreeOpcUaValueConverter::scalarUaToQt<QDateTime, OpcUa::DateTime>(val.ServerTimestamp);
+    res.value = QFreeOpcUaValueConverter::toQVariant(val.Value);
+    emit m_backend->attributeUpdated(item.value()->handle, res);
 }
 
 QT_END_NAMESPACE

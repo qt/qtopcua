@@ -64,6 +64,8 @@ public:
         uintptr_t handle;
         QOpcUa::NodeAttribute attr;
         UA_UInt32 monitoredItemId;
+        UA_UInt32 clientHandle;
+        QOpcUaMonitoringParameters parameters;
         MonitoredItem(uintptr_t h, QOpcUa::NodeAttribute a, UA_UInt32 id)
             : handle(h)
             , attr(a)
@@ -83,6 +85,10 @@ public:
 
 private:
     MonitoredItem *getItemForAttribute(uintptr_t handle, QOpcUa::NodeAttribute attr);
+    UA_ExtensionObject createFilter(const QVariant &filterData);
+
+    bool modifySubscriptionParameters(uintptr_t handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
+    bool modifyMonitoredItemParameters(uintptr_t handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
 
     Open62541AsyncBackend *m_backend;
     double m_interval;
@@ -91,9 +97,12 @@ private:
     UA_UInt32 m_maxKeepaliveCount;
     QOpcUaMonitoringParameters::SubscriptionType m_shared;
     quint8 m_priority;
+    quint32 m_maxNotificationsPerPublish;
 
     QHash<uintptr_t, QHash<QOpcUa::NodeAttribute, MonitoredItem *>> m_handleToItemMapping; // Handle -> Attribute -> MonitoredItem
     QHash<UA_UInt32, MonitoredItem *> m_itemIdToItemMapping; // ItemId -> Item for fast lookup on data change
+
+    quint32 m_clientHandle;
 };
 
 QT_END_NAMESPACE

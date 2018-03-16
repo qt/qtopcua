@@ -77,6 +77,8 @@ namespace QOpen62541ValueConverter {
     UA_Variant arrayFromQVariant(const QVariant &var, const UA_DataType *type);
 
     void createExtensionObject(QByteArray &data, QOpcUaBinaryDataEncoding::TypeEncodingId id, UA_ExtensionObject *ptr);
+
+    QDateTime uaDateTimeToQDateTime(UA_DateTime dt);
 }
 
 QT_END_NAMESPACE

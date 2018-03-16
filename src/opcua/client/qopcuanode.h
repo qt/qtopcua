@@ -71,6 +71,8 @@ public:
     bool readAttributeRange(QOpcUa::NodeAttribute attribute, const QString &indexRange);
     QVariant attribute(QOpcUa::NodeAttribute attribute) const;
     QOpcUa::UaStatusCode attributeError(QOpcUa::NodeAttribute attribute) const;
+    QDateTime sourceTimestamp(QOpcUa::NodeAttribute attribute) const;
+    QDateTime serverTimestamp(QOpcUa::NodeAttribute attribute) const;
     bool writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type = QOpcUa::Types::Undefined);
     bool writeAttributeRange(QOpcUa::NodeAttribute attribute, const QVariant &value,
                         const QString &indexRange, QOpcUa::Types type = QOpcUa::Types::Undefined);
@@ -80,6 +82,7 @@ public:
     bool disableMonitoring(QOpcUa::NodeAttributes attr);
     bool modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value);
     QOpcUaMonitoringParameters monitoringStatus(QOpcUa::NodeAttribute attr);
+    bool modifyDataChangeFilter(QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::DataChangeFilter &filter);
 
     bool browseChildren(QOpcUa::ReferenceTypeId referenceType = QOpcUa::ReferenceTypeId::HierarchicalReferences,
                         QOpcUa::NodeClasses nodeClassMask = QOpcUa::NodeClass::Undefined);

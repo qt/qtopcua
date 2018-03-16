@@ -55,14 +55,12 @@ public:
     ~QOpen62541Client();
 
     void connectToEndpoint(const QUrl &url) override;
-    void secureConnectToEndpoint(const QUrl &url) override;
     void disconnectFromEndpoint() override;
 
     QOpcUaNode *node(const QString &nodeId) override;
 
     QString backend() const override;
 
-    bool isSecureConnectionSupported() const override { return false; }
 private slots:
 
 private:

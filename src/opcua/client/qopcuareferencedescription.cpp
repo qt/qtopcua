@@ -41,6 +41,9 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QOpcUaReferenceDescription
+    \inmodule QtOpcUa
+    \brief Contains information about a node, result of a browse call
+
     This class is used to return the results of a call to \l QOpcUaNode::browseChildren().
 
     It contains the type of the reference used to connect the child node to the parent
@@ -63,7 +66,7 @@ QOpcUaReferenceDescription::QOpcUaReferenceDescription(const QOpcUaReferenceDesc
 {}
 
 /*!
-    Compares this object to QOpcUaReferenceDescription object \a other.
+    Assigns the value of \a other to this object.
 */
 QOpcUaReferenceDescription &QOpcUaReferenceDescription::operator=(const QOpcUaReferenceDescription &other)
 {

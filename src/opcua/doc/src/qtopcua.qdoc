@@ -30,10 +30,10 @@
     \title Qt OPC UA C++ Classes
     \ingroup modules
     \qtvariable opcua
-    \since 5.7
+    \since 5.11
     \brief List of C++ classes that provide the Qt OPC UA functionality.
 
-    To link against the module, e.g. when writing a new plugin, add this line to your \l qmake \c .pro file:
+    To link against the module, add this line to your \l qmake \c .pro file:
 
     \code
     QT += opcua
@@ -51,63 +51,103 @@
     OPC UA stack.
 
     The stacks are connected via plugins and can be selected/switched at runtime.
-    Currently, the LGPL v3 implementation FreeOPCUA and the MPLv2 implementation Open62541 are supported.
+    Currently, the following implementations are supported
+
+    \list
+    \li Open62541, MPLv2
+    \li Unified Automation C++ SDK (UACpp), Commercial
+    \li FreeOPCUA, LGPL v3
+    \endlist
+
+    \section1 Getting started
+
+    Add the following line to your .pro file
+    \code
+        QT += opcua
+    \endcode
+    and include the Qt OPC UA headers into your files using
+    \code
+       #include <QtOpcUa>
+    \endcode
+
+    The \l{Qt OPC UA Examples}{examples} demonstrate how to use Qt OPC UA API to interact with an OPC UA server.
 
     \section1 A short introduction to OPC UA
-    OPC UA is a protocol for data modelling and secure exchange of data in
-    industrial applications.
-    The protocol offers built-in transport security based on certificates and
-    established cryptographic algorithms.
-    The data modelling system is object oriented and offers support for
-    pre-made models which can be extended to fit special needs.
+    OPC UA is a protocol for data modelling and exchange of data in industrial applications.
+
+    An OPC UA server offers access to data which is organized in a mesh of nodes connected by references.
+    The use of different reference types and nodes containing metadata enable a client to navigate and interpret
+    the data without knowing their structure in advance.
+
+    All nodes have a unique identifier and attributes that can be read and written.
+    Among others, there are Variable nodes which store values and callable Method nodes with attached nodes describing
+    parameters and return values. Notifications in case of events and monitoring of Variable nodes for value changes are offered too.
+
+    Complex objects can be created by combining nodes using references, inheritance is also possible.
+    OPC UA offers support for pre-made models which can be extended to fit special needs.
+
+    OPC UA is the platform independent successor of OPC Classic intended for usage on all levels,
+    from embedded sensors up to manufacturing execution and enterprise resource planning systems.
+    It has a service oriented architecture based on standardized messages for service requests and responses.
+    There are different ways for these messages to be encoded and transported over the network. The most common way
+    is binary encoding over TCP.
 
     \section1 Implemented features from the OPC UA protocol
 
-    Following features of OPC UA are supported by QtOpcUa:
+    Following features of OPC UA are supported by Qt OPC UA:
 
     \table
     \header
     \li Feature
     \li Open62541 plugin
+    \li UACpp plugin
     \li FreeOPCUA plugin
     \row
     \li Read
+    \li X
     \li X
     \li X
     \row
     \li Write
     \li X
     \li X
+    \li X
     \row
     \li Browse
+    \li X
     \li X
     \li X
     \row
     \li Data change subscriptions
     \li X
     \li X
+    \li X
     \row
     \li Modify subscriptions / monitored Items
+    \li X
     \li X
     \li
     \row
     \li Method calls
     \li X
     \li X
+    \li X
     \endtable
 
     \section1 Data types
-    A subset of the OPC UA data types is currently supported in QtOpcUa.
+    A subset of the OPC UA data types is currently supported in Qt OPC UA.
     Most of them are available with both backends.
 
     \table
     \header
     \li Data type
     \li Open62541 plugin
+    \li UACpp plugin
     \li FreeOPCUA plugin
-    \li QtOpcUa data type
+    \li Qt OPC UA data type
     \row
-    \li Int16 / Int32 / Int64
+    \li Int16, Int32, Int64
+    \li X
     \li X
     \li X
     \li Directly used
@@ -115,9 +155,11 @@
     \li UInt16, UInt32, UInt64
     \li X
     \li X
+    \li X
     \li Directly used
     \row
     \li Byte
+    \li X
     \li X
     \li X
     \li quint8
@@ -125,9 +167,11 @@
     \li SByte
     \li X
     \li X
+    \li X
     \li qint8
     \row
     \li Boolean
+    \li X
     \li X
     \li X
     \li Directly used
@@ -135,9 +179,11 @@
     \li Double
     \li X
     \li X
+    \li X
     \li Directly used
     \row
     \li Float
+    \li X
     \li X
     \li X
     \li Directly used
@@ -145,9 +191,11 @@
     \li String
     \li X
     \li X
+    \li X
     \li QString
     \row
     \li LocalizedText
+    \li X
     \li X
     \li X
     \li \l QOpcUa::QLocalizedText
@@ -155,14 +203,17 @@
     \li DateTime
     \li X
     \li X
+    \li X
     \li QDateTime
     \row
     \li ByteString
     \li X
     \li X
+    \li X
     \li QByteArray
     \row
     \li XmlElement
+    \li X
     \li X
     \li
     \li QString
@@ -170,9 +221,11 @@
     \li NodeId
     \li X
     \li X
+    \li X
     \li QString
     \row
     \li GUID
+    \li X
     \li X
     \li X
     \li QUuid
@@ -180,39 +233,47 @@
     \li QualifiedName
     \li X
     \li X
+    \li X
     \li \l QOpcUa::QQualifiedName
     \row
     \li StatusCode
+    \li X
     \li X
     \li X
     \li \l QOpcUa::UaStatusCode
     \row
     \li Range
     \li X
+    \li X
     \li
     \li \l QOpcUa::QRange
     \row
     \li EUInformation
     \li X
+    \li X
     \li
     \li \l QOpcUa::QEUInformation
     \row
-    \li ComplexNumer
+    \li ComplexNumber
+    \li X
     \li X
     \li
     \li \l QOpcUa::QComplexNumber
     \row
     \li DoubleComplexNumber
     \li X
+    \li X
     \li
     \li \l QOpcUa::QDoubleComplexNumber
     \row
     \li AxisInformation
     \li X
+    \li X
     \li
     \li \l QOpcUa::QAxisInformation
     \row
     \li XV
+    \li X
     \li X
     \li
     \li \l QOpcUa::QXValue
@@ -222,6 +283,26 @@
     Two important classes are exposed to the user: QOpcUaClient and QOpcUaNode.
 
     Objects of both classes are owned by the user and must be deleted when they are no longer needed.
+
+    \section1 Logging categories
+    The following logging categories are used by Qt OPC UA
+    \table
+    \header
+    \li Logging Category
+    \li Description
+    \row
+    \li qt.opcua
+    \li Plugin independent messages generated by \l QOpcUaProvider and \l QOpcUaClient
+    \row
+    \li qt.opcua.plugins.open62541
+    \li Messages generated by the open62541 plugin
+    \row
+    \li qt.opcua.plugins.uacpp
+    \li Messages generated by the UACpp plugin
+    \row
+    \li qt.opcua.plugins.freeopcua
+    \li Messages generated by the freeopcua plugin
+    \endtable
 
     \section1 Related Information
 

@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
     It has attributes like browse name, value, associated properties and can have
     references to other nodes in the address space.
     Nodes are organized in namespaces and have IDs which can e.g. be numeric,
-    a string, a namespace specific format (/opaque) or a globally unique identifier.
+    a string, a namespace specific format (opaque) or a globally unique identifier.
     A node is identified by the namespace id and the node ID.
     This identifier is usually given as a string:
     The identifier of a node residing in namespace 0 and having the numeric
@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
     identifier can be addressed via \c ns=0;s=myStringIdentifier.
 
     Objects of this type are owned by the user and must be deleted when they are
-    no longer needed.
+    no longer needed. They are valid as long as the \l QOpcUaClient which created them exists.
 
     \section1 Reading and writing of attributes
 
@@ -105,6 +105,25 @@ QT_BEGIN_NAMESPACE
     OPC UA specifies methods on the server which can be called by the user.
     \l QOpcUaNode supports this via \l callMethod which takes parameters and returns the results of
     the call in the \l methodCallFinished signal.
+
+    \section1 Example
+    For connecting the client to a server and getting a \l QOpcUaNode object, see \l QOpcUaClient.
+
+    After the node has been successfully created, the BrowseName of the root node is read from the server:
+
+    \code
+    QOpcUaNode *rootNode; // Created before, see QOpcUaClient documentation.
+    // Connect to the attributeRead signal. Compatible slots of QObjects can be used instead of a lambda.
+    QObject::connect(rootNode, &QOpcUaNode::attributeRead, [rootNode, client](QOpcUa::NodeAttributes attr) {
+        qDebug() << "Signal for attributes:" << attr;
+        if (rootNode->attributeError(QOpcUa::NodeAttribute::BrowseName) != QOpcUa::UaStatusCode::Good) {
+            qDebug() << "Failed to read attribute:" << rootNode->attributeError(QOpcUa::NodeAttribute::BrowseName);
+            client->disconnectFromEndpoint();
+        }
+        qDebug() << "Browse name:" << rootNode->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>().name;
+    });
+    rootNode->readAttributes(QOpcUa::NodeAttribute::BrowseName); // Start a read operation for the node's BrowseName attribute.
+    \endcode
 */
 
 /*!
@@ -170,7 +189,7 @@ QT_BEGIN_NAMESPACE
     This signal is emitted after a method call for \a methodNodeId has finished on the server.
     \a statusCode contains the status code from the method call, \a result contains the output
     arguments of the method. \a result is empty if the method has no output arguments or \a statusCode
-    is not OpcUa::UaStatusCode::Good.
+    is not \l {QOpcUa::UaStatusCode} {Good}.
 */
 
 /*!
@@ -179,8 +198,8 @@ QT_BEGIN_NAMESPACE
     This signal is emitted after a \l browseChildren() operation has finished.
 
     \a children contains information about all nodes which matched the criteria in \l browseChildren().
-    \a statusCode contains the service result of the browse operation. If \a statusCode is not QOpcUa::UaAttributeId::Good,
-    \a children is empty.
+    \a statusCode contains the service result of the browse operation. If \a statusCode is not \l {QOpcUa::UaStatusCode} {Good},
+    the passed \a children vector is empty.
     \sa QOpcUaReferenceDescription
 */
 
@@ -216,7 +235,7 @@ QOpcUaNode::~QOpcUaNode()
     The first element in an array is 0, "1" returns the second element, "0:9" returns the first 10 elements,
     "0,1" returns the second element of the first row in a two-dimensional array.
 
-    Returns true if the asynchronous call has been successfully dispatched.
+    Returns \c true if the asynchronous call has been successfully dispatched.
 
     Attribute values only contain valid information after the \l attributeRead signal has been emitted.
 */
@@ -231,7 +250,7 @@ bool QOpcUaNode::readAttributeRange(QOpcUa::NodeAttribute attribute, const QStri
 
 /*!
     Starts an asynchronous read operation for the node attributes in \a attributes.
-    Returns true if the asynchronous call has been successfully dispatched.
+    Returns \c true if the asynchronous call has been successfully dispatched.
 
     Attribute values only contain valid information after the \l attributeRead signal has been emitted.
 */
@@ -249,7 +268,7 @@ bool QOpcUaNode::readAttributes(QOpcUa::NodeAttributes attributes)
 
     The value is only valid after the \l attributeRead signal has been emitted.
     An empty QVariant is returned if there is no cached value for the attribute.
- */
+*/
 QVariant QOpcUaNode::attribute(QOpcUa::NodeAttribute attribute) const
 {
     Q_D(const QOpcUaNode);
@@ -257,7 +276,7 @@ QVariant QOpcUaNode::attribute(QOpcUa::NodeAttribute attribute) const
     if (it == d->m_nodeAttributes.constEnd())
         return QVariant();
 
-    return it->attribute;
+    return it->value;
 }
 
 /*!
@@ -278,10 +297,41 @@ QOpcUa::UaStatusCode QOpcUaNode::attributeError(QOpcUa::NodeAttribute attribute)
 }
 
 /*!
+    Returns the source timestamp from the last read or data change of \a attribute.
+    Before at least one \l attributeRead or \l attributeUpdated signal has been emitted,
+    a null datetime is returned.
+
+*/
+QDateTime QOpcUaNode::sourceTimestamp(QOpcUa::NodeAttribute attribute) const
+{
+    Q_D(const QOpcUaNode);
+    auto it = d->m_nodeAttributes.constFind(attribute);
+    if (it == d->m_nodeAttributes.constEnd())
+        return QDateTime();
+
+    return it->sourceTimestamp;
+}
+
+/*!
+    Returns the server timestamp from the last read or data change of \a attribute.
+    Before at least one \l attributeRead or \l attributeUpdated signal has been emitted,
+    a null datetime is returned.
+*/
+QDateTime QOpcUaNode::serverTimestamp(QOpcUa::NodeAttribute attribute) const
+{
+    Q_D(const QOpcUaNode);
+    auto it = d->m_nodeAttributes.constFind(attribute);
+    if (it == d->m_nodeAttributes.constEnd())
+        return QDateTime();
+
+    return it->serverTimestamp;
+}
+
+/*!
     This method creates a monitored item for each of the attributes given in \a attr.
     The settings from \a settings are used in the creation of the monitored items and the subscription.
 
-    Returns true if the asynchronous call has been successfully dispatched.
+    Returns \c true if the asynchronous call has been successfully dispatched.
 
     On completion of the call, the \l enableMonitoringFinished signal is emitted.
     There are multiple error cases in which a bad status code is generated: A subscription with the subscription id specified in \a settings does not exist,
@@ -301,10 +351,10 @@ bool QOpcUaNode::enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonit
     This method modifies settings of the monitored item or the subscription.
     The parameter \a item of the monitored item or subscription associated with \a attr is attempted to set to \a value.
 
-    Returns true if the asynchronous call has been successfully dispatched.
+    Returns \c true if the asynchronous call has been successfully dispatched.
 
     After the call has finished, the \l monitoringStatusChanged signal is emitted. This signal contains the modified parameters and the status code.
-    A bad status code is generated if there is no monitored item associated with the requested attribute, revising the requested
+    A bad status code is generated if there is no monitored item associated with the requested attribute, modifying the requested
     parameter is not implemented or if the server has rejected the requested value.
 */
 bool QOpcUaNode::modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value)
@@ -335,8 +385,20 @@ QOpcUaMonitoringParameters QOpcUaNode::monitoringStatus(QOpcUa::NodeAttribute at
 }
 
 /*!
+    Modifies an existing data change monitoring to use \a filter as data change filter.
+
+    Returns \c true if the filter modification request has been successfully dispatched to the backend.
+
+    \l monitoringStatusChanged for \a attr is emitted after the operation has finished.
+*/
+bool QOpcUaNode::modifyDataChangeFilter(QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::DataChangeFilter &filter)
+{
+    return modifyMonitoring(attr, QOpcUaMonitoringParameters::Parameter::Filter, QVariant::fromValue(filter));
+}
+
+/*!
     Writes \a value to the attribute given in \a attribute using the type information from \a type.
-    Returns true if the asynchronous call has been successfully dispatched.
+    Returns \c true if the asynchronous call has been successfully dispatched.
 
     If the \a type parameter is omitted, the backend tries to find the correct type. Following default types are assumed:
     \table
@@ -404,7 +466,7 @@ bool QOpcUaNode::writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant 
     Writes \a value to the attribute given in \a attribute using the type information from \a type.
     For \a indexRange, see \l readAttributeRange().
 
-    Returns true if the asynchronous call has been successfully dispatched.
+    Returns \c true if the asynchronous call has been successfully dispatched.
 */
 bool QOpcUaNode::writeAttributeRange(QOpcUa::NodeAttribute attribute, const QVariant &value, const QString &indexRange, QOpcUa::Types type)
 {
@@ -417,7 +479,7 @@ bool QOpcUaNode::writeAttributeRange(QOpcUa::NodeAttribute attribute, const QVar
 
 /*!
     Executes a write operation for the attributes and values specified in \a toWrite.
-    Returns true if the asynchronous call has been successfully dispatched.
+    Returns \c true if the asynchronous call has been successfully dispatched.
 
     The \a valueAttributeType parameter can be used to supply type information for the value attribute.
     All other attributes have known types.
@@ -435,7 +497,7 @@ bool QOpcUaNode::writeAttributes(const AttributeMap &toWrite, QOpcUa::Types valu
 /*!
     This method disables monitoring for the attributes given in \a attr.
 
-    Returns true if the asynchronous call has been successfully dispatched.
+    Returns \c true if the asynchronous call has been successfully dispatched.
 
     After the call is finished, the \l disableMonitoringFinished signal is emitted and monitoringStatus returns a default constructed value with
     status code BadMonitoredItemIdIinvalid for \a attr.
@@ -457,7 +519,7 @@ bool QOpcUaNode::disableMonitoring(QOpcUa::NodeAttributes attr)
     Returns \c true if the asynchronous call has been successfully dispatched.
 
     To request only children connected to the node by a certain type of reference, \a referenceType must be set to that reference type.
-    For example, this can be  used to get all properties of a node by passing QOpcUa::ReferenceTypeId::HasProperty in \a referenceType.
+    For example, this can be  used to get all properties of a node by passing \l {QOpcUa::ReferenceTypeId} {HasProperty} in \a referenceType.
     The results can be filtered to contain only nodes with certain node classes by setting them in \a nodeClassMask.
 */
 bool QOpcUaNode::browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
@@ -485,7 +547,7 @@ QString QOpcUaNode::nodeId() const
     Calls the OPC UA method \a methodNodeId with the parameters given via \a args. The result is
     returned in the \l methodCallFinished signal.
 
-    Returns true if the asynchronous call has been successfully dispatched.
+    Returns \c true if the asynchronous call has been successfully dispatched.
 */
 bool QOpcUaNode::callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args)
 {

@@ -60,13 +60,27 @@ Q_LOGGING_CATEGORY(QT_OPCUA, "qt.opcua")
     loading a QOpcUaPlugin using the Qt plugin system.
 
     For the available plugins and their capabilities please refer to the
-    \l QOpcUaClient documentation.
+    \l {Qt OPC UA} {introduction}.
+
+    \section1 Example
+    This code creates a client using the first available backend:
+    \code
+    QOpcUaProvider provider;
+    QStringList available = provider.availableBackends();
+    if (!available.isEmpty()) {
+        QOpcUaClient *client = provider.createClient(available[0]);
+        if (client)
+            qDebug() << "Client successfully created";
+    }
+    \endcode
 */
 
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, qOpcualoader,
         (QOpcUaProviderFactory_iid, QLatin1String("/opcua")))
 
 /*!
+    \fn static QHash<QString, QJsonObject> loadPluginMetadata()
+
     Reads the meta data from the plugins known by the loader.
 */
 static QHash<QString, QJsonObject> loadPluginMetadata()
@@ -83,7 +97,9 @@ static QHash<QString, QJsonObject> loadPluginMetadata()
 }
 
 /*!
-    Returns a QHash mapping names to JSON objects containing the meta data of
+    \fn static QHash<QString, QJsonObject> plugins()
+
+    Returns a \l QHash mapping names to JSON objects containing the meta data of
     available plugins.
 */
 static QHash<QString, QJsonObject> plugins()
@@ -106,6 +122,7 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
 {
     qRegisterMetaType<QOpcUa::Types>();
     qRegisterMetaType<QOpcUa::TypedVariant>();
+    qRegisterMetaType<QVector<QOpcUa::TypedVariant>>();
     qRegisterMetaType<QOpcUa::UaStatusCode>();
     qRegisterMetaType<QOpcUa::NodeClass>();
     qRegisterMetaType<QOpcUa::NodeClasses>();

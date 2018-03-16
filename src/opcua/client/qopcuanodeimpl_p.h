@@ -60,6 +60,8 @@ QT_BEGIN_NAMESPACE
 struct QOpcUaReadResult {
     QOpcUa::NodeAttribute attributeId;
     QOpcUa::UaStatusCode statusCode;
+    QDateTime sourceTimestamp;
+    QDateTime serverTimestamp;
     QVariant value;
 };
 
@@ -88,7 +90,7 @@ Q_SIGNALS:
     void attributeWritten(QOpcUa::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode);
     void browseFinished(QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
 
-    void attributeUpdated(QOpcUa::NodeAttribute attr, QVariant value);
+    void attributeUpdated(QOpcUa::NodeAttribute attr, QOpcUaReadResult value);
     void monitoringEnableDisable(QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
     void monitoringStatusChanged(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                            QOpcUaMonitoringParameters param);

@@ -70,23 +70,6 @@ void QOpcUaClientPrivate::connectToEndpoint(const QUrl &url)
     }
 }
 
-void QOpcUaClientPrivate::secureConnectToEndpoint(const QUrl &url)
-{
-    if (!m_impl->isSecureConnectionSupported()) {
-        qCWarning(QT_OPCUA) << "Backend does not support secure connections. Cancelling connection";
-        setStateAndError(m_state, QOpcUaClient::SecureConnectionError);
-        return;
-    }
-
-    bool result = checkAndSetUrl(url);
-    if (result) {
-        setStateAndError(QOpcUaClient::Connecting);
-        m_impl->secureConnectToEndpoint(url);
-    } else {
-        setStateAndError(QOpcUaClient::Disconnected, QOpcUaClient::InvalidUrl);
-    }
-}
-
 void QOpcUaClientPrivate::disconnectFromEndpoint()
 {
     if (m_state != QOpcUaClient::Connected) {
@@ -137,6 +120,51 @@ void QOpcUaClientPrivate::setStateAndError(QOpcUaClient::ClientState state,
         else if (m_state == QOpcUaClient::Disconnected)
             emit q->disconnected();
     }
+
+    // According to UPC-UA part 5, page 23, the server is allowed to change entries of the namespace
+    // array if there is no active session. This could invalidate the cached namespaces table.
+    if (state == QOpcUaClient::Disconnected) {
+        m_namespaceArray.clear();
+    }
+}
+
+bool QOpcUaClientPrivate::updateNamespaceArray()
+{
+    if (m_state != QOpcUaClient::ClientState::Connected)
+        return false;
+
+    if (!m_namespaceArrayNode) {
+        m_namespaceArrayNode.reset(m_impl->node(QStringLiteral("ns=0;i=2255")));
+        if (!m_namespaceArrayNode)
+            return false;
+        QObjectPrivate::connect(m_namespaceArrayNode.data(), &QOpcUaNode::attributeRead, this, &QOpcUaClientPrivate::namespaceArrayUpdated);
+    }
+
+    return m_namespaceArrayNode->readAttributes(QOpcUa::NodeAttribute::Value);
+}
+
+QStringList QOpcUaClientPrivate::namespaceArray() const
+{
+    return m_namespaceArray;
+}
+
+void QOpcUaClientPrivate::namespaceArrayUpdated(QOpcUa::NodeAttributes attr)
+{
+    Q_Q(QOpcUaClient);
+
+    const QVariant value = m_namespaceArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+
+    if (!(attr & QOpcUa::NodeAttribute::Value) || value.type() != QVariant::Type::List) {
+        m_namespaceArray.clear();
+        emit q->namespaceArrayUpdated(QStringList());
+        return;
+    }
+
+    m_namespaceArray.clear();
+    for (auto it : value.toList())
+        m_namespaceArray.append(it.toString());
+
+    emit q->namespaceArrayUpdated(m_namespaceArray);
 }
 
 QT_END_NAMESPACE

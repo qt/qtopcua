@@ -81,7 +81,7 @@ Q_SIGNALS:
     void attributeWritten(uintptr_t hande, QOpcUa::NodeAttribute attribute, QVariant value, QOpcUa::UaStatusCode statusCode);
     void methodCallFinished(uintptr_t handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
 
-    void attributeUpdated(uintptr_t handle, QOpcUa::NodeAttribute attr, QVariant value);
+    void attributeUpdated(uintptr_t handle, QOpcUaReadResult res);
     void monitoringEnableDisable(uintptr_t handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
     void monitoringStatusChanged(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                            QOpcUaMonitoringParameters param);
