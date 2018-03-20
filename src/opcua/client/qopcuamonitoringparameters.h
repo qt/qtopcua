@@ -83,7 +83,7 @@ public:
         enum class DataChangeTrigger {
             Status = 0,
             StatusValue = 1,
-            StatusValueTimestamp = 3
+            StatusValueTimestamp = 2
         };
 
         enum class DeadbandType {
