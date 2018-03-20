@@ -681,6 +681,13 @@ QString QOpcUa::nodeIdFromInteger(quint16 ns, quint32 identifier)
 */
 
 /*!
+    \fn QOpcUa::QEUInformation::QEUInformation(QString p_namespaceUri, qint32 p_unitId, QLocalizedText p_displayName, QLocalizedText p_description)
+
+    Constructs a QEUInformation with namespace URI \a p_namespaceUri, unit id \a p_unitId, display name \a p_displayName
+    and description \a p_description.
+*/
+
+/*!
     \fn bool QOpcUa::QEUInformation::operator==(const QEUInformation &other) const
     Returns \c true if this QEUInformation has the same value as \a other.
 */
@@ -694,7 +701,7 @@ QString QOpcUa::nodeIdFromInteger(quint16 ns, quint32 identifier)
 /*!
     \variable QOpcUa::QEUInformation::unitId
 
-    A machine readable identifier for the unit.
+    A machine-readable identifier for the unit.
 */
 
 /*!
@@ -785,6 +792,13 @@ QString QOpcUa::nodeIdFromInteger(quint16 ns, quint32 identifier)
 /*!
     \fn bool QOpcUa::QAxisInformation::operator==(const QAxisInformation &other) const
     Returns \c true if this QAxisInformation has the same value as \a other.
+*/
+
+/*!
+    \fn QOpcUa::QAxisInformation::QAxisInformation(QEUInformation p_engineeringUnits, QRange p_eURange, QLocalizedText p_title, AxisScale p_axisScaleType, QVector<double> p_axisSteps)
+
+    Constructs a QAxisInformation with engineering units \a p_engineeringUnits, range \a p_eURange, title \a p_title,
+    scaling \a p_axisScaleType and axis steps \a p_axisSteps.
 */
 
 /*!

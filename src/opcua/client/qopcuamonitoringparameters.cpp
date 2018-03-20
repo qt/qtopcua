@@ -50,12 +50,12 @@ QT_BEGIN_NAMESPACE
     the revised values from the server.
 
     \section1 Usage
-    For most use cases, only the publishing interval is required
+    For most use cases, only the publishing interval is required.
     \code
-    QOpcUaMonitoringParameters p(100); // Set a publishing interval of 100ms and share the subscription
+    QOpcUaMonitoringParameters p(100); // Set a publishing interval of 100ms and share the subscription.
     node->enableMonitoring(QOpcUa::NodeAttribute::Value, p);
     \endcode
-    If an \l {QOpcUaMonitoringParameters::SubscriptionType} {exclusive} subscription is required, use the second parameter
+    If an \l {QOpcUaMonitoringParameters::SubscriptionType} {exclusive} subscription is required, use the second parameter.
     \code
     QOpcUaMonitoringParameters p(100, QOpcUaMonitoringParameters::SubscriptionType::Exclusive); // Create a new subscription
     \endcode
@@ -184,6 +184,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn QOpcUaMonitoringParameters::DataChangeFilter::DataChangeFilter(DataChangeTrigger p_trigger, DeadbandType p_deadbandType, double p_deadbandValue)
+
+    Constructs a DataChangeFilter with trigger \a p_trigger, deadband type \a p_deadbandType and deadband value \a p_deadbandValue.
+*/
+
+/*!
     \variable QOpcUaMonitoringParameters::DataChangeFilter::trigger
 
     The trigger for this filter.
@@ -206,9 +212,9 @@ QT_BEGIN_NAMESPACE
 
     Enumerates the possible triggers for a \l DataChangeFilter.
 
-    \value Status Triggers if the status code for the value changes.
-    \value StatusValue Triggers if the status code or the value changes.
-    \value StatusValueTimestamp Triggers if the status code, the value or the source timestamp changes.
+    \value Status Triggers if the value's status code changes.
+    \value StatusValue Triggers if the value's status code or the value itself changes.
+    \value StatusValueTimestamp Triggers if the value's status code, the value itself or the source timestamp changes.
 */
 
 /*!
@@ -355,7 +361,7 @@ quint32 QOpcUaMonitoringParameters::maxNotificationsPerPublish() const
 }
 
 /*!
-    Request \a maxNotificationsPerPublish as maximum notifications per publish value for the subscription.
+    Set \a maxNotificationsPerPublish as maximum notifications per publish value for the subscription.
 */
 void QOpcUaMonitoringParameters::setMaxNotificationsPerPublish(quint32 maxNotificationsPerPublish)
 {
@@ -437,7 +443,7 @@ QOpcUaMonitoringParameters::MonitoringMode QOpcUaMonitoringParameters::monitorin
 }
 
 /*!
-    Request \a monitoringMode as monitoring mode for the monitored item.
+    Set \a monitoringMode as monitoring mode for the monitored item.
 */
 void QOpcUaMonitoringParameters::setMonitoringMode(MonitoringMode monitoringMode)
 {
@@ -453,7 +459,7 @@ bool QOpcUaMonitoringParameters::discardOldest() const
 }
 
 /*!
-    Request \a discardOldest as discardOldest setting for the monitored item.
+    Set \a discardOldest as discardOldest setting for the monitored item.
 */
 void QOpcUaMonitoringParameters::setDiscardOldest(bool discardOldest)
 {
@@ -494,7 +500,7 @@ void QOpcUaMonitoringParameters::setDataChangeFilter(const QOpcUaMonitoringParam
 }
 
 /*!
-    Request \a filter as filter for for the monitored item.
+    Request \a filter as filter for the monitored item.
 
     For general use, the type-safe versions that are listed below are preferred.
 

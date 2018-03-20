@@ -79,22 +79,22 @@
     The use of different reference types and nodes containing metadata enable a client to navigate and interpret
     the data without knowing their structure in advance.
 
-    All nodes have a unique identifier and attributes that can be read and written.
+    Each node has a unique identifier and attributes that can be read and written.
     Among others, there are Variable nodes which store values and callable Method nodes with attached nodes describing
     parameters and return values. Notifications in case of events and monitoring of Variable nodes for value changes are offered too.
 
     Complex objects can be created by combining nodes using references, inheritance is also possible.
     OPC UA offers support for pre-made models which can be extended to fit special needs.
 
-    OPC UA is the platform independent successor of OPC Classic intended for usage on all levels,
+    OPC UA is the platform-independent successor of OPC Classic intended for usage on all levels,
     from embedded sensors up to manufacturing execution and enterprise resource planning systems.
-    It has a service oriented architecture based on standardized messages for service requests and responses.
+    It has a service-oriented architecture based on standardized messages for service requests and responses.
     There are different ways for these messages to be encoded and transported over the network. The most common way
     is binary encoding over TCP.
 
     \section1 Implemented features from the OPC UA protocol
 
-    Following features of OPC UA are supported by Qt OPC UA:
+    The following features of OPC UA are supported by Qt OPC UA:
 
     \table
     \header
@@ -136,7 +136,7 @@
 
     \section1 Data types
     A subset of the OPC UA data types is currently supported in Qt OPC UA.
-    Most of them are available with both backends.
+    Most of them are available with all backends.
 
     \table
     \header

@@ -78,7 +78,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
                 qDebug() << "A node object has been created";
         }
     });
-    client->connectToEndpoint(QUrl("opc.tcp://127.0.0.1:4840"); // Connect the client to the server
+    client->connectToEndpoint(QUrl("opc.tcp://127.0.0.1:4840")); // Connect the client to the server
     \endcode
 */
 
@@ -139,7 +139,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 /*!
     \fn void QOpcUaClient::namespaceArrayUpdated(QStringList namespaces)
 
-    This signal is emitted after a updateNamespaceArray operation has finished.
+    This signal is emitted after an updateNamespaceArray operation has finished.
     \a namespaces contains the content of the server's namespace table. The index
     of an entry in \a namespaces corresponds to the namespace index used in the node id.
 */
@@ -211,8 +211,8 @@ QOpcUaClient::ClientError QOpcUaClient::error() const
     Returns a \l QOpcUaNode object associated with the OPC UA node identified
     by \a nodeId. The caller becomes owner of the node object.
 
-    If the client is not connected, nullptr is returned. The backends may also
-    return nullptr for other error cases (for example for a malformed node id).
+    If the client is not connected, \c nullptr is returned. The backends may also
+    return \c nullptr for other error cases (for example for a malformed node id).
 */
 QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 {

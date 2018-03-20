@@ -38,9 +38,8 @@
     The OPC UA server included in this example runs a simulation of a machine
     containing two tanks, a water pump and a valve. Water can be pumped from the
     first tank into the second tank and then be flushed from the second tank
-    by opening the valve. Both operations have a user configurable setpoint
-    which controls how much water is pumped to the second tank or flushed
-    from the first tank.
+    by opening the valve. Both operations have a user-configurable setpoint
+    which controls how much water is pumped to or flushed from the second tank.
 
     The following nodes exist on the server:
 
@@ -96,9 +95,10 @@
     methods wrapping the OPC UA method calls.
 
     \section2 Member variables
-    Pointers to \l QOpcUaClient and to each \l QOpcUaNode needed for interaction with the server
-    are required. For the values of these nodes, member variables containing the last value
-    reported by the server are added.
+    A pointer to \l QOpcUaClient is required for connection management. An
+    additional pointer to a \l QOpcUaNode object is needed for each OPC UA
+    node the HMI interacts with. For the values of these nodes, member variables
+    containing the last value reported by the server are added.
 
     \quotefromfile opcua/waterpump/qml-hmi/opcuamachinebackend.h
     \dots
@@ -129,7 +129,7 @@
     \printuntil }
 
     A read operation emits the \l QOpcUaNode::attributeRead signal on completion.
-    The client has to check the status code and then get the result from the node
+    The client has to check the status code and then get the result from the node.
 
     \skipto void OpcUaMachineBackend::machineDesignationRead
     \printuntil }
@@ -138,17 +138,23 @@
 
     \section2 Interaction with the server
 
-    In the constructor, a \l QOpcUaProvider is created and a \l QOpcUaClient with
-    open62541 backend is requested. Its \l QOpcUaClient::stateChanged signal must be
-    connected to the backend's machineStateUpdated slot.
+    In the constructor, a QOpcUaProvider is created and the available backends are saved to provide a model for the backend selection dropdown menu.
 
     \quotefromfile opcua/waterpump/qml-hmi/opcuamachinebackend.cpp
     \dots
     \skipto QOpcUaProvider provider
-    \printuntil QObject
+    \printuntil setBackends
     \dots
 
-    machineStateUpdated acts on QOpcUaClient being connected or disconnected.
+    Before attempting a connection, a QOpcUaClient with the selected backend is created. Its \l QOpcUaClient::stateChanged signal must be
+    connected to the backend's clientStateHandler slot.
+
+    \quotefromfile opcua/waterpump/qml-hmi/opcuamachinebackend.cpp
+    \skipto OpcUaMachineBackend::connectToEndpoint
+    \printuntil m_client->connectToEndpoint
+    \printuntil }
+
+    clientStateHandler acts on QOpcUaClient being connected or disconnected.
     In case of a successful connection, the node member variables created before
     are filled with node objects.
 
@@ -159,7 +165,7 @@
     \dots
 
     After all node objects have been created, the data change handlers are
-    connected to the node objects and monitoring is enabled
+    connected to the node objects and monitoring is enabled.
 
     \dots
     \skipto Connect signal handlers
@@ -167,7 +173,7 @@
     \dots
 
     The machine designation is not supposed to change and will be read once at
-    startup
+    startup.
 
     \dots
     \skipto Connect the handler for async reading
@@ -175,12 +181,12 @@
     \codeline
     \dots
 
-    A setter for the setpoint is added to the backend
+    A setter for the setpoint is added to the backend.
 
     \skipto machineWriteTank2TargetPercent
     \printuntil }
 
-    For the methods, wrappers which call the OPC UA server method are created
+    For the methods, wrappers which call the OPC UA server method are created.
 
     \skipto startPump
     \printuntil }
@@ -188,7 +194,7 @@
     \section2 The HMI
 
     A backend instance is created and handed to the QML part as a context property
-    named uaBackend
+    named uaBackend.
 
     \dots
     \quotefromfile opcua/waterpump/qml-hmi/main.cpp
@@ -207,7 +213,7 @@
     \printuntil }
     \printuntil }
 
-    Signals from the backend can also be used directly in the QML code
+    Signals from the backend can also be used directly in the QML code.
 
     \quotefromfile opcua/waterpump/qml-hmi/Pump.qml
     \skipto Connections
