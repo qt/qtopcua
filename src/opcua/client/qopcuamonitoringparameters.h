@@ -117,7 +117,7 @@ public:
     double samplingInterval() const;
     void setSamplingInterval(double samplingInterval);
     QVariant filter() const;
-    void setDataChangeFilter(const DataChangeFilter &filter);
+    void setDataChangeFilter(const QOpcUaMonitoringParameters::DataChangeFilter &filter);
     void setFilter(const QVariant &filter);
     quint32 queueSize() const;
     void setQueueSize(quint32 queueSize);
