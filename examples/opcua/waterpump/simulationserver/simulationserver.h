@@ -74,7 +74,7 @@ public:
 
     UA_NodeId addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value, QOpcUa::Types type);
 
-    UA_NodeId addMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description, const QString &browseName, UA_MethodCallback cb);
+    UA_NodeId addMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description, const QString &name, UA_MethodCallback cb);
 
     static UA_StatusCode startPumpMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle,
                                             const UA_NodeId *methodId, void *methodContext,
