@@ -238,6 +238,8 @@ void Open62541AsyncBackend::enableMonitoring(uintptr_t handle, UA_NodeId id, QOp
         }
     });
 
+    UA_NodeId_deleteMembers(&id);
+
     if (usedSubscription->monitoredItemsCount() == 0)
         removeSubscription(usedSubscription->subscriptionId()); // No items were added
 
