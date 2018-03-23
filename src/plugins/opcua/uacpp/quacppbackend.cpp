@@ -303,7 +303,7 @@ void UACppAsyncBackend::writeAttribute(uintptr_t handle, const UaNodeId &id, QOp
                               static_cast<QOpcUa::UaStatusCode>(writeResults[0]) : static_cast<QOpcUa::UaStatusCode>(result.statusCode()));
 }
 
-void UACppAsyncBackend::writeAttributes(uintptr_t handle, const UaNodeId &id, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types /*valueAttributeType*/)
+void UACppAsyncBackend::writeAttributes(uintptr_t handle, const UaNodeId &id, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType)
 {
     if (toWrite.size() == 0) {
         qCWarning(QT_OPCUA_PLUGINS_UACPP, "No values to be written");
@@ -322,6 +322,8 @@ void UACppAsyncBackend::writeAttributes(uintptr_t handle, const UaNodeId &id, QO
     for (auto it = toWrite.constBegin(); it != toWrite.constEnd(); ++it, ++index) {
         id.copyTo(&nodesToWrite[index].NodeId);
         QOpcUa::Types type = attributeIdToTypeId(it.key());
+        if (type == QOpcUa::Types::Undefined)
+            type = valueAttributeType;
         nodesToWrite[index].AttributeId = QUACppValueConverter::toUaAttributeId(it.key());
         nodesToWrite[index].Value.Value = QUACppValueConverter::toUACppVariant(it.value(), type);
     }
