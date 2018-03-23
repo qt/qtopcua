@@ -64,35 +64,18 @@ Item {
                 uaBackend.flushTank2()
             }
         }
-        RowLayout {
+        Layout.fillHeight: true
+        Tank {
+            id: tank2
             Layout.fillHeight: true
-            Tank {
-                id: tank2
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                percentFilled: uaBackend.percentFilledTank2
-                Rectangle {
-                    color: uaBackend.tank2ValveState ? "#00BFFF" : "lightgrey"
-                    anchors.top: parent.bottom
-                    anchors.right: parent.right
-                    width: tank2.width / 10
-                    height: 40
-                }
-            }
-            Slider {
-                id: setpointSlider
-                Layout.fillHeight: true
-                height: tank2.height
-                enabled: uaBackend.connected && uaBackend.machineState === OpcUaMachineBackend.MachineState.Idle
-                from: 0
-                to: 100
-                value: uaBackend.tank2TargetPercent
-                live: false
-                stepSize: 1.0
-                orientation: Qt.Vertical
-                onValueChanged: {
-                    uaBackend.machineWriteTank2TargetPercent(value);
-                }
+            Layout.fillWidth: true
+            percentFilled: uaBackend.percentFilledTank2
+            Rectangle {
+                color: uaBackend.tank2ValveState ? "#00BFFF" : "lightgrey"
+                anchors.top: parent.bottom
+                anchors.right: parent.right
+                width: tank2.width / 10
+                height: 40
             }
         }
     }
