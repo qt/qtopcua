@@ -47,8 +47,10 @@ QT_BEGIN_NAMESPACE
 
 class QFreeOpcUaWorker;
 
-class QFreeOpcUaSubscription : public OpcUa::SubscriptionHandler
+class QFreeOpcUaSubscription : public QObject, public OpcUa::SubscriptionHandler
 {
+    Q_OBJECT
+
 public:
     QFreeOpcUaSubscription(QFreeOpcUaWorker *backend, const QOpcUaMonitoringParameters &settings);
     ~QFreeOpcUaSubscription() override;
@@ -88,6 +90,9 @@ public:
         {}
     };
 
+signals:
+    void timeout(QFreeOpcUaSubscription *sub, QVector<QPair<uintptr_t, QOpcUa::NodeAttribute>> items);
+
 private:
     MonitoredItem *getItemForAttribute(uintptr_t handle, QOpcUa::NodeAttribute attr);
 
@@ -99,6 +104,8 @@ private:
 
     QHash<quint32, MonitoredItem *> m_itemIdToItemMapping;
     QHash<uintptr_t, QHash<QOpcUa::NodeAttribute, MonitoredItem *>> m_handleToItemMapping;
+
+    bool m_timeout;
 };
 
 QT_END_NAMESPACE

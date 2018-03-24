@@ -226,9 +226,16 @@ void Open62541AsyncBackend::enableMonitoring(uintptr_t handle, UA_NodeId id, QOp
     }
 
     qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attribute){
-        bool success = usedSubscription->addAttributeMonitoredItem(handle, attribute, id, settings);
-        if (success)
-            m_attributeMapping[handle][attribute] = usedSubscription;
+        if (getSubscriptionForItem(handle, attribute)) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Monitored item for" << attribute << "has already been created";
+            QOpcUaMonitoringParameters s;
+            s.setStatusCode(QOpcUa::UaStatusCode::BadEntryExists);
+            emit monitoringEnableDisable(handle, attribute, true, s);
+        } else {
+            bool success = usedSubscription->addAttributeMonitoredItem(handle, attribute, id, settings);
+            if (success)
+                m_attributeMapping[handle][attribute] = usedSubscription;
+        }
     });
 
     if (usedSubscription->monitoredItemsCount() == 0)
@@ -282,6 +289,8 @@ QOpen62541Subscription *Open62541AsyncBackend::getSubscription(const QOpcUaMonit
         return nullptr;
     }
     m_subscriptions[id] = sub;
+    // This must be a queued connection to prevent the slot from being called while the client is inside UA_Client_runAsync().
+    QObject::connect(sub, &QOpen62541Subscription::timeout, this, &Open62541AsyncBackend::handleSubscriptionTimeout, Qt::QueuedConnection);
     return sub;
 }
 
@@ -292,6 +301,7 @@ bool Open62541AsyncBackend::removeSubscription(UA_UInt32 subscriptionId)
         sub.value()->removeOnServer();
         delete sub.value();
         m_subscriptions.remove(subscriptionId);
+        modifyPublishRequests();
         return true;
     }
     return false;
@@ -496,6 +506,19 @@ void Open62541AsyncBackend::modifyPublishRequests()
     m_subscriptionTimer.stop();
     m_sendPublishRequests = true;
     sendPublishRequest();
+}
+
+void Open62541AsyncBackend::handleSubscriptionTimeout(QOpen62541Subscription *sub, QVector<QPair<uintptr_t, QOpcUa::NodeAttribute>> items)
+{
+    for (auto it : qAsConst(items)) {
+        auto item = m_attributeMapping.find(it.first);
+        if (item == m_attributeMapping.end())
+            continue;
+        item->remove(it.second);
+    }
+    m_subscriptions.remove(sub->subscriptionId());
+    delete sub;
+    modifyPublishRequests();
 }
 
 QOpen62541Subscription *Open62541AsyncBackend::getSubscriptionForItem(uintptr_t handle, QOpcUa::NodeAttribute attr)

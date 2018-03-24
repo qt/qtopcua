@@ -269,6 +269,7 @@ QFreeOpcUaSubscription *QFreeOpcUaWorker::getSubscription(const QOpcUaMonitoring
         delete sub;
         return nullptr;
     }
+    QObject::connect(sub, &QFreeOpcUaSubscription::timeout, this, &QFreeOpcUaWorker::handleSubscriptionTimeout, Qt::QueuedConnection);
     m_subscriptions[id] = sub;
     return sub;
 }
@@ -316,9 +317,16 @@ void QFreeOpcUaWorker::enableMonitoring(uintptr_t handle, OpcUa::Node node, QOpc
     }
 
     qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attr) {
-        bool success = usedSubscription->addAttributeMonitoredItem(handle, attr, node, settings);
-        if (success)
-            m_attributeMapping[handle][attr] = usedSubscription;
+        if (getSubscriptionForItem(handle, attr)) {
+            qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Monitored item for" << attr << "has already been created";
+            QOpcUaMonitoringParameters s;
+            s.setStatusCode(QOpcUa::UaStatusCode::BadEntryExists);
+            emit monitoringEnableDisable(handle, attr, true, s);
+        } else {
+            bool success = usedSubscription->addAttributeMonitoredItem(handle, attr, node, settings);
+            if (success)
+                m_attributeMapping[handle][attr] = usedSubscription;
+        }
     });
 
     if (usedSubscription->monitoredItemsCount() == 0)
@@ -402,6 +410,18 @@ void QFreeOpcUaWorker::callMethod(uintptr_t handle, OpcUa::NodeId objectId, OpcU
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Method call failed: " << ex.what();
         emit methodCallFinished(handle, QFreeOpcUaValueConverter::nodeIdToString(methodId), QVariant(), QFreeOpcUaValueConverter::exceptionToStatusCode(ex));
     }
+}
+
+void QFreeOpcUaWorker::handleSubscriptionTimeout(QFreeOpcUaSubscription *sub, QVector<QPair<uintptr_t, QOpcUa::NodeAttribute> > items)
+{
+    for (auto it : items) {
+        auto item = m_attributeMapping.find(it.first);
+        if (item == m_attributeMapping.end())
+            continue;
+        item->remove(it.second);
+    }
+    m_subscriptions.remove(sub->subscriptionId());
+    delete sub;
 }
 
 QT_END_NAMESPACE

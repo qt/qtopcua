@@ -44,8 +44,10 @@ QT_BEGIN_NAMESPACE
 
 class Open62541AsyncBackend;
 
-class QOpen62541Subscription
+class QOpen62541Subscription : public QObject
 {
+    Q_OBJECT
+
 public:
     QOpen62541Subscription(Open62541AsyncBackend *backend, const QOpcUaMonitoringParameters &settings);
     ~QOpen62541Subscription();
@@ -59,6 +61,7 @@ public:
     bool removeAttributeMonitoredItem(uintptr_t handle, QOpcUa::NodeAttribute attr);
 
     void monitoredValueUpdated(UA_UInt32 monId, UA_DataValue *value);
+    void sendTimeoutNotification();
 
     struct MonitoredItem {
         uintptr_t handle;
@@ -83,6 +86,9 @@ public:
 
     QOpcUaMonitoringParameters::SubscriptionType shared() const;
 
+signals:
+    void timeout(QOpen62541Subscription *sub, QVector<QPair<uintptr_t, QOpcUa::NodeAttribute>> items);
+
 private:
     MonitoredItem *getItemForAttribute(uintptr_t handle, QOpcUa::NodeAttribute attr);
     UA_ExtensionObject createFilter(const QVariant &filterData);
@@ -103,6 +109,7 @@ private:
     QHash<UA_UInt32, MonitoredItem *> m_itemIdToItemMapping; // ItemId -> Item for fast lookup on data change
 
     quint32 m_clientHandle;
+    bool m_timeout;
 };
 
 QT_END_NAMESPACE

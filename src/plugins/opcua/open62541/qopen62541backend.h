@@ -71,6 +71,7 @@ public Q_SLOTS:
     bool removeSubscription(UA_UInt32 subscriptionId);
     void sendPublishRequest();
     void modifyPublishRequests();
+    void handleSubscriptionTimeout(QOpen62541Subscription *sub, QVector<QPair<uintptr_t, QOpcUa::NodeAttribute>> items);
 
 public:
     UA_Client *m_uaclient;

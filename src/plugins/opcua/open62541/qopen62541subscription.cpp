@@ -56,6 +56,18 @@ static void monitoredValueHandler(UA_Client *client, UA_UInt32 subId, void *subC
     subscription->monitoredValueUpdated(monId, value);
 }
 
+static void stateChangeHandler(UA_Client *client, UA_UInt32 subId, void *subContext, UA_StatusChangeNotification *notification)
+{
+    Q_UNUSED(client);
+    Q_UNUSED(subId);
+
+    if (notification->status != UA_STATUSCODE_BADTIMEOUT)
+        return;
+
+    QOpen62541Subscription *sub = static_cast<QOpen62541Subscription *>(subContext);
+    sub->sendTimeoutNotification();
+}
+
 QOpen62541Subscription::QOpen62541Subscription(Open62541AsyncBackend *backend, const QOpcUaMonitoringParameters &settings)
     : m_backend(backend)
     , m_interval(settings.publishingInterval())
@@ -66,6 +78,7 @@ QOpen62541Subscription::QOpen62541Subscription(Open62541AsyncBackend *backend, c
     , m_priority(settings.priority())
     , m_maxNotificationsPerPublish(settings.maxNotificationsPerPublish())
     , m_clientHandle(0)
+    , m_timeout(false)
 {
 }
 
@@ -82,7 +95,7 @@ UA_UInt32 QOpen62541Subscription::createOnServer()
     req.requestedMaxKeepAliveCount = m_maxKeepaliveCount;
     req.priority = m_priority;
     req.maxNotificationsPerPublish = m_maxNotificationsPerPublish;
-    UA_CreateSubscriptionResponse res = UA_Client_Subscriptions_create(m_backend->m_uaclient, req, this, NULL, NULL);
+    UA_CreateSubscriptionResponse res = UA_Client_Subscriptions_create(m_backend->m_uaclient, req, this, stateChangeHandler, NULL);
 
     if (res.responseHeader.serviceResult != UA_STATUSCODE_GOOD) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not create subscription with interval" << m_interval << UA_StatusCode_name(res.responseHeader.serviceResult);
@@ -98,15 +111,15 @@ UA_UInt32 QOpen62541Subscription::createOnServer()
 
 bool QOpen62541Subscription::removeOnServer()
 {
-    if (m_subscriptionId == 0)
-        return false;
-
-    UA_StatusCode res = UA_Client_Subscriptions_deleteSingle(m_backend->m_uaclient, m_subscriptionId);
-    m_subscriptionId = 0;
+    UA_StatusCode res = UA_STATUSCODE_GOOD;
+    if (m_subscriptionId) {
+        res = UA_Client_Subscriptions_deleteSingle(m_backend->m_uaclient, m_subscriptionId);
+        m_subscriptionId = 0;
+    }
 
     for (auto it : qAsConst(m_itemIdToItemMapping)) {
         QOpcUaMonitoringParameters s;
-        s.setStatusCode(QOpcUa::UaStatusCode::BadDisconnect);
+        s.setStatusCode(m_timeout ? QOpcUa::UaStatusCode::BadTimeout : QOpcUa::UaStatusCode::BadDisconnect);
         emit m_backend->monitoringEnableDisable(it->handle, it->attr, false, s);
     }
 
@@ -308,6 +321,18 @@ void QOpen62541Subscription::monitoredValueUpdated(UA_UInt32 monId, UA_DataValue
         res.sourceTimestamp = QOpen62541ValueConverter::uaDateTimeToQDateTime(value->sourceTimestamp);
     res.statusCode = QOpcUa::UaStatusCode::Good;
     emit m_backend->attributeUpdated(item.value()->handle, res);
+}
+
+void QOpen62541Subscription::sendTimeoutNotification()
+{
+    QVector<QPair<uintptr_t, QOpcUa::NodeAttribute>> items;
+    for (auto it : qAsConst(m_handleToItemMapping)) {
+        for (auto item : it) {
+            items.push_back({item->handle, item->attr});
+        }
+    }
+    emit timeout(this, items);
+    m_timeout = true;
 }
 
 double QOpen62541Subscription::interval() const

@@ -54,11 +54,11 @@ QT_BEGIN_NAMESPACE
     It has attributes like browse name, value, associated properties and can have
     references to other nodes in the address space.
     Nodes are organized in namespaces and have IDs which can e.g. be numeric,
-    a string, a namespace specific format (opaque) or a globally unique identifier.
-    A node is identified by the namespace id and the node ID.
+    a string, a namespace-specific format (opaque) or a globally unique identifier.
+    A node is identified by the namespace ID and the node ID.
     This identifier is usually given as a string:
     The identifier of a node residing in namespace 0 and having the numeric
-    identifier 42, the string is \c ns=0;i=42, a node with a string
+    identifier 42 results in the string \c ns=0;i=42. A node with a string
     identifier can be addressed via \c ns=0;s=myStringIdentifier.
 
     Objects of this type are owned by the user and must be deleted when they are
@@ -77,7 +77,7 @@ QT_BEGIN_NAMESPACE
     \l attributeError() contains a status code associated with the last read or write operation
     on the attribute. This is the low level status code returned by the OPC UA service.
     This status code can be simplified by converting it to a \l QOpcUa::ErrorCategory using
-    \l QOpcUa::errorCategory).
+    \l QOpcUa::errorCategory().
 
     \section1 Subscribing to data changes
     Subscriptions are a concept in OPC UA which allows receiving of notifications for changes in data
@@ -89,7 +89,7 @@ QT_BEGIN_NAMESPACE
 
     \l QOpcUaNode offers an abstraction to interact with subscriptions and monitored items.
     \l enableMonitoring() enables data change notifications for one or more attributes.
-    The \l attributeUpdated signal contains new values, the local cache is updated.
+    The \l attributeUpdated signal contains new values and the local cache is updated.
     \l disableMonitoring() disables the data change notifications.
     The \l monitoringStatusChanged signal notifies about changes of the monitoring status, e. g. after
     manual enable and disable or a status change on the server.
@@ -250,6 +250,7 @@ bool QOpcUaNode::readAttributeRange(QOpcUa::NodeAttribute attribute, const QStri
 
 /*!
     Starts an asynchronous read operation for the node attributes in \a attributes.
+
     Returns \c true if the asynchronous call has been successfully dispatched.
 
     Attribute values only contain valid information after the \l attributeRead signal has been emitted.
@@ -400,7 +401,7 @@ bool QOpcUaNode::modifyDataChangeFilter(QOpcUa::NodeAttribute attr, const QOpcUa
     Writes \a value to the attribute given in \a attribute using the type information from \a type.
     Returns \c true if the asynchronous call has been successfully dispatched.
 
-    If the \a type parameter is omitted, the backend tries to find the correct type. Following default types are assumed:
+    If the \a type parameter is omitted, the backend tries to find the correct type. The following default types are assumed:
     \table
         \header
             \li Qt MetaType
@@ -479,6 +480,7 @@ bool QOpcUaNode::writeAttributeRange(QOpcUa::NodeAttribute attribute, const QVar
 
 /*!
     Executes a write operation for the attributes and values specified in \a toWrite.
+
     Returns \c true if the asynchronous call has been successfully dispatched.
 
     The \a valueAttributeType parameter can be used to supply type information for the value attribute.
@@ -532,7 +534,7 @@ bool QOpcUaNode::browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::N
 }
 
 /*!
-    The ID of the OPC UA node.
+    Returns the ID of the OPC UA node.
 */
 QString QOpcUaNode::nodeId() const
 {
