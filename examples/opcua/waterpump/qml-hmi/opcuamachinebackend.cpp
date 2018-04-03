@@ -322,8 +322,11 @@ void OpcUaMachineBackend::connectToEndpoint(const QString &url, qint32 index)
     if (index < 0 || index >= m_backends.size())
         return; // Invalid index
 
-    if (!m_client || (m_client && m_client->backend() != m_backends.at(index)))
+    if (!m_client || (m_client && m_client->backend() != m_backends.at(index))) {
         m_client.reset(provider.createClient(m_backends.at(index)));
+        if (m_client)
+            QObject::connect(m_client.data(), &QOpcUaClient::stateChanged, this, &OpcUaMachineBackend::clientStateHandler);
+    }
 
     if (!m_client) {
         qWarning() << "Could not create client";
@@ -332,7 +335,6 @@ void OpcUaMachineBackend::connectToEndpoint(const QString &url, qint32 index)
     }
 
     m_successfullyCreated = true;
-    QObject::connect(m_client.data(), &QOpcUaClient::stateChanged, this, &OpcUaMachineBackend::clientStateHandler);
     m_client->connectToEndpoint(QUrl(url));
 }
 
