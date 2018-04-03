@@ -477,18 +477,16 @@ void Tst_QOpcUaClient::writeMultipleAttributes()
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
-    QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=Demo.Static.Scalar.QualifiedName"));
     QVERIFY(node != 0);
 
-    WRITE_VALUE_ATTRIBUTE(node, QVariant(double(0)), QOpcUa::Types::Double);
-
     QOpcUaNode::AttributeMap map;
-    map[QOpcUa::NodeAttribute::DisplayName] = QVariant(QLatin1String("NewDisplayName"));
-    map[QOpcUa::NodeAttribute::Value] = QVariant(double(23.5));
+    map[QOpcUa::NodeAttribute::DisplayName] = QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("NewDisplayName")));
+    map[QOpcUa::NodeAttribute::Value] = QVariant::fromValue(QOpcUa::QQualifiedName(2, QStringLiteral("TestString")));
 
     QSignalSpy writeSpy(node.data(), &QOpcUaNode::attributeWritten);
 
-    node->writeAttributes(map);
+    node->writeAttributes(map, QOpcUa::Types::QualifiedName);
 
     writeSpy.wait();
     if (writeSpy.size() < 2)
@@ -503,7 +501,7 @@ void Tst_QOpcUaClient::writeMultipleAttributes()
     QVERIFY(writeSpy.at(1).at(0).value<QOpcUa::NodeAttribute>() == QOpcUa::NodeAttribute::Value);
     QVERIFY(writeSpy.at(1).at(1).value<QOpcUa::UaStatusCode>() == QOpcUa::UaStatusCode::Good);
     QVERIFY(node->attributeError(QOpcUa::NodeAttribute::Value) == QOpcUa::UaStatusCode::Good);
-    QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value) == double(23.5));
+    QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QQualifiedName>() == QOpcUa::QQualifiedName(2, QStringLiteral("TestString")));
 }
 
 void Tst_QOpcUaClient::getRootNode()
