@@ -437,6 +437,8 @@ void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
     if (m_uaclient)
         UA_Client_delete(m_uaclient);
 
+    m_useStateCallback = false;
+
     UA_ClientConfig conf = UA_ClientConfig_default;
     conf.clientContext = this;
     conf.stateCallback = &clientStateCallback;
@@ -468,6 +470,8 @@ void Open62541AsyncBackend::disconnectFromEndpoint()
     qDeleteAll(m_subscriptions);
     m_subscriptions.clear();
     m_attributeMapping.clear();
+
+    m_useStateCallback = false;
 
     if (m_uaclient) {
         UA_StatusCode ret = UA_Client_disconnect(m_uaclient);

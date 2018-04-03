@@ -83,6 +83,7 @@ public:
         QSignalSpy connectedSpy(opcuaClient, &QOpcUaClient::connected);
         QSignalSpy disconnectedSpy(opcuaClient, &QOpcUaClient::disconnected);
         QSignalSpy stateSpy(opcuaClient, &QOpcUaClient::stateChanged);
+        QSignalSpy errorSpy(opcuaClient, &QOpcUaClient::errorChanged);
 
         QVERIFY(opcuaClient != nullptr);
         if (opcuaClient->state() == QOpcUaClient::Connected) {
@@ -98,6 +99,7 @@ public:
                      QOpcUaClient::ClientState::Closing);
             QCOMPARE(stateSpy.at(1).at(0).value<QOpcUaClient::ClientState>(),
                      QOpcUaClient::ClientState::Disconnected);
+            QCOMPARE(errorSpy.size(), 0);
         }
 
         opcuaClient = nullptr;
