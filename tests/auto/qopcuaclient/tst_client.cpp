@@ -832,6 +832,7 @@ void Tst_QOpcUaClient::multipleClients()
     opcuaClient->connectToEndpoint(m_endpoint);
     QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
     QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
+    WRITE_VALUE_ATTRIBUTE(node, 42.0, QOpcUa::Types::Double);
     READ_MANDATORY_VARIABLE_NODE(node);
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value).toDouble(), 42.0);
     QScopedPointer<QOpcUaClient> b(m_opcUa.createClient(opcuaClient->backend()));
