@@ -75,66 +75,86 @@ int main(int argc, char **argv)
 //    // TODO: Create Event
 
     // Test variables containing arrays of various types
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Boolean", "BoolArrayTest", false, QOpcUa::Types::Boolean);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Byte", "ByteArrayTest", 0, QOpcUa::Types::Byte);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.SByte", "SByteArrayTest", 0, QOpcUa::Types::SByte);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Double", "DoubleArrayTest", 0.0, QOpcUa::Types::Double);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Float", "FloatArrayTest", 0.0f, QOpcUa::Types::Float);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Int16", "Int16ArrayTest", 0, QOpcUa::Types::Int16);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Int32", "Int32ArrayTest", 0, QOpcUa::Types::Int32);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Int64", "Int64ArrayTest", 0, QOpcUa::Types::Int64);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.UInt16", "UInt16ArrayTest", 0, QOpcUa::Types::UInt16);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.UInt32", "UInt32ArrayTest", 0, QOpcUa::Types::UInt32);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.UInt64", "UInt64ArrayTest", 0, QOpcUa::Types::UInt64);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.String", "StringArrayTest", QStringLiteral("Value 0"), QOpcUa::Types::String);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Boolean", "BoolArrayTest", QVariantList({true, false}), QOpcUa::Types::Boolean);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Byte", "ByteArrayTest", QVariantList({1, 2}), QOpcUa::Types::Byte);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.SByte", "SByteArrayTest", QVariantList({1, 2}), QOpcUa::Types::SByte);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Double", "DoubleArrayTest", QVariantList({1.0, 2.0}), QOpcUa::Types::Double);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Float", "FloatArrayTest", QVariantList({1.0f, 2.0f}), QOpcUa::Types::Float);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Int16", "Int16ArrayTest", QVariantList({1, 2}), QOpcUa::Types::Int16);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Int32", "Int32ArrayTest", QVariantList({1, 2}), QOpcUa::Types::Int32);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Int64", "Int64ArrayTest", QVariantList({1, 2}), QOpcUa::Types::Int64);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.UInt16", "UInt16ArrayTest", QVariantList({1, 2}), QOpcUa::Types::UInt16);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.UInt32", "UInt32ArrayTest", QVariantList({1, 2}), QOpcUa::Types::UInt32);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.UInt64", "UInt64ArrayTest", QVariantList({1, 2}), QOpcUa::Types::UInt64);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.String", "StringArrayTest",
+                       QVariantList({QStringLiteral("Value 1"), QStringLiteral("Value 2")}), QOpcUa::Types::String);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.LocalizedText", "LocalizedTextArrayTest",
-                                                  QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en_US"), QStringLiteral("Value 0"))), QOpcUa::Types::LocalizedText);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.ByteString", "ByteStringArrayTest", QByteArray("Value 0"), QOpcUa::Types::ByteString);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.DateTime", "DateTimeArrayTest", QDateTime::currentDateTime(), QOpcUa::Types::DateTime);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.NodeId", "NodeIdArrayTest", "ns=0;i=84", QOpcUa::Types::NodeId);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Guid", "GuidArrayTest", QUuid::createUuid(), QOpcUa::Types::Guid);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.XmlElement", "XmlElementArrayTest", QString(), QOpcUa::Types::XmlElement);
+                       QVariantList({QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en_US"), QStringLiteral("Value 1"))),
+                                     QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en_US"), QStringLiteral("Value 2")))}),
+                       QOpcUa::Types::LocalizedText);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.ByteString", "ByteStringArrayTest",
+                       QVariantList({QByteArray("Value 1"), QByteArray("Value 2")}), QOpcUa::Types::ByteString);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.DateTime", "DateTimeArrayTest",
+                       QVariantList({QDateTime::currentDateTime(), QDateTime::currentDateTime().addDays(1), QDateTime::currentDateTime().addDays(2)}),
+                       QOpcUa::Types::DateTime);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.NodeId", "NodeIdArrayTest",
+                       QVariantList({QStringLiteral("ns=0;i=84"), QStringLiteral("ns=0;i=85")}), QOpcUa::Types::NodeId);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Guid", "GuidArrayTest",
+                       QVariantList({QUuid::createUuid(), QUuid::createUuid()}), QOpcUa::Types::Guid);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.XmlElement", "XmlElementArrayTest",
+                       QVariantList({QStringLiteral("<?xml version=\"1\" encoding=\"UTF-8\"?>"),
+                                     QStringLiteral("<?xml version=\"1\" encoding=\"UTF-8\"?>")}), QOpcUa::Types::XmlElement);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.QualifiedName", "QualifiedNameArrayTest",
-                                                  QVariant::fromValue(QOpcUa::QQualifiedName(0, QStringLiteral("Value 0"))), QOpcUa::Types::QualifiedName);
+                       QVariantList({QVariant::fromValue(QOpcUa::QQualifiedName(0, QStringLiteral("Value 1"))),
+                                     QVariant::fromValue(QOpcUa::QQualifiedName(0, QStringLiteral("Value 2")))}), QOpcUa::Types::QualifiedName);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.StatusCode", "StatusCodeArrayTest",
-                                               QVariant::fromValue(QOpcUa::UaStatusCode::Good), QOpcUa::Types::StatusCode);
-
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Range", "RangeArrayTest", QVariant::fromValue(QOpcUa::QRange(0, 100)), QOpcUa::Types::Range);
+                       QVariantList({QVariant::fromValue(QOpcUa::UaStatusCode::Good),
+                                     QVariant::fromValue(QOpcUa::UaStatusCode::BadInvalidArgument)}), QOpcUa::Types::StatusCode);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Range", "RangeArrayTest",
+                       QVariantList({QVariant::fromValue(QOpcUa::QRange(0, 100)),
+                                     QVariant::fromValue(QOpcUa::QRange(100, 200))}), QOpcUa::Types::Range);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.EUInformation", "EUInformationArrayTest",
-                                                    QVariant::fromValue(QOpcUa::QEUInformation()), QOpcUa::Types::EUInformation);
+                       QVariantList({QVariant::fromValue(QOpcUa::QEUInformation()),
+                                     QVariant::fromValue(QOpcUa::QEUInformation())}), QOpcUa::Types::EUInformation);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.ComplexNumber", "ComplexNumberArrayTest",
-                                                    QVariant::fromValue(QOpcUa::QComplexNumber(1, 2)), QOpcUa::Types::ComplexNumber);
+                       QVariantList({QVariant::fromValue(QOpcUa::QComplexNumber(1, 2)),
+                                     QVariant::fromValue(QOpcUa::QComplexNumber(2, 3))}), QOpcUa::Types::ComplexNumber);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.DoubleComplexNumber", "DoubleComplexNumberArrayTest",
-                                                    QVariant::fromValue(QOpcUa::QDoubleComplexNumber(1, 2)), QOpcUa::Types::DoubleComplexNumber);
+                       QVariantList({QVariant::fromValue(QOpcUa::QDoubleComplexNumber(1, 2)),
+                                     QVariant::fromValue(QOpcUa::QDoubleComplexNumber(2, 3))}), QOpcUa::Types::DoubleComplexNumber);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.AxisInformation", "AxisInformationArrayTest",
-                                                    QVariant::fromValue(QOpcUa::QAxisInformation()), QOpcUa::Types::AxisInformation);
+                       QVariantList({QVariant::fromValue(QOpcUa::QAxisInformation()),
+                                     QVariant::fromValue(QOpcUa::QAxisInformation())}), QOpcUa::Types::AxisInformation);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.XV", "XVArrayTest",
-                                                    QVariant::fromValue(QOpcUa::QXValue(1, 2)), QOpcUa::Types::XV);
+                       QVariantList({QVariant::fromValue(QOpcUa::QXValue(1, 2)),
+                                     QVariant::fromValue(QOpcUa::QXValue(2, 3))}), QOpcUa::Types::XV);
 
+    // Test variables containing scalar values of various types
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Boolean", "BoolScalarTest", false, QOpcUa::Types::Boolean);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Byte", "ByteScalarTest", 0, QOpcUa::Types::Byte);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.SByte", "SByteScalarTest", 0, QOpcUa::Types::SByte);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Double", "DoubleScalarTest", 0.0, QOpcUa::Types::Double);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Float", "FloatScalarTest", 0.0f, QOpcUa::Types::Float);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Int16", "Int16ScalarTest", 0, QOpcUa::Types::Int16);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Int32", "Int32ScalarTest", 0, QOpcUa::Types::Int32);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Int64", "Int64ScalarTest", 0, QOpcUa::Types::Int64);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.UInt16", "UInt16ScalarTest", 0, QOpcUa::Types::UInt16);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.UInt32", "UInt32ScalarTest", 0, QOpcUa::Types::UInt32);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.UInt64", "UInt64ScalarTest", 0, QOpcUa::Types::UInt64);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Byte", "ByteScalarTest", 1, QOpcUa::Types::Byte);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.SByte", "SByteScalarTest", 2, QOpcUa::Types::SByte);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Double", "DoubleScalarTest", 1.0, QOpcUa::Types::Double);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Float", "FloatScalarTest", 1.0f, QOpcUa::Types::Float);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Int16", "Int16ScalarTest", 1, QOpcUa::Types::Int16);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Int32", "Int32ScalarTest", 1, QOpcUa::Types::Int32);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Int64", "Int64ScalarTest", 1, QOpcUa::Types::Int64);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.UInt16", "UInt16ScalarTest", 1, QOpcUa::Types::UInt16);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.UInt32", "UInt32ScalarTest", 1, QOpcUa::Types::UInt32);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.UInt64", "UInt64ScalarTest", 1, QOpcUa::Types::UInt64);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.String", "StringScalarTest", QStringLiteral("Value"), QOpcUa::Types::String);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.LocalizedText", "LocalizedTextScalarTest",
-                                                  QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en_US"), QStringLiteral("Value"))), QOpcUa::Types::LocalizedText);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.ByteString", "ByteStringScalarTest", QByteArray("Value"), QOpcUa::Types::ByteString);
+                                                  QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en_US"), QStringLiteral("Value"))),
+                       QOpcUa::Types::LocalizedText);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.ByteString", "ByteStringScalarTest", QByteArray("Value 1"), QOpcUa::Types::ByteString);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.DateTime", "DateTimeScalarTest", QDateTime::currentDateTime(), QOpcUa::Types::DateTime);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.NodeId", "NodeIdScalarTest", "ns=0;i=84", QOpcUa::Types::NodeId);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.NodeId", "NodeIdScalarTest", QStringLiteral("ns=0;i=84"), QOpcUa::Types::NodeId);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Guid", "GuidScalarTest", QUuid::createUuid(), QOpcUa::Types::Guid);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.XmlElement", "XmlElementScalarTest", QString(), QOpcUa::Types::XmlElement);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.XmlElement", "XmlElementScalarTest",
+                       QStringLiteral("<?xml version=\"1\" encoding=\"UTF-8\"?>"), QOpcUa::Types::XmlElement);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.QualifiedName", "QualifiedNameScalarTest",
                                                   QVariant::fromValue(QOpcUa::QQualifiedName(0, QStringLiteral("Value"))), QOpcUa::Types::QualifiedName);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.StatusCode", "StatusCodeScalarTest", QVariant::fromValue(QOpcUa::UaStatusCode::Good), QOpcUa::Types::StatusCode);
-
-
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.StatusCode", "StatusCodeScalarTest", QVariant::fromValue(QOpcUa::UaStatusCode::Good),
+                       QOpcUa::Types::StatusCode);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Range", "RangeScalarTest", QVariant::fromValue(QOpcUa::QRange(0, 100)), QOpcUa::Types::Range);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.EUInformation", "EUInformationScalarTest",
                                                     QVariant::fromValue(QOpcUa::QEUInformation()), QOpcUa::Types::EUInformation);
@@ -147,6 +167,7 @@ int main(int argc, char **argv)
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.XV", "XVScalarTest",
                                                     QVariant::fromValue(QOpcUa::QXValue(1, 2)), QOpcUa::Types::XV);
 
+    // Create folders containing child nodes with string, guid and opaque node ids
     UA_NodeId testStringIdsFolder = server.addFolder("ns=3;s=testStringIdsFolder", "testStringIdsFolder");
     server.addVariable(testStringIdsFolder, "ns=3;s=theStringId", "theStringId", QStringLiteral("Value"), QOpcUa::Types::String);
     UA_NodeId testGuidIdsFolder = server.addFolder("ns=3;s=testGuidIdsFolder", "testGuidIdsFolder");
@@ -154,6 +175,7 @@ int main(int argc, char **argv)
     UA_NodeId testOpaqueIdsFolder = server.addFolder("ns=3;s=testOpaqueIdsFolder", "testOpaqueIdsFolder");
     server.addVariable(testOpaqueIdsFolder, "ns=3;b=UXQgZnR3IQ==", "theOpaqueId", QStringLiteral("Value"), QOpcUa::Types::String);
 
+    // Add a method to the test folder
     server.addMethod(testFolder, "ns=3;s=Test.Method.Multiply", "MultiplyDoubles");
 
     server.addEmptyArrayVariable(testFolder, "ns=2;s=EmptyBoolArray", "EmptyBoolArrayTest");
