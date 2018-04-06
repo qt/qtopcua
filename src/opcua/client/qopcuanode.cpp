@@ -283,7 +283,7 @@ QVariant QOpcUaNode::attribute(QOpcUa::NodeAttribute attribute) const
 /*!
     Returns the error code for the attribute given in \a attribute.
 
-    The error code is only valid after the \l attributeRead signal has been emitted.
+    The error code is only valid after the \l attributeRead or \l attributeWritten signal has been emitted.
 
     \sa QOpcUa::errorCategory
  */

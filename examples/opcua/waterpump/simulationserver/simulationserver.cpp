@@ -320,16 +320,16 @@ double DemoServer::readTank2TargetValue()
     return static_cast<double *>(var.data)[0];
 }
 
-UA_NodeId DemoServer::addMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description, const QString &browseName, UA_MethodCallback cb)
+UA_NodeId DemoServer::addMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description, const QString &name, UA_MethodCallback cb)
 {
     UA_NodeId methodNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
     UA_MethodAttributes attr = UA_MethodAttributes_default;
 
     attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
-    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", variableNode.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", name.toUtf8().constData());
     attr.executable = true;
-    UA_QualifiedName methodBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.namespaceIndex, browseName.toUtf8().constData());
+    UA_QualifiedName methodBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.namespaceIndex, name.toUtf8().constData());
 
     UA_NodeId resultId;
     UA_StatusCode result = UA_Server_addMethodNode(m_server, methodNodeId, folder,
@@ -370,10 +370,10 @@ void DemoServer::launch()
      m_machineStateNode = addVariable(machineFolder, "ns=2;s=Machine.State", "Machine.State", static_cast<quint32>(MachineState::Idle), QOpcUa::Types::UInt32);
      addVariable(machineFolder, "ns=2;s=Machine.Designation", "Machine.Designation", "TankExample", QOpcUa::Types::String);
 
-     addMethod(machineFolder, "ns=2;s=Machine.Start", "Start", "Machine.Start", &startPumpMethod);
-     addMethod(machineFolder, "ns=2;s=Machine.Stop", "Stop", "Machine.Start", &stopPumpMethod);
-     addMethod(machineFolder, "ns=2;s=Machine.FlushTank2", "FlushTank2", "Machine.FlushTank2", &flushTank2Method);
-     addMethod(machineFolder, "ns=2;s=Machine.Reset", "Reset", "Machine.Reset", &resetMethod);
+     addMethod(machineFolder, "ns=2;s=Machine.Start", "Starts the pump", "Machine.Start", &startPumpMethod);
+     addMethod(machineFolder, "ns=2;s=Machine.Stop", "Stops the pump", "Machine.Stop", &stopPumpMethod);
+     addMethod(machineFolder, "ns=2;s=Machine.FlushTank2", "Flushes tank 2", "Machine.FlushTank2", &flushTank2Method);
+     addMethod(machineFolder, "ns=2;s=Machine.Reset", "Resets the simulation", "Machine.Reset", &resetMethod);
 
      QObject::connect(&m_machineTimer, &QTimer::timeout, [this]() {
 

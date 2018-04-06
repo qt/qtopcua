@@ -50,6 +50,8 @@
 
 import QtQuick 2.10
 import QtQuick.Layouts 1.3
+import QtQuick.Controls 2.3
+import OpcUaMachineBackend 1.0
 
 RowLayout {
     opacity: uaBackend.connected ? 1.0 : 0.25
@@ -62,6 +64,22 @@ RowLayout {
     Tank2Unit {
         Layout.fillHeight: true
         Layout.fillWidth: true
+    }
+    Slider {
+        id: setpointSlider
+        Layout.fillHeight: false
+        Layout.preferredHeight: tank1unit.tankHeight
+        Layout.alignment: Qt.AlignBottom
+        enabled: uaBackend.connected && uaBackend.machineState === OpcUaMachineBackend.MachineState.Idle
+        from: 0
+        to: 100
+        value: uaBackend.tank2TargetPercent
+        live: false
+        stepSize: 1.0
+        orientation: Qt.Vertical
+        onValueChanged: {
+            uaBackend.machineWriteTank2TargetPercent(value);
+        }
     }
     ValueDisplay {}
 }

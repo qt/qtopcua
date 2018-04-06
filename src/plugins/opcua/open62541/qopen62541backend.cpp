@@ -75,6 +75,8 @@ Open62541AsyncBackend::Open62541AsyncBackend(QOpen62541Client *parent)
 Open62541AsyncBackend::~Open62541AsyncBackend()
 {
     qDeleteAll(m_subscriptions);
+    if (m_uaclient)
+        UA_Client_delete(m_uaclient);
 }
 
 void Open62541AsyncBackend::readAttributes(uintptr_t handle, UA_NodeId id, QOpcUa::NodeAttributes attr, QString indexRange)
@@ -237,6 +239,8 @@ void Open62541AsyncBackend::enableMonitoring(uintptr_t handle, UA_NodeId id, QOp
                 m_attributeMapping[handle][attribute] = usedSubscription;
         }
     });
+
+    UA_NodeId_deleteMembers(&id);
 
     if (usedSubscription->monitoredItemsCount() == 0)
         removeSubscription(usedSubscription->subscriptionId()); // No items were added
@@ -430,6 +434,11 @@ static void clientStateCallback(UA_Client *client, UA_ClientState state)
 
 void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
 {
+    if (m_uaclient)
+        UA_Client_delete(m_uaclient);
+
+    m_useStateCallback = false;
+
     UA_ClientConfig conf = UA_ClientConfig_default;
     conf.clientContext = this;
     conf.stateCallback = &clientStateCallback;
@@ -462,14 +471,18 @@ void Open62541AsyncBackend::disconnectFromEndpoint()
     m_subscriptions.clear();
     m_attributeMapping.clear();
 
-    UA_StatusCode ret = UA_Client_disconnect(m_uaclient);
-    if (ret != UA_STATUSCODE_GOOD) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to disconnect";
-        // Fall through intentionally
+    m_useStateCallback = false;
+
+    if (m_uaclient) {
+        UA_StatusCode ret = UA_Client_disconnect(m_uaclient);
+        if (ret != UA_STATUSCODE_GOOD) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to disconnect";
+            // Fall through intentionally
+        }
+        UA_Client_delete(m_uaclient);
+        m_uaclient = nullptr;
     }
 
-    UA_Client_delete(m_uaclient);
-    m_uaclient = nullptr;
     emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
 }
 

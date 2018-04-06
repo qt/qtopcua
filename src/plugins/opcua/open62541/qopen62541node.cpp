@@ -76,10 +76,12 @@ bool QOpen62541Node::readAttributes(QOpcUa::NodeAttributes attr, const QString &
 
 bool QOpen62541Node::enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
 {
+    UA_NodeId tempId;
+    UA_NodeId_copy(&m_nodeId, &tempId);
     return QMetaObject::invokeMethod(m_client->m_backend, "enableMonitoring",
                                      Qt::QueuedConnection,
                                      Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
-                                     Q_ARG(UA_NodeId, m_nodeId),
+                                     Q_ARG(UA_NodeId, tempId),
                                      Q_ARG(QOpcUa::NodeAttributes, attr),
                                      Q_ARG(QOpcUaMonitoringParameters, settings));
 }

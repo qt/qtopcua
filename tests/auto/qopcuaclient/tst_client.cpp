@@ -83,6 +83,7 @@ public:
         QSignalSpy connectedSpy(opcuaClient, &QOpcUaClient::connected);
         QSignalSpy disconnectedSpy(opcuaClient, &QOpcUaClient::disconnected);
         QSignalSpy stateSpy(opcuaClient, &QOpcUaClient::stateChanged);
+        QSignalSpy errorSpy(opcuaClient, &QOpcUaClient::errorChanged);
 
         QVERIFY(opcuaClient != nullptr);
         if (opcuaClient->state() == QOpcUaClient::Connected) {
@@ -98,6 +99,7 @@ public:
                      QOpcUaClient::ClientState::Closing);
             QCOMPARE(stateSpy.at(1).at(0).value<QOpcUaClient::ClientState>(),
                      QOpcUaClient::ClientState::Disconnected);
+            QCOMPARE(errorSpy.size(), 0);
         }
 
         opcuaClient = nullptr;
@@ -315,6 +317,12 @@ Tst_QOpcUaClient::Tst_QOpcUaClient()
 void Tst_QOpcUaClient::initTestCase()
 {
     for (const auto &backend: m_backends) {
+        // QT_TEST_CI is set to 1 in the Qt CI, see https://wiki.qt.io/CI_Environment
+        if (backend == QStringLiteral("freeopcua") && qgetenv("QT_TEST_CI") == QStringLiteral("1")) {
+            qDebug() << "The freeopcua tests randomly fail in the CI and are disabled by default";
+            continue;
+        }
+
         QOpcUaClient *client = m_opcUa.createClient(backend);
         QVERIFY2(client != nullptr,
                  QString("Loading backend failed: %1").arg(backend).toLatin1().data());
@@ -471,18 +479,16 @@ void Tst_QOpcUaClient::writeMultipleAttributes()
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
-    QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=Demo.Static.Scalar.QualifiedName"));
     QVERIFY(node != 0);
 
-    WRITE_VALUE_ATTRIBUTE(node, QVariant(double(0)), QOpcUa::Types::Double);
-
     QOpcUaNode::AttributeMap map;
-    map[QOpcUa::NodeAttribute::DisplayName] = QVariant(QLatin1String("NewDisplayName"));
-    map[QOpcUa::NodeAttribute::Value] = QVariant(double(23.5));
+    map[QOpcUa::NodeAttribute::DisplayName] = QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("NewDisplayName")));
+    map[QOpcUa::NodeAttribute::Value] = QVariant::fromValue(QOpcUa::QQualifiedName(2, QStringLiteral("TestString")));
 
     QSignalSpy writeSpy(node.data(), &QOpcUaNode::attributeWritten);
 
-    node->writeAttributes(map);
+    node->writeAttributes(map, QOpcUa::Types::QualifiedName);
 
     writeSpy.wait();
     if (writeSpy.size() < 2)
@@ -497,7 +503,7 @@ void Tst_QOpcUaClient::writeMultipleAttributes()
     QVERIFY(writeSpy.at(1).at(0).value<QOpcUa::NodeAttribute>() == QOpcUa::NodeAttribute::Value);
     QVERIFY(writeSpy.at(1).at(1).value<QOpcUa::UaStatusCode>() == QOpcUa::UaStatusCode::Good);
     QVERIFY(node->attributeError(QOpcUa::NodeAttribute::Value) == QOpcUa::UaStatusCode::Good);
-    QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value) == double(23.5));
+    QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QQualifiedName>() == QOpcUa::QQualifiedName(2, QStringLiteral("TestString")));
 }
 
 void Tst_QOpcUaClient::getRootNode()
@@ -828,6 +834,7 @@ void Tst_QOpcUaClient::multipleClients()
     opcuaClient->connectToEndpoint(m_endpoint);
     QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
     QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
+    WRITE_VALUE_ATTRIBUTE(node, 42.0, QOpcUa::Types::Double);
     READ_MANDATORY_VARIABLE_NODE(node);
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value).toDouble(), 42.0);
     QScopedPointer<QOpcUaClient> b(m_opcUa.createClient(opcuaClient->backend()));

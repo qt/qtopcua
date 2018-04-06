@@ -54,6 +54,8 @@ import QtQuick.Layouts 1.3
 import OpcUaMachineBackend 1.0
 
 Item {
+    property alias tankHeight: tank1.height
+
     ColumnLayout {
         anchors.fill: parent
         RowLayout {
