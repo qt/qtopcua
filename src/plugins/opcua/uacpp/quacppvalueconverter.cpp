@@ -22,7 +22,7 @@
 #include "quacppvalueconverter.h"
 #include "quacpputils.h"
 
-#include <private/qopcuabinarydataencoding_p.h>
+#include <QtOpcUa/qopcuabinarydataencoding.h>
 
 #include <QtCore/QDateTime>
 #include <QtCore/QLoggingCategory>
@@ -275,8 +275,9 @@ QVariant scalarToQVariant<QVariant, OpcUa_ExtensionObject>(OpcUa_ExtensionObject
         return QVariant();
     }
 
-    const char *buffer = reinterpret_cast<const char *>(data->Body.EncodeableObject.Object);
-    size_t length = data->Body.EncodeableObject.Type->AllocationSize;
+    QByteArray buffer = QByteArray::fromRawData(reinterpret_cast<const char *>(data->Body.EncodeableObject.Object),
+                                                      data->Body.EncodeableObject.Type->AllocationSize);
+    QOpcUaBinaryDataEncoding decoder(&buffer);
 
     bool success = true;
     QVariant result;
@@ -293,13 +294,13 @@ QVariant scalarToQVariant<QVariant, OpcUa_ExtensionObject>(OpcUa_ExtensionObject
         break;
     }
     case QOpcUaBinaryDataEncoding::TypeEncodingId::Range:
-        result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QRange>(buffer, length, success));
+        result = QVariant::fromValue(decoder.decode<QOpcUa::QRange>(success));
         break;
     case QOpcUaBinaryDataEncoding::TypeEncodingId::ComplexNumber:
-        result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QComplexNumber>(buffer, length, success));
+        result = QVariant::fromValue(decoder.decode<QOpcUa::QComplexNumber>(success));
         break;
     case QOpcUaBinaryDataEncoding::TypeEncodingId::DoubleComplexNumber:
-        result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QDoubleComplexNumber>(buffer, length, success));
+        result = QVariant::fromValue(decoder.decode<QOpcUa::QDoubleComplexNumber>(success));
         break;
     case QOpcUaBinaryDataEncoding::TypeEncodingId::AxisInformation: {
         UaAxisInformation info(*data);
@@ -321,11 +322,11 @@ QVariant scalarToQVariant<QVariant, OpcUa_ExtensionObject>(OpcUa_ExtensionObject
         break;
     }
     case QOpcUaBinaryDataEncoding::TypeEncodingId::XV:
-        result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QXValue>(buffer, length, success));
+        result = QVariant::fromValue(decoder.decode<QOpcUa::QXValue>(success));
         break;
     default:
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Unknown extension object type, returning raw data:" << UACppUtils::nodeIdToQString(data->TypeId.NodeId);
-        result = QByteArray(buffer, length);
+        result = QByteArray(buffer.constData(), buffer.size());
         success = true;
     }
 
@@ -557,7 +558,8 @@ void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUa::QRange>(const QVariant &v
 {
     const QOpcUa::QRange range = var.value<QOpcUa::QRange>();
     QByteArray temp;
-    QOpcUaBinaryDataEncoding::encode<QOpcUa::QRange>(range, temp);
+    QOpcUaBinaryDataEncoding encoder(&temp);
+    encoder.encode<QOpcUa::QRange>(range);
     return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::Range, ptr);
 }
 
@@ -566,7 +568,8 @@ void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUa::QEUInformation>(const QVa
 {
     const QOpcUa::QEUInformation info = var.value<QOpcUa::QEUInformation>();
     QByteArray temp;
-    QOpcUaBinaryDataEncoding::encode<QOpcUa::QEUInformation>(info, temp);
+    QOpcUaBinaryDataEncoding encoder(&temp);
+    encoder.encode<QOpcUa::QEUInformation>(info);
     return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::EUInformation, ptr);
 }
 
@@ -575,7 +578,8 @@ void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUa::QComplexNumber>(const QVa
 {
     const QOpcUa::QComplexNumber num = var.value<QOpcUa::QComplexNumber>();
     QByteArray temp;
-    QOpcUaBinaryDataEncoding::encode<QOpcUa::QComplexNumber>(num, temp);
+    QOpcUaBinaryDataEncoding encoder(&temp);
+    encoder.encode<QOpcUa::QComplexNumber>(num);
     return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::ComplexNumber, ptr);
 }
 
@@ -584,7 +588,8 @@ void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUa::QDoubleComplexNumber>(con
 {
     const QOpcUa::QDoubleComplexNumber num = var.value<QOpcUa::QDoubleComplexNumber>();
     QByteArray temp;
-    QOpcUaBinaryDataEncoding::encode<QOpcUa::QDoubleComplexNumber>(num, temp);
+    QOpcUaBinaryDataEncoding encoder(&temp);
+    encoder.encode<QOpcUa::QDoubleComplexNumber>(num);
     return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::DoubleComplexNumber, ptr);
 }
 
@@ -593,7 +598,8 @@ void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUa::QAxisInformation>(const Q
 {
     const QOpcUa::QAxisInformation num = var.value<QOpcUa::QAxisInformation>();
     QByteArray temp;
-    QOpcUaBinaryDataEncoding::encode<QOpcUa::QAxisInformation>(num, temp);
+    QOpcUaBinaryDataEncoding encoder(&temp);
+    encoder.encode<QOpcUa::QAxisInformation>(num);
     return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::AxisInformation, ptr);
 }
 
@@ -602,7 +608,8 @@ void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUa::QXValue>(const QVariant &
 {
     const QOpcUa::QXValue num = var.value<QOpcUa::QXValue>();
     QByteArray temp;
-    QOpcUaBinaryDataEncoding::encode<QOpcUa::QXValue>(num, temp);
+    QOpcUaBinaryDataEncoding encoder(&temp);
+    encoder.encode<QOpcUa::QXValue>(num);
     return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::XV, ptr);
 }
 

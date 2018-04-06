@@ -38,7 +38,7 @@
 #define TESTSERVER_H
 
 #include <qopen62541.h>
-#include <private/qopcuabinarydataencoding_p.h>
+#include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/QDateTime>
 #include <QtCore/QObject>

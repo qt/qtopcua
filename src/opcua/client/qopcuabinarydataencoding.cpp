@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 basysKom GmbH, opensource@basyskom.com
+** Copyright (C) 2018 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,292 +34,219 @@
 **
 ****************************************************************************/
 
-#include <private/qopcuabinarydataencoding_p.h>
+#include "qopcuabinarydataencoding.h"
 
 QT_BEGIN_NAMESPACE
 
-template<typename T>
-T QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
+/*!
+    \class QOpcUaBinaryDataEncoding
+    \inmodule QtOpcUa
+    \brief QOpcUaBinaryDataEncoding is a partial implementation of the OPC UA binary data encoding described in OPC-UA part 6.
+
+    It offers template functions for encoding and decoding data for reading and writing extension objects.
+
+    The following types are supported:
+
+    \table
+        \header
+            \li Qt type
+            \li OPC UA type
+        \row
+            \li quint8
+            \li uint8
+        \row
+            \li qint8
+            \li int8
+        \row
+            \li quint16
+            \li uint16
+        \row
+            \li qint16
+            \li int16
+        \row
+            \li quint32
+            \li uint32
+        \row
+            \li qint32
+            \li int32
+        \row
+            \li quint64
+            \li uint64
+        \row
+            \li qint64
+            \li int64
+        \row
+            \li float
+            \li float
+        \row
+            \li double
+            \li double
+        \row
+            \li QString
+            \li String
+        \row
+            \li QOpcUa::QQualifiedName
+            \li QualifiedName
+        \row
+            \li QOpcUa::QLocalizedText
+            \li LocalizedText
+        \row
+            \li QOpcUa::QEUInformation
+            \li EUInformation
+        \row
+            \li QOpcUa::QRange
+            \li Range
+        \row
+            \li QOpcUa::QComplexNumber
+            \li ComplexNumber
+        \row
+            \li QOpcUa::QDoubleComplexNumber
+            \li DoubleComplexNumber
+        \row
+            \li QOpcUa::QAxisInformation
+            \li AxisInformation
+        \row
+            \li QOpcUa::QXValue
+            \li XV
+        \row
+            \li QUuid
+            \li GUID
+        \row
+            \li QString node id
+            \li NodeId
+        \row
+            \li QByteArray
+            \li ByteString
+        \row
+            \li QDateTime
+            \li DateTime
+        \row
+            \li QOpcUa::UaStatusCode
+            \li StatusCode
+        \row
+            \li QOpcUa::QExpandedNodeId
+            \li ExpandedNodeId
+        \row
+            \li QOpcUa::QExtensionObject
+            \li ExtensionObject
+        \row
+            \li QOpcUa::QArgument
+            \li Argument
+    \endtable
+*/
+
+/*!
+    \enum QOpcUaBinaryDataEncoding::TypeEncodingId
+
+    Enumerates the type encoding ids of all extension objects supported by Qt OPC UA
+    as listed in \l {https://opcfoundation.org/UA/schemas/1.03/NodeIds.csv}
+
+    \value Range
+    \value EUInformation
+    \value ComplexNumber
+    \value DoubleComplexNumber
+    \value AxisInformation
+    \value XV
+*/
+
+/*!
+    \fn template<typename T, QOpcUa::Types OVERLAY> T QOpcUaBinaryDataEncoding::decode(bool &success)
+
+    Decodes a scalar value of type T from the data buffer.
+    \a success is set to \c true if the decoding was successful, \c false if not.
+
+    The decoded value is returned. If \a success is false, the returned value is invalid.
+
+    \sa decodeArray()
+*/
+
+/*!
+    \fn template<typename T, QOpcUa::Types OVERLAY> bool QOpcUaBinaryDataEncoding::encode(const T &src)
+
+    Encodes \a src of type T and appends the encoded value to the data buffer.
+    Returns \c true if the value has been successfully encoded.
+
+    \sa encodeArray()
+*/
+
+/*!
+    \fn template<typename T, QOpcUa::Types OVERLAY> QVector<T> QOpcUaBinaryDataEncoding::decodeArray(bool &success)
+
+    Decodes an array of type T from the data buffer.
+    \a success is set to \c true if the decoding was successful, \c false if not.
+
+    The decoded value is returned. If \a success is false, the returned value is invalid.
+
+    \sa decode()
+*/
+
+/*!
+    \fn template<typename T, QOpcUa::Types OVERLAY> bool QOpcUaBinaryDataEncoding::encodeArray(const QVector<T> &src)
+
+    Encodes all elements of type T in \a src and appends the encoded values to the data buffer.
+
+    Returns \c true if the value has been successfully encoded.
+
+    \sa encode()
+*/
+
+/*!
+    Constructs a binary data encoding object for the data buffer \a buffer.
+    \a buffer must not be deleted as long as this binary data encoding object is used.
+*/
+QOpcUaBinaryDataEncoding::QOpcUaBinaryDataEncoding(QByteArray *buffer)
+    : m_data(buffer)
 {
-    if (bufferSize >= sizeof(T)) {
-        T temp = *reinterpret_cast<const T *>(ptr);
-        ptr += sizeof(T);
-        success = true;
-        bufferSize -= sizeof(T);
-        return temp;
-    } else {
-        success = false;
-        return T(0);
-    }
 }
 
-template<>
-bool QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
+/*!
+    Constructs a binary data encoding object using the encoded body of \a object as data buffer.
+
+    \a object must not be deleted as long as this binary data encoding oject is used.
+*/
+QOpcUaBinaryDataEncoding::QOpcUaBinaryDataEncoding(QOpcUa::QExtensionObject &object)
+    : m_data(&object.encodedBodyRef())
 {
-    if (bufferSize) {
-        quint8 temp = *reinterpret_cast<const quint8*>(ptr);
-        ptr += 1;
-        bufferSize -= 1;
-        success = true;
-        return temp == 0 ? false : true;
-    } else {
-        success = false;
+}
+
+bool QOpcUaBinaryDataEncoding::enoughData(int requiredSize)
+{
+    if (!m_data)
         return false;
-    }
+    return (m_data->size() + m_offset) >= requiredSize;
 }
 
-template<>
-QString QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
+/*!
+    Returns the current offset in the data buffer.
+*/
+int QOpcUaBinaryDataEncoding::offset() const
 {
-    if (bufferSize < sizeof(qint32)) {
-        success = false;
-        return QString();
-    }
-
-    const qint32 length = decode<qint32>(ptr, bufferSize, success);
-
-    if (!success)
-        return QString();
-
-    if (length > 0 && bufferSize < static_cast<size_t>(length)) {
-        success = false;
-        return QString();
-    }
-
-    if (length > 0) {
-        QString temp =  QString::fromUtf8(reinterpret_cast<const char *>(ptr), length);
-        ptr += length;
-        bufferSize -= length;
-        success = true;
-        return temp;
-    } else { // Empty string
-        success = true;
-        return QString();
-    }
+    return m_offset;
 }
 
-template <>
-QOpcUa::QLocalizedText QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
+/*!
+    Sets the current offset in the data buffer to \a offset.
+    The first byte in the buffer has the offset 0.
+*/
+void QOpcUaBinaryDataEncoding::setOffset(int offset)
 {
-    QOpcUa::QLocalizedText temp;
-    quint8 encodingMask = decode<quint8>(ptr, bufferSize, success);
-    if (!success)
-        return QOpcUa::QLocalizedText();
-
-    if (encodingMask & 0x01) {
-        temp.setLocale(decode<QString>(ptr, bufferSize, success));
-        if (!success)
-            return QOpcUa::QLocalizedText();
-    }
-    if (encodingMask & 0x02) {
-        temp.setText(decode<QString>(ptr, bufferSize, success));
-        if (!success)
-            return QOpcUa::QLocalizedText();
-    }
-    return temp;
+    m_offset = offset;
 }
 
-template <>
-QOpcUa::QEUInformation QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
+/*!
+    Truncates the data buffer to the current \l offset().
+    If the offset is behind the current buffer size, this method does nothing.
+
+    This method can be used to roll back after an unsuccessful encode by setting
+    the old offset and calling truncateBufferToOffset().
+*/
+void QOpcUaBinaryDataEncoding::truncateBufferToOffset()
 {
-    QOpcUa::QEUInformation temp;
-    temp.setNamespaceUri(decode<QString>(ptr, bufferSize, success));
-    if (!success)
-        return QOpcUa::QEUInformation();
-    temp.setUnitId(decode<qint32>(ptr, bufferSize, success));
-    if (!success)
-        return QOpcUa::QEUInformation();
-    temp.setDisplayName(decode<QOpcUa::QLocalizedText>(ptr, bufferSize, success));
-    if (!success)
-        return QOpcUa::QEUInformation();
-    temp.setDescription(decode<QOpcUa::QLocalizedText>(ptr, bufferSize, success));
-    if (!success)
-        return QOpcUa::QEUInformation();
-    return temp;
-}
+    if (!m_data)
+        return;
 
-template <>
-QOpcUa::QRange QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
-{
-    QOpcUa::QRange temp;
-    temp.setLow(decode<double>(ptr, bufferSize, success));
-    if (!success)
-        return QOpcUa::QRange();
-    temp.setHigh(decode<double>(ptr, bufferSize, success));
-    if (!success)
-        return QOpcUa::QRange();
-    return temp;
-}
-
-template <>
-QOpcUa::QComplexNumber QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
-{
-    QOpcUa::QComplexNumber temp;
-    temp.setReal(decode<float>(ptr, bufferSize, success));
-    if (!success)
-        return QOpcUa::QComplexNumber();
-    temp.setImaginary(decode<float>(ptr, bufferSize, success));
-    if (!success)
-        return QOpcUa::QComplexNumber();
-    return temp;
-}
-
-template <>
-QOpcUa::QDoubleComplexNumber QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
-{
-    QOpcUa::QDoubleComplexNumber temp;
-    temp.setReal(decode<double>(ptr, bufferSize, success));
-    if (!success)
-        return QOpcUa::QDoubleComplexNumber();
-    temp.setImaginary(decode<double>(ptr, bufferSize, success));
-    if (!success)
-        return QOpcUa::QDoubleComplexNumber();
-    return temp;
-}
-
-template <>
-QOpcUa::QAxisInformation QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
-{
-    QOpcUa::QAxisInformation temp;
-    temp.setEngineeringUnits(decode<QOpcUa::QEUInformation>(ptr, bufferSize, success));
-    if (!success)
-        return QOpcUa::QAxisInformation();
-    temp.setEURange(decode<QOpcUa::QRange>(ptr, bufferSize, success));
-    if (!success)
-        return QOpcUa::QAxisInformation();
-    temp.setTitle(decode<QOpcUa::QLocalizedText>(ptr, bufferSize, success));
-    if (!success)
-        return QOpcUa::QAxisInformation();
-    temp.setAxisScaleType(static_cast<QOpcUa::AxisScale>(decode<quint32>(ptr, bufferSize, success)));
-    if (!success)
-        return QOpcUa::QAxisInformation();
-    temp.setAxisSteps(decodeArray<double>(ptr, bufferSize, success));
-    if (!success)
-        return QOpcUa::QAxisInformation();
-    return temp;
-}
-
-template <>
-QOpcUa::QXValue QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
-{
-    QOpcUa::QXValue temp;
-    temp.setX(decode<double>(ptr, bufferSize, success));
-    if (!success)
-        return QOpcUa::QXValue();
-    temp.setValue(decode<float>(ptr, bufferSize, success));
-    if (!success)
-        return QOpcUa::QXValue();
-    return temp;
-}
-
-template<typename T>
-void QOpcUaBinaryDataEncoding::encode(const T &src, QByteArray &dst)
-{
-    dst.append(reinterpret_cast<const char *>(&src), sizeof(T));
-}
-
-template<>
-void QOpcUaBinaryDataEncoding::encode<bool>(const bool &src, QByteArray &dst)
-{
-    const quint8 value = src ? 1 : 0;
-    dst.append(reinterpret_cast<const char *>(&value), 1);
-}
-
-template<>
-void QOpcUaBinaryDataEncoding::encode<QString>(const QString &src, QByteArray &dst)
-{
-    QByteArray arr = src.toUtf8();
-    encode<qint32>(arr.length() > 0 ? arr.length() : -1 , dst);
-    if (arr.length())
-        dst.append(arr.data(), arr.length());
-}
-
-template<>
-void QOpcUaBinaryDataEncoding::encode<QOpcUa::QLocalizedText>(const QOpcUa::QLocalizedText &src, QByteArray &dst)
-{
-    quint8 mask = 0;
-    if (src.locale().length() != 0)
-        mask |= 0x01;
-    if (src.text().length() != 0)
-        mask |= 0x02;
-    encode<quint8>(mask, dst);
-    if (src.locale().length())
-        encode(src.locale(), dst);
-    if (src.text().length())
-        encode(src.text(), dst);
-}
-
-template <>
-void QOpcUaBinaryDataEncoding::encode<QOpcUa::QRange>(const QOpcUa::QRange &src, QByteArray &dst)
-{
-    encode<double>(src.low(), dst);
-    encode<double>(src.high(), dst);
-}
-
-template <>
-void QOpcUaBinaryDataEncoding::encode<QOpcUa::QEUInformation>(const QOpcUa::QEUInformation &src, QByteArray &dst)
-{
-    encode<QString>(src.namespaceUri(), dst);
-    encode<qint32>(src.unitId(), dst);
-    encode<QOpcUa::QLocalizedText>(src.displayName(), dst);
-    encode<QOpcUa::QLocalizedText>(src.description(), dst);
-}
-
-template <>
-void QOpcUaBinaryDataEncoding::encode<QOpcUa::QComplexNumber>(const QOpcUa::QComplexNumber &src, QByteArray &dst)
-{
-    encode<float>(src.real(), dst);
-    encode<float>(src.imaginary(), dst);
-}
-
-template <>
-void QOpcUaBinaryDataEncoding::encode<QOpcUa::QDoubleComplexNumber>(const QOpcUa::QDoubleComplexNumber &src, QByteArray &dst)
-{
-    encode<double>(src.real(), dst);
-    encode<double>(src.imaginary(), dst);
-}
-
-template <>
-void QOpcUaBinaryDataEncoding::encode<QOpcUa::QAxisInformation>(const QOpcUa::QAxisInformation &src, QByteArray &dst)
-{
-    encode<QOpcUa::QEUInformation>(src.engineeringUnits(), dst);
-    encode<QOpcUa::QRange>(src.eURange(), dst);
-    encode<QOpcUa::QLocalizedText>(src.title(), dst);
-    encode<quint32>(static_cast<quint32>(src.axisScaleType()), dst);
-    encodeArray<double>(src.axisSteps(), dst);
-}
-
-template <>
-void QOpcUaBinaryDataEncoding::encode<QOpcUa::QXValue>(const QOpcUa::QXValue &src, QByteArray &dst)
-{
-    encode<double>(src.x(), dst);
-    encode<float>(src.value(), dst);
-}
-
-template<typename T>
-QVector<T> QOpcUaBinaryDataEncoding::decodeArray(const char *&ptr, size_t &bufferSize, bool &success)
-{
-    QVector<T> temp;
-
-    qint32 size = decode<qint32>(ptr, bufferSize, success);
-    if (!success)
-        return temp;
-
-    for (int i = 0; i < size; ++i) {
-        temp.push_back(decode<T>(ptr, bufferSize, success));
-        if (!success)
-            return QVector<T>();
-    }
-
-    return temp;
-}
-
-template<typename T>
-void QOpcUaBinaryDataEncoding::encodeArray(const QVector<T> &src, QByteArray &dst)
-{
-    encode<qint32>(src.isEmpty() ? -1 : src.size(), dst);
-    for (const auto &element : src)
-        encode<T>(element, dst);
+    if (m_offset < m_data->size() - 1)
+        m_data->truncate(m_offset +  1);
 }
 
 QT_END_NAMESPACE

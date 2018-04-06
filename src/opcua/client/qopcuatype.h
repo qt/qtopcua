@@ -424,6 +424,8 @@ Q_OPCUA_EXPORT QString nodeIdFromByteString(quint16 ns, const QByteArray &identi
 Q_OPCUA_EXPORT QString nodeIdFromGuid(quint16 ns, const QUuid &identifier);
 Q_OPCUA_EXPORT QString nodeIdFromInteger(quint16 ns, quint32 identifier);
 Q_OPCUA_EXPORT QString nodeIdFromReferenceType(QOpcUa::ReferenceTypeId referenceType);
+Q_OPCUA_EXPORT bool nodeIdStringSplit(const QString &nodeIdString, quint16 *nsIndex,
+                                      QString *identifier, char *identifierType);
 
 typedef QPair<QVariant, QOpcUa::Types> TypedVariant;
 
@@ -1060,6 +1062,36 @@ private:
     QSharedDataPointer<QOpcUa::QArgumentData> data;
 };
 
+class QExtensionObjectData;
+class Q_OPCUA_EXPORT QExtensionObject
+{
+public:
+    enum Encoding {
+        NoBody = 0,
+        ByteString = 1,
+        Xml = 2
+    };
+
+    QExtensionObject();
+    QExtensionObject(const QOpcUa::QExtensionObject &);
+    ~QExtensionObject();
+    QExtensionObject &operator=(const QOpcUa::QExtensionObject &);
+    bool operator==(const QOpcUa::QExtensionObject &rhs) const;
+    operator QVariant() const;
+
+    QString encodingTypeId() const;
+    void setEncodingTypeId(const QString &value);
+
+    QByteArray encodedBody() const;
+    QByteArray &encodedBodyRef();
+    void setEncodedBody(const QByteArray &value);
+
+    QOpcUa::QExtensionObject::Encoding encoding() const;
+    void setEncoding(QOpcUa::QExtensionObject::Encoding value);
+
+private:
+    QSharedDataPointer<QOpcUa::QExtensionObjectData> data;
+};
 }
 
 Q_DECLARE_TYPEINFO(QOpcUa::Types, Q_PRIMITIVE_TYPE);
@@ -1105,5 +1137,6 @@ Q_DECLARE_METATYPE(QOpcUa::QUserTokenPolicy)
 Q_DECLARE_METATYPE(QOpcUa::QApplicationDescription)
 Q_DECLARE_METATYPE(QOpcUa::QEndpointDescription)
 Q_DECLARE_METATYPE(QOpcUa::QArgument)
+Q_DECLARE_METATYPE(QOpcUa::QExtensionObject)
 
 #endif // QOPCUATYPE

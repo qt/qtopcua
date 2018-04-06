@@ -802,6 +802,50 @@ QString QOpcUa::nodeIdFromReferenceType(QOpcUa::ReferenceTypeId referenceType)
 }
 
 /*!
+    Splits the node id string \a nodeIdString in its components.
+    The namespace index of the node id will be copied into \a nsIndex.
+    The identifier string is copied into \a identifier and the identifier type
+    (i, s, g, b) is copied into \a identifierType.
+
+    Returns \c true if the node id could be split successfully.
+
+    For example, "ns=1;s=MyString" is split into 1, 's' and "MyString".
+*/
+bool QOpcUa::nodeIdStringSplit(const QString &nodeIdString, quint16 *nsIndex, QString *identifier, char *identifierType)
+{
+    QStringList components = nodeIdString.split(QLatin1String(";"));
+    QStringList result;
+
+    if (components.size() != 2)
+        return false;
+
+    if (components.at(0).contains(QRegExp(QLatin1String("/^ns=[0-9]+$/"))))
+        return false;
+
+    bool success = false;
+    uint ns = components.at(0).midRef(3).toString().toUInt(&success);
+    if (!success || ns > std::numeric_limits<quint16>::max())
+        return false;
+
+    if (components.at(1).size() < 3)
+        return false;
+
+    if (!components.at(1).contains(QRegExp(QLatin1String("^[isgb]="))))
+        return false;
+
+    if (nsIndex)
+        *nsIndex = ns;
+    if (identifier)
+        *identifier = components.at(1).midRef(2).toString();
+    if (identifierType)
+        *identifierType = components.at(1).at(0).toLatin1();
+
+    result.append(components.at(1).midRef(2).toString());
+
+    return true;
+}
+
+/*!
     \class QOpcUa::QRange
     \inmodule QtOpcUa
     \inheaderfile QtOpcUa/qopcuatype.h
@@ -3519,6 +3563,139 @@ QOpcUa::QLocalizedText QOpcUa::QArgument::description() const
 void QOpcUa::QArgument::setDescription(const QOpcUa::QLocalizedText &description)
 {
     data->description = description;
+}
+
+/*!
+    \class QOpcUa::QExtensionObject
+    \inmodule QtOpcUa
+    \brief The OPC UA ExtensionObject.
+
+    This is the Qt OPC UA representation for an extension object.
+    Extension objects are used as a container in OPC UA whenever a non-builtin type is stored
+    in a Variant. It contains information about the type and encoding of the data as well as
+    the data itself encoded with one of the encodings specified in OPC-UA part 6.
+    Decoders are supposed to decode extension objects if they can handle the type. If the type
+    is not supported by the decoder, the extension object is not decoded and decoding is left
+    to the user.
+*/
+
+/*!
+    \enum QOpcUa::QExtensionObject::Encoding
+
+    Enumerates the possible encodings of the body.
+
+    \value NoBody
+    \value ByteString
+    \value Xml
+*/
+
+class QOpcUa::QExtensionObjectData : public QSharedData
+{
+public:
+    QString encodingTypeId;
+    QByteArray encodedBody;
+    QOpcUa::QExtensionObject::Encoding encoding{QOpcUa::QExtensionObject::Encoding::NoBody};
+};
+
+QOpcUa::QExtensionObject::QExtensionObject()
+    : data(new QExtensionObjectData)
+{
+}
+
+/*!
+    Constructs an extension object from \a rhs.
+*/
+QOpcUa::QExtensionObject::QExtensionObject(const QExtensionObject &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Sets the values from \a rhs in this extension object.
+*/
+QOpcUa::QExtensionObject &QOpcUa::QExtensionObject::operator=(const QOpcUa::QExtensionObject &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+/*!
+    Returns \c true if this extension object has the same value as \a rhs.
+*/
+bool QOpcUa::QExtensionObject::operator==(const QOpcUa::QExtensionObject &rhs) const
+{
+    return data->encoding == rhs.encoding() &&
+            data->encodingTypeId == rhs.encodingTypeId() &&
+            data->encodedBody == rhs.encodedBody();
+}
+
+/*!
+    Converts this extension object to \l QVariant.
+*/
+QOpcUa::QExtensionObject::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
+
+QOpcUa::QExtensionObject::~QExtensionObject()
+{
+}
+
+/*!
+    Returns the \l {QOpcUa::QExtensionObject::Encoding} {encoding} of the body.
+*/
+QOpcUa::QExtensionObject::Encoding QOpcUa::QExtensionObject::encoding() const
+{
+    return data->encoding;
+}
+
+/*!
+    Sets the encoding of the body to \a value.
+*/
+void QOpcUa::QExtensionObject::setEncoding(QOpcUa::QExtensionObject::Encoding value)
+{
+    data->encoding = value;
+}
+
+/*!
+    Returns the body of this extension object. It contains the encoded data.
+*/
+QByteArray QOpcUa::QExtensionObject::encodedBody() const
+{
+    return data->encodedBody;
+}
+
+/*!
+    Returns a reference to the body of this extension object.
+*/
+QByteArray &QOpcUa::QExtensionObject::encodedBodyRef()
+{
+    return data->encodedBody;
+}
+/*!
+    Sets the body of this extension object to \a value.
+*/
+void QOpcUa::QExtensionObject::setEncodedBody(const QByteArray &value)
+{
+    data->encodedBody = value;
+}
+
+/*!
+    Returns the node id of the encoding for the type stored by this extension object, for example ns=0;i=886 for
+    Range_Encoding_DefaultBinary. All encoding ids are listed in \l {https://opcfoundation.org/UA/schemas/1.03/NodeIds.csv}.
+*/
+QString QOpcUa::QExtensionObject::encodingTypeId() const
+{
+    return data->encodingTypeId;
+}
+
+/*!
+    Sets the node id of the encoding for the type stored by this extension object to \a value.
+*/
+void QOpcUa::QExtensionObject::setEncodingTypeId(const QString &value)
+{
+    data->encodingTypeId = value;
 }
 
 QT_END_NAMESPACE

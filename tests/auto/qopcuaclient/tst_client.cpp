@@ -37,6 +37,7 @@
 #include <QtOpcUa/QOpcUaClient>
 #include <QtOpcUa/QOpcUaNode>
 #include <QtOpcUa/QOpcUaProvider>
+#include <QtOpcUa/qopcuabinarydataencoding.h>
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QProcess>
@@ -152,7 +153,31 @@ const QVector<QOpcUa::QXValue> testXV = {
     QOpcUa::QXValue(-10, 100.5),
     QOpcUa::QXValue(10, -100.5)
 };
-
+const QVector<QUuid> testUuid = {
+    QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216"),
+    QUuid("460ebe04-89d8-42f3-a0e0-7b45940f1a4e"),
+    QUuid("72962b91-fa75-4ae6-8d28-b404dc7daf63")
+};
+const QVector<QString> testNodeId = {
+    QStringLiteral("ns=1;i=42"),
+    QStringLiteral("ns=2;s=TestString"),
+    QStringLiteral("ns=3;g=72962b91-fa75-4ae6-8d28-b404dc7daf63")
+};
+const QVector<QDateTime> testDateTime = {
+    QDateTime(QDate(1601, 1, 1), QTime(0, 0)),
+    QDateTime(QDate(2014, 01, 23), QTime(21, 0)),
+    QDateTime(QDate(2300, 01, 01), QTime(12, 0)),
+};
+const QVector<QOpcUa::UaStatusCode> testStatusCode = {
+    QOpcUa::UaStatusCode::Good,
+    QOpcUa::UaStatusCode::BadInvalidArgument,
+    QOpcUa::UaStatusCode::BadNodeIdUnknown
+};
+const QVector<QOpcUa::QExpandedNodeId> testExpandedId = {
+    QOpcUa::QExpandedNodeId(QString(), QLatin1String("ns=1;i=23")),
+    QOpcUa::QExpandedNodeId(QLatin1String("MyNamespace"), QLatin1String("ns=2;s=MyNode")),
+    QOpcUa::QExpandedNodeId(QLatin1String("RemoteNamespace"), QLatin1String("ns=3;b=UXQgZnR3IQ=="), 1)
+};
 const QVector<QOpcUa::QExpandedNodeId> testExpandedNodeId = {
     QOpcUa::QExpandedNodeId(QStringLiteral("namespace1"), QStringLiteral("ns=0;i=99"), 1),
     QOpcUa::QExpandedNodeId(QString(), QStringLiteral("ns=1;i=99")),
@@ -166,6 +191,122 @@ const QVector<QOpcUa::QArgument> testArguments = {
     QOpcUa::QArgument(QStringLiteral("Argument3"), QStringLiteral("ns=0;i=12"), 3,
                       {3, 3, 3}, QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("Description3")))
 };
+
+#define ENCODE_EXTENSION_OBJECT(obj, index) \
+{ \
+    QVERIFY(index < 3); \
+    obj.setEncoding(QOpcUa::QExtensionObject::Encoding::ByteString); \
+    obj.setEncodingTypeId(QStringLiteral("ns=2;s=MyEncoding%1").arg(index)); \
+    QOpcUaBinaryDataEncoding encoder(obj); \
+    encoder.encode<quint8>(quint8(index)); \
+    encoder.encode<qint8>(qint8(index)); \
+    encoder.encode<quint16>(quint16(index)); \
+    encoder.encode<qint16>(qint16(index)); \
+    encoder.encode<quint32>(quint32(index)); \
+    encoder.encode<qint32>(qint32(index)); \
+    encoder.encode<quint64>(quint64(index)); \
+    encoder.encode<qint64>(qint64(index)); \
+    encoder.encode<float>(float(index)); \
+    encoder.encode<double>(double(index)); \
+    encoder.encode<bool>(bool(index)); \
+    encoder.encode<QString>(QStringLiteral("String %1").arg(index)); \
+    encoder.encode<QOpcUa::QQualifiedName>(QOpcUa::QQualifiedName(2, QStringLiteral("QualifiedName %1").arg(index))); \
+    encoder.encode<QOpcUa::QLocalizedText>(localizedTexts.at(index)); \
+    encoder.encode<QOpcUa::QRange>(testRanges.at(index)); \
+    encoder.encode<QOpcUa::QEUInformation>(testEUInfos.at(index)); \
+    encoder.encode<QOpcUa::QComplexNumber>(testComplex.at(index)); \
+    encoder.encode<QOpcUa::QDoubleComplexNumber>(testDoubleComplex.at(index)); \
+    encoder.encode<QOpcUa::QAxisInformation>(testAxisInfo.at(index)); \
+    encoder.encode<QOpcUa::QXValue>(testXV.at(index)); \
+    encoder.encode<QUuid>(testUuid.at(index)); \
+    encoder.encode<QString, QOpcUa::Types::NodeId>(testNodeId.at(index)); \
+    encoder.encode<QDateTime>(testDateTime.at(index)); \
+    encoder.encode<QOpcUa::UaStatusCode>(testStatusCode.at(index)); \
+    encoder.encode<QOpcUa::QExpandedNodeId>(testExpandedId.at(index)); \
+    QOpcUa::QExtensionObject ext; \
+    ext.setEncodingTypeId(obj.encodingTypeId()); \
+    ext.setEncoding(obj.encoding()); \
+    QOpcUaBinaryDataEncoding encoding2(&ext.encodedBodyRef()); \
+    encoding2.encode<QString>(QStringLiteral("String %1").arg(index)); \
+    encoder.encode<QOpcUa::QExtensionObject>(ext); \
+    encoder.encode<QOpcUa::QArgument>(testArguments.at(index)); \
+}
+
+#define VERIFY_EXTENSION_OBJECT(obj, index) \
+{ \
+    QVERIFY(index < 3); \
+    QCOMPARE(obj.encoding(), QOpcUa::QExtensionObject::Encoding::ByteString); \
+    QCOMPARE(obj.encodingTypeId(), QStringLiteral("ns=2;s=MyEncoding%1").arg(index)); \
+    bool success = false; \
+    QOpcUaBinaryDataEncoding decoder(obj); \
+    QCOMPARE(decoder.offset(), 0); \
+    QCOMPARE(decoder.decode<quint8>(success), quint8(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<qint8>(success), qint8(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<quint16>(success), quint16(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<qint16>(success), qint16(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<quint32>(success), quint32(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<qint32>(success), qint32(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<quint64>(success), quint64(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<qint64>(success), qint64(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<float>(success), float(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<double>(success), double(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<bool>(success), bool(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<QString>(success), QStringLiteral("String %1").arg(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<QOpcUa::QQualifiedName>(success), \
+             QOpcUa::QQualifiedName(2, QStringLiteral("QualifiedName %1").arg(index))); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<QOpcUa::QLocalizedText>(success), localizedTexts.at(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<QOpcUa::QRange>(success), testRanges.at(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<QOpcUa::QEUInformation>(success), testEUInfos.at(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<QOpcUa::QComplexNumber>(success), testComplex.at(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<QOpcUa::QDoubleComplexNumber>(success), testDoubleComplex.at(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<QOpcUa::QAxisInformation>(success), testAxisInfo.at(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<QOpcUa::QXValue>(success), testXV.at(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<QUuid>(success), testUuid.at(index)); \
+    QVERIFY(success == true); \
+    QString temp = decoder.decode<QString, QOpcUa::Types::NodeId>(success); \
+    QCOMPARE(temp, testNodeId.at(index)); \
+    QVERIFY(success == true); \
+    QDateTime dt = decoder.decode<QDateTime>(success); \
+    if (index == 0) \
+        QCOMPARE(dt, QDateTime()); \
+    else \
+        QCOMPARE(dt, testDateTime.at(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<QOpcUa::UaStatusCode>(success), testStatusCode.at(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<QOpcUa::QExpandedNodeId>(success), testExpandedId.at(index)); \
+    QVERIFY(success == true); \
+    QOpcUa::QExtensionObject ext = decoder.decode<QOpcUa::QExtensionObject>(success); \
+    QCOMPARE(ext.encodingTypeId(), obj.encodingTypeId()); \
+    QCOMPARE(ext.encoding(), obj.encoding()); \
+    QVERIFY(success == true); \
+    QOpcUaBinaryDataEncoding decoder2(&ext.encodedBodyRef()); \
+    QCOMPARE(decoder2.decode<QString>(success), QStringLiteral("String %1").arg(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<QOpcUa::QArgument>(success), testArguments.at(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.offset(), obj.encodedBody().size()); \
+}
 
 #define defineDataMethod(name) void name()\
 {\
@@ -1241,8 +1382,9 @@ void Tst_QOpcUaClient::writeArray()
     WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::ByteString);
 
     list.clear();
-    list.append(QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216"));
-    list.append(QUuid("460ebe04-89d8-42f3-a0e0-7b45940f1a4e4"));
+    list.append(testUuid[0]);
+    list.append(testUuid[1]);
+    list.append(testUuid[2]);
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Guid"));
     QVERIFY(node != 0);
     WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::Guid);
@@ -1318,6 +1460,23 @@ void Tst_QOpcUaClient::writeArray()
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XV"));
     QVERIFY(node != 0);
     WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::XV);
+
+    if (opcuaClient->backend() != QLatin1String("open62541"))
+        qInfo("The uacpp backend currently does not support writing extension objects");
+    else {
+        node.reset(opcuaClient->node(QStringLiteral("ns=2;s=Demo.Static.Arrays.ExtensionObject")));
+        QVERIFY(node != nullptr);
+
+        QVariantList value;
+
+        for (int i = 0; i < testRanges.size(); ++i) {
+            QOpcUa::QExtensionObject obj;
+            ENCODE_EXTENSION_OBJECT(obj, i);
+            value.append(obj);
+        }
+
+        WRITE_VALUE_ATTRIBUTE(node, value, QOpcUa::Types::ExtensionObject); // Write value to check for
+    }
 
     list.clear();
     list.append(xmlElements[0]);
@@ -1510,9 +1669,10 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(guidArrayNode);
     QVariant guidArray = guidArrayNode->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(guidArray.type() == QVariant::List);
-    QVERIFY(guidArray.toList().length() == 2);
-    QCOMPARE(guidArray.toList()[0].toUuid(), QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216}"));
-    QCOMPARE(guidArray.toList()[1].toUuid(), QUuid("460ebe04-89d8-42f3-a0e0-7b45940f1a4e4"));
+    QVERIFY(guidArray.toList().length() == 3);
+    QCOMPARE(guidArray.toList()[0].toUuid(), testUuid[0]);
+    QCOMPARE(guidArray.toList()[1].toUuid(), testUuid[1]);
+    QCOMPARE(guidArray.toList()[2].toUuid(), testUuid[2]);
 
     QScopedPointer<QOpcUaNode> sbyteArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.SByte"));
     QVERIFY(sbyteArrayNode != 0);
@@ -1615,6 +1775,23 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(xVArray.toList()[0].value<QOpcUa::QXValue>(), testXV[0]);
     QCOMPARE(xVArray.toList()[1].value<QOpcUa::QXValue>(), testXV[1]);
     QCOMPARE(xVArray.toList()[2].value<QOpcUa::QXValue>(), testXV[2]);
+
+    if (opcuaClient->backend() != QLatin1String("open62541"))
+        qInfo("The uacpp backend currently does not support reading extension objects");
+    else {
+        QScopedPointer<QOpcUaNode> extensionObjectNode(opcuaClient->node(QStringLiteral("ns=2;s=Demo.Static.Arrays.ExtensionObject")));
+        QVERIFY(extensionObjectNode != nullptr);
+
+        READ_MANDATORY_VARIABLE_NODE(extensionObjectNode);
+
+        QVariantList list = extensionObjectNode->attribute(QOpcUa::NodeAttribute::Value).toList();
+        QCOMPARE(list.size(), testRanges.size());
+
+        for (int i = 0; i < testRanges.size(); ++i) {
+            QOpcUa::QExtensionObject obj = list.at(i).value<QOpcUa::QExtensionObject>();
+            VERIFY_EXTENSION_OBJECT(obj, i);
+        }
+    }
 
     QScopedPointer<QOpcUaNode> xmlElementArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XmlElement"));
     QVERIFY(xmlElementArrayNode != 0);
@@ -1725,8 +1902,7 @@ void Tst_QOpcUaClient::writeScalar()
 
     QScopedPointer<QOpcUaNode> guidNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Guid"));
     QVERIFY(guidNode != 0);
-    data = QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216");
-    WRITE_VALUE_ATTRIBUTE(guidNode, data, QOpcUa::Guid);
+    WRITE_VALUE_ATTRIBUTE(guidNode, testUuid[0], QOpcUa::Guid);
 
     QScopedPointer<QOpcUaNode> nodeIdNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.NodeId"));
     QVERIFY(nodeIdNode != 0);
@@ -1763,6 +1939,18 @@ void Tst_QOpcUaClient::writeScalar()
     QScopedPointer<QOpcUaNode> xVNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XV"));
     QVERIFY(xVNode != 0);
     WRITE_VALUE_ATTRIBUTE(xVNode, QVariant::fromValue(testXV[0]), QOpcUa::XV);
+
+    if (opcuaClient->backend() != QLatin1String("open62541"))
+        qInfo("The uacpp backend currently does not support writing extension objects");
+    else {
+        QScopedPointer<QOpcUaNode> node(opcuaClient->node(QStringLiteral("ns=2;s=Demo.Static.Scalar.ExtensionObject")));
+        QVERIFY(node != nullptr);
+
+        QOpcUa::QExtensionObject obj;
+        ENCODE_EXTENSION_OBJECT(obj, 0);
+
+        WRITE_VALUE_ATTRIBUTE(node, obj, QOpcUa::Types::ExtensionObject); // Write value to check for
+    }
 
     QScopedPointer<QOpcUaNode> xmlElementNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XmlElement"));
     QVERIFY(xmlElementNode != 0);
@@ -1913,7 +2101,7 @@ void Tst_QOpcUaClient::readScalar()
     QVariant guidScalar = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(guidScalar.isValid());
     QVERIFY(guidScalar.userType() == QMetaType::QUuid);
-    QCOMPARE(guidScalar.toUuid(), QUuid("e0bd5ccd-f571-4545-9352-61a0f8cb9216"));
+    QCOMPARE(guidScalar.toUuid(), testUuid[0]);
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.NodeId"));
     QVERIFY(node != 0);
@@ -1965,6 +2153,18 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(node != 0);
     READ_MANDATORY_VARIABLE_NODE(node);
     QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QXValue>() == testXV[0]);
+
+    if (opcuaClient->backend() != QLatin1String("open62541"))
+        qInfo("The uacpp backend currently does not support reading extension objects");
+    else {
+        node.reset(opcuaClient->node(QStringLiteral("ns=2;s=Demo.Static.Scalar.ExtensionObject")));
+        QVERIFY(node != nullptr);
+
+        READ_MANDATORY_VARIABLE_NODE(node);
+
+        QOpcUa::QExtensionObject obj = node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QExtensionObject>();
+        VERIFY_EXTENSION_OBJECT(obj, 0);
+    }
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XmlElement"));
     QVERIFY(node != 0);

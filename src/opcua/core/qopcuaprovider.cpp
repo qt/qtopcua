@@ -155,6 +155,7 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUa::QEndpointDescription>();
     qRegisterMetaType<QVector<QOpcUa::QEndpointDescription>>();
     qRegisterMetaType<QOpcUa::QArgument>();
+    qRegisterMetaType<QOpcUa::QExtensionObject>();
 }
 
 QOpcUaProvider::~QOpcUaProvider()

@@ -27,4 +27,4 @@ HEADERS += \
     client/qopcuamonitoringparameters_p.h \
     client/qopcuareferencedescription.h \
     client/qopcuareferencedescription_p.h \
-    client/qopcuabinarydataencoding_p.h
+    client/qopcuabinarydataencoding.h

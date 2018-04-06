@@ -40,7 +40,7 @@
 #include "qopen62541.h"
 #include <QtOpcUa/qopcuanode.h>
 #include <QtOpcUa/qopcuatype.h>
-#include <private/qopcuabinarydataencoding_p.h>
+#include <QtOpcUa/qopcuabinarydataencoding.h>
 
 #include <QtCore/qvariant.h>
 
@@ -76,7 +76,8 @@ namespace QOpen62541ValueConverter {
     template<typename TARGETTYPE, typename QTTYPE>
     UA_Variant arrayFromQVariant(const QVariant &var, const UA_DataType *type);
 
-    void createExtensionObject(QByteArray &data, QOpcUaBinaryDataEncoding::TypeEncodingId id, UA_ExtensionObject *ptr);
+    void createExtensionObject(QByteArray &data, const UA_NodeId &typeEncodingId, UA_ExtensionObject *ptr,
+                               QOpcUa::QExtensionObject::Encoding encoding = QOpcUa::QExtensionObject::Encoding::ByteString);
 }
 
 QT_END_NAMESPACE

@@ -138,6 +138,9 @@ int main(int argc, char **argv)
                                      QOpcUa::QArgument(QStringLiteral("Argument2"), QStringLiteral("ns=0;i=12"), 2,
                                                        {2, 2}, QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("Description2")))}),
                        QOpcUa::Types::Argument);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.ExtensionObject", "ExtensionObjectArrayTest",
+                                                    QVariantList({QOpcUa::QExtensionObject(), QOpcUa::QExtensionObject()}),
+                       QOpcUa::Types::ExtensionObject);
 
     // Test variables containing scalar values of various types
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Boolean", "BoolScalarTest", false, QOpcUa::Types::Boolean);
@@ -183,6 +186,8 @@ int main(int argc, char **argv)
                        QOpcUa::QArgument(QStringLiteral("Argument1"), QStringLiteral("ns=0;i=12"), -1,
                                          {},QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("Description1"))),
                        QOpcUa::Types::Argument);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.ExtensionObject", "ExtensionObjectScalarTest",
+                                                    QOpcUa::QExtensionObject(), QOpcUa::Types::ExtensionObject);
 
     // Create folders containing child nodes with string, guid and opaque node ids
     UA_NodeId testStringIdsFolder = server.addFolder("ns=3;s=testStringIdsFolder", "testStringIdsFolder");
