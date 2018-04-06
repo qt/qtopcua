@@ -558,6 +558,126 @@ void Open62541AsyncBackend::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWr
     }
 }
 
+void Open62541AsyncBackend::addNode(const QOpcUaAddNodeItem &nodeToAdd)
+{
+    UA_AddNodesRequest req;
+    UA_AddNodesRequest_init(&req);
+    UaDeleter<UA_AddNodesRequest> requestDeleter(&req, UA_AddNodesRequest_deleteMembers);
+    req.nodesToAddSize = 1;
+    req.nodesToAdd = UA_AddNodesItem_new();
+    UA_AddNodesItem_init(req.nodesToAdd);
+
+    QOpen62541ValueConverter::scalarFromQt<UA_ExpandedNodeId, QOpcUa::QExpandedNodeId>(
+                nodeToAdd.parentNodeId(), &req.nodesToAdd->parentNodeId);
+
+    req.nodesToAdd->referenceTypeId = Open62541Utils::nodeIdFromQString(nodeToAdd.referenceTypeId());
+
+    QOpen62541ValueConverter::scalarFromQt<UA_ExpandedNodeId, QOpcUa::QExpandedNodeId>(
+                nodeToAdd.requestedNewNodeId(), &req.nodesToAdd->requestedNewNodeId);
+
+    QOpen62541ValueConverter::scalarFromQt<UA_QualifiedName, QOpcUa::QQualifiedName>(
+                nodeToAdd.browseName(), &req.nodesToAdd->browseName);
+
+    req.nodesToAdd->nodeClass = static_cast<UA_NodeClass>(nodeToAdd.nodeClass());
+
+    req.nodesToAdd->nodeAttributes = assembleNodeAttributes(nodeToAdd.nodeAttributes(),
+                                                            nodeToAdd.nodeClass());
+
+    if (!nodeToAdd.typeDefinition().nodeId().isEmpty())
+        QOpen62541ValueConverter::scalarFromQt<UA_ExpandedNodeId, QOpcUa::QExpandedNodeId>(
+                    nodeToAdd.typeDefinition(), &req.nodesToAdd->typeDefinition);
+
+    UA_AddNodesResponse res = UA_Client_Service_addNodes(m_uaclient, req);
+    UaDeleter<UA_AddNodesResponse> responseDeleter(&res, UA_AddNodesResponse_deleteMembers);
+
+    QOpcUa::UaStatusCode status = QOpcUa::UaStatusCode::Good;
+    QString resultId;
+    if (res.responseHeader.serviceResult == UA_STATUSCODE_GOOD) {
+        if (res.results[0].statusCode == UA_STATUSCODE_GOOD)
+            resultId = Open62541Utils::nodeIdToQString(res.results[0].addedNodeId);
+        else {
+            status = static_cast<QOpcUa::UaStatusCode>(res.results[0].statusCode);
+            qCDebug(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to add node:" << status;
+        }
+    } else {
+        status = static_cast<QOpcUa::UaStatusCode>(res.responseHeader.serviceResult);
+        qCDebug(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to add node:" << status;
+    }
+
+    emit addNodeFinished(nodeToAdd.requestedNewNodeId(), resultId, status);
+}
+
+void Open62541AsyncBackend::deleteNode(const QString &nodeId, bool deleteTargetReferences)
+{
+    UA_NodeId id = Open62541Utils::nodeIdFromQString(nodeId);
+    UaDeleter<UA_NodeId> nodeIdDeleter(&id, UA_NodeId_deleteMembers);
+
+    UA_StatusCode res = UA_Client_deleteNode(m_uaclient, id, deleteTargetReferences);
+
+    QOpcUa::UaStatusCode resultStatus = static_cast<QOpcUa::UaStatusCode>(res);
+
+    if (resultStatus != QOpcUa::UaStatusCode::Good) {
+        qCDebug(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to delete node" << nodeId << "with status code" << resultStatus;
+    }
+
+    emit deleteNodeFinished(nodeId, resultStatus);
+}
+
+void Open62541AsyncBackend::addReference(const QOpcUaAddReferenceItem &referenceToAdd)
+{
+    UA_ExpandedNodeId target;
+    UA_ExpandedNodeId_init(&target);
+    UaDeleter<UA_ExpandedNodeId> nodeIdDeleter(&target, UA_ExpandedNodeId_deleteMembers);
+
+    QOpen62541ValueConverter::scalarFromQt<UA_ExpandedNodeId, QOpcUa::QExpandedNodeId>(
+                referenceToAdd.targetNodeId(), &target);
+
+    UA_String serverUri;
+    UaDeleter<UA_String> serverUriDeleter(&serverUri, UA_String_deleteMembers);
+    QOpen62541ValueConverter::scalarFromQt<UA_String, QString>(
+                referenceToAdd.targetServerUri(), &serverUri);
+
+    UA_NodeClass nodeClass = static_cast<UA_NodeClass>(referenceToAdd.targetNodeClass());
+
+    UA_StatusCode res = UA_Client_addReference(m_uaclient,
+                                               Open62541Utils::nodeIdFromQString(referenceToAdd.sourceNodeId()),
+                                               Open62541Utils::nodeIdFromQString(referenceToAdd.referenceTypeId()),
+                                               referenceToAdd.isForward(), serverUri, target, nodeClass);
+
+    QOpcUa::UaStatusCode statusCode = static_cast<QOpcUa::UaStatusCode>(res);
+    if (res != UA_STATUSCODE_GOOD)
+        qCDebug(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to add reference from" << referenceToAdd.sourceNodeId() << "to"
+                                            << referenceToAdd.targetNodeId().nodeId() << ":" << statusCode;
+
+    emit addReferenceFinished(referenceToAdd.sourceNodeId(), referenceToAdd.referenceTypeId(),
+                              referenceToAdd.targetNodeId(),
+                              referenceToAdd.isForward(), statusCode);
+}
+
+void Open62541AsyncBackend::deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete)
+{
+    UA_ExpandedNodeId target;
+    UA_ExpandedNodeId_init(&target);
+    UaDeleter<UA_ExpandedNodeId> targetDeleter(&target, UA_ExpandedNodeId_deleteMembers);
+    QOpen62541ValueConverter::scalarFromQt<UA_ExpandedNodeId, QOpcUa::QExpandedNodeId>(
+                referenceToDelete.targetNodeId(), &target);
+
+    UA_StatusCode res = UA_Client_deleteReference(m_uaclient,
+                                                  Open62541Utils::nodeIdFromQString(referenceToDelete.sourceNodeId()),
+                                                  Open62541Utils::nodeIdFromQString(referenceToDelete.referenceTypeId()),
+                                                  referenceToDelete.isForward(),
+                                                  target, referenceToDelete.deleteBidirectional());
+
+    QOpcUa::UaStatusCode statusCode = static_cast<QOpcUa::UaStatusCode>(res);
+    if (res != UA_STATUSCODE_GOOD)
+        qCDebug(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to delete reference from" << referenceToDelete.sourceNodeId() << "to"
+                                            << referenceToDelete.targetNodeId().nodeId() << ":" << statusCode;
+
+    emit deleteReferenceFinished(referenceToDelete.sourceNodeId(), referenceToDelete.referenceTypeId(),
+                                 referenceToDelete.targetNodeId(),
+                                 referenceToDelete.isForward(), statusCode);
+}
+
 static void convertBrowseResult(UA_BrowseResult *src, quint32 referencesSize, QVector<QOpcUaReferenceDescription> &dst)
 {
     if (!src)
@@ -832,6 +952,163 @@ void Open62541AsyncBackend::cleanupSubscriptions()
     m_subscriptions.clear();
     m_attributeMapping.clear();
     m_minPublishingInterval = 0;
+}
+
+UA_ExtensionObject Open62541AsyncBackend::assembleNodeAttributes(const QOpcUaNodeCreationAttributes &nodeAttributes,
+                                                                 QOpcUa::NodeClass nodeClass)
+{
+    UA_ExtensionObject obj;
+    UA_ExtensionObject_init(&obj);
+    obj.encoding = UA_EXTENSIONOBJECT_DECODED;
+
+    switch (nodeClass) {
+    case QOpcUa::NodeClass::Object: {
+        UA_ObjectAttributes *attr = UA_ObjectAttributes_new();
+        *attr = UA_ObjectAttributes_default;
+        obj.content.decoded.data = attr;
+        obj.content.decoded.type = &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES];
+
+        if (nodeAttributes.hasEventNotifier())
+            attr->eventNotifier = nodeAttributes.eventNotifier();
+        break;
+    }
+    case QOpcUa::NodeClass::Variable: {
+        UA_VariableAttributes *attr = UA_VariableAttributes_new();
+        *attr = UA_VariableAttributes_default;
+        obj.content.decoded.data = attr;
+        obj.content.decoded.type = &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES];
+
+        if (nodeAttributes.hasValue())
+            attr->value = QOpen62541ValueConverter::toOpen62541Variant(nodeAttributes.value(),
+                                                                       nodeAttributes.valueType());
+        if (nodeAttributes.hasDataTypeId())
+            attr->dataType = Open62541Utils::nodeIdFromQString(nodeAttributes.dataTypeId());
+        if (nodeAttributes.hasValueRank())
+            attr->valueRank = nodeAttributes.valueRank();
+        if (nodeAttributes.hasArrayDimensions())
+            attr->arrayDimensions = copyArrayDimensions(nodeAttributes.arrayDimensions(), &attr->arrayDimensionsSize);
+        if (nodeAttributes.hasAccessLevel())
+            attr->accessLevel = nodeAttributes.accessLevel();
+        if (nodeAttributes.hasUserAccessLevel())
+            attr->userAccessLevel = nodeAttributes.userAccessLevel();
+        if (nodeAttributes.hasMinimumSamplingInterval())
+            attr->minimumSamplingInterval = nodeAttributes.minimumSamplingInterval();
+        if (nodeAttributes.hasHistorizing())
+            attr->historizing = nodeAttributes.historizing();
+        break;
+    }
+    case QOpcUa::NodeClass::Method: {
+        UA_MethodAttributes *attr = UA_MethodAttributes_new();
+        *attr = UA_MethodAttributes_default;
+        obj.content.decoded.data = attr;
+        obj.content.decoded.type = &UA_TYPES[UA_TYPES_METHODATTRIBUTES];
+
+        if (nodeAttributes.hasExecutable())
+            attr->executable = nodeAttributes.executable();
+        if (nodeAttributes.hasUserExecutable())
+            attr->userExecutable = nodeAttributes.userExecutable();
+        break;
+    }
+    case QOpcUa::NodeClass::ObjectType: {
+        UA_ObjectTypeAttributes *attr = UA_ObjectTypeAttributes_new();
+        *attr = UA_ObjectTypeAttributes_default;
+        obj.content.decoded.data = attr;
+        obj.content.decoded.type = &UA_TYPES[UA_TYPES_OBJECTTYPEATTRIBUTES];
+
+        if (nodeAttributes.hasIsAbstract())
+            attr->isAbstract = nodeAttributes.isAbstract();
+        break;
+    }
+    case QOpcUa::NodeClass::VariableType: {
+        UA_VariableTypeAttributes *attr = UA_VariableTypeAttributes_new();
+        *attr = UA_VariableTypeAttributes_default;
+        obj.content.decoded.data = attr;
+        obj.content.decoded.type = &UA_TYPES[UA_TYPES_VARIABLETYPEATTRIBUTES];
+
+        if (nodeAttributes.hasValue())
+            attr->value = QOpen62541ValueConverter::toOpen62541Variant(nodeAttributes.value(),
+                                                                       nodeAttributes.valueType());
+        if (nodeAttributes.hasDataTypeId())
+            attr->dataType = Open62541Utils::nodeIdFromQString(nodeAttributes.dataTypeId());
+        if (nodeAttributes.hasValueRank())
+            attr->valueRank = nodeAttributes.valueRank();
+        if (nodeAttributes.hasArrayDimensions())
+            attr->arrayDimensions = copyArrayDimensions(nodeAttributes.arrayDimensions(), &attr->arrayDimensionsSize);
+        if (nodeAttributes.hasIsAbstract())
+            attr->isAbstract = nodeAttributes.isAbstract();
+        break;
+    }
+    case QOpcUa::NodeClass::ReferenceType: {
+        UA_ReferenceTypeAttributes *attr = UA_ReferenceTypeAttributes_new();
+        *attr = UA_ReferenceTypeAttributes_default;
+        obj.content.decoded.data = attr;
+        obj.content.decoded.type = &UA_TYPES[UA_TYPES_REFERENCETYPEATTRIBUTES];
+
+        if (nodeAttributes.hasIsAbstract())
+            attr->isAbstract = nodeAttributes.isAbstract();
+        if (nodeAttributes.hasSymmetric())
+            attr->symmetric = nodeAttributes.symmetric();
+        if (nodeAttributes.hasInverseName())
+            QOpen62541ValueConverter::scalarFromQt<UA_LocalizedText, QOpcUa::QLocalizedText>(
+                        nodeAttributes.inverseName(), &attr->inverseName);
+        break;
+    }
+    case QOpcUa::NodeClass::DataType: {
+        UA_DataTypeAttributes *attr = UA_DataTypeAttributes_new();
+        *attr = UA_DataTypeAttributes_default;
+        obj.content.decoded.data = attr;
+        obj.content.decoded.type = &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES];
+
+        if (nodeAttributes.hasIsAbstract())
+            attr->isAbstract = nodeAttributes.isAbstract();
+        break;
+    }
+    case QOpcUa::NodeClass::View: {
+        UA_ViewAttributes *attr = UA_ViewAttributes_new();
+        *attr = UA_ViewAttributes_default;
+        obj.content.decoded.data = attr;
+        obj.content.decoded.type = &UA_TYPES[UA_TYPES_VIEWATTRIBUTES];
+
+        if (nodeAttributes.hasContainsNoLoops())
+            attr->containsNoLoops = nodeAttributes.containsNoLoops();
+        if (nodeAttributes.hasEventNotifier())
+            attr->eventNotifier = nodeAttributes.eventNotifier();
+        break;
+    }
+    default:
+        qCDebug(QT_OPCUA_PLUGINS_OPEN62541) << "Could not convert node attributes, unknown node class";
+        UA_ExtensionObject_init(&obj);
+        return obj;
+    }
+
+    UA_ObjectAttributes *attr = reinterpret_cast<UA_ObjectAttributes *>(obj.content.decoded.data);
+    attr->specifiedAttributes = nodeAttributes.mask();
+    if (nodeAttributes.hasDisplayName())
+        QOpen62541ValueConverter::scalarFromQt<UA_LocalizedText, QOpcUa::QLocalizedText>(
+                    nodeAttributes.displayName(), &attr->displayName);
+    if (nodeAttributes.hasDescription())
+        QOpen62541ValueConverter::scalarFromQt<UA_LocalizedText, QOpcUa::QLocalizedText>(
+                    nodeAttributes.description(), &attr->description);
+    if (nodeAttributes.hasWriteMask())
+        attr->writeMask = nodeAttributes.writeMask();
+    if (nodeAttributes.hasUserWriteMask())
+        attr->userWriteMask = nodeAttributes.userWriteMask();
+
+    return obj;
+}
+
+UA_UInt32 *Open62541AsyncBackend::copyArrayDimensions(const QVector<quint32> &arrayDimensions, size_t *outputSize)
+{
+    if (outputSize)
+        *outputSize = arrayDimensions.size();
+
+    if (!outputSize)
+        return nullptr;
+
+    UA_UInt32 *data = nullptr;
+    UA_StatusCode res = UA_Array_copy(arrayDimensions.constData(), arrayDimensions.size(),
+                                      reinterpret_cast<void **>(&data), &UA_TYPES[UA_TYPES_UINT32]);
+    return res == UA_STATUSCODE_GOOD ? data : nullptr;
 }
 
 QT_END_NAMESPACE

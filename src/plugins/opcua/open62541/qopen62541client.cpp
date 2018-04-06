@@ -124,4 +124,29 @@ bool QOpen62541Client::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite)
                                      Q_ARG(QVector<QOpcUaWriteItem>, nodesToWrite));
 }
 
+bool QOpen62541Client::addNode(const QOpcUaAddNodeItem &nodeToAdd)
+{
+    return QMetaObject::invokeMethod(m_backend, "addNode", Qt::QueuedConnection,
+                                     Q_ARG(QOpcUaAddNodeItem, nodeToAdd));
+}
+
+bool QOpen62541Client::deleteNode(const QString &nodeId, bool deleteTargetReferences)
+{
+    return QMetaObject::invokeMethod(m_backend, "deleteNode", Qt::QueuedConnection,
+                                     Q_ARG(QString, nodeId),
+                                     Q_ARG(bool, deleteTargetReferences));
+}
+
+bool QOpen62541Client::addReference(const QOpcUaAddReferenceItem &referenceToAdd)
+{
+    return QMetaObject::invokeMethod(m_backend, "addReference", Qt::QueuedConnection,
+                                     Q_ARG(QOpcUaAddReferenceItem, referenceToAdd));
+}
+
+bool QOpen62541Client::deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete)
+{
+    return QMetaObject::invokeMethod(m_backend, "deleteReference", Qt::QueuedConnection,
+                                     Q_ARG(QOpcUaDeleteReferenceItem, referenceToDelete));
+}
+
 QT_END_NAMESPACE

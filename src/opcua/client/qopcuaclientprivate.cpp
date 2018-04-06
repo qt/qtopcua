@@ -81,6 +81,28 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
         Q_Q(QOpcUaClient);
         emit q->batchWriteFinished(results, serviceResult);
     });
+
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::addNodeFinished, [this](const QOpcUa::QExpandedNodeId &requestedNodeId, const QString &assignedNodeId, QOpcUa::UaStatusCode statusCode) {
+        Q_Q(QOpcUaClient);
+        emit q->addNodeFinished(requestedNodeId, assignedNodeId, statusCode);
+    });
+
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::deleteNodeFinished, [this](const QString &nodeId, QOpcUa::UaStatusCode statusCode) {
+        Q_Q(QOpcUaClient);
+        emit q->deleteNodeFinished(nodeId, statusCode);
+    });
+
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::addReferenceFinished, [this](const QString &sourceNodeId, const QString &referenceTypeId,
+                     const QOpcUa::QExpandedNodeId &targetNodeId, bool isForward, QOpcUa::UaStatusCode statusCode) {
+        Q_Q(QOpcUaClient);
+        emit q->addReferenceFinished(sourceNodeId, referenceTypeId, targetNodeId, isForward, statusCode);
+    });
+
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::deleteReferenceFinished, [this](const QString &sourceNodeId, const QString &referenceTypeId,
+                     const QOpcUa::QExpandedNodeId &targetNodeId, bool isForward, QOpcUa::UaStatusCode statusCode) {
+        Q_Q(QOpcUaClient);
+        emit q->deleteReferenceFinished(sourceNodeId, referenceTypeId, targetNodeId, isForward, statusCode);
+    });
 }
 
 QOpcUaClientPrivate::~QOpcUaClientPrivate()

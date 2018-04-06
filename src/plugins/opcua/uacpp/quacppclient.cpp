@@ -115,4 +115,37 @@ bool QUACppClient::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite)
     return false;
 }
 
+bool QUACppClient::addNode(const QOpcUaAddNodeItem &nodeToAdd)
+{
+    Q_UNUSED(nodeToAdd);
+
+    qCInfo(QT_OPCUA_PLUGINS_UACPP) << "AddNode is not yet supported by the uacpp backend";
+    return false;
+}
+
+bool QUACppClient::deleteNode(const QString &nodeId, bool deleteTargetReferences)
+{
+    Q_UNUSED(nodeId);
+    Q_UNUSED(deleteTargetReferences);
+
+    qCInfo(QT_OPCUA_PLUGINS_UACPP) << "DeleteNode is not yet supported by the uacpp backend";
+    return false;
+}
+
+bool QUACppClient::addReference(const QOpcUaAddReferenceItem &referenceToAdd)
+{
+    Q_UNUSED(referenceToAdd);
+
+    qCInfo(QT_OPCUA_PLUGINS_UACPP) << "AddReference is not yet supported by the uacpp backend";
+    return false;
+}
+
+bool QUACppClient::deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete)
+{
+    Q_UNUSED(referenceToDelete);
+
+    qCDebug(QT_OPCUA_PLUGINS_UACPP) << "deleteReference is not yet supported by the uacpp backend";
+    return false;
+}
+
 QT_END_NAMESPACE

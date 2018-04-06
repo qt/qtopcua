@@ -378,6 +378,13 @@ private slots:
     defineDataMethod(inverseBrowse_data)
     void inverseBrowse();
 
+    defineDataMethod(addAndRemoveObjectNode_data)
+    void addAndRemoveObjectNode();
+    defineDataMethod(addAndRemoveVariableNode_data)
+    void addAndRemoveVariableNode();
+    defineDataMethod(addAndRemoveReference_data)
+    void addAndRemoveReference();
+
     defineDataMethod(dataChangeSubscription_data)
     void dataChangeSubscription();
     defineDataMethod(dataChangeSubscriptionInvalidNode_data)
@@ -1082,6 +1089,268 @@ void Tst_QOpcUaClient::inverseBrowse()
     QCOMPARE(ref.at(0).displayName().text(), QStringLiteral("BaseDataType"));
     QCOMPARE(ref.at(0).refTypeId(), QOpcUa::nodeIdFromReferenceType(QOpcUa::ReferenceTypeId::HasSubtype));
     QCOMPARE(ref.at(0).nodeClass(), QOpcUa::NodeClass::DataType);
+}
+
+void Tst_QOpcUaClient::addAndRemoveObjectNode()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    if (opcuaClient->backend() != QLatin1String("open62541"))
+        QSKIP("NodeManagement is currently only supported in the open62541 backend");
+
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QSignalSpy addNodeSpy(opcuaClient, &QOpcUaClient::addNodeFinished);
+
+    QOpcUa::QExpandedNodeId parent;
+    parent.setNodeId(QStringLiteral("ns=3;s=TestFolder"));
+    QOpcUa::QExpandedNodeId requestedNewId;
+    requestedNewId.setNodeId(QStringLiteral("ns=3;s=DynamicObjectNode_%1").arg(opcuaClient->backend()));
+    const quint16 namespaceIndex = 3;
+    QOpcUa::QQualifiedName browseName(namespaceIndex, QStringLiteral("DynamicObjectNode_%1").arg(opcuaClient->backend()));
+
+    QOpcUaNodeCreationAttributes attributes;
+
+    QOpcUa::QLocalizedText displayName("en", browseName.name());
+    QOpcUa::QLocalizedText description("en", QStringLiteral("Node added at runtime by %1").arg(opcuaClient->backend()));
+
+    attributes.setDisplayName(displayName);
+    attributes.setDescription(description);
+
+    QOpcUaAddNodeItem nodeInfo;
+    nodeInfo.setParentNodeId(parent);
+    nodeInfo.setReferenceTypeId(QOpcUa::nodeIdFromReferenceType(QOpcUa::ReferenceTypeId::Organizes));
+    nodeInfo.setRequestedNewNodeId(requestedNewId);
+    nodeInfo.setBrowseName(browseName);
+    nodeInfo.setNodeClass(QOpcUa::NodeClass::Object);
+    nodeInfo.setNodeAttributes(attributes);
+
+    opcuaClient->addNode(nodeInfo);
+
+    addNodeSpy.wait();
+
+    QCOMPARE(addNodeSpy.count(), 1);
+
+    QCOMPARE(addNodeSpy.at(0).at(0).value<QOpcUa::QExpandedNodeId>().nodeId(), requestedNewId.nodeId());
+    QCOMPARE(addNodeSpy.at(0).at(1), requestedNewId.nodeId());
+    QCOMPARE(addNodeSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    QScopedPointer<QOpcUaNode> newNode(opcuaClient->node(requestedNewId.nodeId()));
+    QVERIFY(newNode != nullptr);
+
+    QSignalSpy readSpy(newNode.data(), &QOpcUaNode::attributeRead);
+    newNode->readAttributes(QOpcUa::NodeAttribute::BrowseName | QOpcUa::NodeAttribute::DisplayName | QOpcUa::NodeAttribute::Description);
+    readSpy.wait();
+
+    QCOMPARE(readSpy.size(), 1);
+
+    QCOMPARE(newNode->attributeError(QOpcUa::NodeAttribute::BrowseName), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(newNode->attributeError(QOpcUa::NodeAttribute::DisplayName), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(newNode->attributeError(QOpcUa::NodeAttribute::Description), QOpcUa::UaStatusCode::Good);
+
+    QCOMPARE(newNode->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>(), browseName);
+    QCOMPARE(newNode->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>(), displayName);
+    QCOMPARE(newNode->attribute(QOpcUa::NodeAttribute::Description).value<QOpcUa::QLocalizedText>(), description);
+
+    QSignalSpy removeNodeSpy(opcuaClient, &QOpcUaClient::deleteNodeFinished);
+    opcuaClient->deleteNode(requestedNewId.nodeId(), true);
+    removeNodeSpy.wait();
+
+    QCOMPARE(removeNodeSpy.size(), 1);
+    QCOMPARE(removeNodeSpy.at(0).at(0), requestedNewId.nodeId());
+    QCOMPARE(removeNodeSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node(requestedNewId.nodeId()));
+    QVERIFY(node != nullptr);
+
+    QSignalSpy unsuccessfulReadSpy(node.data(), &QOpcUaNode::attributeRead);
+
+    node->readAttributes(QOpcUa::NodeAttribute::NodeId);
+    unsuccessfulReadSpy.wait();
+    QCOMPARE(unsuccessfulReadSpy.size(), 1);
+    QVERIFY(unsuccessfulReadSpy.at(0).at(0).value<QOpcUa::NodeAttributes>() & QOpcUa::NodeAttribute::NodeId);
+    QCOMPARE(node->attributeError(QOpcUa::NodeAttribute::NodeId), QOpcUa::UaStatusCode::BadNodeIdUnknown);
+}
+
+void Tst_QOpcUaClient::addAndRemoveVariableNode()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    if (opcuaClient->backend() != QLatin1String("open62541"))
+        QSKIP("NodeManagement is currently only supported in the open62541 backend");
+
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QSignalSpy addNodeSpy(opcuaClient, &QOpcUaClient::addNodeFinished);
+
+    QOpcUa::QExpandedNodeId parent;
+    parent.setNodeId(QStringLiteral("ns=3;s=TestFolder"));
+    QOpcUa::QExpandedNodeId requestedNewId;
+    requestedNewId.setNodeId(QStringLiteral("ns=3;s=DynamicVariableNode_%1").arg(opcuaClient->backend()));
+    const quint16 namespaceIndex = 3;
+    QOpcUa::QQualifiedName browseName(namespaceIndex, QStringLiteral("DynamicVariableNode_%1").arg(opcuaClient->backend()));
+
+    QOpcUaNodeCreationAttributes attributes;
+
+    QOpcUa::QLocalizedText displayName("en", browseName.name());
+    QOpcUa::QLocalizedText description("en", QStringLiteral("Node added at runtime by %1").arg(opcuaClient->backend()));
+
+    attributes.setDisplayName(displayName);
+    attributes.setDescription(description);
+    attributes.setValue(23.0, QOpcUa::Types::Double);
+    attributes.setDataTypeId(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::Double));
+    attributes.setValueRank(-2); // Scalar or array
+
+    attributes.setAccessLevel(QOpcUa::AccessLevelBit::CurrentRead);
+    attributes.setUserAccessLevel(QOpcUa::AccessLevelBit::CurrentRead);
+
+    QOpcUaAddNodeItem nodeInfo;
+    nodeInfo.setParentNodeId(parent);
+    nodeInfo.setReferenceTypeId(QOpcUa::nodeIdFromReferenceType(QOpcUa::ReferenceTypeId::Organizes));
+    nodeInfo.setRequestedNewNodeId(requestedNewId);
+    nodeInfo.setBrowseName(browseName);
+    nodeInfo.setNodeClass(QOpcUa::NodeClass::Variable);
+    nodeInfo.setNodeAttributes(attributes);
+
+    opcuaClient->addNode(nodeInfo);
+
+    addNodeSpy.wait();
+
+    QCOMPARE(addNodeSpy.count(), 1);
+
+    QCOMPARE(addNodeSpy.at(0).at(0).value<QOpcUa::QExpandedNodeId>().nodeId(), requestedNewId.nodeId());
+    QCOMPARE(addNodeSpy.at(0).at(1), requestedNewId.nodeId());
+    QCOMPARE(addNodeSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    QScopedPointer<QOpcUaNode> newNode(opcuaClient->node(requestedNewId.nodeId()));
+    QVERIFY(newNode != nullptr);
+
+    QSignalSpy readSpy(newNode.data(), &QOpcUaNode::attributeRead);
+    newNode->readAttributes(QOpcUa::NodeAttribute::BrowseName | QOpcUa::NodeAttribute::DisplayName | QOpcUa::NodeAttribute::Description | QOpcUa::NodeAttribute::Value);
+    readSpy.wait();
+
+    QCOMPARE(readSpy.size(), 1);
+
+    QCOMPARE(newNode->attributeError(QOpcUa::NodeAttribute::BrowseName), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(newNode->attributeError(QOpcUa::NodeAttribute::DisplayName), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(newNode->attributeError(QOpcUa::NodeAttribute::Description), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(newNode->attributeError(QOpcUa::NodeAttribute::Value), QOpcUa::UaStatusCode::Good);
+
+    QCOMPARE(newNode->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>(), browseName);
+    QCOMPARE(newNode->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>(), displayName);
+    QCOMPARE(newNode->attribute(QOpcUa::NodeAttribute::Description).value<QOpcUa::QLocalizedText>(), description);
+    QCOMPARE(newNode->attribute(QOpcUa::NodeAttribute::Value).toDouble(), 23.0);
+
+    QSignalSpy removeNodeSpy(opcuaClient, &QOpcUaClient::deleteNodeFinished);
+    opcuaClient->deleteNode(requestedNewId.nodeId(), true);
+    removeNodeSpy.wait();
+
+    QCOMPARE(removeNodeSpy.size(), 1);
+    QCOMPARE(removeNodeSpy.at(0).at(0), requestedNewId.nodeId());
+    QCOMPARE(removeNodeSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node(requestedNewId.nodeId()));
+    QVERIFY(node != nullptr);
+
+    QSignalSpy unsuccessfulReadSpy(node.data(), &QOpcUaNode::attributeRead);
+
+    node->readAttributes(QOpcUa::NodeAttribute::NodeId);
+    unsuccessfulReadSpy.wait();
+    QCOMPARE(unsuccessfulReadSpy.size(), 1);
+    QVERIFY(unsuccessfulReadSpy.at(0).at(0).value<QOpcUa::NodeAttributes>() & QOpcUa::NodeAttribute::NodeId);
+    QCOMPARE(node->attributeError(QOpcUa::NodeAttribute::NodeId), QOpcUa::UaStatusCode::BadNodeIdUnknown);
+}
+
+void Tst_QOpcUaClient::addAndRemoveReference()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    if (opcuaClient->backend() != QLatin1String("open62541"))
+        QSKIP("NodeManagement is currently only supported in the open62541 backend");
+
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QSignalSpy addReferenceSpy(opcuaClient, &QOpcUaClient::addReferenceFinished);
+
+    QOpcUa::QExpandedNodeId target;
+    target.setNodeId(QStringLiteral("ns=3;s=TestFolder"));
+    QString referenceType = QOpcUa::nodeIdFromInteger(0, static_cast<quint32>(QOpcUa::ReferenceTypeId::Organizes));
+
+    QOpcUaAddReferenceItem refInfo;
+    refInfo.setSourceNodeId(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::RootFolder));
+    refInfo.setReferenceTypeId(referenceType);
+    refInfo.setIsForward(true);
+    refInfo.setTargetNodeId(target);
+    refInfo.setTargetNodeClass(QOpcUa::NodeClass::Variable);
+
+    opcuaClient->addReference(refInfo);
+    addReferenceSpy.wait();
+
+    QCOMPARE(addReferenceSpy.count(), 1);
+    QCOMPARE(addReferenceSpy.at(0).at(0), QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::RootFolder));
+    QCOMPARE(addReferenceSpy.at(0).at(1), referenceType);
+    QCOMPARE(addReferenceSpy.at(0).at(2).value<QOpcUa::QExpandedNodeId>().nodeId(), target.nodeId());
+    QCOMPARE(addReferenceSpy.at(0).at(3).value<bool>(), true);
+    QCOMPARE(addReferenceSpy.at(0).at(4).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    // Check if the reference has been added
+    {
+        QScopedPointer<QOpcUaNode> node(opcuaClient->node(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::RootFolder)));
+        QVERIFY(node != nullptr);
+
+        QSignalSpy browseSpy(node.data(), &QOpcUaNode::browseFinished);
+
+        node->browseChildren(QOpcUa::ReferenceTypeId::Organizes);
+        browseSpy.wait();
+        QCOMPARE(browseSpy.size(), 1);
+        QCOMPARE(browseSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+        QVector<QOpcUaReferenceDescription> results = browseSpy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
+        QVERIFY(!results.isEmpty());
+        bool referenceExists = false;
+        for (auto item : results) {
+            if (item.targetNodeId().nodeId() == target.nodeId()) {
+                referenceExists = true;
+                break;
+            }
+        }
+        QVERIFY(referenceExists);
+    }
+
+    QSignalSpy deleteReferenceSpy(opcuaClient, &QOpcUaClient::deleteReferenceFinished);
+
+    QOpcUaDeleteReferenceItem refDelInfo;
+    refDelInfo.setSourceNodeId(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::RootFolder));
+    refDelInfo.setReferenceTypeId(referenceType);
+    refDelInfo.setIsForward(true);
+    refDelInfo.setTargetNodeId(target);
+    refDelInfo.setDeleteBidirectional(true);
+
+    opcuaClient->deleteReference(refDelInfo);
+    deleteReferenceSpy.wait();
+
+    QCOMPARE(deleteReferenceSpy.count(), 1);
+    QCOMPARE(deleteReferenceSpy.at(0).at(0), QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::RootFolder));
+    QCOMPARE(deleteReferenceSpy.at(0).at(1), referenceType);
+    QCOMPARE(deleteReferenceSpy.at(0).at(2).value<QOpcUa::QExpandedNodeId>().nodeId(), target.nodeId());
+    QCOMPARE(deleteReferenceSpy.at(0).at(3).value<bool>(), true);
+    QCOMPARE(deleteReferenceSpy.at(0).at(4).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    // Check if the reference has been deleted
+    {
+        QScopedPointer<QOpcUaNode> node(opcuaClient->node(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::RootFolder)));
+        QVERIFY(node != nullptr);
+
+        QSignalSpy browseSpy(node.data(), &QOpcUaNode::browseFinished);
+
+        node->browseChildren(QOpcUa::ReferenceTypeId::Organizes);
+        browseSpy.wait();
+        QCOMPARE(browseSpy.size(), 1);
+        QCOMPARE(browseSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+        QVector<QOpcUaReferenceDescription> results = browseSpy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
+        QVERIFY(!results.isEmpty());
+        for (auto item : results)
+            QVERIFY(item.targetNodeId().nodeId() != target.nodeId());
+    }
 }
 
 void Tst_QOpcUaClient::dataChangeSubscription()

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,54 +34,51 @@
 **
 ****************************************************************************/
 
-#ifndef QOPEN62541CLIENT_H
-#define QOPEN62541CLIENT_H
+#ifndef QOPCUADDNODEITEM_H
+#define QOPCUADDNODEITEM_H
 
-#include "qopen62541.h"
-#include <private/qopcuaclientimpl_p.h>
-
-#include <QtCore/qtimer.h>
+#include <QtOpcUa/qopcuanodecreationattributes.h>
+#include <QtOpcUa/qopcuatype.h>
 
 QT_BEGIN_NAMESPACE
 
-class Open62541AsyncBackend;
-
-class QOpen62541Client : public QOpcUaClientImpl
+class QOpcUaAddNodeItemData;
+class Q_OPCUA_EXPORT QOpcUaAddNodeItem
 {
-    Q_OBJECT
-
 public:
-    explicit QOpen62541Client();
-    ~QOpen62541Client();
+    QOpcUaAddNodeItem();
+    QOpcUaAddNodeItem(const QOpcUaAddNodeItem &);
+    QOpcUaAddNodeItem &operator=(const QOpcUaAddNodeItem &);
+    ~QOpcUaAddNodeItem();
 
-    void connectToEndpoint(const QUrl &url) override;
-    void disconnectFromEndpoint() override;
+    QOpcUa::QExpandedNodeId parentNodeId() const;
+    void setParentNodeId(const QOpcUa::QExpandedNodeId &parentNodeId);
 
-    QOpcUaNode *node(const QString &nodeId) override;
+    QString referenceTypeId() const;
+    void setReferenceTypeId(const QString &referenceTypeId);
 
-    QString backend() const override;
+    QOpcUa::QExpandedNodeId requestedNewNodeId() const;
+    void setRequestedNewNodeId(const QOpcUa::QExpandedNodeId &requestedNewNodeId);
 
-    bool requestEndpoints(const QUrl &url) override;
+    QOpcUa::QQualifiedName browseName() const;
+    void setBrowseName(const QOpcUa::QQualifiedName &browseName);
 
-    bool findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris) override;
+    QOpcUa::NodeClass nodeClass() const;
+    void setNodeClass(const QOpcUa::NodeClass &nodeClass);
 
-    bool batchRead(const QVector<QOpcUaReadItem> &nodesToRead) override;
-    bool batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite) override;
+    QOpcUaNodeCreationAttributes nodeAttributes() const;
+    QOpcUaNodeCreationAttributes &nodeAttributesRef();
+    void setNodeAttributes(const QOpcUaNodeCreationAttributes &nodeAttributes);
 
-    bool addNode(const QOpcUaAddNodeItem &nodeToAdd) override;
-    bool deleteNode(const QString &nodeId, bool deleteTargetReferences) override;
-
-    bool addReference(const QOpcUaAddReferenceItem &referenceToAdd) override;
-    bool deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete) override;
-
-private slots:
+    QOpcUa::QExpandedNodeId typeDefinition() const;
+    void setTypeDefinition(const QOpcUa::QExpandedNodeId &typeDefinition);
 
 private:
-    friend class QOpen62541Node;
-    QThread *m_thread;
-    Open62541AsyncBackend *m_backend;
+    QSharedDataPointer<QOpcUaAddNodeItemData> data;
 };
 
 QT_END_NAMESPACE
 
-#endif // QOPEN62541CLIENT_H
+Q_DECLARE_METATYPE(QOpcUaAddNodeItem)
+
+#endif // QOPCUADDNODEITEM_H

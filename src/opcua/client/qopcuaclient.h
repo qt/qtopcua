@@ -43,6 +43,9 @@
 #include <QtOpcUa/qopcuareadresult.h>
 #include <QtOpcUa/qopcuawriteitem.h>
 #include <QtOpcUa/qopcuawriteresult.h>
+#include <QtOpcUa/qopcuaaddnodeitem.h>
+#include <QtOpcUa/qopcuaaddreferenceitem.h>
+#include <QtOpcUa/qopcuadeletereferenceitem.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -98,6 +101,12 @@ public:
     bool batchRead(const QVector<QOpcUaReadItem> &nodesToRead);
     bool batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite);
 
+    bool addNode(const QOpcUaAddNodeItem &nodeToAdd);
+    bool deleteNode(const QString &nodeId, bool deleteTargetReferences = true);
+
+    bool addReference(const QOpcUaAddReferenceItem &referenceToAdd);
+    bool deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete);
+
     QUrl url() const;
 
     ClientState state() const;
@@ -121,6 +130,12 @@ Q_SIGNALS:
     void findServersFinished(QVector<QOpcUa::QApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
     void batchReadFinished(QVector<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult);
     void batchWriteFinished(QVector<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult);
+    void addNodeFinished(QOpcUa::QExpandedNodeId requestedNodeId, QString assignedNodeId, QOpcUa::UaStatusCode statusCode);
+    void deleteNodeFinished(QString nodeId, QOpcUa::UaStatusCode statusCode);
+    void addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForward,
+                              QOpcUa::UaStatusCode statusCode);
+    void deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForward,
+                              QOpcUa::UaStatusCode statusCode);
 
 private:
     Q_DISABLE_COPY(QOpcUaClient)

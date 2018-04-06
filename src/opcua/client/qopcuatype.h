@@ -98,6 +98,59 @@ enum class NodeAttribute {
 Q_ENUM_NS(NodeAttribute)
 Q_DECLARE_FLAGS(NodeAttributes, NodeAttribute)
 
+// Defined in OPC-UA part 3, Table 8.
+enum class WriteMaskBit : quint32 {
+    None = 0,
+    AccessLevel = (1 << 0),
+    ArrayDimensions = (1 << 1),
+    BrowseName = (1 << 2),
+    ContainsNoLoops = (1 << 3),
+    DataType = (1 << 4),
+    Description = (1 << 5),
+    DisplayName = (1 << 6),
+    EventNotifier = (1 << 7),
+    Executable = (1 << 8),
+    Historizing = (1 << 9),
+    InverseName = (1 << 10),
+    IsAbstract = (1 << 11),
+    MinimumSamplingInterval = (1 << 12),
+    NodeClass = (1 << 13),
+    NodeId = (1 << 14),
+    Symmetric = (1 << 15),
+    UserAccessLevel = (1 << 16),
+    UserExecutable = (1 << 17),
+    UserWriteMask = (1 << 18),
+    ValueRank = (1 << 19),
+    WriteMask = (1 << 20),
+    ValueForVariableType = (1 << 21),
+};
+Q_ENUM_NS(WriteMaskBit)
+Q_DECLARE_FLAGS(WriteMask, WriteMaskBit)
+
+// Defined in OPC-UA part 3, Table 8.
+enum class AccessLevelBit : quint8 {
+    None = 0,
+    CurrentRead = (1 << 0),
+    CurrentWrite = (1 << 1),
+    HistoryRead = (1 << 2),
+    HistoryWrite = (1 << 3),
+    SemanticChange = (1 << 4),
+    StatusWrite = (1 << 5),
+    TimestampWrite = (1 << 6),
+};
+Q_ENUM_NS(AccessLevelBit)
+Q_DECLARE_FLAGS(AccessLevel, AccessLevelBit)
+
+// Defined in OPC-UA part 3, Table 6.
+enum class EventNotifierBit : quint8 {
+    None = 0,
+    SubscribeToEvents = (1 << 0),
+    HistoryRead = (1 << 2),
+    HistoryWrite = (1 << 3)
+};
+Q_ENUM_NS(EventNotifierBit)
+Q_DECLARE_FLAGS(EventNotifier, EventNotifierBit)
+
 inline uint qHash(const QOpcUa::NodeAttribute& attr)
 {
     return ::qHash(static_cast<uint>(attr));
@@ -1139,6 +1192,9 @@ Q_DECLARE_TYPEINFO(QOpcUa::ErrorCategory, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QOpcUa::NodeClass, Q_PRIMITIVE_TYPE);
 Q_DECLARE_TYPEINFO(QOpcUa::NodeAttribute, Q_PRIMITIVE_TYPE);
 Q_DECLARE_OPERATORS_FOR_FLAGS(QOpcUa::NodeAttributes)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QOpcUa::WriteMask)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QOpcUa::AccessLevel)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QOpcUa::EventNotifier)
 Q_DECLARE_OPERATORS_FOR_FLAGS(QOpcUa::NodeClasses)
 Q_DECLARE_TYPEINFO(QOpcUa::ReferenceTypeId, Q_PRIMITIVE_TYPE);
 
@@ -1153,6 +1209,12 @@ Q_DECLARE_METATYPE(QOpcUa::ErrorCategory)
 Q_DECLARE_METATYPE(QOpcUa::NodeClass)
 Q_DECLARE_METATYPE(QOpcUa::NodeAttribute)
 Q_DECLARE_METATYPE(QOpcUa::NodeAttributes)
+Q_DECLARE_METATYPE(QOpcUa::WriteMaskBit)
+Q_DECLARE_METATYPE(QOpcUa::WriteMask)
+Q_DECLARE_METATYPE(QOpcUa::AccessLevelBit)
+Q_DECLARE_METATYPE(QOpcUa::AccessLevel)
+Q_DECLARE_METATYPE(QOpcUa::EventNotifierBit)
+Q_DECLARE_METATYPE(QOpcUa::EventNotifier)
 Q_DECLARE_METATYPE(QOpcUa::ReferenceTypeId)
 Q_DECLARE_METATYPE(QOpcUa::NodeClasses)
 Q_DECLARE_METATYPE(QOpcUa::QRange)

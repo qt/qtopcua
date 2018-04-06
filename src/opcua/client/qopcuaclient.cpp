@@ -214,6 +214,39 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
+    \fn void QOpcUaClient::addNodeFinished(QOpcUa::QExpandedNodeId requestedNodeId, QString assignedNodeId, QOpcUa::UaStatusCode statusCode)
+
+    This signal is emitted after an \l addNode() operation has finished.
+    \a requestedNodeId is the requested node id from the \l addNode() call, \a assignedNodeId is the node id the server has assigned to the new node.
+    \a statusCode contains the result of the operation. If the result is \l {QOpcUa::UaStatusCode} {Bad}, \a assignedNodeId is empty and no node
+    has been added to the server's address space.
+*/
+
+/*!
+    \fn void QOpcUaClient::deleteNodeFinished(QString nodeId, QOpcUa::UaStatusCode statusCode)
+
+    This signal is emitted after a \l deleteNode() operation has finished.
+    \a nodeId is the node id from the \l deleteNode() call.
+    \a statusCode contains the result of the operation.
+*/
+
+/*!
+    \fn void QOpcUaClient::addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForward, QOpcUa::UaStatusCode statusCode)
+
+    This signal is emitted after an \l addReference() operation has finished.
+    \a sourceNodeId, \a referenceTypeId, \a targetNodeId and \a isForward are the values from the \l addReference() call.
+    \a statusCode contains the result of the operation.
+*/
+
+/*!
+    \fn void QOpcUaClient::deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForward, QOpcUa::UaStatusCode statusCode)
+
+    This signal is emitted after a \l deleteReference() operation has finished.
+    \a sourceNodeId, \a referenceTypeId, \a targetNodeId and \a isForward are the values from the \l deleteReference() call.
+    \a statusCode contains the result of the operation.
+*/
+
+/*!
     \internal QOpcUaClientImpl is an opaque type (as seen from the public API).
     This prevents users of the public API to use this constructor (eventhough
     it is public).
@@ -439,6 +472,135 @@ QOpcUa::QQualifiedName QOpcUaClient::qualifiedNameFromNamespaceUri(const QString
         *ok = true;
 
     return QOpcUa::QQualifiedName(index, name);
+};
+
+/*!
+    Adds the node described by \a nodeToAdd on the server.
+
+    Returns \c true if the asynchronous call has been successfully dispatched.
+
+    The success of the operation is returned in the \l addNodeFinished() signal.
+
+    The following example code adds new a Variable node on the server:
+
+    \code
+    QOpcUaNodeCreationAttributes attributes;
+    attributes.setDisplayName(QOpcUa::QLocalizedText("en", "My new Variable node"));
+    attributes.setDescription(QOpcUa::QLocalizedText("en", "A node which has been added at runtime"));
+    attributes.setValue(23.0, QOpcUa::Types::Double);
+    attributes.setDataTypeId(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::Double));
+    attributes.setValueRank(-2); // Scalar or array
+    attributes.setAccessLevel(QOpcUa::AccessLevelBit::CurrentRead);
+    attributes.setUserAccessLevel(QOpcUa::AccessLevelBit::CurrentRead);
+
+    QOpcUaAddNodeItem item;
+    item.setParentNodeId(QOpcUa::QExpandedNodeId("ns=3;s=TestFolder"));
+    item.setReferenceTypeId(QOpcUa::nodeIdFromReferenceType(QOpcUa::ReferenceTypeId::Organizes));
+    item.setRequestedNewNodeId(QOpcUa::QExpandedNodeId("ns=3;s=MyNewVariableNode"));
+    item.setBrowseName(QOpcUa::QQualifiedName(3, "MyNewVariableNode"));
+    item.setNodeClass(QOpcUa::NodeClass::Variable);
+    item.setNodeAttributes(attributes);
+
+    m_client->addNode(item);
+    \endcode
+
+    \sa deleteNode() addNodeFinished() QOpcUaAddNodeItem
+*/
+bool QOpcUaClient::addNode(const QOpcUaAddNodeItem &nodeToAdd)
+{
+    if (state() != QOpcUaClient::Connected)
+       return false;
+
+    Q_D(QOpcUaClient);
+    return d->m_impl->addNode(nodeToAdd);
+}
+
+/*!
+    Deletes the node with node id \a nodeId from the server.
+    If \a deleteTargetReferences is \c false, only the references with source node \a nodeId are deleted.
+    If \a deleteTargetReferences is \c true, references with \a nodeId as target are deleted too.
+
+    Returns \c true if the asynchronous call has been successfully dispatched.
+
+    The success of the operation is returned in the \l deleteNodeFinished() signal.
+
+    The following example code deletes a node and all references to it from the server:
+
+    \code
+    m_client->deleteNode(QOpcUa::QExpandedNodeId("ns=3;s=MyNewVariableNode"), true);
+    \endcode
+
+    \sa addNode() deleteNodeFinished()
+*/
+bool QOpcUaClient::deleteNode(const QString &nodeId, bool deleteTargetReferences)
+{
+    if (state() != QOpcUaClient::Connected)
+       return false;
+
+    Q_D(QOpcUaClient);
+    return d->m_impl->deleteNode(nodeId, deleteTargetReferences);
+}
+
+/*!
+    Adds the reference described by \a referenceToAdd to the server.
+
+    Returns \c true if the asynchronous call has been successfully dispatched.
+
+    The success of the operation is returned in the \l addReferenceFinished() signal.
+
+    The following example code adds a reference to a node to the "Objects" folder:
+
+    \code
+    QOpcUaAddReferenceItem item;
+    item.setSourceNodeId(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::ObjectsFolder));
+    item.setReferenceTypeId(QOpcUa::nodeIdFromInteger(0, static_cast<quint32>(QOpcUa::ReferenceTypeId::Organizes)));
+    item.setIsForward(true);
+    item.setTargetNodeId(QOpcUa::QExpandedNodeId("ns=3;s=MyNewVariableNode"));
+    item.setTargetNodeClass(QOpcUa::NodeClass::Variable);
+
+    m_client->addReference(item);
+    \endcode
+
+    \sa deleteReference() addReferenceFinished() QOpcUaAddReferenceItem
+*/
+bool QOpcUaClient::addReference(const QOpcUaAddReferenceItem &referenceToAdd)
+{
+    if (state() != QOpcUaClient::Connected)
+       return false;
+
+    Q_D(QOpcUaClient);
+    return d->m_impl->addReference(referenceToAdd);
+}
+
+/*!
+    Deletes the reference described by \a referenceToDelete from the server.
+
+    Returns \c true if the asynchronous call has been successfully dispatched.
+
+    The success of the operation is returned in the \l deleteReferenceFinished() signal.
+
+    The following example code deletes a reference to a node from the "Objects" folder:
+
+    \code
+    QOpcUaDeleteReferenceItem item;
+    item.setSourceNodeId(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::ObjectsFolder));
+    item.setReferenceTypeId(QOpcUa::nodeIdFromInteger(0, static_cast<quint32>(QOpcUa::ReferenceTypeId::Organizes)));
+    item.setIsForward(true);
+    item.setTargetNodeId(QOpcUa::QExpandedNodeId("ns=3;s=MyNewVariableNode"));
+    item.setDeleteBidirectional(true);
+
+    m_client->deleteReference(item);
+    \endcode
+
+    \sa addReference() deleteReferenceFinished() QOpcUaDeleteReferenceItem
+*/
+bool QOpcUaClient::deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete)
+{
+    if (state() != QOpcUaClient::Connected)
+       return false;
+
+    Q_D(QOpcUaClient);
+    return d->m_impl->deleteReference(referenceToDelete);
 }
 
 /*!

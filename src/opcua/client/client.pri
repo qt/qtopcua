@@ -21,7 +21,11 @@ SOURCES += \
     client/qopcuareadresult.cpp \
     client/qopcuanodeids.cpp \
     client/qopcuawriteitem.cpp \
-    client/qopcuawriteresult.cpp
+    client/qopcuawriteresult.cpp \
+    client/qopcuanodecreationattributes.cpp \
+    client/qopcuaaddreferenceitem.cpp \
+    client/qopcuadeletereferenceitem.cpp \
+    client/qopcuaaddnodeitem.cpp
 
 HEADERS += \
     client/qopcuaclient_p.h \
@@ -38,4 +42,9 @@ HEADERS += \
     client/qopcuareadresult.h \
     client/qopcuanodeids.h \
     client/qopcuawriteitem.h \
-    client/qopcuawriteresult.h
+    client/qopcuawriteresult.h \
+    client/qopcuanodecreationattributes.h \
+    client/qopcuanodecreationattributes_p.h \
+    client/qopcuaaddnodeitem.h \
+    client/qopcuaaddreferenceitem.h \
+    client/qopcuadeletereferenceitem.h

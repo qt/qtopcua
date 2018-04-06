@@ -52,6 +52,12 @@ public:
     bool batchRead(const QVector<QOpcUaReadItem> &nodesToRead) override;
     bool batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite) override;
 
+    bool addNode(const QOpcUaAddNodeItem &nodeToAdd) override;
+    bool deleteNode(const QString &nodeId, bool deleteTargetReferences) override;
+
+    bool addReference(const QOpcUaAddReferenceItem &referenceToAdd) override;
+    bool deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete) override;
+
 private:
     friend class QUACppNode;
     QThread *m_thread;

@@ -137,6 +137,65 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QOpcUa::WriteMaskBit
+
+    This enum contains all possible bits for the WriteMask and UserWriteMask node attributes
+    defined in OPC-UA part 3, Tabe 3.
+
+    \value None No attribute is writable.
+    \value AccessLevel The AccessLevel attribute is writable.
+    \value ArrayDimensions The ArrayDimensions attribute is writable.
+    \value BrowseName The BrowseName attribute is writable.
+    \value ContainsNoLoops The ContainsNoLoops attribute is writable.
+    \value DataType The DataType attribute is writable.
+    \value Description The Description attribute is writable.
+    \value DisplayName The DisplayName attribute is writable.
+    \value EventNotifier The EventNotifier attribute is writable.
+    \value Executable The Executable attribute is writable.
+    \value Historizing The Historizing attribute is writable.
+    \value InverseName The InverseName attribute is writable.
+    \value IsAbstract The IsAbstract attribute is writable.
+    \value MinimumSamplingInterval The MinimumSamplingInterval attribute is writable.
+    \value NodeClass The NodeClass attribute is writable.
+    \value NodeId The NodeId attribute is writable.
+    \value Symmetric The Symmetric attribute is writable.
+    \value UserAccessLevel The UserAccessLevel attribute is writable.
+    \value UserExecutable The UserExecutable attribute is writable.
+    \value UserWriteMask The UserWriteMask attribute is writable.
+    \value ValueRank The ValueRank attribute is writable.
+    \value WriteMask The WriteMask attribute is writable.
+    \value ValueForVariableType The Value attribute of a variable type is writable.
+*/
+
+/*!
+    \enum QOpcUa::AccessLevelBit
+
+    This enum contains all possible bits for the AccessLevel and UserAccessLevel node attributes
+    defined in OPC-UA part 3, Table 8.
+
+    \value None No read access to the Value attribute is permitted.
+    \value CurrentRead The current value can be read.
+    \value CurrentWrite The current value can be written.
+    \value HistoryRead The history of the value is readable.
+    \value HistoryWrite The history of the value is writable.
+    \value SemanticChange The property variable generates SemanticChangeEvents.
+    \value StatusWrite The status code of the value is writable.
+    \value TimestampWrite The SourceTimestamp is writable.
+*/
+
+/*!
+    \enum QOpcUa::EventNotifierBit
+
+    This enum contains all possible bits for the EventNotifier node attribute
+    defined in OPC-UA part 3, Table 6.
+
+    \value None The node can't be used to interact with events.
+    \value SubscribeToEvents A client can subscribe to events.
+    \value HistoryRead A client can read the event history.
+    \value HistoryWrite A client can write the event history.
+*/
+
+/*!
     \fn inline uint QOpcUa::qHash(const QOpcUa::NodeAttribute& attr)
 
     Returns a \l QHash key for \a attr.

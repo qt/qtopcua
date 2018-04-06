@@ -72,6 +72,12 @@ public Q_SLOTS:
     void batchRead(const QVector<QOpcUaReadItem> &nodesToRead);
     void batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite);
 
+    // Node management
+    void addNode(const QOpcUaAddNodeItem &nodeToAdd);
+    void deleteNode(const QString &nodeId, bool deleteTargetReferences);
+    void addReference(const QOpcUaAddReferenceItem &referenceToAdd);
+    void deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete);
+
     // Subscription
     QOpen62541Subscription *getSubscription(const QOpcUaMonitoringParameters &settings);
     bool removeSubscription(UA_UInt32 subscriptionId);
@@ -88,6 +94,9 @@ public:
 private:
     QOpen62541Subscription *getSubscriptionForItem(quint64 handle, QOpcUa::NodeAttribute attr);
     QOpcUa::QApplicationDescription convertApplicationDescription(UA_ApplicationDescription &desc);
+
+    UA_ExtensionObject assembleNodeAttributes(const QOpcUaNodeCreationAttributes &nodeAttributes, QOpcUa::NodeClass nodeClass);
+    UA_UInt32 *copyArrayDimensions(const QVector<quint32> &arrayDimensions, size_t *outputSize);
 
     QTimer m_subscriptionTimer;
 
