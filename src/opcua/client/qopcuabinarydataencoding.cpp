@@ -54,6 +54,21 @@ T QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &s
 }
 
 template<>
+bool QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
+{
+    if (bufferSize) {
+        quint8 temp = *reinterpret_cast<const quint8*>(ptr);
+        ptr += 1;
+        bufferSize -= 1;
+        success = true;
+        return temp == 0 ? false : true;
+    } else {
+        success = false;
+        return false;
+    }
+}
+
+template<>
 QString QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
 {
     if (bufferSize < sizeof(qint32)) {
@@ -201,6 +216,13 @@ template<typename T>
 void QOpcUaBinaryDataEncoding::encode(const T &src, QByteArray &dst)
 {
     dst.append(reinterpret_cast<const char *>(&src), sizeof(T));
+}
+
+template<>
+void QOpcUaBinaryDataEncoding::encode<bool>(const bool &src, QByteArray &dst)
+{
+    const quint8 value = src ? 1 : 0;
+    dst.append(reinterpret_cast<const char *>(&value), 1);
 }
 
 template<>

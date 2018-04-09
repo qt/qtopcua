@@ -84,6 +84,8 @@ public:
 };
 
 template <>
+Q_OPCUA_EXPORT bool QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success);
+template <>
 Q_OPCUA_EXPORT QOpcUa::QEUInformation QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success);
 template <>
 Q_OPCUA_EXPORT QOpcUa::QRange QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success);
@@ -95,6 +97,8 @@ template <>
 Q_OPCUA_EXPORT QOpcUa::QAxisInformation QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success);
 template <>
 Q_OPCUA_EXPORT QOpcUa::QXValue QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success);
+template <>
+Q_OPCUA_EXPORT void QOpcUaBinaryDataEncoding::encode(const bool &src, QByteArray &dst);
 template <>
 Q_OPCUA_EXPORT void QOpcUaBinaryDataEncoding::encode(const QOpcUa::QEUInformation &src, QByteArray &dst);
 template <>
