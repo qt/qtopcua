@@ -39,6 +39,8 @@
 
 #include <QtOpcUa/qopcuaglobal.h>
 #include <QtOpcUa/qopcuanode.h>
+#include <QtOpcUa/qopcuareaditem.h>
+#include <QtOpcUa/qopcuareadresult.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -91,6 +93,8 @@ public:
     bool findServers(const QUrl &url, const QStringList &localeIds = QStringList(),
                      const QStringList &serverUris = QStringList());
 
+    bool batchRead(const QVector<QOpcUaReadItem> &nodesToRead);
+
     QUrl url() const;
 
     ClientState state() const;
@@ -106,6 +110,7 @@ Q_SIGNALS:
     void namespaceArrayUpdated(QStringList namespaces);
     void endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
     void findServersFinished(QVector<QOpcUa::QApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
+    void batchReadFinished(QVector<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult);
 
 private:
     Q_DISABLE_COPY(QOpcUaClient)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,47 +34,51 @@
 **
 ****************************************************************************/
 
-#ifndef QOPEN62541CLIENT_H
-#define QOPEN62541CLIENT_H
+#ifndef QOPCUAREADRESULT_H
+#define QOPCUAREADRESULT_H
 
-#include "qopen62541.h"
-#include <private/qopcuaclientimpl_p.h>
+#include <QtOpcUa/qopcuatype.h>
 
-#include <QtCore/qtimer.h>
+#include <QtCore/qdatetime.h>
 
 QT_BEGIN_NAMESPACE
 
-class Open62541AsyncBackend;
-
-class QOpen62541Client : public QOpcUaClientImpl
+class QOpcUaReadResultData;
+class Q_OPCUA_EXPORT QOpcUaReadResult
 {
-    Q_OBJECT
-
 public:
-    explicit QOpen62541Client();
-    ~QOpen62541Client();
+    QOpcUaReadResult();
+    QOpcUaReadResult(const QOpcUaReadResult &other);
+    QOpcUaReadResult &operator=(const QOpcUaReadResult &rhs);
+    ~QOpcUaReadResult();
 
-    void connectToEndpoint(const QUrl &url) override;
-    void disconnectFromEndpoint() override;
+    QDateTime serverTimestamp() const;
+    void setServerTimestamp(const QDateTime &serverTimestamp);
 
-    QOpcUaNode *node(const QString &nodeId) override;
+    QDateTime sourceTimestamp() const;
+    void setSourceTimestamp(const QDateTime &sourceTimestamp);
 
-    QString backend() const override;
+    QOpcUa::UaStatusCode statusCode() const;
+    void setStatusCode(QOpcUa::UaStatusCode statusCode);
 
-    bool requestEndpoints(const QUrl &url) override;
+    QString nodeId() const;
+    void setNodeId(const QString &value);
 
-    bool findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris) override;
+    QOpcUa::NodeAttribute attribute() const;
+    void setAttribute(QOpcUa::NodeAttribute attribute);
 
-    bool batchRead(const QVector<QOpcUaReadItem> &nodesToRead) override;
+    QString indexRange() const;
+    void setIndexRange(const QString &indexRange);
 
-private slots:
+    QVariant value() const;
+    void setValue(const QVariant &value);
 
 private:
-    friend class QOpen62541Node;
-    QThread *m_thread;
-    Open62541AsyncBackend *m_backend;
+    QSharedDataPointer<QOpcUaReadResultData> data;
 };
 
 QT_END_NAMESPACE
 
-#endif // QOPEN62541CLIENT_H
+Q_DECLARE_METATYPE(QOpcUaReadResult)
+
+#endif // QOPCUAREADRESULT_H

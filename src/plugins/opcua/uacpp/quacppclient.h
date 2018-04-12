@@ -49,6 +49,8 @@ public:
 
     bool findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris) override;
 
+    bool batchRead(const QVector<QOpcUaReadItem> &nodesToRead) override;
+
 private:
     friend class QUACppNode;
     QThread *m_thread;

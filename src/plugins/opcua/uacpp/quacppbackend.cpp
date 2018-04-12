@@ -310,7 +310,7 @@ void UACppAsyncBackend::readAttributes(quint64 handle, const UaNodeId &id, QOpcU
             ir.copyTo(&nodeToRead[attributeSize - 1].IndexRange);
         }
         QOpcUaReadResult temp;
-        temp.attributeId = attribute;
+        temp.setAttribute(attribute);
         vec.push_back(temp);
     });
 
@@ -324,10 +324,10 @@ void UACppAsyncBackend::readAttributes(quint64 handle, const UaNodeId &id, QOpcU
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Reading attributes failed:" << result.toString().toUtf8();
     } else {
         for (int i = 0; i < vec.size(); ++i) {
-            vec[i].statusCode = static_cast<QOpcUa::UaStatusCode>(values[i].StatusCode);
-            vec[i].value = QUACppValueConverter::toQVariant(values[i].Value);
-            vec[i].serverTimestamp = QUACppValueConverter::toQDateTime(&values[i].ServerTimestamp);
-            vec[i].sourceTimestamp = QUACppValueConverter::toQDateTime(&values[i].SourceTimestamp);
+            vec[i].setStatusCode(static_cast<QOpcUa::UaStatusCode>(values[i].StatusCode));
+            vec[i].setValue(QUACppValueConverter::toQVariant(values[i].Value));
+            vec[i].setServerTimestamp(QUACppValueConverter::toQDateTime(&values[i].ServerTimestamp));
+            vec[i].setSourceTimestamp(QUACppValueConverter::toQDateTime(&values[i].SourceTimestamp));
         }
     }
 

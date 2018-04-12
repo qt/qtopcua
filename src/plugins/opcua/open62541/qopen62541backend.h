@@ -69,6 +69,8 @@ public Q_SLOTS:
     void resolveBrowsePath(quint64 handle, UA_NodeId startNode, const QVector<QOpcUa::QRelativePathElement> &path);
     void findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris);
 
+    void batchRead(const QVector<QOpcUaReadItem> &nodesToRead);
+
     // Subscription
     QOpen62541Subscription *getSubscription(const QOpcUaMonitoringParameters &settings);
     bool removeSubscription(UA_UInt32 subscriptionId);

@@ -51,19 +51,13 @@
 #include <QtOpcUa/qopcuaglobal.h>
 #include <QtOpcUa/qopcuamonitoringparameters.h>
 #include <QtOpcUa/qopcuanode.h>
+#include <QtOpcUa/qopcuareaditem.h>
+#include <QtOpcUa/qopcuareadresult.h>
 #include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
-
-struct QOpcUaReadResult {
-    QOpcUa::NodeAttribute attributeId;
-    QOpcUa::UaStatusCode statusCode;
-    QDateTime sourceTimestamp;
-    QDateTime serverTimestamp;
-    QVariant value;
-};
 
 class Q_OPCUA_EXPORT QOpcUaNodeImpl : public QObject
 {
@@ -113,7 +107,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QOpcUaReadResult)
 
 #endif // QOPCUANODEIMPL_P_H

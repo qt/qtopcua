@@ -161,6 +161,18 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
+    \fn void QOpcUaClient::batchReadFinished(QVector<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult)
+
+    This signal is emitted after a \l batchRead() operation has finished.
+
+    The elements in \a results have the same order as the elements in the request. For each requested element,
+    there is a value together with timestamps and the status code in \a results.
+    \a serviceResult contains the status code from the OPC UA Read service.
+
+    \sa batchRead() QOpcUaReadResult QOpcUaReadRequest
+*/
+
+/*!
     \internal QOpcUaClientImpl is an opaque type (as seen from the public API).
     This prevents users of the public API to use this constructor (eventhough
     it is public).
@@ -414,6 +426,45 @@ bool QOpcUaClient::findServers(const QUrl &url, const QStringList &localeIds, co
 {
     Q_D(QOpcUaClient);
     return d->m_impl->findServers(url, localeIds, serverUris);
+}
+
+/*!
+    Starts a batch read of multiple attributes on different nodes.
+    The node id, the attribute and an index range can be specified for every entry in \a nodesToRead.
+
+    Returns true if the asynchronous request has been successfully dispatched.
+    The results are returned in the \l batchReadFinished() signal.
+
+    The batch read API offers an alternative way to read attributes of nodes which can be used
+    for scenarios where the values of a large number of node attributes on different nodes must be read
+    without requiring the other features of the \l QOpcUaNode based API like monitoring for value changes.
+    All read items in the request are sent to the server in a single request and are answered in a single
+    response which generates a single \l batchReadFinished() signal. This reduces the network overhead and
+    the number of signal slot connections if many different nodes are involved.
+
+    In the following example, the display name attribute and the two index ranges "0:2" and "5:7" of the value
+    attribute of the same node and the entire value attribute of a second node are read using a single service call:
+    \code
+    QVector<QOpcUaReadItem> request;
+    request.push_back(QOpcUaReadItem("ns=1;s=MyArrayNode",
+                                     QOpcUa::NodeAttribute::DisplayName));
+    request.push_back(QOpcUaReadItem("ns=1;s=MyArrayNode",
+                                     QOpcUa::NodeAttribute::Value, "0:2"));
+    request.push_back(QOpcUaReadItem("ns=1;s=MyArrayNode",
+                                     QOpcUa::NodeAttribute::Value, "5:7"));
+    request.push_back(QOpcUaReadItem("ns=1;s=MyScalarNode));
+    m_client->batchRead(request);
+    \endcode
+
+    \sa QOpcUaReadRequest batchReadFinished()
+*/
+bool QOpcUaClient::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
+{
+    if (state() != QOpcUaClient::Connected)
+       return false;
+
+    Q_D(QOpcUaClient);
+    return d->m_impl->batchRead(nodesToRead);
 }
 
 /*!

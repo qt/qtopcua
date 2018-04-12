@@ -83,6 +83,7 @@ void QOpcUaClientImpl::connectBackendWithClient(QOpcUaBackend *backend)
     connect(backend, &QOpcUaBackend::eventOccurred, this, &QOpcUaClientImpl::handleNewEvent);
     connect(backend, &QOpcUaBackend::endpointsRequestFinished, this, &QOpcUaClientImpl::endpointsRequestFinished);
     connect(backend, &QOpcUaBackend::findServersFinished, this, &QOpcUaClientImpl::findServersFinished);
+    connect(backend, &QOpcUaBackend::batchReadFinished, this, &QOpcUaClientImpl::batchReadFinished);
 }
 
 void QOpcUaClientImpl::handleAttributesRead(quint64 handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
@@ -103,7 +104,7 @@ void QOpcUaClientImpl::handleAttributeUpdated(quint64 handle, const QOpcUaReadRe
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
-        emit (*it)->attributeUpdated(value.attributeId, value);
+        emit (*it)->attributeUpdated(value.attribute(), value);
 }
 
 void QOpcUaClientImpl::handleMonitoringEnableDisable(quint64 handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status)

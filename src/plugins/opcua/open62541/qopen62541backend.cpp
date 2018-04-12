@@ -89,7 +89,7 @@ void Open62541AsyncBackend::readAttributes(quint64 handle, UA_NodeId id, QOpcUa:
             QOpen62541ValueConverter::scalarFromQt<UA_String, QString>(indexRange, &readId.indexRange);
         valueIds.push_back(readId);
         QOpcUaReadResult temp;
-        temp.attributeId = attribute;
+        temp.setAttribute(attribute);
         vec.push_back(temp);
     });
 
@@ -107,19 +107,19 @@ void Open62541AsyncBackend::readAttributes(quint64 handle, UA_NodeId id, QOpcUa:
         // Use the service result as status code if there is no specific result for the current value.
         // This ensures a result for each attribute when UA_Client_Service_read is called for a disconnected client.
         if (static_cast<size_t>(i) >= res.resultsSize) {
-            vec[i].statusCode = static_cast<QOpcUa::UaStatusCode>(res.responseHeader.serviceResult);
+            vec[i].setStatusCode(static_cast<QOpcUa::UaStatusCode>(res.responseHeader.serviceResult));
             continue;
         }
         if (res.results[i].hasStatus)
-            vec[i].statusCode = static_cast<QOpcUa::UaStatusCode>(res.results[i].status);
+            vec[i].setStatusCode(static_cast<QOpcUa::UaStatusCode>(res.results[i].status));
         else
-            vec[i].statusCode = QOpcUa::UaStatusCode::Good;
+            vec[i].setStatusCode(QOpcUa::UaStatusCode::Good);
         if (res.results[i].hasValue && res.results[i].value.data)
-                vec[i].value = QOpen62541ValueConverter::toQVariant(res.results[i].value);
+                vec[i].setValue(QOpen62541ValueConverter::toQVariant(res.results[i].value));
         if (res.results[i].hasServerTimestamp)
-            vec[i].sourceTimestamp = QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&res.results[i].sourceTimestamp);
+            vec[i].setSourceTimestamp(QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&res.results[i].sourceTimestamp));
         if (res.results[i].hasSourceTimestamp)
-            vec[i].serverTimestamp = QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&res.results[i].serverTimestamp);
+            vec[i].setServerTimestamp(QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&res.results[i].serverTimestamp));
     }
     emit attributesRead(handle, vec, static_cast<QOpcUa::UaStatusCode>(res.responseHeader.serviceResult));
 }
@@ -429,6 +429,66 @@ void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &loca
     }
 
     emit findServersFinished(ret, static_cast<QOpcUa::UaStatusCode>(result));
+}
+
+void Open62541AsyncBackend::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
+{
+    if (nodesToRead.size() == 0) {
+        emit batchReadFinished(QVector<QOpcUaReadResult>(), QOpcUa::UaStatusCode::BadNothingToDo);
+        return;
+    }
+
+    UA_ReadRequest req;
+    UA_ReadRequest_init(&req);
+    UaDeleter<UA_ReadRequest> requestDeleter(&req, UA_ReadRequest_deleteMembers);
+
+    req.nodesToReadSize = nodesToRead.size();
+    req.nodesToRead = static_cast<UA_ReadValueId *>(UA_Array_new(nodesToRead.size(), &UA_TYPES[UA_TYPES_READVALUEID]));
+    req.timestampsToReturn = UA_TIMESTAMPSTORETURN_BOTH;
+
+    for (int i = 0; i < nodesToRead.size(); ++i) {
+        UA_ReadValueId_init(&req.nodesToRead[i]);
+        req.nodesToRead[i].attributeId = QOpen62541ValueConverter::toUaAttributeId(nodesToRead.at(i).attribute());
+        req.nodesToRead[i].nodeId = Open62541Utils::nodeIdFromQString(nodesToRead.at(i).nodeId());
+        if (!nodesToRead[i].indexRange().isEmpty())
+            QOpen62541ValueConverter::scalarFromQt<UA_String, QString>(nodesToRead.at(i).indexRange(),
+                                                                       &req.nodesToRead[i].indexRange);
+    }
+
+    UA_ReadResponse res = UA_Client_Service_read(m_uaclient, req);
+    UaDeleter<UA_ReadResponse> responseDeleter(&res, UA_ReadResponse_deleteMembers);
+
+    QOpcUa::UaStatusCode serviceResult = static_cast<QOpcUa::UaStatusCode>(res.responseHeader.serviceResult);
+
+    if (serviceResult != QOpcUa::UaStatusCode::Good) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Batch read failed:" << serviceResult;
+        emit batchReadFinished(QVector<QOpcUaReadResult>(), serviceResult);
+    } else {
+        QVector<QOpcUaReadResult> ret;
+
+        for (int i = 0; i < nodesToRead.size(); ++i) {
+            QOpcUaReadResult item;
+            item.setAttribute(nodesToRead.at(i).attribute());
+            item.setNodeId(nodesToRead.at(i).nodeId());
+            item.setIndexRange(nodesToRead.at(i).indexRange());
+            if (static_cast<size_t>(i) < res.resultsSize) {
+                if (res.results[i].hasServerTimestamp)
+                    item.setServerTimestamp(QOpen62541ValueConverter::scalarToQt<QDateTime>(&res.results[i].serverTimestamp));
+                if (res.results[i].hasSourceTimestamp)
+                    item.setSourceTimestamp(QOpen62541ValueConverter::scalarToQt<QDateTime>(&res.results[i].sourceTimestamp));
+                if (res.results[i].hasValue)
+                    item.setValue(QOpen62541ValueConverter::toQVariant(res.results[i].value));
+                if (res.results[i].hasStatus)
+                    item.setStatusCode(static_cast<QOpcUa::UaStatusCode>(res.results[i].status));
+                else
+                    item.setStatusCode(serviceResult);
+            } else {
+                item.setStatusCode(serviceResult);
+            }
+            ret.push_back(item);
+        }
+        emit batchReadFinished(ret, serviceResult);
+    }
 }
 
 static void convertBrowseResult(UA_BrowseResult *src, quint32 referencesSize, QVector<QOpcUaReferenceDescription> &dst)

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,47 +34,39 @@
 **
 ****************************************************************************/
 
-#ifndef QOPEN62541CLIENT_H
-#define QOPEN62541CLIENT_H
+#ifndef QOPCUAREADITEM_H
+#define QOPCUAREADITEM_H
 
-#include "qopen62541.h"
-#include <private/qopcuaclientimpl_p.h>
-
-#include <QtCore/qtimer.h>
+#include <QtOpcUa/qopcuatype.h>
 
 QT_BEGIN_NAMESPACE
 
-class Open62541AsyncBackend;
-
-class QOpen62541Client : public QOpcUaClientImpl
+class QOpcUaReadItemData;
+class Q_OPCUA_EXPORT QOpcUaReadItem
 {
-    Q_OBJECT
-
 public:
-    explicit QOpen62541Client();
-    ~QOpen62541Client();
+    QOpcUaReadItem();
+    QOpcUaReadItem(const QOpcUaReadItem &other);
+    QOpcUaReadItem(const QString &nodeId, QOpcUa::NodeAttribute attr = QOpcUa::NodeAttribute::Value,
+                   const QString &indexRange = QString());
+    QOpcUaReadItem &operator=(const QOpcUaReadItem &rhs);
+    ~QOpcUaReadItem();
 
-    void connectToEndpoint(const QUrl &url) override;
-    void disconnectFromEndpoint() override;
+    QString nodeId() const;
+    void setNodeId(const QString &nodeId);
 
-    QOpcUaNode *node(const QString &nodeId) override;
+    QOpcUa::NodeAttribute attribute() const;
+    void setAttribute(QOpcUa::NodeAttribute attribute);
 
-    QString backend() const override;
-
-    bool requestEndpoints(const QUrl &url) override;
-
-    bool findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris) override;
-
-    bool batchRead(const QVector<QOpcUaReadItem> &nodesToRead) override;
-
-private slots:
+    QString indexRange() const;
+    void setIndexRange(const QString &indexRange);
 
 private:
-    friend class QOpen62541Node;
-    QThread *m_thread;
-    Open62541AsyncBackend *m_backend;
+    QSharedDataPointer<QOpcUaReadItemData> data;
 };
 
 QT_END_NAMESPACE
 
-#endif // QOPEN62541CLIENT_H
+Q_DECLARE_METATYPE(QOpcUaReadItem)
+
+#endif // QOPCUAREADITEM_H

@@ -66,6 +66,11 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
         Q_Q(QOpcUaClient);
         emit q->findServersFinished(a, s);
     });
+
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::batchReadFinished, [this](const QVector<QOpcUaReadResult> &results, QOpcUa::UaStatusCode serviceResult) {
+        Q_Q(QOpcUaClient);
+        emit q->batchReadFinished(results, serviceResult);
+    });
 }
 
 QOpcUaClientPrivate::~QOpcUaClientPrivate()

@@ -75,15 +75,15 @@ public:
 
             for (auto &entry : qAsConst(attr)) {
                 if (serviceResult == QOpcUa::UaStatusCode::Good)
-                    m_nodeAttributes[entry.attributeId] = entry;
+                    m_nodeAttributes[entry.attribute()] = entry;
                 else {
                     QOpcUaReadResult temp = entry;
-                    temp.statusCode = serviceResult;
-                    temp.value = QVariant();
-                    m_nodeAttributes[entry.attributeId] = temp;
+                    temp.setStatusCode(serviceResult);
+                    temp.setValue(QVariant());
+                    m_nodeAttributes[entry.attribute()] = temp;
                 }
 
-                updatedAttributes |= entry.attributeId;
+                updatedAttributes |= entry.attribute();
             }
 
             Q_Q(QOpcUaNode);
@@ -93,9 +93,9 @@ public:
         m_attributeWrittenConnection = QObject::connect(impl, &QOpcUaNodeImpl::attributeWritten,
                 [this](QOpcUa::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode)
         {
-            m_nodeAttributes[attr].statusCode = statusCode;
+            m_nodeAttributes[attr].setStatusCode(statusCode);
             if (statusCode == QOpcUa::UaStatusCode::Good)
-                m_nodeAttributes[attr].value = value;
+                m_nodeAttributes[attr].setValue(value);
 
             Q_Q(QOpcUaNode);
             emit q->attributeWritten(attr, statusCode);
@@ -106,7 +106,7 @@ public:
         {
             this->m_nodeAttributes[attr] = value;
             Q_Q(QOpcUaNode);
-            emit q->attributeUpdated(attr, value.value);
+            emit q->attributeUpdated(attr, value.value());
         });
 
         m_monitoringEnableDisableConnection = QObject::connect(impl, &QOpcUaNodeImpl::monitoringEnableDisable,

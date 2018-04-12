@@ -112,4 +112,10 @@ bool QOpen62541Client::findServers(const QUrl &url, const QStringList &localeIds
                                     Q_ARG(QStringList, serverUris));
 }
 
+bool QOpen62541Client::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
+{
+    return QMetaObject::invokeMethod(m_backend, "batchRead", Qt::QueuedConnection,
+                                     Q_ARG(QVector<QOpcUaReadItem>, nodesToRead));
+}
+
 QT_END_NAMESPACE

@@ -157,6 +157,10 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUa::QArgument>();
     qRegisterMetaType<QOpcUa::QExtensionObject>();
     qRegisterMetaType<QOpcUaBrowseRequest>();
+    qRegisterMetaType<QOpcUaReadItem>();
+    qRegisterMetaType<QOpcUaReadResult>();
+    qRegisterMetaType<QVector<QOpcUaReadItem>>();
+    qRegisterMetaType<QVector<QOpcUaReadResult>>();
 }
 
 QOpcUaProvider::~QOpcUaProvider()

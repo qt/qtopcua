@@ -352,18 +352,18 @@ void QOpen62541Subscription::monitoredValueUpdated(UA_UInt32 monId, UA_DataValue
     QOpcUaReadResult res;
 
     if (!value || value == UA_EMPTY_ARRAY_SENTINEL) {
-        res.statusCode = QOpcUa::UaStatusCode::Good;
+        res.setStatusCode(QOpcUa::UaStatusCode::Good);
         emit m_backend->attributeUpdated(item.value()->handle, res);
         return;
     }
 
-    res.value = QOpen62541ValueConverter::toQVariant(value->value);
-    res.attributeId = item.value()->attr;
+    res.setValue(QOpen62541ValueConverter::toQVariant(value->value));
+    res.setAttribute(item.value()->attr);
     if (value->hasServerTimestamp)
-        res.serverTimestamp = QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&value->serverTimestamp);
+        res.setServerTimestamp(QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&value->serverTimestamp));
     if (value->hasSourceTimestamp)
-        res.sourceTimestamp = QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&value->sourceTimestamp);
-    res.statusCode = QOpcUa::UaStatusCode::Good;
+        res.setSourceTimestamp(QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&value->sourceTimestamp));
+    res.setStatusCode(QOpcUa::UaStatusCode::Good);
     emit m_backend->attributeUpdated(item.value()->handle, res);
 }
 

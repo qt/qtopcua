@@ -308,7 +308,7 @@ QVariant QOpcUaNode::attribute(QOpcUa::NodeAttribute attribute) const
     if (it == d->m_nodeAttributes.constEnd())
         return QVariant();
 
-    return it->value;
+    return it->value();
 }
 
 /*!
@@ -342,7 +342,7 @@ QOpcUa::UaStatusCode QOpcUaNode::attributeError(QOpcUa::NodeAttribute attribute)
     if (it == d->m_nodeAttributes.constEnd())
         return QOpcUa::UaStatusCode::BadNotFound;
 
-    return it->statusCode;
+    return it->statusCode();
 }
 
 /*!
@@ -368,7 +368,7 @@ QDateTime QOpcUaNode::sourceTimestamp(QOpcUa::NodeAttribute attribute) const
     if (it == d->m_nodeAttributes.constEnd())
         return QDateTime();
 
-    return it->sourceTimestamp;
+    return it->sourceTimestamp();
 }
 
 /*!
@@ -383,7 +383,7 @@ QDateTime QOpcUaNode::serverTimestamp(QOpcUa::NodeAttribute attribute) const
     if (it == d->m_nodeAttributes.constEnd())
         return QDateTime();
 
-    return it->serverTimestamp;
+    return it->serverTimestamp();
 }
 
 /*!

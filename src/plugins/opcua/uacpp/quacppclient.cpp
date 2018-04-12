@@ -100,4 +100,11 @@ bool QUACppClient::findServers(const QUrl &url, const QStringList &localeIds, co
     return false;
 }
 
+bool QUACppClient::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
+{
+    Q_UNUSED(nodesToRead);
+    qInfo("Batch read is currently not implemented in the uacpp backend");
+    return false;
+}
+
 QT_END_NAMESPACE

@@ -354,6 +354,8 @@ private slots:
     void writeMultipleAttributes();
     defineDataMethod(readEmptyArrayVariable_data)
     void readEmptyArrayVariable();
+    defineDataMethod(batchRead_data)
+    void batchRead();
 
     defineDataMethod(getRootNode_data)
     void getRootNode();
@@ -779,6 +781,52 @@ void Tst_QOpcUaClient::readEmptyArrayVariable()
     READ_MANDATORY_VARIABLE_NODE(node);
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value).type(), QVariant::List);
     QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).toList().isEmpty());
+}
+
+void Tst_QOpcUaClient::batchRead()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    if (opcuaClient->backend() == QLatin1String("uacpp"))
+        QSKIP("batchRead is currently not supported in the uacpp backend");
+
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QVector<QOpcUaReadItem> request;
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt32"));
+    QVERIFY (node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, QVariantList({0, 1, 2, 3, 4}), QOpcUa::Types::UInt32);
+
+    request.push_back(QOpcUaReadItem(QStringLiteral("ns=2;s=Demo.Static.Scalar.Double"),
+                                     QOpcUa::NodeAttribute::DisplayName));
+    request.push_back(QOpcUaReadItem(QStringLiteral("ns=2;s=Demo.Static.Arrays.UInt32"),
+                                     QOpcUa::NodeAttribute::Value, QStringLiteral("0:2")));
+
+    QSignalSpy batchReadSpy(opcuaClient, &QOpcUaClient::batchReadFinished);
+
+    opcuaClient->batchRead(request);
+
+    batchReadSpy.wait();
+
+    QCOMPARE(batchReadSpy.size(), 1);
+
+    QCOMPARE(batchReadSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    QVector<QOpcUaReadResult> result = batchReadSpy.at(0).at(0).value<QVector<QOpcUaReadResult>>();
+
+    QCOMPARE(result.size(), 2);
+
+    for (int i = 0; i < result.size(); ++i) {
+        QCOMPARE(result[i].statusCode(), QOpcUa::UaStatusCode::Good);
+        QVERIFY(result[i].serverTimestamp().isValid());
+        QCOMPARE(result[i].nodeId(), request[i].nodeId());
+        QCOMPARE(result[i].attribute(), request[i].attribute());
+        QCOMPARE(result[i].indexRange(), request[i].indexRange());
+    }
+    QVERIFY(!result[0].sourceTimestamp().isValid()); // The initial DisplayName attribute doesn't have a source timestamp
+    QVERIFY(result[1].sourceTimestamp().isValid());
+    QCOMPARE(result[0].value().value<QOpcUa::QLocalizedText>().text(), QStringLiteral("DoubleScalarTest"));
+    QCOMPARE(result[1].value(), QVariantList({0, 1, 2}));
 }
 
 void Tst_QOpcUaClient::getRootNode()

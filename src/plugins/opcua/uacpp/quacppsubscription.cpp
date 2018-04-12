@@ -317,11 +317,11 @@ void QUACppSubscription::dataChange(OpcUa_UInt32 clientSubscriptionHandle, const
             continue;
 
         QOpcUaReadResult temp;
-        temp.value = var;
-        temp.serverTimestamp = QUACppValueConverter::toQDateTime(&dataNotifications[i].Value.ServerTimestamp);
-        temp.sourceTimestamp = QUACppValueConverter::toQDateTime(&dataNotifications[i].Value.SourceTimestamp);
-        temp.attributeId = m_monitoredIds[monitorId].second;
-        temp.statusCode = QOpcUa::UaStatusCode::Good;
+        temp.setValue(var);
+        temp.setServerTimestamp(QUACppValueConverter::toQDateTime(&dataNotifications[i].Value.ServerTimestamp));
+        temp.setSourceTimestamp(QUACppValueConverter::toQDateTime(&dataNotifications[i].Value.SourceTimestamp));
+        temp.setAttribute(m_monitoredIds[monitorId].second);
+        temp.setStatusCode(QOpcUa::UaStatusCode::Good);
 
         emit m_backend->attributeUpdated(m_monitoredIds[monitorId].first, temp);
     }
