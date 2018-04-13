@@ -26,13 +26,6 @@ win32: DESTDIR = ./
 QMAKE_CFLAGS_RELEASE -= -O2
 QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO -= -O2
 
-# This file  can only be compiled in case of TLS support
-qtConfig(mbedtls) {
-    # Use custom compiler from src/3rdparty/open62541.pri to hide warning caused by
-    # including open62541.h
-    OPEN62541_SOURCES += security_addon.cpp
-}
-
 SOURCES += \
            main.cpp \
            testserver.cpp \
@@ -41,8 +34,7 @@ SOURCES += \
 
 
 HEADERS += \
-           testserver.h \
-           security_addon.h \
+           testserver.h
 
 RESOURCES += certs.qrc
 

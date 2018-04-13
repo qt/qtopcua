@@ -81,7 +81,6 @@ DemoServer::~DemoServer()
 {
     shutdown();
     UA_Server_delete(m_server);
-    UA_ServerConfig_delete(m_config);
     UA_NodeId_deleteMembers(&m_percentFilledTank1Node);
     UA_NodeId_deleteMembers(&m_percentFilledTank2Node);
     UA_NodeId_deleteMembers(&m_tank2TargetPercentNode);
@@ -91,13 +90,14 @@ DemoServer::~DemoServer()
 
 bool DemoServer::init()
 {
-    m_config = UA_ServerConfig_new_minimal(43344, nullptr);
-    if (!m_config)
-        return false;
-
-    m_server = UA_Server_new(m_config);
+    m_server = UA_Server_new();
 
     if (!m_server)
+        return false;
+
+    UA_StatusCode result = UA_ServerConfig_setMinimal(UA_Server_getConfig(m_server), 34433, nullptr);
+
+    if (result != UA_STATUSCODE_GOOD)
         return false;
 
     return true;

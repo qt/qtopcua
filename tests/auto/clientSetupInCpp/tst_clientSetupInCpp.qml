@@ -67,7 +67,7 @@ Item {
 
             compare(connection.currentEndpoint.endpointUrl, "opc.tcp://127.0.0.1:43344");
             compare(connection.currentEndpoint.securityPolicy, "http://opcfoundation.org/UA/SecurityPolicy#None");
-            compare(connection.currentEndpoint.server.applicationUri, "urn:unconfigured:application");
+            compare(connection.currentEndpoint.server.applicationUri, "urn:open62541.server.application");
         }
 
         QtOpcUa.ValueNode {

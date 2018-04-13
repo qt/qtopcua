@@ -55,9 +55,9 @@ public:
     explicit TestServer(QObject *parent = nullptr);
     ~TestServer();
     bool init();
-    bool createInsecureServerConfig();
+    bool createInsecureServerConfig(UA_ServerConfig *config);
 #if defined UA_ENABLE_ENCRYPTION
-    bool createSecureServerConfig();
+    bool createSecureServerConfig(UA_ServerConfig *config);
 #endif
 
     int registerNamespace(const QString &ns);

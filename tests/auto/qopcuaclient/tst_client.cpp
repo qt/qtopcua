@@ -727,8 +727,8 @@ void Tst_QOpcUaClient::findServers()
     QCOMPARE(servers.size(), 1);
 
     QCOMPARE(servers.at(0).applicationName(), QOpcUaLocalizedText(QStringLiteral("en"), QStringLiteral("open62541-based OPC UA Application")));
-    QCOMPARE(servers.at(0).applicationUri(), QStringLiteral("urn:unconfigured:application"));
-    QCOMPARE(servers.at(0).discoveryUrls().size(), 1);
+    QCOMPARE(servers.at(0).applicationUri(), QStringLiteral("urn:open62541.server.application"));
+    QVERIFY(servers.at(0).discoveryUrls().size() >= 1);
 }
 
 void Tst_QOpcUaClient::requestEndpoints()
@@ -748,7 +748,7 @@ void Tst_QOpcUaClient::requestEndpoints()
     QCOMPARE(QUrl(desc[0].endpointUrl()).port(), 43344);
     QCOMPARE(desc[0].securityPolicy(), QStringLiteral("http://opcfoundation.org/UA/SecurityPolicy#None"));
     QCOMPARE(desc[0].transportProfileUri(), QStringLiteral("http://opcfoundation.org/UA-Profile/Transport/uatcp-uasc-uabinary"));
-    QCOMPARE(desc[0].securityLevel(), 0);
+    QCOMPARE(desc[0].securityLevel(), 1);
     QCOMPARE(desc[0].securityMode(), QOpcUaEndpointDescription::MessageSecurityMode::None);
 #ifdef SERVER_SUPPORTS_SECURITY
     QFile file(":/open62541-testserver/pki/own/certs/open62541-testserver.der");
@@ -769,7 +769,7 @@ void Tst_QOpcUaClient::requestEndpoints()
 
     QCOMPARE(desc[0].serverRef().applicationName().text(), QStringLiteral("open62541-based OPC UA Application"));
     QCOMPARE(desc[0].serverRef().applicationType(), QOpcUaApplicationDescription::ApplicationType::Server);
-    QCOMPARE(desc[0].serverRef().applicationUri(), QStringLiteral("urn:unconfigured:application"));
+    QCOMPARE(desc[0].serverRef().applicationUri(), QStringLiteral("urn:open62541.server.application"));
     QCOMPARE(desc[0].serverRef().productUri(), QStringLiteral("http://open62541.org"));
 }
 
@@ -2896,6 +2896,17 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
     QVERIFY(monitoringModifiedSpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>() & QOpcUaMonitoringParameters::Parameter::Filter);
     QCOMPARE(monitoringModifiedSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
 
+    // Since v1.0, the server sends a new initial data change after modifying a monitored item
+    if (dataChangeSpy.isEmpty())
+        dataChangeSpy.wait(signalSpyTimeout);
+    QVERIFY(!dataChangeSpy.isEmpty());
+    dataChangeSpy.clear();
+
+    if (attributeUpdatedSpy.isEmpty())
+        attributeUpdatedSpy.wait(signalSpyTimeout);
+    QVERIFY(!attributeUpdatedSpy.isEmpty());
+    attributeUpdatedSpy.clear();
+
     WRITE_VALUE_ATTRIBUTE(doubleWriteNode, 2.0, QOpcUa::Types::Double);
 
     dataChangeSpy.wait(signalSpyTimeout);
@@ -3705,7 +3716,13 @@ void Tst_QOpcUaClient::connectionLost()
     stateSpy.wait(10000); // uacpp and open62541 use a timeout of 5 seconds for service calls, better be safe.
     QCOMPARE(readSpy.size(), 1);
     QVERIFY(readSpy.at(0).at(0).value<QOpcUa::NodeAttributes>() & QOpcUa::NodeAttribute::BrowseName);
-    QCOMPARE(stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName), QOpcUa::UaStatusCode::BadConnectionClosed);
+
+    // open62541 returns a different status code depending on when after the disconnect the request is made
+    if (opcuaClient->backend() == QStringLiteral("open62541"))
+        QVERIFY(stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName) == QOpcUa::UaStatusCode::BadInternalError ||
+                stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName) == QOpcUa::UaStatusCode::BadConnectionClosed);
+    else
+        QCOMPARE(stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName), QOpcUa::UaStatusCode::BadConnectionClosed);
 
     QCOMPARE(stateSpy.size(), 1);
     QCOMPARE(stateSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::ClientState::Disconnected);

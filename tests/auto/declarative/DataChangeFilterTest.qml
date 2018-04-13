@@ -108,6 +108,9 @@ Item {
 
             verify(node1.value != 1.5);
 
+            timer.running = true;
+            timerSpy.wait();
+
             node1ValueSpy.clear();
             node2ValueSpy.clear();
             node2.value = 1.5;

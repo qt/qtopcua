@@ -291,7 +291,7 @@ QOpen62541Subscription *Open62541AsyncBackend::getSubscription(const QOpcUaMonit
     m_subscriptions[id] = sub;
     if (sub->interval() > settings.samplingInterval()) // The publishing interval has been revised by the server.
         m_minPublishingInterval = sub->interval();
-    // This must be a queued connection to prevent the slot from being called while the client is inside UA_Client_runAsync().
+    // This must be a queued connection to prevent the slot from being called while the client is inside UA_Client_run_iterate().
     QObject::connect(sub, &QOpen62541Subscription::timeout, this, &Open62541AsyncBackend::handleSubscriptionTimeout, Qt::QueuedConnection);
     return sub;
 }
@@ -394,7 +394,8 @@ void Open62541AsyncBackend::resolveBrowsePath(quint64 handle, UA_NodeId startNod
 
 void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris)
 {
-    UA_Client *tmpClient = UA_Client_new(UA_ClientConfig_default);
+    UA_Client *tmpClient = UA_Client_new();
+    UA_ClientConfig_setDefault(UA_Client_getConfig(tmpClient));
     UaDeleter<UA_Client> clientDeleter(tmpClient, UA_Client_delete);
 
     UA_String *uaServerUris = nullptr;
@@ -791,10 +792,12 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
 
     m_useStateCallback = false;
 
-    UA_ClientConfig conf = UA_ClientConfig_default;
-    conf.clientContext = this;
-    conf.stateCallback = &clientStateCallback;
-    m_uaclient = UA_Client_new(conf);
+    m_uaclient = UA_Client_new();
+    auto conf = UA_Client_getConfig(m_uaclient);
+    UA_ClientConfig_setDefault(conf);
+    conf->clientContext = this;
+    conf->stateCallback = &clientStateCallback;
+
     UA_StatusCode ret;
     const auto authInfo = m_clientImpl->m_client->authenticationInformation();
 
@@ -872,7 +875,8 @@ void Open62541AsyncBackend::disconnectFromEndpoint()
 
 void Open62541AsyncBackend::requestEndpoints(const QUrl &url)
 {
-    UA_Client *tmpClient = UA_Client_new(UA_ClientConfig_default);
+    UA_Client *tmpClient = UA_Client_new();
+    UA_ClientConfig_setDefault(UA_Client_getConfig(tmpClient));
     size_t numEndpoints = 0;
     UA_EndpointDescription *endpoints = nullptr;
     UA_StatusCode res = UA_Client_getEndpoints(tmpClient, url.toString(QUrl::RemoveUserInfo).toUtf8().constData(), &numEndpoints, &endpoints);
@@ -937,7 +941,7 @@ void Open62541AsyncBackend::sendPublishRequest()
     }
 
     // If BADSERVERNOTCONNECTED is returned, the subscriptions are gone and local information can be deleted.
-    if (UA_Client_runAsync(m_uaclient, 1) == UA_STATUSCODE_BADSERVERNOTCONNECTED) {
+    if (UA_Client_run_iterate(m_uaclient, 1) == UA_STATUSCODE_BADSERVERNOTCONNECTED) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unable to send publish request";
         m_sendPublishRequests = false;
         cleanupSubscriptions();

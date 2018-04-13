@@ -3,6 +3,10 @@ QT += core core-private opcua opcua-private network
 QT -= gui
 
 qtConfig(open62541):!qtConfig(system-open62541) {
+    qtConfig(mbedtls):{
+        QMAKE_USE_PRIVATE += mbedtls
+        DEFINES += UA_ENABLE_ENCRYPTION
+    }
     include($$PWD/../../../3rdparty/open62541.pri)
 } else {
     QMAKE_USE_PRIVATE += open62541

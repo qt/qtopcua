@@ -125,7 +125,7 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
     case QOpcUa::StatusCode:
         return arrayFromQVariant<UA_StatusCode, QOpcUa::UaStatusCode>(value, dt);
     case QOpcUa::Range:
-        return arrayFromQVariant<UA_ExtensionObject, QOpcUaRange>(value, dt);
+        return arrayFromQVariant<UA_Range, QOpcUaRange>(value, dt);
     case QOpcUa::EUInformation:
         return arrayFromQVariant<UA_ExtensionObject, QOpcUaEUInformation>(value, dt);
     case QOpcUa::ComplexNumber:
@@ -202,6 +202,8 @@ QVariant toQVariant(const UA_Variant &value)
         return arrayToQVariant<QOpcUaExpandedNodeId, UA_ExpandedNodeId>(value);
     case UA_TYPES_ARGUMENT:
         return arrayToQVariant<QOpcUaArgument, UA_Argument>(value);
+    case UA_TYPES_RANGE:
+        return arrayToQVariant<QOpcUaRange, UA_Range>(value);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
         return QVariant();
@@ -252,6 +254,7 @@ const UA_DataType *toDataType(QOpcUa::Types valueType)
     case QOpcUa::StatusCode:
         return &UA_TYPES[UA_TYPES_STATUSCODE];
     case QOpcUa::Range:
+        return &UA_TYPES[UA_TYPES_RANGE];
     case QOpcUa::EUInformation:
     case QOpcUa::ComplexNumber:
     case QOpcUa::DoubleComplexNumber:
@@ -339,6 +342,12 @@ QOpcUaArgument scalarToQt<QOpcUaArgument, UA_Argument>(const UA_Argument *data)
     return temp;
 }
 
+template<>
+QOpcUaRange scalarToQt<QOpcUaRange, UA_Range>(const UA_Range *data)
+{
+    return QOpcUaRange(data->low, data->high);
+}
+
 template <>
 QVariant scalarToQt<QVariant, UA_ExtensionObject>(const UA_ExtensionObject *data)
 {
@@ -357,6 +366,10 @@ QVariant scalarToQt<QVariant, UA_ExtensionObject>(const UA_ExtensionObject *data
 
         if (data->content.decoded.type == &UA_TYPES[UA_TYPES_ARGUMENT] && data->content.decoded.data != nullptr) {
             return scalarToQt<QOpcUaArgument, UA_Argument>(reinterpret_cast<UA_Argument *>(data->content.decoded.data));
+        }
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_RANGE] && data->content.decoded.data != nullptr) {
+            return scalarToQt<QOpcUaRange, UA_Range>(reinterpret_cast<UA_Range *>(data->content.decoded.data));
         }
 
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unsupported decoded extension object type, unable to convert";
@@ -379,9 +392,6 @@ QVariant scalarToQt<QVariant, UA_ExtensionObject>(const UA_ExtensionObject *data
         switch (objType) {
         case Namespace0::EUInformation_Encoding_DefaultBinary:
             result = decoder.decode<QOpcUaEUInformation>(success);
-            break;
-        case Namespace0::Range_Encoding_DefaultBinary:
-            result = decoder.decode<QOpcUaRange>(success);
             break;
         case Namespace0::ComplexNumberType_Encoding_DefaultBinary:
             result = decoder.decode<QOpcUaComplexNumber>(success);
@@ -522,13 +532,10 @@ void scalarFromQt<UA_Guid, QUuid>(const QUuid &value, UA_Guid *ptr)
 }
 
 template<>
-void scalarFromQt<UA_ExtensionObject, QOpcUaRange>(const QOpcUaRange &value, UA_ExtensionObject *ptr)
+void scalarFromQt<UA_Range, QOpcUaRange>(const QOpcUaRange &value, UA_Range *ptr)
 {
-    QByteArray temp;
-    QOpcUaBinaryDataEncoding encoder(&temp);
-    encoder.encode<QOpcUaRange>(value);
-    return createExtensionObject(temp,
-                                 UA_NODEID_NUMERIC(0,static_cast<UA_UInt32>(Namespace0::Range_Encoding_DefaultBinary)), ptr);
+    ptr->low = value.low();
+    ptr->high = value.high();
 }
 
 template<>

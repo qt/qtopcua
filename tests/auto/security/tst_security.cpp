@@ -262,6 +262,10 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureUnencryptedKey()
     QScopedPointer<QOpcUaClient> client(m_opcUa.createClient(backend));
     QVERIFY2(client, QString("Loading backend failed: %1").arg(backend).toLatin1().data());
 
+    if (!client->supportedSecurityPolicies().contains(endpoint.securityPolicy()))
+           QSKIP(QString("This test is skipped because backend %1 does not support security policy %2").arg(
+                     client->backend()).arg(endpoint.securityPolicy()).toLatin1().constData());
+
     const QString pkidir = m_pkiData->path();
     QOpcUaPkiConfiguration pkiConfig;
     pkiConfig.setClientCertificateFile(pkidir + "/own/certs/tst_security.der");
