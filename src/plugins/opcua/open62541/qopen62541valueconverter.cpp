@@ -384,8 +384,9 @@ QVariant scalarToQVariant<QVariant, UA_ExtensionObject>(UA_ExtensionObject *data
         result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QXValue>(buffer, length, success));
         break;
     default:
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unknown extension object type: ns=0;i=" << data->content.encoded.typeId.identifier.numeric;
-        return QVariant();
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unknown extension object type, returning raw data:" << Open62541Utils::nodeIdToQString(data->content.encoded.typeId);
+        result = QByteArray(buffer, data->content.encoded.body.length);
+        success = true;
     }
 
     if (success)

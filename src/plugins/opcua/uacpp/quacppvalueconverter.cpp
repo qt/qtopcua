@@ -310,8 +310,9 @@ QVariant scalarToQVariant<QVariant, OpcUa_ExtensionObject>(OpcUa_ExtensionObject
         result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QXValue>(buffer, length, success));
         break;
     default:
-        qCWarning(QT_OPCUA_PLUGINS_UACPP, "Unknown extension object type: ns=0;i=%d", data->TypeId.NodeId.Identifier.Numeric);
-        return QVariant();
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Unknown extension object type, returning raw data:" << UACppUtils::nodeIdToQString(data->TypeId.NodeId);
+        result = QByteArray(buffer, length);
+        success = true;
     }
 
     if (success)

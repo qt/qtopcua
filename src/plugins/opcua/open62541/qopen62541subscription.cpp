@@ -260,8 +260,6 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUa:
     m_itemIdToItemMapping[res.monitoredItemId] = temp;
 
     QOpcUaMonitoringParameters s = settings;
-    if (settings.filter().type() == QVariant::UserType && settings.filter().userType() == QMetaType::type("QOpcUaMonitoringParameters::DataChangeFilter"))
-        s.setFilter(QVariant());
     s.setSubscriptionId(m_subscriptionId);
     s.setPublishingInterval(m_interval);
     s.setMaxKeepAliveCount(m_maxKeepaliveCount);
@@ -272,6 +270,7 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUa:
     temp->parameters = s;
     temp->clientHandle = m_clientHandle;
 
+    s.setFilter(QVariant());
     emit m_backend->monitoringEnableDisable(handle, attr, true, s);
 
     return true;

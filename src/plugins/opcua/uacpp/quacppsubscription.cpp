@@ -125,14 +125,13 @@ bool QUACppSubscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUa::Nod
         return false;
     }
 
-    QOpcUaMonitoringParameters s;
+    QOpcUaMonitoringParameters s = parameters;
     s.setSubscriptionId(m_nativeSubscription->subscriptionId());
     s.setPublishingInterval(m_nativeSubscription->publishingInterval());
     s.setMaxKeepAliveCount(m_nativeSubscription->maxKeepAliveCount());
     s.setLifetimeCount(m_nativeSubscription->lifetimeCount());
     s.setStatusCode(static_cast<QOpcUa::UaStatusCode>(result.statusCode()));
     s.setSamplingInterval(createResults[0].RevisedSamplingInterval);
-    emit m_backend->monitoringEnableDisable(handle, attr, true, s);
 
     // Store information
     const auto key = qMakePair(handle, attr);
@@ -140,6 +139,9 @@ bool QUACppSubscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUa::Nod
     m_monitoredItems.insert(key, value);
     m_monitoredIds.insert(monitorId, key);
     monitorId++;
+
+    s.setFilter(QVariant());
+    emit m_backend->monitoringEnableDisable(handle, attr, true, s);
 
     return true;
 }
