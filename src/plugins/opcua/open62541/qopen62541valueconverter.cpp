@@ -352,47 +352,61 @@ template <>
 QVariant scalarToQVariant<QVariant, UA_ExtensionObject>(UA_ExtensionObject *data, QMetaType::Type type)
 {
     Q_UNUSED(type);
-    if (data->content.encoded.typeId.identifierType != UA_NODEIDTYPE_NUMERIC ||
-            data->content.encoded.typeId.namespaceIndex != 0 ||
-            data->encoding != UA_EXTENSIONOBJECT_ENCODED_BYTESTRING) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unsupported extension object type";
+
+    // OPC-UA part 6, Table 13 states that an extension object can have no body, a ByteString encoded body
+    // or an XML encoded body.
+
+    // Handle extension object without body
+    if (data->encoding == UA_EXTENSIONOBJECT_ENCODED_NOBODY) {
+        return QByteArray();
+    }
+
+    // Some types are automatically decoded by open62541. In this case, the encoding is UA_EXTENSIONOBJECT_DECODED
+    if (data->encoding != UA_EXTENSIONOBJECT_ENCODED_XML && data->encoding != UA_EXTENSIONOBJECT_ENCODED_BYTESTRING) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unsupported decoded extension object type, unable to convert";
         return QVariant();
     }
 
     const char *buffer = reinterpret_cast<const char *>(data->content.encoded.body.data);
-    size_t length = data->content.encoded.body.length;
-    bool success;
-    QVariant result;
-    QOpcUaBinaryDataEncoding::TypeEncodingId objType = static_cast<QOpcUaBinaryDataEncoding::TypeEncodingId>(data->content.encoded.typeId.identifier.numeric);
-    switch (objType) {
-    case QOpcUaBinaryDataEncoding::TypeEncodingId::EUInformation:
-        result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QEUInformation>(buffer, length, success));
-        break;
-    case QOpcUaBinaryDataEncoding::TypeEncodingId::Range:
-        result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QRange>(buffer, length, success));
-        break;
-    case QOpcUaBinaryDataEncoding::TypeEncodingId::ComplexNumber:
-        result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QComplexNumber>(buffer, length, success));
-        break;
-    case QOpcUaBinaryDataEncoding::TypeEncodingId::DoubleComplexNumber:
-        result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QDoubleComplexNumber>(buffer, length, success));
-        break;
-    case QOpcUaBinaryDataEncoding::TypeEncodingId::AxisInformation:
-        result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QAxisInformation>(buffer, length, success));
-        break;
-    case QOpcUaBinaryDataEncoding::TypeEncodingId::XV:
-        result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QXValue>(buffer, length, success));
-        break;
-    default:
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unknown extension object type, returning raw data:" << Open62541Utils::nodeIdToQString(data->content.encoded.typeId);
-        result = QByteArray(buffer, data->content.encoded.body.length);
-        success = true;
+
+    // Decode recognized types, as required by OPC-UA part 4, 5.2.2.15
+    if (data->content.encoded.typeId.identifierType == UA_NODEIDTYPE_NUMERIC &&
+            data->content.encoded.typeId.namespaceIndex == 0 &&
+            data->encoding == UA_EXTENSIONOBJECT_ENCODED_BYTESTRING) {
+
+        size_t length = data->content.encoded.body.length;
+        bool success = false;
+        QVariant result;
+        QOpcUaBinaryDataEncoding::TypeEncodingId objType = static_cast<QOpcUaBinaryDataEncoding::TypeEncodingId>(data->content.encoded.typeId.identifier.numeric);
+        switch (objType) {
+        case QOpcUaBinaryDataEncoding::TypeEncodingId::EUInformation:
+            result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QEUInformation>(buffer, length, success));
+            break;
+        case QOpcUaBinaryDataEncoding::TypeEncodingId::Range:
+            result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QRange>(buffer, length, success));
+            break;
+        case QOpcUaBinaryDataEncoding::TypeEncodingId::ComplexNumber:
+            result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QComplexNumber>(buffer, length, success));
+            break;
+        case QOpcUaBinaryDataEncoding::TypeEncodingId::DoubleComplexNumber:
+            result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QDoubleComplexNumber>(buffer, length, success));
+            break;
+        case QOpcUaBinaryDataEncoding::TypeEncodingId::AxisInformation:
+            result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QAxisInformation>(buffer, length, success));
+            break;
+        case QOpcUaBinaryDataEncoding::TypeEncodingId::XV:
+            result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QXValue>(buffer, length, success));
+            break;
+        default:
+            break;
+        }
+        if (success)
+            return result;
     }
 
-    if (success)
-        return result;
-    else
-        return QVariant();
+    // Treat the object as opaque data, as required by OPC-UA part 4, 5.2.2.15
+    qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Returning raw data for unknown extension object type:" << Open62541Utils::nodeIdToQString(data->content.encoded.typeId);
+    return QVariant::fromValue(QByteArray(buffer, data->content.encoded.body.length));
 }
 
 template<typename TARGETTYPE, typename UATYPE>
