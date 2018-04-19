@@ -418,6 +418,103 @@ QOpcUa::UaStatusCode exceptionToStatusCode(const std::exception &ex)
     return statusCode;
 }
 
+OpcUa::NodeId stringToNodeId(const QString &id)
+{
+    const int semicolonIndex = id.indexOf(';');
+
+    if (semicolonIndex <= 0) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Unable to split node id string:" << qUtf8Printable(id);
+        return OpcUa::NodeId();
+    }
+
+    QStringRef namespaceString = id.leftRef(semicolonIndex);
+    if (namespaceString.length() <= 3 || !namespaceString.startsWith(QLatin1String("ns="))) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Not a valid index string in node id string:" << id;
+        return OpcUa::NodeId();
+    }
+    namespaceString = namespaceString.mid(3); // Remove "ns="
+
+    QStringRef identifierString = id.midRef(semicolonIndex + 1);
+
+    if (identifierString.length() <= 2) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "There is no identifier in node id string:" << id;
+        return OpcUa::NodeId();
+    }
+
+    char identifierType;
+    if (identifierString.startsWith(QLatin1String("s=")))
+        identifierType = 's';
+    else if (identifierString.startsWith(QLatin1String("i=")))
+        identifierType = 'i';
+    else if (identifierString.startsWith(QLatin1String("g=")))
+        identifierType = 'g';
+    else if (identifierString.startsWith(QLatin1String("b=")))
+        identifierType = 'b';
+    else {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "There is no valid identifier type in node id string:" << id;
+        return OpcUa::NodeId();
+    }
+    identifierString = identifierString.mid(2); // Remove identifier type
+
+    bool ok = false;
+    quint16 index = static_cast<quint16>(namespaceString.toUInt(&ok));
+
+    if (!ok) {
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Not a valid namespace index in node id string:" << id;
+        return OpcUa::NodeId();
+    }
+
+    switch (identifierType) {
+    case 'i': {
+        bool isNumber;
+        quint32 identifier = static_cast<quint32>(identifierString.toUInt(&isNumber));
+        if (isNumber)
+            return OpcUa::NumericNodeId(identifier, index);
+        else
+            qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << id << "does not contain a valid numeric identifier";
+        break;
+    }
+    case 's': {
+        if (identifierString.length() > 0) {
+            return OpcUa::StringNodeId(identifierString.toString().toStdString(), index);
+        }
+        else
+            qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << id << "does not contain a valid string identifier";
+        break;
+    }
+    case 'g': {
+        QUuid uuid(identifierString.toString());
+
+        if (uuid.isNull()) {
+            qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << id << "does not contain a valid guid identifier";
+        }
+
+        OpcUa::Guid guid;
+        guid.Data1 = uuid.data1;
+        guid.Data2 = uuid.data2;
+        guid.Data3 = uuid.data3;
+        std::memcpy(guid.Data4, uuid.data4, sizeof(uuid.data4));
+        return OpcUa::GuidNodeId(guid, index);
+    }
+    case 'b': {
+        const QByteArray temp = QByteArray::fromBase64(identifierString.toLocal8Bit());
+        if (temp.size() > 0) {
+            OpcUa::NodeId result;
+            result.Encoding = OpcUa::NodeIdEncoding::EV_BYTE_STRING;
+            result.BinaryData.NamespaceIndex = index;
+            result.BinaryData.Identifier.assign(temp.data(), temp.data() + temp.size());
+            return result;
+        }
+        else
+            qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << id << "does not contain a valid byte string identifier";
+        break;
+    }
+    default:
+        qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Could not parse node id:" << id;
+    }
+    return OpcUa::NodeId();
+}
+
 }
 
 QT_END_NAMESPACE

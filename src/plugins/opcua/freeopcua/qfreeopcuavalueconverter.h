@@ -56,6 +56,7 @@ namespace QFreeOpcUaValueConverter
     QVariant toQVariant(const OpcUa::Variant &variant);
     OpcUa::Variant toTypedVariant(const QVariant &variant, QOpcUa::Types type);
     QString nodeIdToString(const OpcUa::NodeId &id);
+    OpcUa::NodeId stringToNodeId(const QString &id);
 
     QOpcUa::UaStatusCode exceptionToStatusCode(const std::exception &ex);
 

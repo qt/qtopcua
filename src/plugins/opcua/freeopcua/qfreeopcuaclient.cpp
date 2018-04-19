@@ -36,6 +36,7 @@
 
 #include "qfreeopcuaclient.h"
 #include "qfreeopcuanode.h"
+#include "qfreeopcuavalueconverter.h"
 #include "qfreeopcuaworker.h"
 #include <private/qopcuaclient_p.h>
 
@@ -79,8 +80,13 @@ QOpcUaNode *QFreeOpcUaClientImpl::node(const QString &nodeId)
     if (!m_opcuaWorker)
         return nullptr;
 
+    OpcUa::NodeId id = QFreeOpcUaValueConverter::stringToNodeId(nodeId);
+
+    if (id.IsNull())
+        return nullptr;
+
     try {
-        OpcUa::Node node = m_opcuaWorker->GetNode(nodeId.toStdString());
+        OpcUa::Node node = m_opcuaWorker->GetNode(id);
         QFreeOpcUaNode *n = new QFreeOpcUaNode(node, this);
         return new QOpcUaNode(n, m_client);
     } catch (const std::exception &ex) {
