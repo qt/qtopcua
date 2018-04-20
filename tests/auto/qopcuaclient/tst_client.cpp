@@ -46,6 +46,8 @@
 
 #include <QtTest/QSignalSpy>
 #include <QtTest/QtTest>
+#include <QTcpSocket>
+#include <QTcpServer>
 
 class OpcuaConnector
 {
@@ -318,6 +320,9 @@ Tst_QOpcUaClient::Tst_QOpcUaClient()
 
 void Tst_QOpcUaClient::initTestCase()
 {
+    const quint16 defaultPort = 43344;
+    const QHostAddress defaultHost(QHostAddress::LocalHost);
+
     for (const auto &backend: m_backends) {
         QOpcUaClient *client = m_opcUa.createClient(backend);
         QVERIFY2(client != nullptr,
@@ -339,13 +344,28 @@ void Tst_QOpcUaClient::initTestCase()
             QSKIP("all auto tests rely on an open62541-based test-server");
         }
 
+        // In this case the test is supposed to open its own server.
+        // Unfortunately there is no way to check if the server has started up successfully
+        // because of missing error handling.
+        // This checks will detect other servers blocking the port.
+
+        // Check for running server
+        QTcpSocket socket;
+        socket.connectToHost(defaultHost, defaultPort);
+        QVERIFY2(socket.waitForConnected(1500) == false, "Server is already running");
+
+        // Check for running server which does not respond
+        QTcpServer server;
+        QVERIFY2(server.listen(defaultHost, defaultPort) == true, "Port is occupied by another process. Check for defunct server.");
+        server.close();
+
         m_serverProcess.start(m_testServerPath);
         QVERIFY2(m_serverProcess.waitForStarted(), qPrintable(m_serverProcess.errorString()));
         // Let the server come up
         QTest::qSleep(2000);
     }
-    QString host = envOrDefault("OPCUA_HOST", "localhost");
-    QString port = envOrDefault("OPCUA_PORT", "43344");
+    QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
+    QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
     m_endpoint = QString("opc.tcp://%1:%2").arg(host).arg(port);
     qDebug() << "Using endpoint:" << m_endpoint;
 }
