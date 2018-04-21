@@ -64,7 +64,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
     After the connection is established, a \l QOpcUaNode object for the root node is requested.
     \code
     QOpcUaProvider provider;
-    if (provider.isEmpty())
+    if (provider.availableBackends().isEmpty())
         return;
     QOpcUaClient *client = provider.createClient(provider.availableBackends()[0]);
     if (!client)
