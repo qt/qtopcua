@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-    \example opcua/waterpump
+    \example waterpump
     \ingroup qtopcua-examples
     \title Using Qt OPC UA in a basic UI application
 
@@ -100,7 +100,7 @@
     node the HMI interacts with. For the values of these nodes, member variables
     containing the last value reported by the server are added.
 
-    \quotefromfile opcua/waterpump/qml-hmi/opcuamachinebackend.h
+    \quotefromfile waterpump/qml-hmi/opcuamachinebackend.h
     \dots
     \skipto m_client
     \printuntil m_machineDesignation;
@@ -110,7 +110,7 @@
     For each value used in the HMI, a getter, a changed signal and a
     property are added to enable property bindings in QML
 
-    \quotefromfile opcua/waterpump/qml-hmi/opcuamachinebackend.h
+    \quotefromfile waterpump/qml-hmi/opcuamachinebackend.h
     \dots
     \skipto Q_PROPERTY
     \printuntil QString message
@@ -124,7 +124,7 @@
     A handler connected to this signal gets the new value as QVariant and can
     e. g. write that value to a variable or emit a signal with the new value.
 
-    \quotefromfile opcua/waterpump/qml-hmi/opcuamachinebackend.cpp
+    \quotefromfile waterpump/qml-hmi/opcuamachinebackend.cpp
     \skipto void OpcUaMachineBackend::percentFilledTank1Updated
     \printuntil }
 
@@ -140,7 +140,7 @@
 
     In the constructor, a QOpcUaProvider is created and the available backends are saved to provide a model for the backend selection dropdown menu.
 
-    \quotefromfile opcua/waterpump/qml-hmi/opcuamachinebackend.cpp
+    \quotefromfile waterpump/qml-hmi/opcuamachinebackend.cpp
     \dots
     \skipto QOpcUaProvider provider
     \printuntil setBackends
@@ -149,7 +149,7 @@
     Before attempting a connection, a QOpcUaClient with the selected backend is created. Its \l QOpcUaClient::stateChanged signal must be
     connected to the backend's clientStateHandler slot.
 
-    \quotefromfile opcua/waterpump/qml-hmi/opcuamachinebackend.cpp
+    \quotefromfile waterpump/qml-hmi/opcuamachinebackend.cpp
     \skipto OpcUaMachineBackend::connectToEndpoint
     \printuntil m_client->connectToEndpoint
     \printuntil }
@@ -159,7 +159,7 @@
     are filled with node objects.
 
     \dots
-    \quotefromfile opcua/waterpump/qml-hmi/opcuamachinebackend.cpp
+    \quotefromfile waterpump/qml-hmi/opcuamachinebackend.cpp
     \skipto if (state == QOpcUaClient::ClientState::Connected) {
     \printuntil m_machineDesignationNode
     \dots
@@ -197,7 +197,7 @@
     named uaBackend.
 
     \dots
-    \quotefromfile opcua/waterpump/qml-hmi/main.cpp
+    \quotefromfile waterpump/qml-hmi/main.cpp
     \skipto     OpcUaMachineBackend backend
     \printuntil setContextProperty
     \dots
@@ -208,14 +208,14 @@
     the tank level is above the setpoint. On click, the flushTank2() method
     is called on the server.
 
-    \quotefromfile opcua/waterpump/qml-hmi/Tank2Unit.qml
+    \quotefromfile waterpump/qml-hmi/Tank2Unit.qml
     \skipto     Button
     \printuntil }
     \printuntil }
 
     Signals from the backend can also be used directly in the QML code.
 
-    \quotefromfile opcua/waterpump/qml-hmi/Pump.qml
+    \quotefromfile waterpump/qml-hmi/Pump.qml
     \skipto Connections
     \printuntil }
     \printuntil }
@@ -228,4 +228,6 @@
     the current value of the second tank, a click on "Flush" opens the valve.
 
     If there is no water left, click "Reset simulation" to refill the first tank.
+
+    \image tankexample.jpg
 */
