@@ -188,6 +188,8 @@ private slots:
     void writeInvalidNode();
     defineDataMethod(writeMultipleAttributes_data)
     void writeMultipleAttributes();
+    defineDataMethod(readEmptyArrayVariable_data)
+    void readEmptyArrayVariable();
 
     defineDataMethod(getRootNode_data)
     void getRootNode();
@@ -504,6 +506,19 @@ void Tst_QOpcUaClient::writeMultipleAttributes()
     QVERIFY(writeSpy.at(1).at(1).value<QOpcUa::UaStatusCode>() == QOpcUa::UaStatusCode::Good);
     QVERIFY(node->attributeError(QOpcUa::NodeAttribute::Value) == QOpcUa::UaStatusCode::Good);
     QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QQualifiedName>() == QOpcUa::QQualifiedName(2, QStringLiteral("TestString")));
+}
+
+void Tst_QOpcUaClient::readEmptyArrayVariable()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=EmptyBoolArray"));
+    QVERIFY(node != 0);
+
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value).type(), QVariant::List);
+    QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).toList().isEmpty());
 }
 
 void Tst_QOpcUaClient::getRootNode()

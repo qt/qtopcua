@@ -412,16 +412,24 @@ QVariant scalarToQVariant<QVariant, UA_ExtensionObject>(UA_ExtensionObject *data
 template<typename TARGETTYPE, typename UATYPE>
 QVariant arrayToQVariant(const UA_Variant &var, QMetaType::Type type)
 {
-    if (var.arrayLength > 1) {
+    UATYPE *temp = static_cast<UATYPE *>(var.data);
+
+    if (var.arrayLength > 0) {
         QVariantList list;
         for (size_t i = 0; i < var.arrayLength; ++i) {
-            UATYPE *temp = static_cast<UATYPE *>(var.data);
             list.append(scalarToQVariant<TARGETTYPE, UATYPE>(&temp[i], type));
         }
-        return list;
+        if (list.size() == 1)
+            return list.at(0);
+        else
+            return list;
+    } else if (UA_Variant_isScalar(&var)) {
+        return scalarToQVariant<TARGETTYPE, UATYPE>(temp, type);
+    } else if (var.arrayLength == 0 && var.data == UA_EMPTY_ARRAY_SENTINEL) {
+        return QVariantList(); // Return empty QVariantList for empty array
     }
-    UATYPE *temp = static_cast<UATYPE *>(var.data);
-    return scalarToQVariant<TARGETTYPE, UATYPE>(temp, type);
+
+    return QVariant(); // Return empty QVariant for empty scalar variant
 }
 
 template<typename TARGETTYPE, typename QTTYPE>

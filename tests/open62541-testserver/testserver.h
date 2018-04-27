@@ -60,6 +60,7 @@ public:
     UA_NodeId addObject(const UA_NodeId &folderId, int namespaceIndex, const QString &objectName = QString());
 
     UA_NodeId addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value, QOpcUa::Types type);
+    UA_NodeId addEmptyArrayVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name);
 
     UA_NodeId addMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
 
