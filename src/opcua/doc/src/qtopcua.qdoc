@@ -109,6 +109,10 @@
     \li X
     \li X
     \row
+    \li Multidimensional arrays
+    \li X
+    \li
+    \row
     \li Browse
     \li X
     \li X
@@ -351,5 +355,4 @@
     \code
         Unified Automation C++ SDK ............. yes
     \endcode
-
 */

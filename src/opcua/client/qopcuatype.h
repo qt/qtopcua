@@ -1092,6 +1092,39 @@ public:
 private:
     QSharedDataPointer<QOpcUa::QExtensionObjectData> data;
 };
+
+class QMultiDimensionalArrayData;
+class Q_OPCUA_EXPORT QMultiDimensionalArray
+{
+public:
+    QMultiDimensionalArray();
+    QMultiDimensionalArray(const QOpcUa::QMultiDimensionalArray &other);
+    QMultiDimensionalArray &operator=(const QOpcUa::QMultiDimensionalArray &rhs);
+    QMultiDimensionalArray(const QVariantList &valueArray, const QVector<quint32> &arrayDimensions);
+    QMultiDimensionalArray(const QVector<quint32> &arrayDimensions);
+    ~QMultiDimensionalArray();
+
+    QVariantList valueArray() const;
+    QVariantList &valueArrayRef();
+    void setValueArray(const QVariantList &valueArray);
+
+    int arrayIndex(const QVector<quint32> &indices) const;
+    QVariant value(const QVector<quint32> &indices) const;
+    bool setValue(const QVector<quint32> &indices, const QVariant &value);
+
+    bool isValid() const;
+
+    QVector<quint32> arrayDimensions() const;
+    void setArrayDimensions(const QVector<quint32> &arrayDimensions);
+
+    bool operator==(const QOpcUa::QMultiDimensionalArray &other) const;
+
+    operator QVariant() const;
+
+private:
+    QSharedDataPointer<QOpcUa::QMultiDimensionalArrayData> data;
+};
+
 }
 
 Q_DECLARE_TYPEINFO(QOpcUa::Types, Q_PRIMITIVE_TYPE);
@@ -1138,5 +1171,6 @@ Q_DECLARE_METATYPE(QOpcUa::QApplicationDescription)
 Q_DECLARE_METATYPE(QOpcUa::QEndpointDescription)
 Q_DECLARE_METATYPE(QOpcUa::QArgument)
 Q_DECLARE_METATYPE(QOpcUa::QExtensionObject)
+Q_DECLARE_METATYPE(QOpcUa::QMultiDimensionalArray)
 
 #endif // QOPCUATYPE

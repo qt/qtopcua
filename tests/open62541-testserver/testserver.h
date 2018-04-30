@@ -59,7 +59,8 @@ public:
     UA_NodeId addFolder(const QString &nodeString, const QString &displayName, const QString &description = QString());
     UA_NodeId addObject(const UA_NodeId &folderId, int namespaceIndex, const QString &objectName = QString());
 
-    UA_NodeId addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value, QOpcUa::Types type);
+    UA_NodeId addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
+                          QOpcUa::Types type, QVector<quint32> arrayDimensions = QVector<quint32>());
     UA_NodeId addEmptyArrayVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name);
 
     UA_NodeId addMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);

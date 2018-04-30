@@ -95,6 +95,20 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
     UA_Variant open62541value;
     UA_Variant_init(&open62541value);
 
+    if (value.canConvert<QOpcUa::QMultiDimensionalArray>()) {
+        QOpcUa::QMultiDimensionalArray data = value.value<QOpcUa::QMultiDimensionalArray>();
+        UA_Variant result = toOpen62541Variant(data.valueArray(), type);
+
+        if (!data.arrayDimensions().isEmpty()) {
+            // Ensure that the array dimensions size is < UINT32_MAX
+            if (static_cast<quint64>(data.arrayDimensions().size()) > std::numeric_limits<quint32>::max())
+                return open62541value;
+            result.arrayDimensionsSize = data.arrayDimensions().size();
+            result.arrayDimensions = static_cast<UA_UInt32 *>(UA_Array_new(result.arrayDimensionsSize, &UA_TYPES[UA_TYPES_UINT32]));
+            std::copy(data.arrayDimensions().constBegin(), data.arrayDimensions().constEnd(), result.arrayDimensions);
+        }
+        return result;
+    }
 
     if (value.type() == QVariant::List && value.toList().size() == 0)
         return open62541value;
@@ -455,6 +469,16 @@ QVariant arrayToQVariant(const UA_Variant &var, QMetaType::Type type)
                 tempVar.convert(type);
             list.append(tempVar);
         }
+
+        if (var.arrayDimensionsSize > 0) {
+            // Ensure that the array dimensions fit in a QVector
+            if (var.arrayDimensionsSize > static_cast<quint64>(std::numeric_limits<int>::max()))
+                return QOpcUa::QMultiDimensionalArray();
+            QVector<quint32> arrayDimensions;
+            std::copy(var.arrayDimensions, var.arrayDimensions+var.arrayDimensionsSize, std::back_inserter(arrayDimensions));
+            return QOpcUa::QMultiDimensionalArray(list, arrayDimensions);
+        }
+
         if (list.size() == 1)
             return list.at(0);
         else

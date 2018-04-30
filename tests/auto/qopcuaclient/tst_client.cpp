@@ -420,6 +420,9 @@ private slots:
     defineDataMethod(namespaceArray_data)
     void namespaceArray();
 
+    defineDataMethod(multiDimensionalArray_data)
+    void multiDimensionalArray();
+
     defineDataMethod(dateTimeConversion_data)
     void dateTimeConversion();
     defineDataMethod(timeStamps_data)
@@ -2686,6 +2689,44 @@ void Tst_QOpcUaClient::namespaceArray()
     READ_MANDATORY_BASE_NODE(node);
 
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text(), QStringLiteral("StringScalarTest"));
+}
+
+void Tst_QOpcUaClient::multiDimensionalArray()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    if (opcuaClient->backend() != QStringLiteral("open62541"))
+        QSKIP("Multidimensional arrays are only supported in open62541");
+
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=Demo.Static.Arrays.MultiDimensionalDouble"));
+
+    QVector<quint32> arrayDimensions({2, 2, 3});
+    QVariantList value({0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0});
+    QOpcUa::QMultiDimensionalArray arr(value, arrayDimensions);
+    QVERIFY(arr.isValid());
+    WRITE_VALUE_ATTRIBUTE(node, arr , QOpcUa::Double);
+    READ_MANDATORY_VARIABLE_NODE(node);
+
+    QCOMPARE(node->attributeError(QOpcUa::NodeAttribute::Value), QOpcUa::UaStatusCode::Good);
+    QOpcUa::QMultiDimensionalArray readBack = node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QMultiDimensionalArray>();
+
+    QVERIFY(readBack.isValid());
+    QCOMPARE(readBack.value({0, 0, 0}), 0.0);
+    QCOMPARE(readBack.value({0, 0, 1}), 1.0);
+    QCOMPARE(readBack.value({0, 0, 2}), 2.0);
+    QCOMPARE(readBack.value({0, 1, 0}), 3.0);
+    QCOMPARE(readBack.value({0, 1, 1}), 4.0);
+    QCOMPARE(readBack.value({0, 1, 2}), 5.0);
+    QCOMPARE(readBack.value({1, 0, 0}), 6.0);
+    QCOMPARE(readBack.value({1, 0, 1}), 7.0);
+    QCOMPARE(readBack.value({1, 0, 2}), 8.0);
+    QCOMPARE(readBack.value({1, 1, 0}), 9.0);
+    QCOMPARE(readBack.value({1, 1, 1}), 10.0);
+    QCOMPARE(readBack.value({1, 1, 2}), 11.0);
+
+    QCOMPARE(arr, readBack);
 }
 
 void Tst_QOpcUaClient::dateTimeConversion()

@@ -172,7 +172,8 @@ UA_NodeId TestServer::addObject(const UA_NodeId &parentFolder, int namespaceInde
     return resultNode;
 }
 
-UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value, QOpcUa::Types type)
+UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
+                                  QOpcUa::Types type, QVector<quint32> arrayDimensions)
 {
     UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
@@ -181,6 +182,11 @@ UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variab
     attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", name.toUtf8().constData());
     attr.dataType = attr.value.type ? attr.value.type->typeId : UA_TYPES[UA_TYPES_BOOLEAN].typeId;
     attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+
+    if (arrayDimensions.size()) {
+        attr.arrayDimensionsSize = arrayDimensions.size();
+        attr.arrayDimensions = arrayDimensions.data();
+    }
 
     UA_QualifiedName variableName;
     variableName.namespaceIndex = variableNodeId.namespaceIndex;
@@ -196,6 +202,10 @@ UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variab
                                                      attr,
                                                      NULL,
                                                      &resultId);
+
+    // Prevent deletion of the QVector's value by UA_VariableAttribute_deleteMembers
+    attr.arrayDimensions = nullptr;
+    attr.arrayDimensionsSize = 0;
 
     UA_NodeId_deleteMembers(&variableNodeId);
     UA_VariableAttributes_deleteMembers(&attr);
