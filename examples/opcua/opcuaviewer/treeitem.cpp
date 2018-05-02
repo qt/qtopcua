@@ -84,10 +84,10 @@ TreeItem::TreeItem(QOpcUaNode *node, OpcUaModel *model, TreeItem *parent) : QObj
 
 TreeItem::TreeItem(QOpcUaNode *node, OpcUaModel *model, const QOpcUaReferenceDescription &browsingData, TreeItem *parent) : TreeItem(node, model, parent)
 {
-    mNodeBrowseName = browsingData.browseName().name;
+    mNodeBrowseName = browsingData.browseName().name();
     mNodeClass = browsingData.nodeClass();
     mNodeId = browsingData.nodeId();
-    mNodeDisplayName = browsingData.displayName().text;
+    mNodeDisplayName = browsingData.displayName().text();
 }
 
 TreeItem::~TreeItem()
@@ -214,9 +214,9 @@ void TreeItem::handleAttributes(QOpcUa::NodeAttributes attr)
     if (attr & QOpcUa::NodeAttribute::NodeClass)
         mNodeClass = mOpcNode->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>();
     if (attr & QOpcUa::NodeAttribute::BrowseName)
-        mNodeBrowseName = mOpcNode->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>().name;
+        mNodeBrowseName = mOpcNode->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>().name();
     if (attr & QOpcUa::NodeAttribute::DisplayName)
-        mNodeDisplayName = mOpcNode->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text;
+        mNodeDisplayName = mOpcNode->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text();
     if (attr & QOpcUa::NodeAttribute::NodeId)
         mNodeDisplayName = mOpcNode->attribute(QOpcUa::NodeAttribute::NodeId).toString();
 
@@ -275,7 +275,7 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
 
     else if (value.canConvert<QOpcUa::QQualifiedName>()) {
         const auto name = value.value<QOpcUa::QQualifiedName>();
-        return QStringLiteral("%1, \"%2\"").arg(name.namespaceIndex).arg(name.name);
+        return QStringLiteral("%1, \"%2\"").arg(name.namespaceIndex()).arg(name.name());
     } else if (value.canConvert<QOpcUa::QLocalizedText>()) {
         const auto text = value.value<QOpcUa::QLocalizedText>();
         return localizedTextToString(text);
@@ -284,13 +284,13 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
         return rangeToString(range);
     } else if (value.canConvert<QOpcUa::QComplexNumber>()) {
         const auto complex = value.value<QOpcUa::QComplexNumber>();
-        return QStringLiteral("%1 %2 %3i").arg(complex.real).arg(complex.imaginary >= 0 ? "+" : "-").arg(complex.imaginary);
+        return QStringLiteral("%1 %2 %3i").arg(complex.real()).arg(complex.imaginary() >= 0 ? "+" : "-").arg(complex.imaginary());
     } else if (value.canConvert<QOpcUa::QDoubleComplexNumber>()) {
         const auto complex = value.value<QOpcUa::QDoubleComplexNumber>();
-        return QStringLiteral("%1 %2 %3i").arg(complex.real).arg(complex.imaginary >= 0 ? "+" : "-").arg(complex.imaginary);
+        return QStringLiteral("%1 %2 %3i").arg(complex.real()).arg(complex.imaginary() >= 0 ? "+" : "-").arg(complex.imaginary());
     } else if (value.canConvert<QOpcUa::QXValue>()) {
         const auto xv = value.value<QOpcUa::QXValue>();
-        return QStringLiteral("x: %1, y: %2").arg(xv.x).arg(xv.value);
+        return QStringLiteral("x: %1, y: %2").arg(xv.x()).arg(xv.value());
     } else if (value.canConvert<QOpcUa::QEUInformation>()) {
         const auto info = value.value<QOpcUa::QEUInformation>();
         return euInformationToString(info);
@@ -298,9 +298,9 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
         const auto info = value.value<QOpcUa::QAxisInformation>();
 
         return QStringLiteral("EngineeringUnits: %1, EURange: %2, Title: %3 , AxisScaleType: %4, AxisSteps: %5").arg(
-                    euInformationToString(info.engineeringUnits)).arg(rangeToString(info.eURange)).arg(localizedTextToString(info.title)).arg(
-                        info.axisScaleType == QOpcUa::AxisScale::Linear ? "Linear" : (info.axisScaleType == QOpcUa::AxisScale::Ln) ? "Ln" : "Log").arg(
-                        axisStepsToString(info.axisSteps));
+                    euInformationToString(info.engineeringUnits())).arg(rangeToString(info.eURange())).arg(localizedTextToString(info.title())).arg(
+                        info.axisScaleType() == QOpcUa::AxisScale::Linear ? "Linear" : (info.axisScaleType() == QOpcUa::AxisScale::Ln) ? "Ln" : "Log").arg(
+                        axisStepsToString(info.axisSteps()));
     }
 
     if (value.canConvert<QString>())
@@ -311,18 +311,18 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
 
 QString TreeItem::localizedTextToString(const QOpcUa::QLocalizedText &text) const
 {
-    return QStringLiteral("\"%1\", \"%2\"").arg(text.locale).arg(text.text);
+    return QStringLiteral("\"%1\", \"%2\"").arg(text.locale()).arg(text.text());
 }
 
 QString TreeItem::rangeToString(const QOpcUa::QRange &range) const
 {
-    return QStringLiteral("[%1, %2]").arg(range.low).arg(range.high);
+    return QStringLiteral("[%1, %2]").arg(range.low()).arg(range.high());
 }
 
 QString TreeItem::euInformationToString(const QOpcUa::QEUInformation &info) const
 {
-    return QStringLiteral("UnitId: %1; NamespaceUri: \"%2\"; DisplayName: %3; Description: %4").arg(info.unitId).arg(
-                info.namespaceUri).arg(localizedTextToString(info.displayName)).arg(localizedTextToString(info.description));
+    return QStringLiteral("UnitId: %1; NamespaceUri: \"%2\"; DisplayName: %3; Description: %4").arg(info.unitId()).arg(
+                info.namespaceUri()).arg(localizedTextToString(info.displayName())).arg(localizedTextToString(info.description()));
 }
 
 QString TreeItem::axisStepsToString(const QVector<double> &vec) const

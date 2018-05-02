@@ -135,6 +135,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \fn inline uint QOpcUa::qHash(const QOpcUa::NodeAttribute& attr)
+
+    Returns a \l QHash key for \a attr.
+*/
+
+/*!
     \enum QOpcUa::Types
 
     Enumerates the types supported by Qt OPC UA.
@@ -445,29 +451,98 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
     QualifiedName is mainly used to represent the BrowseName attribute of a node.
 */
 
-/*!
-    \fn QOpcUa::QQualifiedName::QQualifiedName(quint16 p_namespaceIndex, const QString &p_name)
+class QOpcUa::QQualifiedNameData : public QSharedData
+{
+public:
+    QString name;
+    quint16 namespaceIndex;
+};
 
-    Constructs an instance of QQualifiedName with the namespace index given in \a p_namespaceIndex and the name given in \a p_name.
-*/
-
-/*!
-    \fn bool QOpcUa::QQualifiedName::operator==(const QQualifiedName &other) const
-
-    Returns \c true if this QQualifiedName has the same value as \a other.
-*/
-
-/*!
-    \variable QOpcUa::QQualifiedName::namespaceIndex
-
-    The namespace index of the QQualifiedName.
-*/
+QOpcUa::QQualifiedName::QQualifiedName()
+    : data(new QOpcUa::QQualifiedNameData)
+{
+}
 
 /*!
-    \variable QOpcUa::QQualifiedName::name
-
-    The name string of the QQualifiedName.
+    Constructs a qualified name from \a rhs.
 */
+QOpcUa::QQualifiedName::QQualifiedName(const QOpcUa::QQualifiedName &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Constructs a qualified name with namespace index \a namespaceIndex and the name \a name.
+*/
+QOpcUa::QQualifiedName::QQualifiedName(quint16 namespaceIndex, const QString &name)
+    : data(new QOpcUa::QQualifiedNameData)
+{
+    data->namespaceIndex = namespaceIndex;
+    data->name = name;
+}
+
+/*!
+    Returns \c true if this qualified name has the same value as \a rhs.
+*/
+bool QOpcUa::QQualifiedName::operator==(const QOpcUa::QQualifiedName &rhs) const
+{
+    return data->namespaceIndex == rhs.namespaceIndex() &&
+            data->name == rhs.name();
+}
+
+/*!
+    Converts this qualified name to \l QVariant.
+*/
+QOpcUa::QQualifiedName::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
+
+/*!
+    Sets the values from \a rhs in this qualified name.
+*/
+QOpcUa::QQualifiedName &QOpcUa::QQualifiedName::operator=(const QOpcUa::QQualifiedName &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+QOpcUa::QQualifiedName::~QQualifiedName()
+{
+}
+
+/*!
+    Returns the namespace index.
+*/
+quint16 QOpcUa::QQualifiedName::namespaceIndex() const
+{
+    return data->namespaceIndex;
+}
+
+/*!
+    Sets the namespace index to \a value.
+*/
+void QOpcUa::QQualifiedName::setNamespaceIndex(const quint16 &value)
+{
+    data->namespaceIndex = value;
+}
+
+/*!
+    Returns the name.
+*/
+QString QOpcUa::QQualifiedName::name() const
+{
+    return data->name;
+}
+
+/*!
+    Sets the name to \a value.
+*/
+void QOpcUa::QQualifiedName::setName(const QString &value)
+{
+    data->name = value;
+}
 
 /*!
     \class QOpcUa::QLocalizedText
@@ -481,29 +556,99 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
     It can be used to provide multiple text strings in different languages for a value using an array of LocalizedText elements.
 */
 
-/*!
-    \fn QOpcUa::QLocalizedText::QLocalizedText(const QString &p_locale, const QString &p_text)
+class QOpcUa::QLocalizedTextData : public QSharedData
+{
+public:
+    QString locale;
+    QString text;
+};
 
-    Constructs an instance of QLocalizedText with the locale given in \a p_locale and the text given in \a p_text.
-*/
-
-/*!
-    \fn bool QOpcUa::QLocalizedText::operator==(const QLocalizedText &other) const
-
-    Returns \c true if this QLocalizedText has the same value as \a other.
-*/
-
-/*!
-    \variable QOpcUa::QLocalizedText::text
-
-    The text string of the QLocalizedText.
-*/
+QOpcUa::QLocalizedText::QLocalizedText()
+    : data(new QOpcUa::QLocalizedTextData)
+{
+}
 
 /*!
-    \variable QOpcUa::QLocalizedText::locale
-
-    The locale of the QLocalizedText.
+    Constructs a localized text from \a rhs.
 */
+QOpcUa::QLocalizedText::QLocalizedText(const QOpcUa::QLocalizedText &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Constructs a localized text with the locale \a locale and the text \a text.
+*/
+QOpcUa::QLocalizedText::QLocalizedText(const QString &locale, const QString &text)
+    : data(new QOpcUa::QLocalizedTextData)
+{
+    data->locale = locale;
+    data->text = text;
+}
+
+/*!
+    Sets the values from \a rhs in this localized text.
+*/
+QOpcUa::QLocalizedText &QOpcUa::QLocalizedText::operator=(const QOpcUa::QLocalizedText &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+/*!
+    Returns \c true if this localized text has the same value as \a rhs.
+*/
+bool QOpcUa::QLocalizedText::operator==(const QOpcUa::QLocalizedText &rhs) const
+{
+    return data->locale == rhs.locale() &&
+            data->text == rhs.text();
+}
+
+/*!
+    Converts this localized text to \l QVariant.
+*/
+QOpcUa::QLocalizedText::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
+
+QOpcUa::QLocalizedText::~QLocalizedText()
+{
+}
+
+/*!
+    Returns the text.
+*/
+QString QOpcUa::QLocalizedText::text() const
+{
+    return data->text;
+}
+
+/*!
+    Sets the text to \a value.
+
+*/
+void QOpcUa::QLocalizedText::setText(const QString &value)
+{
+    data->text = value;
+}
+
+/*!
+    Returns the locale.
+*/
+QString QOpcUa::QLocalizedText::locale() const
+{
+    return data->locale;
+}
+
+/*!
+    Sets the locale to \a value.
+*/
+void QOpcUa::QLocalizedText::setLocale(const QString &value)
+{
+    data->locale = value;
+}
 
 static bool isNodeError(QOpcUa::UaStatusCode statusCode)
 {
@@ -655,20 +800,98 @@ QString QOpcUa::nodeIdFromInteger(quint16 ns, quint32 identifier)
     Ranges are mostly used to store information about acceptable values for a node.
 */
 
-/*!
-    \variable QOpcUa::QRange::low
-    The minimum value of the range.
-*/
+class QOpcUa::QRangeData : public QSharedData
+{
+public:
+    double low{0};
+    double high{0};
+};
+
+QOpcUa::QRange::QRange()
+    : data(new QOpcUa::QRangeData)
+{
+}
 
 /*!
-    \variable QOpcUa::QRange::high
-    The maximum value of the range.
+    Constructs a range from \a rhs.
 */
+QOpcUa::QRange::QRange(const QOpcUa::QRange &rhs)
+    : data(rhs.data)
+{
+}
 
 /*!
-    \fn bool QOpcUa::QRange::operator==(const QOpcUa::QRange &other) const
-    Returns \c true if this QRange has the same value as \a other.
+    Constructs a range with low value \a low and high value \a high.
 */
+QOpcUa::QRange::QRange(double low, double high)
+    : data(new QOpcUa::QRangeData)
+{
+    data->low = low;
+    data->high = high;
+}
+
+/*!
+    Sets the values from \a rhs in this range.
+*/
+QOpcUa::QRange &QOpcUa::QRange::operator=(const QOpcUa::QRange &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+/*!
+    Returns \c true if this range has the same value as \a rhs.
+*/
+bool QOpcUa::QRange::operator==(const QOpcUa::QRange &rhs) const
+{
+    return data->low == rhs.low() &&
+            data->high == rhs.high();
+}
+
+/*!
+    Converts this range to \l QVariant.
+*/
+QOpcUa::QRange::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
+
+QOpcUa::QRange::~QRange()
+{
+}
+
+/*!
+    Returns the high value of the range.
+*/
+double QOpcUa::QRange::high() const
+{
+    return data->high;
+}
+
+/*!
+    Sets the high value of the range to \a value.
+*/
+void QOpcUa::QRange::setHigh(double value)
+{
+    data->high = value;
+}
+
+/*!
+    Returns the low value of the range.
+*/
+double QOpcUa::QRange::low() const
+{
+    return data->low;
+}
+
+/*!
+    Sets the low value of the range to \a value.
+*/
+void QOpcUa::QRange::setLow(double value)
+{
+    data->low = value;
+}
 
 /*!
     \class QOpcUa::QEUInformation
@@ -680,41 +903,138 @@ QString QOpcUa::nodeIdFromInteger(quint16 ns, quint32 identifier)
     The information can e. g. be used to add text and tooltips to GUI elements.
 */
 
-/*!
-    \fn QOpcUa::QEUInformation::QEUInformation(QString p_namespaceUri, qint32 p_unitId, QLocalizedText p_displayName, QLocalizedText p_description)
+class QOpcUa::QEUInformationData : public QSharedData
+{
+public:
+    QString namespaceUri;
+    qint32 unitId{0};
+    QOpcUa::QLocalizedText displayName;
+    QOpcUa::QLocalizedText description;
+};
 
-    Constructs a QEUInformation with namespace URI \a p_namespaceUri, unit id \a p_unitId, display name \a p_displayName
-    and description \a p_description.
-*/
-
-/*!
-    \fn bool QOpcUa::QEUInformation::operator==(const QEUInformation &other) const
-    Returns \c true if this QEUInformation has the same value as \a other.
-*/
-
-/*!
-    \variable QOpcUa::QEUInformation::namespaceUri
-
-    The namespace URI of the unit.
-*/
+QOpcUa::QEUInformation::QEUInformation()
+    : data(new QOpcUa::QEUInformationData)
+{
+}
 
 /*!
-    \variable QOpcUa::QEUInformation::unitId
-
-    A machine-readable identifier for the unit.
+    Constructs a EUinformation from \a rhs.
 */
+QOpcUa::QEUInformation::QEUInformation(const QOpcUa::QEUInformation &rhs)
+    : data(rhs.data)
+{
+}
 
 /*!
-    \variable QOpcUa::QEUInformation::displayName
-
-    The displayName of the unit, e. g. °C
+    Sets the values from \a rhs in this EUinformation.
 */
+QOpcUa::QEUInformation &QOpcUa::QEUInformation::operator=(const QOpcUa::QEUInformation &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+QOpcUa::QEUInformation::~QEUInformation()
+{
+}
 
 /*!
-    \variable QOpcUa::QEUInformation::description
-
-    The description of the unit, e. g. "degree Celsius".
+    Returns the description of the unit, for example \e {degree Celsius}.
 */
+QOpcUa::QLocalizedText QOpcUa::QEUInformation::description() const
+{
+    return data->description;
+}
+
+/*!
+    Sets the description if the unit to \a description.
+*/
+void QOpcUa::QEUInformation::setDescription(const QOpcUa::QLocalizedText &description)
+{
+    data->description = description;
+}
+
+/*!
+    Returns the display name of the unit, for example \e {°C}.
+*/
+QOpcUa::QLocalizedText QOpcUa::QEUInformation::displayName() const
+{
+    return data->displayName;
+}
+
+/*!
+    Sets the display name of the unit to \a displayName.
+*/
+void QOpcUa::QEUInformation::setDisplayName(const QOpcUa::QLocalizedText &displayName)
+{
+    data->displayName = displayName;
+}
+
+/*!
+    Returns the machine-readable identifier for the unit.
+*/
+qint32 QOpcUa::QEUInformation::unitId() const
+{
+    return data->unitId;
+}
+
+/*!
+    Sets the machine-readable identifier for the unit to \a unitId.
+*/
+void QOpcUa::QEUInformation::setUnitId(qint32 unitId)
+{
+    data->unitId = unitId;
+}
+
+/*!
+    Returns the namespace URI of the unit.
+*/
+QString QOpcUa::QEUInformation::namespaceUri() const
+{
+    return data->namespaceUri;
+}
+
+/*!
+    Sets the namespace URI of the unit to \a namespaceUri.
+*/
+void QOpcUa::QEUInformation::setNamespaceUri(const QString &namespaceUri)
+{
+    data->namespaceUri = namespaceUri;
+}
+
+/*!
+    Constructs a EUinformation with namespace URI \a namespaceUri, unit id \a unitId,
+    display name \a displayName and description \a description.
+*/
+QOpcUa::QEUInformation::QEUInformation(const QString &namespaceUri, qint32 unitId, const QOpcUa::QLocalizedText &displayName,
+                                       const QOpcUa::QLocalizedText &description)
+    : data(new QOpcUa::QEUInformationData)
+{
+    data->namespaceUri = namespaceUri;
+    data->unitId = unitId;
+    data->displayName = displayName;
+    data->description = description;
+}
+
+/*!
+    Returns \c true if this EUinformation has the same value as \a rhs.
+*/
+bool QOpcUa::QEUInformation::operator==(const QOpcUa::QEUInformation &rhs) const
+{
+    return data->namespaceUri == rhs.namespaceUri() &&
+            data->unitId == rhs.unitId() &&
+            data->displayName == rhs.displayName() &&
+            data->description == rhs.description();
+}
+
+/*!
+    Converts this EUinformation to \l QVariant.
+*/
+QOpcUa::QEUInformation::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
 
 /*!
     \class QOpcUa::QComplexNumber
@@ -725,22 +1045,96 @@ QString QOpcUa::nodeIdFromInteger(quint16 ns, quint32 identifier)
     It stores a complex number with float precision.
 */
 
+class QOpcUa::QComplexNumberData : public QSharedData
+{
+public:
+    float real{0};
+    float imaginary{0};
+};
+
+QOpcUa::QComplexNumber::QComplexNumber()
+    : data(new QOpcUa::QComplexNumberData)
+{
+}
+
+QOpcUa::QComplexNumber::QComplexNumber(const QOpcUa::QComplexNumber &rhs)
+    : data(rhs.data)
+{
+}
+
 /*!
-    \variable QOpcUa::QComplexNumber::real
-
-    The real part of the value.
+    Sets the values from \a rhs in this complex number.
 */
+QOpcUa::QComplexNumber &QOpcUa::QComplexNumber::operator=(const QOpcUa::QComplexNumber &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+QOpcUa::QComplexNumber::~QComplexNumber()
+{
+
+}
 
 /*!
-    \variable QOpcUa::QComplexNumber::imaginary
-
-    The imaginary part of the value.
+    Returns the imaginary part of the complex number.
 */
+float QOpcUa::QComplexNumber::imaginary() const
+{
+    return data->imaginary;
+}
 
 /*!
-    \fn bool QOpcUa::QComplexNumber::operator==(const QOpcUa::QComplexNumber &other) const
-    Returns \c true if this QComplexNumber has the same value as \a other.
+    Sets the imaginary part of the complex number to \a value.
 */
+void QOpcUa::QComplexNumber::setImaginary(float value)
+{
+    data->imaginary = value;
+}
+
+/*!
+    Returns the real part of the complex number.
+*/
+float QOpcUa::QComplexNumber::real() const
+{
+    return data->real;
+}
+
+/*!
+    Sets the real part of the complex number to \a value.
+*/
+void QOpcUa::QComplexNumber::setReal(float value)
+{
+    data->real = value;
+}
+
+/*!
+    Constructs a complex number with real part \a real and imaginary part \a imaginary.
+*/
+QOpcUa::QComplexNumber::QComplexNumber(float real, float imaginary)
+    : data(new QOpcUa::QComplexNumberData)
+{
+    data->real = real;
+    data->imaginary = imaginary;
+}
+
+/*!
+    Returns \c true if this complex number has the same value as \a rhs.
+*/
+bool QOpcUa::QComplexNumber::operator==(const QOpcUa::QComplexNumber &rhs) const
+{
+    return qFloatDistance(data->real, rhs.real()) == 0 &&
+            qFloatDistance(data->imaginary, rhs.imaginary()) == 0;
+}
+
+/*!
+    Converts this complex number to \l QVariant.
+*/
+QOpcUa::QComplexNumber::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
 
 /*!
     \class QOpcUa::QDoubleComplexNumber
@@ -751,22 +1145,96 @@ QString QOpcUa::nodeIdFromInteger(quint16 ns, quint32 identifier)
     It stores a complex number with double precision.
 */
 
+class QOpcUa::QDoubleComplexNumberData : public QSharedData
+{
+public:
+    double real{0};
+    double imaginary{0};
+};
+
+QOpcUa::QDoubleComplexNumber::QDoubleComplexNumber()
+    : data(new QOpcUa::QDoubleComplexNumberData)
+{
+}
+
+QOpcUa::QDoubleComplexNumber::QDoubleComplexNumber(const QOpcUa::QDoubleComplexNumber &rhs)
+    : data(rhs.data)
+{
+}
+
 /*!
-    \variable QOpcUa::QDoubleComplexNumber::real
-
-    The real part of the value.
+    Sets the values from \a rhs in this double complex number.
 */
+QOpcUa::QDoubleComplexNumber &QOpcUa::QDoubleComplexNumber::operator=(const QOpcUa::QDoubleComplexNumber &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+QOpcUa::QDoubleComplexNumber::~QDoubleComplexNumber()
+{
+
+}
 
 /*!
-    \variable QOpcUa::QDoubleComplexNumber::imaginary
-
-    The imaginary part of the value.
+    Returns the imaginary part of the complex number.
 */
+double QOpcUa::QDoubleComplexNumber::imaginary() const
+{
+    return data->imaginary;
+}
 
 /*!
-    \fn bool QOpcUa::QDoubleComplexNumber::operator==(const QOpcUa::QDoubleComplexNumber &other) const
-    Returns \c true if this QDoubleComplexNumber has the same value as \a other.
+    Sets the imaginary part of the complex number to \a value.
 */
+void QOpcUa::QDoubleComplexNumber::setImaginary(double value)
+{
+    data->imaginary = value;
+}
+
+/*!
+    Returns the real part of the complex number.
+*/
+double QOpcUa::QDoubleComplexNumber::real() const
+{
+    return data->real;
+}
+
+/*!
+    Sets the real part of the complex number to \a value.
+*/
+void QOpcUa::QDoubleComplexNumber::setReal(double value)
+{
+    data->real = value;
+}
+
+/*!
+    Constructs a double complex number with real part \a real and imaginary part \a imaginary.
+*/
+QOpcUa::QDoubleComplexNumber::QDoubleComplexNumber(double real, double imaginary)
+    : data(new QOpcUa::QDoubleComplexNumberData)
+{
+    data->real = real;
+    data->imaginary = imaginary;
+}
+
+/*!
+    Returns \c true if this double complex number has the same value as \a rhs.
+*/
+bool QOpcUa::QDoubleComplexNumber::operator==(const QOpcUa::QDoubleComplexNumber &rhs) const
+{
+    return qFloatDistance(data->real, rhs.real()) == 0 &&
+            qFloatDistance(data->imaginary, rhs.imaginary()) == 0;
+}
+
+/*!
+    Converts this double complex number to \l QVariant.
+*/
+QOpcUa::QDoubleComplexNumber::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
 
 /*!
     \enum QOpcUa::AxisScale
@@ -789,52 +1257,171 @@ QString QOpcUa::nodeIdFromInteger(quint16 ns, quint32 identifier)
     range, axisScaleType and axisSteps provide the scaling and the axis ranges of the plot.
 */
 
+class QOpcUa::QAxisInformationData : public QSharedData
+{
+public:
+    QOpcUa::QEUInformation engineeringUnits;
+    QOpcUa::QRange eURange;
+    QOpcUa::QLocalizedText title;
+    QOpcUa::AxisScale axisScaleType{QOpcUa::AxisScale::Linear};
+    QVector<double> axisSteps;
+};
+
+QOpcUa::QAxisInformation::QAxisInformation()
+    : data(new QOpcUa::QAxisInformationData)
+{
+}
+
 /*!
-    \fn bool QOpcUa::QAxisInformation::operator==(const QAxisInformation &other) const
-    Returns \c true if this QAxisInformation has the same value as \a other.
+    Constructs axis information from \a rhs.
 */
+QOpcUa::QAxisInformation::QAxisInformation(const QOpcUa::QAxisInformation &rhs)
+    : data(rhs.data)
+{
+}
 
 /*!
-    \fn QOpcUa::QAxisInformation::QAxisInformation(QEUInformation p_engineeringUnits, QRange p_eURange, QLocalizedText p_title, AxisScale p_axisScaleType, QVector<double> p_axisSteps)
-
-    Constructs a QAxisInformation with engineering units \a p_engineeringUnits, range \a p_eURange, title \a p_title,
-    scaling \a p_axisScaleType and axis steps \a p_axisSteps.
+    Sets the values from \a rhs in this axis information.
 */
+QOpcUa::QAxisInformation &QOpcUa::QAxisInformation::operator=(const QOpcUa::QAxisInformation &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+QOpcUa::QAxisInformation::~QAxisInformation()
+{
+}
 
 /*!
-    \variable QOpcUa::QAxisInformation::engineeringUnits
-
-    The engineering units of this axis.
+    Returns the lower and upper values of this axis.
 */
+QOpcUa::QRange QOpcUa::QAxisInformation::eURange() const
+{
+    return data->eURange;
+}
 
 /*!
-    \variable QOpcUa::QAxisInformation::eURange
-
-    The lower and upper values of this axis.
+    Sets the lower and upper values of this axis to \a eURange.
 */
+void QOpcUa::QAxisInformation::setEURange(const QOpcUa::QRange &eURange)
+{
+    data->eURange = eURange;
+}
 
 /*!
-    \variable QOpcUa::QAxisInformation::title
-
-    The title of this axis.
+    Returns the title of this axis.
 */
+QOpcUa::QLocalizedText QOpcUa::QAxisInformation::title() const
+{
+    return data->title;
+}
 
 /*!
-    \variable QOpcUa::QAxisInformation::axisScaleType
-
-    The scaling of this axis, defined by QOpcUa::AxisScale.
+    Sets the title to \a title.
 */
+void QOpcUa::QAxisInformation::setTitle(const QOpcUa::QLocalizedText &title)
+{
+    data->title = title;
+}
 
 /*!
-    \variable QOpcUa::QAxisInformation::axisSteps
+    Returns the scaling of this axis, defined by \l QOpcUa::AxisScale.
+*/
+QOpcUa::AxisScale QOpcUa::QAxisInformation::axisScaleType() const
+{
+    return data->axisScaleType;
+}
 
-    Specific values for each axis step.
+/*!
+    Sets the axis scale type to \a axisScaleType.
+*/
+void QOpcUa::QAxisInformation::setAxisScaleType(const QOpcUa::AxisScale &axisScaleType)
+{
+    data->axisScaleType = axisScaleType;
+}
+
+/*!
+    Returns specific values for each axis step.
 
     This value is empty if the points are equally distributed and the step size can be
     calculated from the number of steps and the range.
     If the steps are different for each point but constant over a longer time, there is an entry for
     each data point.
 */
+QVector<double> QOpcUa::QAxisInformation::axisSteps() const
+{
+    return data->axisSteps;
+}
+
+/*!
+    Sets the axis steps to \a axisSteps.
+*/
+void QOpcUa::QAxisInformation::setAxisSteps(const QVector<double> &axisSteps)
+{
+    data->axisSteps = axisSteps;
+}
+
+/*!
+    Returns a reference to the axis steps.
+*/
+QVector<double> &QOpcUa::QAxisInformation::axisStepsRef()
+{
+    return data->axisSteps;
+}
+
+/*!
+    Returns the engineering units of this axis.
+*/
+QOpcUa::QEUInformation QOpcUa::QAxisInformation::engineeringUnits() const
+{
+    return data->engineeringUnits;
+}
+
+/*!
+    Sets the engineering units to \a engineeringUnits.
+*/
+void QOpcUa::QAxisInformation::setEngineeringUnits(const QOpcUa::QEUInformation &engineeringUnits)
+{
+    data->engineeringUnits = engineeringUnits;
+}
+
+/*!
+    Returns \c true if this axis information has the same value as \a rhs.
+*/
+bool QOpcUa::QAxisInformation::operator==(const QOpcUa::QAxisInformation &rhs) const
+{
+    return data->axisScaleType == rhs.axisScaleType() &&
+            data->axisSteps == rhs.axisSteps() &&
+            data->engineeringUnits == rhs.engineeringUnits() &&
+            data->eURange == rhs.eURange() &&
+            data->title == rhs.title();
+}
+
+/*!
+    Converts this axis information to \l QVariant.
+*/
+QOpcUa::QAxisInformation::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
+
+/*!
+    Constructs axis information with engineering units \a engineeringUnits,
+    range \a eURange, title \a title, scaling \a axisScaleType and axis steps \a axisSteps.
+*/
+QOpcUa::QAxisInformation::QAxisInformation(const QOpcUa::QEUInformation &engineeringUnits, const QOpcUa::QRange &eURange, const QOpcUa::QLocalizedText &title,
+                                           const QOpcUa::AxisScale &axisScaleType, const QVector<double> &axisSteps)
+    : data (new QOpcUa::QAxisInformationData)
+{
+    data->engineeringUnits = engineeringUnits;
+    data->eURange == eURange;
+    data->title = title;
+    data->axisScaleType = axisScaleType;
+    data->axisSteps = axisSteps;
+}
+
 
 /*!
     \class QOpcUa::QXValue
@@ -845,27 +1432,97 @@ QString QOpcUa::nodeIdFromInteger(quint16 ns, quint32 identifier)
     This type is used to position values of float precision on an axis with double precision.
 */
 
-/*!
-    \variable QOpcUa::QXValue::x
+class QOpcUa::QXValueData : public QSharedData
+{
+public:
+    double x{0};
+    float value{0};
+};
 
-    The position of the value on the axis.
-*/
-
-/*!
-    \variable QOpcUa::QXValue::value
-
-    The value for position x.
-*/
-
-/*!
-    \fn bool QOpcUa::QXValue::operator==(const QOpcUa::QXValue &other) const
-    Returns \c true if this QXValue has the same value as \a other.
-*/
+QOpcUa::QXValue::QXValue()
+    : data(new QOpcUa::QXValueData)
+{
+}
 
 /*!
-    \fn inline uint QOpcUa::qHash(const QOpcUa::NodeAttribute& attr)
-
-    Returns a \l QHash key for \a attr.
+    Constructs an XValue from \a rhs.
 */
+QOpcUa::QXValue::QXValue(const QOpcUa::QXValue &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Constructs an XValue with position \a x and value \a value.
+*/
+QOpcUa::QXValue::QXValue(double x, float value)
+    : data(new QOpcUa::QXValueData)
+{
+    data->x = x;
+    data->value = value;
+}
+
+/*!
+    Sets the values from \a rhs in this XValue.
+*/
+QOpcUa::QXValue &QOpcUa::QXValue::operator=(const QOpcUa::QXValue &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+/*!
+    Returns \c true if this XValue has the same value as \a rhs.
+*/
+bool QOpcUa::QXValue::operator==(const QOpcUa::QXValue &rhs) const
+{
+    return qFloatDistance(data->x, rhs.x()) == 0 &&
+            qFloatDistance(data->value, rhs.value()) == 0;
+}
+
+/*!
+    Converts this XValue to \l QVariant.
+*/
+QOpcUa::QXValue::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
+
+QOpcUa::QXValue::~QXValue()
+{
+}
+
+/*!
+    Returns the value for position x.
+*/
+float QOpcUa::QXValue::value() const
+{
+    return data->value;
+}
+
+/*!
+    Sets the value for position x to \a value.
+*/
+void QOpcUa::QXValue::setValue(float value)
+{
+    data->value = value;
+}
+
+/*!
+    Returns the position of the value on the axis.
+*/
+double QOpcUa::QXValue::x() const
+{
+    return data->x;
+}
+
+/*!
+    Sets the position of the value on the axis to \a x.
+*/
+void QOpcUa::QXValue::setX(double x)
+{
+    data->x = x;
+}
 
 QT_END_NAMESPACE

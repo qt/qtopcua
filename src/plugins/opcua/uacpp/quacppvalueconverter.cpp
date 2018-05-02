@@ -181,8 +181,8 @@ QVariant scalarToQVariant<QString, OpcUa_LocalizedText>(OpcUa_LocalizedText *dat
 
     QOpcUa::QLocalizedText lt;
 
-    lt.locale = QString::fromUtf8(ualtLocal.toUtf8(), ualtLocal.size());
-    lt.text = QString::fromUtf8(ualtText.toUtf8(), ualtText.size());
+    lt.setLocale(QString::fromUtf8(ualtLocal.toUtf8(), ualtLocal.size()));
+    lt.setText(QString::fromUtf8(ualtText.toUtf8(), ualtText.size()));
     return QVariant::fromValue(lt);
 }
 
@@ -196,8 +196,8 @@ QVariant scalarToQVariant<QOpcUa::QLocalizedText, OpcUa_LocalizedText>(OpcUa_Loc
 
     QOpcUa::QLocalizedText lt;
 
-    lt.locale = QString::fromUtf8(ualtLocal.toUtf8(), ualtLocal.size());
-    lt.text = QString::fromUtf8(ualtText.toUtf8(), ualtText.size());
+    lt.setLocale(QString::fromUtf8(ualtLocal.toUtf8(), ualtLocal.size()));
+    lt.setText(QString::fromUtf8(ualtText.toUtf8(), ualtText.size()));
     return QVariant::fromValue(lt);
 }
 
@@ -230,8 +230,8 @@ QVariant scalarToQVariant<QOpcUa::QQualifiedName, OpcUa_QualifiedName>(OpcUa_Qua
 {
     Q_UNUSED(type);
     QOpcUa::QQualifiedName temp;
-    temp.namespaceIndex = data->NamespaceIndex;
-    temp.name = scalarToQVariant<QString, OpcUa_String>(&data->Name, QMetaType::Type::QString).toString();
+    temp.setNamespaceIndex(data->NamespaceIndex);
+    temp.setName(scalarToQVariant<QString, OpcUa_String>(&data->Name, QMetaType::Type::QString).toString());
     return QVariant::fromValue(temp);
 }
 
@@ -462,10 +462,10 @@ void scalarFromQVariant<OpcUa_LocalizedText, QString>(const QVariant &var, OpcUa
             : QOpcUa::QLocalizedText(QLatin1String(""), var.value<QString>());
 
     UaLocalizedText ualt;
-    if (lt.locale.size())
-        ualt.setLocale(UaString(lt.locale.toUtf8().constData()));
-    if (lt.text.size())
-        ualt.setText(UaString(lt.text.toUtf8().constData()));
+    if (lt.locale().size())
+        ualt.setLocale(UaString(lt.locale().toUtf8().constData()));
+    if (lt.text().size())
+        ualt.setText(UaString(lt.text().toUtf8().constData()));
     ualt.copyTo(ptr);
 }
 
@@ -494,8 +494,8 @@ template<>
 void scalarFromQVariant<OpcUa_QualifiedName, QOpcUa::QQualifiedName>(const QVariant &var, OpcUa_QualifiedName *ptr)
 {
     QOpcUa::QQualifiedName temp = var.value<QOpcUa::QQualifiedName>();
-    ptr->NamespaceIndex = temp.namespaceIndex;
-    const UaString name(temp.name.toUtf8().constData());
+    ptr->NamespaceIndex = temp.namespaceIndex();
+    const UaString name(temp.name().toUtf8().constData());
     name.copyTo(&ptr->Name);
 }
 

@@ -455,7 +455,7 @@ void Tst_QOpcUaClient::readInvalidNode()
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=0;s=doesnotexist"));
     QVERIFY(node != 0);
-    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text, QString());
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text(), QString());
 
     QSignalSpy attributeReadSpy(node.data(), &QOpcUaNode::attributeRead);
 
@@ -501,8 +501,8 @@ void Tst_QOpcUaClient::writeMultipleAttributes()
     QVERIFY(node != 0);
 
     QOpcUaNode::AttributeMap map;
-    map[QOpcUa::NodeAttribute::DisplayName] = QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("NewDisplayName")));
-    map[QOpcUa::NodeAttribute::Value] = QVariant::fromValue(QOpcUa::QQualifiedName(2, QStringLiteral("TestString")));
+    map[QOpcUa::NodeAttribute::DisplayName] = QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("NewDisplayName"));
+    map[QOpcUa::NodeAttribute::Value] = QOpcUa::QQualifiedName(2, QStringLiteral("TestString"));
 
     QSignalSpy writeSpy(node.data(), &QOpcUaNode::attributeWritten);
 
@@ -546,7 +546,7 @@ void Tst_QOpcUaClient::getRootNode()
     QVERIFY(root != 0);
 
     READ_MANDATORY_BASE_NODE(root)
-    QVERIFY(root->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text == QLatin1String("Root"));
+    QVERIFY(root->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text() == QLatin1String("Root"));
 
     QString nodeId = root->nodeId();
     QCOMPARE(nodeId, QStringLiteral("ns=0;i=84"));
@@ -671,7 +671,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
     dataChangeSpy.wait();
     QVERIFY(dataChangeSpy.size() == 1);
     QVERIFY(dataChangeSpy.at(0).at(0).value<QOpcUa::NodeAttribute>() == QOpcUa::NodeAttribute::DisplayName);
-    QVERIFY(dataChangeSpy.at(0).at(1).value<QOpcUa::QLocalizedText>().text == QLatin1String("TestNode.ReadWrite"));
+    QVERIFY(dataChangeSpy.at(0).at(1).value<QOpcUa::QLocalizedText>().text() == QLatin1String("TestNode.ReadWrite"));
 
     monitoringEnabledSpy.clear();
     dataChangeSpy.clear();
@@ -1109,9 +1109,9 @@ void Tst_QOpcUaClient::writeArray()
     WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::UInt64);
 
     list.clear();
-    list.append(QVariant::fromValue(localizedTexts[0]));
-    list.append(QVariant::fromValue(localizedTexts[1]));
-    list.append(QVariant::fromValue(localizedTexts[2]));
+    list.append(localizedTexts[0]);
+    list.append(localizedTexts[1]);
+    list.append(localizedTexts[2]);
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.LocalizedText"));
     QVERIFY(node != 0);
     WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::LocalizedText);
@@ -1143,9 +1143,9 @@ void Tst_QOpcUaClient::writeArray()
     WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::NodeId);
 
     list.clear();
-    list.append(QVariant::fromValue(QOpcUa::QQualifiedName(0, "Test0")));
-    list.append(QVariant::fromValue(QOpcUa::QQualifiedName(1, "Test1")));
-    list.append(QVariant::fromValue(QOpcUa::QQualifiedName(2, "Test2")));
+    list.append(QOpcUa::QQualifiedName(0, "Test0"));
+    list.append(QOpcUa::QQualifiedName(1, "Test1"));
+    list.append(QOpcUa::QQualifiedName(2, "Test2"));
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.QualifiedName"));
     QVERIFY(node != 0);
     WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::QualifiedName);
@@ -1554,7 +1554,7 @@ void Tst_QOpcUaClient::writeScalar()
 
     QScopedPointer<QOpcUaNode> ltNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.LocalizedText"));
     QVERIFY(ltNode != 0);
-    WRITE_VALUE_ATTRIBUTE(ltNode, QVariant::fromValue(localizedTexts[0]), QOpcUa::LocalizedText);
+    WRITE_VALUE_ATTRIBUTE(ltNode, localizedTexts[0], QOpcUa::LocalizedText);
 
     QByteArray withNull("gh");
     withNull.append('\0');
@@ -1577,7 +1577,7 @@ void Tst_QOpcUaClient::writeScalar()
 
     QScopedPointer<QOpcUaNode> qualifiedNameNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.QualifiedName"));
     QVERIFY(qualifiedNameNode != 0);
-    WRITE_VALUE_ATTRIBUTE(qualifiedNameNode, QVariant::fromValue(QOpcUa::QQualifiedName(0, QLatin1String("Test0"))), QOpcUa::QualifiedName);
+    WRITE_VALUE_ATTRIBUTE(qualifiedNameNode, QOpcUa::QQualifiedName(0, QLatin1String("Test0")), QOpcUa::QualifiedName);
 
     QScopedPointer<QOpcUaNode> statusCodeNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.StatusCode"));
     QVERIFY(statusCodeNode != 0);
@@ -1949,9 +1949,9 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
     dataChangeSpy.clear();
 
     QOpcUaMonitoringParameters::DataChangeFilter filter;
-    filter.deadbandType = QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType::Absolute;
-    filter.trigger = QOpcUaMonitoringParameters::DataChangeFilter::DataChangeTrigger::StatusValue;
-    filter.deadbandValue = 1.0;
+    filter.setDeadbandType(QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType::Absolute);
+    filter.setTrigger(QOpcUaMonitoringParameters::DataChangeFilter::DataChangeTrigger::StatusValue);
+    filter.setDeadbandValue(1.0);
     doubleNode->modifyDataChangeFilter(QOpcUa::NodeAttribute::Value, filter);
     monitoringModifiedSpy.wait();
     QVERIFY(monitoringModifiedSpy.size() == 1);
@@ -2186,7 +2186,7 @@ void Tst_QOpcUaClient::stringCharset()
     QOpcUa::QLocalizedText lt2("de", testString);
 
     WRITE_VALUE_ATTRIBUTE(stringScalarNode, testString, QOpcUa::String);
-    WRITE_VALUE_ATTRIBUTE(localizedScalarNode, QVariant::fromValue(localizedTexts[0]), QOpcUa::LocalizedText);
+    WRITE_VALUE_ATTRIBUTE(localizedScalarNode, localizedTexts[0], QOpcUa::LocalizedText);
 
     QVariantList l;
     l.append(testString);
@@ -2195,8 +2195,8 @@ void Tst_QOpcUaClient::stringCharset()
     WRITE_VALUE_ATTRIBUTE(stringArrayNode, l, QOpcUa::String);
 
     l.clear();
-    l.append(QVariant::fromValue(lt1));
-    l.append(QVariant::fromValue(lt2));
+    l.append(lt1);
+    l.append(lt2);
 
     WRITE_VALUE_ATTRIBUTE(localizedArrayNode, l, QOpcUa::LocalizedText);
 
@@ -2247,7 +2247,7 @@ void Tst_QOpcUaClient::namespaceArray()
     QScopedPointer<QOpcUaNode> node(opcuaClient->node(QOpcUa::nodeIdFromString(nsIndex, QStringLiteral("Demo.Static.Scalar.String"))));
     READ_MANDATORY_BASE_NODE(node);
 
-    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text, QStringLiteral("StringScalarTest"));
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text(), QStringLiteral("StringScalarTest"));
 }
 
 void Tst_QOpcUaClient::dateTimeConversion()

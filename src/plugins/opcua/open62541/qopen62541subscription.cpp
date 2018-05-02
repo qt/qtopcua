@@ -383,9 +383,9 @@ UA_ExtensionObject QOpen62541Subscription::createFilter(const QVariant &filterDa
     if (filterData.type() == QVariant::UserType && filterData.userType() == QMetaType::type("QOpcUaMonitoringParameters::DataChangeFilter")) {
         QOpcUaMonitoringParameters::DataChangeFilter temp = filterData.value<QOpcUaMonitoringParameters::DataChangeFilter>();
         UA_DataChangeFilter *filter = UA_DataChangeFilter_new();
-        filter->deadbandType = static_cast<UA_UInt32>(temp.deadbandType);
-        filter->deadbandValue = temp.deadbandValue;
-        filter->trigger = static_cast<UA_DataChangeTrigger>(temp.trigger);
+        filter->deadbandType = static_cast<UA_UInt32>(temp.deadbandType());
+        filter->deadbandValue = temp.deadbandValue();
+        filter->trigger = static_cast<UA_DataChangeTrigger>(temp.trigger());
         obj.encoding = UA_EXTENSIONOBJECT_DECODED;
         obj.content.decoded.type = &UA_TYPES[UA_TYPES_DATACHANGEFILTER];
         obj.content.decoded.data = filter;

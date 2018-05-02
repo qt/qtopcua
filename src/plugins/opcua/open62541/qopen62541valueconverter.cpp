@@ -308,8 +308,8 @@ QVariant scalarToQVariant<QOpcUa::QLocalizedText, UA_LocalizedText>(UA_Localized
     Q_UNUSED(type)
 
     QOpcUa::QLocalizedText lt;
-    lt.locale = scalarToQVariant<QString, UA_String>(&(data->locale), QMetaType::Type::QString).toString();
-    lt.text = scalarToQVariant<QString, UA_String>(&(data->text), QMetaType::Type::QString).toString();
+    lt.setLocale(scalarToQVariant<QString, UA_String>(&(data->locale), QMetaType::Type::QString).toString());
+    lt.setText(scalarToQVariant<QString, UA_String>(&(data->text), QMetaType::Type::QString).toString());
     return QVariant::fromValue(lt);
 }
 
@@ -343,8 +343,8 @@ QVariant scalarToQVariant<QOpcUa::QQualifiedName, UA_QualifiedName>(UA_Qualified
 {
     Q_UNUSED(type);
     QOpcUa::QQualifiedName temp;
-    temp.namespaceIndex = data->namespaceIndex;
-    temp.name = scalarToQVariant<QString, UA_String>(&(data->name), QMetaType::Type::QString).toString();
+    temp.setNamespaceIndex(data->namespaceIndex);
+    temp.setName(scalarToQVariant<QString, UA_String>(&(data->name), QMetaType::Type::QString).toString());
     return QVariant::fromValue(temp);
 }
 
@@ -459,8 +459,8 @@ template<>
 void scalarFromQVariant<UA_LocalizedText, QOpcUa::QLocalizedText>(const QVariant &var, UA_LocalizedText *ptr)
 {
     QOpcUa::QLocalizedText lt = var.value<QOpcUa::QLocalizedText>();
-    scalarFromQVariant<UA_String, QString>(lt.locale, &(ptr->locale));
-    scalarFromQVariant<UA_String, QString>(lt.text, &(ptr->text));
+    scalarFromQVariant<UA_String, QString>(lt.locale(), &(ptr->locale));
+    scalarFromQVariant<UA_String, QString>(lt.text(), &(ptr->text));
 }
 
 template<>
@@ -486,8 +486,8 @@ template<>
 void scalarFromQVariant<UA_QualifiedName, QOpcUa::QQualifiedName>(const QVariant &var, UA_QualifiedName *ptr)
 {
     QOpcUa::QQualifiedName temp = var.value<QOpcUa::QQualifiedName>();
-    ptr->namespaceIndex = temp.namespaceIndex;
-    scalarFromQVariant<UA_String, QString>(temp.name, &(ptr->name));
+    ptr->namespaceIndex = temp.namespaceIndex();
+    scalarFromQVariant<UA_String, QString>(temp.name(), &(ptr->name));
 }
 
 template<>

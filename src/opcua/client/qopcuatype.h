@@ -41,6 +41,7 @@
 
 #include <QtCore/qmetatype.h>
 #include <QtCore/qpair.h>
+#include <QtCore/qshareddata.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qvector.h>
 
@@ -423,113 +424,143 @@ Q_OPCUA_EXPORT QString nodeIdFromInteger(quint16 ns, quint32 identifier);
 
 typedef QPair<QVariant, QOpcUa::Types> TypedVariant;
 
-struct QQualifiedName {
-    quint16 namespaceIndex;
-    QString name;
-    QQualifiedName(quint16 p_namespaceIndex, const QString &p_name)
-        : namespaceIndex(p_namespaceIndex)
-        , name(p_name)
-    {}
-    QQualifiedName()
-        : namespaceIndex(0)
-    {}
-    bool operator==(const QQualifiedName &other) const
-    {
-        return namespaceIndex == other.namespaceIndex &&
-                name == other.name;
-    }
+class QQualifiedNameData;
+class Q_OPCUA_EXPORT QQualifiedName
+{
+public:
+    QQualifiedName();
+    QQualifiedName(const QOpcUa::QQualifiedName &);
+    QQualifiedName(quint16 namespaceIndex, const QString &name);
+    QQualifiedName &operator=(const QOpcUa::QQualifiedName &);
+    bool operator==(const QOpcUa::QQualifiedName &rhs) const;
+    operator QVariant() const;
+    ~QQualifiedName();
+
+    QString name() const;
+    void setName(const QString &value);
+
+    quint16 namespaceIndex() const;
+    void setNamespaceIndex(const quint16 &value);
+
+private:
+    QSharedDataPointer<QOpcUa::QQualifiedNameData> data;
 };
 
-struct QLocalizedText {
-    QString locale;
-    QString text;
-    QLocalizedText(const QString &p_locale, const QString &p_text)
-        : locale(p_locale)
-        , text(p_text)
-    {}
-    QLocalizedText() {}
-    bool operator==(const QLocalizedText &other) const
-    {
-        return locale == other.locale && text == other.text;
-    }
+class QLocalizedTextData;
+class Q_OPCUA_EXPORT QLocalizedText
+{
+public:
+    QLocalizedText();
+    QLocalizedText(const QOpcUa::QLocalizedText &);
+    QLocalizedText(const QString &locale, const QString &text);
+    QLocalizedText &operator=(const QOpcUa::QLocalizedText &);
+    bool operator==(const QOpcUa::QLocalizedText &rhs) const;
+    operator QVariant() const;
+    ~QLocalizedText();
+
+    QString locale() const;
+    void setLocale(const QString &value);
+
+    QString text() const;
+    void setText(const QString &value);
+
+private:
+    QSharedDataPointer<QOpcUa::QLocalizedTextData> data;
 };
 
-struct QRange {
-    double low;
-    double high;
-    constexpr QRange(double p_low, double p_high) noexcept
-        : low(p_low)
-        , high(p_high)
-    {}
-    constexpr QRange() noexcept
-        : low(0)
-        , high(0)
-    {}
-    bool operator==(const QOpcUa::QRange &other) const
-    {
-        return qFloatDistance(low, other.low) == 0 &&
-                qFloatDistance(high, other.high) == 0;
-    }
+class QRangeData;
+class Q_OPCUA_EXPORT QRange
+{
+public:
+    QRange();
+    QRange(const QOpcUa::QRange &);
+    QRange(double low, double high);
+    QRange &operator=(const QOpcUa::QRange &);
+    bool operator==(const QOpcUa::QRange &rhs) const;
+    operator QVariant() const;
+    ~QRange();
+
+    double low() const;
+    void setLow(double value);
+
+    double high() const;
+    void setHigh(double value);
+
+private:
+    QSharedDataPointer<QOpcUa::QRangeData> data;
 };
 
-struct QEUInformation {
-    QString namespaceUri;
-    qint32 unitId;
-    QLocalizedText displayName;
-    QLocalizedText description;
-    QEUInformation()
-        : unitId(0)
-    {}
-    QEUInformation(QString p_namespaceUri, qint32 p_unitId,
-                   QLocalizedText p_displayName, QLocalizedText p_description)
-        : namespaceUri(p_namespaceUri)
-        , unitId(p_unitId)
-        , displayName(p_displayName)
-        , description(p_description)
-    {}
-    bool operator==(const QEUInformation &other) const
-    {
-        return namespaceUri == other.namespaceUri &&
-                unitId == other.unitId &&
-                displayName == other.displayName &&
-                description == other.description;
-    }
+class QEUInformationData;
+class Q_OPCUA_EXPORT QEUInformation
+{
+public:
+    QEUInformation();
+    QEUInformation(const QOpcUa::QEUInformation &);
+    QEUInformation(const QString &namespaceUri, qint32 unitId,
+                   const QOpcUa::QLocalizedText &displayName, const QOpcUa::QLocalizedText &description);
+    QEUInformation &operator=(const QOpcUa::QEUInformation &);
+    bool operator==(const QOpcUa::QEUInformation &rhs) const;
+    operator QVariant() const;
+    ~QEUInformation();
+
+    QString namespaceUri() const;
+    void setNamespaceUri(const QString &namespaceUri);
+
+    qint32 unitId() const;
+    void setUnitId(qint32 unitId);
+
+    QOpcUa::QLocalizedText displayName() const;
+    void setDisplayName(const QOpcUa::QLocalizedText &displayName);
+
+    QOpcUa::QLocalizedText description() const;
+    void setDescription(const QOpcUa::QLocalizedText &description);
+
+private:
+    QSharedDataPointer<QOpcUa::QEUInformationData> data;
 };
 
-struct QComplexNumber {
-    float real;
-    float imaginary;
-    constexpr QComplexNumber() noexcept
-        : real(0)
-        , imaginary(0)
-    {}
-    constexpr QComplexNumber(float p_real, float p_imaginary) noexcept
-        : real(p_real)
-        , imaginary(p_imaginary)
-    {}
-    bool operator==(const QComplexNumber &other) const
-    {
-        return qFloatDistance(real, other.real) == 0 &&
-                qFloatDistance(imaginary, other.imaginary) == 0;
-    }
+class QComplexNumberData;
+class Q_OPCUA_EXPORT QComplexNumber
+{
+public:
+    QComplexNumber();
+    QComplexNumber(const QOpcUa::QComplexNumber &);
+    QComplexNumber(float real, float imaginary);
+    QComplexNumber &operator=(const QOpcUa::QComplexNumber &);
+    bool operator==(const QOpcUa::QComplexNumber &rhs) const;
+    operator QVariant() const;
+    ~QComplexNumber();
+
+    float real() const;
+    void setReal(float value);
+
+    float imaginary() const;
+    void setImaginary(float value);
+
+private:
+    QSharedDataPointer<QOpcUa::QComplexNumberData> data;
 };
 
-struct QDoubleComplexNumber {
-    double real;
-    double imaginary;
-    constexpr QDoubleComplexNumber() noexcept
-        : real(0)
-        , imaginary(0)
-    {}
-    constexpr QDoubleComplexNumber(double p_real, double p_imaginary) noexcept
-        : real(p_real)
-        , imaginary(p_imaginary)
-    {}
-    bool operator==(const QDoubleComplexNumber &other) const
-    {
-        return qFloatDistance(real, other.real) == 0 &&
-                qFloatDistance(imaginary, other.imaginary) == 0;
-    }
+class QDoubleComplexNumberData;
+class Q_OPCUA_EXPORT QDoubleComplexNumber
+{
+public:
+    QDoubleComplexNumber();
+    QDoubleComplexNumber(const QOpcUa::QDoubleComplexNumber &);
+    QDoubleComplexNumber(double real, double imaginary);
+    QDoubleComplexNumber &operator=(const QOpcUa::QDoubleComplexNumber &);
+    bool operator==(const QOpcUa::QDoubleComplexNumber &rhs) const;
+    operator QVariant() const;
+    ~QDoubleComplexNumber();
+
+    double real() const;
+    void setReal(double value);
+
+    double imaginary() const;
+    void setImaginary(double value);
+
+private:
+    QSharedDataPointer<QOpcUa::QDoubleComplexNumberData> data;
 };
 
 enum class AxisScale : quint32 {
@@ -538,47 +569,59 @@ enum class AxisScale : quint32 {
     Ln = 2
 };
 
-struct QAxisInformation {
-    QEUInformation engineeringUnits;
-    QRange eURange;
-    QLocalizedText title;
-    AxisScale axisScaleType;
-    QVector<double> axisSteps;
-    QAxisInformation() {}
-    QAxisInformation(QEUInformation p_engineeringUnits, QRange p_eURange, QLocalizedText p_title,
-                     AxisScale p_axisScaleType, QVector<double> p_axisSteps)
-        : engineeringUnits(p_engineeringUnits)
-        , eURange(p_eURange)
-        , title(p_title)
-        , axisScaleType(p_axisScaleType)
-        , axisSteps(p_axisSteps)
-    {}
-    bool operator==(const QAxisInformation &other) const
-    {
-        return engineeringUnits == other.engineeringUnits &&
-                eURange == other.eURange &&
-                title == other.title &&
-                axisScaleType == other.axisScaleType &&
-                axisSteps == other.axisSteps;
-    }
+class QAxisInformationData;
+class Q_OPCUA_EXPORT QAxisInformation
+{
+public:
+    QAxisInformation();
+    QAxisInformation(const QOpcUa::QAxisInformation &);
+    QAxisInformation(const QOpcUa::QEUInformation &engineeringUnits, const QOpcUa::QRange &eURange, const QOpcUa::QLocalizedText &title,
+                     const QOpcUa::AxisScale &axisScaleType, const QVector<double> &axisSteps);
+    QAxisInformation &operator=(const QOpcUa::QAxisInformation &);
+    bool operator==(const QOpcUa::QAxisInformation &rhs) const;
+    operator QVariant() const;
+    ~QAxisInformation();
+
+    QOpcUa::QEUInformation engineeringUnits() const;
+    void setEngineeringUnits(const QOpcUa::QEUInformation &engineeringUnits);
+
+    QOpcUa::QRange eURange() const;
+    void setEURange(const QOpcUa::QRange &eURange);
+
+    QOpcUa::QLocalizedText title() const;
+    void setTitle(const QOpcUa::QLocalizedText &title);
+
+    QOpcUa::AxisScale axisScaleType() const;
+    void setAxisScaleType(const QOpcUa::AxisScale &axisScaleType);
+
+    QVector<double> axisSteps() const;
+    void setAxisSteps(const QVector<double> &axisSteps);
+    QVector<double> &axisStepsRef();
+
+private:
+    QSharedDataPointer<QOpcUa::QAxisInformationData> data;
 };
 
-struct QXValue {
-    double x;
-    float value;
-    constexpr QXValue() noexcept
-        : x(0)
-        , value()
-    {}
-    constexpr QXValue(float p_x, float p_value) noexcept
-        : x(p_x)
-        , value(p_value)
-    {}
-    bool operator==(const QXValue &other) const
-    {
-        return qFloatDistance(x, other.x) == 0 &&
-                qFloatDistance(value, other.value) == 0;
-    }
+class QXValueData;
+class Q_OPCUA_EXPORT QXValue
+{
+public:
+    QXValue();
+    QXValue(const QOpcUa::QXValue &);
+    QXValue(double x, float value);
+    QXValue &operator=(const QOpcUa::QXValue &);
+    bool operator==(const QOpcUa::QXValue &rhs) const;
+    operator QVariant() const;
+    ~QXValue();
+
+    double x() const;
+    void setX(double x);
+
+    float value() const;
+    void setValue(float value);
+
+private:
+    QSharedDataPointer<QOpcUa::QXValueData> data;
 };
 }
 

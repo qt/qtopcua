@@ -107,12 +107,12 @@ QOpcUa::QLocalizedText QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t
         return QOpcUa::QLocalizedText();
 
     if (encodingMask & 0x01) {
-        temp.locale = decode<QString>(ptr, bufferSize, success);
+        temp.setLocale(decode<QString>(ptr, bufferSize, success));
         if (!success)
             return QOpcUa::QLocalizedText();
     }
     if (encodingMask & 0x02) {
-        temp.text = decode<QString>(ptr, bufferSize, success);
+        temp.setText(decode<QString>(ptr, bufferSize, success));
         if (!success)
             return QOpcUa::QLocalizedText();
     }
@@ -123,16 +123,16 @@ template <>
 QOpcUa::QEUInformation QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
 {
     QOpcUa::QEUInformation temp;
-    temp.namespaceUri = decode<QString>(ptr, bufferSize, success);
+    temp.setNamespaceUri(decode<QString>(ptr, bufferSize, success));
     if (!success)
         return QOpcUa::QEUInformation();
-    temp.unitId = decode<qint32>(ptr, bufferSize, success);
+    temp.setUnitId(decode<qint32>(ptr, bufferSize, success));
     if (!success)
         return QOpcUa::QEUInformation();
-    temp.displayName = decode<QOpcUa::QLocalizedText>(ptr, bufferSize, success);
+    temp.setDisplayName(decode<QOpcUa::QLocalizedText>(ptr, bufferSize, success));
     if (!success)
         return QOpcUa::QEUInformation();
-    temp.description = decode<QOpcUa::QLocalizedText>(ptr, bufferSize, success);
+    temp.setDescription(decode<QOpcUa::QLocalizedText>(ptr, bufferSize, success));
     if (!success)
         return QOpcUa::QEUInformation();
     return temp;
@@ -142,10 +142,10 @@ template <>
 QOpcUa::QRange QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
 {
     QOpcUa::QRange temp;
-    temp.low = decode<double>(ptr, bufferSize, success);
+    temp.setLow(decode<double>(ptr, bufferSize, success));
     if (!success)
         return QOpcUa::QRange();
-    temp.high = decode<double>(ptr, bufferSize, success);
+    temp.setHigh(decode<double>(ptr, bufferSize, success));
     if (!success)
         return QOpcUa::QRange();
     return temp;
@@ -155,10 +155,10 @@ template <>
 QOpcUa::QComplexNumber QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
 {
     QOpcUa::QComplexNumber temp;
-    temp.real = decode<float>(ptr, bufferSize, success);
+    temp.setReal(decode<float>(ptr, bufferSize, success));
     if (!success)
         return QOpcUa::QComplexNumber();
-    temp.imaginary = decode<float>(ptr, bufferSize, success);
+    temp.setImaginary(decode<float>(ptr, bufferSize, success));
     if (!success)
         return QOpcUa::QComplexNumber();
     return temp;
@@ -168,10 +168,10 @@ template <>
 QOpcUa::QDoubleComplexNumber QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
 {
     QOpcUa::QDoubleComplexNumber temp;
-    temp.real = decode<double>(ptr, bufferSize, success);
+    temp.setReal(decode<double>(ptr, bufferSize, success));
     if (!success)
         return QOpcUa::QDoubleComplexNumber();
-    temp.imaginary = decode<double>(ptr, bufferSize, success);
+    temp.setImaginary(decode<double>(ptr, bufferSize, success));
     if (!success)
         return QOpcUa::QDoubleComplexNumber();
     return temp;
@@ -181,19 +181,19 @@ template <>
 QOpcUa::QAxisInformation QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
 {
     QOpcUa::QAxisInformation temp;
-    temp.engineeringUnits = decode<QOpcUa::QEUInformation>(ptr, bufferSize, success);
+    temp.setEngineeringUnits(decode<QOpcUa::QEUInformation>(ptr, bufferSize, success));
     if (!success)
         return QOpcUa::QAxisInformation();
-    temp.eURange = decode<QOpcUa::QRange>(ptr, bufferSize, success);
+    temp.setEURange(decode<QOpcUa::QRange>(ptr, bufferSize, success));
     if (!success)
         return QOpcUa::QAxisInformation();
-    temp.title = decode<QOpcUa::QLocalizedText>(ptr, bufferSize, success);
+    temp.setTitle(decode<QOpcUa::QLocalizedText>(ptr, bufferSize, success));
     if (!success)
         return QOpcUa::QAxisInformation();
-    temp.axisScaleType = static_cast<QOpcUa::AxisScale>(decode<quint32>(ptr, bufferSize, success));
+    temp.setAxisScaleType(static_cast<QOpcUa::AxisScale>(decode<quint32>(ptr, bufferSize, success)));
     if (!success)
         return QOpcUa::QAxisInformation();
-    temp.axisSteps = decodeArray<double>(ptr, bufferSize, success);
+    temp.setAxisSteps(decodeArray<double>(ptr, bufferSize, success));
     if (!success)
         return QOpcUa::QAxisInformation();
     return temp;
@@ -203,10 +203,10 @@ template <>
 QOpcUa::QXValue QOpcUaBinaryDataEncoding::decode(const char *&ptr, size_t &bufferSize, bool &success)
 {
     QOpcUa::QXValue temp;
-    temp.x = decode<double>(ptr, bufferSize, success);
+    temp.setX(decode<double>(ptr, bufferSize, success));
     if (!success)
         return QOpcUa::QXValue();
-    temp.value = decode<float>(ptr, bufferSize, success);
+    temp.setValue(decode<float>(ptr, bufferSize, success));
     if (!success)
         return QOpcUa::QXValue();
     return temp;
@@ -238,62 +238,62 @@ template<>
 void QOpcUaBinaryDataEncoding::encode<QOpcUa::QLocalizedText>(const QOpcUa::QLocalizedText &src, QByteArray &dst)
 {
     quint8 mask = 0;
-    if (src.locale.length() != 0)
+    if (src.locale().length() != 0)
         mask |= 0x01;
-    if (src.text.length() != 0)
+    if (src.text().length() != 0)
         mask |= 0x02;
     encode<quint8>(mask, dst);
-    if (src.locale.length())
-        encode(src.locale, dst);
-    if (src.text.length())
-        encode(src.text, dst);
+    if (src.locale().length())
+        encode(src.locale(), dst);
+    if (src.text().length())
+        encode(src.text(), dst);
 }
 
 template <>
 void QOpcUaBinaryDataEncoding::encode<QOpcUa::QRange>(const QOpcUa::QRange &src, QByteArray &dst)
 {
-    encode<double>(src.low, dst);
-    encode<double>(src.high, dst);
+    encode<double>(src.low(), dst);
+    encode<double>(src.high(), dst);
 }
 
 template <>
 void QOpcUaBinaryDataEncoding::encode<QOpcUa::QEUInformation>(const QOpcUa::QEUInformation &src, QByteArray &dst)
 {
-    encode<QString>(src.namespaceUri, dst);
-    encode<qint32>(src.unitId, dst);
-    encode<QOpcUa::QLocalizedText>(src.displayName, dst);
-    encode<QOpcUa::QLocalizedText>(src.description, dst);
+    encode<QString>(src.namespaceUri(), dst);
+    encode<qint32>(src.unitId(), dst);
+    encode<QOpcUa::QLocalizedText>(src.displayName(), dst);
+    encode<QOpcUa::QLocalizedText>(src.description(), dst);
 }
 
 template <>
 void QOpcUaBinaryDataEncoding::encode<QOpcUa::QComplexNumber>(const QOpcUa::QComplexNumber &src, QByteArray &dst)
 {
-    encode<float>(src.real, dst);
-    encode<float>(src.imaginary, dst);
+    encode<float>(src.real(), dst);
+    encode<float>(src.imaginary(), dst);
 }
 
 template <>
 void QOpcUaBinaryDataEncoding::encode<QOpcUa::QDoubleComplexNumber>(const QOpcUa::QDoubleComplexNumber &src, QByteArray &dst)
 {
-    encode<double>(src.real, dst);
-    encode<double>(src.imaginary, dst);
+    encode<double>(src.real(), dst);
+    encode<double>(src.imaginary(), dst);
 }
 
 template <>
 void QOpcUaBinaryDataEncoding::encode<QOpcUa::QAxisInformation>(const QOpcUa::QAxisInformation &src, QByteArray &dst)
 {
-    encode<QOpcUa::QEUInformation>(src.engineeringUnits, dst);
-    encode<QOpcUa::QRange>(src.eURange, dst);
-    encode<QOpcUa::QLocalizedText>(src.title, dst);
-    encode<quint32>(static_cast<quint32>(src.axisScaleType), dst);
-    encodeArray<double>(src.axisSteps, dst);
+    encode<QOpcUa::QEUInformation>(src.engineeringUnits(), dst);
+    encode<QOpcUa::QRange>(src.eURange(), dst);
+    encode<QOpcUa::QLocalizedText>(src.title(), dst);
+    encode<quint32>(static_cast<quint32>(src.axisScaleType()), dst);
+    encodeArray<double>(src.axisSteps(), dst);
 }
 
 template <>
 void QOpcUaBinaryDataEncoding::encode<QOpcUa::QXValue>(const QOpcUa::QXValue &src, QByteArray &dst)
 {
-    encode<double>(src.x, dst);
-    encode<float>(src.value, dst);
+    encode<double>(src.x(), dst);
+    encode<float>(src.value(), dst);
 }
 
 template<typename T>

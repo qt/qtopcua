@@ -79,7 +79,10 @@ public:
     Q_DECLARE_FLAGS(Parameters, Parameter)
 
     // This type and the enums are defined in OPC-UA part 4, 7.12.2
-    struct DataChangeFilter {
+    class DataChangeFilterData;
+    class DataChangeFilter
+    {
+    public:
         enum class DataChangeTrigger {
             Status = 0,
             StatusValue = 1,
@@ -92,20 +95,25 @@ public:
             Percent = 2
         };
 
-        DataChangeTrigger trigger;
-        DeadbandType deadbandType;
-        double deadbandValue;
+        DataChangeFilter();
+        DataChangeFilter(const DataChangeFilter &);
+        DataChangeFilter(DataChangeTrigger trigger, DeadbandType deadbandType, double deadbandValue);
+        DataChangeFilter &operator=(const DataChangeFilter &);
+        bool operator==(const DataChangeFilter &rhs) const;
+        operator QVariant() const;
+        ~DataChangeFilter();
 
-        DataChangeFilter()
-            : trigger(DataChangeTrigger::Status)
-            , deadbandType(DeadbandType::None)
-            , deadbandValue(0)
-        {}
-        DataChangeFilter(DataChangeTrigger p_trigger, DeadbandType p_deadbandType, double p_deadbandValue)
-            : trigger(p_trigger)
-            , deadbandType(p_deadbandType)
-            , deadbandValue(p_deadbandValue)
-        {}
+        DataChangeTrigger trigger() const;
+        void setTrigger(DataChangeTrigger trigger);
+
+        DeadbandType deadbandType() const;
+        void setDeadbandType(DeadbandType deadbandType);
+
+        double deadbandValue() const;
+        void setDeadbandValue(double deadbandValue);
+
+    private:
+        QSharedDataPointer<DataChangeFilterData> data;
     };
 
     QOpcUaMonitoringParameters();

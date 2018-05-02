@@ -339,9 +339,9 @@ OpcUa_ExtensionObject QUACppSubscription::createFilter(const QVariant &filterDat
             qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not create DataChangeFilter";
             return obj;
         }
-        filter->DeadbandType = static_cast<OpcUa_UInt32>(temp.deadbandType);
-        filter->DeadbandValue = static_cast<OpcUa_Double>(temp.deadbandValue);
-        filter->Trigger = static_cast<OpcUa_DataChangeTrigger>(temp.trigger);
+        filter->DeadbandType = static_cast<OpcUa_UInt32>(temp.deadbandType());
+        filter->DeadbandValue = static_cast<OpcUa_Double>(temp.deadbandValue());
+        filter->Trigger = static_cast<OpcUa_DataChangeTrigger>(temp.trigger());
 
         return obj;
     }

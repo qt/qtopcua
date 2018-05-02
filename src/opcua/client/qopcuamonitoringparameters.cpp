@@ -175,61 +175,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \class QOpcUaMonitoringParameters::DataChangeFilter
-    \inmodule QtOpcUa
-    \brief Defines a DataChangeFilter for a monitored item
-
-    This struct is used to set up filtering for a DataChange monitored item.
-    It is defined in OPC-UA part 4, 7.12.2.
-*/
-
-/*!
-    \fn QOpcUaMonitoringParameters::DataChangeFilter::DataChangeFilter(DataChangeTrigger p_trigger, DeadbandType p_deadbandType, double p_deadbandValue)
-
-    Constructs a DataChangeFilter with trigger \a p_trigger, deadband type \a p_deadbandType and deadband value \a p_deadbandValue.
-*/
-
-/*!
-    \variable QOpcUaMonitoringParameters::DataChangeFilter::trigger
-
-    The trigger for this filter.
-*/
-
-/*!
-    \variable QOpcUaMonitoringParameters::DataChangeFilter::deadbandType
-
-    The deadband type for this filter.
-*/
-
-/*!
-    \variable QOpcUaMonitoringParameters::DataChangeFilter::deadbandValue
-
-    The deadband value for this filter.
-*/
-
-/*!
-    \enum QOpcUaMonitoringParameters::DataChangeFilter::DataChangeTrigger
-
-    Enumerates the possible triggers for a \l DataChangeFilter.
-
-    \value Status Triggers if the value's status code changes.
-    \value StatusValue Triggers if the value's status code or the value itself changes.
-    \value StatusValueTimestamp Triggers if the value's status code, the value itself or the source timestamp changes.
-*/
-
-/*!
-    \enum QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType
-
-    Enumerates the possible deadband types for a \l DataChangeFilter.
-
-    \value None No deadband filtering.
-    \value Absolute A notification is generated if the absolute value of the difference between the last cached value
-           and the current value is greater than the deadband value.
-    \value Percent Only valid for AnalogItems with an EURange property. A notification is generated if the absolute value
-           of the difference between the last cached value and the current value is greater than value percent of the EURange.
-*/
-
-/*!
     The default constructor for QOpcUaMonitoringParameters.
 */
 QOpcUaMonitoringParameters::QOpcUaMonitoringParameters()
@@ -527,6 +472,159 @@ double QOpcUaMonitoringParameters::samplingInterval() const
 void QOpcUaMonitoringParameters::setSamplingInterval(double samplingInterval)
 {
     d_ptr->samplingInterval = samplingInterval;
+}
+
+/*!
+    \class QOpcUaMonitoringParameters::DataChangeFilter
+    \inmodule QtOpcUa
+    \brief Defines a DataChangeFilter for a monitored item
+
+    This class is used to set up filtering for a DataChange monitored item.
+    It is defined in OPC-UA part 4, 7.12.2.
+*/
+
+/*!
+    \enum QOpcUaMonitoringParameters::DataChangeFilter::DataChangeTrigger
+
+    Enumerates the possible triggers for a \l DataChangeFilter.
+
+    \value Status Triggers if the value's status code changes.
+    \value StatusValue Triggers if the value's status code or the value itself changes.
+    \value StatusValueTimestamp Triggers if the value's status code, the value itself or the source timestamp changes.
+*/
+
+/*!
+    \enum QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType
+
+    Enumerates the possible deadband types for a \l DataChangeFilter.
+
+    \value None No deadband filtering.
+    \value Absolute A notification is generated if the absolute value of the difference between the last cached value
+           and the current value is greater than the deadband value.
+    \value Percent Only valid for AnalogItems with an EURange property. A notification is generated if the absolute value
+           of the difference between the last cached value and the current value is greater than value percent of the EURange.
+*/
+
+class QOpcUaMonitoringParameters::DataChangeFilterData : public QSharedData
+{
+public:
+    DataChangeFilterData()
+        : trigger(DataChangeFilter::DataChangeTrigger::Status)
+        , deadbandType(DataChangeFilter::DeadbandType::None)
+        , deadbandValue(0)
+    {}
+
+    DataChangeFilter::DataChangeTrigger trigger;
+    DataChangeFilter::DeadbandType deadbandType;
+    double deadbandValue;
+};
+
+/*!
+    Constructs a data change filter with trigger on \c status, deadband type \c none and deadbandValue \c 0.
+*/
+QOpcUaMonitoringParameters::DataChangeFilter::DataChangeFilter()
+    : data(new QOpcUaMonitoringParameters::DataChangeFilterData)
+{
+}
+
+/*!
+    Constructs a data change filter from \a rhs.
+*/
+QOpcUaMonitoringParameters::DataChangeFilter::DataChangeFilter(const DataChangeFilter &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Constructs a data change filter with trigger \a trigger, deadband type \a deadbandType and deadband value \a deadbandValue.
+*/
+QOpcUaMonitoringParameters::DataChangeFilter::DataChangeFilter(DataChangeFilter::DataChangeTrigger trigger,
+                                                               DataChangeFilter::DeadbandType deadbandType, double deadbandValue)
+    : data(new QOpcUaMonitoringParameters::DataChangeFilterData)
+{
+    data->trigger = trigger;
+    data->deadbandType = deadbandType;
+    data->deadbandValue = deadbandValue;
+}
+
+/*!
+    Sets the values from \a rhs in this data change filter.
+*/
+QOpcUaMonitoringParameters::DataChangeFilter &QOpcUaMonitoringParameters::DataChangeFilter::operator=(const DataChangeFilter &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+/*!
+    Returns \c true if this data change filter has the same value as \a rhs.
+*/
+bool QOpcUaMonitoringParameters::DataChangeFilter::operator==(const QOpcUaMonitoringParameters::DataChangeFilter &rhs) const
+{
+    return data->deadbandType == rhs.deadbandType() &&
+            data->trigger == rhs.trigger() &&
+            data->deadbandValue == rhs.deadbandValue();
+}
+
+QOpcUaMonitoringParameters::DataChangeFilter::~DataChangeFilter()
+{
+}
+
+/*!
+    Returns the deadband value.
+*/
+double QOpcUaMonitoringParameters::DataChangeFilter::deadbandValue() const
+{
+    return data->deadbandValue;
+}
+
+/*!
+    Sets the deadband value to \a deadbandValue.
+*/
+void QOpcUaMonitoringParameters::DataChangeFilter::setDeadbandValue(double deadbandValue)
+{
+    data->deadbandValue = deadbandValue;
+}
+
+/*!
+    Returns the deadband type.
+*/
+QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType QOpcUaMonitoringParameters::DataChangeFilter::deadbandType() const
+{
+    return data->deadbandType;
+}
+
+/*!
+    Sets the deadband type to \a deadbandType.
+*/
+void QOpcUaMonitoringParameters::DataChangeFilter::setDeadbandType(DeadbandType deadbandType)
+{
+    data->deadbandType = deadbandType;
+}
+
+/*!
+    Returns the trigger.
+*/
+QOpcUaMonitoringParameters::DataChangeFilter::DataChangeTrigger QOpcUaMonitoringParameters::DataChangeFilter::trigger() const
+{
+    return data->trigger;
+}
+
+/*!
+    Sets the trigger to \a trigger.
+*/
+void QOpcUaMonitoringParameters::DataChangeFilter::setTrigger(DataChangeTrigger trigger)
+{
+    data->trigger = trigger;
+}
+
+/*!
+    Converts this data change filter to \l QVariant.
+*/
+QOpcUaMonitoringParameters::DataChangeFilter::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
 }
 
 QT_END_NAMESPACE
