@@ -117,6 +117,8 @@ bool QUACppSubscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUa::Nod
     result = m_nativeSubscription->createMonitoredItems(settings, OpcUa_TimestampsToReturn_Both,
                                                         createRequests, createResults);
 
+    OpcUa_MonitoredItemCreateRequest_Clear(&createRequests[0]); // The C++ destructor does not free the members of the requests
+
     if (result.isBad() || createResults.length() != 1 || OpcUa_IsBad(createResults[0].StatusCode)) {
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "creating monitored item failed.";
         QOpcUaMonitoringParameters s;
@@ -507,6 +509,8 @@ bool QUACppSubscription::modifyMonitoredItemParameters(uintptr_t handle, QOpcUa:
         UaMonitoredItemModifyRequests requests(1, &modifyRequest);
         UaMonitoredItemModifyResults results;
         UaStatus result = m_nativeSubscription->modifyMonitoredItems(service, OpcUa_TimestampsToReturn_Both, requests, results);
+
+        OpcUa_MonitoredItemModifyRequest_Clear(&modifyRequest); // The C++ destructor does not free the members of the requests
 
         if (result.isBad() || OpcUa_IsNotGood(results[0].StatusCode)) {
             p.setStatusCode(static_cast<QOpcUa::UaStatusCode>(result.isGood() ?
