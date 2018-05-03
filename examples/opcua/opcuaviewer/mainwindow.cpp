@@ -146,6 +146,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     setMinimumWidth(500);
     mTreeView->setModel(mOpcUaModel);
     mTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    mTreeView->setTextElideMode(Qt::ElideRight);
 
     if (mOpcUaPlugin->count() == 0) {
         mOpcUaPlugin->setDisabled(true);
@@ -185,6 +186,7 @@ void MainWindow::clientConnected()
     mClientConnected = true;
     updateUiState();
     mOpcUaModel->setOpcUaClient(mOpcUaClient);
+    mTreeView->header()->setSectionResizeMode(1 /* Value column*/, QHeaderView::Interactive);
 }
 
 void MainWindow::clientDisconnected()
