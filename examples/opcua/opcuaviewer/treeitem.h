@@ -87,6 +87,12 @@ protected:
     OpcUaModel *mModel = nullptr;
 
 private:
+    QString variantToString(const QVariant &value, const QString &typeNodeId = QString()) const;
+    QString localizedTextToString(const QOpcUa::QLocalizedText &text) const;
+    QString rangeToString(const QOpcUa::QRange &range) const;
+    QString euInformationToString(const QOpcUa::QEUInformation &info) const;
+    QString axisStepsToString(const QVector<double> &vec) const;
+
     bool mAttributesReady = false;
     bool mBrowseStarted = false;
     QList<TreeItem *> mChildItems;
