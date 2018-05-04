@@ -52,15 +52,18 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_FREEOPCUA)
 QFreeOpcUaWorker::QFreeOpcUaWorker(QFreeOpcUaClientImpl *client)
     : QOpcUaBackend()
     , m_client(client)
+    , m_minPublishingInterval(0)
 {}
 
 QFreeOpcUaWorker::~QFreeOpcUaWorker()
 {
-    qDeleteAll(m_subscriptions);
+    cleanupSubscriptions();
 }
 
 void QFreeOpcUaWorker::asyncConnectToEndpoint(const QUrl &url)
 {
+    cleanupSubscriptions();
+
     try {
         QString sNodeName = QHostInfo::localHostName();
         SetApplicationURI(QString("urn:%1:%2:%3").arg(
@@ -102,8 +105,7 @@ void QFreeOpcUaWorker::asyncDisconnectFromEndpoint()
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Could not disconnect from endpoint:" << ex.what();
     }
 
-    qDeleteAll(m_subscriptions);
-    m_subscriptions.clear();
+    cleanupSubscriptions();
 
     emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
 }
@@ -258,8 +260,10 @@ void QFreeOpcUaWorker::writeAttributes(uintptr_t handle, OpcUa::Node node, QOpcU
 QFreeOpcUaSubscription *QFreeOpcUaWorker::getSubscription(const QOpcUaMonitoringParameters &settings)
 {
     if (settings.shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared) {
+        // Requesting multiple subscriptions with publishing interval < minimum publishing interval breaks subscription sharing
+        double interval = revisePublishingInterval(settings.publishingInterval(), m_minPublishingInterval);
         for (auto entry : qAsConst(m_subscriptions))
-            if (entry->interval() == settings.publishingInterval() && entry->shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared)
+            if (qFuzzyCompare(entry->interval(), interval) && entry->shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared)
                 return entry;
     }
 
@@ -269,6 +273,8 @@ QFreeOpcUaSubscription *QFreeOpcUaWorker::getSubscription(const QOpcUaMonitoring
         delete sub;
         return nullptr;
     }
+    if (sub->interval() > settings.samplingInterval()) // The publishing interval has been revised by the server.
+        m_minPublishingInterval = sub->interval();
     QObject::connect(sub, &QFreeOpcUaSubscription::timeout, this, &QFreeOpcUaWorker::handleSubscriptionTimeout, Qt::QueuedConnection);
     m_subscriptions[id] = sub;
     return sub;
@@ -371,6 +377,14 @@ QFreeOpcUaSubscription *QFreeOpcUaWorker::getSubscriptionForItem(uintptr_t handl
         return nullptr;
 
     return subscription.value();
+}
+
+void QFreeOpcUaWorker::cleanupSubscriptions()
+{
+    qDeleteAll(m_subscriptions);
+    m_subscriptions.clear();
+    m_attributeMapping.clear();
+    m_minPublishingInterval = 0;
 }
 
 void QFreeOpcUaWorker::callMethod(uintptr_t handle, OpcUa::NodeId objectId, OpcUa::NodeId methodId, QVector<QOpcUa::TypedVariant> args)

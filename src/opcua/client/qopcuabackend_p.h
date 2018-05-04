@@ -74,6 +74,8 @@ public:
 
     QOpcUa::Types attributeIdToTypeId(QOpcUa::NodeAttribute attr);
 
+    double revisePublishingInterval(double requestedValue, double minimumValue);
+
 Q_SIGNALS:
     void stateAndOrErrorChanged(QOpcUaClient::ClientState state,
                                 QOpcUaClient::ClientError error);

@@ -75,6 +75,7 @@ public:
     static quint32 m_numClients;
     static bool m_platformLayerInitialized;
     QMutex m_lifecycleMutex;
+    double m_minPublishingInterval;
 };
 
 QT_END_NAMESPACE

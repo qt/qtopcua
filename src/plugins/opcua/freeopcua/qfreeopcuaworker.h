@@ -77,11 +77,14 @@ public slots:
     void handleSubscriptionTimeout(QFreeOpcUaSubscription *sub, QVector<QPair<uintptr_t, QOpcUa::NodeAttribute>> items);
 private:
     QFreeOpcUaSubscription *getSubscriptionForItem(uintptr_t handle, QOpcUa::NodeAttribute attr);
+    void cleanupSubscriptions();
 
     QFreeOpcUaClientImpl *m_client;
 
     QHash<quint32, QFreeOpcUaSubscription *> m_subscriptions;
     QHash<uintptr_t, QHash<QOpcUa::NodeAttribute, QFreeOpcUaSubscription *>> m_attributeMapping; // Handle -> Attribute -> Subscription
+
+    double m_minPublishingInterval;
 };
 
 QT_END_NAMESPACE
