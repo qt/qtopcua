@@ -96,7 +96,7 @@ void QFreeOpcUaWorker::asyncDisconnectFromEndpoint()
 {
     try {
         Disconnect();
-        emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
         return;
     } catch (const std::exception &ex) {
         qCWarning(QT_OPCUA_PLUGINS_FREEOPCUA) << "Could not disconnect from endpoint:" << ex.what();
@@ -105,7 +105,7 @@ void QFreeOpcUaWorker::asyncDisconnectFromEndpoint()
     qDeleteAll(m_subscriptions);
     m_subscriptions.clear();
 
-    emit m_client->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
+    emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
 }
 
 void QFreeOpcUaWorker::browseChildren(uintptr_t handle, OpcUa::NodeId id, QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)

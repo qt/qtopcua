@@ -427,7 +427,7 @@ static void clientStateCallback(UA_Client *client, UA_ClientState state)
         return;
 
     if (state == UA_CLIENTSTATE_DISCONNECTED) {
-        emit backend->m_clientImpl->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ConnectionError);
+        emit backend->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ConnectionError);
         backend->m_useStateCallback = false;
     }
 }
@@ -455,7 +455,8 @@ void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
         UA_Client_delete(m_uaclient);
         m_uaclient = nullptr;
         QOpcUaClient::ClientError error = ret == UA_STATUSCODE_BADUSERACCESSDENIED ? QOpcUaClient::AccessDenied : QOpcUaClient::UnknownError;
-        emit m_clientImpl->stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
+
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to connect";
         return;
     }
