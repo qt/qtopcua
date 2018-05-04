@@ -1,7 +1,0 @@
-{
-    "Keys" : [ "freeopcua" ],
-    "Provider" : "freeopcua",
-    "Version" : "1.0",
-    "Features" : [ "client" ],
-    "stability" : 1
-}

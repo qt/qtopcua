@@ -3,21 +3,6 @@
     "testDir": "../../config.tests",
 
     "libraries": {
-        "freeopcua": {
-            "label": "FreeOpcua",
-            "test": "freeopcua",
-            "sources": [
-                {
-                    "type": "pkgConfig",
-                    "args": "libopcuacore libopcuaprotocol libopcuaclient libopcuaserver",
-                    "condition": "!config.win32"
-                },
-                {
-                    "libs": "-lopcuacore -lopcuaclient -lopcuaprotocol -lopcuaserver -lWininet",
-                    "condition": "config.win32"
-                }
-            ]
-        },
         "open62541": {
             "label": "Open62541",
             "test": "open62541",
@@ -66,11 +51,6 @@
     },
 
     "features": {
-        "freeopcua": {
-            "label": "FreeOpcua",
-            "condition": "libs.freeopcua",
-            "output": [ "privateFeature" ]
-        },
         "open62541": {
             "label": "Open62541",
             "condition": "libs.open62541",
@@ -86,7 +66,7 @@
     "summary": [
         {
             "section": "Qt Opcua",
-            "entries": [ "freeopcua", "open62541", "uacpp" ]
+            "entries": [ "open62541", "uacpp" ]
         }
     ]
 }

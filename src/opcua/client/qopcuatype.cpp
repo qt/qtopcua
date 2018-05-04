@@ -154,8 +154,8 @@ QT_BEGIN_NAMESPACE
     \value Byte
     \value SByte
     \value ByteString
-    \value XmlElement \warning Currently not supported by the FreeOPCUA backend
-    \value NodeId \warning Currently not supported by the FreeOPCUA backend
+    \value XmlElement
+    \value NodeId
     \value Guid
     \value QualifiedName A name qualified by an OPC UA namespace index.
     \value StatusCode

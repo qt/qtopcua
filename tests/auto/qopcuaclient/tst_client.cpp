@@ -319,12 +319,6 @@ Tst_QOpcUaClient::Tst_QOpcUaClient()
 void Tst_QOpcUaClient::initTestCase()
 {
     for (const auto &backend: m_backends) {
-        // QT_TEST_CI is set to 1 in the Qt CI, see https://wiki.qt.io/CI_Environment
-        if (backend == QStringLiteral("freeopcua") && qgetenv("QT_TEST_CI") == QStringLiteral("1")) {
-            qDebug() << "The freeopcua tests randomly fail in the CI and are disabled by default";
-            continue;
-        }
-
         QOpcUaClient *client = m_opcUa.createClient(backend);
         QVERIFY2(client != nullptr,
                  QString("Loading backend failed: %1").arg(backend).toLatin1().data());
@@ -677,31 +671,26 @@ void Tst_QOpcUaClient::dataChangeSubscription()
 
     QVector<QOpcUa::NodeAttribute> attrs;
 
-    if (opcuaClient->backend() == QLatin1String("open62541") ||
-            opcuaClient->backend() == QLatin1String("uacpp")) {
-        QSignalSpy monitoringModifiedSpy(node.data(), &QOpcUaNode::monitoringStatusChanged);
-        node->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::PublishingInterval, 200);
+    QSignalSpy monitoringModifiedSpy(node.data(), &QOpcUaNode::monitoringStatusChanged);
+    node->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::PublishingInterval, 200);
 
+    monitoringModifiedSpy.wait();
+    if (monitoringModifiedSpy.size() < 2)
         monitoringModifiedSpy.wait();
-        if (monitoringModifiedSpy.size() < 2)
-            monitoringModifiedSpy.wait();
 
-        attrs = {QOpcUa::NodeAttribute::Value, QOpcUa::NodeAttribute::DisplayName};
-        for (auto it : qAsConst(monitoringModifiedSpy)) {
-            QOpcUa::NodeAttribute temp = it.at(0).value<QOpcUa::NodeAttribute>();
-            QVERIFY(attrs.contains(temp));
-            QVERIFY(it.at(1).value<QOpcUaMonitoringParameters::Parameters>() &  QOpcUaMonitoringParameters::Parameter::PublishingInterval);
-            QVERIFY(it.at(2) == QOpcUa::UaStatusCode::Good);
-            QCOMPARE(node->monitoringStatus(temp).publishingInterval(), 200.0);
-            attrs.remove(attrs.indexOf(temp));
-        }
-        QVERIFY(attrs.size() == 0);
-
-        QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::Value).publishingInterval(),  200.0);
-        QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::DisplayName).publishingInterval(), 200.0);
-    } else {
-        qDebug() << "Modifying monitoring settings is not supported by the freeopcua backend";
+    attrs = {QOpcUa::NodeAttribute::Value, QOpcUa::NodeAttribute::DisplayName};
+    for (auto it : qAsConst(monitoringModifiedSpy)) {
+        QOpcUa::NodeAttribute temp = it.at(0).value<QOpcUa::NodeAttribute>();
+        QVERIFY(attrs.contains(temp));
+        QVERIFY(it.at(1).value<QOpcUaMonitoringParameters::Parameters>() &  QOpcUaMonitoringParameters::Parameter::PublishingInterval);
+        QVERIFY(it.at(2) == QOpcUa::UaStatusCode::Good);
+        QCOMPARE(node->monitoringStatus(temp).publishingInterval(), 200.0);
+        attrs.remove(attrs.indexOf(temp));
     }
+    QVERIFY(attrs.size() == 0);
+
+    QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::Value).publishingInterval(),  200.0);
+    QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::DisplayName).publishingInterval(), 200.0);
 
     QSignalSpy monitoringDisabledSpy(node.data(), &QOpcUaNode::disableMonitoringFinished);
 
@@ -1086,60 +1075,53 @@ void Tst_QOpcUaClient::writeArray()
     QVERIFY(node != 0);
     WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::Types::StatusCode);
 
-    if (opcuaClient->backend() != QLatin1String("freeopcua")) {
-        list.clear();
-        list.append(QVariant::fromValue(testRanges[0]));
-        list.append(QVariant::fromValue(testRanges[1]));
-        list.append(QVariant::fromValue(testRanges[2]));
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Range"));
-        QVERIFY(node != 0);
-        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::Range);
+    list.clear();
+    list.append(QVariant::fromValue(testRanges[0]));
+    list.append(QVariant::fromValue(testRanges[1]));
+    list.append(QVariant::fromValue(testRanges[2]));
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Range"));
+    QVERIFY(node != 0);
+    WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::Range);
 
-        list.clear();
-        list.append(QVariant::fromValue(testEUInfos[0]));
-        list.append(QVariant::fromValue(testEUInfos[1]));
-        list.append(QVariant::fromValue(testEUInfos[2]));
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EUInformation"));
-        QVERIFY(node != 0);
-        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::EUInformation);
+    list.clear();
+    list.append(QVariant::fromValue(testEUInfos[0]));
+    list.append(QVariant::fromValue(testEUInfos[1]));
+    list.append(QVariant::fromValue(testEUInfos[2]));
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EUInformation"));
+    QVERIFY(node != 0);
+    WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::EUInformation);
 
-        list.clear();
-        list.append(QVariant::fromValue(testComplex[0]));
-        list.append(QVariant::fromValue(testComplex[1]));
-        list.append(QVariant::fromValue(testComplex[2]));
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ComplexNumber"));
-        QVERIFY(node != 0);
-        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::ComplexNumber);
+    list.clear();
+    list.append(QVariant::fromValue(testComplex[0]));
+    list.append(QVariant::fromValue(testComplex[1]));
+    list.append(QVariant::fromValue(testComplex[2]));
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ComplexNumber"));
+    QVERIFY(node != 0);
+    WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::ComplexNumber);
 
-        list.clear();
-        list.append(QVariant::fromValue(testDoubleComplex[0]));
-        list.append(QVariant::fromValue(testDoubleComplex[1]));
-        list.append(QVariant::fromValue(testDoubleComplex[2]));
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DoubleComplexNumber"));
-        QVERIFY(node != 0);
-        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::DoubleComplexNumber);
+    list.clear();
+    list.append(QVariant::fromValue(testDoubleComplex[0]));
+    list.append(QVariant::fromValue(testDoubleComplex[1]));
+    list.append(QVariant::fromValue(testDoubleComplex[2]));
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DoubleComplexNumber"));
+    QVERIFY(node != 0);
+    WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::DoubleComplexNumber);
 
-        list.clear();
-        list.append(QVariant::fromValue(testAxisInfo[0]));
-        list.append(QVariant::fromValue(testAxisInfo[1]));
-        list.append(QVariant::fromValue(testAxisInfo[2]));
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.AxisInformation"));
-        QVERIFY(node != 0);
-        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::AxisInformation);
+    list.clear();
+    list.append(QVariant::fromValue(testAxisInfo[0]));
+    list.append(QVariant::fromValue(testAxisInfo[1]));
+    list.append(QVariant::fromValue(testAxisInfo[2]));
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.AxisInformation"));
+    QVERIFY(node != 0);
+    WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::AxisInformation);
 
-        list.clear();
-        list.append(QVariant::fromValue(testXV[0]));
-        list.append(QVariant::fromValue(testXV[1]));
-        list.append(QVariant::fromValue(testXV[2]));
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XV"));
-        QVERIFY(node != 0);
-        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::XV);
-    } else {
-        QWARN("ExtensionObject types are not supported by freeopcua");
-    }
-
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("XmlElement support is not yet implemented in the freeopcua library");
+    list.clear();
+    list.append(QVariant::fromValue(testXV[0]));
+    list.append(QVariant::fromValue(testXV[1]));
+    list.append(QVariant::fromValue(testXV[2]));
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XV"));
+    QVERIFY(node != 0);
+    WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::XV);
 
     list.clear();
     list.append(xmlElements[0]);
@@ -1358,72 +1340,65 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(statusCodeArray.toList()[1].value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadUnexpectedError);
     QCOMPARE(statusCodeArray.toList()[2].value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadInternalError);
 
-    if (opcuaClient->backend() != QLatin1String("freeopcua")) {
-        QScopedPointer<QOpcUaNode> rangeArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Range"));
-        QVERIFY(rangeArrayNode != 0);
-        READ_MANDATORY_VARIABLE_NODE(rangeArrayNode);
-        QVariant rangeArray = rangeArrayNode->attribute(QOpcUa::NodeAttribute::Value);
-        QVERIFY(rangeArray.type() == QVariant::List);
-        QVERIFY(rangeArray.toList().length() == 3);
-        QCOMPARE(rangeArray.toList()[0].value<QOpcUa::QRange>(), testRanges[0]);
-        QCOMPARE(rangeArray.toList()[1].value<QOpcUa::QRange>(), testRanges[1]);
-        QCOMPARE(rangeArray.toList()[2].value<QOpcUa::QRange>(), testRanges[2]);
+    QScopedPointer<QOpcUaNode> rangeArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Range"));
+    QVERIFY(rangeArrayNode != 0);
+    READ_MANDATORY_VARIABLE_NODE(rangeArrayNode);
+    QVariant rangeArray = rangeArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    QVERIFY(rangeArray.type() == QVariant::List);
+    QVERIFY(rangeArray.toList().length() == 3);
+    QCOMPARE(rangeArray.toList()[0].value<QOpcUa::QRange>(), testRanges[0]);
+    QCOMPARE(rangeArray.toList()[1].value<QOpcUa::QRange>(), testRanges[1]);
+    QCOMPARE(rangeArray.toList()[2].value<QOpcUa::QRange>(), testRanges[2]);
 
-        QScopedPointer<QOpcUaNode> euiArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EUInformation"));
-        QVERIFY(euiArrayNode != 0);
-        READ_MANDATORY_VARIABLE_NODE(euiArrayNode);
-        QVariant euiArray = euiArrayNode->attribute(QOpcUa::NodeAttribute::Value);
-        QVERIFY(euiArray.type() == QVariant::List);
-        QVERIFY(euiArray.toList().length() == 3);
-        QCOMPARE(euiArray.toList()[0].value<QOpcUa::QEUInformation>(), testEUInfos[0]);
-        QCOMPARE(euiArray.toList()[1].value<QOpcUa::QEUInformation>(), testEUInfos[1]);
-        QCOMPARE(euiArray.toList()[2].value<QOpcUa::QEUInformation>(), testEUInfos[2]);
+    QScopedPointer<QOpcUaNode> euiArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EUInformation"));
+    QVERIFY(euiArrayNode != 0);
+    READ_MANDATORY_VARIABLE_NODE(euiArrayNode);
+    QVariant euiArray = euiArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    QVERIFY(euiArray.type() == QVariant::List);
+    QVERIFY(euiArray.toList().length() == 3);
+    QCOMPARE(euiArray.toList()[0].value<QOpcUa::QEUInformation>(), testEUInfos[0]);
+    QCOMPARE(euiArray.toList()[1].value<QOpcUa::QEUInformation>(), testEUInfos[1]);
+    QCOMPARE(euiArray.toList()[2].value<QOpcUa::QEUInformation>(), testEUInfos[2]);
 
-        QScopedPointer<QOpcUaNode> complexArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ComplexNumber"));
-        QVERIFY(complexArrayNode != 0);
-        READ_MANDATORY_VARIABLE_NODE(complexArrayNode);
-        QVariant complexArray = complexArrayNode->attribute(QOpcUa::NodeAttribute::Value);
-        QVERIFY(complexArray.type() == QVariant::List);
-        QVERIFY(complexArray.toList().length() == 3);
-        QCOMPARE(complexArray.toList()[0].value<QOpcUa::QComplexNumber>(), testComplex[0]);
-        QCOMPARE(complexArray.toList()[1].value<QOpcUa::QComplexNumber>(), testComplex[1]);
-        QCOMPARE(complexArray.toList()[2].value<QOpcUa::QComplexNumber>(), testComplex[2]);
+    QScopedPointer<QOpcUaNode> complexArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ComplexNumber"));
+    QVERIFY(complexArrayNode != 0);
+    READ_MANDATORY_VARIABLE_NODE(complexArrayNode);
+    QVariant complexArray = complexArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    QVERIFY(complexArray.type() == QVariant::List);
+    QVERIFY(complexArray.toList().length() == 3);
+    QCOMPARE(complexArray.toList()[0].value<QOpcUa::QComplexNumber>(), testComplex[0]);
+    QCOMPARE(complexArray.toList()[1].value<QOpcUa::QComplexNumber>(), testComplex[1]);
+    QCOMPARE(complexArray.toList()[2].value<QOpcUa::QComplexNumber>(), testComplex[2]);
 
-        QScopedPointer<QOpcUaNode> doubleComplexArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DoubleComplexNumber"));
-        QVERIFY(doubleComplexArrayNode != 0);
-        READ_MANDATORY_VARIABLE_NODE(doubleComplexArrayNode);
-        QVariant doubleComplexArray = doubleComplexArrayNode->attribute(QOpcUa::NodeAttribute::Value);
-        QVERIFY(doubleComplexArray.type() == QVariant::List);
-        QVERIFY(doubleComplexArray.toList().length() == 3);
-        QCOMPARE(doubleComplexArray.toList()[0].value<QOpcUa::QDoubleComplexNumber>(), testDoubleComplex[0]);
-        QCOMPARE(doubleComplexArray.toList()[1].value<QOpcUa::QDoubleComplexNumber>(), testDoubleComplex[1]);
-        QCOMPARE(doubleComplexArray.toList()[2].value<QOpcUa::QDoubleComplexNumber>(), testDoubleComplex[2]);
+    QScopedPointer<QOpcUaNode> doubleComplexArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DoubleComplexNumber"));
+    QVERIFY(doubleComplexArrayNode != 0);
+    READ_MANDATORY_VARIABLE_NODE(doubleComplexArrayNode);
+    QVariant doubleComplexArray = doubleComplexArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    QVERIFY(doubleComplexArray.type() == QVariant::List);
+    QVERIFY(doubleComplexArray.toList().length() == 3);
+    QCOMPARE(doubleComplexArray.toList()[0].value<QOpcUa::QDoubleComplexNumber>(), testDoubleComplex[0]);
+    QCOMPARE(doubleComplexArray.toList()[1].value<QOpcUa::QDoubleComplexNumber>(), testDoubleComplex[1]);
+    QCOMPARE(doubleComplexArray.toList()[2].value<QOpcUa::QDoubleComplexNumber>(), testDoubleComplex[2]);
 
-        QScopedPointer<QOpcUaNode> axisInfoArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.AxisInformation"));
-        QVERIFY(axisInfoArrayNode != 0);
-        READ_MANDATORY_VARIABLE_NODE(axisInfoArrayNode);
-        QVariant axisInfoArray = axisInfoArrayNode->attribute(QOpcUa::NodeAttribute::Value);
-        QVERIFY(axisInfoArray.type() == QVariant::List);
-        QVERIFY(axisInfoArray.toList().length() == 3);
-        QCOMPARE(axisInfoArray.toList()[0].value<QOpcUa::QAxisInformation>(), testAxisInfo[0]);
-        QCOMPARE(axisInfoArray.toList()[1].value<QOpcUa::QAxisInformation>(), testAxisInfo[1]);
-        QCOMPARE(axisInfoArray.toList()[2].value<QOpcUa::QAxisInformation>(), testAxisInfo[2]);
+    QScopedPointer<QOpcUaNode> axisInfoArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.AxisInformation"));
+    QVERIFY(axisInfoArrayNode != 0);
+    READ_MANDATORY_VARIABLE_NODE(axisInfoArrayNode);
+    QVariant axisInfoArray = axisInfoArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    QVERIFY(axisInfoArray.type() == QVariant::List);
+    QVERIFY(axisInfoArray.toList().length() == 3);
+    QCOMPARE(axisInfoArray.toList()[0].value<QOpcUa::QAxisInformation>(), testAxisInfo[0]);
+    QCOMPARE(axisInfoArray.toList()[1].value<QOpcUa::QAxisInformation>(), testAxisInfo[1]);
+    QCOMPARE(axisInfoArray.toList()[2].value<QOpcUa::QAxisInformation>(), testAxisInfo[2]);
 
-        QScopedPointer<QOpcUaNode> xVArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XV"));
-        QVERIFY(xVArrayNode != 0);
-        READ_MANDATORY_VARIABLE_NODE(xVArrayNode);
-        QVariant xVArray = xVArrayNode->attribute(QOpcUa::NodeAttribute::Value);
-        QVERIFY(xVArray.type() == QVariant::List);
-        QVERIFY(xVArray.toList().length() == 3);
-        QCOMPARE(xVArray.toList()[0].value<QOpcUa::QXValue>(), testXV[0]);
-        QCOMPARE(xVArray.toList()[1].value<QOpcUa::QXValue>(), testXV[1]);
-        QCOMPARE(xVArray.toList()[2].value<QOpcUa::QXValue>(), testXV[2]);
-    } else {
-        QWARN("ExtensionObject types are not supported by freeopcua");
-    }
-
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("XmlElement support is not yet implemented in the freeopcua backend");
+    QScopedPointer<QOpcUaNode> xVArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XV"));
+    QVERIFY(xVArrayNode != 0);
+    READ_MANDATORY_VARIABLE_NODE(xVArrayNode);
+    QVariant xVArray = xVArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    QVERIFY(xVArray.type() == QVariant::List);
+    QVERIFY(xVArray.toList().length() == 3);
+    QCOMPARE(xVArray.toList()[0].value<QOpcUa::QXValue>(), testXV[0]);
+    QCOMPARE(xVArray.toList()[1].value<QOpcUa::QXValue>(), testXV[1]);
+    QCOMPARE(xVArray.toList()[2].value<QOpcUa::QXValue>(), testXV[2]);
 
     QScopedPointer<QOpcUaNode> xmlElementArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XmlElement"));
     QVERIFY(nodeIdArrayNode != 0);
@@ -1525,36 +1500,29 @@ void Tst_QOpcUaClient::writeScalar()
     QVERIFY(statusCodeNode != 0);
     WRITE_VALUE_ATTRIBUTE(statusCodeNode, QOpcUa::UaStatusCode::BadInternalError, QOpcUa::StatusCode);
 
-    if (opcuaClient->backend() != QLatin1String("freeopcua")) {
-        QScopedPointer<QOpcUaNode> rangeNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Range"));
-        QVERIFY(rangeNode != 0);
-        WRITE_VALUE_ATTRIBUTE(rangeNode, QVariant::fromValue(testRanges[0]), QOpcUa::Range);
+    QScopedPointer<QOpcUaNode> rangeNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Range"));
+    QVERIFY(rangeNode != 0);
+    WRITE_VALUE_ATTRIBUTE(rangeNode, QVariant::fromValue(testRanges[0]), QOpcUa::Range);
 
-        QScopedPointer<QOpcUaNode> euiNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EUInformation"));
-        QVERIFY(euiNode != 0);
-        WRITE_VALUE_ATTRIBUTE(euiNode, QVariant::fromValue(testEUInfos[0]), QOpcUa::EUInformation);
+    QScopedPointer<QOpcUaNode> euiNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EUInformation"));
+    QVERIFY(euiNode != 0);
+    WRITE_VALUE_ATTRIBUTE(euiNode, QVariant::fromValue(testEUInfos[0]), QOpcUa::EUInformation);
 
-        QScopedPointer<QOpcUaNode> complexNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ComplexNumber"));
-        QVERIFY(complexNode != 0);
-        WRITE_VALUE_ATTRIBUTE(complexNode, QVariant::fromValue(testComplex[0]), QOpcUa::ComplexNumber);
+    QScopedPointer<QOpcUaNode> complexNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ComplexNumber"));
+    QVERIFY(complexNode != 0);
+    WRITE_VALUE_ATTRIBUTE(complexNode, QVariant::fromValue(testComplex[0]), QOpcUa::ComplexNumber);
 
-        QScopedPointer<QOpcUaNode> doubleComplexNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DoubleComplexNumber"));
-        QVERIFY(doubleComplexNode != 0);
-        WRITE_VALUE_ATTRIBUTE(doubleComplexNode, QVariant::fromValue(testDoubleComplex[0]), QOpcUa::DoubleComplexNumber);
+    QScopedPointer<QOpcUaNode> doubleComplexNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DoubleComplexNumber"));
+    QVERIFY(doubleComplexNode != 0);
+    WRITE_VALUE_ATTRIBUTE(doubleComplexNode, QVariant::fromValue(testDoubleComplex[0]), QOpcUa::DoubleComplexNumber);
 
-        QScopedPointer<QOpcUaNode> axisInfoNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.AxisInformation"));
-        QVERIFY(axisInfoNode != 0);
-        WRITE_VALUE_ATTRIBUTE(axisInfoNode, QVariant::fromValue(testAxisInfo[0]), QOpcUa::AxisInformation);
+    QScopedPointer<QOpcUaNode> axisInfoNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.AxisInformation"));
+    QVERIFY(axisInfoNode != 0);
+    WRITE_VALUE_ATTRIBUTE(axisInfoNode, QVariant::fromValue(testAxisInfo[0]), QOpcUa::AxisInformation);
 
-        QScopedPointer<QOpcUaNode> xVNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XV"));
-        QVERIFY(xVNode != 0);
-        WRITE_VALUE_ATTRIBUTE(xVNode, QVariant::fromValue(testXV[0]), QOpcUa::XV);
-    } else {
-        QWARN("ExtensionObject types are not supported by freeopcua");
-    }
-
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("XmlElement support is not yet implemented in the freeopcua backend");
+    QScopedPointer<QOpcUaNode> xVNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XV"));
+    QVERIFY(xVNode != 0);
+    WRITE_VALUE_ATTRIBUTE(xVNode, QVariant::fromValue(testXV[0]), QOpcUa::XV);
 
     QScopedPointer<QOpcUaNode> xmlElementNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XmlElement"));
     QVERIFY(xmlElementNode != 0);
@@ -1716,42 +1684,35 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(statusCodeScalar.isValid());
     QCOMPARE(statusCodeScalar.value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadInternalError);
 
-    if (opcuaClient->backend() != QLatin1String("freeopcua")) {
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Range"));
-        QVERIFY(node != 0);
-        READ_MANDATORY_VARIABLE_NODE(node);
-        QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QRange>() == testRanges[0]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Range"));
+    QVERIFY(node != 0);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QRange>() == testRanges[0]);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EUInformation"));
-        QVERIFY(node != 0);
-        READ_MANDATORY_VARIABLE_NODE(node);
-        QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QEUInformation>() == testEUInfos[0]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EUInformation"));
+    QVERIFY(node != 0);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QEUInformation>() == testEUInfos[0]);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ComplexNumber"));
-        QVERIFY(node != 0);
-        READ_MANDATORY_VARIABLE_NODE(node);
-        QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QComplexNumber>() == testComplex[0]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ComplexNumber"));
+    QVERIFY(node != 0);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QComplexNumber>() == testComplex[0]);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DoubleComplexNumber"));
-        QVERIFY(node != 0);
-        READ_MANDATORY_VARIABLE_NODE(node);
-        QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QDoubleComplexNumber>() == testDoubleComplex[0]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DoubleComplexNumber"));
+    QVERIFY(node != 0);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QDoubleComplexNumber>() == testDoubleComplex[0]);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.AxisInformation"));
-        QVERIFY(node != 0);
-        READ_MANDATORY_VARIABLE_NODE(node);
-        QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QAxisInformation>() == testAxisInfo[0]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.AxisInformation"));
+    QVERIFY(node != 0);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QAxisInformation>() == testAxisInfo[0]);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XV"));
-        QVERIFY(node != 0);
-        READ_MANDATORY_VARIABLE_NODE(node);
-        QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QXValue>() == testXV[0]);
-    } else {
-        QWARN("ExtensionObject types are not supported by freeopcua");
-    }
-
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("XmlElement support is not yet implemented in the freeopcua backend");
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XV"));
+    QVERIFY(node != 0);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QXValue>() == testXV[0]);
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XmlElement"));
     QVERIFY(node != 0);
@@ -1875,9 +1836,6 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
     // To run this test case, change the url for connector to the URL of a Prosys simulation server
     // and use ns=3;s=Double as node id for doubleNode.
 
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("DataChangeFilter support is not implemented in the freeopcua plugin");
-
     QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
     QVERIFY(doubleNode != 0);
 
@@ -1941,9 +1899,6 @@ void Tst_QOpcUaClient::modifyPublishingMode()
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("Modification of monitoring is not supported in the freeopcua plugin");
-
     QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
     QVERIFY(doubleNode != 0);
 
@@ -1993,9 +1948,6 @@ void Tst_QOpcUaClient::modifyMonitoringMode()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
-
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("Modification of monitoring is not supported in the freeopcua plugin");
 
     QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
     QVERIFY(doubleNode != 0);
@@ -2047,9 +1999,6 @@ void Tst_QOpcUaClient::modifyMonitoredItem()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
-
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("Modification of monitoring is not supported in the freeopcua plugin");
 
     QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
     QVERIFY(doubleNode != 0);
@@ -2299,9 +2248,6 @@ void Tst_QOpcUaClient::connectionLost()
 
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
-
-    if (opcuaClient->backend() == QLatin1String("freeopcua"))
-        QSKIP("State change on connection loss is not implemented in the freeopcua plugin");
 
     QCOMPARE(opcuaClient->state(), QOpcUaClient::ClientState::Connected);
 

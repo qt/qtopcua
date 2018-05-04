@@ -74,82 +74,66 @@ QT_BEGIN_NAMESPACE
     \li Parameter
     \li Open62541 plugin
     \li UACpp plugin
-    \li FreeOPCUA plugin
     \row
     \li PublishingInterval
-    \li X
     \li X
     \li X
     \row
     \li SamplingInterval
     \li X
     \li X
-    \li
     \row
     \li LifetimeCount
     \li X
     \li X
-    \li
     \row
     \li MaxKeepAliveCount
     \li X
     \li X
-    \li
     \row
     \li Priority
     \li X
     \li X
-    \li
     \row
     \li IndexRange
-    \li X
     \li X
     \li X
     \row
     \li Shared
     \li X
     \li X
-    \li X
     \row
     \li SubscriptionId
-    \li X
     \li X
     \li X
     \row
     \li PublishingEnabled
     \li X
     \li X
-    \li
     \row
     \li Filter
     \li X
     \li X
-    \li
     \row
     \li QueueSize
     \li X
     \li X
-    \li
     \row
     \li DiscardOldest
     \li X
     \li X
-    \li
     \row
     \li MonitoringMode
     \li X
     \li X
-    \li
     \row
     \li IndexRange
     \li X
     \li X
-    \li
     \row
     \li MaxNotificationsPerPublish
     \li X
     \li X
-    \li
     \endtable
 */
 
