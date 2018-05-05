@@ -192,6 +192,42 @@ UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variab
     return resultId;
 }
 
+UA_NodeId TestServer::addEmptyArrayVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name)
+{
+    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
+
+    UA_VariableAttributes attr = UA_VariableAttributes_default;
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", name.toUtf8().constData());
+    attr.dataType = UA_TYPES[UA_TYPES_BOOLEAN].typeId;
+    attr.accessLevel = UA_ACCESSLEVELMASK_READ;
+    attr.valueRank = 1;
+    attr.value.arrayLength = 0;
+    attr.value.type = &UA_TYPES[UA_TYPES_BOOLEAN];
+    attr.value.data = UA_EMPTY_ARRAY_SENTINEL;
+
+    UA_QualifiedName variableName;
+    variableName.namespaceIndex = variableNodeId.namespaceIndex;
+    variableName.name = attr.displayName.text;
+
+    UA_NodeId resultId;
+    UA_StatusCode result = UA_Server_addVariableNode(m_server,
+                                                     variableNodeId,
+                                                     folder,
+                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                     variableName,
+                                                     UA_NODEID_NULL,
+                                                     attr,
+                                                     NULL,
+                                                     &resultId);
+
+    if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not add empty array variable:" << result;
+        return UA_NODEID_NULL;
+    }
+
+    return resultId;
+}
+
 UA_StatusCode TestServer::multiplyMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle, const UA_NodeId *methodId, void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize, const UA_Variant *input, size_t outputSize, UA_Variant *output)
 {
     Q_UNUSED(server);

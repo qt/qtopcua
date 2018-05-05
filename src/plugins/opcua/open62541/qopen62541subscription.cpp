@@ -312,6 +312,13 @@ void QOpen62541Subscription::monitoredValueUpdated(UA_UInt32 monId, UA_DataValue
     if (item == m_itemIdToItemMapping.constEnd())
         return;
     QOpcUaReadResult res;
+
+    if (!value || value == UA_EMPTY_ARRAY_SENTINEL) {
+        res.statusCode = QOpcUa::UaStatusCode::Good;
+        emit m_backend->attributeUpdated(item.value()->handle, res);
+        return;
+    }
+
     res.value = QOpen62541ValueConverter::toQVariant(value->value);
     res.attributeId = item.value()->attr;
     if (value->hasServerTimestamp)

@@ -156,5 +156,7 @@ int main(int argc, char **argv)
 
     server.addMethod(testFolder, "ns=3;s=Test.Method.Multiply", "MultiplyDoubles");
 
+    server.addEmptyArrayVariable(testFolder, "ns=2;s=EmptyBoolArray", "EmptyBoolArrayTest");
+
     return app.exec();
 }

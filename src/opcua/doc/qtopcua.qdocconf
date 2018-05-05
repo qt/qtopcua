@@ -6,7 +6,7 @@ version = $QT_VERSION
 
 sourcedirs += ..
 headerdirs += ..
-exampledirs += ../../../examples/
+exampledirs += ../../../examples/opcua
 imagedirs += images
 
 tagfile = ../../doc/qtopcua/qtopcua.tags
@@ -42,7 +42,7 @@ examples.fileextensions = "*.cpp"
 navigation.landingpage = "Qt OPC UA"
 navigation.cppclassespage = "Qt OPC UA C++ Classes"
 
-examplesinstallpath = qtopcua/opcua
+examplesinstallpath = opcua
 
 depends += \
    qtcore \
