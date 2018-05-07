@@ -24,7 +24,7 @@
 
 #include <QtCore/qstring.h>
 
-#include <uanodeid.h>
+#include <uabase/uanodeid.h>
 
 QT_BEGIN_NAMESPACE
 

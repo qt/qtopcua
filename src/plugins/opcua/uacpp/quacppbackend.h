@@ -29,8 +29,8 @@
 #include <QtCore/QString>
 #include <QtCore/QTimer>
 
-#include <uabase.h>
-#include <uaclientsdk.h>
+#include <uabase/uabase.h>
+#include <uaclient/uaclientsdk.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -34,9 +34,9 @@
 
 #include <QtNetwork/QHostInfo>
 
-#include <uaplatformlayer.h>
-#include <uasession.h>
-#include <uastring.h>
+#include <uabase/uaplatformlayer.h>
+#include <uaclient/uasession.h>
+#include <uabase/uastring.h>
 
 #include <limits>
 
