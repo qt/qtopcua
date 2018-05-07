@@ -77,15 +77,12 @@ QOpcUa::Types qvariantTypeToQOpcUaType(QMetaType::Type type)
         return QOpcUa::Float;
     case QMetaType::QString:
         return QOpcUa::String;
-    //return QOpcUa::LocalizedText;  // TODO: unclear
     case QMetaType::QDateTime:
         return QOpcUa::DateTime;
     case QMetaType::QByteArray:
         return QOpcUa::ByteString;
     case QMetaType::QUuid:
         return QOpcUa::Guid;
-    //return QOpcUa::XmlElement;
-    //return QOpcUa::NodeId;
     default:
         break;
     }
@@ -203,7 +200,7 @@ QVariant toQVariant(const UA_Variant &value)
     case UA_TYPES_BYTESTRING:
         return arrayToQVariant<QByteArray, UA_ByteString>(value, QMetaType::QByteArray);
     case UA_TYPES_LOCALIZEDTEXT:
-        return arrayToQVariant<QOpcUa::QLocalizedText, UA_LocalizedText>(value, QMetaType::QString);
+        return arrayToQVariant<QOpcUa::QLocalizedText, UA_LocalizedText>(value);
     case UA_TYPES_NODEID:
         return arrayToQVariant<QString, UA_NodeId>(value, QMetaType::QString);
     case UA_TYPES_DATETIME:
@@ -281,78 +278,65 @@ const UA_DataType *toDataType(QOpcUa::Types valueType)
 }
 
 template<typename TARGETTYPE, typename UATYPE>
-QVariant scalarToQVariant(UATYPE *data, QMetaType::Type type)
+TARGETTYPE scalarToQt(UATYPE *data)
 {
-    return QVariant(type, reinterpret_cast<TARGETTYPE *>(data));
+    return *reinterpret_cast<TARGETTYPE *>(data);
 }
 
 template<>
-QVariant scalarToQVariant<QString, UA_String>(UA_String *data, QMetaType::Type type)
+QString scalarToQt<QString, UA_String>(UA_String *data)
 {
-    Q_UNUSED(type)
-    UA_String *uaStr = static_cast<UA_String *>(data);
-    return QVariant(QString::fromUtf8(reinterpret_cast<char *>(uaStr->data), uaStr->length));
+    return QString::fromUtf8(reinterpret_cast<char *>(data->data), data->length);
 }
 
 template<>
-QVariant scalarToQVariant<QByteArray, UA_ByteString>(UA_ByteString *data, QMetaType::Type type)
+QByteArray scalarToQt<QByteArray, UA_ByteString>(UA_ByteString *data)
 {
-    Q_UNUSED(type)
-    UA_ByteString *uaBs = static_cast<UA_ByteString *>(data);
-    return QVariant(QByteArray(reinterpret_cast<char *>(uaBs->data), uaBs->length));
+    return QByteArray(reinterpret_cast<char *>(data->data), data->length);
 }
 
 template<>
-QVariant scalarToQVariant<QOpcUa::QLocalizedText, UA_LocalizedText>(UA_LocalizedText *data, QMetaType::Type type)
+QOpcUa::QLocalizedText scalarToQt<QOpcUa::QLocalizedText, UA_LocalizedText>(UA_LocalizedText *data)
 {
-    Q_UNUSED(type)
-
     QOpcUa::QLocalizedText lt;
-    lt.setLocale(scalarToQVariant<QString, UA_String>(&(data->locale), QMetaType::Type::QString).toString());
-    lt.setText(scalarToQVariant<QString, UA_String>(&(data->text), QMetaType::Type::QString).toString());
-    return QVariant::fromValue(lt);
+    lt.setLocale(scalarToQt<QString, UA_String>(&(data->locale)));
+    lt.setText(scalarToQt<QString, UA_String>(&(data->text)));
+    return lt;
 }
 
 template<>
-QVariant scalarToQVariant<QString, UA_NodeId>(UA_NodeId *data, QMetaType::Type type)
+QString scalarToQt<QString, UA_NodeId>(UA_NodeId *data)
 {
-    Q_UNUSED(type)
-    UA_NodeId *uan = static_cast<UA_NodeId *>(data);
-    return Open62541Utils::nodeIdToQString(*uan);
+    return Open62541Utils::nodeIdToQString(*data);
 }
 
 template<>
-QVariant scalarToQVariant<QDateTime, UA_DateTime>(UA_DateTime *data, QMetaType::Type type)
+QDateTime scalarToQt<QDateTime, UA_DateTime>(UA_DateTime *data)
 {
-    Q_UNUSED(type)
-    if (!data)
-        return QVariant();
-    return QVariant(uaDateTimeToQDateTime(*data));
+    // OPC-UA part 3, Table C.9
+    const QDateTime epochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
+    return epochStart.addMSecs(*data * UA_DATETIME_TO_MSEC).toLocalTime();
 }
 
 template<>
-QVariant scalarToQVariant<QUuid, UA_Guid>(UA_Guid *data, QMetaType::Type type)
+QUuid scalarToQt<QUuid, UA_Guid>(UA_Guid *data)
 {
-    Q_UNUSED(type)
     return QUuid(data->data1, data->data2, data->data3, data->data4[0], data->data4[1], data->data4[2],
             data->data4[3], data->data4[4], data->data4[5], data->data4[6], data->data4[7]);
 }
 
 template<>
-QVariant scalarToQVariant<QOpcUa::QQualifiedName, UA_QualifiedName>(UA_QualifiedName *data, QMetaType::Type type)
+QOpcUa::QQualifiedName scalarToQt<QOpcUa::QQualifiedName, UA_QualifiedName>(UA_QualifiedName *data)
 {
-    Q_UNUSED(type);
     QOpcUa::QQualifiedName temp;
     temp.setNamespaceIndex(data->namespaceIndex);
-    temp.setName(scalarToQVariant<QString, UA_String>(&(data->name), QMetaType::Type::QString).toString());
-    return QVariant::fromValue(temp);
+    temp.setName(scalarToQt<QString, UA_String>(&(data->name)));
+    return temp;
 }
 
 template <>
-QVariant scalarToQVariant<QVariant, UA_ExtensionObject>(UA_ExtensionObject *data, QMetaType::Type type)
+QVariant scalarToQt<QVariant, UA_ExtensionObject>(UA_ExtensionObject *data)
 {
-    Q_UNUSED(type);
-
     // OPC-UA part 6, Table 13 states that an extension object can have no body, a ByteString encoded body
     // or an XML encoded body.
 
@@ -380,22 +364,22 @@ QVariant scalarToQVariant<QVariant, UA_ExtensionObject>(UA_ExtensionObject *data
         QOpcUaBinaryDataEncoding::TypeEncodingId objType = static_cast<QOpcUaBinaryDataEncoding::TypeEncodingId>(data->content.encoded.typeId.identifier.numeric);
         switch (objType) {
         case QOpcUaBinaryDataEncoding::TypeEncodingId::EUInformation:
-            result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QEUInformation>(buffer, length, success));
+            result = QOpcUaBinaryDataEncoding::decode<QOpcUa::QEUInformation>(buffer, length, success);
             break;
         case QOpcUaBinaryDataEncoding::TypeEncodingId::Range:
-            result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QRange>(buffer, length, success));
+            result = QOpcUaBinaryDataEncoding::decode<QOpcUa::QRange>(buffer, length, success);
             break;
         case QOpcUaBinaryDataEncoding::TypeEncodingId::ComplexNumber:
-            result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QComplexNumber>(buffer, length, success));
+            result = QOpcUaBinaryDataEncoding::decode<QOpcUa::QComplexNumber>(buffer, length, success);
             break;
         case QOpcUaBinaryDataEncoding::TypeEncodingId::DoubleComplexNumber:
-            result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QDoubleComplexNumber>(buffer, length, success));
+            result = QOpcUaBinaryDataEncoding::decode<QOpcUa::QDoubleComplexNumber>(buffer, length, success);
             break;
         case QOpcUaBinaryDataEncoding::TypeEncodingId::AxisInformation:
-            result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QAxisInformation>(buffer, length, success));
+            result = QOpcUaBinaryDataEncoding::decode<QOpcUa::QAxisInformation>(buffer, length, success);
             break;
         case QOpcUaBinaryDataEncoding::TypeEncodingId::XV:
-            result = QVariant::fromValue(QOpcUaBinaryDataEncoding::decode<QOpcUa::QXValue>(buffer, length, success));
+            result = QOpcUaBinaryDataEncoding::decode<QOpcUa::QXValue>(buffer, length, success);
             break;
         default:
             break;
@@ -417,14 +401,20 @@ QVariant arrayToQVariant(const UA_Variant &var, QMetaType::Type type)
     if (var.arrayLength > 0) {
         QVariantList list;
         for (size_t i = 0; i < var.arrayLength; ++i) {
-            list.append(scalarToQVariant<TARGETTYPE, UATYPE>(&temp[i], type));
+            QVariant tempVar = QVariant::fromValue(scalarToQt<TARGETTYPE, UATYPE>(&temp[i]));
+            if (type != QMetaType::UnknownType && type != static_cast<QMetaType::Type>(tempVar.type()))
+                tempVar.convert(type);
+            list.append(tempVar);
         }
         if (list.size() == 1)
             return list.at(0);
         else
             return list;
     } else if (UA_Variant_isScalar(&var)) {
-        return scalarToQVariant<TARGETTYPE, UATYPE>(temp, type);
+        QVariant tempVar = QVariant::fromValue(scalarToQt<TARGETTYPE, UATYPE>(temp));
+        if (type != QMetaType::UnknownType && type != static_cast<QMetaType::Type>(tempVar.type()))
+            tempVar.convert(type);
+        return tempVar;
     } else if (var.arrayLength == 0 && var.data == UA_EMPTY_ARRAY_SENTINEL) {
         return QVariantList(); // Return empty QVariantList for empty array
     }
@@ -433,124 +423,116 @@ QVariant arrayToQVariant(const UA_Variant &var, QMetaType::Type type)
 }
 
 template<typename TARGETTYPE, typename QTTYPE>
-void scalarFromQVariant(const QVariant &var, TARGETTYPE *ptr)
+void scalarFromQt(const QTTYPE &value, TARGETTYPE *ptr)
 {
-    *ptr = static_cast<TARGETTYPE>(var.value<QTTYPE>());
+    *ptr = static_cast<TARGETTYPE>(value);
 }
 
 template<>
-void scalarFromQVariant<UA_DateTime, QDateTime>(const QVariant &var, UA_DateTime *ptr)
+void scalarFromQt<UA_DateTime, QDateTime>(const QDateTime &value, UA_DateTime *ptr)
 {
     // OPC-UA part 3, Table C.9
     const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
 
-    *ptr = UA_MSEC_TO_DATETIME * (var.toDateTime().toMSecsSinceEpoch() - uaEpochStart.toMSecsSinceEpoch());
+    *ptr = UA_MSEC_TO_DATETIME * (value.toMSecsSinceEpoch() - uaEpochStart.toMSecsSinceEpoch());
 }
 
 template<>
-void scalarFromQVariant<UA_String, QString>(const QVariant &var, UA_String *ptr)
+void scalarFromQt<UA_String, QString>(const QString &value, UA_String *ptr)
 {
-    UA_String tmpValue = UA_String_fromChars(var.toString().toUtf8().constData());
+    UA_String tmpValue = UA_String_fromChars(value.toUtf8().constData());
     UA_String_copy(&tmpValue, ptr);
     UA_String_deleteMembers(&tmpValue);
 }
 
 template<>
-void scalarFromQVariant<UA_LocalizedText, QOpcUa::QLocalizedText>(const QVariant &var, UA_LocalizedText *ptr)
+void scalarFromQt<UA_LocalizedText, QOpcUa::QLocalizedText>(const QOpcUa::QLocalizedText &value, UA_LocalizedText *ptr)
 {
-    QOpcUa::QLocalizedText lt = var.value<QOpcUa::QLocalizedText>();
-    scalarFromQVariant<UA_String, QString>(lt.locale(), &(ptr->locale));
-    scalarFromQVariant<UA_String, QString>(lt.text(), &(ptr->text));
+    scalarFromQt<UA_String, QString>(value.locale(), &(ptr->locale));
+    scalarFromQt<UA_String, QString>(value.text(), &(ptr->text));
 }
 
 template<>
-void scalarFromQVariant<UA_ByteString, QByteArray>(const QVariant &var, UA_ByteString *ptr)
+void scalarFromQt<UA_ByteString, QByteArray>(const QByteArray &value, UA_ByteString *ptr)
 {
-    QByteArray arr = var.toByteArray();
-    UA_ByteString tmpValue;
-    UA_ByteString_init(&tmpValue);
-    tmpValue.length = arr.length();
-    tmpValue.data = reinterpret_cast<UA_Byte *>(arr.data());
-    UA_ByteString_copy(&tmpValue, ptr);
+    ptr->length = value.length();
+    UA_StatusCode success = UA_Array_copy(reinterpret_cast<const UA_Byte *>(value.constData()),
+                                          value.length(), reinterpret_cast<void **>(&ptr->data), &UA_TYPES[UA_TYPES_BYTE]);
+    if (success != UA_STATUSCODE_GOOD) {
+        ptr->length = 0;
+        ptr->data = nullptr;
+    }
 }
 
 template<>
-void scalarFromQVariant<UA_NodeId, QString>(const QVariant &var, UA_NodeId *ptr)
+void scalarFromQt<UA_NodeId, QString>(const QString &value, UA_NodeId *ptr)
 {
-    UA_NodeId tmpValue = Open62541Utils::nodeIdFromQString(var.toString());
+    UA_NodeId tmpValue = Open62541Utils::nodeIdFromQString(value);
     UA_NodeId_copy(&tmpValue, ptr);
     UA_NodeId_deleteMembers(&tmpValue);
 }
 
 template<>
-void scalarFromQVariant<UA_QualifiedName, QOpcUa::QQualifiedName>(const QVariant &var, UA_QualifiedName *ptr)
+void scalarFromQt<UA_QualifiedName, QOpcUa::QQualifiedName>(const QOpcUa::QQualifiedName &value, UA_QualifiedName *ptr)
 {
-    QOpcUa::QQualifiedName temp = var.value<QOpcUa::QQualifiedName>();
-    ptr->namespaceIndex = temp.namespaceIndex();
-    scalarFromQVariant<UA_String, QString>(temp.name(), &(ptr->name));
+    ptr->namespaceIndex = value.namespaceIndex();
+    scalarFromQt<UA_String, QString>(value.name(), &(ptr->name));
 }
 
 template<>
-void scalarFromQVariant<UA_Guid, QUuid>(const QVariant &var, UA_Guid *ptr)
+void scalarFromQt<UA_Guid, QUuid>(const QUuid &value, UA_Guid *ptr)
 {
-    const QUuid uuid = var.toUuid();
-    ptr->data1 = uuid.data1;
-    ptr->data2 = uuid.data2;
-    ptr->data3 = uuid.data3;
-    std::memcpy(ptr->data4, uuid.data4, sizeof(uuid.data4));
+    ptr->data1 = value.data1;
+    ptr->data2 = value.data2;
+    ptr->data3 = value.data3;
+    std::memcpy(ptr->data4, value.data4, sizeof(value.data4));
 }
 
 template<>
-void scalarFromQVariant<UA_ExtensionObject, QOpcUa::QRange>(const QVariant &var, UA_ExtensionObject *ptr)
+void scalarFromQt<UA_ExtensionObject, QOpcUa::QRange>(const QOpcUa::QRange &value, UA_ExtensionObject *ptr)
 {
-    const QOpcUa::QRange range = var.value<QOpcUa::QRange>();
     QByteArray temp;
-    QOpcUaBinaryDataEncoding::encode<QOpcUa::QRange>(range, temp);
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QRange>(value, temp);
     return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::Range, ptr);
 }
 
 template<>
-void scalarFromQVariant<UA_ExtensionObject, QOpcUa::QEUInformation>(const QVariant &var, UA_ExtensionObject *ptr)
+void scalarFromQt<UA_ExtensionObject, QOpcUa::QEUInformation>(const QOpcUa::QEUInformation &value, UA_ExtensionObject *ptr)
 {
-    const QOpcUa::QEUInformation info = var.value<QOpcUa::QEUInformation>();
     QByteArray temp;
-    QOpcUaBinaryDataEncoding::encode<QOpcUa::QEUInformation>(info, temp);
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QEUInformation>(value, temp);
     return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::EUInformation, ptr);
 }
 
 template<>
-void scalarFromQVariant<UA_ExtensionObject, QOpcUa::QComplexNumber>(const QVariant &var, UA_ExtensionObject *ptr)
+void scalarFromQt<UA_ExtensionObject, QOpcUa::QComplexNumber>(const QOpcUa::QComplexNumber &value, UA_ExtensionObject *ptr)
 {
-    const QOpcUa::QComplexNumber num = var.value<QOpcUa::QComplexNumber>();
     QByteArray temp;
-    QOpcUaBinaryDataEncoding::encode<QOpcUa::QComplexNumber>(num, temp);
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QComplexNumber>(value, temp);
     return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::ComplexNumber, ptr);
 }
 
 template<>
-void scalarFromQVariant<UA_ExtensionObject, QOpcUa::QDoubleComplexNumber>(const QVariant &var, UA_ExtensionObject *ptr)
+void scalarFromQt<UA_ExtensionObject, QOpcUa::QDoubleComplexNumber>(const QOpcUa::QDoubleComplexNumber &value, UA_ExtensionObject *ptr)
 {
-    const QOpcUa::QDoubleComplexNumber num = var.value<QOpcUa::QDoubleComplexNumber>();
     QByteArray temp;
-    QOpcUaBinaryDataEncoding::encode<QOpcUa::QDoubleComplexNumber>(num, temp);
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QDoubleComplexNumber>(value, temp);
     return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::DoubleComplexNumber, ptr);
 }
 
 template<>
-void scalarFromQVariant<UA_ExtensionObject, QOpcUa::QAxisInformation>(const QVariant &var, UA_ExtensionObject *ptr)
+void scalarFromQt<UA_ExtensionObject, QOpcUa::QAxisInformation>(const QOpcUa::QAxisInformation &value, UA_ExtensionObject *ptr)
 {
-    const QOpcUa::QAxisInformation num = var.value<QOpcUa::QAxisInformation>();
     QByteArray temp;
-    QOpcUaBinaryDataEncoding::encode<QOpcUa::QAxisInformation>(num, temp);
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QAxisInformation>(value, temp);
     return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::AxisInformation, ptr);
 }
 
 template<>
-void scalarFromQVariant<UA_ExtensionObject, QOpcUa::QXValue>(const QVariant &var, UA_ExtensionObject *ptr)
+void scalarFromQt<UA_ExtensionObject, QOpcUa::QXValue>(const QOpcUa::QXValue &value, UA_ExtensionObject *ptr)
 {
-    const QOpcUa::QXValue num = var.value<QOpcUa::QXValue>();
     QByteArray temp;
-    QOpcUaBinaryDataEncoding::encode<QOpcUa::QXValue>(num, temp);
+    QOpcUaBinaryDataEncoding::encode<QOpcUa::QXValue>(value, temp);
     return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::XV, ptr);
 }
 
@@ -560,22 +542,41 @@ UA_Variant arrayFromQVariant(const QVariant &var, const UA_DataType *type)
     UA_Variant open62541value;
     UA_Variant_init(&open62541value);
 
+    if (type == nullptr) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unable to convert QVariant to UA_Variant, unknown type";
+        return open62541value;
+    }
+
     if (var.type() == QVariant::List) {
         const QVariantList list = var.toList();
         if (list.isEmpty())
             return open62541value;
 
+        for (auto it : qAsConst(list)) {
+            if (!it.canConvert<QTTYPE>()) {
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Value type" << var.typeName() <<
+                                                         "in the QVariant does not match type parameter" << type->typeName;
+                return open62541value;
+            }
+        }
+
         TARGETTYPE *arr = static_cast<TARGETTYPE *>(UA_Array_new(list.size(), type));
 
         for (int i = 0; i < list.size(); ++i)
-            scalarFromQVariant<TARGETTYPE, QTTYPE>(list[i], &arr[i]);
+            scalarFromQt<TARGETTYPE, QTTYPE>(list[i].value<QTTYPE>(), &arr[i]);
 
         UA_Variant_setArray(&open62541value, arr, list.size(), type);
         return open62541value;
     }
 
+    if (!var.canConvert<QTTYPE>()) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Value type" << var.typeName() <<
+                                                 "in the QVariant does not match type parameter" << type->typeName;
+        return open62541value;
+    }
+
     TARGETTYPE *temp = static_cast<TARGETTYPE *>(UA_new(type));
-    scalarFromQVariant<TARGETTYPE, QTTYPE>(var, temp);
+    scalarFromQt<TARGETTYPE, QTTYPE>(var.value<QTTYPE>(), temp);
     UA_Variant_setScalar(&open62541value, temp, type);
     return open62541value;
 }
@@ -589,16 +590,6 @@ void createExtensionObject(QByteArray &data, QOpcUaBinaryDataEncoding::TypeEncod
     obj.content.encoded.body.length = data.length();
     obj.content.encoded.typeId = UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(id));
     UA_ExtensionObject_copy(&obj, ptr);
-}
-
-QDateTime uaDateTimeToQDateTime(UA_DateTime dt)
-{
-    if (!dt)
-        return QDateTime();
-
-    // OPC-UA part 3, Table C.9
-    const QDateTime epochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
-    return epochStart.addMSecs(dt * UA_DATETIME_TO_MSEC).toLocalTime();
 }
 
 }

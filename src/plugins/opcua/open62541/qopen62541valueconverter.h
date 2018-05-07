@@ -65,20 +65,18 @@ namespace QOpen62541ValueConverter {
     QOpcUa::Types qvariantTypeToQOpcUaType(QMetaType::Type type);
 
     template<typename TARGETTYPE, typename UATYPE>
-    QVariant scalarToQVariant(UATYPE *data, QMetaType::Type type = QMetaType::UnknownType);
+    TARGETTYPE scalarToQt(UATYPE *data);
 
     template<typename TARGETTYPE, typename UATYPE>
     QVariant arrayToQVariant(const UA_Variant &var, QMetaType::Type type = QMetaType::UnknownType);
 
     template<typename TARGETTYPE, typename QTTYPE>
-    void scalarFromQVariant(const QVariant &var, TARGETTYPE *ptr);
+    void scalarFromQt(const QTTYPE &var, TARGETTYPE *ptr);
 
     template<typename TARGETTYPE, typename QTTYPE>
     UA_Variant arrayFromQVariant(const QVariant &var, const UA_DataType *type);
 
     void createExtensionObject(QByteArray &data, QOpcUaBinaryDataEncoding::TypeEncodingId id, UA_ExtensionObject *ptr);
-
-    QDateTime uaDateTimeToQDateTime(UA_DateTime dt);
 }
 
 QT_END_NAMESPACE

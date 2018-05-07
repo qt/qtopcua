@@ -95,7 +95,7 @@ void Open62541AsyncBackend::readAttributes(quint64 handle, UA_NodeId id, QOpcUa:
     qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attribute){
         readId.attributeId = QOpen62541ValueConverter::toUaAttributeId(attribute);
         if (indexRange.length())
-            readId.indexRange = UA_STRING_ALLOC(indexRange.toUtf8().data());
+            QOpen62541ValueConverter::scalarFromQt<UA_String, QString>(indexRange, &readId.indexRange);
         valueIds.push_back(readId);
         QOpcUaReadResult temp;
         temp.attributeId = attribute;
@@ -124,9 +124,9 @@ void Open62541AsyncBackend::readAttributes(quint64 handle, UA_NodeId id, QOpcUa:
         if (res.results[i].hasValue && res.results[i].value.data)
                 vec[i].value = QOpen62541ValueConverter::toQVariant(res.results[i].value);
         if (res.results[i].hasServerTimestamp)
-            vec[i].sourceTimestamp = QOpen62541ValueConverter::uaDateTimeToQDateTime(res.results[i].sourceTimestamp);
+            vec[i].sourceTimestamp = QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&res.results[i].sourceTimestamp);
         if (res.results[i].hasSourceTimestamp)
-            vec[i].serverTimestamp = QOpen62541ValueConverter::uaDateTimeToQDateTime(res.results[i].serverTimestamp);
+            vec[i].serverTimestamp = QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&res.results[i].serverTimestamp);
     }
     emit attributesRead(handle, vec, static_cast<QOpcUa::UaStatusCode>(res.responseHeader.serviceResult));
     UA_ReadValueId_deleteMembers(&readId);
@@ -149,7 +149,7 @@ void Open62541AsyncBackend::writeAttribute(quint64 handle, UA_NodeId id, QOpcUa:
     req.nodesToWrite->value.value = QOpen62541ValueConverter::toOpen62541Variant(value, type);
     req.nodesToWrite->value.hasValue = true;
     if (indexRange.length())
-        req.nodesToWrite->indexRange = UA_STRING_ALLOC(indexRange.toUtf8().data());
+        QOpen62541ValueConverter::scalarFromQt<UA_String, QString>(indexRange, &req.nodesToWrite->indexRange);
 
     UA_WriteResponse res = UA_Client_Service_write(m_uaclient, req);
 
@@ -410,10 +410,8 @@ static void convertBrowseResult(UA_BrowseResult *src, quint32 referencesSize, QV
         temp.setNodeId(Open62541Utils::nodeIdToQString(src->references[i].nodeId.nodeId));
         temp.setRefType(static_cast<QOpcUa::ReferenceTypeId>(src->references[i].referenceTypeId.identifier.numeric));
         temp.setNodeClass(static_cast<QOpcUa::NodeClass>(src->references[i].nodeClass));
-        temp.setBrowseName(QOpen62541ValueConverter::scalarToQVariant<QOpcUa::QQualifiedName, UA_QualifiedName>(
-                    &(src->references[i].browseName), QMetaType::Type::UnknownType).value<QOpcUa::QQualifiedName>());
-        temp.setDisplayName(QOpen62541ValueConverter::scalarToQVariant<QOpcUa::QLocalizedText, UA_LocalizedText>(
-                    &(src->references[i].displayName), QMetaType::Type::UnknownType).value<QOpcUa::QLocalizedText>());
+        temp.setBrowseName(QOpen62541ValueConverter::scalarToQt<QOpcUa::QQualifiedName, UA_QualifiedName>(&src->references[i].browseName));
+        temp.setDisplayName(QOpen62541ValueConverter::scalarToQt<QOpcUa::QLocalizedText, UA_LocalizedText>(&src->references[i].displayName));
         dst.push_back(temp);
     }
 }

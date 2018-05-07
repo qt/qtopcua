@@ -234,7 +234,7 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::N
     req.itemToMonitor.attributeId = QOpen62541ValueConverter::toUaAttributeId(attr);
     UA_NodeId_copy(&id, &(req.itemToMonitor.nodeId));
     if (settings.indexRange().size())
-        req.itemToMonitor.indexRange = UA_STRING_ALLOC(settings.indexRange().toUtf8().data());
+        QOpen62541ValueConverter::scalarFromQt<UA_String, QString>(settings.indexRange(), &req.itemToMonitor.indexRange);
     req.monitoringMode = static_cast<UA_MonitoringMode>(settings.monitoringMode());
     req.requestedParameters.samplingInterval = qFuzzyCompare(settings.samplingInterval(), 0.0) ? m_interval : settings.samplingInterval();
     req.requestedParameters.queueSize = settings.queueSize() == 0 ? 1 : settings.queueSize();
@@ -322,9 +322,9 @@ void QOpen62541Subscription::monitoredValueUpdated(UA_UInt32 monId, UA_DataValue
     res.value = QOpen62541ValueConverter::toQVariant(value->value);
     res.attributeId = item.value()->attr;
     if (value->hasServerTimestamp)
-        res.serverTimestamp = QOpen62541ValueConverter::uaDateTimeToQDateTime(value->serverTimestamp);
+        res.serverTimestamp = QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&value->serverTimestamp);
     if (value->hasSourceTimestamp)
-        res.sourceTimestamp = QOpen62541ValueConverter::uaDateTimeToQDateTime(value->sourceTimestamp);
+        res.sourceTimestamp = QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&value->sourceTimestamp);
     res.statusCode = QOpcUa::UaStatusCode::Good;
     emit m_backend->attributeUpdated(item.value()->handle, res);
 }
