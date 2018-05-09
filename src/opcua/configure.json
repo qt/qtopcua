@@ -51,6 +51,7 @@
             "test": "uacpp",
             "sources": [
                 {
+                    "type": "uacpp",
                     "builds": {
                         "debug": "uaclientd.lib uabased.lib coremoduled.lib uastackd.lib uapkid.lib xmlparserd.lib Crypt32.lib Ole32.lib OleAut32.lib ws2_32.lib libeay32.lib libxml2.lib",
                         "release": "uaclient.lib uabase.lib coremodule.lib uastack.lib uapki.lib xmlparser.lib Crypt32.lib Ole32.lib OleAut32.lib ws2_32.lib libeay32.lib libxml2.lib"
@@ -58,8 +59,9 @@
                     "condition": "config.win32 && var.QT_EDITION != 'OpenSource'"
                 },
                 {
+                    "type": "uacpp",
                     "libs": "-luaclient -luamodule -luamodels -lcoremodule -luabase -luastack -lxmlparser -luapki -lcrypto -lssl -lxml2",
-                    "condition": "var.QT_EDITION != 'OpenSource'"
+                    "condition": "!config.win32 && var.QT_EDITION != 'OpenSource'"
                 }
             ]
         }
