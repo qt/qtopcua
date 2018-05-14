@@ -319,8 +319,7 @@ Tst_QOpcUaClient::Tst_QOpcUaClient()
 void Tst_QOpcUaClient::initTestCase()
 {
     for (const auto &backend: m_backends) {
-        // QT_TEST_CI is set to 1 in the Qt CI, see https://wiki.qt.io/CI_Environment
-        if (backend == QStringLiteral("freeopcua") && qgetenv("QT_TEST_CI") == QStringLiteral("1")) {
+        if (backend == QStringLiteral("freeopcua") && qEnvironmentVariable("QTEST_ENVIRONMENT").split(' ').contains(QLatin1String("ci"))) {
             qDebug() << "The freeopcua tests randomly fail in the CI and are disabled by default";
             continue;
         }
