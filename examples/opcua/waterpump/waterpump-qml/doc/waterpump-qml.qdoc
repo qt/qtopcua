@@ -1,0 +1,128 @@
+/****************************************************************************
+**
+** Copyright (C) 2018 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:FDL$
+** Commercial License Usage
+** Licensees holding valid commercial Qt licenses may use this file in
+** accordance with the commercial license agreement provided with the
+** Software or, alternatively, in accordance with the terms contained in
+** a written agreement between you and The Qt Company. For licensing terms
+** and conditions see https://www.qt.io/terms-conditions. For further
+** information use the contact form at https://www.qt.io/contact-us.
+**
+** GNU Free Documentation License Usage
+** Alternatively, this file may be used under the terms of the GNU Free
+** Documentation License version 1.3 as published by the Free Software
+** Foundation and appearing in the file included in the packaging of
+** this file. Please review the following information to ensure
+** the GNU Free Documentation License version 1.3 requirements
+** will be met: https://www.gnu.org/licenses/fdl-1.3.html.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \example waterpump/waterpump-qml
+    \ingroup qtopcua-examples
+    \title Example using the QML API for Qt OPC UA
+    \brief This example shows how to use Qt OPC UA QML API to interact with an OPC UA
+    server to build a QML based HMI for a simple machine.
+
+    \section1 Introduction
+    This example shows how to use Qt OPC UA QML API to interact with an OPC UA
+    server to build a QML based HMI for a simple machine.
+
+    \section1 The Simulation
+    The OPC UA server included in this example runs a simulation of a machine
+    containing two tanks, a water pump and a valve. Water can be pumped from the
+    first tank into the second tank and then be flushed from the second tank
+    by opening the valve. Both operations have a user-configurable setpoint
+    which controls how much water is pumped to or flushed from the second tank.
+
+    The following nodes exist on the server:
+
+    \table
+        \header
+            \li NodeId
+            \li Function
+        \row
+            \li ns=2;s=Machine
+            \li The folder containing the method and variable nodes for the machine
+        \row
+            \li ns=2;s=Machine.State
+            \li The state of the machine
+        \row
+            \li ns=2;s=Machine.Tank1.PercentFilled
+            \li The current fill status of the first tank
+        \row
+            \li ns=2;s=Machine.Tank2.PercentFilled
+            \li The current fill status of the second tank
+        \row
+            \li ns=2;s=Machine.Tank2.TargetPercent
+            \li The setpoint for pumping and flushing
+        \row
+            \li ns=2;s=Machine.Tank2.ValveState
+            \li The state of the valve of the second tank
+        \row
+            \li ns=2;s=Machine.Designation
+            \li A human readable designation of the machine for display purposes
+        \row
+            \li ns=2;s=Machine.Start
+            \li Call this method to start the pump
+        \row
+            \li ns=2;s=Machine.Stop
+            \li Call this method to stop the pump
+        \row
+            \li ns=2;s=Machine.FlushTank2
+            \li Call this method to flush tank 2
+    \endtable
+
+    \section1 Implementation
+
+    This example uses QML items to read and write values as well as method calls.
+    All operations are asynchronous and handled by QML in the background.
+
+    A QML item represents the machine and its components. This item does not have any
+    graphical interface and only provides access to the properties of the machine.
+    It has two tanks which are instances of a separate \c Tank component.
+
+    \section2 Properties
+
+    The machine item exposes all properties and subitems as properties.
+
+    \quotefromfile waterpump/waterpump-qml/machine/Machine.qml
+    \dots
+    \skipto readonly
+    \printuntil flushMethod
+    \codeline
+    \dots
+
+    \section2 Asynchronous Handlers
+
+    The asynchronous parts of the API are handled by QML automatically because
+    signals are emitted for every property change by default.
+
+    For example, the button to flush the second tank is enabled
+    only if the backend is connected to the server, the machine is idle, and
+    the tank level is above the setpoint. On click, the flushTank2() method
+    is called on the server.
+
+    \quotefromfile waterpump/waterpump-qml/MachineDisplay.qml
+    \skipto     Tank2Unit
+    \printuntil valveState
+
+    \section1 Usage
+    The server is started automatically by the HMI application.
+    After connecting to the server by clicking the \uicontrol Connect button,
+    drag the slider to set a setpoint, then click \uicontrol Start to start pumping water
+    from the first tank to the second tank. After setting a setpoint lower than
+    the current value of the second tank, a click on \uicontrol Flush opens the valve.
+
+    If there is no water left, click \uicontrol {Reset simulation} to refill the first tank.
+
+    \image tankexample.jpg
+*/

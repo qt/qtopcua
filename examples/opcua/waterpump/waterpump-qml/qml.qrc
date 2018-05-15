@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>TankDisplay.qml</file>
+        <file>Tank1Unit.qml</file>
+        <file>Tank2Unit.qml</file>
+        <file>ValueDisplay.qml</file>
+        <file>ServerControl.qml</file>
+        <file>Pump.qml</file>
+        <file>MachineDisplay.qml</file>
+        <file>machine/Tank.qml</file>
+        <file>machine/Machine.qml</file>
+    </qresource>
+</RCC>

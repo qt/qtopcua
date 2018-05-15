@@ -4,8 +4,10 @@ project = QtOpcUa
 description = An OPC UA module for Qt
 version = $QT_VERSION
 
-sourcedirs += ..
-headerdirs += ..
+sourcedirs += .. \
+              ../../imports
+headerdirs += .. \
+              ../../imports
 exampledirs += ../../../examples/opcua
 imagedirs += images
 
@@ -33,6 +35,11 @@ qhp.QtOpcUa.subprojects.classes.indexTitle = Qt OPC UA C++ Classes
 qhp.QtOpcUa.subprojects.classes.selectors = class function namespace fake:headerfile
 qhp.QtOpcUa.subprojects.classes.sortPages = true
 
+qhp.QtOpcUa.subprojects.qmltypes.title = QML Types
+qhp.QtOpcUa.subprojects.qmltypes.indexTitle = Qt OPC UA QML Types
+qhp.QtOpcUa.subprojects.qmltypes.selectors = qmltype
+qhp.QtOpcUa.subprojects.qmltypes.sortPages = true
+
 qhp.QtOpcUa.subprojects.examples.title = Examples
 qhp.QtOpcUa.subprojects.examples.indexTitle = Qt OPC UA Examples
 qhp.QtOpcUa.subprojects.examples.selectors = fake:example
@@ -41,6 +48,7 @@ examples.fileextensions = "*.cpp"
 
 navigation.landingpage = "Qt OPC UA"
 navigation.cppclassespage = "Qt OPC UA C++ Classes"
+navigation.qmltypespage = "Qt OPC UA QML Types"
 
 examplesinstallpath = opcua
 

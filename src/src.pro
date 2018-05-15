@@ -8,3 +8,8 @@ SUBDIRS += plugins
 plugin.subdir = plugins
 plugin.target = sub-plugins
 plugins.depends = opcua
+
+qtHaveModule(quick) {
+    SUBDIRS += imports
+    imports.depends += opcua
+}

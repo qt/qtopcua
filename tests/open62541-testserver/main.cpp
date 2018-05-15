@@ -207,5 +207,9 @@ int main(int argc, char **argv)
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.MultiDimensionalDouble", "MultiDimensionalDoubleTest",
                        QOpcUa::QMultiDimensionalArray(value, arrayDimensions), QOpcUa::Types::Double, QVector<quint32>({2, 2, 3}));
 
+    // Add folders for relative nodes
+    const UA_NodeId testFolder2 = server.addFolder("ns=3;s=TestFolder2", "TestFolder2");
+    server.addVariable(testFolder2, "ns=3;s=TestNode2.ReadWrite", "TestNode.ReadWrite", 0.1, QOpcUa::Types::Double);
+
     return app.exec();
 }

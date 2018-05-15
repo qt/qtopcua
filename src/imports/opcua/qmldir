@@ -1,0 +1,4 @@
+module QtOpcUa
+plugin declarative_opcua
+classname OpcUaPlugin
+typeinfo plugins.qmltypes

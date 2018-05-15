@@ -41,6 +41,27 @@
 */
 
 /*!
+    \qmlmodule QtOpcUa
+    \title Qt OPC UA QML Types
+    \brief Provides QML types for Qt OPC UA.
+    \ingroup qmlmodules
+
+    The QML types can be imported into your application using the following
+    import statements in your .qml file:
+
+    \badcode
+    import QtOpcUa 5.12 as QtOpcUa
+    \endcode
+
+    To link against the module, add the following QT variable to your qmake .pro
+    file:
+
+    \badcode
+    QT += opcua
+    \endcode
+*/
+
+/*!
     \page qtopcua-index.html
     \since 5.7
     \title Qt OPC UA
@@ -316,6 +337,7 @@
     \li \l{Building Qt OPC UA Open62541 Plugin}
     \li \l{Building Qt OPC UA UACPP Plugin}
     \li \l{Qt OPC UA C++ Classes}{C++ Classes}
+    \li \l{Qt OPC UA QML Types}{QML Types}
     \li \l{Qt OPC UA Examples}{Examples}
     \li \l{https://opcfoundation.org/about/opc-technologies/opc-ua/}{OPC UA at the OPC foundation}
     \endlist
