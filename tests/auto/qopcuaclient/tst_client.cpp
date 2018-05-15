@@ -208,6 +208,8 @@ private slots:
     void dataChangeSubscription();
     defineDataMethod(dataChangeSubscriptionInvalidNode_data)
     void dataChangeSubscriptionInvalidNode();
+    defineDataMethod(dataChangeSubscriptionSharing_data)
+    void dataChangeSubscriptionSharing();
     defineDataMethod(methodCall_data)
     void methodCall();
     defineDataMethod(methodCallInvalid_data)
@@ -333,7 +335,7 @@ void Tst_QOpcUaClient::initTestCase()
     }
 
     if (qEnvironmentVariableIsEmpty("OPCUA_HOST") && qEnvironmentVariableIsEmpty("OPCUA_PORT")) {
-        m_testServerPath = QDir::currentPath()
+        m_testServerPath = qApp->applicationDirPath()
                                      + QLatin1String("/../../open62541-testserver/open62541-testserver")
 #ifdef Q_OS_WIN
                                      + QLatin1String(".exe")
@@ -751,6 +753,67 @@ void Tst_QOpcUaClient::dataChangeSubscriptionInvalidNode()
     QVERIFY(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>() == QOpcUa::NodeAttribute::Value);
     QVERIFY(noDataNode->monitoringStatus(QOpcUa::NodeAttribute::Value).statusCode() == QOpcUa::UaStatusCode::BadAttributeIdInvalid);
     QVERIFY(noDataNode->monitoringStatus(QOpcUa::NodeAttribute::Value).subscriptionId() == 0);
+}
+
+void Tst_QOpcUaClient::dataChangeSubscriptionSharing()
+{
+    // The open62541 test server has a minimum publishing interval of 100ms.
+    // This test verifies that monitorings with smaller requested publishing interval and shared flag
+    // share the same subscription.
+
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node(readWriteNode));
+    QVERIFY(node != 0);
+    QSignalSpy monitoringEnabledSpy(node.data(), &QOpcUaNode::enableMonitoringFinished);
+
+    node->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(50));
+    monitoringEnabledSpy.wait();
+
+    QVERIFY(monitoringEnabledSpy.size() == 1);
+    QVERIFY(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>() == QOpcUa::NodeAttribute::Value);
+    QVERIFY(node->monitoringStatus(QOpcUa::NodeAttribute::Value).statusCode() == QOpcUa::UaStatusCode::Good);
+
+    QOpcUaMonitoringParameters valueStatus = node->monitoringStatus(QOpcUa::NodeAttribute::Value);
+    QVERIFY(valueStatus.subscriptionId() != 0);
+    QVERIFY(valueStatus.statusCode() == QOpcUa::UaStatusCode::Good);
+
+    monitoringEnabledSpy.clear();
+
+    node->enableMonitoring(QOpcUa::NodeAttribute::DisplayName, QOpcUaMonitoringParameters(25));
+    monitoringEnabledSpy.wait();
+
+    QVERIFY(monitoringEnabledSpy.size() == 1);
+    QVERIFY(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>() == QOpcUa::NodeAttribute::DisplayName);
+    QVERIFY(node->monitoringStatus(QOpcUa::NodeAttribute::DisplayName).statusCode() == QOpcUa::UaStatusCode::Good);
+
+    QOpcUaMonitoringParameters displayNameStatus = node->monitoringStatus(QOpcUa::NodeAttribute::DisplayName);
+    QVERIFY(displayNameStatus.subscriptionId() == valueStatus.subscriptionId());
+    QVERIFY(displayNameStatus.statusCode() == QOpcUa::UaStatusCode::Good);
+
+    QVERIFY(valueStatus.subscriptionId() == displayNameStatus.subscriptionId());
+    QCOMPARE(valueStatus.publishingInterval(), displayNameStatus.publishingInterval());
+    QCOMPARE(valueStatus.publishingInterval(), 100.0);
+
+    QSignalSpy monitoringDisabledSpy(node.data(), &QOpcUaNode::disableMonitoringFinished);
+
+    node->disableMonitoring(QOpcUa::NodeAttribute::Value | QOpcUa::NodeAttribute::DisplayName | QOpcUa::NodeAttribute::NodeId);
+    monitoringDisabledSpy.wait();
+    if (monitoringDisabledSpy.size() < 2)
+        monitoringDisabledSpy.wait();
+
+    QVERIFY(monitoringDisabledSpy.size() == 2);
+
+    QVector<QOpcUa::NodeAttribute> attrs = {QOpcUa::NodeAttribute::Value, QOpcUa::NodeAttribute::DisplayName};
+    for (auto it : qAsConst(monitoringDisabledSpy)) {
+        auto temp = it.at(0).value<QOpcUa::NodeAttribute>();
+        QVERIFY(attrs.contains(temp));
+        QVERIFY(node->monitoringStatus(temp).subscriptionId() == 0);
+        QVERIFY(node->monitoringStatus(temp).statusCode() == QOpcUa::UaStatusCode::BadAttributeIdInvalid);
+        attrs.removeOne(temp);
+    }
+    QVERIFY(attrs.size() == 0);
 }
 
 void Tst_QOpcUaClient::methodCall()

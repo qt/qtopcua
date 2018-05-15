@@ -29,8 +29,8 @@
 #include <QtCore/QString>
 #include <QtCore/QTimer>
 
-#include <uabase.h>
-#include <uaclientsdk.h>
+#include <uabase/uabase.h>
+#include <uaclient/uaclientsdk.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -75,6 +75,7 @@ public:
     static quint32 m_numClients;
     static bool m_platformLayerInitialized;
     QMutex m_lifecycleMutex;
+    double m_minPublishingInterval;
 };
 
 QT_END_NAMESPACE

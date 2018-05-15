@@ -72,6 +72,7 @@ public Q_SLOTS:
     void sendPublishRequest();
     void modifyPublishRequests();
     void handleSubscriptionTimeout(QOpen62541Subscription *sub, QVector<QPair<uintptr_t, QOpcUa::NodeAttribute>> items);
+    void cleanupSubscriptions();
 
 public:
     UA_Client *m_uaclient;
@@ -88,6 +89,8 @@ private:
     QHash<uintptr_t, QHash<QOpcUa::NodeAttribute, QOpen62541Subscription *>> m_attributeMapping; // Handle -> Attribute -> Subscription
 
     bool m_sendPublishRequests;
+
+    double m_minPublishingInterval;
 };
 
 QT_END_NAMESPACE

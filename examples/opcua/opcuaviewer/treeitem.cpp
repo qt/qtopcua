@@ -129,12 +129,7 @@ QVariant TreeItem::data(int column)
         const auto type = mOpcNode->attribute(QOpcUa::NodeAttribute::DataType).toString();
         const auto value = mOpcNode->attribute(QOpcUa::NodeAttribute::Value);
 
-        if (value.type() == QVariant::Type::List)
-            return value.toStringList().join("\n");
-        else if (type == "ns=0;i=3")
-            return QLatin1String("0x") + QString::number(value.toUInt(), 16);
-        else
-            return mOpcNode->attribute(QOpcUa::NodeAttribute::Value);
+        return variantToString(value, type);
     } else if (column == 2) {
         QMetaEnum metaEnum = QMetaEnum::fromType<QOpcUa::NodeClass>();
         QString name = metaEnum.valueToKey((uint)mNodeClass);
@@ -251,6 +246,92 @@ void TreeItem::browseFinished(QVector<QOpcUaReferenceDescription> children, QOpc
     }
 
     emit mModel->dataChanged(mModel->createIndex(row(), 0, this), mModel->createIndex(row(), numberOfDisplayColumns - 1, this));
+}
+
+QString TreeItem::variantToString(const QVariant &value, const QString &typeNodeId) const
+{
+    if (value.type() == QVariant::List) {
+        const auto list = value.toList();
+        QStringList concat;
+
+        for (auto it : list)
+            concat.append(variantToString(it, typeNodeId));
+
+        return concat.join("\n");
+    }
+
+    if (typeNodeId == QLatin1String("ns=0;i=2")) // Char
+        return QString::number(value.toInt());
+    else if (typeNodeId == QLatin1String("ns=0;i=3")) // SChar
+        return QString::number(value.toUInt());
+    else if (typeNodeId == QLatin1String("ns=0;i=4")) // Int16
+        return QString::number(value.toInt());
+    else if (typeNodeId == QLatin1String("ns=0;i=5")) // UInt16
+        return QString::number(value.toUInt());
+    else if (value.type() == QVariant::ByteArray)
+        return QLatin1String("0x") + value.toByteArray().toHex();
+    else if (value.type() == QVariant::DateTime)
+        return value.toDateTime().toString(Qt::ISODate);
+
+    else if (value.canConvert<QOpcUa::QQualifiedName>()) {
+        const auto name = value.value<QOpcUa::QQualifiedName>();
+        return QStringLiteral("%1, \"%2\"").arg(name.namespaceIndex).arg(name.name);
+    } else if (value.canConvert<QOpcUa::QLocalizedText>()) {
+        const auto text = value.value<QOpcUa::QLocalizedText>();
+        return localizedTextToString(text);
+    } else if (value.canConvert<QOpcUa::QRange>()) {
+        const auto range = value.value<QOpcUa::QRange>();
+        return rangeToString(range);
+    } else if (value.canConvert<QOpcUa::QComplexNumber>()) {
+        const auto complex = value.value<QOpcUa::QComplexNumber>();
+        return QStringLiteral("%1 %2 %3i").arg(complex.real).arg(complex.imaginary >= 0 ? "+" : "-").arg(complex.imaginary);
+    } else if (value.canConvert<QOpcUa::QDoubleComplexNumber>()) {
+        const auto complex = value.value<QOpcUa::QDoubleComplexNumber>();
+        return QStringLiteral("%1 %2 %3i").arg(complex.real).arg(complex.imaginary >= 0 ? "+" : "-").arg(complex.imaginary);
+    } else if (value.canConvert<QOpcUa::QXValue>()) {
+        const auto xv = value.value<QOpcUa::QXValue>();
+        return QStringLiteral("x: %1, y: %2").arg(xv.x).arg(xv.value);
+    } else if (value.canConvert<QOpcUa::QEUInformation>()) {
+        const auto info = value.value<QOpcUa::QEUInformation>();
+        return euInformationToString(info);
+    } else if (value.canConvert<QOpcUa::QAxisInformation>()) {
+        const auto info = value.value<QOpcUa::QAxisInformation>();
+
+        return QStringLiteral("EngineeringUnits: %1, EURange: %2, Title: %3 , AxisScaleType: %4, AxisSteps: %5").arg(
+                    euInformationToString(info.engineeringUnits)).arg(rangeToString(info.eURange)).arg(localizedTextToString(info.title)).arg(
+                        info.axisScaleType == QOpcUa::AxisScale::Linear ? "Linear" : (info.axisScaleType == QOpcUa::AxisScale::Ln) ? "Ln" : "Log").arg(
+                        axisStepsToString(info.axisSteps));
+    }
+
+    if (value.canConvert<QString>())
+        return value.toString();
+
+    return QString();
+}
+
+QString TreeItem::localizedTextToString(const QOpcUa::QLocalizedText &text) const
+{
+    return QStringLiteral("\"%1\", \"%2\"").arg(text.locale).arg(text.text);
+}
+
+QString TreeItem::rangeToString(const QOpcUa::QRange &range) const
+{
+    return QStringLiteral("[%1, %2]").arg(range.low).arg(range.high);
+}
+
+QString TreeItem::euInformationToString(const QOpcUa::QEUInformation &info) const
+{
+    return QStringLiteral("UnitId: %1; NamespaceUri: \"%2\"; DisplayName: %3; Description: %4").arg(info.unitId).arg(
+                info.namespaceUri).arg(localizedTextToString(info.displayName)).arg(localizedTextToString(info.description));
+}
+
+QString TreeItem::axisStepsToString(const QVector<double> &vec) const
+{
+    QStringList list;
+    for (auto it : vec)
+        list.append(QString::number(it));
+
+    return list.join(", ");
 }
 
 QT_END_NAMESPACE

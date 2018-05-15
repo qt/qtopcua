@@ -34,9 +34,9 @@
 
 #include <QtNetwork/QHostInfo>
 
-#include <uaplatformlayer.h>
-#include <uasession.h>
-#include <uastring.h>
+#include <uabase/uaplatformlayer.h>
+#include <uaclient/uasession.h>
+#include <uabase/uastring.h>
 
 #include <limits>
 
@@ -57,6 +57,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_UACPP)
 UACppAsyncBackend::UACppAsyncBackend(QUACppClient *parent)
     : QOpcUaBackend()
     , m_clientImpl(parent)
+    , m_minPublishingInterval(0)
 {
     QMutexLocker locker(&m_lifecycleMutex);
     if (!m_platformLayerInitialized) {
@@ -456,8 +457,10 @@ void UACppAsyncBackend::callMethod(uintptr_t handle, const UaNodeId &objectId, c
 QUACppSubscription *UACppAsyncBackend::getSubscription(const QOpcUaMonitoringParameters &settings)
 {
     if (settings.shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared) {
+        // Requesting multiple subscriptions with publishing interval < minimum publishing interval breaks subscription sharing
+        double interval = revisePublishingInterval(settings.publishingInterval(), m_minPublishingInterval);
         for (auto entry : qAsConst(m_subscriptions)) {
-            if (qFuzzyCompare(entry->interval(), settings.publishingInterval()) && entry->shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared)
+            if (qFuzzyCompare(entry->interval(), interval) && entry->shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared)
                 return entry;
         }
     }
@@ -468,6 +471,8 @@ QUACppSubscription *UACppAsyncBackend::getSubscription(const QOpcUaMonitoringPar
         delete sub;
         return nullptr;
     }
+    if (sub->interval() > settings.samplingInterval()) // The publishing interval has been revised by the server.
+        m_minPublishingInterval = sub->interval();
     m_subscriptions[id] = sub;
     return sub;
 }
@@ -489,6 +494,7 @@ void UACppAsyncBackend::cleanupSubscriptions()
     qDeleteAll(m_subscriptions);
     m_subscriptions.clear();
     m_attributeMapping.clear();
+    m_minPublishingInterval = 0;
 }
 
 bool UACppAsyncBackend::removeSubscription(quint32 subscriptionId)

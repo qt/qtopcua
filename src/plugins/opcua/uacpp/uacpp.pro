@@ -1,10 +1,6 @@
 TARGET = uacpp_backend
 QT += core core-private opcua opcua-private network
 
-PLUGIN_TYPE = opcua
-PLUGIN_CLASS_NAME = QUACppPlugin
-load(qt_plugin)
-
 win32 {
     CONFIG(debug, debug|release): LIBS += uaclientd.lib uabased.lib coremoduled.lib uastackd.lib uapkid.lib xmlparserd.lib
     else: LIBS += uaclient.lib uabase.lib coremodule.lib uastack.lib uapki.lib xmlparser.lib
@@ -40,3 +36,7 @@ SOURCES += \
     quacpputils.cpp
 
 OTHER_FILES = uacpp-metadata.json
+
+PLUGIN_TYPE = opcua
+PLUGIN_CLASS_NAME = QUACppPlugin
+load(qt_plugin)

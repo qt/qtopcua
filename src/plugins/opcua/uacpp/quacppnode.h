@@ -28,7 +28,7 @@
 
 #include <QtCore/QPointer>
 
-#include <uanodeid.h>
+#include <uabase/uanodeid.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -147,6 +147,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     mTreeView->setModel(mOpcUaModel);
     mTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
     mTreeView->setTextElideMode(Qt::ElideRight);
+    mTreeView->setAlternatingRowColors(true);
 
     if (mOpcUaPlugin->count() == 0) {
         mOpcUaPlugin->setDisabled(true);

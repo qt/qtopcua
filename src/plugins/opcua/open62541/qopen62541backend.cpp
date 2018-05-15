@@ -66,6 +66,7 @@ Open62541AsyncBackend::Open62541AsyncBackend(QOpen62541Client *parent)
     , m_useStateCallback(false)
     , m_subscriptionTimer(this)
     , m_sendPublishRequests(false)
+    , m_minPublishingInterval(0)
 {
     m_subscriptionTimer.setSingleShot(true);
     QObject::connect(&m_subscriptionTimer, &QTimer::timeout,
@@ -74,7 +75,7 @@ Open62541AsyncBackend::Open62541AsyncBackend(QOpen62541Client *parent)
 
 Open62541AsyncBackend::~Open62541AsyncBackend()
 {
-    qDeleteAll(m_subscriptions);
+    cleanupSubscriptions();
     if (m_uaclient)
         UA_Client_delete(m_uaclient);
 }
@@ -280,8 +281,10 @@ void Open62541AsyncBackend::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttri
 QOpen62541Subscription *Open62541AsyncBackend::getSubscription(const QOpcUaMonitoringParameters &settings)
 {
     if (settings.shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared) {
+        // Requesting multiple subscriptions with publishing interval < minimum publishing interval breaks subscription sharing
+        double interval = revisePublishingInterval(settings.publishingInterval(), m_minPublishingInterval);
         for (auto entry : qAsConst(m_subscriptions)) {
-            if (qFuzzyCompare(entry->interval(), settings.publishingInterval()) && entry->shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared)
+            if (qFuzzyCompare(entry->interval(), interval) && entry->shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared)
                 return entry;
         }
     }
@@ -293,6 +296,8 @@ QOpen62541Subscription *Open62541AsyncBackend::getSubscription(const QOpcUaMonit
         return nullptr;
     }
     m_subscriptions[id] = sub;
+    if (sub->interval() > settings.samplingInterval()) // The publishing interval has been revised by the server.
+        m_minPublishingInterval = sub->interval();
     // This must be a queued connection to prevent the slot from being called while the client is inside UA_Client_runAsync().
     QObject::connect(sub, &QOpen62541Subscription::timeout, this, &Open62541AsyncBackend::handleSubscriptionTimeout, Qt::QueuedConnection);
     return sub;
@@ -427,13 +432,16 @@ static void clientStateCallback(UA_Client *client, UA_ClientState state)
         return;
 
     if (state == UA_CLIENTSTATE_DISCONNECTED) {
-        emit backend->m_clientImpl->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ConnectionError);
+        emit backend->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ConnectionError);
         backend->m_useStateCallback = false;
+        backend->cleanupSubscriptions();
     }
 }
 
 void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
 {
+    cleanupSubscriptions();
+
     if (m_uaclient)
         UA_Client_delete(m_uaclient);
 
@@ -455,7 +463,8 @@ void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
         UA_Client_delete(m_uaclient);
         m_uaclient = nullptr;
         QOpcUaClient::ClientError error = ret == UA_STATUSCODE_BADUSERACCESSDENIED ? QOpcUaClient::AccessDenied : QOpcUaClient::UnknownError;
-        emit m_clientImpl->stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
+
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to connect";
         return;
     }
@@ -467,9 +476,7 @@ void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
 void Open62541AsyncBackend::disconnectFromEndpoint()
 {
     m_subscriptionTimer.stop();
-    qDeleteAll(m_subscriptions);
-    m_subscriptions.clear();
-    m_attributeMapping.clear();
+    cleanupSubscriptions();
 
     m_useStateCallback = false;
 
@@ -499,9 +506,7 @@ void Open62541AsyncBackend::sendPublishRequest()
     if (UA_Client_runAsync(m_uaclient, 1) == UA_STATUSCODE_BADSERVERNOTCONNECTED) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unable to send publish request";
         m_sendPublishRequests = false;
-        qDeleteAll(m_subscriptions);
-        m_subscriptions.clear();
-        m_attributeMapping.clear();
+        cleanupSubscriptions();
         return;
     }
 
@@ -546,6 +551,14 @@ QOpen62541Subscription *Open62541AsyncBackend::getSubscriptionForItem(uintptr_t 
     }
 
     return subscription.value();
+}
+
+void Open62541AsyncBackend::cleanupSubscriptions()
+{
+    qDeleteAll(m_subscriptions);
+    m_subscriptions.clear();
+    m_attributeMapping.clear();
+    m_minPublishingInterval = 0;
 }
 
 QT_END_NAMESPACE
