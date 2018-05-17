@@ -112,7 +112,7 @@ void DemoServer::shutdown()
     }
 }
 
-UA_NodeId DemoServer::addFolder(const QString &parent, const QString &nodeString, const QString &displayName, const QString &description)
+UA_NodeId DemoServer::addFolder(const QString &parent, const QString &nodeString, const QString &browseName, const QString &displayName, const QString &description)
 {
     UA_NodeId resultNode;
     UA_ObjectAttributes oAttr = UA_ObjectAttributes_default;
@@ -128,7 +128,7 @@ UA_NodeId DemoServer::addFolder(const QString &parent, const QString &nodeString
                                      requestedNodeId,
                                      Open62541Utils::nodeIdFromQString(parent),
                                      UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
-                                     UA_QUALIFIEDNAME_ALLOC(requestedNodeId.namespaceIndex, nodeString.toUtf8().constData()),
+                                     UA_QUALIFIEDNAME_ALLOC(requestedNodeId.namespaceIndex, browseName.toUtf8().constData()),
                                      UA_NODEID_NULL,
                                      oAttr,
                                      NULL,
@@ -140,19 +140,17 @@ UA_NodeId DemoServer::addFolder(const QString &parent, const QString &nodeString
     return resultNode;
 }
 
-UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value, QOpcUa::Types type)
+UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &browseName, const QString &displayName, const QVariant &value, QOpcUa::Types type)
 {
     UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
     UA_VariableAttributes attr = UA_VariableAttributes_default;
     attr.value = QOpen62541ValueConverter::toOpen62541Variant(value, type);
-    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", name.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", displayName.toUtf8().constData());
     attr.dataType = attr.value.type ? attr.value.type->typeId : UA_TYPES[UA_TYPES_BOOLEAN].typeId;
     attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
 
-    UA_QualifiedName variableName;
-    variableName.namespaceIndex = variableNodeId.namespaceIndex;
-    variableName.name = attr.displayName.text;
+    UA_QualifiedName variableName = UA_QUALIFIEDNAME_ALLOC(variableNodeId.namespaceIndex, browseName.toUtf8().constData());
 
     UA_NodeId resultId;
     UA_StatusCode result = UA_Server_addVariableNode(m_server,
@@ -320,16 +318,16 @@ double DemoServer::readTank2TargetValue()
     return static_cast<double *>(var.data)[0];
 }
 
-UA_NodeId DemoServer::addMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description, const QString &name, UA_MethodCallback cb)
+UA_NodeId DemoServer::addMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description, const QString &browseName, const QString &displayName,  UA_MethodCallback cb)
 {
     UA_NodeId methodNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
     UA_MethodAttributes attr = UA_MethodAttributes_default;
 
     attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
-    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", name.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", displayName.toUtf8().constData());
     attr.executable = true;
-    UA_QualifiedName methodBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.namespaceIndex, name.toUtf8().constData());
+    UA_QualifiedName methodBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.namespaceIndex, browseName.toUtf8().constData());
 
     UA_NodeId resultId;
     UA_StatusCode result = UA_Server_addMethodNode(m_server, methodNodeId, folder,
@@ -359,21 +357,21 @@ void DemoServer::launch()
          qFatal("Unexpected namespace index for Demo namespace");
      }
 
-     const UA_NodeId machineFolder = addFolder("ns=0;i=85", "ns=2;s=Machine", "Machine");
-     const UA_NodeId tank1Folder = addFolder("ns=2;s=Machine", "ns=2;s=Machine.Tank1", "Machine.Tank1");
-     const UA_NodeId tank2Folder = addFolder("ns=2;s=Machine", "ns=2;s=Machine.Tank2", "Machine.Tank2");
+     const UA_NodeId machineFolder = addFolder("ns=0;i=85", "ns=2;s=Machine", "Machine", "Machine");
+     const UA_NodeId tank1Folder = addFolder("ns=2;s=Machine", "ns=2;s=Machine.Tank1", "Tank1", "Machine.Tank1");
+     const UA_NodeId tank2Folder = addFolder("ns=2;s=Machine", "ns=2;s=Machine.Tank2", "Tank2", "Machine.Tank2");
 
-     m_percentFilledTank1Node = addVariable(tank1Folder, "ns=2;s=Machine.Tank1.PercentFilled", "Machine.Tank1.PercentFilled", 100.0, QOpcUa::Types::Double);
-     m_percentFilledTank2Node = addVariable(tank2Folder, "ns=2;s=Machine.Tank2.PercentFilled", "Machine.Tank2.PercentFilled", 0.0, QOpcUa::Types::Double);
-     m_tank2TargetPercentNode = addVariable(tank2Folder, "ns=2;s=Machine.Tank2.TargetPercent", "Machine.Tank2.TargetPercent", 0.0, QOpcUa::Types::Double);
-     m_tank2ValveStateNode = addVariable(tank2Folder, "ns=2;s=Machine.Tank2.ValveState", "Machine.Tank2.ValveState", false, QOpcUa::Types::Boolean);
-     m_machineStateNode = addVariable(machineFolder, "ns=2;s=Machine.State", "Machine.State", static_cast<quint32>(MachineState::Idle), QOpcUa::Types::UInt32);
-     addVariable(machineFolder, "ns=2;s=Machine.Designation", "Machine.Designation", "TankExample", QOpcUa::Types::String);
+     m_percentFilledTank1Node = addVariable(tank1Folder, "ns=2;s=Machine.Tank1.PercentFilled", "PercentFilled", "Machine.Tank1.PercentFilled", 100.0, QOpcUa::Types::Double);
+     m_percentFilledTank2Node = addVariable(tank2Folder, "ns=2;s=Machine.Tank2.PercentFilled", "PercentFilled", "Machine.Tank2.PercentFilled", 0.0, QOpcUa::Types::Double);
+     m_tank2TargetPercentNode = addVariable(tank2Folder, "ns=2;s=Machine.Tank2.TargetPercent", "TargetPercent", "Machine.Tank2.TargetPercent", 0.0, QOpcUa::Types::Double);
+     m_tank2ValveStateNode = addVariable(tank2Folder, "ns=2;s=Machine.Tank2.ValveState", "ValveState", "Machine.Tank2.ValveState", false, QOpcUa::Types::Boolean);
+     m_machineStateNode = addVariable(machineFolder, "ns=2;s=Machine.State", "State", "Machine.State", static_cast<quint32>(MachineState::Idle), QOpcUa::Types::UInt32);
+     addVariable(machineFolder, "ns=2;s=Machine.Designation", "Designation", "Machine.Designation", "TankExample", QOpcUa::Types::String);
 
-     addMethod(machineFolder, "ns=2;s=Machine.Start", "Starts the pump", "Machine.Start", &startPumpMethod);
-     addMethod(machineFolder, "ns=2;s=Machine.Stop", "Stops the pump", "Machine.Stop", &stopPumpMethod);
-     addMethod(machineFolder, "ns=2;s=Machine.FlushTank2", "Flushes tank 2", "Machine.FlushTank2", &flushTank2Method);
-     addMethod(machineFolder, "ns=2;s=Machine.Reset", "Resets the simulation", "Machine.Reset", &resetMethod);
+     addMethod(machineFolder, "ns=2;s=Machine.Start", "Starts the pump", "Start", "Machine.Start", &startPumpMethod);
+     addMethod(machineFolder, "ns=2;s=Machine.Stop", "Stops the pump", "Stop", "Machine.Stop", &stopPumpMethod);
+     addMethod(machineFolder, "ns=2;s=Machine.FlushTank2", "Flushes tank 2", "FlushTank2", "Machine.FlushTank2", &flushTank2Method);
+     addMethod(machineFolder, "ns=2;s=Machine.Reset", "Resets the simulation", "Reset", "Machine.Reset", &resetMethod);
 
      QObject::connect(&m_machineTimer, &QTimer::timeout, [this]() {
 
