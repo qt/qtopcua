@@ -52,6 +52,8 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
     QObject::connect(m_impl.data(), &QOpcUaClientImpl::stateAndOrErrorChanged,
                     [this](QOpcUaClient::ClientState state, QOpcUaClient::ClientError error) {
         setStateAndError(state, error);
+        if (state == QOpcUaClient::ClientState::Connected)
+            updateNamespaceArray();
     });
 }
 

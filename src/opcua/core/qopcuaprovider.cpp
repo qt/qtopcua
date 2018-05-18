@@ -148,6 +148,7 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUa::QDoubleComplexNumber>();
     qRegisterMetaType<QOpcUa::QAxisInformation>();
     qRegisterMetaType<QOpcUa::QXValue>();
+    qRegisterMetaType<QOpcUa::QExpandedNodeId>();
 }
 
 QOpcUaProvider::~QOpcUaProvider()

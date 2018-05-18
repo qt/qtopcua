@@ -259,6 +259,9 @@ private slots:
     defineDataMethod(timeStamps_data)
     void timeStamps();
 
+    defineDataMethod(createNodeFromExpandedId_data)
+    void createNodeFromExpandedId();
+
     // This test case restarts the server. It must be run last to avoid
     // destroying state required by other test cases.
     defineDataMethod(connectionLost_data)
@@ -2233,8 +2236,6 @@ void Tst_QOpcUaClient::namespaceArray()
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
-    QCOMPARE(opcuaClient->namespaceArray().size(), 0);
-
     QSignalSpy spy(opcuaClient, &QOpcUaClient::namespaceArrayUpdated);
     QCOMPARE(opcuaClient->updateNamespaceArray(), true);
 
@@ -2321,6 +2322,48 @@ void Tst_QOpcUaClient::timeStamps()
     QCOMPARE(monitoringDisabledSpy.size(), 1);
     QCOMPARE(monitoringDisabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
     QCOMPARE(monitoringDisabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+}
+
+void Tst_QOpcUaClient::createNodeFromExpandedId()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QSignalSpy updateSpy(opcuaClient, &QOpcUaClient::namespaceArrayUpdated);
+    opcuaClient->updateNamespaceArray();
+    updateSpy.wait();
+    QVERIFY(updateSpy.size() > 0);
+    QVERIFY(opcuaClient->namespaceArray().size() > 0);
+
+    // Node on a remote server, nullptr expected
+    QOpcUa::QExpandedNodeId id;
+    id.setNodeId(QStringLiteral("ns=0;i=84"));
+    id.setServerIndex(1);
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node(id));
+    QVERIFY(node == nullptr);
+
+    // Root node on the local server, valid pointer expected
+    id.setServerIndex(0);
+    node.reset(opcuaClient->node(id));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_BASE_NODE(node);
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>(), QOpcUa::QQualifiedName(0, QStringLiteral("Root")));
+
+    // Successful namespace substitution, valid pointer expected
+    id.setNodeId("ns=0;s=TestNode.ReadWrite");
+    id.setNamespaceUri(QStringLiteral("Test Namespace"));
+    node.reset(opcuaClient->node(id));
+    QVERIFY(node != nullptr);
+    QVERIFY(node->nodeId() == QStringLiteral("ns=3;s=TestNode.ReadWrite"));
+    READ_MANDATORY_BASE_NODE(node);
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>(),
+             QOpcUa::QQualifiedName(3, QStringLiteral("TestNode.ReadWrite")));
+
+    // Invalid namespace, nullptr expected
+    id.setNodeId("ns=0;s=TestNode.ReadWrite");
+    id.setNamespaceUri(QStringLiteral("InvalidNamespace"));
+    node.reset(opcuaClient->node(id));
+    QVERIFY(node == nullptr);
 }
 
 void Tst_QOpcUaClient::connectionLost()

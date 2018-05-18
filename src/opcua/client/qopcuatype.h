@@ -623,6 +623,29 @@ public:
 private:
     QSharedDataPointer<QOpcUa::QXValueData> data;
 };
+
+class QExpandedNodeIdData;
+class Q_OPCUA_EXPORT QExpandedNodeId
+{
+public:
+    QExpandedNodeId();
+    QExpandedNodeId(const QOpcUa::QExpandedNodeId &);
+    QExpandedNodeId &operator=(const QOpcUa::QExpandedNodeId &);
+    bool operator==(const QOpcUa::QExpandedNodeId &) const;
+    ~QExpandedNodeId();
+
+    quint32 serverIndex() const;
+    void setServerIndex(quint32 value);
+
+    QString namespaceUri() const;
+    void setNamespaceUri(const QString &value);
+
+    QString nodeId() const;
+    void setNodeId(const QString &value);
+
+private:
+    QSharedDataPointer<QOpcUa::QExpandedNodeIdData> data;
+};
 }
 
 Q_DECLARE_TYPEINFO(QOpcUa::Types, Q_PRIMITIVE_TYPE);
@@ -654,5 +677,6 @@ Q_DECLARE_METATYPE(QOpcUa::QComplexNumber)
 Q_DECLARE_METATYPE(QOpcUa::QDoubleComplexNumber)
 Q_DECLARE_METATYPE(QOpcUa::QAxisInformation)
 Q_DECLARE_METATYPE(QOpcUa::QXValue)
+Q_DECLARE_METATYPE(QOpcUa::QExpandedNodeId)
 
 #endif // QOPCUATYPE

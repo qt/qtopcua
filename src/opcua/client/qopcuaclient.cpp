@@ -224,6 +224,30 @@ QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 }
 
 /*!
+    Returns a \l QOpcUaNode object associated with the OPC UA node identified
+    by \a expandedNodeId. The caller becomes owner of the node object.
+
+    If the node is not on the currently connected server, the namespace can't be resolved,
+    the node id is malformed or the client is not connected, \c nullptr is returned.
+
+    \sa updateNamespaceArray()
+*/
+QOpcUaNode *QOpcUaClient::node(const QOpcUa::QExpandedNodeId &expandedNodeId)
+{
+    if (expandedNodeId.serverIndex()) {
+        qCWarning(QT_OPCUA) << "Can't create a QOpcuaNode for a node on a different server.";
+        return nullptr;
+    }
+
+    const QString nodeId = resolveExpandedNodeId(expandedNodeId);
+
+    if (!nodeId.isEmpty())
+        return node(nodeId);
+    else
+        return nullptr;
+}
+
+/*!
     Requests an update of the namespace array from the server.
     Returns \c true if the operation has been successfully dispatched.
 
@@ -251,6 +275,45 @@ QStringList QOpcUaClient::namespaceArray() const
 {
     Q_D(const QOpcUaClient);
     return d->namespaceArray();
+}
+
+/*!
+    Attempts to resolve an expanded node id to a node id string with numeric namespace index.
+    Returns the node id string if the conversion was successful.
+
+    An empty string is returned if the namespace index can't be resolved or if the identifier part
+    of the expanded node id is malformed.
+*/
+QString QOpcUaClient::resolveExpandedNodeId(const QOpcUa::QExpandedNodeId &expandedNodeId) const
+{
+    if (expandedNodeId.serverIndex() && !expandedNodeId.namespaceUri().isEmpty()) {
+        qCWarning(QT_OPCUA) << "Can't resolve a namespace index on a different server.";
+        return QString();
+    }
+
+    if (expandedNodeId.namespaceUri().isEmpty())
+        return expandedNodeId.nodeId();
+    else {
+        if (!namespaceArray().size()) {
+            qCWarning(QT_OPCUA) << "Namespaces table missing, unable to resolve namespace URI.";
+            return QString();
+        }
+
+        int index = namespaceArray().indexOf(expandedNodeId.namespaceUri());
+
+        if (index < 0) {
+            qCWarning(QT_OPCUA) << "Failed to resolve namespace" << expandedNodeId.namespaceUri();
+            return QString();
+        }
+
+        QStringList splitId = expandedNodeId.nodeId().split(QLatin1String(";"));
+        if (splitId.size() != 2) {
+            qCWarning(QT_OPCUA) << "Failed to split node id" << expandedNodeId.nodeId();
+            return QString();
+        }
+
+        return QStringLiteral("ns=%1;").arg(index).append(splitId.at(1));
+    }
 }
 
 /*!

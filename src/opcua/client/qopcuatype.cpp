@@ -1525,4 +1525,107 @@ void QOpcUa::QXValue::setX(double x)
     data->x = x;
 }
 
+/*!
+    \class QOpcUa::QExpandedNodeId
+    \inmodule QtOpcUa
+    \brief The OPC UA ExpandedNodeId
+
+    An expanded node id is a node id where the namespace index can be given as index or as a string URI.
+    A list of namespaces and their indices on the server is provided by \l QOpcUaClient::namespaceArray().
+*/
+
+class QOpcUa::QExpandedNodeIdData : public QSharedData
+{
+public:
+    quint32 serverIndex{0};
+    QString namespaceUri;
+    QString nodeId;
+};
+
+QOpcUa::QExpandedNodeId::QExpandedNodeId()
+    : data(new QOpcUa::QExpandedNodeIdData)
+{
+}
+
+/*!
+    Constructs an expanded node id from \a rhs.
+*/
+QOpcUa::QExpandedNodeId::QExpandedNodeId(const QOpcUa::QExpandedNodeId &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Sets the values from \a rhs in this expanded node id.
+*/
+QOpcUa::QExpandedNodeId &QOpcUa::QExpandedNodeId::operator=(const QOpcUa::QExpandedNodeId &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+/*!
+    Returns \c true if this expanded node id has the same value as \a rhs.
+*/
+bool QOpcUa::QExpandedNodeId::operator==(const QOpcUa::QExpandedNodeId &rhs) const
+{
+    return data->namespaceUri == rhs.namespaceUri() &&
+            data->nodeId == rhs.nodeId() &&
+            data->serverIndex == rhs.serverIndex();
+}
+
+QOpcUa::QExpandedNodeId::~QExpandedNodeId()
+{
+}
+
+/*!
+    Returns the index of the server containing the node. This index maps to an entry in the server's server table.
+*/
+quint32 QOpcUa::QExpandedNodeId::serverIndex() const
+{
+    return data->serverIndex;
+}
+
+/*!
+    Sets the server index to \a value.
+*/
+void QOpcUa::QExpandedNodeId::setServerIndex(quint32 value)
+{
+    data->serverIndex = value;
+}
+
+/*!
+    Returns the namespace URI of the node id. If this value is specified, the namespace index in
+    \l {QOpcUa::QExpandedNodeId::nodeId} {nodeId} is 0 and must be ignored.
+*/
+QString QOpcUa::QExpandedNodeId::namespaceUri() const
+{
+    return data->namespaceUri;
+}
+
+/*!
+    Sets the namespace URI to \a value.
+*/
+void QOpcUa::QExpandedNodeId::setNamespaceUri(const QString &value)
+{
+    data->namespaceUri = value;
+}
+
+/*!
+    Returns the node id. If \l {QOpcUa::QExpandedNodeId::namespaceUri} {namespaceUri} is specified, the namespace index is invalid.
+*/
+QString QOpcUa::QExpandedNodeId::nodeId() const
+{
+    return data->nodeId;
+}
+
+/*!
+    Sets the node id to \a value.
+*/
+void QOpcUa::QExpandedNodeId::setNodeId(const QString &value)
+{
+    data->nodeId = value;
+}
+
 QT_END_NAMESPACE

@@ -79,9 +79,12 @@ public:
     Q_INVOKABLE void connectToEndpoint(const QUrl &url);
     Q_INVOKABLE void disconnectFromEndpoint();
     QOpcUaNode *node(const QString &nodeId);
+    QOpcUaNode *node(const QOpcUa::QExpandedNodeId &expandedNodeId);
 
     bool updateNamespaceArray();
     QStringList namespaceArray() const;
+
+    QString resolveExpandedNodeId(const QOpcUa::QExpandedNodeId &expandedNodeId) const;
 
     QUrl url() const;
 
