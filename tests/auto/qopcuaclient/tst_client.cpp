@@ -1936,10 +1936,6 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
-    QSKIP("DataChangeFilter is not supported by the open62541 test server");
-    // To run this test case, change the url for connector to the URL of a Prosys simulation server
-    // and use ns=3;s=Double as node id for doubleNode.
-
     if (opcuaClient->backend() == QLatin1String("freeopcua"))
         QSKIP("DataChangeFilter support is not implemented in the freeopcua plugin");
 
