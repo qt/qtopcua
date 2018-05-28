@@ -71,6 +71,8 @@ public:
         m_attributesReadConnection = QObject::connect(impl, &QOpcUaNodeImpl::attributesRead,
                 [this](QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
         {
+            QOpcUa::NodeAttributes updatedAttributes;
+
             for (auto &entry : qAsConst(attr)) {
                 if (serviceResult == QOpcUa::UaStatusCode::Good)
                     m_nodeAttributes[entry.attributeId] = entry;
@@ -80,11 +82,9 @@ public:
                     temp.value = QVariant();
                     m_nodeAttributes[entry.attributeId] = temp;
                 }
-            }
 
-            QOpcUa::NodeAttributes updatedAttributes;
-            for (auto &entry : qAsConst(attr))
                 updatedAttributes |= entry.attributeId;
+            }
 
             Q_Q(QOpcUaNode);
             emit q->attributeRead(updatedAttributes);
