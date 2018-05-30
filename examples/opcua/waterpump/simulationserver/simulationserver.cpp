@@ -356,7 +356,7 @@ void DemoServer::launch()
 
      int ns1 = UA_Server_addNamespace(m_server, "Demo Namespace");
      if (ns1 != 2) {
-         qWarning() << "Unexpected namespace index for Demo namespace";
+         qFatal("Unexpected namespace index for Demo namespace");
      }
 
      const UA_NodeId machineFolder = addFolder("ns=0;i=85", "ns=2;s=Machine", "Machine");
