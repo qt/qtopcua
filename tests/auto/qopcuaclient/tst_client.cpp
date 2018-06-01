@@ -550,6 +550,7 @@ void Tst_QOpcUaClient::getRootNode()
 
     QScopedPointer<QOpcUaNode> root(opcuaClient->node("ns=0;i=84"));
     QVERIFY(root != 0);
+    QVERIFY(root->client() == opcuaClient);
 
     READ_MANDATORY_BASE_NODE(root)
     QVERIFY(root->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text() == QLatin1String("Root"));

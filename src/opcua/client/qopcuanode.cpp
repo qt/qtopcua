@@ -546,6 +546,15 @@ QString QOpcUaNode::nodeId() const
 }
 
 /*!
+    Returns a pointer to the client that has created this node.
+*/
+QOpcUaClient *QOpcUaNode::client() const
+{
+    Q_D(const QOpcUaNode);
+    return d->m_client.data();
+}
+
+/*!
     Calls the OPC UA method \a methodNodeId with the parameters given via \a args. The result is
     returned in the \l methodCallFinished signal.
 

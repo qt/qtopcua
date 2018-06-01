@@ -88,6 +88,7 @@ public:
                         QOpcUa::NodeClasses nodeClassMask = QOpcUa::NodeClass::Undefined);
 
     QString nodeId() const;
+    QOpcUaClient *client() const;
 
     bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args = QVector<QOpcUa::TypedVariant>());
 
