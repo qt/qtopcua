@@ -455,7 +455,7 @@ class QOpcUa::QQualifiedNameData : public QSharedData
 {
 public:
     QString name;
-    quint16 namespaceIndex;
+    quint16 namespaceIndex{0}; //OPC UA part 4, page 116: a string is converted to a qualified name by setting the namespace index to 0.
 };
 
 QOpcUa::QQualifiedName::QQualifiedName()
