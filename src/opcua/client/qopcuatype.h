@@ -630,6 +630,8 @@ class Q_OPCUA_EXPORT QExpandedNodeId
 public:
     QExpandedNodeId();
     QExpandedNodeId(const QOpcUa::QExpandedNodeId &);
+    QExpandedNodeId(const QString &nodeId);
+    QExpandedNodeId(const QString &namespaceUri, const QString &nodeId, quint32 serverIndex = 0);
     QExpandedNodeId &operator=(const QOpcUa::QExpandedNodeId &);
     bool operator==(const QOpcUa::QExpandedNodeId &) const;
     ~QExpandedNodeId();
