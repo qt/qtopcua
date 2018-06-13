@@ -52,9 +52,6 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
-#include <QtCore/QThread>
-#include <QtCore/QVariant>
-#include <QUuid>
 
 int main(int argc, char **argv)
 {
