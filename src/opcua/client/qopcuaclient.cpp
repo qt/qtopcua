@@ -282,20 +282,27 @@ QStringList QOpcUaClient::namespaceArray() const
     Returns the node id string if the conversion was successful.
 
     An empty string is returned if the namespace index can't be resolved or if the identifier part
-    of the expanded node id is malformed.
+    of the expanded node id is malformed. \a ok will be set to \c true if the conversion has been successful.
+    If the expanded node id could not be resolved, \a ok will be set to \c false.
 */
-QString QOpcUaClient::resolveExpandedNodeId(const QOpcUa::QExpandedNodeId &expandedNodeId) const
+QString QOpcUaClient::resolveExpandedNodeId(const QOpcUa::QExpandedNodeId &expandedNodeId, bool *ok) const
 {
     if (expandedNodeId.serverIndex() && !expandedNodeId.namespaceUri().isEmpty()) {
         qCWarning(QT_OPCUA) << "Can't resolve a namespace index on a different server.";
+        if (ok)
+            *ok = false;
         return QString();
     }
 
-    if (expandedNodeId.namespaceUri().isEmpty())
+    if (expandedNodeId.namespaceUri().isEmpty()) {
+        if (ok)
+            *ok = true;
         return expandedNodeId.nodeId();
-    else {
+    } else {
         if (!namespaceArray().size()) {
             qCWarning(QT_OPCUA) << "Namespaces table missing, unable to resolve namespace URI.";
+            if (ok)
+                *ok = false;
             return QString();
         }
 
@@ -303,15 +310,21 @@ QString QOpcUaClient::resolveExpandedNodeId(const QOpcUa::QExpandedNodeId &expan
 
         if (index < 0) {
             qCWarning(QT_OPCUA) << "Failed to resolve namespace" << expandedNodeId.namespaceUri();
+            if (ok)
+                *ok = false;
             return QString();
         }
 
         QStringList splitId = expandedNodeId.nodeId().split(QLatin1String(";"));
         if (splitId.size() != 2) {
             qCWarning(QT_OPCUA) << "Failed to split node id" << expandedNodeId.nodeId();
+            if (ok)
+                *ok = false;
             return QString();
         }
 
+        if (ok)
+            *ok = true;
         return QStringLiteral("ns=%1;").arg(index).append(splitId.at(1));
     }
 }

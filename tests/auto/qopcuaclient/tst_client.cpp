@@ -260,6 +260,11 @@ private slots:
 
     defineDataMethod(createNodeFromExpandedId_data)
     void createNodeFromExpandedId();
+    defineDataMethod(checkExpandedIdConversion_data)
+    void checkExpandedIdConversion();
+    defineDataMethod(checkExpandedIdConversionNoOk_data)
+    void checkExpandedIdConversionNoOk();
+    defineDataMethod(createQualifiedName_data)
     defineDataMethod(resolveBrowsePath_data)
     void resolveBrowsePath();
 
@@ -2364,6 +2369,100 @@ void Tst_QOpcUaClient::createNodeFromExpandedId()
     id.setNamespaceUri(QStringLiteral("InvalidNamespace"));
     node.reset(opcuaClient->node(id));
     QVERIFY(node == nullptr);
+}
+
+void Tst_QOpcUaClient::checkExpandedIdConversion()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    // Before the namespace array is populated, error expected
+    bool ok = true;
+    QOpcUa::QExpandedNodeId id;
+    id.setNodeId(QStringLiteral("ns=0;i=84"));
+    id.setNamespaceUri(QStringLiteral("MyNameSpace"));
+    QString result = opcuaClient->resolveExpandedNodeId(id, &ok);
+    QVERIFY(ok == false);
+    QCOMPARE(result, QString());
+    id.setNamespaceUri(QString());
+
+    QSignalSpy updateSpy(opcuaClient, &QOpcUaClient::namespaceArrayUpdated);
+
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    updateSpy.wait();
+    QVERIFY(updateSpy.size() > 0);
+    QVERIFY(!opcuaClient->namespaceArray().isEmpty());
+
+    // Root node on the local server, valid string expected
+    id.setServerIndex(0);
+    result = opcuaClient->resolveExpandedNodeId(id, &ok);
+    QVERIFY(ok == true);
+    QCOMPARE(result, QStringLiteral("ns=0;i=84"));
+
+    // Successful namespace substitution, valid string expected
+    ok = false;
+    id.setNodeId("ns=0;s=TestNode.ReadWrite");
+    id.setNamespaceUri(QStringLiteral("Test Namespace"));
+    result = opcuaClient->resolveExpandedNodeId(id, &ok);
+    QVERIFY(ok == true);
+    QCOMPARE(result, QStringLiteral("ns=3;s=TestNode.ReadWrite"));
+
+    // Invalid namespace, empty string expected
+    id.setNodeId("ns=0;s=TestNode.ReadWrite");
+    id.setNamespaceUri(QStringLiteral("InvalidNamespace"));
+    result = opcuaClient->resolveExpandedNodeId(id, &ok);
+    QVERIFY(ok == false);
+    QCOMPARE(result, QString());
+
+    // Malformed node id string, empty string expected
+    ok = true;
+    id.setNodeId("ns=0,s=TestNode.ReadWrite");
+    result = opcuaClient->resolveExpandedNodeId(id, &ok);
+    QVERIFY(ok == false);
+    QCOMPARE(result, QString());
+}
+
+void Tst_QOpcUaClient::checkExpandedIdConversionNoOk()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    // Before the namespace array is populated, empty string expected
+    QOpcUa::QExpandedNodeId id;
+    id.setNodeId(QStringLiteral("ns=0;i=84"));
+    id.setNamespaceUri(QStringLiteral("MyNameSpace"));
+    QString result = opcuaClient->resolveExpandedNodeId(id);
+    QCOMPARE(result, QString());
+    id.setNamespaceUri(QString());
+
+    QSignalSpy updateSpy(opcuaClient, &QOpcUaClient::namespaceArrayUpdated);
+
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    updateSpy.wait();
+    QVERIFY(updateSpy.size() > 0);
+    QVERIFY(!opcuaClient->namespaceArray().isEmpty());
+
+    // Root node on the local server, valid string expected
+    id.setServerIndex(0);
+    result = opcuaClient->resolveExpandedNodeId(id);
+    QCOMPARE(result, QStringLiteral("ns=0;i=84"));
+
+    // Successful namespace substitution, valid string expected
+    id.setNodeId("ns=0;s=TestNode.ReadWrite");
+    id.setNamespaceUri(QStringLiteral("Test Namespace"));
+    result = opcuaClient->resolveExpandedNodeId(id);
+    QCOMPARE(result, QStringLiteral("ns=3;s=TestNode.ReadWrite"));
+
+    // Invalid namespace, empty string expected
+    id.setNodeId("ns=0;s=TestNode.ReadWrite");
+    id.setNamespaceUri(QStringLiteral("InvalidNamespace"));
+    result = opcuaClient->resolveExpandedNodeId(id);
+    QCOMPARE(result, QString());
+
+    // Malformed node id string, empty string expected
+    id.setNodeId("ns=0,s=TestNode.ReadWrite");
+    result = opcuaClient->resolveExpandedNodeId(id);
+    QCOMPARE(result, QString());
 }
 
 void Tst_QOpcUaClient::resolveBrowsePath()
