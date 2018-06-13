@@ -412,7 +412,7 @@ void DemoServer::launch()
          if (m_state == MachineState::Pumping && m_percentFilledTank1 > 0 && m_percentFilledTank2 < targetValue) {
             setPercentFillTank1(m_percentFilledTank1 - 1);
             setPercentFillTank2(m_percentFilledTank2 + 1);
-            if (m_percentFilledTank1 == 0 || m_percentFilledTank2 >= targetValue) {
+            if (qFuzzyIsNull(m_percentFilledTank1) || m_percentFilledTank2 >= targetValue) {
                 setState(MachineState::Idle);
                 m_machineTimer.stop();
             }
