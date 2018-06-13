@@ -91,7 +91,7 @@ DemoServer::~DemoServer()
 
 bool DemoServer::init()
 {
-    m_config = UA_ServerConfig_new_minimal(43344, NULL);
+    m_config = UA_ServerConfig_new_minimal(43344, nullptr);
     if (!m_config)
         return false;
 
@@ -139,7 +139,7 @@ UA_NodeId DemoServer::addFolder(const QString &parent, const QString &nodeString
                                      nodeBrowseName,
                                      UA_NODEID_NULL,
                                      oAttr,
-                                     NULL,
+                                     nullptr,
                                      &resultNode);
 
     UA_QualifiedName_deleteMembers(&nodeBrowseName);
@@ -174,7 +174,7 @@ UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variab
                                                      variableName,
                                                      UA_NODEID_NULL,
                                                      attr,
-                                                     NULL,
+                                                     nullptr,
                                                      &resultId);
 
     UA_NodeId_deleteMembers(&variableNodeId);

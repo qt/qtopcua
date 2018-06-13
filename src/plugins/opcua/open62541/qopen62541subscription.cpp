@@ -112,7 +112,7 @@ UA_UInt32 QOpen62541Subscription::createOnServer()
     req.requestedMaxKeepAliveCount = m_maxKeepaliveCount;
     req.priority = m_priority;
     req.maxNotificationsPerPublish = m_maxNotificationsPerPublish;
-    UA_CreateSubscriptionResponse res = UA_Client_Subscriptions_create(m_backend->m_uaclient, req, this, stateChangeHandler, NULL);
+    UA_CreateSubscriptionResponse res = UA_Client_Subscriptions_create(m_backend->m_uaclient, req, this, stateChangeHandler, nullptr);
 
     if (res.responseHeader.serviceResult != UA_STATUSCODE_GOOD) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not create subscription with interval" << m_interval << UA_StatusCode_name(res.responseHeader.serviceResult);

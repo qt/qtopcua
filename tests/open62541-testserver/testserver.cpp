@@ -67,7 +67,7 @@ TestServer::~TestServer()
 
 bool TestServer::init()
 {
-    m_config = UA_ServerConfig_new_minimal(43344, NULL);
+    m_config = UA_ServerConfig_new_minimal(43344, nullptr);
     if (!m_config)
         return false;
 
@@ -128,7 +128,7 @@ UA_NodeId TestServer::addFolder(const QString &nodeString, const QString &displa
                                      nodeBrowseName,
                                      UA_NODEID_NULL,
                                      oAttr,
-                                     NULL,
+                                     nullptr,
                                      &resultNode);
 
     UA_QualifiedName_deleteMembers(&nodeBrowseName);
@@ -159,7 +159,7 @@ UA_NodeId TestServer::addObject(const UA_NodeId &parentFolder, int namespaceInde
                                      nodeBrowseName,
                                      UA_NODEID_NULL,
                                      oAttr,
-                                     NULL,
+                                     nullptr,
                                      &resultNode);
 
     UA_QualifiedName_deleteMembers(&nodeBrowseName);
@@ -200,7 +200,7 @@ UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variab
                                                      variableName,
                                                      UA_NODEID_NULL,
                                                      attr,
-                                                     NULL,
+                                                     nullptr,
                                                      &resultId);
 
     // Prevent deletion of the QVector's value by UA_VariableAttribute_deleteMembers
@@ -243,7 +243,7 @@ UA_NodeId TestServer::addEmptyArrayVariable(const UA_NodeId &folder, const QStri
                                                      variableName,
                                                      UA_NODEID_NULL,
                                                      attr,
-                                                     NULL,
+                                                     nullptr,
                                                      &resultId);
 
     UA_NodeId_deleteMembers(&variableNodeId);
@@ -324,7 +324,7 @@ UA_NodeId TestServer::addMethod(const UA_NodeId &folder, const QString &variable
                                                      attr, &multiplyMethod,
                                                      2, inputArguments,
                                                      1, &outputArgument,
-                                                     NULL, &resultId);
+                                                     nullptr, &resultId);
 
     UA_QualifiedName_deleteMembers(&nodeBrowseName);
     UA_NodeId_deleteMembers(&methodNodeId);
