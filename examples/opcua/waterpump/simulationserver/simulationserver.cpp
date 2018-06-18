@@ -82,6 +82,11 @@ DemoServer::~DemoServer()
     shutdown();
     UA_Server_delete(m_server);
     UA_ServerConfig_delete(m_config);
+    UA_NodeId_deleteMembers(&m_percentFilledTank1Node);
+    UA_NodeId_deleteMembers(&m_percentFilledTank2Node);
+    UA_NodeId_deleteMembers(&m_tank2TargetPercentNode);
+    UA_NodeId_deleteMembers(&m_tank2ValveStateNode);
+    UA_NodeId_deleteMembers(&m_machineStateNode);
 }
 
 bool DemoServer::init()
@@ -123,16 +128,25 @@ UA_NodeId DemoServer::addFolder(const QString &parent, const QString &nodeString
 
     UA_StatusCode result;
     UA_NodeId requestedNodeId = Open62541Utils::nodeIdFromQString(nodeString);
+    UA_NodeId parentNodeId = Open62541Utils::nodeIdFromQString(parent);
+
+    UA_QualifiedName nodeBrowseName = UA_QUALIFIEDNAME_ALLOC(requestedNodeId.namespaceIndex, browseName.toUtf8().constData());
 
     result = UA_Server_addObjectNode(m_server,
                                      requestedNodeId,
-                                     Open62541Utils::nodeIdFromQString(parent),
+                                     parentNodeId,
                                      UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
-                                     UA_QUALIFIEDNAME_ALLOC(requestedNodeId.namespaceIndex, browseName.toUtf8().constData()),
+                                     nodeBrowseName,
                                      UA_NODEID_NULL,
                                      oAttr,
                                      NULL,
                                      &resultNode);
+
+    UA_QualifiedName_deleteMembers(&nodeBrowseName);
+    UA_NodeId_deleteMembers(&requestedNodeId);
+    UA_NodeId_deleteMembers(&parentNodeId);
+    UA_ObjectAttributes_deleteMembers(&oAttr);
+
     if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Could not add folder:" << nodeString << " :" << result;
         return UA_NODEID_NULL;
@@ -162,6 +176,10 @@ UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variab
                                                      attr,
                                                      NULL,
                                                      &resultId);
+
+    UA_NodeId_deleteMembers(&variableNodeId);
+    UA_VariableAttributes_deleteMembers(&attr);
+    UA_QualifiedName_deleteMembers(&variableName);
 
     if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Could not add variable:" << result;
@@ -337,6 +355,11 @@ UA_NodeId DemoServer::addMethod(const UA_NodeId &folder, const QString &variable
                                                      0, nullptr,
                                                      0, nullptr,
                                                      this, &resultId);
+
+    UA_NodeId_deleteMembers(&methodNodeId);
+    UA_MethodAttributes_deleteMembers(&attr);
+    UA_QualifiedName_deleteMembers(&methodBrowseName);
+
     if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Could not add Method:" << result;
         return UA_NODEID_NULL;
@@ -357,21 +380,31 @@ void DemoServer::launch()
          qFatal("Unexpected namespace index for Demo namespace");
      }
 
-     const UA_NodeId machineFolder = addFolder("ns=0;i=85", "ns=2;s=Machine", "Machine", "Machine");
-     const UA_NodeId tank1Folder = addFolder("ns=2;s=Machine", "ns=2;s=Machine.Tank1", "Tank1", "Machine.Tank1");
-     const UA_NodeId tank2Folder = addFolder("ns=2;s=Machine", "ns=2;s=Machine.Tank2", "Tank2", "Machine.Tank2");
+     UA_NodeId machineFolder = addFolder("ns=0;i=85", "ns=2;s=Machine", "Machine", "Machine");
+     UA_NodeId tank1Folder = addFolder("ns=2;s=Machine", "ns=2;s=Machine.Tank1", "Tank1", "Machine.Tank1");
+     UA_NodeId tank2Folder = addFolder("ns=2;s=Machine", "ns=2;s=Machine.Tank2", "Tank2", "Machine.Tank2");
 
      m_percentFilledTank1Node = addVariable(tank1Folder, "ns=2;s=Machine.Tank1.PercentFilled", "PercentFilled", "Machine.Tank1.PercentFilled", 100.0, QOpcUa::Types::Double);
      m_percentFilledTank2Node = addVariable(tank2Folder, "ns=2;s=Machine.Tank2.PercentFilled", "PercentFilled", "Machine.Tank2.PercentFilled", 0.0, QOpcUa::Types::Double);
      m_tank2TargetPercentNode = addVariable(tank2Folder, "ns=2;s=Machine.Tank2.TargetPercent", "TargetPercent", "Machine.Tank2.TargetPercent", 0.0, QOpcUa::Types::Double);
      m_tank2ValveStateNode = addVariable(tank2Folder, "ns=2;s=Machine.Tank2.ValveState", "ValveState", "Machine.Tank2.ValveState", false, QOpcUa::Types::Boolean);
      m_machineStateNode = addVariable(machineFolder, "ns=2;s=Machine.State", "State", "Machine.State", static_cast<quint32>(MachineState::Idle), QOpcUa::Types::UInt32);
-     addVariable(machineFolder, "ns=2;s=Machine.Designation", "Designation", "Machine.Designation", "TankExample", QOpcUa::Types::String);
+     UA_NodeId tempId;
+     tempId = addVariable(machineFolder, "ns=2;s=Machine.Designation", "Designation", "Machine.Designation", "TankExample", QOpcUa::Types::String);
+     UA_NodeId_deleteMembers(&tempId);
 
-     addMethod(machineFolder, "ns=2;s=Machine.Start", "Starts the pump", "Start", "Machine.Start", &startPumpMethod);
-     addMethod(machineFolder, "ns=2;s=Machine.Stop", "Stops the pump", "Stop", "Machine.Stop", &stopPumpMethod);
-     addMethod(machineFolder, "ns=2;s=Machine.FlushTank2", "Flushes tank 2", "FlushTank2", "Machine.FlushTank2", &flushTank2Method);
-     addMethod(machineFolder, "ns=2;s=Machine.Reset", "Resets the simulation", "Reset", "Machine.Reset", &resetMethod);
+     tempId = addMethod(machineFolder, "ns=2;s=Machine.Start", "Starts the pump", "Start", "Machine.Start", &startPumpMethod);
+     UA_NodeId_deleteMembers(&tempId);
+     tempId = addMethod(machineFolder, "ns=2;s=Machine.Stop", "Stops the pump", "Stop", "Machine.Stop", &stopPumpMethod);
+     UA_NodeId_deleteMembers(&tempId);
+     tempId = addMethod(machineFolder, "ns=2;s=Machine.FlushTank2", "Flushes tank 2", "FlushTank2", "Machine.FlushTank2", &flushTank2Method);
+     UA_NodeId_deleteMembers(&tempId);
+     tempId = addMethod(machineFolder, "ns=2;s=Machine.Reset", "Resets the simulation", "Reset", "Machine.Reset", &resetMethod);
+     UA_NodeId_deleteMembers(&tempId);
+
+     UA_NodeId_deleteMembers(&machineFolder);
+     UA_NodeId_deleteMembers(&tank1Folder);
+     UA_NodeId_deleteMembers(&tank2Folder);
 
      QObject::connect(&m_machineTimer, &QTimer::timeout, [this]() {
 
