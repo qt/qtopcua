@@ -65,6 +65,9 @@ QOpen62541Node::~QOpen62541Node()
 
 bool QOpen62541Node::readAttributes(QOpcUa::NodeAttributes attr, const QString &indexRange)
 {
+    if (!m_client)
+        return false;
+
     UA_NodeId tempId;
     UA_NodeId_copy(&m_nodeId, &tempId);
     return QMetaObject::invokeMethod(m_client->m_backend, "readAttributes",
@@ -77,6 +80,9 @@ bool QOpen62541Node::readAttributes(QOpcUa::NodeAttributes attr, const QString &
 
 bool QOpen62541Node::enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
 {
+    if (!m_client)
+        return false;
+
     UA_NodeId tempId;
     UA_NodeId_copy(&m_nodeId, &tempId);
     return QMetaObject::invokeMethod(m_client->m_backend, "enableMonitoring",
@@ -89,6 +95,9 @@ bool QOpen62541Node::enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaM
 
 bool QOpen62541Node::disableMonitoring(QOpcUa::NodeAttributes attr)
 {
+    if (!m_client)
+        return false;
+
     return QMetaObject::invokeMethod(m_client->m_backend, "disableMonitoring",
                                      Qt::QueuedConnection,
                                      Q_ARG(quint64, handle()),
@@ -97,6 +106,9 @@ bool QOpen62541Node::disableMonitoring(QOpcUa::NodeAttributes attr)
 
 bool QOpen62541Node::modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value)
 {
+    if (!m_client)
+        return false;
+
     return QMetaObject::invokeMethod(m_client->m_backend, "modifyMonitoring",
                                      Qt::QueuedConnection,
                                      Q_ARG(quint64, handle()),
@@ -112,6 +124,9 @@ QString QOpen62541Node::nodeId() const
 
 bool QOpen62541Node::browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
 {
+    if (!m_client)
+        return false;
+
     UA_NodeId tempId;
     UA_NodeId_copy(&m_nodeId, &tempId);
     return QMetaObject::invokeMethod(m_client->m_backend, "browseChildren",
@@ -124,6 +139,9 @@ bool QOpen62541Node::browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcU
 
 bool QOpen62541Node::writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange)
 {
+    if (!m_client)
+        return false;
+
     UA_NodeId tempId;
     UA_NodeId_copy(&m_nodeId, &tempId);
     return QMetaObject::invokeMethod(m_client->m_backend, "writeAttribute",
@@ -138,6 +156,9 @@ bool QOpen62541Node::writeAttribute(QOpcUa::NodeAttribute attribute, const QVari
 
 bool QOpen62541Node::writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType)
 {
+    if (!m_client)
+        return false;
+
     UA_NodeId tempId;
     UA_NodeId_copy(&m_nodeId, &tempId);
     return QMetaObject::invokeMethod(m_client->m_backend, "writeAttributes",
@@ -150,6 +171,9 @@ bool QOpen62541Node::writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QO
 
 bool QOpen62541Node::callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args)
 {
+    if (!m_client)
+        return false;
+
     UA_NodeId obj;
     UA_NodeId_copy(&m_nodeId, &obj);
     return QMetaObject::invokeMethod(m_client->m_backend, "callMethod",
@@ -162,6 +186,9 @@ bool QOpen62541Node::callMethod(const QString &methodNodeId, const QVector<QOpcU
 
 bool QOpen62541Node::resolveBrowsePath(const QVector<QOpcUa::QRelativePathElement> &path)
 {
+    if (!m_client)
+        return false;
+
     UA_NodeId start;
     UA_NodeId_copy(&m_nodeId, &start);
 
