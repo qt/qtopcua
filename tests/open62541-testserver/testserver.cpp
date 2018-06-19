@@ -119,15 +119,22 @@ UA_NodeId TestServer::addFolder(const QString &nodeString, const QString &displa
     UA_StatusCode result;
     UA_NodeId requestedNodeId = Open62541Utils::nodeIdFromQString(nodeString);
 
+    UA_QualifiedName nodeBrowseName = UA_QUALIFIEDNAME_ALLOC(requestedNodeId.namespaceIndex, nodeString.toUtf8().constData());
+
     result = UA_Server_addObjectNode(m_server,
                                      requestedNodeId,
                                      UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER),
                                      UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
-                                     UA_QUALIFIEDNAME_ALLOC(requestedNodeId.namespaceIndex, nodeString.toUtf8().constData()),
+                                     nodeBrowseName,
                                      UA_NODEID_NULL,
                                      oAttr,
                                      NULL,
                                      &resultNode);
+
+    UA_QualifiedName_deleteMembers(&nodeBrowseName);
+    UA_NodeId_deleteMembers(&requestedNodeId);
+    UA_ObjectAttributes_deleteMembers(&oAttr);
+
     if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Could not add folder:" << nodeString << " :" << result;
         return UA_NODEID_NULL;
@@ -143,15 +150,21 @@ UA_NodeId TestServer::addObject(const UA_NodeId &parentFolder, int namespaceInde
     if (objectName.size())
         oAttr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", objectName.toUtf8().constData());
 
+    UA_QualifiedName nodeBrowseName = UA_QUALIFIEDNAME_ALLOC(namespaceIndex, objectName.toUtf8().constData());
+
     UA_StatusCode result;
     result = UA_Server_addObjectNode(m_server, UA_NODEID_NULL,
                                      parentFolder,
                                      UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
-                                     UA_QUALIFIEDNAME_ALLOC(namespaceIndex, objectName.toUtf8().constData()),
+                                     nodeBrowseName,
                                      UA_NODEID_NULL,
                                      oAttr,
                                      NULL,
                                      &resultNode);
+
+    UA_QualifiedName_deleteMembers(&nodeBrowseName);
+    UA_ObjectAttributes_deleteMembers(&oAttr);
+
     if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Could not add object to folder:" << result;
         return UA_NODEID_NULL;
@@ -183,6 +196,9 @@ UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variab
                                                      attr,
                                                      NULL,
                                                      &resultId);
+
+    UA_NodeId_deleteMembers(&variableNodeId);
+    UA_VariableAttributes_deleteMembers(&attr);
 
     if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Could not add variable:" << result;
@@ -219,6 +235,9 @@ UA_NodeId TestServer::addEmptyArrayVariable(const UA_NodeId &folder, const QStri
                                                      attr,
                                                      NULL,
                                                      &resultId);
+
+    UA_NodeId_deleteMembers(&variableNodeId);
+    UA_VariableAttributes_deleteMembers(&attr);
 
     if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Could not add empty array variable:" << result;
@@ -294,6 +313,13 @@ UA_NodeId TestServer::addMethod(const UA_NodeId &folder, const QString &variable
                                                      2, inputArguments,
                                                      1, &outputArgument,
                                                      NULL, &resultId);
+
+    UA_NodeId_deleteMembers(&methodNodeId);
+    UA_MethodAttributes_deleteMembers(&attr);
+    UA_Argument_deleteMembers(&inputArguments[0]);
+    UA_Argument_deleteMembers(&inputArguments[1]);
+    UA_Argument_deleteMembers(&outputArgument);
+
     if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Could not add variable:" << result;
         return UA_NODEID_NULL;
