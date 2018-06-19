@@ -42,11 +42,14 @@
 #include "qopen62541valueconverter.h"
 #include <private/qopcuaclient_p.h>
 
+#include <QtCore/qloggingcategory.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qthread.h>
 #include <QtCore/qurl.h>
 
 QT_BEGIN_NAMESPACE
+
+Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541)
 
 QOpen62541Client::QOpen62541Client()
     : QOpcUaClientImpl()
@@ -82,7 +85,13 @@ QOpcUaNode *QOpen62541Client::node(const QString &nodeId)
     if (UA_NodeId_isNull(&uaNodeId))
         return nullptr;
 
-    return new QOpcUaNode(new QOpen62541Node(uaNodeId, this, nodeId), m_client);
+    auto tempNode = new QOpen62541Node(uaNodeId, this, nodeId);
+    if (!tempNode->registered()) {
+        qCDebug(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to register node with backend, maximum number of nodes reached.";
+        delete tempNode;
+        return nullptr;
+    }
+    return new QOpcUaNode(tempNode, m_client);
 }
 
 QString QOpen62541Client::backend() const

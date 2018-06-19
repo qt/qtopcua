@@ -39,9 +39,9 @@ public:
     bool removeOnServer();
 
 
-    bool addAttributeMonitoredItem(uintptr_t handle, QOpcUa::NodeAttribute attr, const UaNodeId &id, QOpcUaMonitoringParameters parameters);
-    void modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
-    bool removeAttributeMonitoredItem(uintptr_t handle, QOpcUa::NodeAttribute attr);
+    bool addAttributeMonitoredItem(quint64 handle, QOpcUa::NodeAttribute attr, const UaNodeId &id, QOpcUaMonitoringParameters parameters);
+    void modifyMonitoring(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
+    bool removeAttributeMonitoredItem(quint64 handle, QOpcUa::NodeAttribute attr);
 
     double interval() const;
     quint32 subscriptionId() const;
@@ -56,15 +56,15 @@ public:
 private:
     OpcUa_ExtensionObject createFilter(const QVariant &filterData);
 
-    bool modifySubscriptionParameters(uintptr_t handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
-    bool modifyMonitoredItemParameters(uintptr_t handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
+    bool modifySubscriptionParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
+    bool modifyMonitoredItemParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
 
     UACppAsyncBackend *m_backend;
     QOpcUaMonitoringParameters m_subscriptionParameters;
     UaClientSdk::UaSubscription *m_nativeSubscription;
-    QHash<QPair<uintptr_t, QOpcUa::NodeAttribute>,
+    QHash<QPair<quint64, QOpcUa::NodeAttribute>,
         QPair<OpcUa_MonitoredItemCreateResult, QOpcUaMonitoringParameters>> m_monitoredItems;
-    QHash<quint32, QPair<uintptr_t, QOpcUa::NodeAttribute>> m_monitoredIds;
+    QHash<quint32, QPair<quint64, QOpcUa::NodeAttribute>> m_monitoredIds;
 };
 
 QT_END_NAMESPACE

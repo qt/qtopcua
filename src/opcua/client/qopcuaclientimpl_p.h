@@ -76,7 +76,7 @@ public:
     virtual QOpcUaNode *node(const QString &nodeId) = 0;
     virtual QString backend() const = 0;
 
-    void registerNode(QPointer<QOpcUaNodeImpl> obj);
+    bool registerNode(QPointer<QOpcUaNodeImpl> obj);
     void unregisterNode(QPointer<QOpcUaNodeImpl> obj);
 
     void connectBackendWithClient(QOpcUaBackend *backend);
@@ -84,16 +84,16 @@ public:
     QOpcUaClient *m_client;
 
 private Q_SLOTS:
-    void handleAttributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
-    void handleAttributeWritten(uintptr_t handle, QOpcUa::NodeAttribute attr, const QVariant &value, QOpcUa::UaStatusCode statusCode);
-    void handleAttributeUpdated(uintptr_t handle, const QOpcUaReadResult &value);
-    void handleMonitoringEnableDisable(uintptr_t handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
-    void handleMonitoringStatusChanged(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
+    void handleAttributesRead(quint64 handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
+    void handleAttributeWritten(quint64 handle, QOpcUa::NodeAttribute attr, const QVariant &value, QOpcUa::UaStatusCode statusCode);
+    void handleAttributeUpdated(quint64 handle, const QOpcUaReadResult &value);
+    void handleMonitoringEnableDisable(quint64 handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
+    void handleMonitoringStatusChanged(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                                  QOpcUaMonitoringParameters param);
-    void handleMethodCallFinished(uintptr_t handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
-    void handleBrowseFinished(uintptr_t handle, const QVector<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode);
+    void handleMethodCallFinished(quint64 handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
+    void handleBrowseFinished(quint64 handle, const QVector<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode);
 
-    void handleResolveBrowsePathFinished(uintptr_t handle, QVector<QOpcUa::QBrowsePathTarget> targets,
+    void handleResolveBrowsePathFinished(quint64 handle, QVector<QOpcUa::QBrowsePathTarget> targets,
                                            QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode status);
 
 signals:
@@ -103,7 +103,8 @@ signals:
                                 QOpcUaClient::ClientError error);
 private:
     Q_DISABLE_COPY(QOpcUaClientImpl)
-    QHash<uintptr_t, QPointer<QOpcUaNodeImpl>> m_handles;
+    QHash<quint64, QPointer<QOpcUaNodeImpl>> m_handles;
+    quint64 m_handleCounter;
 };
 
 inline uint qHash(const QPointer<QOpcUaNodeImpl>& n)

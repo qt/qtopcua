@@ -39,11 +39,33 @@
 QT_BEGIN_NAMESPACE
 
 QOpcUaNodeImpl::QOpcUaNodeImpl()
+    : m_handle{0}
+    , m_registered{false}
 {
 }
 
 QOpcUaNodeImpl::~QOpcUaNodeImpl()
 {
+}
+
+quint64 QOpcUaNodeImpl::handle() const
+{
+    return m_handle;
+}
+
+void QOpcUaNodeImpl::setHandle(quint64 handle)
+{
+    m_handle = handle;
+}
+
+bool QOpcUaNodeImpl::registered() const
+{
+    return m_registered;
+}
+
+void QOpcUaNodeImpl::setRegistered(bool registered)
+{
+    m_registered = registered;
 }
 
 QT_END_NAMESPACE

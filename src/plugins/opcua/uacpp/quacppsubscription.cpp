@@ -89,9 +89,9 @@ bool QUACppSubscription::removeOnServer()
     return true;
 }
 
-bool QUACppSubscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUa::NodeAttribute attr, const UaNodeId &id, QOpcUaMonitoringParameters parameters)
+bool QUACppSubscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::NodeAttribute attr, const UaNodeId &id, QOpcUaMonitoringParameters parameters)
 {
-    qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Adding monitored Item: " << handle << ":" << attr;
+    qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Adding monitored Item for" << attr;
     static quint32 monitorId = 100;
 
     UaStatus result;
@@ -148,14 +148,14 @@ bool QUACppSubscription::addAttributeMonitoredItem(uintptr_t handle, QOpcUa::Nod
     return true;
 }
 
-void QUACppSubscription::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
+void QUACppSubscription::modifyMonitoring(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
 {
     QOpcUaMonitoringParameters p;
     p.setStatusCode(QOpcUa::UaStatusCode::BadNotImplemented);
     const auto key = qMakePair(handle, attr);
 
     if (!m_monitoredItems.contains(key)) {
-        qCWarning(QT_OPCUA_PLUGINS_UACPP, "Could not modify parameter for %lu, there are no monitored items", handle);
+        qCWarning(QT_OPCUA_PLUGINS_UACPP, "Could not modify parameter, there are no monitored items");
         p.setStatusCode(QOpcUa::UaStatusCode::BadAttributeIdInvalid);
         emit m_backend->monitoringStatusChanged(handle, attr, item, p);
         return;
@@ -228,13 +228,13 @@ void QUACppSubscription::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribut
     emit m_backend->monitoringStatusChanged(handle, attr, item, p);
 }
 
-bool QUACppSubscription::removeAttributeMonitoredItem(uintptr_t handle, QOpcUa::NodeAttribute attr)
+bool QUACppSubscription::removeAttributeMonitoredItem(quint64 handle, QOpcUa::NodeAttribute attr)
 {
-    qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Removing monitored Item: " << handle << ":" << attr;
+    qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Removing monitored Item for" << attr;
 
-    const QPair<uintptr_t, QOpcUa::NodeAttribute> pair(handle, attr);
+    const QPair<quint64, QOpcUa::NodeAttribute> pair(handle, attr);
     if (!m_monitoredItems.contains(pair)) {
-        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Trying to remove unknown monitored item:" << handle << ":" << attr;
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Trying to remove unknown monitored item for" << attr;
         return false;
     }
 
@@ -248,7 +248,7 @@ bool QUACppSubscription::removeAttributeMonitoredItem(uintptr_t handle, QOpcUa::
     UaStatusCodeArray removeResults;
     result = m_nativeSubscription->deleteMonitoredItems(settings, removeIds, removeResults);
     if (result.isBad() || removeResults.length() != 1 || OpcUa_IsBad(removeResults[0])) {
-        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to remove monitored item:" << handle << ":" << attr;
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to remove monitored item for" << attr;
         return false;
     }
 
@@ -352,7 +352,7 @@ OpcUa_ExtensionObject QUACppSubscription::createFilter(const QVariant &filterDat
     return obj;
 }
 
-bool QUACppSubscription::modifySubscriptionParameters(uintptr_t handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value)
+bool QUACppSubscription::modifySubscriptionParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value)
 {
     QOpcUaMonitoringParameters p;
     SubscriptionSettings settings;
@@ -369,7 +369,7 @@ bool QUACppSubscription::modifySubscriptionParameters(uintptr_t handle, QOpcUa::
         settings.publishingInterval = value.toDouble(&ok);
 
         if (!ok) {
-            qCWarning(QT_OPCUA_PLUGINS_UACPP, "Could not modify PublishingInterval for %lu, value is not a double", handle);
+            qCWarning(QT_OPCUA_PLUGINS_UACPP, "Could not modify PublishingInterval, value is not a double");
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(handle, attr, item, p);
             return true;
@@ -381,7 +381,7 @@ bool QUACppSubscription::modifySubscriptionParameters(uintptr_t handle, QOpcUa::
         settings.lifetimeCount = value.toUInt(&ok);
 
         if (!ok) {
-            qCWarning(QT_OPCUA_PLUGINS_UACPP, "Could not modify LifetimeCount for %lu, value is not an integer", handle);
+            qCWarning(QT_OPCUA_PLUGINS_UACPP, "Could not modify LifetimeCount, value is not an integer");
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(handle, attr, item, p);
             return true;
@@ -393,7 +393,7 @@ bool QUACppSubscription::modifySubscriptionParameters(uintptr_t handle, QOpcUa::
         settings.maxKeepAliveCount = value.toUInt(&ok);
 
         if (!ok) {
-            qCWarning(QT_OPCUA_PLUGINS_UACPP, "Could not modify MaxKeepAliveCount for %lu, value is not an integer", handle);
+            qCWarning(QT_OPCUA_PLUGINS_UACPP, "Could not modify MaxKeepAliveCount, value is not an integer");
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(handle, attr, item, p);
             return true;
@@ -441,10 +441,10 @@ bool QUACppSubscription::modifySubscriptionParameters(uintptr_t handle, QOpcUa::
     return false;
 }
 
-bool QUACppSubscription::modifyMonitoredItemParameters(uintptr_t handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value)
+bool QUACppSubscription::modifyMonitoredItemParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value)
 {
     // Get hold of OpcUa_MonitoredItemCreateResult
-    const QPair<uintptr_t, QOpcUa::NodeAttribute> key(handle, attr);
+    const QPair<quint64, QOpcUa::NodeAttribute> key(handle, attr);
     if (!m_monitoredItems.contains(key)) {
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Did not find monitored item";
         return false;
@@ -467,7 +467,7 @@ bool QUACppSubscription::modifyMonitoredItemParameters(uintptr_t handle, QOpcUa:
     switch (item) {
     case QOpcUaMonitoringParameters::Parameter::DiscardOldest: {
         if (value.type() != QVariant::Bool) {
-            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not modify DiscardOldest for" << handle << ", value is not a bool";
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not modify DiscardOldest, value is not a bool";
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(handle, attr, item, p);
             return true;
@@ -477,7 +477,7 @@ bool QUACppSubscription::modifyMonitoredItemParameters(uintptr_t handle, QOpcUa:
     }
     case QOpcUaMonitoringParameters::Parameter::QueueSize: {
         if (value.type() != QVariant::UInt) {
-            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not modify QueueSize for" << handle << ", value is not an integer";
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not modify QueueSize, value is not an integer";
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(handle, attr, item, p);
             return true;
@@ -487,7 +487,7 @@ bool QUACppSubscription::modifyMonitoredItemParameters(uintptr_t handle, QOpcUa:
     }
     case QOpcUaMonitoringParameters::Parameter::SamplingInterval: {
         if (value.type() != QVariant::Double) {
-            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not modify SamplingInterval for" << handle << ", value is not a double";
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not modify SamplingInterval, value is not a double";
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(handle, attr, item, p);
             return true;

@@ -80,7 +80,7 @@ Open62541AsyncBackend::~Open62541AsyncBackend()
         UA_Client_delete(m_uaclient);
 }
 
-void Open62541AsyncBackend::readAttributes(uintptr_t handle, UA_NodeId id, QOpcUa::NodeAttributes attr, QString indexRange)
+void Open62541AsyncBackend::readAttributes(quint64 handle, UA_NodeId id, QOpcUa::NodeAttributes attr, QString indexRange)
 {
     UA_ReadRequest req;
     UA_ReadRequest_init(&req);
@@ -133,7 +133,7 @@ void Open62541AsyncBackend::readAttributes(uintptr_t handle, UA_NodeId id, QOpcU
     UA_ReadResponse_deleteMembers(&res);
 }
 
-void Open62541AsyncBackend::writeAttribute(uintptr_t handle, UA_NodeId id, QOpcUa::NodeAttribute attrId, QVariant value, QOpcUa::Types type, QString indexRange)
+void Open62541AsyncBackend::writeAttribute(quint64 handle, UA_NodeId id, QOpcUa::NodeAttribute attrId, QVariant value, QOpcUa::Types type, QString indexRange)
 {
     if (type == QOpcUa::Types::Undefined && attrId != QOpcUa::NodeAttribute::Value)
         type = attributeIdToTypeId(attrId);
@@ -162,7 +162,7 @@ void Open62541AsyncBackend::writeAttribute(uintptr_t handle, UA_NodeId id, QOpcU
     UA_WriteResponse_deleteMembers(&res);
 }
 
-void Open62541AsyncBackend::writeAttributes(uintptr_t handle, UA_NodeId id, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType)
+void Open62541AsyncBackend::writeAttributes(quint64 handle, UA_NodeId id, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType)
 {
     if (toWrite.size() == 0) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "No values to be written";
@@ -196,7 +196,7 @@ void Open62541AsyncBackend::writeAttributes(uintptr_t handle, UA_NodeId id, QOpc
     UA_NodeId_deleteMembers(&id);
 }
 
-void Open62541AsyncBackend::enableMonitoring(uintptr_t handle, UA_NodeId id, QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
+void Open62541AsyncBackend::enableMonitoring(quint64 handle, UA_NodeId id, QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
 {
     QOpen62541Subscription *usedSubscription = nullptr;
 
@@ -249,7 +249,7 @@ void Open62541AsyncBackend::enableMonitoring(uintptr_t handle, UA_NodeId id, QOp
     modifyPublishRequests();
 }
 
-void Open62541AsyncBackend::disableMonitoring(uintptr_t handle, QOpcUa::NodeAttributes attr)
+void Open62541AsyncBackend::disableMonitoring(quint64 handle, QOpcUa::NodeAttributes attr)
 {
     qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attribute){
         QOpen62541Subscription *sub = getSubscriptionForItem(handle, attribute);
@@ -263,11 +263,11 @@ void Open62541AsyncBackend::disableMonitoring(uintptr_t handle, QOpcUa::NodeAttr
     modifyPublishRequests();
 }
 
-void Open62541AsyncBackend::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
+void Open62541AsyncBackend::modifyMonitoring(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
 {
     QOpen62541Subscription *subscription = getSubscriptionForItem(handle, attr);
     if (!subscription) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify parameter for" << handle << ", the monitored item does not exist";
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify" << item << ", the monitored item does not exist";
         QOpcUaMonitoringParameters p;
         p.setStatusCode(QOpcUa::UaStatusCode::BadMonitoredItemIdInvalid);
         emit monitoringStatusChanged(handle, attr, item, p);
@@ -316,7 +316,7 @@ bool Open62541AsyncBackend::removeSubscription(UA_UInt32 subscriptionId)
     return false;
 }
 
-void Open62541AsyncBackend::callMethod(uintptr_t handle, UA_NodeId objectId, UA_NodeId methodId, QVector<QOpcUa::TypedVariant> args)
+void Open62541AsyncBackend::callMethod(quint64 handle, UA_NodeId objectId, UA_NodeId methodId, QVector<QOpcUa::TypedVariant> args)
 {
     UA_Variant *inputArgs = nullptr;
 
@@ -355,7 +355,7 @@ void Open62541AsyncBackend::callMethod(uintptr_t handle, UA_NodeId objectId, UA_
     UA_NodeId_deleteMembers(&methodId);
 }
 
-void Open62541AsyncBackend::resolveBrowsePath(uintptr_t handle, UA_NodeId startNode, const QVector<QOpcUa::QRelativePathElement> &path)
+void Open62541AsyncBackend::resolveBrowsePath(quint64 handle, UA_NodeId startNode, const QVector<QOpcUa::QRelativePathElement> &path)
 {
     UA_TranslateBrowsePathsToNodeIdsRequest req;
     UA_TranslateBrowsePathsToNodeIdsRequest_init(&req);
@@ -418,7 +418,7 @@ static void convertBrowseResult(UA_BrowseResult *src, quint32 referencesSize, QV
     }
 }
 
-void Open62541AsyncBackend::browseChildren(uintptr_t handle, UA_NodeId id, QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
+void Open62541AsyncBackend::browseChildren(quint64 handle, UA_NodeId id, QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
 {
     UA_BrowseRequest request;
     UA_BrowseRequest_init(&request);
@@ -571,7 +571,7 @@ void Open62541AsyncBackend::modifyPublishRequests()
     sendPublishRequest();
 }
 
-void Open62541AsyncBackend::handleSubscriptionTimeout(QOpen62541Subscription *sub, QVector<QPair<uintptr_t, QOpcUa::NodeAttribute>> items)
+void Open62541AsyncBackend::handleSubscriptionTimeout(QOpen62541Subscription *sub, QVector<QPair<quint64, QOpcUa::NodeAttribute>> items)
 {
     for (auto it : qAsConst(items)) {
         auto item = m_attributeMapping.find(it.first);
@@ -584,7 +584,7 @@ void Open62541AsyncBackend::handleSubscriptionTimeout(QOpen62541Subscription *su
     modifyPublishRequests();
 }
 
-QOpen62541Subscription *Open62541AsyncBackend::getSubscriptionForItem(uintptr_t handle, QOpcUa::NodeAttribute attr)
+QOpen62541Subscription *Open62541AsyncBackend::getSubscriptionForItem(quint64 handle, QOpcUa::NodeAttribute attr)
 {
     auto nodeEntry = m_attributeMapping.find(handle);
     if (nodeEntry == m_attributeMapping.end())

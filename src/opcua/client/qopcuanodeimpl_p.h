@@ -87,6 +87,12 @@ public:
 
     virtual bool resolveBrowsePath(const QVector<QOpcUa::QRelativePathElement> &path) = 0;
 
+    quint64 handle() const;
+    void setHandle(quint64 handle);
+
+    bool registered() const;
+    void setRegistered(bool registered);
+
 Q_SIGNALS:
     void attributesRead(QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
     void attributeWritten(QOpcUa::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode);
@@ -99,6 +105,10 @@ Q_SIGNALS:
     void methodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
     void resolveBrowsePathFinished(QVector<QOpcUa::QBrowsePathTarget> targets,
                                      QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode status);
+
+private:
+    quint64 m_handle;
+    bool m_registered;
 };
 
 QT_END_NAMESPACE

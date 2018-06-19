@@ -52,27 +52,27 @@ public Q_SLOTS:
     void connectToEndpoint(const QUrl &url);
     void disconnectFromEndpoint();
 
-    void browseChildren(uintptr_t handle, const UaNodeId &id, QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask);
-    void readAttributes(uintptr_t handle, const UaNodeId &id, QOpcUa::NodeAttributes attr, QString indexRange);
-    void writeAttribute(uintptr_t handle, const UaNodeId &id, QOpcUa::NodeAttribute attrId, QVariant value, QOpcUa::Types type, QString indexRange);
-    void writeAttributes(uintptr_t handle, const UaNodeId &id, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType);
-    void enableMonitoring(uintptr_t handle, const UaNodeId &id, QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
-    void modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
-    void disableMonitoring(uintptr_t handle, QOpcUa::NodeAttributes attr);
-    void callMethod(uintptr_t handle, const UaNodeId &objectId, const UaNodeId &methodId, QVector<QOpcUa::TypedVariant> args);
-    void resolveBrowsePath(uintptr_t handle, const UaNodeId &startNode, const QVector<QOpcUa::QRelativePathElement> &path);
+    void browseChildren(quint64 handle, const UaNodeId &id, QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask);
+    void readAttributes(quint64 handle, const UaNodeId &id, QOpcUa::NodeAttributes attr, QString indexRange);
+    void writeAttribute(quint64 handle, const UaNodeId &id, QOpcUa::NodeAttribute attrId, QVariant value, QOpcUa::Types type, QString indexRange);
+    void writeAttributes(quint64 handle, const UaNodeId &id, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType);
+    void enableMonitoring(quint64 handle, const UaNodeId &id, QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
+    void modifyMonitoring(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
+    void disableMonitoring(quint64 handle, QOpcUa::NodeAttributes attr);
+    void callMethod(quint64 handle, const UaNodeId &objectId, const UaNodeId &methodId, QVector<QOpcUa::TypedVariant> args);
+    void resolveBrowsePath(quint64 handle, const UaNodeId &startNode, const QVector<QOpcUa::QRelativePathElement> &path);
 
     bool removeSubscription(quint32 subscriptionId);
 
 public:
     QUACppSubscription *getSubscription(const QOpcUaMonitoringParameters &settings);
-    QUACppSubscription *getSubscriptionForItem(uintptr_t handle, QOpcUa::NodeAttribute attr);
+    QUACppSubscription *getSubscriptionForItem(quint64 handle, QOpcUa::NodeAttribute attr);
     void cleanupSubscriptions();
     Q_DISABLE_COPY(UACppAsyncBackend);
     UaClientSdk::UaSession *m_nativeSession;
     QUACppClient *m_clientImpl;
     QHash<quint32, QUACppSubscription *> m_subscriptions;
-    QHash<uintptr_t, QHash<QOpcUa::NodeAttribute, QUACppSubscription *>> m_attributeMapping; // Handle -> Attribute -> Subscription
+    QHash<quint64, QHash<QOpcUa::NodeAttribute, QUACppSubscription *>> m_attributeMapping; // Handle -> Attribute -> Subscription
     static quint32 m_numClients;
     static bool m_platformLayerInitialized;
     QMutex m_lifecycleMutex;

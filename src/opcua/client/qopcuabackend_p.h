@@ -79,17 +79,17 @@ public:
 Q_SIGNALS:
     void stateAndOrErrorChanged(QOpcUaClient::ClientState state,
                                 QOpcUaClient::ClientError error);
-    void attributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attributes, QOpcUa::UaStatusCode serviceResult);
-    void attributeWritten(uintptr_t hande, QOpcUa::NodeAttribute attribute, QVariant value, QOpcUa::UaStatusCode statusCode);
-    void methodCallFinished(uintptr_t handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
+    void attributesRead(quint64 handle, QVector<QOpcUaReadResult> attributes, QOpcUa::UaStatusCode serviceResult);
+    void attributeWritten(quint64 hande, QOpcUa::NodeAttribute attribute, QVariant value, QOpcUa::UaStatusCode statusCode);
+    void methodCallFinished(quint64 handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
 
-    void attributeUpdated(uintptr_t handle, QOpcUaReadResult res);
-    void monitoringEnableDisable(uintptr_t handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
-    void monitoringStatusChanged(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
+    void attributeUpdated(quint64 handle, QOpcUaReadResult res);
+    void monitoringEnableDisable(quint64 handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
+    void monitoringStatusChanged(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                            QOpcUaMonitoringParameters param);
-    void browseFinished(uintptr_t handle, QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
+    void browseFinished(quint64 handle, QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
 
-    void resolveBrowsePathFinished(uintptr_t handle, const QVector<QOpcUa::QBrowsePathTarget> &targets,
+    void resolveBrowsePathFinished(quint64 handle, const QVector<QOpcUa::QBrowsePathTarget> &targets,
                                      const QVector<QOpcUa::QRelativePathElement> &path, QOpcUa::UaStatusCode status);
 
 private:

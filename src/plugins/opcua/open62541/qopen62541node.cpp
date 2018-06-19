@@ -51,7 +51,8 @@ QOpen62541Node::QOpen62541Node(const UA_NodeId nodeId, QOpen62541Client *client,
     , m_nodeIdString(nodeIdString)
     , m_nodeId(nodeId)
 {
-    m_client->registerNode(this);
+    bool success = m_client->registerNode(this);
+    setRegistered(success);
 }
 
 QOpen62541Node::~QOpen62541Node()
@@ -68,7 +69,7 @@ bool QOpen62541Node::readAttributes(QOpcUa::NodeAttributes attr, const QString &
     UA_NodeId_copy(&m_nodeId, &tempId);
     return QMetaObject::invokeMethod(m_client->m_backend, "readAttributes",
                                      Qt::QueuedConnection,
-                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(quint64, handle()),
                                      Q_ARG(UA_NodeId, tempId),
                                      Q_ARG(QOpcUa::NodeAttributes, attr),
                                      Q_ARG(QString, indexRange));
@@ -80,7 +81,7 @@ bool QOpen62541Node::enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaM
     UA_NodeId_copy(&m_nodeId, &tempId);
     return QMetaObject::invokeMethod(m_client->m_backend, "enableMonitoring",
                                      Qt::QueuedConnection,
-                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(quint64, handle()),
                                      Q_ARG(UA_NodeId, tempId),
                                      Q_ARG(QOpcUa::NodeAttributes, attr),
                                      Q_ARG(QOpcUaMonitoringParameters, settings));
@@ -90,7 +91,7 @@ bool QOpen62541Node::disableMonitoring(QOpcUa::NodeAttributes attr)
 {
     return QMetaObject::invokeMethod(m_client->m_backend, "disableMonitoring",
                                      Qt::QueuedConnection,
-                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(quint64, handle()),
                                      Q_ARG(QOpcUa::NodeAttributes, attr));
 }
 
@@ -98,7 +99,7 @@ bool QOpen62541Node::modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitori
 {
     return QMetaObject::invokeMethod(m_client->m_backend, "modifyMonitoring",
                                      Qt::QueuedConnection,
-                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(quint64, handle()),
                                      Q_ARG(QOpcUa::NodeAttribute, attr),
                                      Q_ARG(QOpcUaMonitoringParameters::Parameter, item),
                                      Q_ARG(QVariant, value));
@@ -115,7 +116,7 @@ bool QOpen62541Node::browseChildren(QOpcUa::ReferenceTypeId referenceType, QOpcU
     UA_NodeId_copy(&m_nodeId, &tempId);
     return QMetaObject::invokeMethod(m_client->m_backend, "browseChildren",
                                      Qt::QueuedConnection,
-                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(quint64, handle()),
                                      Q_ARG(UA_NodeId, tempId),
                                      Q_ARG(QOpcUa::ReferenceTypeId, referenceType),
                                      Q_ARG(QOpcUa::NodeClasses, nodeClassMask));
@@ -127,7 +128,7 @@ bool QOpen62541Node::writeAttribute(QOpcUa::NodeAttribute attribute, const QVari
     UA_NodeId_copy(&m_nodeId, &tempId);
     return QMetaObject::invokeMethod(m_client->m_backend, "writeAttribute",
                                      Qt::QueuedConnection,
-                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(quint64, handle()),
                                      Q_ARG(UA_NodeId, tempId),
                                      Q_ARG(QOpcUa::NodeAttribute, attribute),
                                      Q_ARG(QVariant, value),
@@ -141,7 +142,7 @@ bool QOpen62541Node::writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QO
     UA_NodeId_copy(&m_nodeId, &tempId);
     return QMetaObject::invokeMethod(m_client->m_backend, "writeAttributes",
                                      Qt::QueuedConnection,
-                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(quint64, handle()),
                                      Q_ARG(UA_NodeId, tempId),
                                      Q_ARG(QOpcUaNode::AttributeMap, toWrite),
                                      Q_ARG(QOpcUa::Types, valueAttributeType));
@@ -153,7 +154,7 @@ bool QOpen62541Node::callMethod(const QString &methodNodeId, const QVector<QOpcU
     UA_NodeId_copy(&m_nodeId, &obj);
     return QMetaObject::invokeMethod(m_client->m_backend, "callMethod",
                                      Qt::QueuedConnection,
-                                     Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                     Q_ARG(quint64, handle()),
                                      Q_ARG(UA_NodeId, obj),
                                      Q_ARG(UA_NodeId, Open62541Utils::nodeIdFromQString(methodNodeId)),
                                      Q_ARG(QVector<QOpcUa::TypedVariant>, args));
@@ -165,7 +166,7 @@ bool QOpen62541Node::resolveBrowsePath(const QVector<QOpcUa::QRelativePathElemen
     UA_NodeId_copy(&m_nodeId, &start);
 
     return QMetaObject::invokeMethod(m_client->m_backend, "resolveBrowsePath", Qt::QueuedConnection,
-                                             Q_ARG(uintptr_t, reinterpret_cast<uintptr_t>(this)),
+                                             Q_ARG(quint64, handle()),
                                              Q_ARG(UA_NodeId, start),
                                              Q_ARG(QVector<QOpcUa::QRelativePathElement>, path));
 }

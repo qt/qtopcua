@@ -69,7 +69,14 @@ QOpcUaNode *QUACppClient::node(const QString &nodeId)
     UaNodeId nativeId = UACppUtils::nodeIdFromQString(nodeId);
     if (nativeId.isNull())
         return nullptr;
-    return new QOpcUaNode(new QUACppNode(nativeId, this, nodeId), m_client);
+
+    auto tempNode = new QUACppNode(nativeId, this, nodeId);
+    if (!tempNode->registered()) {
+        qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Failed to register node with backend, maximum number of nodes reached.";
+        delete tempNode;
+        return nullptr;
+    }
+    return new QOpcUaNode(tempNode, m_client);
 }
 
 QString QUACppClient::backend() const

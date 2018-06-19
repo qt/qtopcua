@@ -42,19 +42,31 @@ QT_BEGIN_NAMESPACE
 
 QOpcUaClientImpl::QOpcUaClientImpl(QObject *parent)
     : QObject(parent)
+    , m_handleCounter(0)
 {}
 
 QOpcUaClientImpl::~QOpcUaClientImpl()
 {}
 
-void QOpcUaClientImpl::registerNode(QPointer<QOpcUaNodeImpl> obj)
+bool QOpcUaClientImpl::registerNode(QPointer<QOpcUaNodeImpl> obj)
 {
-    m_handles[reinterpret_cast<uintptr_t>(obj.data())] = obj;
+    if (m_handles.count() == std::numeric_limits<int>::max())
+        return false;
+
+    while (true) {
+        ++m_handleCounter;
+
+        if (!m_handles.contains(m_handleCounter)) {
+            obj->setHandle(m_handleCounter);
+            m_handles[m_handleCounter] = obj;
+            return true;
+        }
+    }
 }
 
 void QOpcUaClientImpl::unregisterNode(QPointer<QOpcUaNodeImpl> obj)
 {
-    m_handles.remove(reinterpret_cast<uintptr_t>(obj.data()));
+    m_handles.remove(obj->handle());
 }
 
 void QOpcUaClientImpl::connectBackendWithClient(QOpcUaBackend *backend)
@@ -70,56 +82,56 @@ void QOpcUaClientImpl::connectBackendWithClient(QOpcUaBackend *backend)
     connect(backend, &QOpcUaBackend::resolveBrowsePathFinished, this, &QOpcUaClientImpl::handleResolveBrowsePathFinished);
 }
 
-void QOpcUaClientImpl::handleAttributesRead(uintptr_t handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
+void QOpcUaClientImpl::handleAttributesRead(quint64 handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
         emit (*it)->attributesRead(attr, serviceResult);
 }
 
-void QOpcUaClientImpl::handleAttributeWritten(uintptr_t handle, QOpcUa::NodeAttribute attr, const QVariant &value, QOpcUa::UaStatusCode statusCode)
+void QOpcUaClientImpl::handleAttributeWritten(quint64 handle, QOpcUa::NodeAttribute attr, const QVariant &value, QOpcUa::UaStatusCode statusCode)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
         emit (*it)->attributeWritten(attr, value, statusCode);
 }
 
-void QOpcUaClientImpl::handleAttributeUpdated(uintptr_t handle, const QOpcUaReadResult &value)
+void QOpcUaClientImpl::handleAttributeUpdated(quint64 handle, const QOpcUaReadResult &value)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
         emit (*it)->attributeUpdated(value.attributeId, value);
 }
 
-void QOpcUaClientImpl::handleMonitoringEnableDisable(uintptr_t handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status)
+void QOpcUaClientImpl::handleMonitoringEnableDisable(quint64 handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
         emit (*it)->monitoringEnableDisable(attr, subscribe, status);
 }
 
-void QOpcUaClientImpl::handleMonitoringStatusChanged(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items, QOpcUaMonitoringParameters param)
+void QOpcUaClientImpl::handleMonitoringStatusChanged(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items, QOpcUaMonitoringParameters param)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
         emit (*it)->monitoringStatusChanged(attr, items, param);
 }
 
-void QOpcUaClientImpl::handleMethodCallFinished(uintptr_t handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode)
+void QOpcUaClientImpl::handleMethodCallFinished(quint64 handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
         emit (*it)->methodCallFinished(methodNodeId, result, statusCode);
 }
 
-void QOpcUaClientImpl::handleBrowseFinished(uintptr_t handle, const QVector<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode)
+void QOpcUaClientImpl::handleBrowseFinished(quint64 handle, const QVector<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
         emit (*it)->browseFinished(children, statusCode);
 }
 
-void QOpcUaClientImpl::handleResolveBrowsePathFinished(uintptr_t handle, QVector<QOpcUa::QBrowsePathTarget> targets,
+void QOpcUaClientImpl::handleResolveBrowsePathFinished(quint64 handle, QVector<QOpcUa::QBrowsePathTarget> targets,
                                                          QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode status)
 {
     auto it = m_handles.constFind(handle);

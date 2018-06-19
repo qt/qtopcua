@@ -121,7 +121,7 @@ void UACppAsyncBackend::connectionStatusChanged(OpcUa_UInt32 clientConnectionId,
     }
 }
 
-void UACppAsyncBackend::browseChildren(uintptr_t handle, const UaNodeId &id, QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
+void UACppAsyncBackend::browseChildren(quint64 handle, const UaNodeId &id, QOpcUa::ReferenceTypeId referenceType, QOpcUa::NodeClasses nodeClassMask)
 {
     UaStatus status;
     ServiceSettings serviceSettings;
@@ -229,7 +229,7 @@ inline OpcUa_UInt32 toUaAttributeId(QOpcUa::NodeAttribute attr)
     return static_cast<OpcUa_UInt32>(0);
 }
 
-void UACppAsyncBackend::readAttributes(uintptr_t handle, const UaNodeId &id, QOpcUa::NodeAttributes attr, QString indexRange)
+void UACppAsyncBackend::readAttributes(quint64 handle, const UaNodeId &id, QOpcUa::NodeAttributes attr, QString indexRange)
 {
     UaStatus result;
 
@@ -276,7 +276,7 @@ void UACppAsyncBackend::readAttributes(uintptr_t handle, const UaNodeId &id, QOp
     emit attributesRead(handle, vec, static_cast<QOpcUa::UaStatusCode>(result.statusCode()));
 }
 
-void UACppAsyncBackend::writeAttribute(uintptr_t handle, const UaNodeId &id, QOpcUa::NodeAttribute attrId, QVariant value, QOpcUa::Types type, QString indexRange)
+void UACppAsyncBackend::writeAttribute(quint64 handle, const UaNodeId &id, QOpcUa::NodeAttribute attrId, QVariant value, QOpcUa::Types type, QString indexRange)
 {
     if (type == QOpcUa::Types::Undefined && attrId != QOpcUa::NodeAttribute::Value)
         type = attributeIdToTypeId(attrId);
@@ -304,7 +304,7 @@ void UACppAsyncBackend::writeAttribute(uintptr_t handle, const UaNodeId &id, QOp
                               static_cast<QOpcUa::UaStatusCode>(writeResults[0]) : static_cast<QOpcUa::UaStatusCode>(result.statusCode()));
 }
 
-void UACppAsyncBackend::writeAttributes(uintptr_t handle, const UaNodeId &id, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType)
+void UACppAsyncBackend::writeAttributes(quint64 handle, const UaNodeId &id, QOpcUaNode::AttributeMap toWrite, QOpcUa::Types valueAttributeType)
 {
     if (toWrite.size() == 0) {
         qCWarning(QT_OPCUA_PLUGINS_UACPP, "No values to be written");
@@ -342,7 +342,7 @@ void UACppAsyncBackend::writeAttributes(uintptr_t handle, const UaNodeId &id, QO
     }
 }
 
-void UACppAsyncBackend::enableMonitoring(uintptr_t handle, const UaNodeId &id, QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
+void UACppAsyncBackend::enableMonitoring(quint64 handle, const UaNodeId &id, QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
 {
     QUACppSubscription *usedSubscription = nullptr;
 
@@ -391,11 +391,11 @@ void UACppAsyncBackend::enableMonitoring(uintptr_t handle, const UaNodeId &id, Q
         removeSubscription(usedSubscription->subscriptionId()); // No items were added
 }
 
-void UACppAsyncBackend::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
+void UACppAsyncBackend::modifyMonitoring(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
 {
     QUACppSubscription *subscription = getSubscriptionForItem(handle, attr);
     if (!subscription) {
-        qCWarning(QT_OPCUA_PLUGINS_UACPP, "Could not modify parameter for %lu, the monitored item does not exist", handle);
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not modify" << item << ", the monitored item does not exist";
         QOpcUaMonitoringParameters p;
         p.setStatusCode(QOpcUa::UaStatusCode::BadMonitoredItemIdInvalid);
         emit monitoringStatusChanged(handle, attr, item, p);
@@ -405,7 +405,7 @@ void UACppAsyncBackend::modifyMonitoring(uintptr_t handle, QOpcUa::NodeAttribute
     subscription->modifyMonitoring(handle, attr, item, value);
 }
 
-void UACppAsyncBackend::disableMonitoring(uintptr_t handle, QOpcUa::NodeAttributes attr)
+void UACppAsyncBackend::disableMonitoring(quint64 handle, QOpcUa::NodeAttributes attr)
 {
     qt_forEachAttribute(attr, [&](QOpcUa::NodeAttribute attribute){
         QUACppSubscription *sub = getSubscriptionForItem(handle, attribute);
@@ -417,7 +417,7 @@ void UACppAsyncBackend::disableMonitoring(uintptr_t handle, QOpcUa::NodeAttribut
     });
 }
 
-void UACppAsyncBackend::callMethod(uintptr_t handle, const UaNodeId &objectId, const UaNodeId &methodId, QVector<QOpcUa::TypedVariant> args)
+void UACppAsyncBackend::callMethod(quint64 handle, const UaNodeId &objectId, const UaNodeId &methodId, QVector<QOpcUa::TypedVariant> args)
 {
     ServiceSettings settings;
     CallIn in;
@@ -454,7 +454,7 @@ void UACppAsyncBackend::callMethod(uintptr_t handle, const UaNodeId &objectId, c
     emit methodCallFinished(handle, UACppUtils::nodeIdToQString(methodId), result, static_cast<QOpcUa::UaStatusCode>(status.statusCode()));
 }
 
-void UACppAsyncBackend::resolveBrowsePath(uintptr_t handle, const UaNodeId &startNode, const QVector<QOpcUa::QRelativePathElement> &path)
+void UACppAsyncBackend::resolveBrowsePath(quint64 handle, const UaNodeId &startNode, const QVector<QOpcUa::QRelativePathElement> &path)
 {
     ServiceSettings settings;
     UaDiagnosticInfos diagnosticInfos;
@@ -519,7 +519,7 @@ QUACppSubscription *UACppAsyncBackend::getSubscription(const QOpcUaMonitoringPar
     return sub;
 }
 
-QUACppSubscription *UACppAsyncBackend::getSubscriptionForItem(uintptr_t handle, QOpcUa::NodeAttribute attr)
+QUACppSubscription *UACppAsyncBackend::getSubscriptionForItem(quint64 handle, QOpcUa::NodeAttribute attr)
 {
     auto entriesForHandle = m_attributeMapping.find(handle);
     if (entriesForHandle == m_attributeMapping.end())
