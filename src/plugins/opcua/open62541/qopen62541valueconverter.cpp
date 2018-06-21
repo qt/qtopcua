@@ -315,7 +315,7 @@ QDateTime scalarToQt<QDateTime, UA_DateTime>(UA_DateTime *data)
 {
     // OPC-UA part 3, Table C.9
     const QDateTime epochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
-    return epochStart.addMSecs(*data * UA_DATETIME_TO_MSEC).toLocalTime();
+    return epochStart.addMSecs(*data / UA_DATETIME_MSEC).toLocalTime();
 }
 
 template<>
@@ -434,7 +434,7 @@ void scalarFromQt<UA_DateTime, QDateTime>(const QDateTime &value, UA_DateTime *p
     // OPC-UA part 3, Table C.9
     const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
 
-    *ptr = UA_MSEC_TO_DATETIME * (value.toMSecsSinceEpoch() - uaEpochStart.toMSecsSinceEpoch());
+    *ptr = UA_DATETIME_MSEC * (value.toMSecsSinceEpoch() - uaEpochStart.toMSecsSinceEpoch());
 }
 
 template<>
