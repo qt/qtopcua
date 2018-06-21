@@ -277,8 +277,35 @@
     \section1 Related Information
 
     \list
+    \li \l{Building Qt OPC UA UACPP Plugin}
     \li \l{Qt OPC UA C++ Classes}{C++ Classes}
     \li \l{Qt OPC UA Examples}{Examples}
     \li \l{https://opcfoundation.org/about/opc-technologies/opc-ua/}{OPC UA at the OPC foundation}
     \endlist
+
+*/
+
+/*!
+    \page qtopcua-build-uacpp.html
+    \title Building Qt OPC UA UACPP Plugin
+    \brief Build instructions for the Qt OPC UA UACPP plugin.
+
+    When building at the top level, you have to specify the path to the UACPP SDK:
+
+    \code
+        configure UACPP_PREFIX=/path/to/sdk
+    \endcode
+
+    If you are not building at the top level, this setting has to be given to qmake:
+
+    \code
+        qmake </path/to/qtopcua> -- UACPP_PREFIX=/path/to/sdk
+    \endcode
+
+    Check the output of the configuration step if the detection was successful:
+
+    \code
+        Unified Automation C++ SDK ............. yes
+    \endcode
+
 */
