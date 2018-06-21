@@ -305,15 +305,18 @@ UA_NodeId TestServer::addMethod(const UA_NodeId &folder, const QString &variable
     attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", variableNode.toUtf8().constData());
     attr.executable = true;
 
+    UA_QualifiedName nodeBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.namespaceIndex, "multiplyArguments");
+
     UA_NodeId resultId;
     UA_StatusCode result = UA_Server_addMethodNode(m_server, methodNodeId, folder,
                                                      UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT),
-                                                     UA_QUALIFIEDNAME_ALLOC(methodNodeId.namespaceIndex, "multiplyArguments"),
+                                                     nodeBrowseName,
                                                      attr, &multiplyMethod,
                                                      2, inputArguments,
                                                      1, &outputArgument,
                                                      NULL, &resultId);
 
+    UA_QualifiedName_deleteMembers(&nodeBrowseName);
     UA_NodeId_deleteMembers(&methodNodeId);
     UA_MethodAttributes_deleteMembers(&attr);
     UA_Argument_deleteMembers(&inputArguments[0]);
