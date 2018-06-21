@@ -80,7 +80,7 @@ public:
 
     // This type and the enums are defined in OPC-UA part 4, 7.12.2
     class DataChangeFilterData;
-    class DataChangeFilter
+    class Q_OPCUA_EXPORT DataChangeFilter
     {
     public:
         enum class DataChangeTrigger {
