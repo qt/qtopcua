@@ -588,8 +588,8 @@ OpcUa_Variant arrayFromQVariant(const QVariant &var, const OpcUa_BuiltInType typ
         opcuavariant.Datatype = type;
         opcuavariant.ArrayType = OpcUa_True;
         opcuavariant.Value.Array.Length = list.size();
-        // Use malloc() instead of new because the OPC UA stack uses free() internally when clearing the data
-        TARGETTYPE *arr = static_cast<TARGETTYPE *>(malloc(sizeof(TARGETTYPE) * list.size()));
+        // Use calloc() instead of new because the OPC UA stack uses free() internally when clearing the data
+        TARGETTYPE *arr = static_cast<TARGETTYPE *>(calloc(list.size(), sizeof(TARGETTYPE)));
         opcuavariant.Value.Array.Value.Array = arr;
 
         for (int i = 0; i < list.size(); ++i)
@@ -621,8 +621,8 @@ OpcUa_Variant arrayFromQVariantPointer(const QVariant &var, const OpcUa_BuiltInT
         opcuavariant.Datatype = type;
         opcuavariant.ArrayType = OpcUa_True;
         opcuavariant.Value.Array.Length = list.size();
-        // Use malloc() instead of new because the OPC UA stack uses free() internally when clearing the data
-        TARGETTYPE *arr = static_cast<TARGETTYPE *>(malloc(sizeof(TARGETTYPE) * list.size()));
+        // Use calloc() instead of new because the OPC UA stack uses free() internally when clearing the data
+        TARGETTYPE *arr = static_cast<TARGETTYPE *>(calloc(list.size(), sizeof(TARGETTYPE)));
 
         opcuavariant.Value.Array.Value.Array = arr;
 
@@ -635,8 +635,8 @@ OpcUa_Variant arrayFromQVariantPointer(const QVariant &var, const OpcUa_BuiltInT
     // Taking one pointer for all as it is union
     TARGETTYPE **temp = reinterpret_cast<TARGETTYPE **>(&opcuavariant.Value.Guid);
     // We have to allocate, otherwise copyTo() will not do any action
-    // Use malloc() instead of new because the OPC UA stack uses free() internally when clearing the data
-    *temp = static_cast<TARGETTYPE *>(malloc(sizeof(TARGETTYPE)));
+    // Use calloc() instead of new because the OPC UA stack uses free() internally when clearing the data
+    *temp = static_cast<TARGETTYPE *>(calloc(1, sizeof(TARGETTYPE)));
     scalarFromQVariant<TARGETTYPE, QTTYPE>(var, *temp);
     opcuavariant.Datatype = type;
     return opcuavariant;
