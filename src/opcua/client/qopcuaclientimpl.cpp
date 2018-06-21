@@ -82,6 +82,7 @@ void QOpcUaClientImpl::connectBackendWithClient(QOpcUaBackend *backend)
     connect(backend, &QOpcUaBackend::resolveBrowsePathFinished, this, &QOpcUaClientImpl::handleResolveBrowsePathFinished);
     connect(backend, &QOpcUaBackend::eventOccurred, this, &QOpcUaClientImpl::handleNewEvent);
     connect(backend, &QOpcUaBackend::endpointsRequestFinished, this, &QOpcUaClientImpl::endpointsRequestFinished);
+    connect(backend, &QOpcUaBackend::findServersFinished, this, &QOpcUaClientImpl::findServersFinished);
 }
 
 void QOpcUaClientImpl::handleAttributesRead(quint64 handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)

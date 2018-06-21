@@ -104,4 +104,12 @@ bool QOpen62541Client::requestEndpoints(const QUrl &url)
     return QMetaObject::invokeMethod(m_backend, "requestEndpoints", Qt::QueuedConnection, Q_ARG(QUrl, url));
 }
 
+bool QOpen62541Client::findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris)
+{
+   return QMetaObject::invokeMethod(m_backend, "findServers", Qt::QueuedConnection,
+                                    Q_ARG(QUrl, url),
+                                    Q_ARG(QStringList, localeIds),
+                                    Q_ARG(QStringList, serverUris));
+}
+
 QT_END_NAMESPACE

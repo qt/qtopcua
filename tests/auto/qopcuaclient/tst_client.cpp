@@ -338,6 +338,10 @@ private slots:
     defineDataMethod(connectAndDisconnectPassword_data)
     void connectAndDisconnectPassword();
 
+    // Server discovery
+    defineDataMethod(findServers_data)
+    void findServers();
+
     // Endpoint discovery
     defineDataMethod(requestEndpoints_data)
     void requestEndpoints();
@@ -624,6 +628,30 @@ void Tst_QOpcUaClient::connectAndDisconnectPassword()
     QVERIFY(connectSpy.count() == 2);
     QVERIFY(connectSpy.at(0).at(0) == QOpcUaClient::Closing);
     QVERIFY(connectSpy.at(1).at(0) == QOpcUaClient::Disconnected);
+}
+
+void Tst_QOpcUaClient::findServers()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    if (opcuaClient->backend() != QStringLiteral("open62541"))
+        QSKIP("FindServers is not yet supported in uacpp.");
+
+    QSignalSpy discoverySpy(opcuaClient, &QOpcUaClient::findServersFinished);
+
+    opcuaClient->findServers(m_endpoint);
+
+    discoverySpy.wait();
+
+    QCOMPARE(discoverySpy.size(), 1);
+
+    QCOMPARE(discoverySpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    QVector<QOpcUa::QApplicationDescription> servers = discoverySpy.at(0).at(0).value<QVector<QOpcUa::QApplicationDescription>>();
+    QCOMPARE(servers.size(), 1);
+
+    QCOMPARE(servers.at(0).applicationName(), QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("open62541-based OPC UA Application")));
+    QCOMPARE(servers.at(0).applicationUri(), QStringLiteral("urn:unconfigured:application"));
+    QCOMPARE(servers.at(0).discoveryUrls().size(), 1);
 }
 
 void Tst_QOpcUaClient::requestEndpoints()

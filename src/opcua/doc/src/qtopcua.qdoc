@@ -137,6 +137,10 @@
     \li GetEndpoints
     \li X
     \li X
+    \row
+    \li FindServers
+    \li X
+    \li
     \endtable
 
     \section1 Data types

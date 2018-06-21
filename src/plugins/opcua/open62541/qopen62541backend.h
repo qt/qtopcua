@@ -67,6 +67,7 @@ public Q_SLOTS:
     void modifyMonitoring(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
     void callMethod(quint64 handle, UA_NodeId objectId, UA_NodeId methodId, QVector<QOpcUa::TypedVariant> args);
     void resolveBrowsePath(quint64 handle, UA_NodeId startNode, const QVector<QOpcUa::QRelativePathElement> &path);
+    void findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris);
 
     // Subscription
     QOpen62541Subscription *getSubscription(const QOpcUaMonitoringParameters &settings);
@@ -83,6 +84,7 @@ public:
 
 private:
     QOpen62541Subscription *getSubscriptionForItem(quint64 handle, QOpcUa::NodeAttribute attr);
+    QOpcUa::QApplicationDescription convertApplicationDescription(UA_ApplicationDescription &desc);
 
     QTimer m_subscriptionTimer;
 

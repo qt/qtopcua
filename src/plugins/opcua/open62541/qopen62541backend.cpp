@@ -400,6 +400,48 @@ void Open62541AsyncBackend::resolveBrowsePath(quint64 handle, UA_NodeId startNod
     UA_TranslateBrowsePathsToNodeIdsResponse_deleteMembers(&res);
 }
 
+void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris)
+{
+    UA_Client *tmpClient = UA_Client_new(UA_ClientConfig_default);
+
+    UA_String *uaServerUris = nullptr;
+    if (!serverUris.isEmpty()) {
+        uaServerUris = static_cast<UA_String *>(UA_Array_new(serverUris.size(), &UA_TYPES[UA_TYPES_STRING]));
+        for (int i = 0; i < serverUris.size(); ++i)
+            QOpen62541ValueConverter::scalarFromQt(serverUris.at(i), &uaServerUris[i]);
+    }
+
+    UA_String *uaLocaleIds = nullptr;
+    if (!localeIds.isEmpty()) {
+        uaLocaleIds = static_cast<UA_String *>(UA_Array_new(localeIds.size(), &UA_TYPES[UA_TYPES_STRING]));
+        for (int i = 0; i < localeIds.size(); ++i)
+            QOpen62541ValueConverter::scalarFromQt(localeIds.at(i), &uaLocaleIds[i]);
+    }
+
+    size_t serversSize;
+    UA_ApplicationDescription *servers;
+
+    UA_StatusCode result = UA_Client_findServers(tmpClient, url.toString(QUrl::RemoveUserInfo).toUtf8().constData(),
+                                                 serverUris.size(), uaServerUris, localeIds.size(), uaLocaleIds,
+                                                 &serversSize, &servers);
+
+    QVector<QOpcUa::QApplicationDescription> ret;
+
+    for (size_t i = 0; i < serversSize; ++i)
+        ret.append(convertApplicationDescription(servers[i]));
+
+    if (result != UA_STATUSCODE_GOOD) {
+        qCDebug(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to get servers:" << static_cast<QOpcUa::UaStatusCode>(result);
+    }
+
+    UA_Array_delete(uaServerUris, serverUris.size(), &UA_TYPES[UA_TYPES_STRING]);
+    UA_Array_delete(uaLocaleIds, localeIds.size(), &UA_TYPES[UA_TYPES_STRING]);
+    UA_Array_delete(servers, serversSize, &UA_TYPES[UA_TYPES_APPLICATIONDESCRIPTION]);
+    UA_Client_delete(tmpClient);
+
+    emit findServersFinished(ret, static_cast<QOpcUa::UaStatusCode>(result));
+}
+
 static void convertBrowseResult(UA_BrowseResult *src, quint32 referencesSize, QVector<QOpcUaReferenceDescription> &dst)
 {
     if (!src)
@@ -646,6 +688,24 @@ QOpen62541Subscription *Open62541AsyncBackend::getSubscriptionForItem(quint64 ha
     }
 
     return subscription.value();
+}
+
+QOpcUa::QApplicationDescription Open62541AsyncBackend::convertApplicationDescription(UA_ApplicationDescription &desc)
+{
+    QOpcUa::QApplicationDescription temp;
+
+    temp.setApplicationUri(QOpen62541ValueConverter::scalarToQt<QString, UA_String>(&desc.applicationUri));
+    temp.setProductUri(QOpen62541ValueConverter::scalarToQt<QString, UA_String>(&desc.productUri));
+    temp.setApplicationName(QOpen62541ValueConverter::scalarToQt<QOpcUa::QLocalizedText, UA_LocalizedText>(&desc.applicationName));
+    temp.setApplicationType(static_cast<QOpcUa::QApplicationDescription::ApplicationType>(desc.applicationType));
+    temp.setGatewayServerUri(QOpen62541ValueConverter::scalarToQt<QString, UA_String>(&desc.gatewayServerUri));
+    temp.setDiscoveryProfileUri(QOpen62541ValueConverter::scalarToQt<QString, UA_String>(&desc.discoveryProfileUri));
+
+
+    for (size_t i = 0; i < desc.discoveryUrlsSize; ++i)
+        temp.discoveryUrlsRef().append(QOpen62541ValueConverter::scalarToQt<QString, UA_String>(&desc.discoveryUrls[i]));
+
+    return temp;
 }
 
 void Open62541AsyncBackend::cleanupSubscriptions()

@@ -153,6 +153,14 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
+    \fn void QOpcUaClient::findServersFinished(QVector<QOpcUa::QApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
+
+    This signal is emitted after a \l findServers() operation has finished.
+    \a statusCode contains the result of the operation. If the result is \l {QOpcUa::UaStatusCode} {Good},
+    \a servers contains the application descriptions of all servers known to the queried server that matched the filter criteria.
+*/
+
+/*!
     \internal QOpcUaClientImpl is an opaque type (as seen from the public API).
     This prevents users of the public API to use this constructor (eventhough
     it is public).
@@ -380,6 +388,32 @@ bool QOpcUaClient::requestEndpoints(const QUrl &url)
 {
     Q_D(QOpcUaClient);
     return d->m_impl->requestEndpoints(url);
+}
+
+/*!
+    Starts an asynchronous FindServers request to read a list of known servers from a server or
+    discovery server at \a url.
+    Returns \c true if the asynchronous call has been successfully dispatched.
+
+    \a localeIds can be used to select the language of the application names returned by the request.
+    The format is specified in OPC-UA part 3, 8.4, for example "en" for English, or "de-DE" for
+    German (Germany). If more than one locale ID is specified, the server uses the first match. If there
+    is no match or \a localeIds is empty, a default locale is chosen by the server.
+
+    \a serverUris may be used to restrict the results to servers with a matching applicationUri in their
+    application description. For example, finding the current URL of the server with the applicationUri
+    "MyPLC", the following call can be used:
+
+    \code
+        client->findServers(discoveryServerUrl, QStringList(), QStringList({"MyPLC"}));
+    \endcode
+
+    The results are returned in the \l findServersFinished() signal.
+*/
+bool QOpcUaClient::findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris)
+{
+    Q_D(QOpcUaClient);
+    return d->m_impl->findServers(url, localeIds, serverUris);
 }
 
 /*!

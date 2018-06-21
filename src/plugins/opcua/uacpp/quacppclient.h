@@ -47,6 +47,8 @@ public:
 
     bool requestEndpoints(const QUrl &url) override;
 
+    bool findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris) override;
+
 private:
     friend class QUACppNode;
     QThread *m_thread;

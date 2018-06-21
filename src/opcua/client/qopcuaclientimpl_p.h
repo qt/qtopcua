@@ -76,6 +76,7 @@ public:
     virtual QOpcUaNode *node(const QString &nodeId) = 0;
     virtual QString backend() const = 0;
     virtual bool requestEndpoints(const QUrl &url) = 0;
+    virtual bool findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris) = 0;
 
 
     bool registerNode(QPointer<QOpcUaNodeImpl> obj);
@@ -106,6 +107,8 @@ signals:
     void stateAndOrErrorChanged(QOpcUaClient::ClientState state,
                                 QOpcUaClient::ClientError error);
     void endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
+    void findServersFinished(QVector<QOpcUa::QApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
+
 private:
     Q_DISABLE_COPY(QOpcUaClientImpl)
     QHash<quint64, QPointer<QOpcUaNodeImpl>> m_handles;

@@ -89,4 +89,15 @@ bool QUACppClient::requestEndpoints(const QUrl &url)
     return QMetaObject::invokeMethod(m_backend, "requestEndpoints", Qt::QueuedConnection, Q_ARG(QUrl, url));
 }
 
+bool QUACppClient::findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris)
+{
+    Q_UNUSED(url);
+    Q_UNUSED(localeIds);
+    Q_UNUSED(serverUris);
+
+    qInfo("The uacpp backend does not yet support the FindServers service.");
+
+    return false;
+}
+
 QT_END_NAMESPACE

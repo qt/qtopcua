@@ -88,6 +88,8 @@ public:
     QOpcUa::QQualifiedName qualifiedNameFromNamespaceUri(const QString &namespaceUri, const QString &name, bool *ok = nullptr) const;
 
     bool requestEndpoints(const QUrl &url);
+    bool findServers(const QUrl &url, const QStringList &localeIds = QStringList(),
+                     const QStringList &serverUris = QStringList());
 
     QUrl url() const;
 
@@ -103,6 +105,7 @@ Q_SIGNALS:
     void errorChanged(QOpcUaClient::ClientError error);
     void namespaceArrayUpdated(QStringList namespaces);
     void endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
+    void findServersFinished(QVector<QOpcUa::QApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
 
 private:
     Q_DISABLE_COPY(QOpcUaClient)
