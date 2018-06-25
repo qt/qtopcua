@@ -76,6 +76,7 @@ public:
     TreeItem *parentItem();
     void appendChild(TreeItem *child);
     QPixmap icon(int column) const;
+    bool hasChildNodeItem(const QString &nodeId) const;
 
 private slots:
     void startBrowsing();
@@ -96,6 +97,7 @@ private:
     bool mAttributesReady = false;
     bool mBrowseStarted = false;
     QList<TreeItem *> mChildItems;
+    QSet<QString> mChildNodeIds;
     TreeItem *mParentItem = nullptr;
 
 private:

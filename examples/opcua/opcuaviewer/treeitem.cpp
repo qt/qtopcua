@@ -169,7 +169,15 @@ TreeItem *TreeItem::parentItem()
 
 void TreeItem::appendChild(TreeItem *child)
 {
-    mChildItems.append(child);
+    if (!child)
+        return;
+
+    if (!hasChildNodeItem(child->mNodeId)) {
+        mChildItems.append(child);
+        mChildNodeIds.insert(child->mNodeId);
+    } else {
+        child->deleteLater();
+    }
 }
 
 QPixmap TreeItem::icon(int column) const
@@ -196,6 +204,11 @@ QPixmap TreeItem::icon(int column) const
     QPixmap p(10,10);
     p.fill(c);
     return p;
+}
+
+bool TreeItem::hasChildNodeItem(const QString &nodeId) const
+{
+    return mChildNodeIds.contains(nodeId);
 }
 
 void TreeItem::startBrowsing()
@@ -234,6 +247,9 @@ void TreeItem::browseFinished(QVector<QOpcUaReferenceDescription> children, QOpc
     auto index = mModel->createIndex(row(), 0, this);
 
     for (const auto &item : children) {
+        if (hasChildNodeItem(item.nodeId()))
+            continue;
+
         auto node = mModel->opcUaClient()->node(item.nodeId());
         if (!node) {
             qWarning() << "Failed to instantiate node:" << item.nodeId();
@@ -241,7 +257,7 @@ void TreeItem::browseFinished(QVector<QOpcUaReferenceDescription> children, QOpc
         }
 
         mModel->beginInsertRows(index, mChildItems.size(), mChildItems.size() + 1);
-        mChildItems.append(new TreeItem(node, mModel, item, this));
+        appendChild(new TreeItem(node, mModel, item, this));
         mModel->endInsertRows();
     }
 
