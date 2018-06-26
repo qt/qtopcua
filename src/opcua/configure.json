@@ -9,21 +9,11 @@
             "sources": [
                 {
                     "libs": "-lopen62541",
-                    "condition": "!config.win32",
-                    "type": "open62541"
-                },
-                {
-                    "libs": "-lopen62541 -lws2_32",
-                    "condition": "config.win32",
-                    "type": "open62541"
+                    "condition": "!config.win32"
                 },
                 {
                     "libs": "-lopen62541 -lws2_32",
                     "condition": "config.win32"
-                },
-                {
-                    "libs": "-lopen62541",
-                    "condition": "!config.win32"
                 },
                 {
                     "type": "pkgConfig",

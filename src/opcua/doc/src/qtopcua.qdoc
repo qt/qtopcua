@@ -282,11 +282,37 @@
     \section1 Related Information
 
     \list
+    \li \l{Building Qt OPC UA Open62541 Plugin}
     \li \l{Building Qt OPC UA UACPP Plugin}
     \li \l{Qt OPC UA C++ Classes}{C++ Classes}
     \li \l{Qt OPC UA Examples}{Examples}
     \li \l{https://opcfoundation.org/about/opc-technologies/opc-ua/}{OPC UA at the OPC foundation}
     \endlist
+
+*/
+
+/*!
+    \page qtopcua-build-open62541.html
+    \title Building Qt OPC UA Open62541 Plugin
+    \brief Build instructions for the Qt OPC UA Open62541 plugin.
+
+    When building at the top level, you have to specify the path to the Open62541 SDK:
+
+    \code
+        configure OPEN62541_PREFIX=/path/to/sdk
+    \endcode
+
+    If you are not building at the top level, this setting has to be given to qmake:
+
+    \code
+        qmake </path/to/qtopcua> -- OPEN62541_PREFIX=/path/to/sdk
+    \endcode
+
+    Check the output of the configuration step if the detection was successful:
+
+    \code
+        Open62541 .............................. yes
+    \endcode
 
 */
 
