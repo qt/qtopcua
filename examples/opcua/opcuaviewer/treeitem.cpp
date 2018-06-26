@@ -234,14 +234,13 @@ void TreeItem::browseFinished(QVector<QOpcUaReferenceDescription> children, QOpc
     auto index = mModel->createIndex(row(), 0, this);
 
     for (const auto &item : children) {
-        mModel->beginInsertRows(index, mChildItems.size(), mChildItems.size() + 1);
-
         auto node = mModel->opcUaClient()->node(item.nodeId());
         if (!node) {
             qWarning() << "Failed to instantiate node:" << item.nodeId();
             continue;
         }
 
+        mModel->beginInsertRows(index, mChildItems.size(), mChildItems.size() + 1);
         mChildItems.append(new TreeItem(node, mModel, item, this));
         mModel->endInsertRows();
     }
