@@ -1491,7 +1491,7 @@ void Tst_QOpcUaClient::readArray()
         QSKIP("XmlElement support is not yet implemented in the freeopcua backend");
 
     QScopedPointer<QOpcUaNode> xmlElementArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XmlElement"));
-    QVERIFY(nodeIdArrayNode != 0);
+    QVERIFY(xmlElementArrayNode != 0);
     READ_MANDATORY_VARIABLE_NODE(xmlElementArrayNode)
     QVariant xmlElementArray = xmlElementArrayNode->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(xmlElementArray.type() == QVariant::List);
