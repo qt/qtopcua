@@ -1567,6 +1567,7 @@ QOpcUa::QExpandedNodeId::QExpandedNodeId(const QOpcUa::QExpandedNodeId &rhs)
     Constructs an expanded node id from node id string \a nodeId.
 */
 QOpcUa::QExpandedNodeId::QExpandedNodeId(const QString &nodeId)
+    : data(new QOpcUa::QExpandedNodeIdData)
 {
     data->nodeId = nodeId;
 }
@@ -1576,6 +1577,7 @@ QOpcUa::QExpandedNodeId::QExpandedNodeId(const QString &nodeId)
     and server index \a serverIndex.
 */
 QOpcUa::QExpandedNodeId::QExpandedNodeId(const QString &namespaceUri, const QString &nodeId, quint32 serverIndex)
+    : data(new QOpcUa::QExpandedNodeIdData)
 {
     data->namespaceUri = namespaceUri;
     data->nodeId = nodeId;
