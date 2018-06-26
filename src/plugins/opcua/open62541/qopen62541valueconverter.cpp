@@ -158,6 +158,8 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
         return arrayFromQVariant<UA_ExtensionObject, QOpcUa::QAxisInformation>(value, dt);
     case QOpcUa::XV:
         return arrayFromQVariant<UA_ExtensionObject, QOpcUa::QXValue>(value, dt);
+    case QOpcUa::ExpandedNodeId:
+        return arrayFromQVariant<UA_ExpandedNodeId, QOpcUa::QExpandedNodeId>(value, dt);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion to Open62541 for typeIndex" << type << " not implemented";
     }
@@ -215,6 +217,8 @@ QVariant toQVariant(const UA_Variant &value)
         return arrayToQVariant<QOpcUa::UaStatusCode, UA_StatusCode>(value, QMetaType::UInt);
     case UA_TYPES_EXTENSIONOBJECT:
         return arrayToQVariant<QVariant, UA_ExtensionObject>(value);
+    case UA_TYPES_EXPANDEDNODEID:
+        return arrayToQVariant<QOpcUa::QExpandedNodeId, UA_ExpandedNodeId>(value);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
         return QVariant();
@@ -271,6 +275,8 @@ const UA_DataType *toDataType(QOpcUa::Types valueType)
     case QOpcUa::AxisInformation:
     case QOpcUa::XV:
         return &UA_TYPES[UA_TYPES_EXTENSIONOBJECT];
+    case QOpcUa::ExpandedNodeId:
+        return &UA_TYPES[UA_TYPES_EXPANDEDNODEID];
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Trying to convert undefined type:" << valueType;
         return nullptr;
@@ -391,6 +397,16 @@ QVariant scalarToQt<QVariant, UA_ExtensionObject>(const UA_ExtensionObject *data
     // Treat the object as opaque data, as required by OPC-UA part 4, 5.2.2.15
     qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Returning raw data for unknown extension object type:" << Open62541Utils::nodeIdToQString(data->content.encoded.typeId);
     return QVariant::fromValue(QByteArray(buffer, data->content.encoded.body.length));
+}
+
+template<>
+QOpcUa::QExpandedNodeId scalarToQt<QOpcUa::QExpandedNodeId, UA_ExpandedNodeId>(const UA_ExpandedNodeId *data)
+{
+    QOpcUa::QExpandedNodeId temp;
+    temp.setServerIndex(data->serverIndex);
+    temp.setNodeId(Open62541Utils::nodeIdToQString(data->nodeId));
+    temp.setNamespaceUri(scalarToQt<QString, UA_String>(&data->namespaceUri));
+    return temp;
 }
 
 template<typename TARGETTYPE, typename UATYPE>
@@ -532,6 +548,14 @@ void scalarFromQt<UA_ExtensionObject, QOpcUa::QXValue>(const QOpcUa::QXValue &va
     QByteArray temp;
     QOpcUaBinaryDataEncoding::encode<QOpcUa::QXValue>(value, temp);
     return createExtensionObject(temp, QOpcUaBinaryDataEncoding::TypeEncodingId::XV, ptr);
+}
+
+template<>
+void scalarFromQt<UA_ExpandedNodeId, QOpcUa::QExpandedNodeId>(const QOpcUa::QExpandedNodeId &value, UA_ExpandedNodeId *ptr)
+{
+    ptr->serverIndex = value.serverIndex();
+    scalarFromQt<UA_String, QString>(value.namespaceUri(), &ptr->namespaceUri);
+    ptr->nodeId = Open62541Utils::nodeIdFromQString(value.nodeId());
 }
 
 template<typename TARGETTYPE, typename QTTYPE>

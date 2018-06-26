@@ -165,6 +165,7 @@ enum Types
     DoubleComplexNumber = 24,
     AxisInformation = 25,
     XV              = 26,
+    ExpandedNodeId  = 27,
     Undefined       = 0xFFFFFFFF
 };
 
@@ -635,6 +636,7 @@ public:
     QExpandedNodeId(const QString &namespaceUri, const QString &nodeId, quint32 serverIndex = 0);
     QExpandedNodeId &operator=(const QOpcUa::QExpandedNodeId &);
     bool operator==(const QOpcUa::QExpandedNodeId &) const;
+    operator QVariant() const;
     ~QExpandedNodeId();
 
     quint32 serverIndex() const;

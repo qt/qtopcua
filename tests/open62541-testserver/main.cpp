@@ -128,6 +128,10 @@ int main(int argc, char **argv)
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.XV", "XVArrayTest",
                        QVariantList({QVariant::fromValue(QOpcUa::QXValue(1, 2)),
                                      QVariant::fromValue(QOpcUa::QXValue(2, 3))}), QOpcUa::Types::XV);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.ExpandedNodeId", "ExpandedNodeIdArrayTest",
+                       QVariantList({QOpcUa::QExpandedNodeId(QStringLiteral("ns1"), QStringLiteral("ns=0;i=64"), 1),
+                                     QOpcUa::QExpandedNodeId(QString(), QStringLiteral("ns=1;i=84"))}),
+                       QOpcUa::Types::ExpandedNodeId);
 
     // Test variables containing scalar values of various types
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Boolean", "BoolScalarTest", false, QOpcUa::Types::Boolean);
@@ -166,6 +170,9 @@ int main(int argc, char **argv)
                                                     QVariant::fromValue(QOpcUa::QAxisInformation()), QOpcUa::Types::AxisInformation);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.XV", "XVScalarTest",
                                                     QVariant::fromValue(QOpcUa::QXValue(1, 2)), QOpcUa::Types::XV);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.ExpandedNodeId", "ExpandedNodeIdScalarTest",
+                                                    QOpcUa::QExpandedNodeId(QStringLiteral("ns1"), QStringLiteral("ns=0;i=64"), 1),
+                       QOpcUa::Types::ExpandedNodeId);
 
     // Create folders containing child nodes with string, guid and opaque node ids
     UA_NodeId testStringIdsFolder = server.addFolder("ns=3;s=testStringIdsFolder", "testStringIdsFolder");

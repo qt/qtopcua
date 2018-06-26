@@ -153,6 +153,12 @@ const QVector<QOpcUa::QXValue> testXV = {
     QOpcUa::QXValue(10, -100.5)
 };
 
+const QVector<QOpcUa::QExpandedNodeId> testExpandedNodeId = {
+    QOpcUa::QExpandedNodeId(QStringLiteral("namespace1"), QStringLiteral("ns=0;i=99"), 1),
+    QOpcUa::QExpandedNodeId(QString(), QStringLiteral("ns=1;i=99")),
+    QOpcUa::QExpandedNodeId(QString(), QStringLiteral("ns=1;s=test"))
+};
+
 #define defineDataMethod(name) void name()\
 {\
     QTest::addColumn<QOpcUaClient *>("opcuaClient");\
@@ -1268,6 +1274,14 @@ void Tst_QOpcUaClient::writeArray()
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XmlElement"));
     QVERIFY(node != 0);
     WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::XmlElement);
+
+    list.clear();
+    list.append(testExpandedNodeId[0]);
+    list.append(testExpandedNodeId[1]);
+    list.append(testExpandedNodeId[2]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ExpandedNodeId"));
+    QVERIFY(node != 0);
+    WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::ExpandedNodeId);
 }
 
 void Tst_QOpcUaClient::readArray()
@@ -1548,6 +1562,16 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(xmlElementArray.toList()[0].toString(), xmlElements[0]);
     QCOMPARE(xmlElementArray.toList()[1].toString(), xmlElements[1]);
     QCOMPARE(xmlElementArray.toList()[2].toString(), xmlElements[2]);
+
+    QScopedPointer<QOpcUaNode> expandedNodeIdArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ExpandedNodeId"));
+    QVERIFY(expandedNodeIdArrayNode != 0);
+    READ_MANDATORY_VARIABLE_NODE(expandedNodeIdArrayNode)
+    QVariant expandedNodeIdArray = expandedNodeIdArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    QVERIFY(expandedNodeIdArray.type() == QVariant::List);
+    QVERIFY(expandedNodeIdArray.toList().length() == 3);
+    QCOMPARE(expandedNodeIdArray.toList()[0].value<QOpcUa::QExpandedNodeId>(), testExpandedNodeId[0]);
+    QCOMPARE(expandedNodeIdArray.toList()[1].value<QOpcUa::QExpandedNodeId>(), testExpandedNodeId[1]);
+    QCOMPARE(expandedNodeIdArray.toList()[2].value<QOpcUa::QExpandedNodeId>(), testExpandedNodeId[2]);
 }
 
 void Tst_QOpcUaClient::writeScalar()
@@ -1665,6 +1689,10 @@ void Tst_QOpcUaClient::writeScalar()
     QScopedPointer<QOpcUaNode> xmlElementNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XmlElement"));
     QVERIFY(xmlElementNode != 0);
     WRITE_VALUE_ATTRIBUTE(xmlElementNode, xmlElements[0], QOpcUa::XmlElement);
+
+    QScopedPointer<QOpcUaNode> expandedNodeIdNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ExpandedNodeId"));
+    QVERIFY(expandedNodeIdNode != 0);
+    WRITE_VALUE_ATTRIBUTE(expandedNodeIdNode, testExpandedNodeId[0], QOpcUa::ExpandedNodeId);
 }
 
 void Tst_QOpcUaClient::readScalar()
@@ -1859,6 +1887,13 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(xmlElementScalar.isValid());
     QCOMPARE(xmlElementScalar.type(), QVariant::String);
     QCOMPARE(xmlElementScalar.toString(), xmlElements[0]);
+
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ExpandedNodeId"));
+    QVERIFY(node != 0);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    QVariant expandedNodeIdScalar = node->attribute(QOpcUa::NodeAttribute::Value);
+    QVERIFY(expandedNodeIdScalar.isValid());
+    QCOMPARE(expandedNodeIdScalar.value<QOpcUa::QExpandedNodeId>(), testExpandedNodeId[0]);
 }
 
 void Tst_QOpcUaClient::indexRange()

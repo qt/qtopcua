@@ -1613,6 +1613,14 @@ bool QOpcUa::QExpandedNodeId::operator==(const QOpcUa::QExpandedNodeId &rhs) con
             data->serverIndex == rhs.serverIndex();
 }
 
+/*!
+    Converts this expanded node id to \l QVariant.
+*/
+QOpcUa::QExpandedNodeId::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
+
 QOpcUa::QExpandedNodeId::~QExpandedNodeId()
 {
 }
