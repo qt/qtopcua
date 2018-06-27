@@ -85,6 +85,7 @@ public:
     QStringList namespaceArray() const;
 
     QString resolveExpandedNodeId(const QOpcUa::QExpandedNodeId &expandedNodeId, bool *ok = nullptr) const;
+    QOpcUa::QQualifiedName qualifiedNameFromNamespaceUri(const QString &namespaceUri, const QString &name, bool *ok = nullptr) const;
 
     QUrl url() const;
 

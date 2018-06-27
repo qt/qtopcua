@@ -265,6 +265,10 @@ private slots:
     defineDataMethod(checkExpandedIdConversionNoOk_data)
     void checkExpandedIdConversionNoOk();
     defineDataMethod(createQualifiedName_data)
+    void createQualifiedName();
+    defineDataMethod(createQualifiedNameNoOk_data)
+    void createQualifiedNameNoOk();
+
     defineDataMethod(resolveBrowsePath_data)
     void resolveBrowsePath();
 
@@ -2463,6 +2467,60 @@ void Tst_QOpcUaClient::checkExpandedIdConversionNoOk()
     id.setNodeId("ns=0,s=TestNode.ReadWrite");
     result = opcuaClient->resolveExpandedNodeId(id);
     QCOMPARE(result, QString());
+}
+
+void Tst_QOpcUaClient::createQualifiedName()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    // Before the namespace array is populated, empty qualified name expected
+    bool ok = true;
+    QOpcUa::QQualifiedName name = opcuaClient->qualifiedNameFromNamespaceUri(QStringLiteral("Test Namespace"), QStringLiteral("Name"), &ok);
+    QVERIFY(ok == false);
+    QCOMPARE(name, QOpcUa::QQualifiedName());
+
+    QSignalSpy updateSpy(opcuaClient, &QOpcUaClient::namespaceArrayUpdated);
+
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    updateSpy.wait();
+    QVERIFY(updateSpy.size() > 0);
+    QVERIFY(!opcuaClient->namespaceArray().isEmpty());
+
+    // Valid namespace, valid qualified name expected
+    name = opcuaClient->qualifiedNameFromNamespaceUri(QStringLiteral("Test Namespace"), QStringLiteral("Name"), &ok);
+    QVERIFY(ok == true);
+    QCOMPARE(name, QOpcUa::QQualifiedName(3, QStringLiteral("Name")));
+
+    // Invalid namespace, empty qualified name expected
+    name = opcuaClient->qualifiedNameFromNamespaceUri(QStringLiteral("InvalidNamespace"), QStringLiteral("Name"), &ok);
+    QVERIFY(ok == false);
+    QCOMPARE(name, QOpcUa::QQualifiedName());
+}
+
+void Tst_QOpcUaClient::createQualifiedNameNoOk()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    // Before the namespace array is populated, empty qualified name expected
+    QOpcUa::QQualifiedName name = opcuaClient->qualifiedNameFromNamespaceUri(QStringLiteral("Test Namespace"), QStringLiteral("Name"));
+    QCOMPARE(name, QOpcUa::QQualifiedName());
+
+    QSignalSpy updateSpy(opcuaClient, &QOpcUaClient::namespaceArrayUpdated);
+
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    updateSpy.wait();
+    QVERIFY(updateSpy.size() > 0);
+    QVERIFY(!opcuaClient->namespaceArray().isEmpty());
+
+    // Valid namespace, valid qualified name expected
+    name = opcuaClient->qualifiedNameFromNamespaceUri(QStringLiteral("Test Namespace"), QStringLiteral("Name"));
+    QCOMPARE(name, QOpcUa::QQualifiedName(3, QStringLiteral("Name")));
+
+    // Invalid namespace, empty qualified name expected
+    name = opcuaClient->qualifiedNameFromNamespaceUri(QStringLiteral("InvalidNamespace"), QStringLiteral("Name"));
+    QCOMPARE(name, QOpcUa::QQualifiedName());
 }
 
 void Tst_QOpcUaClient::resolveBrowsePath()

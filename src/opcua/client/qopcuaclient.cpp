@@ -330,6 +330,38 @@ QString QOpcUaClient::resolveExpandedNodeId(const QOpcUa::QExpandedNodeId &expan
 }
 
 /*!
+    Attempts to create a qualified name from \a namespaceUri and the name string \a name.
+    Returns the resulting qualified name. An empty qualified name is returned if
+    \a namespaceUri can't be resolved.
+
+    \a ok will be set to \c true if the namespace URI resolution has been successful.
+    If the namespace URI could not be resolved, \a ok will be set to \c false.
+*/
+QOpcUa::QQualifiedName QOpcUaClient::qualifiedNameFromNamespaceUri(const QString &namespaceUri, const QString &name, bool *ok) const
+{
+    if (namespaceArray().isEmpty()) {
+        qCWarning(QT_OPCUA) << "Namespaces table missing, unable to resolve namespace URI.";
+        if (ok)
+            *ok = false;
+        return QOpcUa::QQualifiedName();
+    }
+
+    int index = namespaceArray().indexOf(namespaceUri);
+
+    if (index < 0) {
+        qCWarning(QT_OPCUA) << "Failed to resolve namespace" << namespaceUri;
+        if (ok)
+            *ok = false;
+        return QOpcUa::QQualifiedName();
+    }
+
+    if (ok)
+        *ok = true;
+
+    return QOpcUa::QQualifiedName(index, name);
+}
+
+/*!
     Returns the name of the backend used by this instance of QOpcUaClient,
     e.g. "open62541".
 */
