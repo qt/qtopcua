@@ -152,7 +152,6 @@ const QVector<QOpcUa::QXValue> testXV = {
     QOpcUa::QXValue(-10, 100.5),
     QOpcUa::QXValue(10, -100.5)
 };
-const int numberOfOperations = 1000;
 
 #define defineDataMethod(name) void name()\
 {\
