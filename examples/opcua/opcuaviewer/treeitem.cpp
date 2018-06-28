@@ -150,7 +150,7 @@ QVariant TreeItem::data(int column)
         if (!mAttributesReady)
             return tr("Loading ...");
 
-        return mOpcNode->attribute(QOpcUa::NodeAttribute::Description);
+        return mOpcNode->attribute(QOpcUa::NodeAttribute::Description).value<QOpcUa::QLocalizedText>().text;
     }
     return QVariant();
 }
@@ -230,8 +230,6 @@ void TreeItem::handleAttributes(QOpcUa::NodeAttributes attr)
         mNodeBrowseName = mOpcNode->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>().name;
     if (attr & QOpcUa::NodeAttribute::DisplayName)
         mNodeDisplayName = mOpcNode->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text;
-    if (attr & QOpcUa::NodeAttribute::NodeId)
-        mNodeDisplayName = mOpcNode->attribute(QOpcUa::NodeAttribute::NodeId).toString();
 
     mAttributesReady = true;
     emit mModel->dataChanged(mModel->createIndex(row(), 0, this), mModel->createIndex(row(), numberOfDisplayColumns - 1, this));
