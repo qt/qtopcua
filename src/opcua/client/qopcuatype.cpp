@@ -444,7 +444,7 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
 /*!
     \class QOpcUa::QQualifiedName
     \inmodule QtOpcUa
-    \brief The OPC UA QualifiedName type
+    \brief The OPC UA QualifiedName type.
 
     This is the Qt OPC UA representation for the OPC UA QualifiedName type defined in OPC-UA part 3, 8.3.
     A QualifiedName is a name qualified by a namespace index. The namespace index corresponds to an entry in the server's namespace array.
@@ -547,7 +547,7 @@ void QOpcUa::QQualifiedName::setName(const QString &value)
 /*!
     \class QOpcUa::QLocalizedText
     \inmodule QtOpcUa
-    \brief The OPC UA LocalizedText type
+    \brief The OPC UA LocalizedText type.
 
     This is the Qt OPC UA representation for the OPC UA LocalizedText type defined in OPC-UA part 3, 8.5.
     A LocalizedText value contains a text string with associated locale information in a second string (e. g. "en" or "en-US").
@@ -801,7 +801,7 @@ QString QOpcUa::nodeIdFromReferenceType(QOpcUa::ReferenceTypeId referenceType)
 /*!
     \class QOpcUa::QRange
     \inmodule QtOpcUa
-    \brief The OPC UA Range type
+    \brief The OPC UA Range type.
 
     This is the Qt OPC UA representation for the OPC UA Range type defined in OPC-UA part 8, 5.6.2.
     It consists of two double values which mark minimum and maximum of the range.
@@ -904,7 +904,7 @@ void QOpcUa::QRange::setLow(double value)
 /*!
     \class QOpcUa::QEUInformation
     \inmodule QtOpcUa
-    \brief The OPC UA EURange type
+    \brief The OPC UA EURange type.
 
     This is the Qt OPC UA representation for the OPC UA EUInformation type defined in OPC-UA part 8, 5.6.3.
     EUInformation values contain information about units and are mostly used as property of a node with a numeric value attribute.
@@ -1047,7 +1047,7 @@ QOpcUa::QEUInformation::operator QVariant() const
 /*!
     \class QOpcUa::QComplexNumber
     \inmodule QtOpcUa
-    \brief The OPC UA ComplexNumber type
+    \brief The OPC UA ComplexNumber type.
 
     The ComplexNumberType defined in OPC-UA part 8, 5.6.4.
     It stores a complex number with float precision.
@@ -1147,7 +1147,7 @@ QOpcUa::QComplexNumber::operator QVariant() const
 /*!
     \class QOpcUa::QDoubleComplexNumber
     \inmodule QtOpcUa
-    \brief The OPC UA DoubleComplexNumber type
+    \brief The OPC UA DoubleComplexNumber type.
 
     The DoubleComplexNumberType defined in OPC-UA part 8, 5.6.5.
     It stores a complex number with double precision.
@@ -1257,7 +1257,7 @@ QOpcUa::QDoubleComplexNumber::operator QVariant() const
 /*!
     \class QOpcUa::QAxisInformation
     \inmodule QtOpcUa
-    \brief The OPC UA AxisInformation type
+    \brief The OPC UA AxisInformation type.
 
     This is the Qt OPC UA representation for the OPC UA AxisInformation type defined in OPC-UA part 8, 5.6.6.
     It contains information about an axis which can be used for multiple purposes. A common use case could
@@ -1434,7 +1434,7 @@ QOpcUa::QAxisInformation::QAxisInformation(const QOpcUa::QEUInformation &enginee
 /*!
     \class QOpcUa::QXValue
     \inmodule QtOpcUa
-    \brief The OPC UA XVType
+    \brief The OPC UA XVType.
 
     This is the Qt OPC UA representation for the OPC UA XVType type defined in OPC-UA part 8, 5.6.8.
     This type is used to position values of float precision on an axis with double precision.
@@ -1536,7 +1536,7 @@ void QOpcUa::QXValue::setX(double x)
 /*!
     \class QOpcUa::QExpandedNodeId
     \inmodule QtOpcUa
-    \brief The OPC UA ExpandedNodeId
+    \brief The OPC UA ExpandedNodeId.
 
     An expanded node id is a node id where the namespace index can be given as index or as a string URI.
     A list of namespaces and their indices on the server is provided by \l QOpcUaClient::namespaceArray().
@@ -1660,7 +1660,7 @@ void QOpcUa::QExpandedNodeId::setNodeId(const QString &value)
 /*!
     \class QOpcUa::QRelativePathElement
     \inmodule QtOpcUa
-    \brief The OPC UA RelativePathElement
+    \brief The OPC UA RelativePathElement.
 
     QRelativePathElement defines an element of a relative path on an OPC UA server.
     This is needed for resolution of browse paths to node ids in \l QOpcUaNode::resolveBrowsePath().
@@ -1813,7 +1813,7 @@ void QOpcUa::QRelativePathElement::setReferenceTypeId(QOpcUa::ReferenceTypeId va
 /*!
     \class QOpcUa::QBrowsePathTarget
     \inmodule QtOpcUa
-    \brief The OPC UA BrowsePathTarget
+    \brief The OPC UA BrowsePathTarget.
 
     A BrowsePathTarget contains a target of a browse path and information about the completeness of the node id resolution.
 */

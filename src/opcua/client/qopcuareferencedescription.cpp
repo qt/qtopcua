@@ -42,7 +42,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QOpcUaReferenceDescription
     \inmodule QtOpcUa
-    \brief Contains information about a node
+    \brief Contains information about a node.
 
     This class is used to return the results of a call to \l QOpcUaNode::browseChildren().
 

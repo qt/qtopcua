@@ -278,7 +278,7 @@ QStringList QOpcUaClient::namespaceArray() const
 }
 
 /*!
-    Attempts to resolve an expanded node id to a node id string with numeric namespace index.
+    Attempts to resolve \a expandedNodeId to a node id string with numeric namespace index.
     Returns the node id string if the conversion was successful.
 
     An empty string is returned if the namespace index can't be resolved or if the identifier part

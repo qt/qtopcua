@@ -120,7 +120,7 @@ QT_BEGIN_NAMESPACE
             qDebug() << "Failed to read attribute:" << rootNode->attributeError(QOpcUa::NodeAttribute::BrowseName);
             client->disconnectFromEndpoint();
         }
-        qDebug() << "Browse name:" << rootNode->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>().name;
+        qDebug() << "Browse name:" << rootNode->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>().name();
     });
     rootNode->readAttributes(QOpcUa::NodeAttribute::BrowseName); // Start a read operation for the node's BrowseName attribute.
     \endcode
