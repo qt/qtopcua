@@ -39,6 +39,7 @@
 #include "qopen62541node.h"
 #include "qopen62541subscription.h"
 #include "qopen62541valueconverter.h"
+#include "qopen62541utils.h"
 #include <private/qopcuanode_p.h>
 
 #include <QtCore/qloggingcategory.h>
@@ -248,7 +249,7 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::N
     UA_MonitoredItemCreateRequest_deleteMembers(&req);
 
     if (res.statusCode != UA_STATUSCODE_GOOD) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not add monitored item to subscription" << m_subscriptionId << ":" << UA_StatusCode_name(res.statusCode);
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not add monitored item for" << attr << "of node" << Open62541Utils::nodeIdToQString(id) << ":" << UA_StatusCode_name(res.statusCode);
         QOpcUaMonitoringParameters s;
         s.setStatusCode(static_cast<QOpcUa::UaStatusCode>(res.statusCode));
         emit m_backend->monitoringEnableDisable(handle, attr, true, s);
