@@ -440,9 +440,7 @@ void scalarFromQt<UA_DateTime, QDateTime>(const QDateTime &value, UA_DateTime *p
 template<>
 void scalarFromQt<UA_String, QString>(const QString &value, UA_String *ptr)
 {
-    UA_String tmpValue = UA_String_fromChars(value.toUtf8().constData());
-    UA_String_copy(&tmpValue, ptr);
-    UA_String_deleteMembers(&tmpValue);
+    *ptr = UA_STRING_ALLOC(value.toUtf8().constData());
 }
 
 template<>
