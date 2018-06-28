@@ -3327,4 +3327,198 @@ void QOpcUa::QEndpointDescription::setEndpointUrl(const QString &value)
     data->endpointUrl = value;
 }
 
+/*!
+    \class QOpcUa::QArgument
+    \inmodule QtOpcUa
+    \inheaderfile QtOpcUa/qopcuatype.h
+    \brief The OPC UA Argument type
+
+    This is the Qt OPC UA representation for the Argument type defined in OPC-UA part 3, 8.6.
+
+    The Argument type is mainly used for the values of the InputArguments and OutputArguments properties
+    which describe the parameters and return values of method nodes.
+*/
+class QOpcUa::QArgumentData : public QSharedData
+{
+public:
+    QString name;
+    QString dataTypeId;
+    qint32 valueRank{-2};
+    QVector<quint32> arrayDimensions;
+    QOpcUa::QLocalizedText description;
+};
+
+QOpcUa::QArgument::QArgument()
+    : data(new QOpcUa::QArgumentData)
+{
+}
+
+QOpcUa::QArgument::QArgument(const QOpcUa::QArgument &rhs)
+    : data(rhs.data)
+{
+}
+
+/*!
+    Constructs an argument with name \a name, data type id \a dataTypeId, value rank \a valueRank,
+    array dimensions \a arrayDimensions and description \a description.
+*/
+QOpcUa::QArgument::QArgument(const QString &name, const QString &dataTypeId, qint32 valueRank,
+                             const QVector<quint32> &arrayDimensions, const QOpcUa::QLocalizedText &description)
+    : data(new QOpcUa::QArgumentData)
+{
+    setName(name);
+    setDataTypeId(dataTypeId);
+    setValueRank(valueRank);
+    setArrayDimensions(arrayDimensions);
+    setDescription(description);
+}
+
+/*!
+    Sets the values from \a rhs in this argument.
+*/
+QOpcUa::QArgument &QOpcUa::QArgument::operator=(const QOpcUa::QArgument &rhs)
+{
+    if (this != &rhs)
+        data.operator=(rhs.data);
+    return *this;
+}
+
+/*!
+    Returns true if this argument has the same value as \a other.
+*/
+bool QOpcUa::QArgument::operator==(const QOpcUa::QArgument &other) const
+{
+    return data->arrayDimensions == other.arrayDimensions() &&
+            data->dataTypeId == other.dataTypeId() &&
+            data->description == other.description() &&
+            data->name == other.name() &&
+            data->valueRank == other.valueRank();
+}
+
+/*!
+    Converts this argument to \l QVariant.
+*/
+QOpcUa::QArgument::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
+
+QOpcUa::QArgument::~QArgument()
+{
+}
+
+/*!
+    Returns the name of the argument.
+*/
+QString QOpcUa::QArgument::name() const
+{
+    return data->name;
+}
+
+/*!
+    Sets the name of the argument to \a name.
+*/
+void QOpcUa::QArgument::setName(const QString &name)
+{
+    data->name = name;
+}
+
+/*!
+    Returns the data type node id of the argument.
+*/
+QString QOpcUa::QArgument::dataTypeId() const
+{
+    return data->dataTypeId;
+}
+
+/*!
+    Sets the data type node id of the argument to \a dataTypeId.
+*/
+void QOpcUa::QArgument::setDataTypeId(const QString &dataTypeId)
+{
+    data->dataTypeId = dataTypeId;
+}
+
+/*!
+    Returns the value rank of the argument.
+    The value rank describes the structure of the value.
+    \table
+        \header
+            \li ValueRank
+            \li Meaning
+        \row
+            \li -3
+            \li Scalar or one dimensional array
+        \row
+            \li -2
+            \li Scalar or array with any number of dimensions
+        \row
+            \li -1
+            \li Not an array
+        \row
+            \li 0
+            \li Array with one or more dimensions
+        \row
+            \li 1
+            \li One dimensional array
+        \row
+            \li >1
+            \li Array with n dimensions
+    \endtable
+*/
+qint32 QOpcUa::QArgument::valueRank() const
+{
+    return data->valueRank;
+}
+
+/*!
+    Sets the value rank of the argument to \a valueRank.
+*/
+void QOpcUa::QArgument::setValueRank(const qint32 &valueRank)
+{
+    data->valueRank = valueRank;
+}
+
+/*!
+    Returns the array dimensions of the argument.
+
+    The array dimensions describe the length of each array dimension.
+*/
+QVector<quint32> QOpcUa::QArgument::arrayDimensions() const
+{
+    return data->arrayDimensions;
+}
+
+/*!
+    Returns a reference to the array dimensions of the argument.
+*/
+QVector<quint32> &QOpcUa::QArgument::arrayDimensionsRef()
+{
+    return data->arrayDimensions;
+}
+
+/*!
+    Sets the array dimensions of the argument to \a arrayDimensions.
+*/
+void QOpcUa::QArgument::setArrayDimensions(const QVector<quint32> &arrayDimensions)
+{
+    data->arrayDimensions = arrayDimensions;
+}
+
+/*!
+    Returns the description of the argument.
+*/
+QOpcUa::QLocalizedText QOpcUa::QArgument::description() const
+{
+    return data->description;
+}
+
+/*!
+    Sets the description of the argument to \a description.
+*/
+void QOpcUa::QArgument::setDescription(const QOpcUa::QLocalizedText &description)
+{
+    data->description = description;
+}
+
 QT_END_NAMESPACE

@@ -160,6 +160,8 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
         return arrayFromQVariant<UA_ExtensionObject, QOpcUa::QXValue>(value, dt);
     case QOpcUa::ExpandedNodeId:
         return arrayFromQVariant<UA_ExpandedNodeId, QOpcUa::QExpandedNodeId>(value, dt);
+    case QOpcUa::Argument:
+        return arrayFromQVariant<UA_Argument, QOpcUa::QArgument>(value, dt);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion to Open62541 for typeIndex" << type << " not implemented";
     }
@@ -218,6 +220,8 @@ QVariant toQVariant(const UA_Variant &value)
         return arrayToQVariant<QVariant, UA_ExtensionObject>(value);
     case UA_TYPES_EXPANDEDNODEID:
         return arrayToQVariant<QOpcUa::QExpandedNodeId, UA_ExpandedNodeId>(value);
+    case UA_TYPES_ARGUMENT:
+        return arrayToQVariant<QOpcUa::QArgument, UA_Argument>(value);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
         return QVariant();
@@ -276,6 +280,8 @@ const UA_DataType *toDataType(QOpcUa::Types valueType)
         return &UA_TYPES[UA_TYPES_EXTENSIONOBJECT];
     case QOpcUa::ExpandedNodeId:
         return &UA_TYPES[UA_TYPES_EXPANDEDNODEID];
+    case QOpcUa::Argument:
+        return &UA_TYPES[UA_TYPES_ARGUMENT];
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Trying to convert undefined type:" << valueType;
         return nullptr;
@@ -339,6 +345,19 @@ QOpcUa::QQualifiedName scalarToQt<QOpcUa::QQualifiedName, UA_QualifiedName>(cons
     return temp;
 }
 
+template<>
+QOpcUa::QArgument scalarToQt<QOpcUa::QArgument, UA_Argument>(const UA_Argument *data)
+{
+    QOpcUa::QArgument temp;
+    temp.setValueRank(data->valueRank);
+    temp.setDataTypeId(Open62541Utils::nodeIdToQString(data->dataType));
+    temp.setName(scalarToQt<QString, UA_String>(&data->name));
+    temp.setDescription(scalarToQt<QOpcUa::QLocalizedText, UA_LocalizedText>(&data->description));
+    for (size_t i = 0; i < data->arrayDimensionsSize; ++i)
+        temp.arrayDimensionsRef().append(data->arrayDimensions[i]);
+    return temp;
+}
+
 template <>
 QVariant scalarToQt<QVariant, UA_ExtensionObject>(const UA_ExtensionObject *data)
 {
@@ -352,6 +371,11 @@ QVariant scalarToQt<QVariant, UA_ExtensionObject>(const UA_ExtensionObject *data
 
     // Some types are automatically decoded by open62541. In this case, the encoding is UA_EXTENSIONOBJECT_DECODED
     if (data->encoding != UA_EXTENSIONOBJECT_ENCODED_XML && data->encoding != UA_EXTENSIONOBJECT_ENCODED_BYTESTRING) {
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_ARGUMENT] && data->content.decoded.data != nullptr) {
+            return scalarToQt<QOpcUa::QArgument, UA_Argument>(reinterpret_cast<UA_Argument *>(data->content.decoded.data));
+        }
+
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unsupported decoded extension object type, unable to convert";
         return QVariant();
     }
@@ -555,6 +579,20 @@ void scalarFromQt<UA_ExpandedNodeId, QOpcUa::QExpandedNodeId>(const QOpcUa::QExp
     ptr->serverIndex = value.serverIndex();
     scalarFromQt<UA_String, QString>(value.namespaceUri(), &ptr->namespaceUri);
     ptr->nodeId = Open62541Utils::nodeIdFromQString(value.nodeId());
+}
+
+template<>
+void scalarFromQt<UA_Argument, QOpcUa::QArgument>(const QOpcUa::QArgument &value, UA_Argument *ptr)
+{
+    ptr->valueRank = value.valueRank();
+    scalarFromQt<UA_LocalizedText, QOpcUa::QLocalizedText>(value.description(), &ptr->description);
+    scalarFromQt<UA_String, QString>(value.name(), &ptr->name);
+    ptr->dataType = Open62541Utils::nodeIdFromQString(value.dataTypeId());
+    ptr->arrayDimensionsSize = value.arrayDimensions().size();
+    UA_StatusCode res = UA_Array_copy(value.arrayDimensions().constData(), ptr->arrayDimensionsSize,
+                  reinterpret_cast<void **>(&ptr->arrayDimensions), &UA_TYPES[UA_TYPES_UINT32]);
+    if (res != UA_STATUSCODE_GOOD)
+        ptr->arrayDimensionsSize = 0;
 }
 
 template<typename TARGETTYPE, typename QTTYPE>

@@ -154,6 +154,7 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QVector<QOpcUa::QBrowsePathTarget>>();
     qRegisterMetaType<QOpcUa::QEndpointDescription>();
     qRegisterMetaType<QVector<QOpcUa::QEndpointDescription>>();
+    qRegisterMetaType<QOpcUa::QArgument>();
 }
 
 QOpcUaProvider::~QOpcUaProvider()

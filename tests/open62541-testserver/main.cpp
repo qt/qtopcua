@@ -132,6 +132,12 @@ int main(int argc, char **argv)
                        QVariantList({QOpcUa::QExpandedNodeId(QStringLiteral("ns1"), QStringLiteral("ns=0;i=64"), 1),
                                      QOpcUa::QExpandedNodeId(QString(), QStringLiteral("ns=1;i=84"))}),
                        QOpcUa::Types::ExpandedNodeId);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Argument", "ArgumentArrayTest",
+                       QVariantList({QOpcUa::QArgument(QStringLiteral("Argument1"), QStringLiteral("ns=0;i=12"), -1,
+                                                       {},QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("Description1"))),
+                                     QOpcUa::QArgument(QStringLiteral("Argument2"), QStringLiteral("ns=0;i=12"), 2,
+                                                       {2, 2}, QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("Description2")))}),
+                       QOpcUa::Types::Argument);
 
     // Test variables containing scalar values of various types
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Boolean", "BoolScalarTest", false, QOpcUa::Types::Boolean);
@@ -173,6 +179,10 @@ int main(int argc, char **argv)
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.ExpandedNodeId", "ExpandedNodeIdScalarTest",
                                                     QOpcUa::QExpandedNodeId(QStringLiteral("ns1"), QStringLiteral("ns=0;i=64"), 1),
                        QOpcUa::Types::ExpandedNodeId);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Argument", "ArgumentScalarTest",
+                       QOpcUa::QArgument(QStringLiteral("Argument1"), QStringLiteral("ns=0;i=12"), -1,
+                                         {},QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("Description1"))),
+                       QOpcUa::Types::Argument);
 
     // Create folders containing child nodes with string, guid and opaque node ids
     UA_NodeId testStringIdsFolder = server.addFolder("ns=3;s=testStringIdsFolder", "testStringIdsFolder");

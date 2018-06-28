@@ -158,6 +158,14 @@ const QVector<QOpcUa::QExpandedNodeId> testExpandedNodeId = {
     QOpcUa::QExpandedNodeId(QString(), QStringLiteral("ns=1;i=99")),
     QOpcUa::QExpandedNodeId(QString(), QStringLiteral("ns=1;s=test"))
 };
+const QVector<QOpcUa::QArgument> testArguments = {
+    QOpcUa::QArgument(QStringLiteral("Argument1"), QStringLiteral("ns=0;i=12"), -1,
+                      {},QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("Description1"))),
+    QOpcUa::QArgument(QStringLiteral("Argument2"), QStringLiteral("ns=0;i=12"), 2,
+                      {2, 2}, QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("Description2"))),
+    QOpcUa::QArgument(QStringLiteral("Argument3"), QStringLiteral("ns=0;i=12"), 3,
+                      {3, 3, 3}, QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("Description3")))
+};
 
 #define defineDataMethod(name) void name()\
 {\
@@ -223,6 +231,8 @@ private slots:
     void methodCall();
     defineDataMethod(methodCallInvalid_data)
     void methodCallInvalid();
+    defineDataMethod(readMethodArguments_data)
+    void readMethodArguments();
     defineDataMethod(malformedNodeString_data)
     void malformedNodeString();
     defineDataMethod(nodeIdGeneration_data)
@@ -938,6 +948,48 @@ void Tst_QOpcUaClient::methodCallInvalid()
     QCOMPARE(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadArgumentsMissing);
 }
 
+void Tst_QOpcUaClient::readMethodArguments()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    if (opcuaClient->backend() != QStringLiteral("open62541"))
+        QSKIP("The argument type is currently only supported in the open62541 backend");
+
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=0;i=11493")); // InputArguments of GetMonitoredItems
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+
+    QOpcUa::QArgument argument = node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QArgument>();
+    QCOMPARE(argument.name(), QStringLiteral("SubscriptionId"));
+    QCOMPARE(argument.dataTypeId(), QStringLiteral("ns=0;i=7"));
+    QCOMPARE(argument.valueRank(), -1);
+    QVERIFY(argument.arrayDimensions().isEmpty());
+    QCOMPARE(argument.description(), QOpcUa::QLocalizedText());
+
+    node.reset(opcuaClient->node("ns=0;i=11494")); // OutputArguments of GetMonitoredItems
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+
+    QVariantList list = node->attribute(QOpcUa::NodeAttribute::Value).toList();
+    QCOMPARE(list.size(), 2);
+
+    argument = list.at(0).value<QOpcUa::QArgument>();
+    QCOMPARE(argument.name(), QStringLiteral("ServerHandles"));
+    QCOMPARE(argument.dataTypeId(), QStringLiteral("ns=0;i=7"));
+    QCOMPARE(argument.valueRank(), 1);
+    QVERIFY(argument.arrayDimensions().isEmpty());
+    QCOMPARE(argument.description(), QOpcUa::QLocalizedText());
+
+    argument = list.at(1).value<QOpcUa::QArgument>();
+    QCOMPARE(argument.name(), QStringLiteral("ClientHandles"));
+    QCOMPARE(argument.dataTypeId(), QStringLiteral("ns=0;i=7"));
+    QCOMPARE(argument.valueRank(), 1);
+    QVERIFY(argument.arrayDimensions().isEmpty());
+    QCOMPARE(argument.description(), QOpcUa::QLocalizedText());
+}
+
 void Tst_QOpcUaClient::malformedNodeString()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
@@ -1282,6 +1334,18 @@ void Tst_QOpcUaClient::writeArray()
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ExpandedNodeId"));
     QVERIFY(node != 0);
     WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::ExpandedNodeId);
+
+    if (opcuaClient->backend() == QStringLiteral("open62541")) {
+        list.clear();
+        list.append(testArguments[0]);
+        list.append(testArguments[1]);
+        list.append(testArguments[2]);
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Argument"));
+        QVERIFY(node != nullptr);
+        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::Argument);
+    } else {
+        qInfo("The argument type is currently only supported in the open62541 backend");
+    }
 }
 
 void Tst_QOpcUaClient::readArray()
@@ -1572,6 +1636,20 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(expandedNodeIdArray.toList()[0].value<QOpcUa::QExpandedNodeId>(), testExpandedNodeId[0]);
     QCOMPARE(expandedNodeIdArray.toList()[1].value<QOpcUa::QExpandedNodeId>(), testExpandedNodeId[1]);
     QCOMPARE(expandedNodeIdArray.toList()[2].value<QOpcUa::QExpandedNodeId>(), testExpandedNodeId[2]);
+
+    if (opcuaClient->backend() == QStringLiteral("open62541")) {
+        QScopedPointer<QOpcUaNode> argumentArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Argument"));
+        QVERIFY(argumentArrayNode != nullptr);
+        READ_MANDATORY_VARIABLE_NODE(argumentArrayNode)
+        QVariant argumentArray = argumentArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+        QVERIFY(argumentArray.type() == QVariant::List);
+        QVERIFY(argumentArray.toList().length() == 3);
+        QCOMPARE(argumentArray.toList()[0].value<QOpcUa::QArgument>(), testArguments[0]);
+        QCOMPARE(argumentArray.toList()[1].value<QOpcUa::QArgument>(), testArguments[1]);
+        QCOMPARE(argumentArray.toList()[2].value<QOpcUa::QArgument>(), testArguments[2]);
+    } else {
+        qInfo("The argument type is currently only supported in the open62541 backend");
+    }
 }
 
 void Tst_QOpcUaClient::writeScalar()
@@ -1693,6 +1771,14 @@ void Tst_QOpcUaClient::writeScalar()
     QScopedPointer<QOpcUaNode> expandedNodeIdNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ExpandedNodeId"));
     QVERIFY(expandedNodeIdNode != 0);
     WRITE_VALUE_ATTRIBUTE(expandedNodeIdNode, testExpandedNodeId[0], QOpcUa::ExpandedNodeId);
+
+    if (opcuaClient->backend() == QStringLiteral("open62541")) {
+        QScopedPointer<QOpcUaNode> argumentNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Argument"));
+        QVERIFY(argumentNode != nullptr);
+        WRITE_VALUE_ATTRIBUTE(argumentNode, testArguments[0], QOpcUa::Argument);
+    } else {
+        qInfo("The argument type is currently only supported in the open62541 backend");
+    }
 }
 
 void Tst_QOpcUaClient::readScalar()
@@ -1894,6 +1980,17 @@ void Tst_QOpcUaClient::readScalar()
     QVariant expandedNodeIdScalar = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(expandedNodeIdScalar.isValid());
     QCOMPARE(expandedNodeIdScalar.value<QOpcUa::QExpandedNodeId>(), testExpandedNodeId[0]);
+
+    if (opcuaClient->backend() == QStringLiteral("open62541")) {
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Argument"));
+        QVERIFY(node != nullptr);
+        READ_MANDATORY_VARIABLE_NODE(node)
+        QVariant argumentScalar = node->attribute(QOpcUa::NodeAttribute::Value);
+        QVERIFY(argumentScalar.isValid());
+        QCOMPARE(argumentScalar.value<QOpcUa::QArgument>(), testArguments[0]);
+    } else {
+        qInfo("The argument type is currently only supported in the open62541 backend");
+    }
 }
 
 void Tst_QOpcUaClient::indexRange()

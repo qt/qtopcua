@@ -259,6 +259,11 @@
     \li X
     \li X
     \li \l QOpcUa::QXValue
+    \row
+    \li Argument
+    \li X
+    \li
+    \li QOpcUa::QArgument
     \endtable
 
     \section1 Classes and ownership

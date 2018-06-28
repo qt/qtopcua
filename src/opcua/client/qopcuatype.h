@@ -166,6 +166,7 @@ enum Types
     AxisInformation = 25,
     XV              = 26,
     ExpandedNodeId  = 27,
+    Argument        = 28,
     Undefined       = 0xFFFFFFFF
 };
 
@@ -1026,6 +1027,39 @@ private:
     QSharedDataPointer<QEndpointDescriptionData> data;
 };
 
+class QArgumentData;
+class Q_OPCUA_EXPORT QArgument
+{
+public:
+    QArgument();
+    QArgument(const QArgument &rhs);
+    QArgument(const QString &name, const QString &dataTypeId, qint32 valueRank,
+              const QVector<quint32> &arrayDimensions, const QOpcUa::QLocalizedText &description);
+    QArgument &operator=(const QArgument &);
+    bool operator==(const QArgument &other) const;
+    operator QVariant() const;
+    ~QArgument();
+
+    QString name() const;
+    void setName(const QString &name);
+
+    QString dataTypeId() const;
+    void setDataTypeId(const QString &dataTypeId);
+
+    qint32 valueRank() const;
+    void setValueRank(const qint32 &valueRank);
+
+    QVector<quint32> arrayDimensions() const;
+    QVector<quint32> &arrayDimensionsRef();
+    void setArrayDimensions(const QVector<quint32> &arrayDimensions);
+
+    QOpcUa::QLocalizedText description() const;
+    void setDescription(const QOpcUa::QLocalizedText &description);
+
+private:
+    QSharedDataPointer<QOpcUa::QArgumentData> data;
+};
+
 }
 
 Q_DECLARE_TYPEINFO(QOpcUa::Types, Q_PRIMITIVE_TYPE);
@@ -1070,5 +1104,6 @@ Q_DECLARE_METATYPE(QOpcUa::QEventFilterResult)
 Q_DECLARE_METATYPE(QOpcUa::QUserTokenPolicy)
 Q_DECLARE_METATYPE(QOpcUa::QApplicationDescription)
 Q_DECLARE_METATYPE(QOpcUa::QEndpointDescription)
+Q_DECLARE_METATYPE(QOpcUa::QArgument)
 
 #endif // QOPCUATYPE
