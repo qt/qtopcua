@@ -18,7 +18,8 @@ SOURCES += \
     client/qopcuabrowserequest.cpp \
     client/qopcuareferencedescription.cpp \
     client/qopcuareaditem.cpp \
-    client/qopcuareadresult.cpp
+    client/qopcuareadresult.cpp \
+    client/qopcuanodeids.cpp
 
 HEADERS += \
     client/qopcuaclient_p.h \
@@ -32,4 +33,5 @@ HEADERS += \
     client/qopcuabrowserequest.h \
     client/qopcuareferencedescription.h \
     client/qopcuareaditem.h \
-    client/qopcuareadresult.h
+    client/qopcuareadresult.h \
+    client/qopcuanodeids.h

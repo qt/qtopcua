@@ -136,20 +136,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QOpcUaBinaryDataEncoding::TypeEncodingId
-
-    Enumerates the type encoding ids of all extension objects supported by Qt OPC UA
-    as listed in \l {https://opcfoundation.org/UA/schemas/1.03/NodeIds.csv}
-
-    \value Range
-    \value EUInformation
-    \value ComplexNumber
-    \value DoubleComplexNumber
-    \value AxisInformation
-    \value XV
-*/
-
-/*!
     \fn template<typename T, QOpcUa::Types OVERLAY> T QOpcUaBinaryDataEncoding::decode(bool &success)
 
     Decodes a scalar value of type T from the data buffer.

@@ -52,13 +52,24 @@
             "label": "Unified Automation C++ SDK",
             "condition": "libs.uacpp",
             "output": [ "privateFeature" ]
+        },
+        "ns0idnames": {
+            "label": "Support for namespace 0 NodeId names",
+            "purpose": "Provides names for the QOpcUa::NodeIds::NS0 enum.",
+            "output": [ "privateFeature" ]
+        },
+        "ns0idgenerator": {
+            "label": "Namespace 0 NodeIds generator",
+            "purpose": "Build a generator for updating the QOpcUa::NodeIds::NS0 enum from the NodeIds.csv file.",
+            "autoDetect": "false",
+            "output": [ "privateFeature" ]
         }
     },
 
     "summary": [
         {
             "section": "Qt Opcua",
-            "entries": [ "open62541", "uacpp" ]
+            "entries": [ "open62541", "uacpp", "ns0idnames", "ns0idgenerator" ]
         }
     ]
 }

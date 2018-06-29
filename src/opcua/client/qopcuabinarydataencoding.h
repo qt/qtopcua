@@ -56,17 +56,6 @@ public:
     QOpcUaBinaryDataEncoding(QByteArray *buffer);
     QOpcUaBinaryDataEncoding(QOpcUa::QExtensionObject &object);
 
-    // The Ids in this enum are the numeric Ids of the _Encoding_DefaultBinary nodes for the respective types
-    // as listed in https://opcfoundation.org/UA/schemas/1.03/NodeIds.csv
-    enum class TypeEncodingId {
-        Range = 886,
-        EUInformation = 889,
-        ComplexNumber = 12181,
-        DoubleComplexNumber = 12182,
-        AxisInformation = 12089,
-        XV = 12090
-    };
-
     template <typename T, QOpcUa::Types OVERLAY = QOpcUa::Types::Undefined>
     T decode(bool &success);
     template <typename T, QOpcUa::Types OVERLAY = QOpcUa::Types::Undefined>

@@ -48,6 +48,8 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541)
 
+using namespace QOpcUa::NodeIds;
+
 namespace QOpen62541ValueConverter {
 
 QOpcUa::Types qvariantTypeToQOpcUaType(QMetaType::Type type)
@@ -411,24 +413,24 @@ QVariant scalarToQt<QVariant, UA_ExtensionObject>(const UA_ExtensionObject *data
 
         bool success = false;
         QVariant result;
-        QOpcUaBinaryDataEncoding::TypeEncodingId objType = static_cast<QOpcUaBinaryDataEncoding::TypeEncodingId>(data->content.encoded.typeId.identifier.numeric);
+        NS0 objType = NS0(data->content.encoded.typeId.identifier.numeric);
         switch (objType) {
-        case QOpcUaBinaryDataEncoding::TypeEncodingId::EUInformation:
+        case NS0::EUInformation_Encoding_DefaultBinary:
             result = decoder.decode<QOpcUa::QEUInformation>(success);
             break;
-        case QOpcUaBinaryDataEncoding::TypeEncodingId::Range:
+        case NS0::Range_Encoding_DefaultBinary:
             result = decoder.decode<QOpcUa::QRange>(success);
             break;
-        case QOpcUaBinaryDataEncoding::TypeEncodingId::ComplexNumber:
+        case NS0::ComplexNumberType_Encoding_DefaultBinary:
             result = decoder.decode<QOpcUa::QComplexNumber>(success);
             break;
-        case QOpcUaBinaryDataEncoding::TypeEncodingId::DoubleComplexNumber:
+        case NS0::DoubleComplexNumberType_Encoding_DefaultBinary:
             result = decoder.decode<QOpcUa::QDoubleComplexNumber>(success);
             break;
-        case QOpcUaBinaryDataEncoding::TypeEncodingId::AxisInformation:
+        case NS0::AxisInformation_Encoding_DefaultBinary:
             result = decoder.decode<QOpcUa::QAxisInformation>(success);
             break;
-        case QOpcUaBinaryDataEncoding::TypeEncodingId::XV:
+        case NS0::XVType_Encoding_DefaultBinary:
             result = decoder.decode<QOpcUa::QXValue>(success);
             break;
         default:
@@ -563,7 +565,8 @@ void scalarFromQt<UA_ExtensionObject, QOpcUa::QRange>(const QOpcUa::QRange &valu
     QByteArray temp;
     QOpcUaBinaryDataEncoding encoder(&temp);
     encoder.encode<QOpcUa::QRange>(value);
-    return createExtensionObject(temp, UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(QOpcUaBinaryDataEncoding::TypeEncodingId::Range)), ptr);
+    return createExtensionObject(temp,
+                                 UA_NODEID_NUMERIC(0,static_cast<UA_UInt32>(NS0::Range_Encoding_DefaultBinary)), ptr);
 }
 
 template<>
@@ -572,7 +575,8 @@ void scalarFromQt<UA_ExtensionObject, QOpcUa::QEUInformation>(const QOpcUa::QEUI
     QByteArray temp;
     QOpcUaBinaryDataEncoding encoder(&temp);
     encoder.encode<QOpcUa::QEUInformation>(value);
-    return createExtensionObject(temp, UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(QOpcUaBinaryDataEncoding::TypeEncodingId::EUInformation)), ptr);
+    return createExtensionObject(temp,
+                                 UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(NS0::EUInformation_Encoding_DefaultBinary)), ptr);
 }
 
 template<>
@@ -581,7 +585,8 @@ void scalarFromQt<UA_ExtensionObject, QOpcUa::QComplexNumber>(const QOpcUa::QCom
     QByteArray temp;
     QOpcUaBinaryDataEncoding encoder(&temp);
     encoder.encode<QOpcUa::QComplexNumber>(value);
-    return createExtensionObject(temp, UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(QOpcUaBinaryDataEncoding::TypeEncodingId::ComplexNumber)), ptr);
+    return createExtensionObject(temp,
+                                 UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(NS0::ComplexNumberType_Encoding_DefaultBinary)), ptr);
 }
 
 template<>
@@ -590,7 +595,8 @@ void scalarFromQt<UA_ExtensionObject, QOpcUa::QDoubleComplexNumber>(const QOpcUa
     QByteArray temp;
     QOpcUaBinaryDataEncoding encoder(&temp);
     encoder.encode<QOpcUa::QDoubleComplexNumber>(value);
-    return createExtensionObject(temp, UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(QOpcUaBinaryDataEncoding::TypeEncodingId::DoubleComplexNumber)), ptr);
+    return createExtensionObject(temp,
+                                 UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(NS0::DoubleComplexNumberType_Encoding_DefaultBinary)), ptr);
 }
 
 template<>
@@ -599,7 +605,8 @@ void scalarFromQt<UA_ExtensionObject, QOpcUa::QAxisInformation>(const QOpcUa::QA
     QByteArray temp;
     QOpcUaBinaryDataEncoding encoder(&temp);
     encoder.encode<QOpcUa::QAxisInformation>(value);
-    return createExtensionObject(temp, UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(QOpcUaBinaryDataEncoding::TypeEncodingId::AxisInformation)), ptr);
+    return createExtensionObject(temp,
+                                 UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(NS0::AxisInformation_Encoding_DefaultBinary)), ptr);
 }
 
 template<>
@@ -608,7 +615,8 @@ void scalarFromQt<UA_ExtensionObject, QOpcUa::QXValue>(const QOpcUa::QXValue &va
     QByteArray temp;
     QOpcUaBinaryDataEncoding encoder(&temp);
     encoder.encode<QOpcUa::QXValue>(value);
-    return createExtensionObject(temp, UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(QOpcUaBinaryDataEncoding::TypeEncodingId::XV)), ptr);
+    return createExtensionObject(temp,
+                                 UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(NS0::XVType_Encoding_DefaultBinary)), ptr);
 }
 
 template<>

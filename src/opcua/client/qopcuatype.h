@@ -38,6 +38,7 @@
 #define QOPCUATYPE
 
 #include <QtOpcUa/qopcuaglobal.h>
+#include <QtOpcUa/qopcuanodeids.h>
 
 #include <QtCore/qmetatype.h>
 #include <QtCore/qpair.h>
@@ -426,6 +427,9 @@ Q_OPCUA_EXPORT QString nodeIdFromInteger(quint16 ns, quint32 identifier);
 Q_OPCUA_EXPORT QString nodeIdFromReferenceType(QOpcUa::ReferenceTypeId referenceType);
 Q_OPCUA_EXPORT bool nodeIdStringSplit(const QString &nodeIdString, quint16 *nsIndex,
                                       QString *identifier, char *identifierType);
+Q_OPCUA_EXPORT QString ns0ID(QOpcUa::NodeIds::NS0 id);
+Q_OPCUA_EXPORT QOpcUa::NodeIds::NS0 ns0IDFromNodeId(const QString &nodeId);
+Q_OPCUA_EXPORT QString ns0IDName(QOpcUa::NodeIds::NS0 id);
 
 typedef QPair<QVariant, QOpcUa::Types> TypedVariant;
 

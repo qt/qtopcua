@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>NodeIds.csv</file>
-    </qresource>
-</RCC>

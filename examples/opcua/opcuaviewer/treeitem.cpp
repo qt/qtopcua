@@ -50,7 +50,6 @@
 
 #include "treeitem.h"
 #include "opcuamodel.h"
-#include "common.h"
 #include <QOpcUaClient>
 #include <QMetaEnum>
 #include <QPixmap>
@@ -138,10 +137,12 @@ QVariant TreeItem::data(int column)
         if (!mAttributesReady)
             return tr("Loading ...");
 
-        const auto dti = dataTypeInfo(mOpcNode->attribute(QOpcUa::NodeAttribute::DataType).toString());
-        if (dti.name.isEmpty())
-            return QString();
-        return dti.name + " (" + mOpcNode->attribute(QOpcUa::NodeAttribute::DataType).toString() + ")";
+        const QString typeId = mOpcNode->attribute(QOpcUa::NodeAttribute::DataType).toString();
+        auto enumEntry = QOpcUa::ns0IDFromNodeId(typeId);
+        QString name;
+        if (enumEntry == QOpcUa::NodeIds::NS0::Unknown)
+            return typeId;
+        return QOpcUa::ns0IDName(enumEntry) + " (" + typeId + ")";
     } else if (column == 4) {
         return mNodeId;
     } else if (column == 5) {
