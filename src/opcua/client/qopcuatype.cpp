@@ -1424,7 +1424,7 @@ QOpcUa::QAxisInformation::QAxisInformation(const QOpcUa::QEUInformation &enginee
     : data (new QOpcUa::QAxisInformationData)
 {
     data->engineeringUnits = engineeringUnits;
-    data->eURange == eURange;
+    data->eURange = eURange;
     data->title = title;
     data->axisScaleType = axisScaleType;
     data->axisSteps = axisSteps;
