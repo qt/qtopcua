@@ -119,7 +119,7 @@ UA_NodeId TestServer::addFolder(const QString &nodeString, const QString &displa
     UA_StatusCode result;
     UA_NodeId requestedNodeId = Open62541Utils::nodeIdFromQString(nodeString);
 
-    UA_QualifiedName nodeBrowseName = UA_QUALIFIEDNAME_ALLOC(requestedNodeId.namespaceIndex, nodeString.toUtf8().constData());
+    UA_QualifiedName nodeBrowseName = UA_QUALIFIEDNAME_ALLOC(requestedNodeId.namespaceIndex, displayName.toUtf8().constData());
 
     result = UA_Server_addObjectNode(m_server,
                                      requestedNodeId,
