@@ -51,7 +51,7 @@
 #ifndef QOPCUADEMOSERVER_H
 #define QOPCUADEMOSERVER_H
 
-#include <open62541.h>
+#include <qopen62541.h>
 
 #include <qopcuatype.h>
 
