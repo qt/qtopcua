@@ -1503,7 +1503,7 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(xVArray.toList()[2].value<QOpcUa::QXValue>(), testXV[2]);
 
     QScopedPointer<QOpcUaNode> xmlElementArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XmlElement"));
-    QVERIFY(nodeIdArrayNode != 0);
+    QVERIFY(xmlElementArrayNode != 0);
     READ_MANDATORY_VARIABLE_NODE(xmlElementArrayNode)
     QVariant xmlElementArray = xmlElementArrayNode->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(xmlElementArray.type() == QVariant::List);

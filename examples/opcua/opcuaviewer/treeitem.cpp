@@ -150,7 +150,7 @@ QVariant TreeItem::data(int column)
         if (!mAttributesReady)
             return tr("Loading ...");
 
-        return mOpcNode->attribute(QOpcUa::NodeAttribute::Description);
+        return mOpcNode->attribute(QOpcUa::NodeAttribute::Description).value<QOpcUa::QLocalizedText>().text();
     }
     return QVariant();
 }
@@ -169,7 +169,15 @@ TreeItem *TreeItem::parentItem()
 
 void TreeItem::appendChild(TreeItem *child)
 {
-    mChildItems.append(child);
+    if (!child)
+        return;
+
+    if (!hasChildNodeItem(child->mNodeId)) {
+        mChildItems.append(child);
+        mChildNodeIds.insert(child->mNodeId);
+    } else {
+        child->deleteLater();
+    }
 }
 
 QPixmap TreeItem::icon(int column) const
@@ -198,6 +206,11 @@ QPixmap TreeItem::icon(int column) const
     return p;
 }
 
+bool TreeItem::hasChildNodeItem(const QString &nodeId) const
+{
+    return mChildNodeIds.contains(nodeId);
+}
+
 void TreeItem::startBrowsing()
 {
     if (mBrowseStarted)
@@ -217,8 +230,6 @@ void TreeItem::handleAttributes(QOpcUa::NodeAttributes attr)
         mNodeBrowseName = mOpcNode->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>().name();
     if (attr & QOpcUa::NodeAttribute::DisplayName)
         mNodeDisplayName = mOpcNode->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text();
-    if (attr & QOpcUa::NodeAttribute::NodeId)
-        mNodeDisplayName = mOpcNode->attribute(QOpcUa::NodeAttribute::NodeId).toString();
 
     mAttributesReady = true;
     emit mModel->dataChanged(mModel->createIndex(row(), 0, this), mModel->createIndex(row(), numberOfDisplayColumns - 1, this));
@@ -234,14 +245,17 @@ void TreeItem::browseFinished(QVector<QOpcUaReferenceDescription> children, QOpc
     auto index = mModel->createIndex(row(), 0, this);
 
     for (const auto &item : children) {
-        mModel->beginInsertRows(index, mChildItems.size(), mChildItems.size() + children.size());
+        if (hasChildNodeItem(item.nodeId()))
+            continue;
+
         auto node = mModel->opcUaClient()->node(item.nodeId());
         if (!node) {
             qWarning() << "Failed to instantiate node:" << item.nodeId();
             continue;
         }
 
-        mChildItems.append(new TreeItem(node, mModel, item, this));
+        mModel->beginInsertRows(index, mChildItems.size(), mChildItems.size() + 1);
+        appendChild(new TreeItem(node, mModel, item, this));
         mModel->endInsertRows();
     }
 
