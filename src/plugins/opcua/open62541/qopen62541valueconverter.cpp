@@ -278,25 +278,25 @@ const UA_DataType *toDataType(QOpcUa::Types valueType)
 }
 
 template<typename TARGETTYPE, typename UATYPE>
-TARGETTYPE scalarToQt(UATYPE *data)
+TARGETTYPE scalarToQt(const UATYPE *data)
 {
-    return *reinterpret_cast<TARGETTYPE *>(data);
+    return *reinterpret_cast<const TARGETTYPE *>(data);
 }
 
 template<>
-QString scalarToQt<QString, UA_String>(UA_String *data)
+QString scalarToQt<QString, UA_String>(const UA_String *data)
 {
-    return QString::fromUtf8(reinterpret_cast<char *>(data->data), data->length);
+    return QString::fromUtf8(reinterpret_cast<const char *>(data->data), data->length);
 }
 
 template<>
-QByteArray scalarToQt<QByteArray, UA_ByteString>(UA_ByteString *data)
+QByteArray scalarToQt<QByteArray, UA_ByteString>(const UA_ByteString *data)
 {
-    return QByteArray(reinterpret_cast<char *>(data->data), data->length);
+    return QByteArray(reinterpret_cast<const char *>(data->data), data->length);
 }
 
 template<>
-QOpcUa::QLocalizedText scalarToQt<QOpcUa::QLocalizedText, UA_LocalizedText>(UA_LocalizedText *data)
+QOpcUa::QLocalizedText scalarToQt<QOpcUa::QLocalizedText, UA_LocalizedText>(const UA_LocalizedText *data)
 {
     QOpcUa::QLocalizedText lt;
     lt.setLocale(scalarToQt<QString, UA_String>(&(data->locale)));
@@ -305,13 +305,13 @@ QOpcUa::QLocalizedText scalarToQt<QOpcUa::QLocalizedText, UA_LocalizedText>(UA_L
 }
 
 template<>
-QString scalarToQt<QString, UA_NodeId>(UA_NodeId *data)
+QString scalarToQt<QString, UA_NodeId>(const UA_NodeId *data)
 {
     return Open62541Utils::nodeIdToQString(*data);
 }
 
 template<>
-QDateTime scalarToQt<QDateTime, UA_DateTime>(UA_DateTime *data)
+QDateTime scalarToQt<QDateTime, UA_DateTime>(const UA_DateTime *data)
 {
     // OPC-UA part 3, Table C.9
     const QDateTime epochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
@@ -319,14 +319,14 @@ QDateTime scalarToQt<QDateTime, UA_DateTime>(UA_DateTime *data)
 }
 
 template<>
-QUuid scalarToQt<QUuid, UA_Guid>(UA_Guid *data)
+QUuid scalarToQt<QUuid, UA_Guid>(const UA_Guid *data)
 {
     return QUuid(data->data1, data->data2, data->data3, data->data4[0], data->data4[1], data->data4[2],
             data->data4[3], data->data4[4], data->data4[5], data->data4[6], data->data4[7]);
 }
 
 template<>
-QOpcUa::QQualifiedName scalarToQt<QOpcUa::QQualifiedName, UA_QualifiedName>(UA_QualifiedName *data)
+QOpcUa::QQualifiedName scalarToQt<QOpcUa::QQualifiedName, UA_QualifiedName>(const UA_QualifiedName *data)
 {
     QOpcUa::QQualifiedName temp;
     temp.setNamespaceIndex(data->namespaceIndex);
@@ -335,7 +335,7 @@ QOpcUa::QQualifiedName scalarToQt<QOpcUa::QQualifiedName, UA_QualifiedName>(UA_Q
 }
 
 template <>
-QVariant scalarToQt<QVariant, UA_ExtensionObject>(UA_ExtensionObject *data)
+QVariant scalarToQt<QVariant, UA_ExtensionObject>(const UA_ExtensionObject *data)
 {
     // OPC-UA part 6, Table 13 states that an extension object can have no body, a ByteString encoded body
     // or an XML encoded body.

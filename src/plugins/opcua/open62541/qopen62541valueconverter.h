@@ -65,7 +65,7 @@ namespace QOpen62541ValueConverter {
     QOpcUa::Types qvariantTypeToQOpcUaType(QMetaType::Type type);
 
     template<typename TARGETTYPE, typename UATYPE>
-    TARGETTYPE scalarToQt(UATYPE *data);
+    TARGETTYPE scalarToQt(const UATYPE *data);
 
     template<typename TARGETTYPE, typename UATYPE>
     QVariant arrayToQVariant(const UA_Variant &var, QMetaType::Type type = QMetaType::UnknownType);
