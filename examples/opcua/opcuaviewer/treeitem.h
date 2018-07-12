@@ -92,7 +92,8 @@ private:
     QString localizedTextToString(const QOpcUa::QLocalizedText &text) const;
     QString rangeToString(const QOpcUa::QRange &range) const;
     QString euInformationToString(const QOpcUa::QEUInformation &info) const;
-    QString axisStepsToString(const QVector<double> &vec) const;
+    template <typename T>
+    QString numberArrayToString(const QVector<T> &vec) const;
 
     bool mAttributesReady = false;
     bool mBrowseStarted = false;
@@ -106,6 +107,16 @@ private:
     QString mNodeDisplayName;
     QOpcUa::NodeClass mNodeClass = QOpcUa::NodeClass::Undefined;
 };
+
+template <typename T>
+QString TreeItem::numberArrayToString(const QVector<T> &vec) const
+{
+    QStringList list;
+    for (auto it : vec)
+        list.append(QString::number(it));
+
+    return QLatin1String("[") + list.join(";") + QLatin1String("]");
+}
 
 QT_END_NAMESPACE
 

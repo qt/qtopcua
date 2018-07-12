@@ -275,6 +275,13 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
         return concat.join("\n");
     }
 
+    if (typeNodeId == QLatin1String("ns=0;i=19")) { // StatusCode
+        const char *name = QMetaEnum::fromType<QOpcUa::UaStatusCode>().valueToKey(value.toInt());
+        if (!name)
+            return QLatin1String("Unknown StatusCode");
+        else
+            return QString(name);
+    }
     if (typeNodeId == QLatin1String("ns=0;i=2")) // Char
         return QString::number(value.toInt());
     else if (typeNodeId == QLatin1String("ns=0;i=3")) // SChar
@@ -287,10 +294,9 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
         return QLatin1String("0x") + value.toByteArray().toHex();
     else if (value.type() == QVariant::DateTime)
         return value.toDateTime().toString(Qt::ISODate);
-
     else if (value.canConvert<QOpcUa::QQualifiedName>()) {
         const auto name = value.value<QOpcUa::QQualifiedName>();
-        return QStringLiteral("%1, \"%2\"").arg(name.namespaceIndex()).arg(name.name());
+        return QStringLiteral("[NamespaceIndex: %1, Name: \"%2\"]").arg(name.namespaceIndex()).arg(name.name());
     } else if (value.canConvert<QOpcUa::QLocalizedText>()) {
         const auto text = value.value<QOpcUa::QLocalizedText>();
         return localizedTextToString(text);
@@ -299,23 +305,38 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
         return rangeToString(range);
     } else if (value.canConvert<QOpcUa::QComplexNumber>()) {
         const auto complex = value.value<QOpcUa::QComplexNumber>();
-        return QStringLiteral("%1 %2 %3i").arg(complex.real()).arg(complex.imaginary() >= 0 ? "+" : "-").arg(complex.imaginary());
+        return QStringLiteral("[Real: %1, Imaginary: %2]").arg(complex.real()).arg(complex.imaginary());
     } else if (value.canConvert<QOpcUa::QDoubleComplexNumber>()) {
         const auto complex = value.value<QOpcUa::QDoubleComplexNumber>();
-        return QStringLiteral("%1 %2 %3i").arg(complex.real()).arg(complex.imaginary() >= 0 ? "+" : "-").arg(complex.imaginary());
+        return QStringLiteral("[Real: %1, Imaginary: %2]").arg(complex.real()).arg(complex.imaginary());
     } else if (value.canConvert<QOpcUa::QXValue>()) {
         const auto xv = value.value<QOpcUa::QXValue>();
-        return QStringLiteral("x: %1, y: %2").arg(xv.x()).arg(xv.value());
+        return QStringLiteral("[X: %1, Value: %2]").arg(xv.x()).arg(xv.value());
     } else if (value.canConvert<QOpcUa::QEUInformation>()) {
         const auto info = value.value<QOpcUa::QEUInformation>();
         return euInformationToString(info);
     } else if (value.canConvert<QOpcUa::QAxisInformation>()) {
         const auto info = value.value<QOpcUa::QAxisInformation>();
-
-        return QStringLiteral("EngineeringUnits: %1, EURange: %2, Title: %3 , AxisScaleType: %4, AxisSteps: %5").arg(
+        return QStringLiteral("[EUInformation: %1, EURange: %2, Title: %3 , AxisScaleType: %4, AxisSteps: %5]").arg(
                     euInformationToString(info.engineeringUnits())).arg(rangeToString(info.eURange())).arg(localizedTextToString(info.title())).arg(
                         info.axisScaleType() == QOpcUa::AxisScale::Linear ? "Linear" : (info.axisScaleType() == QOpcUa::AxisScale::Ln) ? "Ln" : "Log").arg(
-                        axisStepsToString(info.axisSteps()));
+                        numberArrayToString(info.axisSteps()));
+    } else if (value.canConvert<QOpcUa::QExpandedNodeId>()) {
+        const auto id = value.value<QOpcUa::QExpandedNodeId>();
+        return QStringLiteral("[NodeId: \"%1\", ServerIndex: \"%2\", NamespaceUri: \"%3\"]").arg(
+                    id.nodeId()).arg(id.serverIndex()).arg(id.namespaceUri());
+    } else if (value.canConvert<QOpcUa::QArgument>()) {
+        const auto a = value.value<QOpcUa::QArgument>();
+
+        return QStringLiteral("[Name: \"%1\", DataType: \"%2\", ValueRank: \"%3\", ArrayDimensions: %4, Description: %5]").arg(
+                    a.name()).arg(a.dataTypeId()).arg(a.valueRank()).arg(numberArrayToString(a.arrayDimensions())).arg(
+                    localizedTextToString(a.description()));
+    } else if (value.canConvert<QOpcUa::QExtensionObject>()) {
+        const auto obj = value.value<QOpcUa::QExtensionObject>();
+        return QStringLiteral("[TypeId: \"%1\", Encoding: %2, Body: 0x%3]").arg(obj.encodingTypeId()).arg(
+                    obj.encoding() == QOpcUa::QExtensionObject::Encoding::NoBody ?
+                        "NoBody" : (obj.encoding() == QOpcUa::QExtensionObject::Encoding::ByteString ?
+                            "ByteString" : "XML")).arg(obj.encodedBody().isEmpty() ? "0" : QString(obj.encodedBody().toHex()));
     }
 
     if (value.canConvert<QString>())
@@ -326,27 +347,18 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
 
 QString TreeItem::localizedTextToString(const QOpcUa::QLocalizedText &text) const
 {
-    return QStringLiteral("\"%1\", \"%2\"").arg(text.locale()).arg(text.text());
+    return QStringLiteral("[Locale: \"%1\", Text: \"%2\"]").arg(text.locale()).arg(text.text());
 }
 
 QString TreeItem::rangeToString(const QOpcUa::QRange &range) const
 {
-    return QStringLiteral("[%1, %2]").arg(range.low()).arg(range.high());
+    return QStringLiteral("[Low: %1, High: %2]").arg(range.low()).arg(range.high());
 }
 
 QString TreeItem::euInformationToString(const QOpcUa::QEUInformation &info) const
 {
-    return QStringLiteral("UnitId: %1; NamespaceUri: \"%2\"; DisplayName: %3; Description: %4").arg(info.unitId()).arg(
+    return QStringLiteral("[UnitId: %1, NamespaceUri: \"%2\", DisplayName: %3, Description: %4]").arg(info.unitId()).arg(
                 info.namespaceUri()).arg(localizedTextToString(info.displayName())).arg(localizedTextToString(info.description()));
-}
-
-QString TreeItem::axisStepsToString(const QVector<double> &vec) const
-{
-    QStringList list;
-    for (auto it : vec)
-        list.append(QString::number(it));
-
-    return list.join(", ");
 }
 
 QT_END_NAMESPACE
