@@ -383,6 +383,26 @@ void QOpcUaMonitoringParameters::setSubscriptionId(quint32 subscriptionId)
 }
 
 /*!
+    Returns the monitored item id assigned by the server.
+    If the monitored item id is 0, the monitored item could
+    not be successfully created.
+*/
+quint32 QOpcUaMonitoringParameters::monitoredItemId() const
+{
+    return d_ptr->monitoredItemId;
+}
+
+/*!
+    Sets the monitored item id to \a monitoredItemId.
+
+    Setting this value as a client has no effect.
+*/
+void QOpcUaMonitoringParameters::setMonitoredItemId(quint32 monitoredItemId)
+{
+    d_ptr->monitoredItemId = monitoredItemId;
+}
+
+/*!
     Returns the monitoring mode for the monitored item.
 */
 QOpcUaMonitoringParameters::MonitoringMode QOpcUaMonitoringParameters::monitoringMode() const

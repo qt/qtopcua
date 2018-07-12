@@ -912,6 +912,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
 
     QOpcUaMonitoringParameters valueStatus = node->monitoringStatus(QOpcUa::NodeAttribute::Value);
     QVERIFY(valueStatus.subscriptionId() != 0);
+    QVERIFY(valueStatus.monitoredItemId() != 0);
     QVERIFY(valueStatus.statusCode() == 0);
 
     WRITE_VALUE_ATTRIBUTE(node, QVariant(double(42)), QOpcUa::Types::Double);
@@ -938,6 +939,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
 
     QOpcUaMonitoringParameters displayNameStatus = node->monitoringStatus(QOpcUa::NodeAttribute::DisplayName);
     QVERIFY(displayNameStatus.subscriptionId() == valueStatus.subscriptionId());
+    QVERIFY(displayNameStatus.monitoredItemId() != 0);
     QVERIFY(displayNameStatus.statusCode() == 0);
 
     dataChangeSpy.wait();
@@ -956,6 +958,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
 
     QOpcUaMonitoringParameters nodeIdStatus = node->monitoringStatus(QOpcUa::NodeAttribute::NodeId);
     QVERIFY(nodeIdStatus.subscriptionId() != valueStatus.subscriptionId());
+    QVERIFY(nodeIdStatus.monitoredItemId() != 0);
     QVERIFY(nodeIdStatus.statusCode() == 0);
 
     dataChangeSpy.wait();
@@ -1002,6 +1005,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
         QOpcUa::NodeAttribute temp = it.at(0).value<QOpcUa::NodeAttribute>();
         QVERIFY(attrs.contains(temp));
         QVERIFY(node->monitoringStatus(temp).subscriptionId() == 0);
+        QVERIFY(node->monitoringStatus(temp).monitoredItemId() == 0);
         QVERIFY(node->monitoringStatus(temp).statusCode() == QOpcUa::UaStatusCode::BadAttributeIdInvalid);
         attrs.remove(attrs.indexOf(temp));
     }

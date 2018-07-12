@@ -300,6 +300,7 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::N
     s.setStatusCode(QOpcUa::UaStatusCode::Good);
     s.setSamplingInterval(res.revisedSamplingInterval);
     s.setQueueSize(res.revisedQueueSize);
+    s.setMonitoredItemId(res.monitoredItemId);
     temp->parameters = s;
     temp->clientHandle = m_clientHandle;
 

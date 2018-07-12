@@ -160,6 +160,8 @@ public:
     void setMonitoringMode(MonitoringMode monitoringMode);
     quint32 subscriptionId() const;
     void setSubscriptionId(quint32 subscriptionId);
+    quint32 monitoredItemId() const;
+    void setMonitoredItemId(quint32 monitoredItemId);
     double publishingInterval() const;
     void setPublishingInterval(double publishingInterval);
     quint32 lifetimeCount() const;

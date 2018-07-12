@@ -144,6 +144,7 @@ bool QUACppSubscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::NodeA
     s.setLifetimeCount(m_nativeSubscription->lifetimeCount());
     s.setStatusCode(static_cast<QOpcUa::UaStatusCode>(result.statusCode()));
     s.setSamplingInterval(createResults[0].RevisedSamplingInterval);
+    s.setMonitoredItemId(createResults[0].MonitoredItemId);
 
     // Store information
     const auto key = qMakePair(handle, attr);
