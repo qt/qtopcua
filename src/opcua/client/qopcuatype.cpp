@@ -2234,7 +2234,6 @@ QOpcUa::QLiteralOperand::QLiteralOperand()
 QOpcUa::QLiteralOperand::QLiteralOperand(const QLiteralOperand &rhs)
     : data(rhs.data)
 {
-    data->type = QOpcUa::Types::Undefined;
 }
 
 /*!
