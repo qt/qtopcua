@@ -2351,6 +2351,17 @@ QOpcUa::QSimpleAttributeOperand::QSimpleAttributeOperand(const QString &name, qu
 }
 
 /*!
+    Constructs a simple attribute operand for the attribute \a attributeId of an object or variable of type \a typeId.
+    This can be used for requesting the ConditionId in an event filter as described in OPC-UA part 9, Table 8.
+*/
+QOpcUa::QSimpleAttributeOperand::QSimpleAttributeOperand(QOpcUa::NodeAttribute attributeId, const QString &typeId)
+    : data(new QOpcUa::QSimpleAttributeOperandData)
+{
+    setTypeId(typeId);
+    setAttributeId(attributeId);
+}
+
+/*!
     Sets the values from \a rhs in this simple attribute operand.
 */
 QOpcUa::QSimpleAttributeOperand &QOpcUa::QSimpleAttributeOperand::operator=(const QOpcUa::QSimpleAttributeOperand &rhs)

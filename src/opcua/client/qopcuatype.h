@@ -756,6 +756,8 @@ public:
     QSimpleAttributeOperand(const QString &name, quint16 namespaceIndex = 0,
                             const QString &typeId = QStringLiteral("ns=0;i=2041"), // BaseEventType
                             QOpcUa::NodeAttribute attributeId = QOpcUa::NodeAttribute::Value);
+    QSimpleAttributeOperand(QOpcUa::NodeAttribute attributeId,
+                            const QString &typeId = QStringLiteral("ns=0;i=2041")); // BaseEventType
     QSimpleAttributeOperand &operator=(const QOpcUa::QSimpleAttributeOperand &);
     operator QVariant() const;
     ~QSimpleAttributeOperand();
