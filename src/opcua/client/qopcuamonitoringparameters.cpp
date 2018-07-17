@@ -150,6 +150,9 @@ QT_BEGIN_NAMESPACE
 /*!
     \enum QOpcUaMonitoringParameters::SubscriptionType
 
+    This enum is used to determine if the monitored item can be added to a shared subscription
+    or if a new subscription must be created.
+
     \value Shared Share subscription with other monitored items with the same interval
     \value Exclusive Request a new subscription for this attribute
 */
