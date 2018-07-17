@@ -641,7 +641,7 @@ QOpcUaMonitoringParameters::DataChangeFilter::operator QVariant() const
     \class QOpcUaMonitoringParameters::EventFilter
     \inmodule QtOpcUa
     \inheaderfile QOpcUaMonitoringParameters
-    \brief Defines an EventFilter for a monitored item
+    \brief Defines an EventFilter for a monitored item.
 
     An event filter is required for monitoring events on the server.
     It consists of \c select clauses and a \c where clause.
@@ -690,7 +690,7 @@ QOpcUaMonitoringParameters::EventFilter::EventFilter()
 }
 
 /*!
-    Constructs an \l event filter from \a rhs.
+    Constructs an event filter from \a rhs.
 */
 QOpcUaMonitoringParameters::EventFilter::EventFilter(const QOpcUaMonitoringParameters::EventFilter &rhs)
     : data(rhs.data)
@@ -726,7 +726,7 @@ QOpcUaMonitoringParameters::EventFilter &QOpcUaMonitoringParameters::EventFilter
 }
 
 /*!
-    Converts this \l event filter to \l QVariant.
+    Converts this event filter to \l QVariant.
 */
 QOpcUaMonitoringParameters::EventFilter::operator const QVariant()
 {
@@ -748,7 +748,7 @@ QVector<QOpcUa::QContentFilterElement> QOpcUaMonitoringParameters::EventFilter::
 /*!
     Returns a reference to the where clause.
 
-    \sa whereClause().
+    \sa whereClause()
 */
 QVector<QOpcUa::QContentFilterElement> &QOpcUaMonitoringParameters::EventFilter::whereClauseRef()
 {

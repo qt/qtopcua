@@ -172,6 +172,7 @@ QT_BEGIN_NAMESPACE
     \value DoubleComplexNumber The OPC UA DoubleComplexNumber type.
     \value AxisInformation Information about an axis.
     \value XV A float value with a double precision position on an axis.
+    \value ExpandedNodeId A node id with additional namespace URI and server index.
     \value Undefined
 */
 
@@ -1935,7 +1936,7 @@ void QOpcUa::QBrowsePathTarget::setTargetId(const QOpcUa::QExpandedNodeId &value
     \class QOpcUa::QContentFilterElement
     \inmodule QtOpcUa
     \inheaderfile QtOpcUa/qopcuatype.h
-    \brief The OPC UA ContentFilterElement
+    \brief The OPC UA ContentFilterElement.
 
     A content filter element contains an operator and a list of operands.
     There are four different operator types which contain literal values, references to
@@ -2110,7 +2111,7 @@ QOpcUa::QContentFilterElement &QOpcUa::QContentFilterElement::operator<<(const Q
     \class QOpcUa::QElementOperand
     \inmodule QtOpcUa
     \inheaderfile QtOpcUa/qopcuatype.h
-    \brief The OPC UA ElementOperand type
+    \brief The OPC UA ElementOperand type.
 
     The ElementOperand is defined in OPC-UA part 4, 7.4.4.2.
     It is used to identify another element in the filter by its index
@@ -2210,7 +2211,7 @@ void QOpcUa::QElementOperand::setIndex(const quint32 &value)
     \class QOpcUa::QLiteralOperand
     \inmodule QtOpcUa
     \inheaderfile QtOpcUa/qopcuatype.h
-    \brief The OPC UA LiteralOperand type
+    \brief The OPC UA LiteralOperand type.
 
     The LiteralOperand is defined in OPC-UA part 4, 7.4.4.3.
     It contains a literal value that is to be used as operand.
@@ -2304,7 +2305,7 @@ void QOpcUa::QLiteralOperand::setValue(const QVariant &value)
     \class QOpcUa::QSimpleAttributeOperand
     \inmodule QtOpcUa
     \inheaderfile QtOpcUa/qopcuatype.h
-    \brief The OPC UA SimpleAttributeOperand type
+    \brief The OPC UA SimpleAttributeOperand type.
 
     The SimpleAttributeOperand is specified in OPC-UA part 4, 7.4.4.5.
     It is used when a node attribute is required as operand.
@@ -2338,7 +2339,7 @@ QOpcUa::QSimpleAttributeOperand::QSimpleAttributeOperand(const QOpcUa::QSimpleAt
 }
 
 /*!
-    Constructs a simple attribute operand for attribute \a attribute of the direct child with the browse name
+    Constructs a simple attribute operand for attribute \a attributeId of the direct child with the browse name
     \a name in namespace \a namespaceIndex. \a typeId is the node id of a type definition node. The operand will
     be restricted to instances of type \a typeId or a subtype.
 */
@@ -2426,7 +2427,7 @@ QVector<QOpcUa::QQualifiedName> QOpcUa::QSimpleAttributeOperand::browsePath() co
 /*!
     Returns a reference to the browse path.
 
-    \sa browsePath().
+    \sa browsePath()
 */
 QVector<QOpcUa::QQualifiedName> &QOpcUa::QSimpleAttributeOperand::browsePathRef()
 {
@@ -2461,7 +2462,7 @@ void QOpcUa::QSimpleAttributeOperand::setTypeId(const QString &value)
     \class QOpcUa::QAttributeOperand
     \inmodule QtOpcUa
     \inheaderfile QtOpcUa/qopcuatype.h
-    \brief The OPC UA AttributeOperand type
+    \brief The OPC UA AttributeOperand type.
 
     The AttributeOperand is defined in OPC-UA part 4, 7.4.4.4.
     It has the same purpose as \l QSimpleAttributeOperand but has more configurable options.
@@ -2607,7 +2608,7 @@ void QOpcUa::QAttributeOperand::setNodeId(const QString &value)
     \class QOpcUa::QContentFilterElementResult
     \inmodule QtOPcUa
     \inheaderfile QtOpcUa/qopcuatype.h
-    \brief The OPC UA ContentFilterElementResult
+    \brief The OPC UA ContentFilterElementResult.
 
     QContentFilterElementResult contains the status code for a
     filter element and all its operands.
@@ -2693,7 +2694,7 @@ QVector<QOpcUa::UaStatusCode> &QOpcUa::QContentFilterElementResult::operandStatu
     \class QOpcUa::QEventFilterResult
     \inmodule QtOpcUa
     \inheaderfile QtOpcUa/qopcuatype.h
-    \brief The OPCUA EventFilterResult
+    \brief The OPCUA EventFilterResult.
 
     The EventFilterResult contains status codes for all elements of the \c select clauses
     and all elements of the \c where clause.
@@ -2810,7 +2811,7 @@ void QOpcUa::QEventFilterResult::setSelectClauseResults(const QVector<QOpcUa::Ua
     \class QOpcUa::QUserTokenPolicy
     \inmodule QtOpcUa
     \inheaderfile QtOpcUa/qopcuatype.h
-    \brief The OPC UA UserTokenPolicy
+    \brief The OPC UA UserTokenPolicy.
 
     The user token policy contains information about an user token accepted by the server.
 */
@@ -2945,7 +2946,7 @@ void QOpcUa::QUserTokenPolicy::setPolicyId(const QString &value)
     \class QOpcUa::QApplicationDescription
     \inmodule QtOpcUa
     \inheaderfile QtOpcUa/qopcuatype.h
-    \brief The OPC UA ApplicationDescription
+    \brief The OPC UA ApplicationDescription.
 
     The application description contains information about an OPC UA application.
 */
@@ -3121,7 +3122,7 @@ void QOpcUa::QApplicationDescription::setApplicationUri(const QString &value)
     \class QOpcUa::QEndpointDescription
     \inmodule QtOpcUa
     \inheaderfile QtOpcUa/qopcuatype.h
-    \brief The OPC UA EndpointDescription
+    \brief The OPC UA EndpointDescription.
 
     An endpoint description contains information about an endpoint and how to connect to it.
 */

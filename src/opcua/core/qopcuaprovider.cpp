@@ -54,7 +54,7 @@ Q_LOGGING_CATEGORY(QT_OPCUA, "qt.opcua")
     \class QOpcUaProvider
     \inmodule QtOpcUa
 
-    \brief QOpcUaProvider creates an instance of QOpcUaClient
+    \brief QOpcUaProvider creates an instance of QOpcUaClient.
 
     QOpcUaProvider allows the user to create an instance of QOpcUaClient by
     loading a QOpcUaPlugin using the Qt plugin system.
