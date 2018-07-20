@@ -1,5 +1,4 @@
 TEMPLATE = app
-TARGET = simulationserver
 
 INCLUDEPATH += \
                $$PWD/../../../../src/plugins/opcua/open62541

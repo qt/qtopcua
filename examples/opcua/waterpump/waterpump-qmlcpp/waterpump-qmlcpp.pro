@@ -1,6 +1,5 @@
 QT += quick opcua
 CONFIG += c++11
-TARGET = qml-hmi
 
 SOURCES += main.cpp \
     opcuamachinebackend.cpp
@@ -11,5 +10,5 @@ HEADERS += \
     opcuamachinebackend.h
 
 #install
-target.path = $$[QT_INSTALL_EXAMPLES]/opcua/waterpump/qml-hmi
+target.path = $$[QT_INSTALL_EXAMPLES]/opcua/waterpump/waterpump-qmlcpp
 INSTALLS += target

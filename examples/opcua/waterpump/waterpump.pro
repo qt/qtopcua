@@ -1,3 +1,2 @@
 TEMPLATE = subdirs
-
-SUBDIRS += simulationserver qml-hmi
+SUBDIRS += simulationserver waterpump-qmlcpp
