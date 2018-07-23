@@ -29,12 +29,14 @@
     \example waterpump/waterpump-qmlcpp
     \ingroup qtopcua-examples
     \title Using Qt OPC UA in a basic UI application
+    \brief This example shows how to use Qt OPC UA to interact with an OPC UA
+    server to build a QML based HMI for a simple machine.
 
     \section1 Introduction
     This example shows how to use Qt OPC UA to interact with an OPC UA
     server to build a QML based HMI for a simple machine.
 
-    \section1 The simulation
+    \section1 The Simulation
     The OPC UA server included in this example runs a simulation of a machine
     containing two tanks, a water pump and a valve. Water can be pumped from the
     first tank into the second tank and then be flushed from the second tank
@@ -83,7 +85,7 @@
     \l {QOpcUa::UaStatusCode} {BadUserAccessDenied} if the operation is illegal
     (e. g. trying to start the pump if the first tank is empty).
 
-    \section1 Used features of \l QOpcUaClient
+    \section1 Used Features of \l QOpcUaClient
     This example uses read, write, method calls and data change subscriptions
     and shows how to set up handlers for the asynchronous operations offered
     by QOpcUaClient and QOpcUaNode.
@@ -94,7 +96,7 @@
     and expose the content of this server by means of properties and Q_INVOKABLE
     methods wrapping the OPC UA method calls.
 
-    \section2 Member variables
+    \section2 Member Variables
     A pointer to \l QOpcUaClient is required for connection management. An
     additional pointer to a \l QOpcUaNode object is needed for each OPC UA
     node the HMI interacts with. For the values of these nodes, member variables
@@ -116,7 +118,7 @@
     \printuntil QString message
     \dots
 
-    \section2 Asynchronous handlers
+    \section2 Asynchronous Handlers
 
     The asynchronous API of Qt OPC UA requires signal handlers for all operations.
 
@@ -136,7 +138,7 @@
     \printuntil }
     \printuntil }
 
-    \section2 Interaction with the server
+    \section2 Interaction with the Server
 
     In the constructor, a QOpcUaProvider is created and the available backends are saved to provide a model for the backend selection dropdown menu.
 
@@ -222,12 +224,12 @@
 
     \section1 Usage
     The server is started automatically by the HMI application.
-    After connecting to the server by clicking the "Connect" button,
-    drag the slider to set a setpoint, then click "Start" to start pumping water
+    After connecting to the server by clicking the \uicontrol Connect button,
+    drag the slider to set a setpoint, then click \uicontrol Start to start pumping water
     from the first tank to the second tank. After setting a setpoint lower than
-    the current value of the second tank, a click on "Flush" opens the valve.
+    the current value of the second tank, a click on \uicontrol Flush opens the valve.
 
-    If there is no water left, click "Reset simulation" to refill the first tank.
+    If there is no water left, click \uicontrol {Reset simulation} to refill the first tank.
 
     \image tankexample.jpg
 */

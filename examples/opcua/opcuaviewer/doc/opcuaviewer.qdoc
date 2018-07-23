@@ -29,6 +29,8 @@
     \example opcuaviewer
     \ingroup qtopcua-examples
     \title Qt OPC UA explorer
+    \brief This example uses the model/view approach to display all nodes of an
+    OPC UA server in a \l QTreeView.
 
     \section1 Introduction
     This example uses the model/view approach to display all nodes of an
