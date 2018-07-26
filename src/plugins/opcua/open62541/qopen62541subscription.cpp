@@ -174,11 +174,13 @@ void QOpen62541Subscription::modifyMonitoring(quint64 handle, QOpcUa::NodeAttrib
 
         UA_SetPublishingModeRequest req;
         UA_SetPublishingModeRequest_init(&req);
+        UaDeleter<UA_SetPublishingModeRequest> requestDeleter(&req, UA_SetPublishingModeRequest_deleteMembers);
         req.publishingEnabled = value.toBool();
         req.subscriptionIdsSize = 1;
         req.subscriptionIds = UA_UInt32_new();
         *req.subscriptionIds = m_subscriptionId;
         UA_SetPublishingModeResponse res = UA_Client_Subscriptions_setPublishingMode(m_backend->m_uaclient, req);
+        UaDeleter<UA_SetPublishingModeResponse> responseDeleter(&res, UA_SetPublishingModeResponse_deleteMembers);
 
         if (res.responseHeader.serviceResult != UA_STATUSCODE_GOOD) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set publishing mode:" << res.responseHeader.serviceResult;
@@ -193,8 +195,6 @@ void QOpen62541Subscription::modifyMonitoring(quint64 handle, QOpcUa::NodeAttrib
         p.setStatusCode(static_cast<QOpcUa::UaStatusCode>(res.results[0]));
         emit m_backend->monitoringStatusChanged(handle, attr, item, p);
 
-        UA_SetPublishingModeRequest_deleteMembers(&req);
-        UA_SetPublishingModeResponse_deleteMembers(&res);
         return;
     }
 
@@ -209,12 +209,14 @@ void QOpen62541Subscription::modifyMonitoring(quint64 handle, QOpcUa::NodeAttrib
 
         UA_SetMonitoringModeRequest req;
         UA_SetMonitoringModeRequest_init(&req);
+        UaDeleter<UA_SetMonitoringModeRequest> requestDeleter(&req, UA_SetMonitoringModeRequest_deleteMembers);
         req.monitoringMode = static_cast<UA_MonitoringMode>(value.value<QOpcUaMonitoringParameters::MonitoringMode>());
         req.monitoredItemIdsSize = 1;
         req.monitoredItemIds = UA_UInt32_new();
         *req.monitoredItemIds = monItem->monitoredItemId;
         req.subscriptionId = m_subscriptionId;
         UA_SetMonitoringModeResponse res = UA_Client_MonitoredItems_setMonitoringMode(m_backend->m_uaclient, req);
+        UaDeleter<UA_SetMonitoringModeResponse> responseDeleter(&res, UA_SetMonitoringModeResponse_deleteMembers);
 
         if (res.responseHeader.serviceResult != UA_STATUSCODE_GOOD) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set monitoring mode:" << res.responseHeader.serviceResult;
@@ -228,9 +230,6 @@ void QOpen62541Subscription::modifyMonitoring(quint64 handle, QOpcUa::NodeAttrib
 
         p.setStatusCode(static_cast<QOpcUa::UaStatusCode>(res.results[0]));
         emit m_backend->monitoringStatusChanged(handle, attr, item, p);
-
-        UA_SetMonitoringModeRequest_deleteMembers(&req);
-        UA_SetMonitoringModeResponse_deleteMembers(&res);
         return;
     }
 
@@ -248,6 +247,7 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::N
 {
     UA_MonitoredItemCreateRequest req;
     UA_MonitoredItemCreateRequest_init(&req);
+    UaDeleter<UA_MonitoredItemCreateRequest> requestDeleter(&req, UA_MonitoredItemCreateRequest_deleteMembers);
     req.itemToMonitor.attributeId = QOpen62541ValueConverter::toUaAttributeId(attr);
     UA_NodeId_copy(&id, &(req.itemToMonitor.nodeId));
     if (settings.indexRange().size())
@@ -272,14 +272,13 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::N
     }
 
     UA_MonitoredItemCreateResult res;
+    UaDeleter<UA_MonitoredItemCreateResult> resultDeleter(&res, UA_MonitoredItemCreateResult_deleteMembers);
 
     if (attr == QOpcUa::NodeAttribute::EventNotifier && settings.filter().canConvert<QOpcUaMonitoringParameters::EventFilter>())
         res = UA_Client_MonitoredItems_createEvent(m_backend->m_uaclient, m_subscriptionId,
                                                    UA_TIMESTAMPSTORETURN_BOTH, req, this, eventHandler, nullptr);
     else
         res = UA_Client_MonitoredItems_createDataChange(m_backend->m_uaclient, m_subscriptionId, UA_TIMESTAMPSTORETURN_BOTH, req, this, monitoredValueHandler, nullptr);
-
-    UA_MonitoredItemCreateRequest_deleteMembers(&req);
 
     if (res.statusCode != UA_STATUSCODE_GOOD) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not add monitored item for" << attr << "of node" << Open62541Utils::nodeIdToQString(id) << ":" << UA_StatusCode_name(res.statusCode);
@@ -308,8 +307,6 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::N
         s.setFilter(QVariant::fromValue(convertEventFilterResult(&res.filterResult)));
     else
         s.setFilter(QVariant());
-
-    UA_MonitoredItemCreateResult_deleteMembers(&res);
 
     emit m_backend->monitoringEnableDisable(handle, attr, true, s);
 
@@ -732,6 +729,7 @@ bool QOpen62541Subscription::modifyMonitoredItemParameters(quint64 handle, QOpcU
 
     UA_ModifyMonitoredItemsRequest req;
     UA_ModifyMonitoredItemsRequest_init(&req);
+    UaDeleter<UA_ModifyMonitoredItemsRequest> requestDeleter(&req, UA_ModifyMonitoredItemsRequest_deleteMembers);
     req.subscriptionId = m_subscriptionId;
     req.itemsToModifySize = 1;
     req.itemsToModify = UA_MonitoredItemModifyRequest_new();
@@ -751,7 +749,6 @@ bool QOpen62541Subscription::modifyMonitoredItemParameters(quint64 handle, QOpcU
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify DiscardOldest, value is not a bool";
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(handle, attr, item, p);
-            UA_ModifyMonitoredItemsRequest_deleteMembers(&req);
             return true;
         }
         req.itemsToModify->requestedParameters.discardOldest = value.toBool();
@@ -762,7 +759,6 @@ bool QOpen62541Subscription::modifyMonitoredItemParameters(quint64 handle, QOpcU
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify QueueSize, value is not an integer";
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(handle, attr, item, p);
-            UA_ModifyMonitoredItemsRequest_deleteMembers(&req);
             return true;
         }
         req.itemsToModify->requestedParameters.queueSize = value.toUInt();
@@ -773,7 +769,6 @@ bool QOpen62541Subscription::modifyMonitoredItemParameters(quint64 handle, QOpcU
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify SamplingInterval, value is not a double";
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(handle, attr, item, p);
-            UA_ModifyMonitoredItemsRequest_deleteMembers(&req);
             return true;
         }
         req.itemsToModify->requestedParameters.samplingInterval = value.toDouble();
@@ -787,7 +782,6 @@ bool QOpen62541Subscription::modifyMonitoredItemParameters(quint64 handle, QOpcU
             qCDebug(QT_OPCUA_PLUGINS_OPEN62541) << "Unable to modify filter, filter creation failed";
             p.setStatusCode(QOpcUa::UaStatusCode::BadInternalError);
             emit m_backend->monitoringStatusChanged(handle, attr, item, p);
-            UA_ModifyMonitoredItemsRequest_deleteMembers(&req);
             return true;
         }
         break;
@@ -806,18 +800,17 @@ bool QOpen62541Subscription::modifyMonitoredItemParameters(quint64 handle, QOpcU
                 qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify monitored item, filter creation failed";
                 p.setStatusCode(QOpcUa::UaStatusCode::BadInternalError);
                 emit m_backend->monitoringStatusChanged(handle, attr, item, p);
-                UA_ModifyMonitoredItemsRequest_deleteMembers(&req);
                 return true;
             }
         }
 
         UA_ModifyMonitoredItemsResponse res = UA_Client_MonitoredItems_modify(m_backend->m_uaclient, req);
+        UaDeleter<UA_ModifyMonitoredItemsResponse> responseDeleter(
+                    &res, UA_ModifyMonitoredItemsResponse_deleteMembers);
 
         if (res.responseHeader.serviceResult != UA_STATUSCODE_GOOD || res.results[0].statusCode != UA_STATUSCODE_GOOD) {
             p.setStatusCode(static_cast<QOpcUa::UaStatusCode>(res.responseHeader.serviceResult == UA_STATUSCODE_GOOD ? res.results[0].statusCode : res.responseHeader.serviceResult));
             emit m_backend->monitoringStatusChanged(handle, attr, item, p);
-            UA_ModifyMonitoredItemsRequest_deleteMembers(&req);
-            UA_ModifyMonitoredItemsResponse_deleteMembers(&res);
             return true;
         } else {
             p.setStatusCode(QOpcUa::UaStatusCode::Good);
@@ -844,14 +837,9 @@ bool QOpen62541Subscription::modifyMonitoredItemParameters(quint64 handle, QOpcU
 
             emit m_backend->monitoringStatusChanged(handle, attr, changed, p);
             monItem->parameters = p;
-            UA_ModifyMonitoredItemsRequest_deleteMembers(&req);
-            UA_ModifyMonitoredItemsResponse_deleteMembers(&res);
         }
         return true;
     }
-
-    UA_ModifyMonitoredItemsRequest_deleteMembers(&req);
-
     return false;
 }
 

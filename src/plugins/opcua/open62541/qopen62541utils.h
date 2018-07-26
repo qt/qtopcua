@@ -41,7 +41,48 @@
 
 #include <QtCore/qstring.h>
 
+#include <functional>
+
 QT_BEGIN_NAMESPACE
+
+template <typename T>
+class UaDeleter
+{
+public:
+    UaDeleter(T *data, std::function<void(T *value)> f)
+        : m_data(data)
+        , m_function(f)
+    {
+    }
+    ~UaDeleter()
+    {
+        if (m_data)
+            m_function(m_data);
+    }
+private:
+    T *m_data {nullptr};
+    std::function<void(T *attribute)> m_function;
+};
+
+template <uint TYPEINDEX>
+class UaArrayDeleter
+{
+public:
+    UaArrayDeleter(void *data, size_t arrayLength)
+        : m_data(data)
+        , m_arrayLength(arrayLength)
+    {
+        static_assert (TYPEINDEX < UA_TYPES_COUNT, "Invalid index outside the UA_TYPES array.");
+    }
+    ~UaArrayDeleter()
+    {
+        if (m_data && m_arrayLength > 0)
+            UA_Array_delete(m_data, m_arrayLength, &UA_TYPES[TYPEINDEX]);
+    }
+private:
+    void *m_data {nullptr};
+    size_t m_arrayLength {0};
+};
 
 namespace Open62541Utils {
     UA_NodeId nodeIdFromQString(const QString &name);

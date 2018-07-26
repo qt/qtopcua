@@ -538,9 +538,7 @@ void scalarFromQt<UA_ByteString, QByteArray>(const QByteArray &value, UA_ByteStr
 template<>
 void scalarFromQt<UA_NodeId, QString>(const QString &value, UA_NodeId *ptr)
 {
-    UA_NodeId tmpValue = Open62541Utils::nodeIdFromQString(value);
-    UA_NodeId_copy(&tmpValue, ptr);
-    UA_NodeId_deleteMembers(&tmpValue);
+    *ptr = Open62541Utils::nodeIdFromQString(value);
 }
 
 template<>
@@ -618,8 +616,8 @@ void scalarFromQt<UA_ExtensionObject, QOpcUa::QExtensionObject>(const QOpcUa::QE
 {
     QByteArray temp = obj.encodedBody();
     UA_NodeId encodingId = Open62541Utils::nodeIdFromQString(obj.encodingTypeId());
+    UaDeleter<UA_NodeId> nodeIdDeleter(&encodingId, UA_NodeId_deleteMembers);
     createExtensionObject(temp, encodingId, ptr, obj.encoding());
-    UA_NodeId_deleteMembers(&encodingId);
 }
 
 template<>
