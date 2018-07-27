@@ -205,12 +205,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QOpcUaNode::resolveBrowsePathFinished(QVector<QOpcUa::QBrowsePathTarget> targets, QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode status)
+    \fn void QOpcUaNode::resolveBrowsePathFinished(QVector<QOpcUa::QBrowsePathTarget> targets, QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode statusCode)
 
     This signal is emitted after a \l resolveBrowsePath() call has finished.
 
-    \l QOpcUa::QBrowsePathTarget \a targets contains the matches, \a status is the status code of the operation.
-    If \a status is not \l {QOpcUa::UaStatusCode} {Good}, \a targets is empty.
+    \l QOpcUa::QBrowsePathTarget \a targets contains the matches, \a statusCode is the status code of the operation.
+    If \a statusCode is not \l {QOpcUa::UaStatusCode} {Good}, \a targets is empty.
     The browse path \a path is the browse path from the request. It can be used to associate results with requests.
 */
 

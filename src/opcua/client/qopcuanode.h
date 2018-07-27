@@ -110,7 +110,7 @@ Q_SIGNALS:
     void methodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
     void browseFinished(QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
     void resolveBrowsePathFinished(QVector<QOpcUa::QBrowsePathTarget> targets,
-                                     QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode status);
+                                     QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode statusCode);
 
 private:
     Q_DISABLE_COPY(QOpcUaNode)

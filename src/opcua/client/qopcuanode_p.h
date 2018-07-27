@@ -175,10 +175,10 @@ public:
 
         m_resolveBrowsePathFinishedConnection = QObject::connect(impl, &QOpcUaNodeImpl::resolveBrowsePathFinished,
                 [this](QVector<QOpcUa::QBrowsePathTarget> targets, QVector<QOpcUa::QRelativePathElement> path,
-                                                                   QOpcUa::UaStatusCode status)
+                                                                   QOpcUa::UaStatusCode statusCode)
         {
             Q_Q(QOpcUaNode);
-            emit q->resolveBrowsePathFinished(targets, path, status);
+            emit q->resolveBrowsePathFinished(targets, path, statusCode);
         });
 
         m_eventOccurredConnection = QObject::connect(impl, &QOpcUaNodeImpl::eventOccurred,

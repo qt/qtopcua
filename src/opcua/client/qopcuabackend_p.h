@@ -91,7 +91,7 @@ Q_SIGNALS:
     void browseFinished(quint64 handle, QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
 
     void resolveBrowsePathFinished(quint64 handle, const QVector<QOpcUa::QBrowsePathTarget> &targets,
-                                     const QVector<QOpcUa::QRelativePathElement> &path, QOpcUa::UaStatusCode status);
+                                     const QVector<QOpcUa::QRelativePathElement> &path, QOpcUa::UaStatusCode statusCode);
     void endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
     void findServersFinished(QVector<QOpcUa::QApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
 
