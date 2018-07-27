@@ -173,6 +173,7 @@ QT_BEGIN_NAMESPACE
     \value AxisInformation Information about an axis.
     \value XV A float value with a double precision position on an axis.
     \value ExpandedNodeId A node id with additional namespace URI and server index.
+    \value Argument The OPC UA Argument type.
     \value Undefined
 */
 
@@ -3375,7 +3376,7 @@ void QOpcUa::QEndpointDescription::setEndpointUrl(const QString &value)
     \class QOpcUa::QArgument
     \inmodule QtOpcUa
     \inheaderfile QtOpcUa/qopcuatype.h
-    \brief The OPC UA Argument type
+    \brief The OPC UA Argument type.
 
     This is the Qt OPC UA representation for the Argument type defined in OPC-UA part 3, 8.6.
 
