@@ -200,6 +200,16 @@ public:
         QObject::disconnect(m_browseFinishedConnection);
         QObject::disconnect(m_resolveBrowsePathFinishedConnection);
         QObject::disconnect(m_eventOccurredConnection);
+
+        // Disable remaining monitorings
+        QOpcUa::NodeAttributes attr;
+        for (auto it = m_monitoringStatus.constBegin(); it != m_monitoringStatus.constEnd(); ++it) {
+            if (it->statusCode() == QOpcUa::UaStatusCode::Good)
+                attr |= it.key();
+        }
+        if (attr != 0 && m_impl) {
+            m_impl->disableMonitoring(attr);
+        }
     }
 
     QScopedPointer<QOpcUaNodeImpl> m_impl;

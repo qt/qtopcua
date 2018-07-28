@@ -413,6 +413,8 @@ private slots:
     void modifyMonitoredItem();
     defineDataMethod(addDuplicateMonitoredItem_data)
     void addDuplicateMonitoredItem();
+    defineDataMethod(checkMonitoredItemCleanup_data);
+    void checkMonitoredItemCleanup();
 
     defineDataMethod(stringCharset_data)
     void stringCharset();
@@ -2607,6 +2609,61 @@ void Tst_QOpcUaClient::addDuplicateMonitoredItem()
     QCOMPARE(monitoringDisabledSpy.size(), 1);
     QCOMPARE(monitoringDisabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
     QCOMPARE(monitoringDisabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+}
+
+void Tst_QOpcUaClient::checkMonitoredItemCleanup()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> readWriteNode(opcuaClient->node("ns=3;s=TestNode.ReadWrite"));
+    QVERIFY(readWriteNode != nullptr);
+
+    QScopedPointer<QOpcUaNode> serverNode(opcuaClient->node("ns=0;i=2253"));
+    QVERIFY(serverNode != nullptr);
+
+    QSignalSpy monitoringEnabledSpy(readWriteNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QOpcUa::NodeAttributes attr = QOpcUa::NodeAttribute::Value | QOpcUa::NodeAttribute::BrowseName;
+    readWriteNode->enableMonitoring(attr, QOpcUaMonitoringParameters(100, QOpcUaMonitoringParameters::SubscriptionType::Exclusive));
+    monitoringEnabledSpy.wait();
+    if (monitoringEnabledSpy.size() != 2)
+        monitoringEnabledSpy.wait();
+    QCOMPARE(monitoringEnabledSpy.size(), 2);
+
+    for (auto entry : monitoringEnabledSpy) {
+        QVERIFY(attr & entry.at(0).value<QOpcUa::NodeAttribute>());
+        QCOMPARE(entry.at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    }
+
+    quint32 subscriptionId = readWriteNode->monitoringStatus(QOpcUa::NodeAttribute::Value).subscriptionId();
+    QCOMPARE(subscriptionId, readWriteNode->monitoringStatus(QOpcUa::NodeAttribute::BrowseName).subscriptionId());
+
+    QSignalSpy methodSpy(serverNode.data(), &QOpcUaNode::methodCallFinished);
+    QVector<QOpcUa::TypedVariant> parameter;
+    parameter.append(QOpcUa::TypedVariant(QVariant(quint32(subscriptionId)), QOpcUa::Types::UInt32));
+    serverNode->callMethod("ns=0;i=11492", parameter); // Call the getMonitoredItems method
+
+    methodSpy.wait();
+    QCOMPARE(methodSpy.size(), 1);
+
+    for (auto entry : methodSpy) {
+        QCOMPARE(entry.at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+        QCOMPARE(entry.at(1).toList().size(), 2); // Two monitored items
+        QCOMPARE(entry.at(1).toList().at(0).toList().size(), 2); // One server handle for each monitored item
+        QCOMPARE(entry.at(1).toList().at(1).toList().size(), 2); // One client handle for each monitored item
+    }
+
+    readWriteNode.reset(); // Delete the node object
+
+    methodSpy.wait(); // Give the backend some time to process the deletion request
+    methodSpy.clear();
+    serverNode->callMethod("ns=0;i=11492", parameter); // Call the getMonitoredItems method
+    methodSpy.wait();
+    QCOMPARE(methodSpy.size(), 1);
+
+    for (auto entry : methodSpy) {
+        QCOMPARE(entry.at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
+    }
 }
 
 void Tst_QOpcUaClient::stringCharset()
