@@ -107,4 +107,12 @@ bool QUACppClient::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
     return false;
 }
 
+bool QUACppClient::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite)
+{
+    Q_UNUSED(nodesToWrite);
+
+    qInfo("Batch write is currently not implemented in the uacpp backend");
+    return false;
+}
+
 QT_END_NAMESPACE

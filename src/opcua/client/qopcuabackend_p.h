@@ -95,6 +95,7 @@ Q_SIGNALS:
     void endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
     void findServersFinished(QVector<QOpcUa::QApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
     void batchReadFinished(QVector<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult);
+    void batchWriteFinished(QVector<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult);
 
 private:
     Q_DISABLE_COPY(QOpcUaBackend)

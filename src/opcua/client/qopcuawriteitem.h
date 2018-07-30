@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2018 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,48 +34,58 @@
 **
 ****************************************************************************/
 
-#ifndef QOPEN62541CLIENT_H
-#define QOPEN62541CLIENT_H
+#ifndef QOPCUAWRITEITEM_H
+#define QOPCUAWRITEITEM_H
 
-#include "qopen62541.h"
-#include <private/qopcuaclientimpl_p.h>
+#include <QtOpcUa/qopcuatype.h>
 
-#include <QtCore/qtimer.h>
+#include <QtCore/qdatetime.h>
 
 QT_BEGIN_NAMESPACE
 
-class Open62541AsyncBackend;
-
-class QOpen62541Client : public QOpcUaClientImpl
+class QOpcUaWriteItemData;
+class Q_OPCUA_EXPORT QOpcUaWriteItem
 {
-    Q_OBJECT
-
 public:
-    explicit QOpen62541Client();
-    ~QOpen62541Client();
+    QOpcUaWriteItem();
+    QOpcUaWriteItem(const QOpcUaWriteItem &other);
+    QOpcUaWriteItem(const QString &nodeId, QOpcUa::NodeAttribute attribute, const QVariant &value,
+                    QOpcUa::Types type = QOpcUa::Types::Undefined, const QString &indexRange = QString());
+    QOpcUaWriteItem &operator=(const QOpcUaWriteItem &rhs);
+    ~QOpcUaWriteItem();
 
-    void connectToEndpoint(const QUrl &url) override;
-    void disconnectFromEndpoint() override;
+    QString nodeId() const;
+    void setNodeId(const QString &nodeId);
 
-    QOpcUaNode *node(const QString &nodeId) override;
+    QOpcUa::NodeAttribute attribute() const;
+    void setAttribute(QOpcUa::NodeAttribute attribute);
 
-    QString backend() const override;
+    QString indexRange() const;
+    void setIndexRange(const QString &indexRange);
 
-    bool requestEndpoints(const QUrl &url) override;
+    QVariant value() const;
+    void setValue(const QVariant &value);
+    void setValue(const QVariant &value, QOpcUa::Types type);
 
-    bool findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris) override;
+    QOpcUa::Types type() const;
+    void setType(QOpcUa::Types type);
 
-    bool batchRead(const QVector<QOpcUaReadItem> &nodesToRead) override;
-    bool batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite) override;
+    QDateTime sourceTimestamp() const;
+    void setSourceTimestamp(const QDateTime &sourceTimestamp);
 
-private slots:
+    QDateTime serverTimestamp() const;
+    void setServerTimestamp(const QDateTime &serverTimestamp);
+
+    QOpcUa::UaStatusCode statusCode() const;
+    bool hasStatusCode() const;
+    void setStatusCode(QOpcUa::UaStatusCode statusCode);
 
 private:
-    friend class QOpen62541Node;
-    QThread *m_thread;
-    Open62541AsyncBackend *m_backend;
+    QSharedDataPointer<QOpcUaWriteItemData> data;
 };
 
 QT_END_NAMESPACE
 
-#endif // QOPEN62541CLIENT_H
+Q_DECLARE_METATYPE(QOpcUaWriteItem)
+
+#endif // QOPCUAWRITEITEM_H

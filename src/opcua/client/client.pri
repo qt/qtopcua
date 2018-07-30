@@ -19,7 +19,9 @@ SOURCES += \
     client/qopcuareferencedescription.cpp \
     client/qopcuareaditem.cpp \
     client/qopcuareadresult.cpp \
-    client/qopcuanodeids.cpp
+    client/qopcuanodeids.cpp \
+    client/qopcuawriteitem.cpp \
+    client/qopcuawriteresult.cpp
 
 HEADERS += \
     client/qopcuaclient_p.h \
@@ -34,4 +36,6 @@ HEADERS += \
     client/qopcuareferencedescription.h \
     client/qopcuareaditem.h \
     client/qopcuareadresult.h \
-    client/qopcuanodeids.h
+    client/qopcuanodeids.h \
+    client/qopcuawriteitem.h \
+    client/qopcuawriteresult.h

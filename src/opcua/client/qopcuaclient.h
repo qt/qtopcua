@@ -41,6 +41,8 @@
 #include <QtOpcUa/qopcuanode.h>
 #include <QtOpcUa/qopcuareaditem.h>
 #include <QtOpcUa/qopcuareadresult.h>
+#include <QtOpcUa/qopcuawriteitem.h>
+#include <QtOpcUa/qopcuawriteresult.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -94,6 +96,7 @@ public:
                      const QStringList &serverUris = QStringList());
 
     bool batchRead(const QVector<QOpcUaReadItem> &nodesToRead);
+    bool batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite);
 
     QUrl url() const;
 
@@ -112,6 +115,7 @@ Q_SIGNALS:
     void endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
     void findServersFinished(QVector<QOpcUa::QApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
     void batchReadFinished(QVector<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult);
+    void batchWriteFinished(QVector<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult);
 
 private:
     Q_DISABLE_COPY(QOpcUaClient)

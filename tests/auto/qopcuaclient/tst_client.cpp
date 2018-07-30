@@ -354,6 +354,8 @@ private slots:
     void writeMultipleAttributes();
     defineDataMethod(readEmptyArrayVariable_data)
     void readEmptyArrayVariable();
+    defineDataMethod(batchWrite_data)
+    void batchWrite();
     defineDataMethod(batchRead_data)
     void batchRead();
 
@@ -785,6 +787,56 @@ void Tst_QOpcUaClient::readEmptyArrayVariable()
     QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).toList().isEmpty());
 }
 
+void Tst_QOpcUaClient::batchWrite()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    if (opcuaClient->backend() == QLatin1String("uacpp"))
+        QSKIP("Batch write is currently not supported in the uacpp backend");
+
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QVector<QOpcUaWriteItem> request;
+
+    request.append(QOpcUaWriteItem(QStringLiteral("ns=2;s=Demo.Static.Scalar.Double"), QOpcUa::NodeAttribute::Value,
+                                      23.0, QOpcUa::Types::Double));
+    request.front().setSourceTimestamp(QDateTime::fromString(QStringLiteral("2018-08-03 01:00:00"), Qt::ISODate));
+    request.front().setServerTimestamp(QDateTime::fromString(QStringLiteral("2018-08-03T01:01:00"), Qt::ISODate));
+    request.append(QOpcUaWriteItem(QStringLiteral("ns=2;s=Demo.Static.Arrays.UInt32"), QOpcUa::NodeAttribute::Value,
+                                      QVariantList({0, 1, 2}), QOpcUa::Types::UInt32, QStringLiteral("0:2")));
+    request.append(QOpcUaWriteItem(QStringLiteral("ns=2;s=Demo.Static.Arrays.UInt32"), QOpcUa::NodeAttribute::Value,
+                                      QVariantList({0, 1, 2}), QOpcUa::Types::UInt32, QStringLiteral("0:2")));
+    // Trigger a write error by trying to update an index range with a status code mismatch.
+    request.back().setStatusCode(QOpcUa::UaStatusCode::BadDependentValueChanged);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt32"));
+    QVERIFY (node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, QVariantList({1, 2, 3, 4, 5}), QOpcUa::Types::UInt32);
+
+    QSignalSpy batchWriteSpy(opcuaClient, &QOpcUaClient::batchWriteFinished);
+
+    opcuaClient->batchWrite(request);
+
+    batchWriteSpy.wait();
+
+    QCOMPARE(batchWriteSpy.size(), 1);
+
+    QCOMPARE(batchWriteSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    QVector<QOpcUaWriteResult> result = batchWriteSpy.at(0).at(0).value<QVector<QOpcUaWriteResult>>();
+
+    QCOMPARE(result.size(), 3);
+
+    for (int i = 0; i < result.size(); ++i) {
+        if (i == result.size() - 1)
+            QCOMPARE(result[i].statusCode(), QOpcUa::UaStatusCode::BadIndexRangeInvalid); // Status code mismatch
+        else
+            QCOMPARE(result[i].statusCode(), QOpcUa::UaStatusCode::Good);
+        QCOMPARE(result[i].nodeId(), request[i].nodeId());
+        QCOMPARE(result[i].attribute(), request[i].attribute());
+        QCOMPARE(result[i].indexRange(), request[i].indexRange());
+    }
+}
+
 void Tst_QOpcUaClient::batchRead()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
@@ -802,6 +854,7 @@ void Tst_QOpcUaClient::batchRead()
 
     request.push_back(QOpcUaReadItem(QStringLiteral("ns=2;s=Demo.Static.Scalar.Double"),
                                      QOpcUa::NodeAttribute::DisplayName));
+    request.push_back(QOpcUaReadItem(QStringLiteral("ns=2;s=Demo.Static.Scalar.Double")));
     request.push_back(QOpcUaReadItem(QStringLiteral("ns=2;s=Demo.Static.Arrays.UInt32"),
                                      QOpcUa::NodeAttribute::Value, QStringLiteral("0:2")));
 
@@ -816,7 +869,7 @@ void Tst_QOpcUaClient::batchRead()
     QCOMPARE(batchReadSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
     QVector<QOpcUaReadResult> result = batchReadSpy.at(0).at(0).value<QVector<QOpcUaReadResult>>();
 
-    QCOMPARE(result.size(), 2);
+    QCOMPARE(result.size(), 3);
 
     for (int i = 0; i < result.size(); ++i) {
         QCOMPARE(result[i].statusCode(), QOpcUa::UaStatusCode::Good);
@@ -827,8 +880,13 @@ void Tst_QOpcUaClient::batchRead()
     }
     QVERIFY(!result[0].sourceTimestamp().isValid()); // The initial DisplayName attribute doesn't have a source timestamp
     QVERIFY(result[1].sourceTimestamp().isValid());
+    QVERIFY(result[2].sourceTimestamp().isValid());
     QCOMPARE(result[0].value().value<QOpcUa::QLocalizedText>().text(), QStringLiteral("DoubleScalarTest"));
-    QCOMPARE(result[1].value(), QVariantList({0, 1, 2}));
+    QCOMPARE(result[1].value(), 23.0);
+    QCOMPARE(result[2].value(), QVariantList({0, 1, 2}));
+    // Only check the source timestamp, the server timestamp is replaced with the current DateTime in the open62541
+    // server's Read service.
+    QCOMPARE(result[1].sourceTimestamp(), QDateTime::fromString(QStringLiteral("2018-08-03 01:00:00"), Qt::ISODate));
 }
 
 void Tst_QOpcUaClient::getRootNode()

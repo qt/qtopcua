@@ -118,4 +118,10 @@ bool QOpen62541Client::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
                                      Q_ARG(QVector<QOpcUaReadItem>, nodesToRead));
 }
 
+bool QOpen62541Client::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite)
+{
+    return QMetaObject::invokeMethod(m_backend, "batchWrite", Qt::QueuedConnection,
+                                     Q_ARG(QVector<QOpcUaWriteItem>, nodesToWrite));
+}
+
 QT_END_NAMESPACE

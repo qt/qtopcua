@@ -71,6 +71,11 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
         Q_Q(QOpcUaClient);
         emit q->batchReadFinished(results, serviceResult);
     });
+
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::batchWriteFinished, [this](const QVector<QOpcUaWriteResult> &results, QOpcUa::UaStatusCode serviceResult) {
+        Q_Q(QOpcUaClient);
+        emit q->batchWriteFinished(results, serviceResult);
+    });
 }
 
 QOpcUaClientPrivate::~QOpcUaClientPrivate()

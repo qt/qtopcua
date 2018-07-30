@@ -50,6 +50,7 @@ public:
     bool findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris) override;
 
     bool batchRead(const QVector<QOpcUaReadItem> &nodesToRead) override;
+    bool batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite) override;
 
 private:
     friend class QUACppNode;

@@ -161,6 +161,10 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUaReadResult>();
     qRegisterMetaType<QVector<QOpcUaReadItem>>();
     qRegisterMetaType<QVector<QOpcUaReadResult>>();
+    qRegisterMetaType<QOpcUaWriteItem>();
+    qRegisterMetaType<QOpcUaWriteResult>();
+    qRegisterMetaType<QVector<QOpcUaWriteItem>>();
+    qRegisterMetaType<QVector<QOpcUaWriteResult>>();
 }
 
 QOpcUaProvider::~QOpcUaProvider()

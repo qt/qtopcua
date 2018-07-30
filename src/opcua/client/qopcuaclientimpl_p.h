@@ -78,6 +78,7 @@ public:
     virtual bool requestEndpoints(const QUrl &url) = 0;
     virtual bool findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris) = 0;
     virtual bool batchRead(const QVector<QOpcUaReadItem> &nodesToRead) = 0;
+    virtual bool batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite) = 0;
 
     bool registerNode(QPointer<QOpcUaNodeImpl> obj);
     void unregisterNode(QPointer<QOpcUaNodeImpl> obj);
@@ -109,6 +110,7 @@ signals:
     void endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
     void findServersFinished(QVector<QOpcUa::QApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
     void batchReadFinished(QVector<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult);
+    void batchWriteFinished(QVector<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult);
 
 private:
     Q_DISABLE_COPY(QOpcUaClientImpl)

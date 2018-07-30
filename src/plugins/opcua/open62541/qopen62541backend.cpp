@@ -491,6 +491,73 @@ void Open62541AsyncBackend::batchRead(const QVector<QOpcUaReadItem> &nodesToRead
     }
 }
 
+void Open62541AsyncBackend::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite)
+{
+    if (nodesToWrite.isEmpty()) {
+        emit batchWriteFinished(QVector<QOpcUaWriteResult>(), QOpcUa::UaStatusCode::BadNothingToDo);
+        return;
+    }
+
+    UA_WriteRequest req;
+    UA_WriteRequest_init(&req);
+    UaDeleter<UA_WriteRequest> requestDeleter(&req, UA_WriteRequest_deleteMembers);
+
+    req.nodesToWriteSize = nodesToWrite.size();
+    req.nodesToWrite = static_cast<UA_WriteValue *>(UA_Array_new(nodesToWrite.size(), &UA_TYPES[UA_TYPES_WRITEVALUE]));
+
+    for (int i = 0; i < nodesToWrite.size(); ++i) {
+        const auto &currentItem = nodesToWrite.at(i);
+        auto &currentUaItem = req.nodesToWrite[i];
+        currentUaItem.attributeId = QOpen62541ValueConverter::toUaAttributeId(currentItem.attribute());
+        currentUaItem.nodeId = Open62541Utils::nodeIdFromQString(currentItem.nodeId());
+        if (currentItem.hasStatusCode()) {
+            currentUaItem.value.status = currentItem.statusCode();
+            currentUaItem.value.hasStatus = UA_TRUE;
+        }
+        if (!currentItem.indexRange().isEmpty())
+            QOpen62541ValueConverter::scalarFromQt<UA_String, QString>(currentItem.indexRange(), &currentUaItem.indexRange);
+        if (!currentItem.value().isNull()) {
+            currentUaItem.value.hasValue = true;
+            currentUaItem.value.value = QOpen62541ValueConverter::toOpen62541Variant(currentItem.value(), currentItem.type());
+        }
+        if (currentItem.sourceTimestamp().isValid()) {
+            QOpen62541ValueConverter::scalarFromQt<UA_DateTime, QDateTime>(currentItem.sourceTimestamp(),
+                                                                           &currentUaItem.value.sourceTimestamp);
+            currentUaItem.value.hasSourceTimestamp = UA_TRUE;
+        }
+        if (currentItem.serverTimestamp().isValid()) {
+            QOpen62541ValueConverter::scalarFromQt<UA_DateTime, QDateTime>(currentItem.serverTimestamp(),
+                                                                           &currentUaItem.value.serverTimestamp);
+            currentUaItem.value.hasServerTimestamp = UA_TRUE;
+        }
+    }
+
+    UA_WriteResponse res = UA_Client_Service_write(m_uaclient, req);
+    UaDeleter<UA_WriteResponse> responseDeleter(&res, UA_WriteResponse_deleteMembers);
+
+    QOpcUa::UaStatusCode serviceResult = QOpcUa::UaStatusCode(res.responseHeader.serviceResult);
+
+    if (serviceResult != QOpcUa::UaStatusCode::Good) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Batch write failed:" << serviceResult;
+        emit batchWriteFinished(QVector<QOpcUaWriteResult>(), serviceResult);
+    } else {
+        QVector<QOpcUaWriteResult> ret;
+
+        for (int i = 0; i < nodesToWrite.size(); ++i) {
+            QOpcUaWriteResult item;
+            item.setAttribute(nodesToWrite.at(i).attribute());
+            item.setNodeId(nodesToWrite.at(i).nodeId());
+            item.setIndexRange(nodesToWrite.at(i).indexRange());
+            if (static_cast<size_t>(i) < res.resultsSize)
+                item.setStatusCode(QOpcUa::UaStatusCode(res.results[i]));
+            else
+                item.setStatusCode(serviceResult);
+            ret.push_back(item);
+        }
+        emit batchWriteFinished(ret, serviceResult);
+    }
+}
+
 static void convertBrowseResult(UA_BrowseResult *src, quint32 referencesSize, QVector<QOpcUaReferenceDescription> &dst)
 {
     if (!src)

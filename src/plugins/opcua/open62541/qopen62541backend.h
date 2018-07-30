@@ -70,6 +70,7 @@ public Q_SLOTS:
     void findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris);
 
     void batchRead(const QVector<QOpcUaReadItem> &nodesToRead);
+    void batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite);
 
     // Subscription
     QOpen62541Subscription *getSubscription(const QOpcUaMonitoringParameters &settings);

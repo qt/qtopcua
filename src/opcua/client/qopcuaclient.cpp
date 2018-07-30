@@ -198,6 +198,22 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
+    \fn void QOpcUaClient::batchWriteFinished(QVector<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult)
+
+    This signal is emitted after a \l batchWrite() operation has finished.
+
+    The elements in \a results have the same order as the elements in the batch write request.
+    They contain the value, timestamps and status code received from the server as well as the node id,
+    attribute and index range from the write item. This facilitates matching the result with the request.
+
+    \a serviceResult is the status code from the the OPC UA Write service. If \a serviceResult is not
+    \l {QOpcUa::UaStatusCode} {Good}, the entries in \a results also have an invalid status code and must
+    not be used.
+
+    \sa batchWrite() QOpcUaWriteResult
+*/
+
+/*!
     \internal QOpcUaClientImpl is an opaque type (as seen from the public API).
     This prevents users of the public API to use this constructor (eventhough
     it is public).
@@ -490,6 +506,46 @@ bool QOpcUaClient::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
 
     Q_D(QOpcUaClient);
     return d->m_impl->batchRead(nodesToRead);
+}
+
+/*!
+    Starts a batch write for multiple attributes on different nodes.
+    The node id, the attribute, the value, the value type and an index range can be specified
+    for every entry in \a nodesToWrite.
+
+    Returns \c true if the asynchronous request has been successfully dispatched.
+    The results are returned in the \l batchWriteFinished() signal.
+
+    The batch write API offers an alternative way to write attributes of nodes which can be used
+    for scenarios where the values of a large number of node attributes on different nodes must be written
+    without requiring the other features of the \l QOpcUaNode based API like monitoring for value changes.
+    All write items in the request are sent to the server in a single request and are answered in a single
+    response which generates a single \l batchWriteFinished() signal. This reduces the network overhead and
+    the number of signal slot connections if many different nodes are involved.
+
+    In the following example, the Values attributes of two different nodes are written in one call.
+    The second node has an array value of which only the first two elements are overwritten:
+
+    \code
+    QVector<QOpcUaWriteItem> request;
+
+    request.append(QOpcUaWriteItem("ns=2;s=Demo.Static.Scalar.Double", QOpcUa::NodeAttribute::Value,
+                                      23.0, QOpcUa::Types::Double));
+    request.append(QOpcUaWriteItem("ns=2;s=Demo.Static.Arrays.UInt32", QOpcUa::NodeAttribute::Value,
+                                      QVariantList({0, 1, 2}), QOpcUa::Types::UInt32, "0:2"));
+
+    m_client->batchWrite(request);
+    \endcode
+
+    \sa QOpcUaWriteItem batchWriteFinished()
+*/
+bool QOpcUaClient::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite)
+{
+    if (state() != QOpcUaClient::Connected)
+       return false;
+
+    Q_D(QOpcUaClient);
+    return d->m_impl->batchWrite(nodesToWrite);
 }
 
 /*!
