@@ -392,6 +392,7 @@ void Open62541AsyncBackend::resolveBrowsePath(quint64 handle, UA_NodeId startNod
 void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris)
 {
     UA_Client *tmpClient = UA_Client_new(UA_ClientConfig_default);
+    UaDeleter<UA_Client> clientDeleter(tmpClient, UA_Client_delete);
 
     UA_String *uaServerUris = nullptr;
     if (!serverUris.isEmpty()) {
@@ -399,6 +400,7 @@ void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &loca
         for (int i = 0; i < serverUris.size(); ++i)
             QOpen62541ValueConverter::scalarFromQt(serverUris.at(i), &uaServerUris[i]);
     }
+    UaArrayDeleter<UA_TYPES_STRING> serverUrisDeleter(uaServerUris, serverUris.size());
 
     UA_String *uaLocaleIds = nullptr;
     if (!localeIds.isEmpty()) {
@@ -406,6 +408,7 @@ void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &loca
         for (int i = 0; i < localeIds.size(); ++i)
             QOpen62541ValueConverter::scalarFromQt(localeIds.at(i), &uaLocaleIds[i]);
     }
+    UaArrayDeleter<UA_TYPES_STRING> localeIdsDeleter(uaLocaleIds, localeIds.size());
 
     size_t serversSize;
     UA_ApplicationDescription *servers;
@@ -413,6 +416,8 @@ void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &loca
     UA_StatusCode result = UA_Client_findServers(tmpClient, url.toString(QUrl::RemoveUserInfo).toUtf8().constData(),
                                                  serverUris.size(), uaServerUris, localeIds.size(), uaLocaleIds,
                                                  &serversSize, &servers);
+
+    UaArrayDeleter<UA_TYPES_APPLICATIONDESCRIPTION> serversDeleter(servers, serversSize);
 
     QVector<QOpcUa::QApplicationDescription> ret;
 
@@ -422,11 +427,6 @@ void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &loca
     if (result != UA_STATUSCODE_GOOD) {
         qCDebug(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to get servers:" << static_cast<QOpcUa::UaStatusCode>(result);
     }
-
-    UA_Array_delete(uaServerUris, serverUris.size(), &UA_TYPES[UA_TYPES_STRING]);
-    UA_Array_delete(uaLocaleIds, localeIds.size(), &UA_TYPES[UA_TYPES_STRING]);
-    UA_Array_delete(servers, serversSize, &UA_TYPES[UA_TYPES_APPLICATIONDESCRIPTION]);
-    UA_Client_delete(tmpClient);
 
     emit findServersFinished(ret, static_cast<QOpcUa::UaStatusCode>(result));
 }
