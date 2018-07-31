@@ -272,6 +272,16 @@
     \li X
     \li
     \li QOpcUa::QArgument
+    \row
+    \li ExpandedNodeId
+    \li X
+    \li X
+    \li QOpcUa::QExpandedNodeId
+    \row
+    \li ExtensionObject
+    \li X
+    \li
+    \li QOpcUa::QExtensionObject
     \endtable
 
     \section1 Classes and ownership
