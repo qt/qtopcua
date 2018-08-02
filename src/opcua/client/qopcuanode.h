@@ -69,14 +69,18 @@ public:
 
     bool readAttributes(QOpcUa::NodeAttributes attributes = mandatoryBaseAttributes());
     bool readAttributeRange(QOpcUa::NodeAttribute attribute, const QString &indexRange);
+    bool readValueAttribute();
     QVariant attribute(QOpcUa::NodeAttribute attribute) const;
+    QVariant value() const;
     QOpcUa::UaStatusCode attributeError(QOpcUa::NodeAttribute attribute) const;
+    QOpcUa::UaStatusCode valueAttributeError() const;
     QDateTime sourceTimestamp(QOpcUa::NodeAttribute attribute) const;
     QDateTime serverTimestamp(QOpcUa::NodeAttribute attribute) const;
     bool writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type = QOpcUa::Types::Undefined);
     bool writeAttributeRange(QOpcUa::NodeAttribute attribute, const QVariant &value,
                         const QString &indexRange, QOpcUa::Types type = QOpcUa::Types::Undefined);
     bool writeAttributes(const AttributeMap &toWrite, QOpcUa::Types valueAttributeType = QOpcUa::Types::Undefined);
+    bool writeValueAttribute(const QVariant &value, QOpcUa::Types type = QOpcUa::Types::Undefined);
 
     bool enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
     bool disableMonitoring(QOpcUa::NodeAttributes attr);

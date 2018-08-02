@@ -268,6 +268,18 @@ bool QOpcUaNode::readAttributeRange(QOpcUa::NodeAttribute attribute, const QStri
 }
 
 /*!
+    Starts an asynchronous read operation for the node's Value attribute.
+
+    Returns \c true if the asynchronous call has been successfully dispatched.
+
+    \sa readAttribute()
+*/
+bool QOpcUaNode::readValueAttribute()
+{
+    return readAttributes(QOpcUa::NodeAttribute::Value);
+}
+
+/*!
     Starts an asynchronous read operation for the node attributes in \a attributes.
 
     Returns \c true if the asynchronous call has been successfully dispatched.
@@ -300,6 +312,23 @@ QVariant QOpcUaNode::attribute(QOpcUa::NodeAttribute attribute) const
 }
 
 /*!
+    Returns the value of the node's Value attribute.
+
+    The returned value is only valid after the Value attribute has been successfully read or written
+    or after a data change from a monitoring has updated the attribute cache.
+    This is indicated by a \l attributeRead() or \l attributeWritten() signal with status code
+    \l {QOpcUa::UaStatusCode} {Good} or a \l attributeUpdated() signal for the Value attribute.
+
+    If there is no value in the attribute cache, an invalid \l QVariant is returned.
+
+    \sa readValueAttribute()  writeValueAttribute() valueAttributeError()
+*/
+QVariant QOpcUaNode::value() const
+{
+    return attribute(QOpcUa::NodeAttribute::Value);
+}
+
+/*!
     Returns the error code for the attribute given in \a attribute.
 
     The error code is only valid after the \l attributeRead or \l attributeWritten signal has been emitted.
@@ -314,6 +343,16 @@ QOpcUa::UaStatusCode QOpcUaNode::attributeError(QOpcUa::NodeAttribute attribute)
         return QOpcUa::UaStatusCode::BadNotFound;
 
     return it->statusCode;
+}
+
+/*!
+    Returns the error code for the node's Value attribute.
+    The status code \l {QOpcUa::UaStatusCode} {Good} indicates a valid return value for \l value().
+    If there is no value in the attribute cache, \l {QOpcUa::UaStatusCode} {BadNotFound} is returned.
+*/
+QOpcUa::UaStatusCode QOpcUaNode::valueAttributeError() const
+{
+    return attributeError(QOpcUa::NodeAttribute::Value);
 }
 
 /*!
@@ -533,6 +572,18 @@ bool QOpcUaNode::writeAttributes(const AttributeMap &toWrite, QOpcUa::Types valu
         return false;
 
     return d->m_impl->writeAttributes(toWrite, valueAttributeType);
+}
+
+/*!
+    Writes \a value to the node's Value attribute using the type information from \a type.
+
+    Returns \c true if the asynchronous call has been successfully dispatched.
+
+    \sa writeAttribute()
+*/
+bool QOpcUaNode::writeValueAttribute(const QVariant &value, QOpcUa::Types type)
+{
+    return writeAttribute(QOpcUa::NodeAttribute::Value, value, type);
 }
 
 /*!
