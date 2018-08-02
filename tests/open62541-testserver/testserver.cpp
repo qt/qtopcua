@@ -283,7 +283,7 @@ UA_StatusCode TestServer::multiplyMethod(UA_Server *server, const UA_NodeId *ses
     return UA_STATUSCODE_GOOD;
 }
 
-UA_NodeId TestServer::addMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description)
+UA_NodeId TestServer::addMultiplyMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description)
 {
     UA_NodeId methodNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 

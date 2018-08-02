@@ -63,7 +63,7 @@ public:
                           QOpcUa::Types type, QVector<quint32> arrayDimensions = QVector<quint32>());
     UA_NodeId addEmptyArrayVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name);
 
-    UA_NodeId addMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
+    UA_NodeId addMultiplyMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
 
     static UA_StatusCode multiplyMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle,
                                             const UA_NodeId *methodId, void *methodContext,

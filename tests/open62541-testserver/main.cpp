@@ -198,7 +198,7 @@ int main(int argc, char **argv)
     server.addVariable(testOpaqueIdsFolder, "ns=3;b=UXQgZnR3IQ==", "theOpaqueId", QStringLiteral("Value"), QOpcUa::Types::String);
 
     // Add a method to the test folder
-    server.addMethod(testFolder, "ns=3;s=Test.Method.Multiply", "MultiplyDoubles");
+    server.addMultiplyMethod(testFolder, "ns=3;s=Test.Method.Multiply", "MultiplyDoubles");
 
     server.addEmptyArrayVariable(testFolder, "ns=2;s=EmptyBoolArray", "EmptyBoolArrayTest");
 
