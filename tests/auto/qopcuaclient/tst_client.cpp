@@ -442,6 +442,8 @@ private slots:
     void createQualifiedName();
     defineDataMethod(createQualifiedNameNoOk_data)
     void createQualifiedNameNoOk();
+    defineDataMethod(addNamespace_data)
+    void addNamespace();
 
     defineDataMethod(resolveBrowsePath_data)
     void resolveBrowsePath();
@@ -3113,6 +3115,66 @@ void Tst_QOpcUaClient::resolveBrowsePath()
     QCOMPARE(results.at(0).targetId().serverIndex(), 0U);
     QCOMPARE(spy.at(0).at(1).value<QVector<QOpcUa::QRelativePathElement>>(), path);
     QCOMPARE(spy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+}
+
+void Tst_QOpcUaClient::addNamespace()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QSignalSpy namespaceUpdatedSpy(opcuaClient, &QOpcUaClient::namespaceArrayUpdated);
+    QSignalSpy namespaceChangedSpy(opcuaClient, &QOpcUaClient::namespaceArrayChanged);
+
+    opcuaClient->updateNamespaceArray();
+    namespaceUpdatedSpy.wait();
+    namespaceChangedSpy.wait();
+    QVERIFY(namespaceUpdatedSpy.count() > 0);
+    QCOMPARE(namespaceChangedSpy.count(), 1);
+
+    // Update second time: No change signal emitted
+    namespaceChangedSpy.clear();
+    namespaceUpdatedSpy.clear();
+    opcuaClient->updateNamespaceArray();
+    namespaceUpdatedSpy.wait();
+    namespaceChangedSpy.wait();
+    QCOMPARE(namespaceUpdatedSpy.count(), 1);
+    QCOMPARE(namespaceChangedSpy.count(), 0);
+
+    auto namespaceArray = opcuaClient->namespaceArray();
+    QString newNamespaceName = QString("DynamicTestNamespace#%1").arg(namespaceArray.size());
+
+    QVERIFY(!namespaceArray.isEmpty());
+    QVERIFY(!namespaceArray.contains(newNamespaceName));
+
+    QVector<QOpcUa::TypedVariant> args;
+    args.push_back(QOpcUa::TypedVariant(newNamespaceName, QOpcUa::String));
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=0;i=2253")); // Server node
+    QVERIFY(node != nullptr);
+
+    QSignalSpy methodSpy(node.data(), &QOpcUaNode::methodCallFinished);
+
+    bool success = node->callMethod("ns=3;s=Test.Method.AddNamespace", args);
+    QVERIFY(success == true);
+
+    methodSpy.wait();
+
+    QCOMPARE(methodSpy.size(), 1);
+    QCOMPARE(methodSpy.at(0).at(0).value<QString>(), QStringLiteral("ns=3;s=Test.Method.AddNamespace"));
+    QCOMPARE(methodSpy.at(0).at(1).value<quint16>(), namespaceArray.size());
+    QCOMPARE(QOpcUa::isSuccessStatus(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>()), true);
+
+    namespaceUpdatedSpy.clear();
+    namespaceChangedSpy.clear();
+    opcuaClient->updateNamespaceArray();
+    namespaceChangedSpy.wait();
+
+    QCOMPARE(namespaceUpdatedSpy.size(), 1);
+    QCOMPARE(namespaceChangedSpy.size(), 1);
+    auto updatedNamespaceArray = opcuaClient->namespaceArray();
+    QVERIFY(updatedNamespaceArray.size() == namespaceArray.size() + 1);
+    QVERIFY(updatedNamespaceArray.contains(newNamespaceName));
+    QCOMPARE(methodSpy.at(0).at(1).value<quint16>(), updatedNamespaceArray.indexOf(newNamespaceName));
 }
 
 void Tst_QOpcUaClient::connectionLost()

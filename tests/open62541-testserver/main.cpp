@@ -35,6 +35,7 @@
 ****************************************************************************/
 
 #include "testserver.h"
+#include "qopen62541utils.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
@@ -210,6 +211,9 @@ int main(int argc, char **argv)
     // Add folders for relative nodes
     const UA_NodeId testFolder2 = server.addFolder("ns=3;s=TestFolder2", "TestFolder2");
     server.addVariable(testFolder2, "ns=3;s=TestNode2.ReadWrite", "TestNode.ReadWrite", 0.1, QOpcUa::Types::Double);
+
+    // Add a method for adding namespaces
+    server.addAddNamespaceMethod(Open62541Utils::nodeIdFromQString("ns=0;i=2253"), "ns=3;s=Test.Method.AddNamespace", "AddNamespace");
 
     return app.exec();
 }

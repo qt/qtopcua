@@ -334,10 +334,85 @@ UA_NodeId TestServer::addMultiplyMethod(const UA_NodeId &folder, const QString &
     UA_Argument_deleteMembers(&outputArgument);
 
     if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not add variable:" << result;
+        return UA_NODEID_NULL;
+    }
+    return resultId;
+}
+
+UA_NodeId TestServer::addAddNamespaceMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description)
+{
+    UA_NodeId methodNodeId = Open62541Utils::nodeIdFromQString(variableNode);
+
+    UA_Argument inputArguments[1];
+    UA_Argument_init(&inputArguments[0]);
+
+    inputArguments[0].description = UA_LOCALIZEDTEXT_ALLOC("en", "Namespace name to be added");
+    inputArguments[0].name = UA_STRING_ALLOC("Namespace name");
+    inputArguments[0].dataType = UA_TYPES[UA_TYPES_STRING].typeId;
+    inputArguments[0].valueRank = -1;
+
+    UA_Argument outputArgument;
+    UA_Argument_init(&outputArgument);
+
+    outputArgument.description = UA_LOCALIZEDTEXT_ALLOC("en", "Index of the added namespace");
+    outputArgument.name = UA_STRING_ALLOC("Namespace index");
+    outputArgument.dataType = UA_TYPES[UA_TYPES_UINT16].typeId;
+    outputArgument.valueRank = -1;
+
+    UA_MethodAttributes attr = UA_MethodAttributes_default;
+
+    attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", variableNode.toUtf8().constData());
+    attr.executable = true;
+
+    UA_QualifiedName nodeBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.namespaceIndex, "addNamespace");
+
+    UA_NodeId resultId;
+    UA_StatusCode result = UA_Server_addMethodNode(m_server, methodNodeId, folder,
+                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT),
+                                                     nodeBrowseName,
+                                                     attr, &addNamespaceMethod,
+                                                     1, inputArguments,
+                                                     1, &outputArgument,
+                                                     nullptr, &resultId);
+
+    UA_QualifiedName_deleteMembers(&nodeBrowseName);
+    UA_NodeId_deleteMembers(&methodNodeId);
+    UA_MethodAttributes_deleteMembers(&attr);
+    UA_Argument_deleteMembers(&inputArguments[0]);
+    UA_Argument_deleteMembers(&outputArgument);
+
+    if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Could not add method:" << result;
         return UA_NODEID_NULL;
     }
     return resultId;
+}
+
+UA_StatusCode TestServer::addNamespaceMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle, const UA_NodeId *methodId, void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize, const UA_Variant *input, size_t outputSize, UA_Variant *output)
+{
+    Q_UNUSED(sessionId);
+    Q_UNUSED(sessionHandle);
+    Q_UNUSED(methodId);
+    Q_UNUSED(methodContext);
+    Q_UNUSED(objectId);
+    Q_UNUSED(objectContext);
+
+    if (inputSize < 1)
+        return QOpcUa::UaStatusCode::BadArgumentsMissing;
+    if (inputSize > 1)
+        return QOpcUa::UaStatusCode::BadTooManyArguments;
+    if (outputSize != 1)
+        return QOpcUa::UaStatusCode::BadInvalidArgument;
+
+    if (input[0].type != &UA_TYPES[UA_TYPES_STRING])
+        return UA_STATUSCODE_BADTYPEMISMATCH;
+
+    QString uri = QOpen62541ValueConverter::scalarToQt<QString>(static_cast<UA_String *>(input[0].data));
+    UA_UInt16 namespaceIndex = UA_Server_addNamespace(server, uri.toUtf8().constData());
+    UA_Variant_setScalarCopy(output, &namespaceIndex, &UA_TYPES[UA_TYPES_UINT16]);
+    return UA_STATUSCODE_GOOD;
 }
 
 QT_END_NAMESPACE
