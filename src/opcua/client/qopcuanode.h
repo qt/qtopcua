@@ -37,9 +37,10 @@
 #ifndef QOPCUANODE_H
 #define QOPCUANODE_H
 
+#include <QtOpcUa/qopcuabrowserequest.h>
 #include <QtOpcUa/qopcuaglobal.h>
 #include <QtOpcUa/qopcuamonitoringparameters.h>
-#include <QtOpcUa/qopcuabrowsing.h>
+#include <QtOpcUa/qopcuareferencedescription.h>
 #include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/qdatetime.h>

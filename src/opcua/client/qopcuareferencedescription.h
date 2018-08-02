@@ -34,8 +34,8 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUABROWSING_H
-#define QOPCUABROWSING_H
+#ifndef QOPCUAREFERENCEDESCRIPTION_H
+#define QOPCUAREFERENCEDESCRIPTION_H
 
 #include <QtOpcUa/qopcuatype.h>
 
@@ -43,41 +43,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaBrowseRequestData;
-class Q_OPCUA_EXPORT QOpcUaBrowseRequest
-{
-public:
-
-    enum class BrowseDirection : quint32 {
-        Forward = 0,
-        Inverse = 1,
-        Both = 2
-    };
-
-    QOpcUaBrowseRequest();
-    QOpcUaBrowseRequest(const QOpcUaBrowseRequest &other);
-    QOpcUaBrowseRequest &operator=(const QOpcUaBrowseRequest &rhs);
-    ~QOpcUaBrowseRequest();
-
-    QOpcUaBrowseRequest::BrowseDirection browseDirection() const;
-    void setBrowseDirection(const QOpcUaBrowseRequest::BrowseDirection &browseDirection);
-
-    QString referenceTypeId() const;
-    void setReferenceTypeId(const QString &referenceTypeId);
-    void setReferenceTypeId(QOpcUa::ReferenceTypeId referenceTypeId);
-
-    bool includeSubtypes() const;
-    void setIncludeSubtypes(bool includeSubtypes);
-
-    QOpcUa::NodeClasses nodeClassMask() const;
-    void setNodeClassMask(const QOpcUa::NodeClasses &nodeClassMask);
-
-private:
-    QSharedDataPointer<QOpcUaBrowseRequestData> data;
-};
-
 class QOpcUaReferenceDescriptionPrivate;
-
 class Q_OPCUA_EXPORT QOpcUaReferenceDescription
 {
 public:
@@ -111,6 +77,5 @@ Q_DECLARE_TYPEINFO(QOpcUaReferenceDescription, Q_MOVABLE_TYPE);
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QOpcUaReferenceDescription)
-Q_DECLARE_METATYPE(QOpcUaBrowseRequest)
 
-#endif // QOPCUABROWSING_H
+#endif // QOPCUAREFERENCEDESCRIPTION_H
