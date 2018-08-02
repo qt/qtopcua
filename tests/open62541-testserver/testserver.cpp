@@ -334,7 +334,7 @@ UA_NodeId TestServer::addMultiplyMethod(const UA_NodeId &folder, const QString &
     UA_Argument_deleteMembers(&outputArgument);
 
     if (result != UA_STATUSCODE_GOOD) {
-        qWarning() << "Could not add variable:" << result;
+        qWarning() << "Could not add method:" << result;
         return UA_NODEID_NULL;
     }
     return resultId;
