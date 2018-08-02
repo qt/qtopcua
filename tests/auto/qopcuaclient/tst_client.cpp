@@ -1318,52 +1318,40 @@ void Tst_QOpcUaClient::nodeClass()
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     // Root -> Types -> ReferenceTypes -> References
-    {
-        QScopedPointer<QOpcUaNode> refNode(opcuaClient->node("ns=0;i=31"));
-        QVERIFY(refNode != nullptr);
-        READ_MANDATORY_BASE_NODE(refNode)
-        QCOMPARE(refNode->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>(), QOpcUa::NodeClass::ReferenceType);
-    }
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=0;i=31"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_BASE_NODE(node)
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>(), QOpcUa::NodeClass::ReferenceType);
 
     // Root -> Types -> DataTypes -> BaseDataTypes -> Boolean
-    {
-        QScopedPointer<QOpcUaNode> dataTypeNode(opcuaClient->node("ns=0;i=1"));
-        QVERIFY(dataTypeNode != nullptr);
-        READ_MANDATORY_BASE_NODE(dataTypeNode)
-        QCOMPARE(dataTypeNode->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>(), QOpcUa::NodeClass::DataType);
-    }
+    node.reset(opcuaClient->node("ns=0;i=1"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_BASE_NODE(node)
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>(), QOpcUa::NodeClass::DataType);
 
     // Root -> Types -> DataTypes -> ObjectTypes -> BaseObjectTypes -> FolderType
-    {
-        QScopedPointer<QOpcUaNode> objectTypeNode(opcuaClient->node("ns=0;i=61"));
-        QVERIFY(objectTypeNode != nullptr);
-        READ_MANDATORY_BASE_NODE(objectTypeNode)
-        QCOMPARE(objectTypeNode->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>(), QOpcUa::NodeClass::ObjectType);
-    }
+    node.reset(opcuaClient->node("ns=0;i=61"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_BASE_NODE(node)
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>(), QOpcUa::NodeClass::ObjectType);
 
     // Root -> Types -> DataTypes -> VariableTypes -> BaseVariableType -> PropertyType
-    {
-        QScopedPointer<QOpcUaNode> variableTypeNode(opcuaClient->node("ns=0;i=68"));
-        QVERIFY(variableTypeNode != nullptr);
-        READ_MANDATORY_BASE_NODE(variableTypeNode)
-        QCOMPARE(variableTypeNode->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>(), QOpcUa::NodeClass::VariableType);
-    }
+    node.reset(opcuaClient->node("ns=0;i=68"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_BASE_NODE(node)
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>(), QOpcUa::NodeClass::VariableType);
 
     // Root -> Objects
-    {
-        QScopedPointer<QOpcUaNode> objectNode(opcuaClient->node("ns=0;i=85"));
-        QVERIFY(objectNode != nullptr);
-        READ_MANDATORY_BASE_NODE(objectNode)
-        QCOMPARE(objectNode->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>(), QOpcUa::NodeClass::Object);
-    }
+    node.reset(opcuaClient->node("ns=0;i=85"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_BASE_NODE(node)
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>(), QOpcUa::NodeClass::Object);
 
     // Root -> Objects -> Server -> NamespaceArray
-    {
-        QScopedPointer<QOpcUaNode> variableNode(opcuaClient->node("ns=0;i=2255"));
-        QVERIFY(variableNode != nullptr);
-        READ_MANDATORY_BASE_NODE(variableNode)
-        QCOMPARE(variableNode->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>(), QOpcUa::NodeClass::Variable);
-    }
+    node.reset(opcuaClient->node("ns=0;i=2255"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_BASE_NODE(node)
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>(), QOpcUa::NodeClass::Variable);
 }
 
 void Tst_QOpcUaClient::writeArray()
@@ -1626,10 +1614,10 @@ void Tst_QOpcUaClient::readArray()
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
-    QScopedPointer<QOpcUaNode> booleanArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Boolean"));
-    QVERIFY(booleanArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(booleanArrayNode);
-    QVariant booleanArray = booleanArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Boolean"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant booleanArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(booleanArray.type() == QVariant::List);
     QVERIFY(booleanArray.toList().length() == 3);
     QCOMPARE(booleanArray.toList()[0].type(), QVariant::Bool);
@@ -1637,10 +1625,10 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(booleanArray.toList()[1].toBool(), false);
     QCOMPARE(booleanArray.toList()[2].toBool(), true);
 
-    QScopedPointer<QOpcUaNode> int32ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int32"));
-    QVERIFY(int32ArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(int32ArrayNode);
-    QVariant int32Array = int32ArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int32"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant int32Array = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(int32Array.type() == QVariant::List);
     QVERIFY(int32Array.toList().length() == 3);
     QCOMPARE(int32Array.toList()[0].type(), QVariant::Int);
@@ -1648,10 +1636,10 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(int32Array.toList()[1].toInt(), std::numeric_limits<qint32>::max());
     QCOMPARE(int32Array.toList()[2].toInt(), 10);
 
-    QScopedPointer<QOpcUaNode> uint32ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt32"));
-    QVERIFY(uint32ArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(uint32ArrayNode);
-    QVariant uint32Array = uint32ArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt32"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant uint32Array = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(uint32Array.type() == QVariant::List);
     QVERIFY(uint32Array.toList().length() == 3);
     QCOMPARE(uint32Array.toList()[0].type(), QVariant::UInt);
@@ -1659,10 +1647,10 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(uint32Array.toList()[1].toUInt(), std::numeric_limits<quint32>::max());
     QCOMPARE(uint32Array.toList()[2].toUInt(), quint32(10));
 
-    QScopedPointer<QOpcUaNode> doubleArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Double"));
-    QVERIFY(doubleArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(doubleArrayNode);
-    QVariant doubleArray = doubleArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Double"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant doubleArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(doubleArray.type() == QVariant::List);
     QVERIFY(doubleArray.toList().length() == 3);
     QCOMPARE(doubleArray.toList()[0].type(), QVariant::Double);
@@ -1670,10 +1658,10 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(doubleArray.toList()[1].toDouble(), double(23.6));
     QCOMPARE(doubleArray.toList()[2].toDouble(), double(23.7));
 
-    QScopedPointer<QOpcUaNode> floatArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Float"));
-    QVERIFY(floatArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(floatArrayNode);
-    QVariant floatArray = floatArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Float"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant floatArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(floatArray.type() == QVariant::List);
     QVERIFY(floatArray.toList().length() == 3);
     QVERIFY(floatArray.toList()[0].userType() == QMetaType::Float);
@@ -1681,10 +1669,10 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(floatArray.toList()[1].toFloat(), float(23.6));
     QCOMPARE(floatArray.toList()[2].toFloat(), float(23.7));
 
-    QScopedPointer<QOpcUaNode> stringArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.String"));
-    QVERIFY(stringArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(stringArrayNode);
-    QVariant stringArray = stringArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.String"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant stringArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(stringArray.type() == QVariant::List);
     QVERIFY(stringArray.toList().length() == 3);
     QCOMPARE(stringArray.toList()[0].type(), QVariant::String);
@@ -1692,28 +1680,28 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(stringArray.toList()[1].toString(), QStringLiteral("Test2"));
     QCOMPARE(stringArray.toList()[2].toString(), QStringLiteral("Test3"));
 
-    QScopedPointer<QOpcUaNode> dateTimeArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DateTime"));
-    QVERIFY(dateTimeArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(dateTimeArrayNode);
-    QVariant dateTimeArray = dateTimeArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DateTime"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant dateTimeArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(dateTimeArray.type() == QVariant::List);
     QVERIFY(dateTimeArray.toList().length() == 3);
     QCOMPARE(dateTimeArray.toList()[0].type(), QVariant::DateTime);
 
-    QScopedPointer<QOpcUaNode> ltArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.LocalizedText"));
-    QVERIFY(ltArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(ltArrayNode);
-    QVariant ltArray = ltArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.LocalizedText"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant ltArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(ltArray.type() == QVariant::List);
     QVERIFY(ltArray.toList().length() == 3);
     QVERIFY(ltArray.toList()[0].value<QOpcUa::QLocalizedText>() == localizedTexts[0]);
     QVERIFY(ltArray.toList()[1].value<QOpcUa::QLocalizedText>() == localizedTexts[1]);
     QVERIFY(ltArray.toList()[2].value<QOpcUa::QLocalizedText>() == localizedTexts[2]);
 
-    QScopedPointer<QOpcUaNode> uint16ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt16"));
-    QVERIFY(uint16ArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(uint16ArrayNode);
-    QVariant uint16Array = uint16ArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt16"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant uint16Array = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(uint16Array.type() == QVariant::List);
     QVERIFY(uint16Array.toList().length() == 3);
     QVERIFY(uint16Array.toList()[0].userType() == QMetaType::UShort);
@@ -1721,10 +1709,10 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(uint16Array.toList()[1] == std::numeric_limits<quint16>::max());
     QVERIFY(uint16Array.toList()[2] == quint16(10));
 
-    QScopedPointer<QOpcUaNode> int16ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int16"));
-    QVERIFY(int16ArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(int16ArrayNode);
-    QVariant int16Array = int16ArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int16"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant int16Array = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(int16Array.type() == QVariant::List);
     QVERIFY(int16Array.toList().length() == 3);
     QVERIFY(int16Array.toList()[0].userType() == QMetaType::Short);
@@ -1732,10 +1720,10 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(int16Array.toList()[1] == std::numeric_limits<qint16>::max());
     QVERIFY(int16Array.toList()[2] == qint16(10));
 
-    QScopedPointer<QOpcUaNode> uint64ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt64"));
-    QVERIFY(uint64ArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(uint64ArrayNode);
-    QVariant uint64Array = uint64ArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt64"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant uint64Array = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(uint64Array.type(), QVariant::List);
     QCOMPARE(uint64Array.toList().length(), 3);
     QCOMPARE(uint64Array.toList()[0].type(), QVariant::ULongLong);
@@ -1743,20 +1731,20 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(uint64Array.toList()[1] == std::numeric_limits<quint64>::max());
     QVERIFY(uint64Array.toList()[2] == quint64(10));
 
-    QScopedPointer<QOpcUaNode> int64ArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int64"));
-    QVERIFY(int64ArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(int64ArrayNode);
-    QVariant int64Array = int64ArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int64"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant int64Array = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(int64Array.type() == QVariant::List && int64Array.toList().length() == 3);
     QCOMPARE(int64Array.toList()[0].type(), QVariant::LongLong);
     QVERIFY(int64Array.toList()[0] == std::numeric_limits<qint64>::min());
     QVERIFY(int64Array.toList()[1] == std::numeric_limits<qint64>::max());
     QVERIFY(int64Array.toList()[2] == qint64(10));
 
-    QScopedPointer<QOpcUaNode> byteArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Byte"));
-    QVERIFY(byteArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(byteArrayNode);
-    QVariant byteArray = byteArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Byte"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant byteArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(byteArray.type() == QVariant::List);
     QVERIFY(byteArray.toList().length() == 3);
     QVERIFY(byteArray.toList()[0].userType() == QMetaType::UChar);
@@ -1764,10 +1752,10 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(byteArray.toList()[1] == std::numeric_limits<quint8>::max());
     QVERIFY(byteArray.toList()[2] == quint8(10));
 
-    QScopedPointer<QOpcUaNode> byteStringArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ByteString"));
-    QVERIFY(byteStringArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(byteStringArrayNode);
-    QVariant byteStringArray = byteStringArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ByteString"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant byteStringArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(byteStringArray.type() == QVariant::List);
     QVERIFY(byteStringArray.toList().length() == 3);
     QVERIFY(byteStringArray.toList()[0].userType() == QMetaType::QByteArray);
@@ -1778,20 +1766,20 @@ void Tst_QOpcUaClient::readArray()
     withNull.append("i");
     QVERIFY(byteStringArray.toList()[2] == withNull);
 
-    QScopedPointer<QOpcUaNode> guidArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Guid"));
-    QVERIFY(guidArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(guidArrayNode);
-    QVariant guidArray = guidArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Guid"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant guidArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(guidArray.type() == QVariant::List);
     QVERIFY(guidArray.toList().length() == 3);
     QCOMPARE(guidArray.toList()[0].toUuid(), testUuid[0]);
     QCOMPARE(guidArray.toList()[1].toUuid(), testUuid[1]);
     QCOMPARE(guidArray.toList()[2].toUuid(), testUuid[2]);
 
-    QScopedPointer<QOpcUaNode> sbyteArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.SByte"));
-    QVERIFY(sbyteArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(sbyteArrayNode);
-    QVariant sbyteArray = sbyteArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.SByte"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant sbyteArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(sbyteArray.type() == QVariant::List);
     QVERIFY(sbyteArray.toList().length() == 3);
     QVERIFY(sbyteArray.toList()[0].userType() == QMetaType::SChar);
@@ -1799,10 +1787,10 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(sbyteArray.toList()[1] == std::numeric_limits<qint8>::max());
     QVERIFY(sbyteArray.toList()[2] == qint8(10));
 
-    QScopedPointer<QOpcUaNode> nodeIdArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.NodeId"));
-    QVERIFY(nodeIdArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(nodeIdArrayNode);
-    QVariant nodeIdArray = nodeIdArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.NodeId"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant nodeIdArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(nodeIdArray.type() == QVariant::List);
     QVERIFY(nodeIdArray.toList().length() == 3);
     QCOMPARE(nodeIdArray.toList()[0].type(), QVariant::String);
@@ -1810,80 +1798,80 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(nodeIdArray.toList()[1].toString(), QStringLiteral("ns=0;i=1"));
     QCOMPARE(nodeIdArray.toList()[2].toString(), QStringLiteral("ns=0;i=2"));
 
-    QScopedPointer<QOpcUaNode> qualifiedNameArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.QualifiedName"));
-    QVERIFY(nodeIdArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(qualifiedNameArrayNode)
-    QVariant qualifiedNameArray = qualifiedNameArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.QualifiedName"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    QVariant qualifiedNameArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(qualifiedNameArray.type() == QVariant::List);
     QVERIFY(qualifiedNameArray.toList().length() == 3);
     QVERIFY(qualifiedNameArray.toList()[0].value<QOpcUa::QQualifiedName>()  == QOpcUa::QQualifiedName(0, "Test0"));
     QVERIFY(qualifiedNameArray.toList()[1].value<QOpcUa::QQualifiedName>()  == QOpcUa::QQualifiedName(1, "Test1"));
     QVERIFY(qualifiedNameArray.toList()[2].value<QOpcUa::QQualifiedName>()  == QOpcUa::QQualifiedName(2, "Test2"));
 
-    QScopedPointer<QOpcUaNode> statusCodeArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.StatusCode"));
-    QVERIFY(statusCodeArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(statusCodeArrayNode);
-    QVariant statusCodeArray = statusCodeArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.StatusCode"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant statusCodeArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(statusCodeArray.type() == QVariant::List);
     QVERIFY(statusCodeArray.toList().length() == 3);
     QCOMPARE(statusCodeArray.toList()[0].value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
     QCOMPARE(statusCodeArray.toList()[1].value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadUnexpectedError);
     QCOMPARE(statusCodeArray.toList()[2].value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadInternalError);
 
-    QScopedPointer<QOpcUaNode> rangeArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Range"));
-    QVERIFY(rangeArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(rangeArrayNode);
-    QVariant rangeArray = rangeArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Range"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant rangeArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(rangeArray.type() == QVariant::List);
     QVERIFY(rangeArray.toList().length() == 3);
     QCOMPARE(rangeArray.toList()[0].value<QOpcUa::QRange>(), testRanges[0]);
     QCOMPARE(rangeArray.toList()[1].value<QOpcUa::QRange>(), testRanges[1]);
     QCOMPARE(rangeArray.toList()[2].value<QOpcUa::QRange>(), testRanges[2]);
 
-    QScopedPointer<QOpcUaNode> euiArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EUInformation"));
-    QVERIFY(euiArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(euiArrayNode);
-    QVariant euiArray = euiArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EUInformation"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant euiArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(euiArray.type() == QVariant::List);
     QVERIFY(euiArray.toList().length() == 3);
     QCOMPARE(euiArray.toList()[0].value<QOpcUa::QEUInformation>(), testEUInfos[0]);
     QCOMPARE(euiArray.toList()[1].value<QOpcUa::QEUInformation>(), testEUInfos[1]);
     QCOMPARE(euiArray.toList()[2].value<QOpcUa::QEUInformation>(), testEUInfos[2]);
 
-    QScopedPointer<QOpcUaNode> complexArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ComplexNumber"));
-    QVERIFY(complexArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(complexArrayNode);
-    QVariant complexArray = complexArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ComplexNumber"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant complexArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(complexArray.type() == QVariant::List);
     QVERIFY(complexArray.toList().length() == 3);
     QCOMPARE(complexArray.toList()[0].value<QOpcUa::QComplexNumber>(), testComplex[0]);
     QCOMPARE(complexArray.toList()[1].value<QOpcUa::QComplexNumber>(), testComplex[1]);
     QCOMPARE(complexArray.toList()[2].value<QOpcUa::QComplexNumber>(), testComplex[2]);
 
-    QScopedPointer<QOpcUaNode> doubleComplexArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DoubleComplexNumber"));
-    QVERIFY(doubleComplexArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(doubleComplexArrayNode);
-    QVariant doubleComplexArray = doubleComplexArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DoubleComplexNumber"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant doubleComplexArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(doubleComplexArray.type() == QVariant::List);
     QVERIFY(doubleComplexArray.toList().length() == 3);
     QCOMPARE(doubleComplexArray.toList()[0].value<QOpcUa::QDoubleComplexNumber>(), testDoubleComplex[0]);
     QCOMPARE(doubleComplexArray.toList()[1].value<QOpcUa::QDoubleComplexNumber>(), testDoubleComplex[1]);
     QCOMPARE(doubleComplexArray.toList()[2].value<QOpcUa::QDoubleComplexNumber>(), testDoubleComplex[2]);
 
-    QScopedPointer<QOpcUaNode> axisInfoArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.AxisInformation"));
-    QVERIFY(axisInfoArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(axisInfoArrayNode);
-    QVariant axisInfoArray = axisInfoArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.AxisInformation"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant axisInfoArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(axisInfoArray.type() == QVariant::List);
     QVERIFY(axisInfoArray.toList().length() == 3);
     QCOMPARE(axisInfoArray.toList()[0].value<QOpcUa::QAxisInformation>(), testAxisInfo[0]);
     QCOMPARE(axisInfoArray.toList()[1].value<QOpcUa::QAxisInformation>(), testAxisInfo[1]);
     QCOMPARE(axisInfoArray.toList()[2].value<QOpcUa::QAxisInformation>(), testAxisInfo[2]);
 
-    QScopedPointer<QOpcUaNode> xVArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XV"));
-    QVERIFY(xVArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(xVArrayNode);
-    QVariant xVArray = xVArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XV"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant xVArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(xVArray.type() == QVariant::List);
     QVERIFY(xVArray.toList().length() == 3);
     QCOMPARE(xVArray.toList()[0].value<QOpcUa::QXValue>(), testXV[0]);
@@ -1893,12 +1881,12 @@ void Tst_QOpcUaClient::readArray()
     if (opcuaClient->backend() != QLatin1String("open62541"))
         qInfo("The uacpp backend currently does not support reading extension objects");
     else {
-        QScopedPointer<QOpcUaNode> extensionObjectNode(opcuaClient->node(QStringLiteral("ns=2;s=Demo.Static.Arrays.ExtensionObject")));
-        QVERIFY(extensionObjectNode != nullptr);
+        node.reset(opcuaClient->node(QStringLiteral("ns=2;s=Demo.Static.Arrays.ExtensionObject")));
+        QVERIFY(node != nullptr);
 
-        READ_MANDATORY_VARIABLE_NODE(extensionObjectNode);
+        READ_MANDATORY_VARIABLE_NODE(node);
 
-        QVariantList list = extensionObjectNode->attribute(QOpcUa::NodeAttribute::Value).toList();
+        QVariantList list = node->attribute(QOpcUa::NodeAttribute::Value).toList();
         QCOMPARE(list.size(), testRanges.size());
 
         for (int i = 0; i < testRanges.size(); ++i) {
@@ -1907,10 +1895,10 @@ void Tst_QOpcUaClient::readArray()
         }
     }
 
-    QScopedPointer<QOpcUaNode> xmlElementArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XmlElement"));
-    QVERIFY(xmlElementArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(xmlElementArrayNode)
-    QVariant xmlElementArray = xmlElementArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XmlElement"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    QVariant xmlElementArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(xmlElementArray.type() == QVariant::List);
     QVERIFY(xmlElementArray.toList().length() == 3);
     QCOMPARE(xmlElementArray.toList()[0].type(), QVariant::String);
@@ -1918,10 +1906,10 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(xmlElementArray.toList()[1].toString(), xmlElements[1]);
     QCOMPARE(xmlElementArray.toList()[2].toString(), xmlElements[2]);
 
-    QScopedPointer<QOpcUaNode> expandedNodeIdArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ExpandedNodeId"));
-    QVERIFY(expandedNodeIdArrayNode != nullptr);
-    READ_MANDATORY_VARIABLE_NODE(expandedNodeIdArrayNode)
-    QVariant expandedNodeIdArray = expandedNodeIdArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ExpandedNodeId"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    QVariant expandedNodeIdArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(expandedNodeIdArray.type() == QVariant::List);
     QVERIFY(expandedNodeIdArray.toList().length() == 3);
     QCOMPARE(expandedNodeIdArray.toList()[0].value<QOpcUa::QExpandedNodeId>(), testExpandedNodeId[0]);
@@ -1929,10 +1917,10 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(expandedNodeIdArray.toList()[2].value<QOpcUa::QExpandedNodeId>(), testExpandedNodeId[2]);
 
     if (opcuaClient->backend() == QStringLiteral("open62541")) {
-        QScopedPointer<QOpcUaNode> argumentArrayNode(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Argument"));
-        QVERIFY(argumentArrayNode != nullptr);
-        READ_MANDATORY_VARIABLE_NODE(argumentArrayNode)
-        QVariant argumentArray = argumentArrayNode->attribute(QOpcUa::NodeAttribute::Value);
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Argument"));
+        QVERIFY(node != nullptr);
+        READ_MANDATORY_VARIABLE_NODE(node)
+        QVariant argumentArray = node->attribute(QOpcUa::NodeAttribute::Value);
         QVERIFY(argumentArray.type() == QVariant::List);
         QVERIFY(argumentArray.toList().length() == 3);
         QCOMPARE(argumentArray.toList()[0].value<QOpcUa::QArgument>(), testArguments[0]);
@@ -1948,61 +1936,61 @@ void Tst_QOpcUaClient::writeScalar()
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
-    QScopedPointer<QOpcUaNode> booleanNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Boolean"));
-    QVERIFY(booleanNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(booleanNode, true, QOpcUa::Types::Boolean);
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Boolean"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, true, QOpcUa::Types::Boolean);
 
-    QScopedPointer<QOpcUaNode> int32Node(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int32"));
-    QVERIFY(int32Node != nullptr);
-    WRITE_VALUE_ATTRIBUTE(int32Node, std::numeric_limits<qint32>::min(), QOpcUa::Types::Int32);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int32"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, std::numeric_limits<qint32>::min(), QOpcUa::Types::Int32);
 
-    QScopedPointer<QOpcUaNode> uint32Node(opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt32"));
-    QVERIFY(uint32Node != nullptr);
-    WRITE_VALUE_ATTRIBUTE(uint32Node, std::numeric_limits<quint32>::max(), QOpcUa::UInt32);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt32"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, std::numeric_limits<quint32>::max(), QOpcUa::UInt32);
 
-    QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
-    QVERIFY(doubleNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(doubleNode, 42, QOpcUa::Double);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, 42, QOpcUa::Double);
 
-    QScopedPointer<QOpcUaNode> floatNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Float"));
-    QVERIFY(floatNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(floatNode, 42, QOpcUa::Float);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Float"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, 42, QOpcUa::Float);
 
-    QScopedPointer<QOpcUaNode> stringNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.String"));
-    QVERIFY(stringNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(stringNode, "QOpcUa Teststring", QOpcUa::String);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.String"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, "QOpcUa Teststring", QOpcUa::String);
 
-    QScopedPointer<QOpcUaNode> dtNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DateTime"));
-    QVERIFY(dtNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(dtNode, QDateTime::currentDateTime(), QOpcUa::DateTime);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DateTime"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, QDateTime::currentDateTime(), QOpcUa::DateTime);
 
-    QScopedPointer<QOpcUaNode> uint16Node(opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt16"));
-    QVERIFY(uint16Node != nullptr);
-    WRITE_VALUE_ATTRIBUTE(uint16Node, std::numeric_limits<quint16>::max(), QOpcUa::UInt16);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt16"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, std::numeric_limits<quint16>::max(), QOpcUa::UInt16);
 
-    QScopedPointer<QOpcUaNode> int16Node(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int16"));
-    QVERIFY(int16Node != nullptr);
-    WRITE_VALUE_ATTRIBUTE(int16Node, std::numeric_limits<qint16>::min(), QOpcUa::Int16);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int16"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, std::numeric_limits<qint16>::min(), QOpcUa::Int16);
 
-    QScopedPointer<QOpcUaNode> uint64Node(opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt64"));
-    QVERIFY(uint64Node != nullptr);
-    WRITE_VALUE_ATTRIBUTE(uint64Node, std::numeric_limits<quint64>::max(), QOpcUa::UInt64);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt64"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, std::numeric_limits<quint64>::max(), QOpcUa::UInt64);
 
-    QScopedPointer<QOpcUaNode> int64Node(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int64"));
-    QVERIFY(int64Node != nullptr);
-    WRITE_VALUE_ATTRIBUTE(int64Node, std::numeric_limits<qint64>::min(), QOpcUa::Int64);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int64"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, std::numeric_limits<qint64>::min(), QOpcUa::Int64);
 
-    QScopedPointer<QOpcUaNode> byteNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Byte"));
-    QVERIFY(byteNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(byteNode, std::numeric_limits<quint8>::max(), QOpcUa::Byte);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Byte"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, std::numeric_limits<quint8>::max(), QOpcUa::Byte);
 
-    QScopedPointer<QOpcUaNode> sbyteNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.SByte"));
-    QVERIFY(sbyteNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(sbyteNode, std::numeric_limits<qint8>::min(), QOpcUa::SByte);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.SByte"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, std::numeric_limits<qint8>::min(), QOpcUa::SByte);
 
-    QScopedPointer<QOpcUaNode> ltNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.LocalizedText"));
-    QVERIFY(ltNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(ltNode, localizedTexts[0], QOpcUa::LocalizedText);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.LocalizedText"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, localizedTexts[0], QOpcUa::LocalizedText);
 
     QByteArray withNull("gh");
     withNull.append('\0');
@@ -2010,54 +1998,54 @@ void Tst_QOpcUaClient::writeScalar()
 
     QVariant data = withNull;
 
-    QScopedPointer<QOpcUaNode> byteStringNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ByteString"));
-    QVERIFY(byteStringNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(byteStringNode, data, QOpcUa::ByteString);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ByteString"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, data, QOpcUa::ByteString);
 
-    QScopedPointer<QOpcUaNode> guidNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Guid"));
-    QVERIFY(guidNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(guidNode, testUuid[0], QOpcUa::Guid);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Guid"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, testUuid[0], QOpcUa::Guid);
 
-    QScopedPointer<QOpcUaNode> nodeIdNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.NodeId"));
-    QVERIFY(nodeIdNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(nodeIdNode, "ns=42;s=Test", QOpcUa::NodeId);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.NodeId"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, "ns=42;s=Test", QOpcUa::NodeId);
 
-    QScopedPointer<QOpcUaNode> qualifiedNameNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.QualifiedName"));
-    QVERIFY(qualifiedNameNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(qualifiedNameNode, QOpcUa::QQualifiedName(0, QLatin1String("Test0")), QOpcUa::QualifiedName);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.QualifiedName"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, QOpcUa::QQualifiedName(0, QLatin1String("Test0")), QOpcUa::QualifiedName);
 
-    QScopedPointer<QOpcUaNode> statusCodeNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.StatusCode"));
-    QVERIFY(statusCodeNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(statusCodeNode, QOpcUa::UaStatusCode::BadInternalError, QOpcUa::StatusCode);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.StatusCode"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, QOpcUa::UaStatusCode::BadInternalError, QOpcUa::StatusCode);
 
-    QScopedPointer<QOpcUaNode> rangeNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Range"));
-    QVERIFY(rangeNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(rangeNode, QVariant::fromValue(testRanges[0]), QOpcUa::Range);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Range"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, QVariant::fromValue(testRanges[0]), QOpcUa::Range);
 
-    QScopedPointer<QOpcUaNode> euiNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EUInformation"));
-    QVERIFY(euiNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(euiNode, QVariant::fromValue(testEUInfos[0]), QOpcUa::EUInformation);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EUInformation"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, QVariant::fromValue(testEUInfos[0]), QOpcUa::EUInformation);
 
-    QScopedPointer<QOpcUaNode> complexNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ComplexNumber"));
-    QVERIFY(complexNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(complexNode, QVariant::fromValue(testComplex[0]), QOpcUa::ComplexNumber);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ComplexNumber"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, QVariant::fromValue(testComplex[0]), QOpcUa::ComplexNumber);
 
-    QScopedPointer<QOpcUaNode> doubleComplexNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DoubleComplexNumber"));
-    QVERIFY(doubleComplexNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(doubleComplexNode, QVariant::fromValue(testDoubleComplex[0]), QOpcUa::DoubleComplexNumber);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DoubleComplexNumber"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, QVariant::fromValue(testDoubleComplex[0]), QOpcUa::DoubleComplexNumber);
 
-    QScopedPointer<QOpcUaNode> axisInfoNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.AxisInformation"));
-    QVERIFY(axisInfoNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(axisInfoNode, QVariant::fromValue(testAxisInfo[0]), QOpcUa::AxisInformation);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.AxisInformation"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, QVariant::fromValue(testAxisInfo[0]), QOpcUa::AxisInformation);
 
-    QScopedPointer<QOpcUaNode> xVNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XV"));
-    QVERIFY(xVNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(xVNode, QVariant::fromValue(testXV[0]), QOpcUa::XV);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XV"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, QVariant::fromValue(testXV[0]), QOpcUa::XV);
 
     if (opcuaClient->backend() != QLatin1String("open62541"))
         qInfo("The uacpp backend currently does not support writing extension objects");
     else {
-        QScopedPointer<QOpcUaNode> node(opcuaClient->node(QStringLiteral("ns=2;s=Demo.Static.Scalar.ExtensionObject")));
+        node.reset(opcuaClient->node(QStringLiteral("ns=2;s=Demo.Static.Scalar.ExtensionObject")));
         QVERIFY(node != nullptr);
 
         QOpcUa::QExtensionObject obj;
@@ -2066,18 +2054,18 @@ void Tst_QOpcUaClient::writeScalar()
         WRITE_VALUE_ATTRIBUTE(node, obj, QOpcUa::Types::ExtensionObject); // Write value to check for
     }
 
-    QScopedPointer<QOpcUaNode> xmlElementNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XmlElement"));
-    QVERIFY(xmlElementNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(xmlElementNode, xmlElements[0], QOpcUa::XmlElement);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XmlElement"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, xmlElements[0], QOpcUa::XmlElement);
 
-    QScopedPointer<QOpcUaNode> expandedNodeIdNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ExpandedNodeId"));
-    QVERIFY(expandedNodeIdNode != nullptr);
-    WRITE_VALUE_ATTRIBUTE(expandedNodeIdNode, testExpandedNodeId[0], QOpcUa::ExpandedNodeId);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.ExpandedNodeId"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, testExpandedNodeId[0], QOpcUa::ExpandedNodeId);
 
     if (opcuaClient->backend() == QStringLiteral("open62541")) {
-        QScopedPointer<QOpcUaNode> argumentNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Argument"));
-        QVERIFY(argumentNode != nullptr);
-        WRITE_VALUE_ATTRIBUTE(argumentNode, testArguments[0], QOpcUa::Argument);
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Argument"));
+        QVERIFY(node != nullptr);
+        WRITE_VALUE_ATTRIBUTE(node, testArguments[0], QOpcUa::Argument);
     } else {
         qInfo("The argument type is currently only supported in the open62541 backend");
     }
