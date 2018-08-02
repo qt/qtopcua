@@ -72,6 +72,7 @@ public:
     QOpcUaClient::ClientState m_state;
     QOpcUaClient::ClientError m_error;
     QUrl m_url;
+    bool m_enableNamespaceArrayAutoupdate;
 
     bool checkAndSetUrl(const QUrl &url);
     void setStateAndError(QOpcUaClient::ClientState state,
@@ -80,11 +81,14 @@ public:
     bool updateNamespaceArray();
     QStringList namespaceArray() const;
     void namespaceArrayUpdated(QOpcUa::NodeAttributes attr);
+    void setupNamespaceArrayMonitoring();
 
 private:
     Q_DECLARE_PUBLIC(QOpcUaClient)
     QStringList m_namespaceArray;
     QScopedPointer<QOpcUaNode> m_namespaceArrayNode;
+    bool m_namespaceArrayAutoupdateEnabled;
+    unsigned int m_namespaceArrayUpdateInterval;
 };
 
 QT_END_NAMESPACE

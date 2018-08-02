@@ -569,4 +569,57 @@ QString QOpcUaClient::backend() const
     return d->m_impl->backend();
 }
 
+/*!
+    Enables automatic update of the namespace table.
+
+    A subscription will be made to the server node and \l namespaceArrayUpdated will be emitted
+    when the array changed without calling \l updateNamespaceArray first.
+
+    \a enable Determines whether to enable or disable the autoupdate functionality.
+
+    \sa namespaceArray() namespaceArrayUpdated()
+*/
+void QOpcUaClient::setEnableNamespaceAutoupdate(bool enable)
+{
+    Q_D(QOpcUaClient);
+    d->m_enableNamespaceArrayAutoupdate = enable;
+    d->setupNamespaceArrayMonitoring();
+}
+
+/*!
+    Returns whether autoupdate of the namespace array is activated.
+*/
+bool QOpcUaClient::namespaceAutoupdateEnabled() const
+{
+    Q_D(const QOpcUaClient);
+    return d->m_enableNamespaceArrayAutoupdate;
+}
+
+/*!
+    Sets the interval for the namespace table subscription.
+
+    The subscription may be revised by the server.
+
+    \a interval determines the interval to check for changes in milliseconds. The default is once per second.
+
+    \sa QOpcUaClient::setEnableNamespaceAutoupdate(bool enable)
+*/
+void QOpcUaClient::setNamespaceAutoupdateInterval(int interval)
+{
+    Q_D(QOpcUaClient);
+    d->m_namespaceArrayUpdateInterval = interval;
+    d->setupNamespaceArrayMonitoring();
+}
+
+/*!
+    Returns the current revised update inverval of the namespace array.
+
+    \sa setNamespaceAutoupdateInterval(int interval)
+*/
+int QOpcUaClient::namespaceAutoupdateInterval() const
+{
+    Q_D(const QOpcUaClient);
+    return d->m_namespaceArrayUpdateInterval;
+}
+
 QT_END_NAMESPACE

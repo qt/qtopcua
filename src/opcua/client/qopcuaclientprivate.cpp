@@ -47,13 +47,18 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
     , m_impl(impl)
     , m_state(QOpcUaClient::Disconnected)
     , m_error(QOpcUaClient::NoError)
+    , m_enableNamespaceArrayAutoupdate(false)
+    , m_namespaceArrayAutoupdateEnabled(false)
+    , m_namespaceArrayUpdateInterval(1000)
 {
     // callback from client implementation
     QObject::connect(m_impl.data(), &QOpcUaClientImpl::stateAndOrErrorChanged,
                     [this](QOpcUaClient::ClientState state, QOpcUaClient::ClientError error) {
         setStateAndError(state, error);
-        if (state == QOpcUaClient::ClientState::Connected)
+        if (state == QOpcUaClient::ClientState::Connected) {
             updateNamespaceArray();
+            setupNamespaceArrayMonitoring();
+        }
     });
 
     QObject::connect(m_impl.data(), &QOpcUaClientImpl::endpointsRequestFinished, m_impl.data(),
@@ -192,6 +197,46 @@ void QOpcUaClientPrivate::namespaceArrayUpdated(QOpcUa::NodeAttributes attr)
         emit q->namespaceArrayChanged(m_namespaceArray);
     }
     emit q->namespaceArrayUpdated(m_namespaceArray);
+}
+
+void QOpcUaClientPrivate::setupNamespaceArrayMonitoring()
+{
+    Q_Q(QOpcUaClient);
+
+    if (!m_namespaceArrayNode || m_state != QOpcUaClient::ClientState::Connected)
+        return;
+
+    if (!m_enableNamespaceArrayAutoupdate && m_namespaceArrayAutoupdateEnabled) {
+        m_namespaceArrayNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
+        m_namespaceArrayAutoupdateEnabled = false;
+        return;
+    }
+
+    if (m_enableNamespaceArrayAutoupdate && !m_namespaceArrayAutoupdateEnabled) {
+        QOpcUaMonitoringParameters options;
+        options.setShared(QOpcUaMonitoringParameters::SubscriptionType::Exclusive);
+        options.setMaxKeepAliveCount(std::numeric_limits<quint32>::max() - 1);
+        options.setPublishingInterval(m_namespaceArrayUpdateInterval);
+        m_namespaceArrayAutoupdateEnabled = true;
+
+        QObject::connect(m_namespaceArrayNode.data(), &QOpcUaNode::enableMonitoringFinished, q,
+            [&] (QOpcUa::NodeAttribute, QOpcUa::UaStatusCode statusCode) {
+                if (statusCode == QOpcUa::Good) {
+                    // Update interval member to the revised value from the server
+                    m_namespaceArrayUpdateInterval = m_namespaceArrayNode->monitoringStatus(QOpcUa::NodeAttribute::Value).publishingInterval();
+                } else {
+                    m_namespaceArrayAutoupdateEnabled = m_enableNamespaceArrayAutoupdate = false;
+                }
+            }
+        );
+        QObject::connect(m_namespaceArrayNode.data(), &QOpcUaNode::attributeUpdated, q,
+            [&] (QOpcUa::NodeAttribute attr, QVariant /*value*/) {
+                namespaceArrayUpdated(attr);
+            }
+        );
+
+        m_namespaceArrayNode->enableMonitoring(QOpcUa::NodeAttribute::Value, options);
+    }
 }
 
 QT_END_NAMESPACE

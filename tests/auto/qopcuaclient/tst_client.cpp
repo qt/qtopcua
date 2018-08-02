@@ -3298,6 +3298,10 @@ void Tst_QOpcUaClient::addNamespace()
 
     QSignalSpy methodSpy(node.data(), &QOpcUaNode::methodCallFinished);
 
+    opcuaClient->setEnableNamespaceAutoupdate(true);
+    namespaceUpdatedSpy.clear();
+    namespaceChangedSpy.clear();
+
     bool success = node->callMethod("ns=3;s=Test.Method.AddNamespace", args);
     QVERIFY(success == true);
 
@@ -3308,12 +3312,10 @@ void Tst_QOpcUaClient::addNamespace()
     QCOMPARE(methodSpy.at(0).at(1).value<quint16>(), namespaceArray.size());
     QCOMPARE(QOpcUa::isSuccessStatus(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>()), true);
 
-    namespaceUpdatedSpy.clear();
-    namespaceChangedSpy.clear();
-    opcuaClient->updateNamespaceArray();
+    // Do not call updateNamespaceArray()
     namespaceChangedSpy.wait();
 
-    QCOMPARE(namespaceUpdatedSpy.size(), 1);
+    QVERIFY(namespaceUpdatedSpy.size() > 0);
     QCOMPARE(namespaceChangedSpy.size(), 1);
     auto updatedNamespaceArray = opcuaClient->namespaceArray();
     QVERIFY(updatedNamespaceArray.size() == namespaceArray.size() + 1);

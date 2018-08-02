@@ -105,6 +105,11 @@ public:
 
     QString backend() const;
 
+    void setEnableNamespaceAutoupdate(bool enable);
+    bool namespaceAutoupdateEnabled() const;
+    void setNamespaceAutoupdateInterval(int interval);
+    int namespaceAutoupdateInterval() const;
+
 Q_SIGNALS:
     void connected();
     void disconnected();
