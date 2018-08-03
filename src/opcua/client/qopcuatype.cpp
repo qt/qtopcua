@@ -1989,7 +1989,7 @@ void QOpcUa::QBrowsePathTarget::setTargetId(const QOpcUa::QExpandedNodeId &value
 
     A combination of one or more content filter elements makes a content filter which is used
     by the server to filter data for the criteria defined by the content filter elements.
-    For example, the where clause of an event filter is a content filter which is used to decide
+    For example, the \c where clause of an event filter is a content filter which is used to decide
     if a notification is generated for an event.
 */
 
@@ -2651,7 +2651,7 @@ void QOpcUa::QAttributeOperand::setNodeId(const QString &value)
 
 /*!
     \class QOpcUa::QContentFilterElementResult
-    \inmodule QtOPcUa
+    \inmodule QtOpcUa
     \inheaderfile QtOpcUa/qopcuatype.h
     \brief The OPC UA ContentFilterElementResult.
 
@@ -2819,7 +2819,7 @@ QVector<QOpcUa::QContentFilterElementResult> &QOpcUa::QEventFilterResult::whereC
 }
 
 /*!
-    Sets the where clause results to \a value.
+    Sets the \c where clause results to \a value.
 */
 void QOpcUa::QEventFilterResult::setWhereClauseResults(const QVector<QOpcUa::QContentFilterElementResult> &value)
 {
@@ -2845,7 +2845,7 @@ QVector<QOpcUa::UaStatusCode> &QOpcUa::QEventFilterResult::selectClauseResultsRe
 }
 
 /*!
-    Sets the \¢ select clause results to \a value.
+    Sets the \c select clause results to \a value.
 */
 void QOpcUa::QEventFilterResult::setSelectClauseResults(const QVector<QOpcUa::UaStatusCode> &value)
 {
