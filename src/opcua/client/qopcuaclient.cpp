@@ -142,6 +142,20 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
     This signal is emitted after an updateNamespaceArray operation has finished.
     \a namespaces contains the content of the server's namespace table. The index
     of an entry in \a namespaces corresponds to the namespace index used in the node id.
+
+    If the namespace array content stays the same after the update this signal is emitted nevertheless.
+
+    \sa namespaceArrayChanged() updateNamespaceArray()
+*/
+
+/*!
+    \fn void QOpcUaClient::namespaceArrayChanged(QStringList namespaces)
+
+    This signal is emitted after the namespace array has changed.
+    \a namespaces contains the content of the server's namespace table. The index
+    of an entry in \a namespaces corresponds to the namespace index used in the node id.
+
+    \sa namespaceArrayUpdated() updateNamespaceArray()
 */
 
 /*!
