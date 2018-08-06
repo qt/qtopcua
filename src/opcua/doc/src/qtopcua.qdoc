@@ -54,7 +54,7 @@
     Currently, the following implementations are supported
 
     \list
-    \li Open62541, MPLv2
+    \li Open62541 v0.3, MPLv2
     \li Unified Automation C++ SDK (UACpp), Commercial
     \li FreeOPCUA, LGPL v3
     \endlist
