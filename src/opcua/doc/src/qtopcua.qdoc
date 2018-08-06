@@ -54,7 +54,7 @@
     Currently, the following implementations are supported
 
     \list
-    \li Open62541, MPLv2
+    \li Open62541 v0.3, MPLv2
     \li Unified Automation C++ SDK (UACpp), Commercial
     \endlist
 
@@ -326,6 +326,8 @@
     \page qtopcua-build-open62541.html
     \title Building Qt OPC UA Open62541 Plugin
     \brief Build instructions for the Qt OPC UA Open62541 plugin.
+
+    The Open62541 plugin requires Open62541 v0.3 built with UA_ENABLE_AMALGAMATION=ON.
 
     When building at the top level, you have to specify the path to the Open62541 SDK:
 
