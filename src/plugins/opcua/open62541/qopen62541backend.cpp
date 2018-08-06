@@ -503,7 +503,7 @@ void Open62541AsyncBackend::sendPublishRequest()
     }
 
     // If BADSERVERNOTCONNECTED is returned, the subscriptions are gone and local information can be deleted.
-    if (UA_Client_runAsync(m_uaclient, 1) == UA_STATUSCODE_BADSERVERNOTCONNECTED) {
+    if (UA_Client_run_iterate(m_uaclient, 1) == UA_STATUSCODE_BADSERVERNOTCONNECTED) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unable to send publish request";
         m_sendPublishRequests = false;
         cleanupSubscriptions();
