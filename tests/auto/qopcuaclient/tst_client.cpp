@@ -2703,10 +2703,7 @@ void Tst_QOpcUaClient::checkMonitoredItemCleanup()
     serverNode->callMethod(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::Server_GetMonitoredItems), parameter);
     methodSpy.wait();
     QCOMPARE(methodSpy.size(), 1);
-
-    for (auto entry : methodSpy) {
-        QCOMPARE(entry.at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
-    }
+    QCOMPARE(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadNoMatch);
 }
 
 void Tst_QOpcUaClient::stringCharset()
