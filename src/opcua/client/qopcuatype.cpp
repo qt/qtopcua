@@ -2189,7 +2189,7 @@ QOpcUa::QContentFilterElement &QOpcUa::QContentFilterElement::operator<<(const Q
 class QOpcUa::QElementOperandData : public QSharedData
 {
 public:
-    quint32 index;
+    quint32 index {0};
 };
 
 QOpcUa::QElementOperand::QElementOperand()
@@ -2265,7 +2265,7 @@ class QOpcUa::QLiteralOperandData : public QSharedData
 {
 public:
     QVariant value;
-    QOpcUa::Types type;
+    QOpcUa::Types type {QOpcUa::Types::Undefined};
 };
 
 QOpcUa::QLiteralOperand::QLiteralOperand()
@@ -2366,7 +2366,7 @@ class QOpcUa::QSimpleAttributeOperandData : public QSharedData
 public:
     QString typeId{QStringLiteral("ns=0;i=2041")}; // BaseEventType
     QVector<QOpcUa::QQualifiedName> browsePath;
-    QOpcUa::NodeAttribute attributeId;
+    QOpcUa::NodeAttribute attributeId {QOpcUa::NodeAttribute::Value};
     QString indexRange;
 };
 
@@ -2519,7 +2519,7 @@ public:
     QString nodeId;
     QString alias;
     QVector<QOpcUa::QRelativePathElement> browsePath;
-    QOpcUa::NodeAttribute attributeId;
+    QOpcUa::NodeAttribute attributeId {QOpcUa::NodeAttribute::Value};
     QString indexRange;
 };
 
@@ -2662,7 +2662,7 @@ void QOpcUa::QAttributeOperand::setNodeId(const QString &value)
 class QOpcUa::QContentFilterElementResultData : public QSharedData
 {
 public:
-    QOpcUa::UaStatusCode statusCode;
+    QOpcUa::UaStatusCode statusCode {QOpcUa::UaStatusCode::Good};
     QVector<QOpcUa::UaStatusCode> operandStatusCodes;
 };
 
