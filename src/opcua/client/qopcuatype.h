@@ -442,10 +442,10 @@ public:
     ~QQualifiedName();
 
     QString name() const;
-    void setName(const QString &value);
+    void setName(const QString &name);
 
     quint16 namespaceIndex() const;
-    void setNamespaceIndex(const quint16 &value);
+    void setNamespaceIndex(quint16 namespaceIndex);
 
 private:
     QSharedDataPointer<QOpcUa::QQualifiedNameData> data;
@@ -464,10 +464,10 @@ public:
     ~QLocalizedText();
 
     QString locale() const;
-    void setLocale(const QString &value);
+    void setLocale(const QString &locale);
 
     QString text() const;
-    void setText(const QString &value);
+    void setText(const QString &text);
 
 private:
     QSharedDataPointer<QOpcUa::QLocalizedTextData> data;
@@ -486,10 +486,10 @@ public:
     ~QRange();
 
     double low() const;
-    void setLow(double value);
+    void setLow(double low);
 
     double high() const;
-    void setHigh(double value);
+    void setHigh(double high);
 
 private:
     QSharedDataPointer<QOpcUa::QRangeData> data;
@@ -537,10 +537,10 @@ public:
     ~QComplexNumber();
 
     float real() const;
-    void setReal(float value);
+    void setReal(float real);
 
     float imaginary() const;
-    void setImaginary(float value);
+    void setImaginary(float imaginary);
 
 private:
     QSharedDataPointer<QOpcUa::QComplexNumberData> data;
@@ -559,10 +559,10 @@ public:
     ~QDoubleComplexNumber();
 
     double real() const;
-    void setReal(double value);
+    void setReal(double real);
 
     double imaginary() const;
-    void setImaginary(double value);
+    void setImaginary(double imaginary);
 
 private:
     QSharedDataPointer<QOpcUa::QDoubleComplexNumberData> data;
@@ -597,7 +597,7 @@ public:
     void setTitle(const QOpcUa::QLocalizedText &title);
 
     QOpcUa::AxisScale axisScaleType() const;
-    void setAxisScaleType(const QOpcUa::AxisScale &axisScaleType);
+    void setAxisScaleType(QOpcUa::AxisScale axisScaleType);
 
     QVector<double> axisSteps() const;
     void setAxisSteps(const QVector<double> &axisSteps);
@@ -643,13 +643,13 @@ public:
     ~QExpandedNodeId();
 
     quint32 serverIndex() const;
-    void setServerIndex(quint32 value);
+    void setServerIndex(quint32 serverIndex);
 
     QString namespaceUri() const;
-    void setNamespaceUri(const QString &value);
+    void setNamespaceUri(const QString &namespaceUri);
 
     QString nodeId() const;
-    void setNodeId(const QString &value);
+    void setNodeId(const QString &nodeId);
 
 private:
     QSharedDataPointer<QOpcUa::QExpandedNodeIdData> data;
@@ -668,17 +668,17 @@ public:
     ~QRelativePathElement();
 
     QString referenceTypeId() const;
-    void setReferenceTypeId(const QString &value);
-    void setReferenceTypeId(QOpcUa::ReferenceTypeId value);
+    void setReferenceTypeId(const QString &referenceTypeId);
+    void setReferenceTypeId(QOpcUa::ReferenceTypeId referenceTypeId);
 
     bool isInverse() const;
-    void setIsInverse(bool value);
+    void setIsInverse(bool isInverse);
 
     bool includeSubtypes() const;
-    void setIncludeSubtypes(bool value);
+    void setIncludeSubtypes(bool includeSubtypes);
 
     QOpcUa::QQualifiedName targetName() const;
-    void setTargetName(const QOpcUa::QQualifiedName &value);
+    void setTargetName(const QOpcUa::QQualifiedName &targetName);
 
 private:
     QSharedDataPointer<QOpcUa::QRelativePathElementData> data;
@@ -696,10 +696,10 @@ public:
 
     QOpcUa::QExpandedNodeId targetId() const;
     QOpcUa::QExpandedNodeId &targetIdRef();
-    void setTargetId(const QOpcUa::QExpandedNodeId &value);
+    void setTargetId(const QOpcUa::QExpandedNodeId &targetId);
 
     quint32 remainingPathIndex() const;
-    void setRemainingPathIndex(const quint32 &value);
+    void setRemainingPathIndex(quint32 remainingPathIndex);
 
     bool isFullyResolved() const;
 
@@ -721,7 +721,7 @@ public:
     ~QElementOperand();
 
     quint32 index() const;
-    void setIndex(const quint32 &value);
+    void setIndex(quint32 index);
 
 private:
     QSharedDataPointer<QOpcUa::QElementOperandData> data;
@@ -743,7 +743,7 @@ public:
     void setValue(const QVariant &value);
 
     QOpcUa::Types type() const;
-    void setType(QOpcUa::Types value);
+    void setType(QOpcUa::Types type);
 
 private:
     QSharedDataPointer<QOpcUa::QLiteralOperandData> data;
@@ -766,17 +766,17 @@ public:
     ~QSimpleAttributeOperand();
 
     QString typeId() const;
-    void setTypeId(const QString &value);
+    void setTypeId(const QString &typeId);
 
     QVector<QOpcUa::QQualifiedName> browsePath() const;
     QVector<QOpcUa::QQualifiedName> &browsePathRef();
-    void setBrowsePath(const QVector<QOpcUa::QQualifiedName> &value);
+    void setBrowsePath(const QVector<QOpcUa::QQualifiedName> &browsePath);
 
     QOpcUa::NodeAttribute attributeId() const;
-    void setAttributeId(const QOpcUa::NodeAttribute &value);
+    void setAttributeId(QOpcUa::NodeAttribute attributeId);
 
     QString indexRange() const;
-    void setIndexRange(const QString &value);
+    void setIndexRange(const QString &indexRange);
 
 private:
     QSharedDataPointer<QOpcUa::QSimpleAttributeOperandData> data;
@@ -794,20 +794,20 @@ public:
     ~QAttributeOperand();
 
     QString nodeId() const;
-    void setNodeId(const QString &value);
+    void setNodeId(const QString &nodeId);
 
     QString alias() const;
-    void setAlias(const QString &value);
+    void setAlias(const QString &alias);
 
     QVector<QOpcUa::QRelativePathElement> browsePath() const;
     QVector<QOpcUa::QRelativePathElement> &browsePathRef();
-    void setBrowsePath(const QVector<QOpcUa::QRelativePathElement> &value);
+    void setBrowsePath(const QVector<QOpcUa::QRelativePathElement> &browsePath);
 
     QOpcUa::NodeAttribute attributeId() const;
-    void setAttributeId(const QOpcUa::NodeAttribute &value);
+    void setAttributeId(QOpcUa::NodeAttribute attributeId);
 
     QString indexRange() const;
-    void setIndexRange(const QString &value);
+    void setIndexRange(const QString &indexRange);
 
 private:
     QSharedDataPointer<QOpcUa::QAttributeOperandData> data;
@@ -853,11 +853,11 @@ public:
 
 
     QOpcUa::QContentFilterElement::FilterOperator filterOperator() const;
-    void setFilterOperator(const QOpcUa::QContentFilterElement::FilterOperator &value);
+    void setFilterOperator(QOpcUa::QContentFilterElement::FilterOperator filterOperator);
 
     QVector<QVariant> filterOperands() const;
     QVector<QVariant> &filterOperandsRef();
-    void setFilterOperands(const QVector<QVariant> &value);
+    void setFilterOperands(const QVector<QVariant> &filterOperands);
 
 private:
     QSharedDataPointer<QOpcUa::QContentFilterElementData> data;
@@ -873,11 +873,11 @@ public:
     ~QContentFilterElementResult();
 
     QOpcUa::UaStatusCode statusCode() const;
-    void setStatusCode(const QOpcUa::UaStatusCode &value);
+    void setStatusCode(QOpcUa::UaStatusCode statusCode);
 
     QVector<QOpcUa::UaStatusCode> operandStatusCodes() const;
     QVector<QOpcUa::UaStatusCode> &operandStatusCodesRef();
-    void setOperandStatusCodes(const QVector<QOpcUa::UaStatusCode> &value);
+    void setOperandStatusCodes(const QVector<QOpcUa::UaStatusCode> &operandStatusCodes);
 
 private:
     QSharedDataPointer<QOpcUa::QContentFilterElementResultData> data;
@@ -896,11 +896,11 @@ public:
 
     QVector<QOpcUa::UaStatusCode> selectClauseResults() const;
     QVector<QOpcUa::UaStatusCode> &selectClauseResultsRef();
-    void setSelectClauseResults(const QVector<QOpcUa::UaStatusCode> &value);
+    void setSelectClauseResults(const QVector<QOpcUa::UaStatusCode> &selectClausesResult);
 
     QVector<QOpcUa::QContentFilterElementResult> whereClauseResults() const;
     QVector<QOpcUa::QContentFilterElementResult> &whereClauseResultsRef();
-    void setWhereClauseResults(const QVector<QOpcUa::QContentFilterElementResult> &value);
+    void setWhereClauseResults(const QVector<QOpcUa::QContentFilterElementResult> &whereClauseResult);
 
 private:
     QSharedDataPointer<QEventFilterResultData> data;
@@ -923,19 +923,19 @@ public:
     };
 
     QString policyId() const;
-    void setPolicyId(const QString &value);
+    void setPolicyId(const QString &policyId);
 
     TokenType tokenType() const;
-    void setTokenType(QOpcUa::QUserTokenPolicy::TokenType value);
+    void setTokenType(QOpcUa::QUserTokenPolicy::TokenType tokenType);
 
     QString issuedTokenType() const;
-    void setIssuedTokenType(const QString &value);
+    void setIssuedTokenType(const QString &issuedTokenType);
 
     QString issuerEndpointUrl() const;
-    void setIssuerEndpointUrl(const QString &value);
+    void setIssuerEndpointUrl(const QString &issuerEndpointUrl);
 
     QString securityPolicyUri() const;
-    void setSecurityPolicyUri(const QString &value);
+    void setSecurityPolicyUri(const QString &securityPolicyUri);
 
 private:
     QSharedDataPointer<QUserTokenPolicyData> data;
@@ -958,26 +958,26 @@ public:
     };
 
     QString applicationUri() const;
-    void setApplicationUri(const QString &value);
+    void setApplicationUri(const QString &applicationUri);
 
     QString productUri() const;
-    void setProductUri(const QString &value);
+    void setProductUri(const QString &productUri);
 
     QOpcUa::QLocalizedText applicationName() const;
-    void setApplicationName(const QOpcUa::QLocalizedText &value);
+    void setApplicationName(const QOpcUa::QLocalizedText &applicationName);
 
     QOpcUa::QApplicationDescription::ApplicationType applicationType() const;
-    void setApplicationType(QOpcUa::QApplicationDescription::ApplicationType value);
+    void setApplicationType(QOpcUa::QApplicationDescription::ApplicationType applicationType);
 
     QString gatewayServerUri() const;
-    void setGatewayServerUri(const QString &value);
+    void setGatewayServerUri(const QString &gatewayServerUri);
 
     QString discoveryProfileUri() const;
-    void setDiscoveryProfileUri(const QString &value);
+    void setDiscoveryProfileUri(const QString &discoveryProfileUri);
 
     QVector<QString> discoveryUrls() const;
     QVector<QString> &discoveryUrlsRef();
-    void setDiscoveryUrls(const QVector<QString> &value);
+    void setDiscoveryUrls(const QVector<QString> &discoveryUrls);
 
 private:
     QSharedDataPointer<QApplicationDescriptionData> data;
@@ -1000,30 +1000,30 @@ public:
     };
 
     QString endpointUrl() const;
-    void setEndpointUrl(const QString &value);
+    void setEndpointUrl(const QString &endpointUrl);
 
     QOpcUa::QApplicationDescription server() const;
     QOpcUa::QApplicationDescription &serverRef();
-    void setServer(const QOpcUa::QApplicationDescription &value);
+    void setServer(const QOpcUa::QApplicationDescription &server);
 
     QByteArray serverCertificate() const;
-    void setServerCertificate(const QByteArray &value);
+    void setServerCertificate(const QByteArray &serverCertificate);
 
     QOpcUa::QEndpointDescription::MessageSecurityMode securityMode() const;
-    void setSecurityMode(const QOpcUa::QEndpointDescription::MessageSecurityMode &value);
+    void setSecurityMode(QOpcUa::QEndpointDescription::MessageSecurityMode securityMode);
 
     QString securityPolicyUri() const;
-    void setSecurityPolicyUri(const QString &value);
+    void setSecurityPolicyUri(const QString &securityPolicyUri);
 
     QVector<QOpcUa::QUserTokenPolicy> userIdentityTokens() const;
     QVector<QOpcUa::QUserTokenPolicy> &userIdentityTokensRef();
-    void setUserIdentityTokens(const QVector<QOpcUa::QUserTokenPolicy> &value);
+    void setUserIdentityTokens(const QVector<QOpcUa::QUserTokenPolicy> &userIdentityTokens);
 
     QString transportProfileUri() const;
-    void setTransportProfileUri(const QString &value);
+    void setTransportProfileUri(const QString &transportProfileUri);
 
     quint8 securityLevel() const;
-    void setSecurityLevel(const quint8 &value);
+    void setSecurityLevel(quint8 securityLevel);
 
 private:
     QSharedDataPointer<QEndpointDescriptionData> data;
@@ -1049,7 +1049,7 @@ public:
     void setDataTypeId(const QString &dataTypeId);
 
     qint32 valueRank() const;
-    void setValueRank(const qint32 &valueRank);
+    void setValueRank(qint32 valueRank);
 
     QVector<quint32> arrayDimensions() const;
     QVector<quint32> &arrayDimensionsRef();
@@ -1080,14 +1080,14 @@ public:
     operator QVariant() const;
 
     QString encodingTypeId() const;
-    void setEncodingTypeId(const QString &value);
+    void setEncodingTypeId(const QString &encodingTypeId);
 
     QByteArray encodedBody() const;
     QByteArray &encodedBodyRef();
-    void setEncodedBody(const QByteArray &value);
+    void setEncodedBody(const QByteArray &encodedBody);
 
     QOpcUa::QExtensionObject::Encoding encoding() const;
-    void setEncoding(QOpcUa::QExtensionObject::Encoding value);
+    void setEncoding(QOpcUa::QExtensionObject::Encoding encoding);
 
 private:
     QSharedDataPointer<QOpcUa::QExtensionObjectData> data;

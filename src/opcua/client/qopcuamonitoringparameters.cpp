@@ -779,11 +779,11 @@ QVector<QOpcUa::QContentFilterElement> &QOpcUaMonitoringParameters::EventFilter:
 }
 
 /*!
-    Sets the where clause to \a value.
+    Sets the where clause to \a whereClause.
 */
-void QOpcUaMonitoringParameters::EventFilter::setWhereClause(const QVector<QOpcUa::QContentFilterElement> &value)
+void QOpcUaMonitoringParameters::EventFilter::setWhereClause(const QVector<QOpcUa::QContentFilterElement> &whereClause)
 {
-    data->whereClause = value;
+    data->whereClause = whereClause;
 }
 
 /*!
@@ -803,11 +803,11 @@ QVector<QOpcUa::QSimpleAttributeOperand> &QOpcUaMonitoringParameters::EventFilte
 }
 
 /*!
-    Sets the select clauses to \a value.
+    Sets the select clauses to \a selectClauses.
 */
-void QOpcUaMonitoringParameters::EventFilter::setSelectClauses(const QVector<QOpcUa::QSimpleAttributeOperand> &value)
+void QOpcUaMonitoringParameters::EventFilter::setSelectClauses(const QVector<QOpcUa::QSimpleAttributeOperand> &selectClauses)
 {
-    data->selectClauses = value;
+    data->selectClauses = selectClauses;
 }
 
 QT_END_NAMESPACE

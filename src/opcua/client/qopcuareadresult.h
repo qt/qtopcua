@@ -62,7 +62,7 @@ public:
     void setStatusCode(QOpcUa::UaStatusCode statusCode);
 
     QString nodeId() const;
-    void setNodeId(const QString &value);
+    void setNodeId(const QString &nodeId);
 
     QOpcUa::NodeAttribute attribute() const;
     void setAttribute(QOpcUa::NodeAttribute attribute);

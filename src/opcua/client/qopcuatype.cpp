@@ -524,11 +524,11 @@ quint16 QOpcUa::QQualifiedName::namespaceIndex() const
 }
 
 /*!
-    Sets the namespace index to \a value.
+    Sets the namespace index to \a namespaceIndex.
 */
-void QOpcUa::QQualifiedName::setNamespaceIndex(const quint16 &value)
+void QOpcUa::QQualifiedName::setNamespaceIndex(quint16 namespaceIndex)
 {
-    data->namespaceIndex = value;
+    data->namespaceIndex = namespaceIndex;
 }
 
 /*!
@@ -540,11 +540,11 @@ QString QOpcUa::QQualifiedName::name() const
 }
 
 /*!
-    Sets the name to \a value.
+    Sets the name to \a name.
 */
-void QOpcUa::QQualifiedName::setName(const QString &value)
+void QOpcUa::QQualifiedName::setName(const QString &name)
 {
-    data->name = value;
+    data->name = name;
 }
 
 /*!
@@ -630,12 +630,12 @@ QString QOpcUa::QLocalizedText::text() const
 }
 
 /*!
-    Sets the text to \a value.
+    Sets the text to \a text.
 
 */
-void QOpcUa::QLocalizedText::setText(const QString &value)
+void QOpcUa::QLocalizedText::setText(const QString &text)
 {
-    data->text = value;
+    data->text = text;
 }
 
 /*!
@@ -647,11 +647,11 @@ QString QOpcUa::QLocalizedText::locale() const
 }
 
 /*!
-    Sets the locale to \a value.
+    Sets the locale to \a locale.
 */
-void QOpcUa::QLocalizedText::setLocale(const QString &value)
+void QOpcUa::QLocalizedText::setLocale(const QString &locale)
 {
-    data->locale = value;
+    data->locale = locale;
 }
 
 static bool isNodeError(QOpcUa::UaStatusCode statusCode)
@@ -927,11 +927,11 @@ double QOpcUa::QRange::high() const
 }
 
 /*!
-    Sets the high value of the range to \a value.
+    Sets the high value of the range to \a high.
 */
-void QOpcUa::QRange::setHigh(double value)
+void QOpcUa::QRange::setHigh(double high)
 {
-    data->high = value;
+    data->high = high;
 }
 
 /*!
@@ -943,11 +943,11 @@ double QOpcUa::QRange::low() const
 }
 
 /*!
-    Sets the low value of the range to \a value.
+    Sets the low value of the range to \a low.
 */
-void QOpcUa::QRange::setLow(double value)
+void QOpcUa::QRange::setLow(double low)
 {
-    data->low = value;
+    data->low = low;
 }
 
 /*!
@@ -1145,11 +1145,11 @@ float QOpcUa::QComplexNumber::imaginary() const
 }
 
 /*!
-    Sets the imaginary part of the complex number to \a value.
+    Sets the imaginary part of the complex number to \a imaginary.
 */
-void QOpcUa::QComplexNumber::setImaginary(float value)
+void QOpcUa::QComplexNumber::setImaginary(float imaginary)
 {
-    data->imaginary = value;
+    data->imaginary = imaginary;
 }
 
 /*!
@@ -1161,11 +1161,11 @@ float QOpcUa::QComplexNumber::real() const
 }
 
 /*!
-    Sets the real part of the complex number to \a value.
+    Sets the real part of the complex number to \a real.
 */
-void QOpcUa::QComplexNumber::setReal(float value)
+void QOpcUa::QComplexNumber::setReal(float real)
 {
-    data->real = value;
+    data->real = real;
 }
 
 /*!
@@ -1246,11 +1246,11 @@ double QOpcUa::QDoubleComplexNumber::imaginary() const
 }
 
 /*!
-    Sets the imaginary part of the complex number to \a value.
+    Sets the imaginary part of the complex number to \a imaginary.
 */
-void QOpcUa::QDoubleComplexNumber::setImaginary(double value)
+void QOpcUa::QDoubleComplexNumber::setImaginary(double imaginary)
 {
-    data->imaginary = value;
+    data->imaginary = imaginary;
 }
 
 /*!
@@ -1262,11 +1262,11 @@ double QOpcUa::QDoubleComplexNumber::real() const
 }
 
 /*!
-    Sets the real part of the complex number to \a value.
+    Sets the real part of the complex number to \a real.
 */
-void QOpcUa::QDoubleComplexNumber::setReal(double value)
+void QOpcUa::QDoubleComplexNumber::setReal(double real)
 {
-    data->real = value;
+    data->real = real;
 }
 
 /*!
@@ -1398,7 +1398,7 @@ QOpcUa::AxisScale QOpcUa::QAxisInformation::axisScaleType() const
 /*!
     Sets the axis scale type to \a axisScaleType.
 */
-void QOpcUa::QAxisInformation::setAxisScaleType(const QOpcUa::AxisScale &axisScaleType)
+void QOpcUa::QAxisInformation::setAxisScaleType(QOpcUa::AxisScale axisScaleType)
 {
     data->axisScaleType = axisScaleType;
 }
@@ -1680,11 +1680,11 @@ quint32 QOpcUa::QExpandedNodeId::serverIndex() const
 }
 
 /*!
-    Sets the server index to \a value.
+    Sets the server index to \a serverIndex.
 */
-void QOpcUa::QExpandedNodeId::setServerIndex(quint32 value)
+void QOpcUa::QExpandedNodeId::setServerIndex(quint32 serverIndex)
 {
-    data->serverIndex = value;
+    data->serverIndex = serverIndex;
 }
 
 /*!
@@ -1697,11 +1697,11 @@ QString QOpcUa::QExpandedNodeId::namespaceUri() const
 }
 
 /*!
-    Sets the namespace URI to \a value.
+    Sets the namespace URI to \a namespaceUri.
 */
-void QOpcUa::QExpandedNodeId::setNamespaceUri(const QString &value)
+void QOpcUa::QExpandedNodeId::setNamespaceUri(const QString &namespaceUri)
 {
-    data->namespaceUri = value;
+    data->namespaceUri = namespaceUri;
 }
 
 /*!
@@ -1713,11 +1713,11 @@ QString QOpcUa::QExpandedNodeId::nodeId() const
 }
 
 /*!
-    Sets the node id to \a value.
+    Sets the node id to \a nodeId.
 */
-void QOpcUa::QExpandedNodeId::setNodeId(const QString &value)
+void QOpcUa::QExpandedNodeId::setNodeId(const QString &nodeId)
 {
-    data->nodeId = value;
+    data->nodeId = nodeId;
 }
 
 /*!
@@ -1809,11 +1809,11 @@ QOpcUa::QQualifiedName QOpcUa::QRelativePathElement::targetName() const
 }
 
 /*!
-    Sets the target name to \a value, for example QOpcUa::QQualifiedName(0, "DataTypes").
+    Sets the target name to \a targetName, for example QOpcUa::QQualifiedName(0, "DataTypes").
 */
-void QOpcUa::QRelativePathElement::setTargetName(const QOpcUa::QQualifiedName &value)
+void QOpcUa::QRelativePathElement::setTargetName(const QOpcUa::QQualifiedName &targetName)
 {
-    data->targetName = value;
+    data->targetName = targetName;
 }
 
 /*!
@@ -1825,12 +1825,12 @@ bool QOpcUa::QRelativePathElement::includeSubtypes() const
 }
 
 /*!
-    Sets the includeSubtypes flag to \a value.
+    Sets the includeSubtypes flag to \a includeSubtypes.
     If the flag is \c true, the lookup also follows references with subtypes of \l referenceTypeId().
 */
-void QOpcUa::QRelativePathElement::setIncludeSubtypes(bool value)
+void QOpcUa::QRelativePathElement::setIncludeSubtypes(bool includeSubtypes)
 {
-    data->includeSubtypes = value;
+    data->includeSubtypes = includeSubtypes;
 }
 
 /*!
@@ -1842,12 +1842,12 @@ bool QOpcUa::QRelativePathElement::isInverse() const
 }
 
 /*!
-    Sets the isInverse flag to \a value.
+    Sets the isInverse flag to \a isInverse.
     If the flag is \c true, the lookup follows the reverse reference.
 */
-void QOpcUa::QRelativePathElement::setIsInverse(bool value)
+void QOpcUa::QRelativePathElement::setIsInverse(bool isInverse)
 {
-    data->isInverse = value;
+    data->isInverse = isInverse;
 }
 
 /*!
@@ -1859,19 +1859,19 @@ QString QOpcUa::QRelativePathElement::referenceTypeId() const
 }
 
 /*!
-    Sets the reference type id to \a value.
+    Sets the reference type id to \a referenceTypeId.
 */
-void QOpcUa::QRelativePathElement::setReferenceTypeId(const QString &value)
+void QOpcUa::QRelativePathElement::setReferenceTypeId(const QString &referenceTypeId)
 {
-    data->referenceTypeId = value;
+    data->referenceTypeId = referenceTypeId;
 }
 
 /*!
-    Sets the reference type id to \a value.
+    Sets the reference type id to \a referenceTypeId.
 */
-void QOpcUa::QRelativePathElement::setReferenceTypeId(QOpcUa::ReferenceTypeId value)
+void QOpcUa::QRelativePathElement::setReferenceTypeId(QOpcUa::ReferenceTypeId referenceTypeId)
 {
-    data->referenceTypeId = QOpcUa::nodeIdFromReferenceType(value);
+    data->referenceTypeId = QOpcUa::nodeIdFromReferenceType(referenceTypeId);
 }
 
 /*!
@@ -1936,11 +1936,11 @@ quint32 QOpcUa::QBrowsePathTarget::remainingPathIndex() const
 }
 
 /*!
-    Sets the remaining path index to \a value.
+    Sets the remaining path index to \a remainingPathIndex.
 */
-void QOpcUa::QBrowsePathTarget::setRemainingPathIndex(const quint32 &value)
+void QOpcUa::QBrowsePathTarget::setRemainingPathIndex(quint32 remainingPathIndex)
 {
-    data->remainingPathIndex = value;
+    data->remainingPathIndex = remainingPathIndex;
 }
 
 /*!
@@ -1970,11 +1970,11 @@ QOpcUa::QExpandedNodeId &QOpcUa::QBrowsePathTarget::targetIdRef()
 }
 
 /*!
-    Sets the node id of the target node to \a value.
+    Sets the node id of the target node to \a targetId.
 */
-void QOpcUa::QBrowsePathTarget::setTargetId(const QOpcUa::QExpandedNodeId &value)
+void QOpcUa::QBrowsePathTarget::setTargetId(const QOpcUa::QExpandedNodeId &targetId)
 {
-    data->targetId = value;
+    data->targetId = targetId;
 }
 
 /*!
@@ -2076,13 +2076,13 @@ QVector<QVariant> &QOpcUa::QContentFilterElement::filterOperandsRef()
 }
 
 /*!
-    Sets the filter operands for this content filter element to \a value.
+    Sets the filter operands for this content filter element to \a filterOperands.
     Supported classes are \l QOpcUa::QElementOperand, \l QOpcUa::QLiteralOperand,
     \l QOpcUa::QSimpleAttributeOperand and \l QOpcUa::QAttributeOperand.
 */
-void QOpcUa::QContentFilterElement::setFilterOperands(const QVector<QVariant> &value)
+void QOpcUa::QContentFilterElement::setFilterOperands(const QVector<QVariant> &filterOperands)
 {
-    data->filterOperands = value;
+    data->filterOperands = filterOperands;
 }
 
 /*!
@@ -2094,11 +2094,11 @@ QOpcUa::QContentFilterElement::FilterOperator QOpcUa::QContentFilterElement::fil
 }
 
 /*!
-    Sets the operator that is applied to the filter operands to \a value.
+    Sets the operator that is applied to the filter operands to \a filterOperator.
 */
-void QOpcUa::QContentFilterElement::setFilterOperator(const QOpcUa::QContentFilterElement::FilterOperator &value)
+void QOpcUa::QContentFilterElement::setFilterOperator(QOpcUa::QContentFilterElement::FilterOperator filterOperator)
 {
-    data->filterOperator = value;
+    data->filterOperator = filterOperator;
 }
 
 QOpcUa::QContentFilterElement::~QContentFilterElement()
@@ -2245,11 +2245,11 @@ quint32 QOpcUa::QElementOperand::index() const
 }
 
 /*!
-    Sets the index of the filter element that is going to be used as operand to \a value.
+    Sets the index of the filter element that is going to be used as operand to \a index.
 */
-void QOpcUa::QElementOperand::setIndex(const quint32 &value)
+void QOpcUa::QElementOperand::setIndex(quint32 index)
 {
-    data->index = value;
+    data->index = index;
 }
 
 /*!
@@ -2323,11 +2323,11 @@ QOpcUa::Types QOpcUa::QLiteralOperand::type() const
 }
 
 /*!
-    Sets the type of the value of the literal operand to \a value.
+    Sets the type of the value of the literal operand to \a type.
 */
-void QOpcUa::QLiteralOperand::setType(QOpcUa::Types value)
+void QOpcUa::QLiteralOperand::setType(QOpcUa::Types type)
 {
-    data->type = value;
+    data->type = type;
 }
 
 /*!
@@ -2438,11 +2438,11 @@ QString QOpcUa::QSimpleAttributeOperand::indexRange() const
 }
 
 /*!
-    Sets the index range string used to identify a single value or subset of the attribute's value to \a value.
+    Sets the index range string used to identify a single value or subset of the attribute's value to \a indexRange.
 */
-void QOpcUa::QSimpleAttributeOperand::setIndexRange(const QString &value)
+void QOpcUa::QSimpleAttributeOperand::setIndexRange(const QString &indexRange)
 {
-    data->indexRange = value;
+    data->indexRange = indexRange;
 }
 
 /*!
@@ -2454,11 +2454,11 @@ QOpcUa::NodeAttribute QOpcUa::QSimpleAttributeOperand::attributeId() const
 }
 
 /*!
-    Sets the attribute id to \a value.
+    Sets the attribute id to \a attributeId.
 */
-void QOpcUa::QSimpleAttributeOperand::setAttributeId(const QOpcUa::NodeAttribute &value)
+void QOpcUa::QSimpleAttributeOperand::setAttributeId(QOpcUa::NodeAttribute attributeId)
 {
-    data->attributeId = value;
+    data->attributeId = attributeId;
 }
 
 /*!
@@ -2480,11 +2480,11 @@ QVector<QOpcUa::QQualifiedName> &QOpcUa::QSimpleAttributeOperand::browsePathRef(
 }
 
 /*!
-    Sets the browse path to the node holding the attribute to \a value.
+    Sets the browse path to the node holding the attribute to \a browsePath.
 */
-void QOpcUa::QSimpleAttributeOperand::setBrowsePath(const QVector<QOpcUa::QQualifiedName> &value)
+void QOpcUa::QSimpleAttributeOperand::setBrowsePath(const QVector<QOpcUa::QQualifiedName> &browsePath)
 {
-    data->browsePath = value;
+    data->browsePath = browsePath;
 }
 
 /*!
@@ -2496,11 +2496,11 @@ QString QOpcUa::QSimpleAttributeOperand::typeId() const
 }
 
 /*!
-    Sets the node id of the type definition node to \a value. The operand will be of the type or one of its subtypes.
+    Sets the node id of the type definition node to \a typeId. The operand will be of the type or one of its subtypes.
 */
-void QOpcUa::QSimpleAttributeOperand::setTypeId(const QString &value)
+void QOpcUa::QSimpleAttributeOperand::setTypeId(const QString &typeId)
 {
-    data->typeId = value;
+    data->typeId = typeId;
 }
 
 /*!
@@ -2567,11 +2567,11 @@ QString QOpcUa::QAttributeOperand::indexRange() const
 }
 
 /*!
-    Sets the index range string used to identify a single value or subset of the attribute's value to \a value.
+    Sets the index range string used to identify a single value or subset of the attribute's value to \a indexRange.
 */
-void QOpcUa::QAttributeOperand::setIndexRange(const QString &value)
+void QOpcUa::QAttributeOperand::setIndexRange(const QString &indexRange)
 {
-    data->indexRange = value;
+    data->indexRange = indexRange;
 }
 
 /*!
@@ -2583,11 +2583,11 @@ QOpcUa::NodeAttribute QOpcUa::QAttributeOperand::attributeId() const
 }
 
 /*!
-    Sets the attribute id to \a value.
+    Sets the attribute id to \a attributeId.
 */
-void QOpcUa::QAttributeOperand::setAttributeId(const QOpcUa::NodeAttribute &value)
+void QOpcUa::QAttributeOperand::setAttributeId(QOpcUa::NodeAttribute attributeId)
 {
-    data->attributeId = value;
+    data->attributeId = attributeId;
 }
 
 /*!
@@ -2609,11 +2609,11 @@ QVector<QOpcUa::QRelativePathElement> &QOpcUa::QAttributeOperand::browsePathRef(
 }
 
 /*!
-    Sets the relative path to a node starting from \l nodeId() to \a value.
+    Sets the relative path to a node starting from \l nodeId() to \a browsePath.
 */
-void QOpcUa::QAttributeOperand::setBrowsePath(const QVector<QOpcUa::QRelativePathElement> &value)
+void QOpcUa::QAttributeOperand::setBrowsePath(const QVector<QOpcUa::QRelativePathElement> &browsePath)
 {
-    data->browsePath = value;
+    data->browsePath = browsePath;
 }
 
 /*!
@@ -2625,12 +2625,12 @@ QString QOpcUa::QAttributeOperand::alias() const
 }
 
 /*!
-    Sets the alias to \a value. This allows using this instance
+    Sets the alias to \a alias. This allows using this instance
     as operand for other operations in the filter.
 */
-void QOpcUa::QAttributeOperand::setAlias(const QString &value)
+void QOpcUa::QAttributeOperand::setAlias(const QString &alias)
 {
-    data->alias = value;
+    data->alias = alias;
 }
 
 /*!
@@ -2642,11 +2642,11 @@ QString QOpcUa::QAttributeOperand::nodeId() const
 }
 
 /*!
-    Sets the node id of the type definition node to \a value.
+    Sets the node id of the type definition node to \a nodeId.
 */
-void QOpcUa::QAttributeOperand::setNodeId(const QString &value)
+void QOpcUa::QAttributeOperand::setNodeId(const QString &nodeId)
 {
-    data->nodeId = value;
+    data->nodeId = nodeId;
 }
 
 /*!
@@ -2702,11 +2702,11 @@ QOpcUa::UaStatusCode QOpcUa::QContentFilterElementResult::statusCode() const
 }
 
 /*!
-    Sets the status code for the filter element to \a value.
+    Sets the status code for the filter element to \a statusCode.
 */
-void QOpcUa::QContentFilterElementResult::setStatusCode(const QOpcUa::UaStatusCode &value)
+void QOpcUa::QContentFilterElementResult::setStatusCode(QOpcUa::UaStatusCode statusCode)
 {
-    data->statusCode = value;
+    data->statusCode = statusCode;
 }
 
 /*!
@@ -2718,11 +2718,11 @@ QVector<QOpcUa::UaStatusCode> QOpcUa::QContentFilterElementResult::operandStatus
 }
 
 /*!
-    Sets the status codes for all filter operands to \a value.
+    Sets the status codes for all filter operands to \a operandStatusCodes.
 */
-void QOpcUa::QContentFilterElementResult::setOperandStatusCodes(const QVector<QOpcUa::UaStatusCode> &value)
+void QOpcUa::QContentFilterElementResult::setOperandStatusCodes(const QVector<QOpcUa::UaStatusCode> &operandStatusCodes)
 {
-    data->operandStatusCodes = value;
+    data->operandStatusCodes = operandStatusCodes;
 }
 
 /*!
@@ -2819,11 +2819,11 @@ QVector<QOpcUa::QContentFilterElementResult> &QOpcUa::QEventFilterResult::whereC
 }
 
 /*!
-    Sets the \c where clause results to \a value.
+    Sets the \c where clause results to \a whereClausesResult.
 */
-void QOpcUa::QEventFilterResult::setWhereClauseResults(const QVector<QOpcUa::QContentFilterElementResult> &value)
+void QOpcUa::QEventFilterResult::setWhereClauseResults(const QVector<QOpcUa::QContentFilterElementResult> &whereClausesResult)
 {
-    data->whereClauseResults = value;
+    data->whereClauseResults = whereClausesResult;
 }
 
 /*!
@@ -2845,11 +2845,11 @@ QVector<QOpcUa::UaStatusCode> &QOpcUa::QEventFilterResult::selectClauseResultsRe
 }
 
 /*!
-    Sets the \c select clause results to \a value.
+    Sets the \c select clause results to \a selectClausesResult.
 */
-void QOpcUa::QEventFilterResult::setSelectClauseResults(const QVector<QOpcUa::UaStatusCode> &value)
+void QOpcUa::QEventFilterResult::setSelectClauseResults(const QVector<QOpcUa::UaStatusCode> &selectClausesResult)
 {
-    data->selectClauseResults = value;
+    data->selectClauseResults = selectClausesResult;
 }
 
 /*!
@@ -2916,11 +2916,11 @@ QString QOpcUa::QUserTokenPolicy::securityPolicyUri() const
 }
 
 /*!
-    Sets the URI of the security policy to \a value.
+    Sets the URI of the security policy to \a securityPolicyUri.
 */
-void QOpcUa::QUserTokenPolicy::setSecurityPolicyUri(const QString &value)
+void QOpcUa::QUserTokenPolicy::setSecurityPolicyUri(const QString &securityPolicyUri)
 {
-    data->securityPolicyUri = value;
+    data->securityPolicyUri = securityPolicyUri;
 }
 
 /*!
@@ -2932,11 +2932,11 @@ QString QOpcUa::QUserTokenPolicy::issuerEndpointUrl() const
 }
 
 /*!
-    Sets the URL of the token issuing service to \a value.
+    Sets the URL of the token issuing service to \a issuerEndpointUrl.
 */
-void QOpcUa::QUserTokenPolicy::setIssuerEndpointUrl(const QString &value)
+void QOpcUa::QUserTokenPolicy::setIssuerEndpointUrl(const QString &issuerEndpointUrl)
 {
-    data->issuerEndpointUrl = value;
+    data->issuerEndpointUrl = issuerEndpointUrl;
 }
 
 /*!
@@ -2948,11 +2948,11 @@ QString QOpcUa::QUserTokenPolicy::issuedTokenType() const
 }
 
 /*!
-    Sets the URI for the token type to \a value.
+    Sets the URI for the token type to \a issuedTokenType.
 */
-void QOpcUa::QUserTokenPolicy::setIssuedTokenType(const QString &value)
+void QOpcUa::QUserTokenPolicy::setIssuedTokenType(const QString &issuedTokenType)
 {
-    data->issuedTokenType = value;
+    data->issuedTokenType = issuedTokenType;
 }
 
 /*!
@@ -2964,11 +2964,11 @@ QOpcUa::QUserTokenPolicy::TokenType QOpcUa::QUserTokenPolicy::tokenType() const
 }
 
 /*!
-    Sets the type of the required user identity token to \a value.
+    Sets the type of the required user identity token to \a tokenType.
 */
-void QOpcUa::QUserTokenPolicy::setTokenType(TokenType value)
+void QOpcUa::QUserTokenPolicy::setTokenType(TokenType tokenType)
 {
-    data->tokenType = value;
+    data->tokenType = tokenType;
 }
 
 /*!
@@ -2980,11 +2980,11 @@ QString QOpcUa::QUserTokenPolicy::policyId() const
 }
 
 /*!
-    Sets the identifier for this policy to \a value.
+    Sets the identifier for this policy to \a policyId.
 */
-void QOpcUa::QUserTokenPolicy::setPolicyId(const QString &value)
+void QOpcUa::QUserTokenPolicy::setPolicyId(const QString &policyId)
 {
-    data->policyId = value;
+    data->policyId = policyId;
 }
 
 /*!
@@ -3060,11 +3060,11 @@ QVector<QString> &QOpcUa::QApplicationDescription::discoveryUrlsRef()
 }
 
 /*!
-    Sets the discovery URLs to \a value.
+    Sets the discovery URLs to \a discoveryUrls.
 */
-void QOpcUa::QApplicationDescription::setDiscoveryUrls(const QVector<QString> &value)
+void QOpcUa::QApplicationDescription::setDiscoveryUrls(const QVector<QString> &discoveryUrls)
 {
-    data->discoveryUrls = value;
+    data->discoveryUrls = discoveryUrls;
 }
 
 /*!
@@ -3076,11 +3076,11 @@ QString QOpcUa::QApplicationDescription::discoveryProfileUri() const
 }
 
 /*!
-    Sets the discovery profile URI to \a value.
+    Sets the discovery profile URI to \a discoveryProfileUri.
 */
-void QOpcUa::QApplicationDescription::setDiscoveryProfileUri(const QString &value)
+void QOpcUa::QApplicationDescription::setDiscoveryProfileUri(const QString &discoveryProfileUri)
 {
-    data->discoveryProfileUri = value;
+    data->discoveryProfileUri = discoveryProfileUri;
 }
 
 /*!
@@ -3092,11 +3092,11 @@ QString QOpcUa::QApplicationDescription::gatewayServerUri() const
 }
 
 /*!
-    Sets the URI of the gateway server to \a value.
+    Sets the URI of the gateway server to \a gatewayServerUri.
 */
-void QOpcUa::QApplicationDescription::setGatewayServerUri(const QString &value)
+void QOpcUa::QApplicationDescription::setGatewayServerUri(const QString &gatewayServerUri)
 {
-    data->gatewayServerUri = value;
+    data->gatewayServerUri = gatewayServerUri;
 }
 
 /*!
@@ -3108,11 +3108,11 @@ QOpcUa::QApplicationDescription::ApplicationType QOpcUa::QApplicationDescription
 }
 
 /*!
-    Sets the application type to \a value.
+    Sets the application type to \a applicationType.
 */
-void QOpcUa::QApplicationDescription::setApplicationType(ApplicationType value)
+void QOpcUa::QApplicationDescription::setApplicationType(ApplicationType applicationType)
 {
-    data->applicationType = value;
+    data->applicationType = applicationType;
 }
 
 /*!
@@ -3124,11 +3124,11 @@ QOpcUa::QLocalizedText QOpcUa::QApplicationDescription::applicationName() const
 }
 
 /*!
-    Sets the application name to \a value.
+    Sets the application name to \a applicationName.
 */
-void QOpcUa::QApplicationDescription::setApplicationName(const QOpcUa::QLocalizedText &value)
+void QOpcUa::QApplicationDescription::setApplicationName(const QOpcUa::QLocalizedText &applicationName)
 {
-    data->applicationName = value;
+    data->applicationName = applicationName;
 }
 
 /*!
@@ -3140,11 +3140,11 @@ QString QOpcUa::QApplicationDescription::productUri() const
 }
 
 /*!
-    Sets the globally unique identifier for this product to \a value.
+    Sets the globally unique identifier for this product to \a productUri.
 */
-void QOpcUa::QApplicationDescription::setProductUri(const QString &value)
+void QOpcUa::QApplicationDescription::setProductUri(const QString &productUri)
 {
-    data->productUri = value;
+    data->productUri = productUri;
 }
 
 /*!
@@ -3156,11 +3156,11 @@ QString QOpcUa::QApplicationDescription::applicationUri() const
 }
 
 /*!
-    Sets the globally unique identifier for this application instance to \a value.
+    Sets the globally unique identifier for this application instance to \a applicationUri.
 */
-void QOpcUa::QApplicationDescription::setApplicationUri(const QString &value)
+void QOpcUa::QApplicationDescription::setApplicationUri(const QString &applicationUri)
 {
-    data->applicationUri = value;
+    data->applicationUri = applicationUri;
 }
 
 /*!
@@ -3237,11 +3237,11 @@ quint8 QOpcUa::QEndpointDescription::securityLevel() const
 }
 
 /*!
-    Sets the security level to \a value.
+    Sets the security level to \a securityLevel.
 */
-void QOpcUa::QEndpointDescription::setSecurityLevel(const quint8 &value)
+void QOpcUa::QEndpointDescription::setSecurityLevel(quint8 securityLevel)
 {
-    data->securityLevel = value;
+    data->securityLevel = securityLevel;
 }
 
 /*!
@@ -3253,11 +3253,11 @@ QString QOpcUa::QEndpointDescription::transportProfileUri() const
 }
 
 /*!
-    Sets the URI of the transport profile supported by the endpoint to \a value.
+    Sets the URI of the transport profile supported by the endpoint to \a transportProfileUri.
 */
-void QOpcUa::QEndpointDescription::setTransportProfileUri(const QString &value)
+void QOpcUa::QEndpointDescription::setTransportProfileUri(const QString &transportProfileUri)
 {
-    data->transportProfileUri = value;
+    data->transportProfileUri = transportProfileUri;
 }
 
 /*!
@@ -3277,11 +3277,11 @@ QVector<QOpcUa::QUserTokenPolicy> &QOpcUa::QEndpointDescription::userIdentityTok
 }
 
 /*!
-    Sets the user identity tokens to \a value.
+    Sets the user identity tokens to \a userIdentityTokens.
 */
-void QOpcUa::QEndpointDescription::setUserIdentityTokens(const QVector<QOpcUa::QUserTokenPolicy> &value)
+void QOpcUa::QEndpointDescription::setUserIdentityTokens(const QVector<QOpcUa::QUserTokenPolicy> &userIdentityTokens)
 {
-    data->userIdentityTokens = value;
+    data->userIdentityTokens = userIdentityTokens;
 }
 
 /*!
@@ -3293,11 +3293,11 @@ QString QOpcUa::QEndpointDescription::securityPolicyUri() const
 }
 
 /*!
-    Sets the URI of the security policy to \a value.
+    Sets the URI of the security policy to \a securityPolicyUri.
 */
-void QOpcUa::QEndpointDescription::setSecurityPolicyUri(const QString &value)
+void QOpcUa::QEndpointDescription::setSecurityPolicyUri(const QString &securityPolicyUri)
 {
-    data->securityPolicyUri = value;
+    data->securityPolicyUri = securityPolicyUri;
 }
 
 /*!
@@ -3309,11 +3309,11 @@ QOpcUa::QEndpointDescription::MessageSecurityMode QOpcUa::QEndpointDescription::
 }
 
 /*!
-    Sets the security mode supported by this endpoint to \a value.
+    Sets the security mode supported by this endpoint to \a securityMode.
 */
-void QOpcUa::QEndpointDescription::setSecurityMode(const MessageSecurityMode &value)
+void QOpcUa::QEndpointDescription::setSecurityMode(MessageSecurityMode securityMode)
 {
-    data->securityMode = value;
+    data->securityMode = securityMode;
 }
 
 /*!
@@ -3325,11 +3325,11 @@ QByteArray QOpcUa::QEndpointDescription::serverCertificate() const
 }
 
 /*!
-    Sets the application instance certificate of the server to \a value.
+    Sets the application instance certificate of the server to \a serverCertificate.
 */
-void QOpcUa::QEndpointDescription::setServerCertificate(const QByteArray &value)
+void QOpcUa::QEndpointDescription::setServerCertificate(const QByteArray &serverCertificate)
 {
-    data->serverCertificate = value;
+    data->serverCertificate = serverCertificate;
 }
 
 /*!
@@ -3349,11 +3349,11 @@ QOpcUa::QApplicationDescription &QOpcUa::QEndpointDescription::serverRef()
 }
 
 /*!
-    Sets the application description of the server to \a value.
+    Sets the application description of the server to \a server.
 */
-void QOpcUa::QEndpointDescription::setServer(const QOpcUa::QApplicationDescription &value)
+void QOpcUa::QEndpointDescription::setServer(const QOpcUa::QApplicationDescription &server)
 {
-    data->server = value;
+    data->server = server;
 }
 
 /*!
@@ -3365,11 +3365,11 @@ QString QOpcUa::QEndpointDescription::endpointUrl() const
 }
 
 /*!
-    Sets the URL for the endpoint to \a value.
+    Sets the URL for the endpoint to \a endpointUrl.
 */
-void QOpcUa::QEndpointDescription::setEndpointUrl(const QString &value)
+void QOpcUa::QEndpointDescription::setEndpointUrl(const QString &endpointUrl)
 {
-    data->endpointUrl = value;
+    data->endpointUrl = endpointUrl;
 }
 
 /*!
@@ -3519,7 +3519,7 @@ qint32 QOpcUa::QArgument::valueRank() const
 /*!
     Sets the value rank of the argument to \a valueRank.
 */
-void QOpcUa::QArgument::setValueRank(const qint32 &valueRank)
+void QOpcUa::QArgument::setValueRank(qint32 valueRank)
 {
     data->valueRank = valueRank;
 }
@@ -3652,11 +3652,11 @@ QOpcUa::QExtensionObject::Encoding QOpcUa::QExtensionObject::encoding() const
 }
 
 /*!
-    Sets the encoding of the body to \a value.
+    Sets the encoding of the body to \a encoding.
 */
-void QOpcUa::QExtensionObject::setEncoding(QOpcUa::QExtensionObject::Encoding value)
+void QOpcUa::QExtensionObject::setEncoding(QOpcUa::QExtensionObject::Encoding encoding)
 {
-    data->encoding = value;
+    data->encoding = encoding;
 }
 
 /*!
@@ -3675,11 +3675,11 @@ QByteArray &QOpcUa::QExtensionObject::encodedBodyRef()
     return data->encodedBody;
 }
 /*!
-    Sets the body of this extension object to \a value.
+    Sets the body of this extension object to \a encodedBody.
 */
-void QOpcUa::QExtensionObject::setEncodedBody(const QByteArray &value)
+void QOpcUa::QExtensionObject::setEncodedBody(const QByteArray &encodedBody)
 {
-    data->encodedBody = value;
+    data->encodedBody = encodedBody;
 }
 
 /*!
@@ -3692,11 +3692,11 @@ QString QOpcUa::QExtensionObject::encodingTypeId() const
 }
 
 /*!
-    Sets the node id of the encoding for the type stored by this extension object to \a value.
+    Sets the node id of the encoding for the type stored by this extension object to \a encodingTypeId.
 */
-void QOpcUa::QExtensionObject::setEncodingTypeId(const QString &value)
+void QOpcUa::QExtensionObject::setEncodingTypeId(const QString &encodingTypeId)
 {
-    data->encodingTypeId = value;
+    data->encodingTypeId = encodingTypeId;
 }
 
 /*

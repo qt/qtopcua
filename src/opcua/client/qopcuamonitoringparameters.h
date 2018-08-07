@@ -130,11 +130,11 @@ public:
 
         QVector<QOpcUa::QSimpleAttributeOperand> selectClauses() const;
         QVector<QOpcUa::QSimpleAttributeOperand> &selectClausesRef();
-        void setSelectClauses(const QVector<QOpcUa::QSimpleAttributeOperand> &value);
+        void setSelectClauses(const QVector<QOpcUa::QSimpleAttributeOperand> &selectClauses);
 
         QVector<QOpcUa::QContentFilterElement> whereClause() const;
         QVector<QOpcUa::QContentFilterElement> &whereClauseRef();
-        void setWhereClause(const QVector<QOpcUa::QContentFilterElement> &value);
+        void setWhereClause(const QVector<QOpcUa::QContentFilterElement> &whereClause);
 
     private:
         QSharedDataPointer<QOpcUaMonitoringParameters::EventFilterData> data;
