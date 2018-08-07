@@ -169,7 +169,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
     there is a value together with timestamps and the status code in \a results.
     \a serviceResult contains the status code from the OPC UA Read service.
 
-    \sa batchRead() QOpcUaReadResult QOpcUaReadRequest
+    \sa batchRead() QOpcUaReadResult QOpcUaReadItem
 */
 
 /*!
@@ -456,7 +456,7 @@ bool QOpcUaClient::findServers(const QUrl &url, const QStringList &localeIds, co
     m_client->batchRead(request);
     \endcode
 
-    \sa QOpcUaReadRequest batchReadFinished()
+    \sa QOpcUaReadItem batchReadFinished()
 */
 bool QOpcUaClient::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
 {

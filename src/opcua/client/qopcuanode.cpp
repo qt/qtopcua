@@ -272,7 +272,7 @@ bool QOpcUaNode::readAttributeRange(QOpcUa::NodeAttribute attribute, const QStri
 
     Returns \c true if the asynchronous call has been successfully dispatched.
 
-    \sa readAttribute()
+    \sa readAttributes()
 */
 bool QOpcUaNode::readValueAttribute()
 {
