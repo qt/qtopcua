@@ -21,6 +21,8 @@
 
 #include "quacpputils.h"
 
+#include <QtOpcUa/qopcuatype.h>
+
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QString>
 #include <QtCore/QUuid>
@@ -36,47 +38,13 @@ namespace UACppUtils {
 
 UaNodeId nodeIdFromQString(const QString &name)
 {
-    const int semicolonIndex = name.indexOf(';');
+    quint16 index = 0;
+    char identifierType = 0;
+    QString identifierString;
 
-    if (semicolonIndex <= 0) {
+    bool success = QOpcUa::nodeIdStringSplit(name, &index, &identifierString, &identifierType);
+    if (!success) {
         qCWarning(QT_OPCUA_PLUGINS_UACPP, "Unable to split node id string: %s", qUtf8Printable(name));
-        return UaNodeId();
-    }
-
-    QStringRef namespaceString = name.leftRef(semicolonIndex);
-    if (namespaceString.length() <= 3 || !namespaceString.startsWith(QLatin1String("ns="))) {
-        qCWarning(QT_OPCUA_PLUGINS_UACPP, "Not a valid index string in node id string: %s", qUtf8Printable(name));
-        return UaNodeId();
-    }
-    namespaceString = namespaceString.mid(3); // Remove "ns="
-
-    QStringRef identifierString = name.midRef(semicolonIndex + 1);
-
-    if (identifierString.length() <= 2) {
-        qCWarning(QT_OPCUA_PLUGINS_UACPP, "There is no identifier in node id string: %s", qUtf8Printable(name));
-        return UaNodeId();
-    }
-
-    char identifierType;
-    if (identifierString.startsWith(QLatin1String("s=")))
-        identifierType = 's';
-    else if (identifierString.startsWith(QLatin1String("i=")))
-        identifierType = 'i';
-    else if (identifierString.startsWith(QLatin1String("g=")))
-        identifierType = 'g';
-    else if (identifierString.startsWith(QLatin1String("b=")))
-        identifierType = 'b';
-    else {
-        qCWarning(QT_OPCUA_PLUGINS_UACPP, "There is no valid identifier type in node id string: %s", qUtf8Printable(name));
-        return UaNodeId();
-    }
-    identifierString = identifierString.mid(2); // Remove identifier type
-
-    bool ok = false;
-    OpcUa_UInt16 index = static_cast<OpcUa_UInt16>(namespaceString.toUInt(&ok));
-
-    if (!ok) {
-        qCWarning(QT_OPCUA_PLUGINS_UACPP, "Not a valid namespace index in node id string: %s", qUtf8Printable(name));
         return UaNodeId();
     }
 
@@ -98,7 +66,7 @@ UaNodeId nodeIdFromQString(const QString &name)
         break;
     }
     case 'g': {
-        QUuid uuid(identifierString.toString());
+        QUuid uuid(identifierString);
 
         if (uuid.isNull()) {
             qCWarning(QT_OPCUA_PLUGINS_UACPP, "%s does not contain a valid guid identifier", qUtf8Printable(name));
@@ -112,7 +80,7 @@ UaNodeId nodeIdFromQString(const QString &name)
         return UaNodeId(guid, index);
     }
     case 'b': {
-        QByteArray temp = QByteArray::fromBase64(identifierString.toLocal8Bit());
+        QByteArray temp = QByteArray::fromBase64(identifierString.toLatin1());
         UaByteString bstr((OpcUa_Int32)temp.size(), reinterpret_cast<OpcUa_Byte *>(temp.data()));
         if (temp.size() > 0) {
             return UaNodeId(bstr, index);

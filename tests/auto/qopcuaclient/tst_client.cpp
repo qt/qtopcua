@@ -346,6 +346,10 @@ private slots:
     defineDataMethod(requestEndpoints_data)
     void requestEndpoints();
 
+    defineDataMethod(compareNodeIds_data)
+    void compareNodeIds();
+    defineDataMethod(readNS0OmitNode_data)
+    void readNS0OmitNode();
     defineDataMethod(readInvalidNode_data)
     void readInvalidNode();
     defineDataMethod(writeInvalidNode_data)
@@ -695,6 +699,73 @@ void Tst_QOpcUaClient::requestEndpoints()
     QCOMPARE(desc[0].serverRef().applicationType(), QOpcUa::QApplicationDescription::ApplicationType::Server);
     QCOMPARE(desc[0].serverRef().applicationUri(), QStringLiteral("urn:unconfigured:application"));
     QCOMPARE(desc[0].serverRef().productUri(), QStringLiteral("http://open62541.org"));
+}
+
+void Tst_QOpcUaClient::compareNodeIds()
+{
+    const QString numericId = QStringLiteral("i=42");
+    const QString stringId = QStringLiteral ("s=TestString");
+    const QString guidId = QStringLiteral("g=72962b91-fa75-4ae6-8d28-b404dc7daf63");
+    const QString opaqueId = QStringLiteral("b=UXQgZnR3IQ==");
+
+    const QString prefix = QStringLiteral("ns=0;");
+
+    QVERIFY(QOpcUa::nodeIdEquals(numericId, prefix + numericId));
+    QVERIFY(QOpcUa::nodeIdEquals(stringId, prefix + stringId));
+    QVERIFY(QOpcUa::nodeIdEquals(guidId, prefix + guidId));
+    QVERIFY(QOpcUa::nodeIdEquals(opaqueId, prefix + opaqueId));
+
+    {
+        quint16 namespaceIndex = 1;
+        char identifierType = 0;
+        QString identifier;
+        QVERIFY(QOpcUa::nodeIdStringSplit(numericId, &namespaceIndex, &identifier, &identifierType));
+        QCOMPARE(namespaceIndex, 0);
+        QCOMPARE(identifierType, 'i');
+        QCOMPARE(identifier, QStringLiteral("42"));
+    }
+    {
+        quint16 namespaceIndex = 1;
+        char identifierType = 0;
+        QString identifier;
+        QVERIFY(QOpcUa::nodeIdStringSplit(stringId, &namespaceIndex, &identifier, &identifierType));
+        QCOMPARE(namespaceIndex, 0);
+        QCOMPARE(identifierType, 's');
+        QCOMPARE(identifier, QStringLiteral("TestString"));
+    }
+    {
+        quint16 namespaceIndex = 1;
+        char identifierType = 0;
+        QString identifier;
+        QVERIFY(QOpcUa::nodeIdStringSplit(guidId, &namespaceIndex, &identifier, &identifierType));
+        QCOMPARE(namespaceIndex, 0);
+        QCOMPARE(identifierType, 'g');
+        QCOMPARE(identifier, QStringLiteral("72962b91-fa75-4ae6-8d28-b404dc7daf63"));
+    }
+    {
+        quint16 namespaceIndex = 1;
+        char identifierType = 0;
+        QString identifier;
+        QVERIFY(QOpcUa::nodeIdStringSplit(opaqueId, &namespaceIndex, &identifier, &identifierType));
+        QCOMPARE(namespaceIndex, 0);
+        QCOMPARE(identifierType, 'b');
+        QCOMPARE(identifier, QStringLiteral("UXQgZnR3IQ=="));
+    }
+}
+
+void Tst_QOpcUaClient::readNS0OmitNode()
+{
+    QFETCH(QOpcUaClient*, opcuaClient);
+
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("i=84")); // Root node
+    QVERIFY(node != nullptr);
+
+    READ_MANDATORY_BASE_NODE(node);
+
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>(),
+             QOpcUa::QQualifiedName(0, QStringLiteral("Root")));
 }
 
 void Tst_QOpcUaClient::readInvalidNode()

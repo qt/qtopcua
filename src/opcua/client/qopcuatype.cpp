@@ -37,6 +37,7 @@
 #include "qopcuatype.h"
 
 #include <QMetaEnum>
+#include <QRegularExpression>
 #include <QUuid>
 
 QT_BEGIN_NAMESPACE
@@ -812,39 +813,53 @@ QString QOpcUa::nodeIdFromReferenceType(QOpcUa::ReferenceTypeId referenceType)
     Returns \c true if the node id could be split successfully.
 
     For example, "ns=1;s=MyString" is split into 1, 's' and "MyString".
+    If no namespace index is given, ns=0 is assumed.
 */
 bool QOpcUa::nodeIdStringSplit(const QString &nodeIdString, quint16 *nsIndex, QString *identifier, char *identifierType)
 {
+    quint16 namespaceIndex = 0;
+
     QStringList components = nodeIdString.split(QLatin1String(";"));
-    QStringList result;
 
-    if (components.size() != 2)
+    if (components.size() > 2)
         return false;
 
-    if (components.at(0).contains(QRegExp(QLatin1String("/^ns=[0-9]+$/"))))
+    if (components.size() == 2 && components.at(0).contains(QRegularExpression(QLatin1String("^ns=[0-9]+")))) {
+        bool success = false;
+        uint ns = components.at(0).midRef(3).toString().toUInt(&success);
+        if (!success || ns > std::numeric_limits<quint16>::max())
+            return false;
+        namespaceIndex = ns;
+    }
+
+    if (components.last().size() < 3)
         return false;
 
-    bool success = false;
-    uint ns = components.at(0).midRef(3).toString().toUInt(&success);
-    if (!success || ns > std::numeric_limits<quint16>::max())
-        return false;
-
-    if (components.at(1).size() < 3)
-        return false;
-
-    if (!components.at(1).contains(QRegExp(QLatin1String("^[isgb]="))))
+    if (!components.last().contains(QRegularExpression(QLatin1String("^[isgb]="))))
         return false;
 
     if (nsIndex)
-        *nsIndex = ns;
+        *nsIndex = namespaceIndex;
     if (identifier)
-        *identifier = components.at(1).midRef(2).toString();
+        *identifier = components.last().midRef(2).toString();
     if (identifierType)
-        *identifierType = components.at(1).at(0).toLatin1();
-
-    result.append(components.at(1).midRef(2).toString());
+        *identifierType = components.last().at(0).toLatin1();
 
     return true;
+}
+
+/*!
+    Returns \c true if the two node ids have the same namespace index and identifier.
+    A node id string without a namespace index is assumed to be in namespace 0.
+*/
+bool QOpcUa::nodeIdEquals(const QString &first, const QString &second)
+{
+    if (first.startsWith(QLatin1String("ns=0;")) && !second.startsWith(QLatin1String("ns=")))
+        return first.midRef(5) == second;
+    else if (second.startsWith(QLatin1String("ns=0;")) && !first.startsWith(QLatin1String("ns=")))
+        return second.midRef(5) == first;
+    else
+        return first == second;
 }
 
 /*!
@@ -1716,7 +1731,7 @@ QOpcUa::QExpandedNodeId &QOpcUa::QExpandedNodeId::operator=(const QOpcUa::QExpan
 bool QOpcUa::QExpandedNodeId::operator==(const QOpcUa::QExpandedNodeId &rhs) const
 {
     return data->namespaceUri == rhs.namespaceUri() &&
-            data->nodeId == rhs.nodeId() &&
+            nodeIdEquals(data->nodeId, rhs.nodeId()) &&
             data->serverIndex == rhs.serverIndex();
 }
 
@@ -3495,7 +3510,7 @@ QOpcUa::QArgument &QOpcUa::QArgument::operator=(const QOpcUa::QArgument &rhs)
 bool QOpcUa::QArgument::operator==(const QOpcUa::QArgument &other) const
 {
     return data->arrayDimensions == other.arrayDimensions() &&
-            data->dataTypeId == other.dataTypeId() &&
+            nodeIdEquals(data->dataTypeId, other.dataTypeId()) &&
             data->description == other.description() &&
             data->name == other.name() &&
             data->valueRank == other.valueRank();
@@ -3688,7 +3703,7 @@ QOpcUa::QExtensionObject &QOpcUa::QExtensionObject::operator=(const QOpcUa::QExt
 bool QOpcUa::QExtensionObject::operator==(const QOpcUa::QExtensionObject &rhs) const
 {
     return data->encoding == rhs.encoding() &&
-            data->encodingTypeId == rhs.encodingTypeId() &&
+            nodeIdEquals(data->encodingTypeId, rhs.encodingTypeId()) &&
             data->encodedBody == rhs.encodedBody();
 }
 
