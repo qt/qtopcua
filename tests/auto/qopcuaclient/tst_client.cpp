@@ -3121,10 +3121,11 @@ void Tst_QOpcUaClient::resolveBrowsePath()
 void Tst_QOpcUaClient::addNamespace()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
-    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSignalSpy namespaceUpdatedSpy(opcuaClient, &QOpcUaClient::namespaceArrayUpdated);
     QSignalSpy namespaceChangedSpy(opcuaClient, &QOpcUaClient::namespaceArrayChanged);
+
+    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     opcuaClient->updateNamespaceArray();
     namespaceUpdatedSpy.wait();
