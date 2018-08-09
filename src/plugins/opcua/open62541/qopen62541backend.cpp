@@ -636,7 +636,9 @@ static void clientStateCallback(UA_Client *client, UA_ClientState state)
     if (state == UA_CLIENTSTATE_DISCONNECTED) {
         emit backend->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ConnectionError);
         backend->m_useStateCallback = false;
-        backend->cleanupSubscriptions();
+        // Use a queued connection to make sure the subscription is not deleted if the callback was triggered
+        // inside of one of its methods.
+        QMetaObject::invokeMethod(backend, "cleanupSubscriptions", Qt::QueuedConnection);
     }
 }
 
