@@ -346,6 +346,8 @@ QVariant QOpcUaNode::value() const
 
     The error code is only valid after the \l attributeRead or \l attributeWritten signal has been emitted.
 
+    If there is no entry in the attribute cache, \l {QOpcUa::UaStatusCode} {BadNoEntryExists} is returned.
+
     \sa QOpcUa::errorCategory
  */
 QOpcUa::UaStatusCode QOpcUaNode::attributeError(QOpcUa::NodeAttribute attribute) const
@@ -353,7 +355,7 @@ QOpcUa::UaStatusCode QOpcUaNode::attributeError(QOpcUa::NodeAttribute attribute)
     Q_D(const QOpcUaNode);
     auto it = d->m_nodeAttributes.constFind(attribute);
     if (it == d->m_nodeAttributes.constEnd())
-        return QOpcUa::UaStatusCode::BadNotFound;
+        return QOpcUa::UaStatusCode::BadNoEntryExists;
 
     return it->statusCode();
 }
@@ -361,7 +363,7 @@ QOpcUa::UaStatusCode QOpcUaNode::attributeError(QOpcUa::NodeAttribute attribute)
 /*!
     Returns the error code for the node's Value attribute.
     The status code \l {QOpcUa::UaStatusCode} {Good} indicates a valid return value for \l value().
-    If there is no value in the attribute cache, \l {QOpcUa::UaStatusCode} {BadNotFound} is returned.
+    If there is no entry in the attribute cache, \l {QOpcUa::UaStatusCode} {BadNoEntryExists} is returned.
 */
 QOpcUa::UaStatusCode QOpcUaNode::valueAttributeError() const
 {
@@ -449,7 +451,9 @@ bool QOpcUaNode::modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringPa
 /*!
     Returns the monitoring parameters associated with the attribute \a attr. This can be used to check the success of \l enableMonitoring()
     or if parameters have been revised.
-    The returned values are only valid after \l enableMonitoringFinished or \l monitoringStatusChanged have been emitted for \a attr.
+    The returned values are only valid after \l enableMonitoringFinished or \l monitoringStatusChanged have been emitted
+    for \a attr. If the status is queried before a signal has been emitted, \l QOpcUaMonitoringParameters::statusCode()
+    returns \l {QOpcUa::UaStatusCode} {BadNoEntryExists}.
 */
 QOpcUaMonitoringParameters QOpcUaNode::monitoringStatus(QOpcUa::NodeAttribute attr)
 {
@@ -457,7 +461,7 @@ QOpcUaMonitoringParameters QOpcUaNode::monitoringStatus(QOpcUa::NodeAttribute at
     auto it = d->m_monitoringStatus.constFind(attr);
     if (it == d->m_monitoringStatus.constEnd()) {
         QOpcUaMonitoringParameters p;
-        p.setStatusCode(QOpcUa::UaStatusCode::BadAttributeIdInvalid);
+        p.setStatusCode(QOpcUa::UaStatusCode::BadNoEntryExists);
         return p;
     }
 

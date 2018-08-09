@@ -352,6 +352,8 @@ private slots:
     void readNS0OmitNode();
     defineDataMethod(readInvalidNode_data)
     void readInvalidNode();
+    defineDataMethod(requestNotInCache_data)
+    void requestNotInCache();
     defineDataMethod(writeInvalidNode_data)
     void writeInvalidNode();
     defineDataMethod(writeMultipleAttributes_data)
@@ -792,6 +794,20 @@ void Tst_QOpcUaClient::readInvalidNode()
     QVERIFY(QOpcUa::isSuccessStatus(node->attributeError(QOpcUa::NodeAttribute::DisplayName)) == false);
 }
 
+void Tst_QOpcUaClient::requestNotInCache()
+{
+    QFETCH(QOpcUaClient*, opcuaClient);
+
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::RootFolder)));
+    QVERIFY(node != nullptr);
+
+    QCOMPARE(node->attributeError(QOpcUa::NodeAttribute::BrowseName), QOpcUa::UaStatusCode::BadNoEntryExists);
+    QCOMPARE(node->valueAttributeError(), QOpcUa::UaStatusCode::BadNoEntryExists);
+    QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::Value).statusCode(), QOpcUa::UaStatusCode::BadNoEntryExists);
+}
+
 void Tst_QOpcUaClient::writeInvalidNode()
 {
     QFETCH(QOpcUaClient*, opcuaClient);
@@ -1185,7 +1201,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
         QVERIFY(attrs.contains(temp));
         QVERIFY(node->monitoringStatus(temp).subscriptionId() == 0);
         QVERIFY(node->monitoringStatus(temp).monitoredItemId() == 0);
-        QVERIFY(node->monitoringStatus(temp).statusCode() == QOpcUa::UaStatusCode::BadAttributeIdInvalid);
+        QVERIFY(node->monitoringStatus(temp).statusCode() == QOpcUa::UaStatusCode::BadNoEntryExists);
         attrs.remove(attrs.indexOf(temp));
     }
     QVERIFY(attrs.size() == 0);
@@ -1265,7 +1281,7 @@ void Tst_QOpcUaClient::dataChangeSubscriptionSharing()
         auto temp = it.at(0).value<QOpcUa::NodeAttribute>();
         QVERIFY(attrs.contains(temp));
         QVERIFY(node->monitoringStatus(temp).subscriptionId() == 0);
-        QVERIFY(node->monitoringStatus(temp).statusCode() == QOpcUa::UaStatusCode::BadAttributeIdInvalid);
+        QVERIFY(node->monitoringStatus(temp).statusCode() == QOpcUa::UaStatusCode::BadNoEntryExists);
         attrs.removeOne(temp);
     }
     QVERIFY(attrs.size() == 0);

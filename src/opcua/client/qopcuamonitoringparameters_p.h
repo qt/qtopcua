@@ -71,7 +71,7 @@ public:
         , maxNotificationsPerPublish(0)
         , priority(0)
         , publishingEnabled(true)
-        , statusCode(QOpcUa::UaStatusCode::BadAttributeIdInvalid)
+        , statusCode(QOpcUa::UaStatusCode::BadNoEntryExists)
         , shared(QOpcUaMonitoringParameters::SubscriptionType::Shared)
     {}
 
