@@ -52,8 +52,19 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
     \section1 QOpcUaClient
 
     QOpcUaClient implements basic client capabilities to communicate with
-    OPC UA enabled devices and applications. This includes connecting,
-    disconnecting and getting \l QOpcUaNode objects for a node on the server.
+    OPC UA enabled devices and applications. This includes querying a discovery server
+    for known servers, requesting a list of endpoints from a server, connecting and
+    disconnecting.
+
+    After successfully connecting to a server, QOpcUaClient allows getting \l QOpcUaNode
+    objects which enable further interaction with nodes on the OPC UA server.
+    For operations that concern multiple nodes, QOpcUaClient offers a batch API which supports
+    reading multiple attributes of multiple nodes in a single request to the server.
+
+    QOpcUaClient also keeps a local copy of the server's namespace array which is created after
+    a successful connect. This information can be queried or updated while the connection lasts.
+    The copy of the namespace array is also used for the resolution of expanded node ids and the
+    creation of qualified names from a namespace URI.
 
     \section1 Addressing Nodes
 

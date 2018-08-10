@@ -79,7 +79,7 @@ QT_BEGIN_NAMESPACE
     This status code can be simplified by converting it to a \l QOpcUa::ErrorCategory using
     \l QOpcUa::errorCategory().
 
-    \section1 Subscribing to data changes
+    \section1 Subscriptions and monitored items
     Subscriptions are a concept in OPC UA which allows receiving of notifications for changes in data
     or in case of events instead of continuously polling a node for changes.
     Monitored items define how attributes of a node are watched for changes. They are added to a
@@ -94,6 +94,13 @@ QT_BEGIN_NAMESPACE
     The \l monitoringStatusChanged signal notifies about changes of the monitoring status, e. g. after
     manual enable and disable or a status change on the server.
 
+    Event monitoring uses the same API for setup and life cycle management.
+    The \l {QOpcUa::NodeAttribute} {EventNotifier} attribute
+    must be monitored using an \l {QOpcUaMonitoringParameters::EventFilter} {EventFilter} which selects
+    the required event fields and filters the reported events by user defined criteria. The events are
+    reported in the \l eventOccurred() signal as a \l QVariantList which contains the values of the selected
+    event fields.
+
     Settings of the subscription and monitored item can be modified at runtime using \l modifyMonitoring().
 
     \section1 Browsing the address space
@@ -106,6 +113,12 @@ QT_BEGIN_NAMESPACE
     OPC UA specifies methods on the server which can be called by the user.
     \l QOpcUaNode supports this via \l callMethod which takes parameters and returns the results of
     the call in the \l methodCallFinished signal.
+
+    \section1 Resolving browse paths
+    To support programming against a type description, OPC UA supports the resolution of a path of browse names
+    starting from a certain node to obtain the node id of the target node. The \l resolveBrowsePath() method
+    follows a path starting from the node it was called on and returns the result in the
+    \l resolveBrowsePathFinished() signal.
 
     \section1 Example
     For connecting the client to a server and getting a \l QOpcUaNode object, see \l QOpcUaClient.
