@@ -34,59 +34,55 @@
 **
 ****************************************************************************/
 
-#pragma once
-
-#include <QObject>
-#include <qopcuatype.h>
-#include "universalnode.h"
-#include "opcuaattributecache.h"
+#include "opcuaattributevalue.h"
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaNode;
-class OpcUaConnection;
-class OpcUaNodeIdType;
+/*!
+    \class OpcUaAttributeValue
+    \inqmlmodule QtOpcUa
+    \brief Stores an attribute value and provides a changed signal.
+    \internal
 
-class OpcUaNode : public QObject
+    This class is just for internal use in the declarative backend and not exposed to users.
+
+    When setting the value it will emit a changed signal if the value has changed.
+
+    \sa OpcUaAttributeCache
+*/
+
+OpcUaAttributeValue::OpcUaAttributeValue(QObject *parent)
+    : QObject(parent)
 {
-    Q_OBJECT
-    Q_DISABLE_COPY(OpcUaNode)
-    Q_PROPERTY(OpcUaNodeIdType* nodeId READ nodeId WRITE setNodeId NOTIFY nodeIdChanged)
-    Q_PROPERTY(OpcUaConnection* connection READ connection WRITE setConnection NOTIFY connectionChanged)
-    Q_PROPERTY(bool readyToUse READ readyToUse NOTIFY readyToUseChanged)
 
-public:
-    OpcUaNode(QObject *parent = nullptr);
-    ~OpcUaNode();
-    OpcUaNodeIdType *nodeId() const;
-    OpcUaConnection *connection();
-    bool readyToUse() const;
+}
 
-public slots:
-    void setNodeId(OpcUaNodeIdType *nodeId);
-    void setConnection(OpcUaConnection *);
+bool OpcUaAttributeValue::operator ==(const OpcUaAttributeValue &rhs)
+{
+    return m_value == rhs.m_value;
+}
 
-signals:
-    void nodeIdChanged(const OpcUaNodeIdType *nodeId);
-    void connectionChanged(OpcUaConnection *);
-    void nodeChanged();
-    void readyToUseChanged();
+void OpcUaAttributeValue::setValue(const QVariant &value)
+{
+    if (value != m_value) {
+        m_value = value;
+        emit changed(m_value);
+    }
+}
 
-protected slots:
-    virtual void setupNode(const QString &absoluteNodePath);
-    void updateNode();
+void OpcUaAttributeValue::invalidate()
+{
+    setValue(QVariant());
+}
 
-protected:
-    void retrieveAbsoluteNodePath(OpcUaNodeIdType *, std::function<void (const QString &)>);
-    void setReadyToUse(bool value = true);
+const QVariant &OpcUaAttributeValue::value() const
+{
+    return m_value;
+}
 
-    OpcUaNodeIdType *m_nodeId = nullptr;
-    QOpcUaNode *m_node = nullptr;
-    OpcUaConnection *m_connection = nullptr;
-    QString m_absoluteNodePath; // not exposed
-    bool m_readyToUse = false;
-    UniversalNode m_resolvedNode;
-    OpcUaAttributeCache m_attributeCache;
-};
+OpcUaAttributeValue::operator QVariant() const
+{
+    return value();
+}
 
 QT_END_NAMESPACE

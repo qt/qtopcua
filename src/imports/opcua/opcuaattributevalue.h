@@ -37,56 +37,26 @@
 #pragma once
 
 #include <QObject>
-#include <qopcuatype.h>
-#include "universalnode.h"
-#include "opcuaattributecache.h"
+#include <QVariant>
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaNode;
-class OpcUaConnection;
-class OpcUaNodeIdType;
-
-class OpcUaNode : public QObject
+class OpcUaAttributeValue : public QObject
 {
     Q_OBJECT
-    Q_DISABLE_COPY(OpcUaNode)
-    Q_PROPERTY(OpcUaNodeIdType* nodeId READ nodeId WRITE setNodeId NOTIFY nodeIdChanged)
-    Q_PROPERTY(OpcUaConnection* connection READ connection WRITE setConnection NOTIFY connectionChanged)
-    Q_PROPERTY(bool readyToUse READ readyToUse NOTIFY readyToUseChanged)
-
 public:
-    OpcUaNode(QObject *parent = nullptr);
-    ~OpcUaNode();
-    OpcUaNodeIdType *nodeId() const;
-    OpcUaConnection *connection();
-    bool readyToUse() const;
-
-public slots:
-    void setNodeId(OpcUaNodeIdType *nodeId);
-    void setConnection(OpcUaConnection *);
+    explicit OpcUaAttributeValue(QObject *parent);
+    bool operator ==(const OpcUaAttributeValue &rhs);
+    void setValue(const QVariant &value);
+    void invalidate();
+    const QVariant &value() const;
+    operator QVariant() const;
 
 signals:
-    void nodeIdChanged(const OpcUaNodeIdType *nodeId);
-    void connectionChanged(OpcUaConnection *);
-    void nodeChanged();
-    void readyToUseChanged();
+    void changed(QVariant value);
 
-protected slots:
-    virtual void setupNode(const QString &absoluteNodePath);
-    void updateNode();
-
-protected:
-    void retrieveAbsoluteNodePath(OpcUaNodeIdType *, std::function<void (const QString &)>);
-    void setReadyToUse(bool value = true);
-
-    OpcUaNodeIdType *m_nodeId = nullptr;
-    QOpcUaNode *m_node = nullptr;
-    OpcUaConnection *m_connection = nullptr;
-    QString m_absoluteNodePath; // not exposed
-    bool m_readyToUse = false;
-    UniversalNode m_resolvedNode;
-    OpcUaAttributeCache m_attributeCache;
+private:
+    QVariant m_value;
 };
 
 QT_END_NAMESPACE

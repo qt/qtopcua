@@ -59,11 +59,6 @@ signals:
 
 private slots:
     void setupNode(const QString &absolutePath) override;
-    void handleAttributeUpdate(QOpcUa::NodeAttributes attrs);
-    void handleDataChangeOccurred(QOpcUa::NodeAttribute attr, QVariant value);
-
- private:
-    QVariant m_cachedValue;
 };
 
 QT_END_NAMESPACE

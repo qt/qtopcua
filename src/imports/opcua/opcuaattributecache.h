@@ -36,57 +36,27 @@
 
 #pragma once
 
+#include "qopcuatype.h"
 #include <QObject>
-#include <qopcuatype.h>
-#include "universalnode.h"
-#include "opcuaattributecache.h"
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaNode;
-class OpcUaConnection;
-class OpcUaNodeIdType;
+class OpcUaAttributeValue;
 
-class OpcUaNode : public QObject
+class OpcUaAttributeCache : public QObject
 {
     Q_OBJECT
-    Q_DISABLE_COPY(OpcUaNode)
-    Q_PROPERTY(OpcUaNodeIdType* nodeId READ nodeId WRITE setNodeId NOTIFY nodeIdChanged)
-    Q_PROPERTY(OpcUaConnection* connection READ connection WRITE setConnection NOTIFY connectionChanged)
-    Q_PROPERTY(bool readyToUse READ readyToUse NOTIFY readyToUseChanged)
-
 public:
-    OpcUaNode(QObject *parent = nullptr);
-    ~OpcUaNode();
-    OpcUaNodeIdType *nodeId() const;
-    OpcUaConnection *connection();
-    bool readyToUse() const;
+    explicit OpcUaAttributeCache(QObject *parent = nullptr);
+    OpcUaAttributeValue *attribute(QOpcUa::NodeAttribute attribute);
+    const QVariant &attributeValue(QOpcUa::NodeAttribute);
 
 public slots:
-    void setNodeId(OpcUaNodeIdType *nodeId);
-    void setConnection(OpcUaConnection *);
+    void setAttributeValue(QOpcUa::NodeAttribute attribute, const QVariant &value);
+    void invalidate();
 
-signals:
-    void nodeIdChanged(const OpcUaNodeIdType *nodeId);
-    void connectionChanged(OpcUaConnection *);
-    void nodeChanged();
-    void readyToUseChanged();
-
-protected slots:
-    virtual void setupNode(const QString &absoluteNodePath);
-    void updateNode();
-
-protected:
-    void retrieveAbsoluteNodePath(OpcUaNodeIdType *, std::function<void (const QString &)>);
-    void setReadyToUse(bool value = true);
-
-    OpcUaNodeIdType *m_nodeId = nullptr;
-    QOpcUaNode *m_node = nullptr;
-    OpcUaConnection *m_connection = nullptr;
-    QString m_absoluteNodePath; // not exposed
-    bool m_readyToUse = false;
-    UniversalNode m_resolvedNode;
-    OpcUaAttributeCache m_attributeCache;
+private:
+    QHash<QOpcUa::NodeAttribute, OpcUaAttributeValue *> m_attributeCache;
 };
 
 QT_END_NAMESPACE

@@ -41,6 +41,7 @@
 #include "opcuarelativenodepath.h"
 #include "opcuarelativenodeid.h"
 #include "opcuapathresolver.h"
+#include "opcuaattributevalue.h"
 #include <QOpcUaNode>
 #include <QOpcUaClient>
 #include <QLoggingCategory>
@@ -192,6 +193,8 @@ void OpcUaNode::setupNode(const QString &absoluteNodePath)
         qCWarning(QT_OPCUA_PLUGINS_QML) << "Invalid node:" << m_absoluteNodePath;
         return;
     }
+
+    connect(m_node, &QOpcUaNode::attributeUpdated, &m_attributeCache, &OpcUaAttributeCache::setAttributeValue);
 }
 
 void OpcUaNode::updateNode()

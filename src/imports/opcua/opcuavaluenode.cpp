@@ -37,6 +37,7 @@
 #include "opcuavaluenode.h"
 #include "opcuaconnection.h"
 #include "opcuanodeid.h"
+#include "opcuaattributevalue.h"
 #include <QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
@@ -77,11 +78,11 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML)
 OpcUaValueNode::OpcUaValueNode(QObject *parent):
     OpcUaNode(parent)
 {
+    connect(m_attributeCache.attribute(QOpcUa::NodeAttribute::Value), &OpcUaAttributeValue::changed, this, &OpcUaValueNode::valueChanged);
 }
 
 OpcUaValueNode::~OpcUaValueNode()
 {
-
 }
 
 void OpcUaValueNode::setValue(const QVariant &value)
@@ -95,8 +96,7 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
     if (!m_node)
         return;
 
-    connect(m_node, &QOpcUaNode::attributeRead, this, &OpcUaValueNode::handleAttributeUpdate);
-    connect(m_node, &QOpcUaNode::dataChangeOccurred, this, &OpcUaValueNode::handleDataChangeOccurred);
+    connect(m_node, &QOpcUaNode::attributeRead, this, [this](){setReadyToUse(true);});
 
     if (!m_node->readAttributes(QOpcUa::NodeAttribute::Value
                             | QOpcUa::NodeAttribute::NodeClass
@@ -109,40 +109,6 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
 
     if (!m_node->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(100)))
         qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed monitoring" << m_node->nodeId();
-}
-
-void OpcUaValueNode::handleAttributeUpdate(QOpcUa::NodeAttributes attrs)
-{
-    /*
-     if (attr & QOpcUa::NodeAttribute::NodeClass)
-         mNodeClass = mOpcNode->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>();
-     if (attr & QOpcUa::NodeAttribute::BrowseName)
-         mNodeBrowseName = mOpcNode->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>().name();
-     if (attr & QOpcUa::NodeAttribute::DisplayName)
-         mNodeDisplayName = mOpcNode->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text();
-     if (attr & QOpcUa::NodeAttribute::NodeId)
-         mNodeDisplayName = mOpcNode->attribute(QOpcUa::NodeAttribute::NodeId).toString();
-         */
-
-    if (attrs & QOpcUa::NodeAttribute::Value) {
-        const auto value = m_node->attribute(QOpcUa::NodeAttribute::Value);
-        if (value != m_cachedValue) {
-            m_cachedValue = value;
-            emit valueChanged(value);
-        }
-    }
-
-    setReadyToUse();
-}
-
-void OpcUaValueNode::handleDataChangeOccurred(QOpcUa::NodeAttribute attr, QVariant value)
-{
-    if (attr == QOpcUa::NodeAttribute::Value) {
-        if (value != m_cachedValue) {
-            m_cachedValue = value;
-            emit valueChanged(value);
-        }
-    }
 }
 
 QVariant OpcUaValueNode::value() const
