@@ -117,7 +117,8 @@ void DemoServer::shutdown()
     }
 }
 
-UA_NodeId DemoServer::addFolder(const QString &parent, const QString &nodeString, const QString &browseName, const QString &displayName, const QString &description)
+UA_NodeId DemoServer::addObject(const QString &parent, const QString &nodeString, const QString &browseName,
+                                const QString &displayName, const QString &description, quint32 referenceType)
 {
     UA_NodeId resultNode;
     UA_ObjectAttributes oAttr = UA_ObjectAttributes_default;
@@ -135,7 +136,7 @@ UA_NodeId DemoServer::addFolder(const QString &parent, const QString &nodeString
     result = UA_Server_addObjectNode(m_server,
                                      requestedNodeId,
                                      parentNodeId,
-                                     UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                     UA_NODEID_NUMERIC(0, referenceType),
                                      nodeBrowseName,
                                      UA_NODEID_NULL,
                                      oAttr,
@@ -154,7 +155,9 @@ UA_NodeId DemoServer::addFolder(const QString &parent, const QString &nodeString
     return resultNode;
 }
 
-UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &browseName, const QString &displayName, const QVariant &value, QOpcUa::Types type)
+UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &browseName,
+                                  const QString &displayName, const QVariant &value, QOpcUa::Types type,
+                                  quint32 referenceType)
 {
     UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
@@ -170,7 +173,7 @@ UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variab
     UA_StatusCode result = UA_Server_addVariableNode(m_server,
                                                      variableNodeId,
                                                      folder,
-                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                     UA_NODEID_NUMERIC(0, referenceType),
                                                      variableName,
                                                      UA_NODEID_NULL,
                                                      attr,
@@ -336,7 +339,9 @@ double DemoServer::readTank2TargetValue()
     return static_cast<double *>(var.data)[0];
 }
 
-UA_NodeId DemoServer::addMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description, const QString &browseName, const QString &displayName,  UA_MethodCallback cb)
+UA_NodeId DemoServer::addMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description,
+                                const QString &browseName, const QString &displayName, UA_MethodCallback cb,
+                                quint32 referenceType)
 {
     UA_NodeId methodNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
@@ -349,7 +354,7 @@ UA_NodeId DemoServer::addMethod(const UA_NodeId &folder, const QString &variable
 
     UA_NodeId resultId;
     UA_StatusCode result = UA_Server_addMethodNode(m_server, methodNodeId, folder,
-                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT),
+                                                     UA_NODEID_NUMERIC(0, referenceType),
                                                      methodBrowseName,
                                                      attr, cb,
                                                      0, nullptr,
@@ -380,31 +385,32 @@ void DemoServer::launch()
          qFatal("Unexpected namespace index for Demo namespace");
      }
 
-     UA_NodeId machineFolder = addFolder("ns=0;i=85", "ns=2;s=Machine", "Machine", "Machine");
-     UA_NodeId tank1Folder = addFolder("ns=2;s=Machine", "ns=2;s=Machine.Tank1", "Tank1", "Machine.Tank1");
-     UA_NodeId tank2Folder = addFolder("ns=2;s=Machine", "ns=2;s=Machine.Tank2", "Tank2", "Machine.Tank2");
+     UA_NodeId machineObject = addObject(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::ObjectsFolder), "ns=2;s=Machine",
+                                         "Machine", "Machine", "The machine simulator", UA_NS0ID_ORGANIZES);
+     UA_NodeId tank1Object = addObject("ns=2;s=Machine", "ns=2;s=Machine.Tank1", "Tank1", "Machine.Tank1");
+     UA_NodeId tank2Object = addObject("ns=2;s=Machine", "ns=2;s=Machine.Tank2", "Tank2", "Machine.Tank2");
 
-     m_percentFilledTank1Node = addVariable(tank1Folder, "ns=2;s=Machine.Tank1.PercentFilled", "PercentFilled", "Machine.Tank1.PercentFilled", 100.0, QOpcUa::Types::Double);
-     m_percentFilledTank2Node = addVariable(tank2Folder, "ns=2;s=Machine.Tank2.PercentFilled", "PercentFilled", "Machine.Tank2.PercentFilled", 0.0, QOpcUa::Types::Double);
-     m_tank2TargetPercentNode = addVariable(tank2Folder, "ns=2;s=Machine.Tank2.TargetPercent", "TargetPercent", "Machine.Tank2.TargetPercent", 0.0, QOpcUa::Types::Double);
-     m_tank2ValveStateNode = addVariable(tank2Folder, "ns=2;s=Machine.Tank2.ValveState", "ValveState", "Machine.Tank2.ValveState", false, QOpcUa::Types::Boolean);
-     m_machineStateNode = addVariable(machineFolder, "ns=2;s=Machine.State", "State", "Machine.State", static_cast<quint32>(MachineState::Idle), QOpcUa::Types::UInt32);
+     m_percentFilledTank1Node = addVariable(tank1Object, "ns=2;s=Machine.Tank1.PercentFilled", "PercentFilled", "Machine.Tank1.PercentFilled", 100.0, QOpcUa::Types::Double);
+     m_percentFilledTank2Node = addVariable(tank2Object, "ns=2;s=Machine.Tank2.PercentFilled", "PercentFilled", "Machine.Tank2.PercentFilled", 0.0, QOpcUa::Types::Double);
+     m_tank2TargetPercentNode = addVariable(tank2Object, "ns=2;s=Machine.Tank2.TargetPercent", "TargetPercent", "Machine.Tank2.TargetPercent", 0.0, QOpcUa::Types::Double);
+     m_tank2ValveStateNode = addVariable(tank2Object, "ns=2;s=Machine.Tank2.ValveState", "ValveState", "Machine.Tank2.ValveState", false, QOpcUa::Types::Boolean);
+     m_machineStateNode = addVariable(machineObject, "ns=2;s=Machine.State", "State", "Machine.State", static_cast<quint32>(MachineState::Idle), QOpcUa::Types::UInt32);
      UA_NodeId tempId;
-     tempId = addVariable(machineFolder, "ns=2;s=Machine.Designation", "Designation", "Machine.Designation", "TankExample", QOpcUa::Types::String);
+     tempId = addVariable(machineObject, "ns=2;s=Machine.Designation", "Designation", "Machine.Designation", "TankExample", QOpcUa::Types::String);
      UA_NodeId_deleteMembers(&tempId);
 
-     tempId = addMethod(machineFolder, "ns=2;s=Machine.Start", "Starts the pump", "Start", "Machine.Start", &startPumpMethod);
+     tempId = addMethod(machineObject, "ns=2;s=Machine.Start", "Starts the pump", "Start", "Machine.Start", &startPumpMethod);
      UA_NodeId_deleteMembers(&tempId);
-     tempId = addMethod(machineFolder, "ns=2;s=Machine.Stop", "Stops the pump", "Stop", "Machine.Stop", &stopPumpMethod);
+     tempId = addMethod(machineObject, "ns=2;s=Machine.Stop", "Stops the pump", "Stop", "Machine.Stop", &stopPumpMethod);
      UA_NodeId_deleteMembers(&tempId);
-     tempId = addMethod(machineFolder, "ns=2;s=Machine.FlushTank2", "Flushes tank 2", "FlushTank2", "Machine.FlushTank2", &flushTank2Method);
+     tempId = addMethod(machineObject, "ns=2;s=Machine.FlushTank2", "Flushes tank 2", "FlushTank2", "Machine.FlushTank2", &flushTank2Method);
      UA_NodeId_deleteMembers(&tempId);
-     tempId = addMethod(machineFolder, "ns=2;s=Machine.Reset", "Resets the simulation", "Reset", "Machine.Reset", &resetMethod);
+     tempId = addMethod(machineObject, "ns=2;s=Machine.Reset", "Resets the simulation", "Reset", "Machine.Reset", &resetMethod);
      UA_NodeId_deleteMembers(&tempId);
 
-     UA_NodeId_deleteMembers(&machineFolder);
-     UA_NodeId_deleteMembers(&tank1Folder);
-     UA_NodeId_deleteMembers(&tank2Folder);
+     UA_NodeId_deleteMembers(&machineObject);
+     UA_NodeId_deleteMembers(&tank1Object);
+     UA_NodeId_deleteMembers(&tank2Object);
 
      QObject::connect(&m_machineTimer, &QTimer::timeout, [this]() {
 
