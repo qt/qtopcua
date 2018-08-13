@@ -94,11 +94,11 @@ void OpcUaMachineBackend::clientStateHandler(QOpcUaClient::ClientState state)
         m_machineDesignationNode.reset(m_client->node("ns=2;s=Machine.Designation"));
 
         // Connect signal handlers for subscribed values
-        QObject::connect(m_machineStateNode.data(), &QOpcUaNode::attributeUpdated, this, &OpcUaMachineBackend::machineStateUpdated);
-        QObject::connect(m_percentFilledTank1Node.data(), &QOpcUaNode::attributeUpdated, this, &OpcUaMachineBackend::percentFilledTank1Updated);
-        QObject::connect(m_percentFilledTank2Node.data(), &QOpcUaNode::attributeUpdated, this, &OpcUaMachineBackend::percentFilledTank2Updated);
-        QObject::connect(m_tank2TargetPercentNode.data(), &QOpcUaNode::attributeUpdated, this, &OpcUaMachineBackend::tank2TargetPercentUpdated);
-        QObject::connect(m_tank2ValveStateNode.data(), &QOpcUaNode::attributeUpdated, this, &OpcUaMachineBackend::tank2ValveStateUpdated);
+        QObject::connect(m_machineStateNode.data(), &QOpcUaNode::dataChangeOccurred, this, &OpcUaMachineBackend::machineStateUpdated);
+        QObject::connect(m_percentFilledTank1Node.data(), &QOpcUaNode::dataChangeOccurred, this, &OpcUaMachineBackend::percentFilledTank1Updated);
+        QObject::connect(m_percentFilledTank2Node.data(), &QOpcUaNode::dataChangeOccurred, this, &OpcUaMachineBackend::percentFilledTank2Updated);
+        QObject::connect(m_tank2TargetPercentNode.data(), &QOpcUaNode::dataChangeOccurred, this, &OpcUaMachineBackend::tank2TargetPercentUpdated);
+        QObject::connect(m_tank2ValveStateNode.data(), &QOpcUaNode::dataChangeOccurred, this, &OpcUaMachineBackend::tank2ValveStateUpdated);
 
         // Subscribe to data changes
         m_machineStateNode->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(100));

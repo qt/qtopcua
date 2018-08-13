@@ -353,7 +353,7 @@ void QOpen62541Subscription::monitoredValueUpdated(UA_UInt32 monId, UA_DataValue
 
     if (!value || value == UA_EMPTY_ARRAY_SENTINEL) {
         res.setStatusCode(QOpcUa::UaStatusCode::Good);
-        emit m_backend->attributeUpdated(item.value()->handle, res);
+        emit m_backend->dataChangeOccurred(item.value()->handle, res);
         return;
     }
 
@@ -364,7 +364,7 @@ void QOpen62541Subscription::monitoredValueUpdated(UA_UInt32 monId, UA_DataValue
     if (value->hasSourceTimestamp)
         res.setSourceTimestamp(QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&value->sourceTimestamp));
     res.setStatusCode(QOpcUa::UaStatusCode::Good);
-    emit m_backend->attributeUpdated(item.value()->handle, res);
+    emit m_backend->dataChangeOccurred(item.value()->handle, res);
 }
 
 void QOpen62541Subscription::sendTimeoutNotification()

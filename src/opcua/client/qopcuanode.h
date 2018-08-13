@@ -105,6 +105,7 @@ public:
 Q_SIGNALS:
     void attributeRead(QOpcUa::NodeAttributes attributes);
     void attributeWritten(QOpcUa::NodeAttribute attribute, QOpcUa::UaStatusCode statusCode);
+    void dataChangeOccurred(QOpcUa::NodeAttribute attr, QVariant value);
     void attributeUpdated(QOpcUa::NodeAttribute attr, QVariant value);
     void eventOccurred(QVariantList eventFields);
 

@@ -96,7 +96,7 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
         return;
 
     connect(m_node, &QOpcUaNode::attributeRead, this, &OpcUaValueNode::handleAttributeUpdate);
-    connect(m_node, &QOpcUaNode::attributeUpdated, this, &OpcUaValueNode::handleAttributeUpdated);
+    connect(m_node, &QOpcUaNode::dataChangeOccurred, this, &OpcUaValueNode::handleDataChangeOccurred);
 
     if (!m_node->readAttributes(QOpcUa::NodeAttribute::Value
                             | QOpcUa::NodeAttribute::NodeClass
@@ -135,7 +135,7 @@ void OpcUaValueNode::handleAttributeUpdate(QOpcUa::NodeAttributes attrs)
     setReadyToUse();
 }
 
-void OpcUaValueNode::handleAttributeUpdated(QOpcUa::NodeAttribute attr, QVariant value)
+void OpcUaValueNode::handleDataChangeOccurred(QOpcUa::NodeAttribute attr, QVariant value)
 {
     if (attr == QOpcUa::NodeAttribute::Value) {
         if (value != m_cachedValue) {

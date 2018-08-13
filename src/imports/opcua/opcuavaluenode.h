@@ -60,7 +60,7 @@ signals:
 private slots:
     void setupNode(const QString &absolutePath) override;
     void handleAttributeUpdate(QOpcUa::NodeAttributes attrs);
-    void handleAttributeUpdated(QOpcUa::NodeAttribute attr, QVariant value);
+    void handleDataChangeOccurred(QOpcUa::NodeAttribute attr, QVariant value);
 
  private:
     QVariant m_cachedValue;

@@ -425,6 +425,8 @@ private slots:
     void addDuplicateMonitoredItem();
     defineDataMethod(checkMonitoredItemCleanup_data);
     void checkMonitoredItemCleanup();
+    defineDataMethod(checkAttributeUpdated_data);
+    void checkAttributeUpdated();
 
     defineDataMethod(stringCharset_data)
     void stringCharset();
@@ -1095,7 +1097,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
 
     WRITE_VALUE_ATTRIBUTE(node, QVariant(double(0)), QOpcUa::Types::Double);
 
-    QSignalSpy dataChangeSpy(node.data(), &QOpcUaNode::attributeUpdated);
+    QSignalSpy dataChangeSpy(node.data(), &QOpcUaNode::dataChangeOccurred);
     QSignalSpy monitoringEnabledSpy(node.data(), &QOpcUaNode::enableMonitoringFinished);
 
     node->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(100, QOpcUaMonitoringParameters::SubscriptionType::Exclusive));
@@ -2508,7 +2510,7 @@ void Tst_QOpcUaClient::subscriptionIndexRange()
     QSignalSpy monitoringEnabledSpy(integerArrayNode.data(), &QOpcUaNode::enableMonitoringFinished);
     QSignalSpy monitoringDisabledSpy(integerArrayNode.data(), &QOpcUaNode::disableMonitoringFinished);
     QSignalSpy writeSpy(integerArrayNode.data(), &QOpcUaNode::attributeWritten);
-    QSignalSpy dataChangeSpy(integerArrayNode.data(), &QOpcUaNode::attributeUpdated);
+    QSignalSpy dataChangeSpy(integerArrayNode.data(), &QOpcUaNode::dataChangeOccurred);
 
     QVariantList l({0, 1});
     WRITE_VALUE_ATTRIBUTE(integerArrayNode, l, QOpcUa::Types::Int32);
@@ -2559,7 +2561,7 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
 
     QSignalSpy monitoringEnabledSpy(doubleNode.data(), &QOpcUaNode::enableMonitoringFinished);
     QSignalSpy monitoringDisabledSpy(doubleNode.data(), &QOpcUaNode::disableMonitoringFinished);
-    QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::attributeUpdated);
+    QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::dataChangeOccurred);
     QSignalSpy monitoringModifiedSpy(doubleNode.data(), &QOpcUaNode::monitoringStatusChanged);
 
     WRITE_VALUE_ATTRIBUTE(doubleNode, 1.0, QOpcUa::Types::Double);
@@ -2622,7 +2624,7 @@ void Tst_QOpcUaClient::modifyPublishingMode()
 
     QSignalSpy monitoringEnabledSpy(doubleNode.data(), &QOpcUaNode::enableMonitoringFinished);
     QSignalSpy monitoringDisabledSpy(doubleNode.data(), &QOpcUaNode::disableMonitoringFinished);
-    QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::attributeUpdated);
+    QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::dataChangeOccurred);
     QSignalSpy monitoringStatusSpy(doubleNode.data(), &QOpcUaNode::monitoringStatusChanged);
 
     WRITE_VALUE_ATTRIBUTE(doubleNode, 1.0, QOpcUa::Types::Double);
@@ -2672,7 +2674,7 @@ void Tst_QOpcUaClient::modifyMonitoringMode()
 
     QSignalSpy monitoringEnabledSpy(doubleNode.data(), &QOpcUaNode::enableMonitoringFinished);
     QSignalSpy monitoringDisabledSpy(doubleNode.data(), &QOpcUaNode::disableMonitoringFinished);
-    QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::attributeUpdated);
+    QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::dataChangeOccurred);
     QSignalSpy monitoringStatusSpy(doubleNode.data(), &QOpcUaNode::monitoringStatusChanged);
 
     WRITE_VALUE_ATTRIBUTE(doubleNode, 1.0, QOpcUa::Types::Double);
@@ -2723,7 +2725,7 @@ void Tst_QOpcUaClient::modifyMonitoredItem()
 
     QSignalSpy monitoringEnabledSpy(doubleNode.data(), &QOpcUaNode::enableMonitoringFinished);
     QSignalSpy monitoringDisabledSpy(doubleNode.data(), &QOpcUaNode::disableMonitoringFinished);
-    QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::attributeUpdated);
+    QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::dataChangeOccurred);
     QSignalSpy monitoringStatusSpy(doubleNode.data(), &QOpcUaNode::monitoringStatusChanged);
 
     WRITE_VALUE_ATTRIBUTE(doubleNode, 1.0, QOpcUa::Types::Double);
@@ -2849,6 +2851,34 @@ void Tst_QOpcUaClient::checkMonitoredItemCleanup()
     methodSpy.wait();
     QCOMPARE(methodSpy.size(), 1);
     QCOMPARE(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadNoMatch);
+}
+
+void Tst_QOpcUaClient::checkAttributeUpdated()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node(QStringLiteral("ns=3;s=TestNode.ReadWrite")));
+    QVERIFY(node != nullptr);
+
+    QSignalSpy spy(node.data(), &QOpcUaNode::attributeUpdated);
+
+    node->readAttributes(QOpcUa::NodeAttribute::Value);
+    spy.wait();
+    QCOMPARE(spy.size(), 1);
+
+    node->writeValueAttribute(23.0, QOpcUa::Types::Double);
+    spy.wait();
+    QCOMPARE(spy.size(), 2);
+
+    node->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(100));
+    spy.wait();
+    QCOMPARE(spy.size(), 3);
+
+    for (auto it : spy) {
+        QCOMPARE(it.at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+        QVERIFY(it.at(1).isValid());
+    }
 }
 
 void Tst_QOpcUaClient::stringCharset()
@@ -3012,7 +3042,7 @@ void Tst_QOpcUaClient::timeStamps()
     QOpcUaMonitoringParameters p(100);
     QSignalSpy monitoringEnabledSpy(stringScalarNode.data(), &QOpcUaNode::enableMonitoringFinished);
     QSignalSpy monitoringDisabledSpy(stringScalarNode.data(), &QOpcUaNode::disableMonitoringFinished);
-    QSignalSpy dataChangeSpy(stringScalarNode.data(), &QOpcUaNode::attributeUpdated);
+    QSignalSpy dataChangeSpy(stringScalarNode.data(), &QOpcUaNode::dataChangeOccurred);
 
     QTest::qWait(10); // Make sure the timestamp has a chance to change
 

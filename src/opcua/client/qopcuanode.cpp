@@ -89,7 +89,7 @@ QT_BEGIN_NAMESPACE
 
     \l QOpcUaNode offers an abstraction to interact with subscriptions and monitored items.
     \l enableMonitoring() enables data change notifications for one or more attributes.
-    The \l attributeUpdated signal contains new values and the local cache is updated.
+    The \l dataChangeOccurred signal contains new values and the local cache is updated.
     \l disableMonitoring() disables the data change notifications.
     The \l monitoringStatusChanged signal notifies about changes of the monitoring status, e. g. after
     manual enable and disable or a status change on the server.
@@ -166,10 +166,22 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QOpcUaNode::attributeUpdated(QOpcUa::NodeAttribute attr, QVariant value)
+    \fn void QOpcUaNode::dataChangeOccurred(QOpcUa::NodeAttribute attr, QVariant value)
 
     This signal is emitted after a data change notification has been received. \a value contains the
     new value for the node attribute \a attr.
+
+    \sa attribute() serverTimestamp() sourceTimestamp()
+*/
+
+/*!
+    \fn void QOpcUaNode::attributeUpdated(QOpcUa::NodeAttribute attr, QVariant value)
+
+    This signal is emitted after the value in the attribute cache has been updated by a
+    data change notification from the server, a read or a write operation. \a value contains the
+    new value for the node attribute \a attr.
+
+    \sa attribute() attributeError() serverTimestamp() sourceTimestamp()
 */
 
 /*!
@@ -330,7 +342,7 @@ QVariant QOpcUaNode::attribute(QOpcUa::NodeAttribute attribute) const
     The returned value is only valid after the Value attribute has been successfully read or written
     or after a data change from a monitoring has updated the attribute cache.
     This is indicated by a \l attributeRead() or \l attributeWritten() signal with status code
-    \l {QOpcUa::UaStatusCode} {Good} or a \l attributeUpdated() signal for the Value attribute.
+    \l {QOpcUa::UaStatusCode} {Good} or a \l dataChangeOccurred() signal for the Value attribute.
 
     If there is no value in the attribute cache, an invalid \l QVariant is returned.
 
@@ -372,7 +384,7 @@ QOpcUa::UaStatusCode QOpcUaNode::valueAttributeError() const
 
 /*!
     Returns the source timestamp from the last read or data change of \a attribute.
-    Before at least one \l attributeRead or \l attributeUpdated signal has been emitted,
+    Before at least one \l attributeRead or \l dataChangeOccurred signal has been emitted,
     a null datetime is returned.
 
 */
@@ -388,7 +400,7 @@ QDateTime QOpcUaNode::sourceTimestamp(QOpcUa::NodeAttribute attribute) const
 
 /*!
     Returns the server timestamp from the last read or data change of \a attribute.
-    Before at least one \l attributeRead or \l attributeUpdated signal has been emitted,
+    Before at least one \l attributeRead or \l dataChangeOccurred signal has been emitted,
     a null datetime is returned.
 */
 QDateTime QOpcUaNode::serverTimestamp(QOpcUa::NodeAttribute attribute) const

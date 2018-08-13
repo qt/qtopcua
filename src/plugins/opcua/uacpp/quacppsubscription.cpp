@@ -323,7 +323,7 @@ void QUACppSubscription::dataChange(OpcUa_UInt32 clientSubscriptionHandle, const
         temp.setAttribute(m_monitoredIds[monitorId].second);
         temp.setStatusCode(QOpcUa::UaStatusCode::Good);
 
-        emit m_backend->attributeUpdated(m_monitoredIds[monitorId].first, temp);
+        emit m_backend->dataChangeOccurred(m_monitoredIds[monitorId].first, temp);
     }
 }
 

@@ -74,7 +74,7 @@ void QOpcUaClientImpl::connectBackendWithClient(QOpcUaBackend *backend)
     connect(backend, &QOpcUaBackend::attributesRead, this, &QOpcUaClientImpl::handleAttributesRead);
     connect(backend, &QOpcUaBackend::stateAndOrErrorChanged, this, &QOpcUaClientImpl::stateAndOrErrorChanged);
     connect(backend, &QOpcUaBackend::attributeWritten, this, &QOpcUaClientImpl::handleAttributeWritten);
-    connect(backend, &QOpcUaBackend::attributeUpdated, this, &QOpcUaClientImpl::handleAttributeUpdated);
+    connect(backend, &QOpcUaBackend::dataChangeOccurred, this, &QOpcUaClientImpl::handleDataChangeOccurred);
     connect(backend, &QOpcUaBackend::monitoringEnableDisable, this, &QOpcUaClientImpl::handleMonitoringEnableDisable);
     connect(backend, &QOpcUaBackend::monitoringStatusChanged, this, &QOpcUaClientImpl::handleMonitoringStatusChanged);
     connect(backend, &QOpcUaBackend::methodCallFinished, this, &QOpcUaClientImpl::handleMethodCallFinished);
@@ -101,11 +101,11 @@ void QOpcUaClientImpl::handleAttributeWritten(quint64 handle, QOpcUa::NodeAttrib
         emit (*it)->attributeWritten(attr, value, statusCode);
 }
 
-void QOpcUaClientImpl::handleAttributeUpdated(quint64 handle, const QOpcUaReadResult &value)
+void QOpcUaClientImpl::handleDataChangeOccurred(quint64 handle, const QOpcUaReadResult &value)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
-        emit (*it)->attributeUpdated(value.attribute(), value);
+        emit (*it)->dataChangeOccurred(value.attribute(), value);
 }
 
 void QOpcUaClientImpl::handleMonitoringEnableDisable(quint64 handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status)

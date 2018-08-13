@@ -72,6 +72,7 @@ public:
                 [this](QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
         {
             QOpcUa::NodeAttributes updatedAttributes;
+            Q_Q(QOpcUaNode);
 
             for (auto &entry : qAsConst(attr)) {
                 if (serviceResult == QOpcUa::UaStatusCode::Good)
@@ -84,9 +85,9 @@ public:
                 }
 
                 updatedAttributes |= entry.attribute();
+                emit q->attributeUpdated(entry.attribute(), entry.value());
             }
 
-            Q_Q(QOpcUaNode);
             emit q->attributeRead(updatedAttributes);
         });
 
@@ -94,18 +95,22 @@ public:
                 [this](QOpcUa::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode)
         {
             m_nodeAttributes[attr].setStatusCode(statusCode);
-            if (statusCode == QOpcUa::UaStatusCode::Good)
-                m_nodeAttributes[attr].setValue(value);
-
             Q_Q(QOpcUaNode);
+
+            if (statusCode == QOpcUa::UaStatusCode::Good) {
+                m_nodeAttributes[attr].setValue(value);
+                emit q->attributeUpdated(attr, value);
+            }
+
             emit q->attributeWritten(attr, statusCode);
         });
 
-        m_attributeUpdatedConnection = QObject::connect(impl, &QOpcUaNodeImpl::attributeUpdated,
+        m_dataChangeOccurredConnection = QObject::connect(impl, &QOpcUaNodeImpl::dataChangeOccurred,
                 [this](QOpcUa::NodeAttribute attr, QOpcUaReadResult value)
         {
             this->m_nodeAttributes[attr] = value;
             Q_Q(QOpcUaNode);
+            emit q->dataChangeOccurred(attr, value.value());
             emit q->attributeUpdated(attr, value.value());
         });
 
@@ -193,7 +198,7 @@ public:
     {
         QObject::disconnect(m_attributesReadConnection);
         QObject::disconnect(m_attributeWrittenConnection);
-        QObject::disconnect(m_attributeUpdatedConnection);
+        QObject::disconnect(m_dataChangeOccurredConnection);
         QObject::disconnect(m_monitoringEnableDisableConnection);
         QObject::disconnect(m_monitoringStatusChangedConnection);
         QObject::disconnect(m_methodCallFinishedConnection);
@@ -220,7 +225,7 @@ public:
 
     QMetaObject::Connection m_attributesReadConnection;
     QMetaObject::Connection m_attributeWrittenConnection;
-    QMetaObject::Connection m_attributeUpdatedConnection;
+    QMetaObject::Connection m_dataChangeOccurredConnection;
     QMetaObject::Connection m_monitoringEnableDisableConnection;
     QMetaObject::Connection m_monitoringStatusChangedConnection;
     QMetaObject::Connection m_methodCallFinishedConnection;
