@@ -172,6 +172,45 @@ UA_NodeId TestServer::addObject(const UA_NodeId &parentFolder, int namespaceInde
     return resultNode;
 }
 
+UA_NodeId TestServer::addVariableWithWriteMask(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
+                                  QOpcUa::Types type, quint32 writeMask)
+{
+    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
+
+    UA_VariableAttributes attr = UA_VariableAttributes_default;
+    attr.value = QOpen62541ValueConverter::toOpen62541Variant(value, type);
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", name.toUtf8().constData());
+    attr.dataType = attr.value.type ? attr.value.type->typeId : UA_TYPES[UA_TYPES_BOOLEAN].typeId;
+    attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+    attr.writeMask = writeMask;
+
+    UA_QualifiedName variableName;
+    variableName.namespaceIndex = variableNodeId.namespaceIndex;
+    variableName.name = attr.displayName.text;
+
+    UA_NodeId resultId;
+    UA_StatusCode result = UA_Server_addVariableNode(m_server,
+                                                     variableNodeId,
+                                                     folder,
+                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                     variableName,
+                                                     UA_NODEID_NULL,
+                                                     attr,
+                                                     nullptr,
+                                                     &resultId);
+
+
+    UA_NodeId_deleteMembers(&variableNodeId);
+    UA_VariableAttributes_deleteMembers(&attr);
+
+    if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not add variable:" << result;
+        return UA_NODEID_NULL;
+    }
+
+    return resultId;
+}
+
 UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
                                   QOpcUa::Types type, QVector<quint32> arrayDimensions)
 {

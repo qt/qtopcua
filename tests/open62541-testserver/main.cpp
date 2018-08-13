@@ -215,5 +215,14 @@ int main(int argc, char **argv)
     // Add a method for adding namespaces
     server.addAddNamespaceMethod(Open62541Utils::nodeIdFromQString("ns=0;i=2253"), "ns=3;s=Test.Method.AddNamespace", "AddNamespace");
 
+    // Add full writable node
+    quint32 fullWritableMask = UA_WRITEMASK_ACCESSLEVEL | UA_WRITEMASK_ARRRAYDIMENSIONS | UA_WRITEMASK_BROWSENAME | UA_WRITEMASK_CONTAINSNOLOOPS |
+                                UA_WRITEMASK_DATATYPE | UA_WRITEMASK_DESCRIPTION | UA_WRITEMASK_DISPLAYNAME | UA_WRITEMASK_EVENTNOTIFIER | UA_WRITEMASK_EXECUTABLE |
+                                UA_WRITEMASK_HISTORIZING | UA_WRITEMASK_INVERSENAME | UA_WRITEMASK_ISABSTRACT | UA_WRITEMASK_MINIMUMSAMPLINGINTERVAL | UA_WRITEMASK_NODECLASS |
+                                UA_WRITEMASK_NODEID | UA_WRITEMASK_SYMMETRIC | UA_WRITEMASK_USERACCESSLEVEL | UA_WRITEMASK_USEREXECUTABLE | UA_WRITEMASK_USERWRITEMASK |
+                                UA_WRITEMASK_VALUERANK | UA_WRITEMASK_WRITEMASK | UA_WRITEMASK_VALUEFORVARIABLETYPE;
+
+    server.addVariableWithWriteMask(testFolder, "ns=3;s=Demo.Static.Scalar.FullyWritable", "FullyWritableTest", 1.0, QOpcUa::Types::Double, fullWritableMask);
+
     return app.exec();
 }
