@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
 
     This enum contains the reference types specified in OPC-UA part 3, 7.
     They are used to filter for a certain reference type in \l QOpcUaNode::browseChildren
-    and for the reference type information in \a QOpcUaReferenceDescription.
+    and for the reference type information in \l QOpcUaReferenceDescription.
 
     \value Unspecified Not a valid reference type.
     \value References The abstract base type for all references.
@@ -181,7 +181,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \enum QOpcUa::UaStatusCode
 
-    Enumerates all status codes from https://opcfoundation.org/UA/schemas/1.03/Opc.Ua.StatusCodes.csv
+    Enumerates all status codes from \l {https://opcfoundation.org/UA/schemas/1.03/Opc.Ua.StatusCodes.csv}
 
     \value Good
     \value BadUnexpectedError
