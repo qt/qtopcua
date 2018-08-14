@@ -233,6 +233,17 @@ QOpcUaClient::~QOpcUaClient()
 
 /*!
     Connects to the OPC UA endpoint given in \a url.
+
+    If the endpoint requires username and password, they must be included in \a url.
+
+    \code
+    QUrl url("opc.tcp://localhost:4840");
+    url.setUserName("user");
+    url.setPassword("password");
+
+    m_client->connectToEndpoint(url);
+    \endcode
+
     \sa disconnectFromEndpoint()
 */
 void QOpcUaClient::connectToEndpoint(const QUrl &url)
