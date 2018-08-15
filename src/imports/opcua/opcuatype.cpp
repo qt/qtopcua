@@ -34,49 +34,48 @@
 **
 ****************************************************************************/
 
-#include "opcua_plugin.h"
-#include "opcuavaluenode.h"
-#include "opcuamethodnode.h"
-#include "opcuanodeid.h"
-#include "opcuanodeidtype.h"
-#include "opcuaconnection.h"
-#include "opcuarelativenodepath.h"
-#include "opcuarelativenodeid.h"
 #include "opcuatype.h"
-#include <QLoggingCategory>
-
-#include <qqml.h>
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML, "qt.opcua.plugins.qml")
+/*!
+    \qmltype LocalizedText
+    \inqmlmodule QtOpcUa
+    \brief Contains a text with associated locale.
+    \since QtOpcUa 5.12
 
-namespace Constants {
-    Q_NAMESPACE
-    Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
-    Q_ENUM_NS(QOpcUa::ReferenceTypeId)
-    // Only one type declaration is needed because all other
-    // types of the same meta object will be added automatically.
-}
+    The two members of this type contain the actual text and the locale of the text.
+*/
 
-void OpcUaPlugin::registerTypes(const char *uri)
+/*!
+    \qmlproperty string LocalizedText::text
+
+    Textual content.
+*/
+
+/*!
+    \qmlproperty string LocalizedText::locale
+
+    Locale of the contained text.
+    This has to be in a modified ISO standard notation, for example \c en-US.
+    See OPC UA specification part 3, 8.4 for details.
+*/
+
+LocalizedText::LocalizedText()
 {
-    const int major = 5;
-    const int minor = 12;
-
-    qmlRegisterType<OpcUaConnection>(uri, major, minor, "Connection");
-    qmlRegisterType<OpcUaValueNode>(uri, major, minor, "ValueNode");
-    qmlRegisterType<OpcUaMethodNode>(uri, major, minor, "MethodNode");
-    qmlRegisterType<OpcUaNode>(uri, major, minor, "Node");
-    qmlRegisterType<OpcUaNodeId>(uri, major, minor, "NodeId");
-    qmlRegisterUncreatableType<OpcUaNodeIdType>(uri, major, minor, "NodeIdType",
-                      "The type 'NodeIdType' is not creatable. Use 'NodeId' or 'RelativeNodeId' instead.");
-    qmlRegisterType<OpcUaRelativeNodePath>(uri, major, minor, "RelativeNodePath");
-    qmlRegisterType<OpcUaRelativeNodeId>(uri, major, minor, "RelativeNodeId");
-    qmlRegisterUncreatableMetaObject(Constants::staticMetaObject, uri, major, minor, "Constants", "This type can not be created.");
-    qmlRegisterUncreatableType<LocalizedText>(uri, major, minor, "LocalizedText", "This type can only be accessed as member of other elements");
 }
 
-#include "opcua_plugin.moc"
+LocalizedText::LocalizedText(const QOpcUa::QLocalizedText &other)
+    : QLocalizedText(other)
+{
+}
+
+LocalizedText &LocalizedText::operator=(const LocalizedText &rhs)
+{
+    if (this != &rhs)
+        QLocalizedText::operator =(rhs);
+    return *this;
+}
 
 QT_END_NAMESPACE
+

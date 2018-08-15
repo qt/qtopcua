@@ -13,7 +13,8 @@ SOURCES += \
     universalnode.cpp \
     opcuapathresolver.cpp \
     opcuaattributevalue.cpp \
-    opcuaattributecache.cpp
+    opcuaattributecache.cpp \
+    opcuatype.cpp \
 
 HEADERS += \
     opcua_plugin.h \
@@ -28,7 +29,8 @@ HEADERS += \
     universalnode.h \
     opcuapathresolver.h \
     opcuaattributecache.h \
-    opcuaattributevalue.h
+    opcuaattributevalue.h \
+    opcuatype.h \
 
 load(qml_plugin)
 

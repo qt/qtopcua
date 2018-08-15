@@ -15,6 +15,14 @@ Module {
         exportMetaObjectRevisions: [0]
     }
     Component {
+        name: "LocalizedText"
+        exports: ["LocalizedText 5.12"]
+        isCreatable: false
+        exportMetaObjectRevisions: [0]
+        Property { name: "locale"; type: "string" }
+        Property { name: "text"; type: "string" }
+    }
+    Component {
         name: "OpcUaConnection"
         prototype: "QObject"
         exports: ["Connection 5.12"]
