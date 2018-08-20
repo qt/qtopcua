@@ -95,7 +95,7 @@ bool QUACppClient::findServers(const QUrl &url, const QStringList &localeIds, co
     Q_UNUSED(localeIds);
     Q_UNUSED(serverUris);
 
-    qInfo("The uacpp backend does not yet support the FindServers service.");
+    qCInfo(QT_OPCUA_PLUGINS_UACPP) << "The uacpp backend does not yet support the FindServers service.";
 
     return false;
 }
@@ -103,7 +103,7 @@ bool QUACppClient::findServers(const QUrl &url, const QStringList &localeIds, co
 bool QUACppClient::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
 {
     Q_UNUSED(nodesToRead);
-    qInfo("Batch read is currently not implemented in the uacpp backend");
+    qCInfo(QT_OPCUA_PLUGINS_UACPP) << "Batch read is currently not implemented in the uacpp backend";
     return false;
 }
 
@@ -111,7 +111,7 @@ bool QUACppClient::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite)
 {
     Q_UNUSED(nodesToWrite);
 
-    qInfo("Batch write is currently not implemented in the uacpp backend");
+    qCInfo(QT_OPCUA_PLUGINS_UACPP) << "Batch write is currently not implemented in the uacpp backend";
     return false;
 }
 
@@ -144,7 +144,7 @@ bool QUACppClient::deleteReference(const QOpcUaDeleteReferenceItem &referenceToD
 {
     Q_UNUSED(referenceToDelete);
 
-    qCDebug(QT_OPCUA_PLUGINS_UACPP) << "deleteReference is not yet supported by the uacpp backend";
+    qCInfo(QT_OPCUA_PLUGINS_UACPP) << "deleteReference is not yet supported by the uacpp backend";
     return false;
 }
 
