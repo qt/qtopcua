@@ -67,6 +67,10 @@ Module {
         Property { name: "nodeId"; type: "OpcUaNodeIdType"; isPointer: true }
         Property { name: "connection"; type: "OpcUaConnection"; isPointer: true }
         Property { name: "readyToUse"; type: "bool"; isReadonly: true }
+        Property { name: "browseName"; type: "string" }
+        Property { name: "nodeClass"; type: "QOpcUa::NodeClass"; isReadonly: true }
+        Property { name: "displayName"; type: "LocalizedText" }
+        Property { name: "description"; type: "LocalizedText" }
         Signal {
             name: "nodeIdChanged"
             Parameter { name: "nodeId"; type: "const OpcUaNodeIdType"; isPointer: true }

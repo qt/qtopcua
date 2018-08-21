@@ -132,6 +132,23 @@ void OpcUaMethodNode::callMethod()
     m_node->callMethod(m_objectNodePath, QVector<QOpcUa::TypedVariant> ());
 }
 
+void OpcUaMethodNode::objectNodePathResolved(const QString &str)
+{
+    m_objectNodePath = str;
+
+    connect(m_node, &QOpcUaNode::attributeRead, this, [this](){
+        setReadyToUse(true);
+    });
+
+    if (!m_node->readAttributes(QOpcUa::NodeAttribute::NodeClass
+                            | QOpcUa::NodeAttribute::Description
+                            | QOpcUa::NodeAttribute::DataType
+                            | QOpcUa::NodeAttribute::BrowseName
+                            | QOpcUa::NodeAttribute::DisplayName
+                            ))
+        qCWarning(QT_OPCUA_PLUGINS_QML) << "Reading attributes" << m_node->nodeId() << "failed";
+}
+
 void OpcUaMethodNode::setupNode(const QString &absolutePath)
 {
     OpcUaNode::setupNode(absolutePath);
@@ -140,7 +157,9 @@ void OpcUaMethodNode::setupNode(const QString &absolutePath)
 
 void OpcUaMethodNode::retrieveObjectNodePath()
 {
-    retrieveAbsoluteNodePath(m_objectNodeId, [&](const QString &str) { m_objectNodePath = str;});
+    retrieveAbsoluteNodePath(m_objectNodeId, [this](const QString &str) {
+        this->objectNodePathResolved(str);
+    });
 }
 
 QT_END_NAMESPACE

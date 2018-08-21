@@ -56,6 +56,10 @@ Item {
 
         function test_nodeTest() {
             compare(node1.value, "Value", "");
+            compare(node1.browseName, "theStringId");
+            compare(node1.nodeClass, QtOpcUa.Constants.NodeClass.Variable);
+            compare(node1.displayName.text, "theStringId");
+            compare(node1.description.text, "Description for ns=3;s=theStringId");
         }
 
         QtOpcUa.ValueNode {
@@ -193,12 +197,18 @@ Item {
             verify(node8IdentifierSpy.valid);
             node8.nodeId.identifier = "b=UXQgZnR3IQ==";
             node8ValueSpy.wait();
+
+            // value has to be undefined because when node IDs are changed
+            // all attributes become undefined before they get the new values.
+            verify(!node8.value);
+
+            node8ValueSpy.wait();
             compare(node8IdentifierSpy.count, 1);
             compare(node8NodeIdSpy.count, 1);
             compare(node8NamespaceSpy.count, 0);
             verify(node8NodeChangedSpy.count > 0);
             compare(node8NodeIdChangedSpy.count, 1);
-            compare(node8ValueSpy.count, 1);
+            compare(node8ValueSpy.count, 2); // first undefined, then the real value
             compare(node8.value, "Value");
         }
 
@@ -265,4 +275,70 @@ Item {
         }
     }
 
+    TestCase {
+        name: "Standard attributes on variable node"
+        when: node10.readyToUse
+
+        SignalSpy {
+            id: node10BrowseNameSpy
+            target: node10
+            signalName: "browseNameChanged"
+        }
+
+        SignalSpy {
+            id: node10NodeClassSpy
+            target: node10
+            signalName: "nodeClassChanged"
+        }
+
+        SignalSpy {
+            id: node10DisplayNameSpy
+            target: node10
+            signalName: "displayNameChanged"
+        }
+
+        SignalSpy {
+            id: node10DescriptionSpy
+            target: node10
+            signalName: "descriptionChanged"
+        }
+
+        function test_nodeTest() {
+            compare(node10.browseName, "FullyWritableTest");
+            compare(node10.nodeClass, QtOpcUa.Constants.NodeClass.Variable);
+            compare(node10.displayName.text, "FullyWritableTest");
+            compare(node10.description.text, "Description for ns=3;s=Demo.Static.Scalar.FullyWritable");
+
+            node10BrowseNameSpy.clear();
+            node10NodeClassSpy.clear();
+            node10DisplayNameSpy.clear();
+            node10DescriptionSpy.clear();
+
+            node10.browseName = "modifiedBrowseName";
+            node10BrowseNameSpy.wait();
+            compare(node10BrowseNameSpy.count, 1);
+            node10.browseName = "FullyWritableTest"; // Setting back to default
+
+            // node class is not supposed to be changed: skipping tests
+
+            node10.displayName.text = "modifiedDisplayName";
+            node10DisplayNameSpy.wait();
+            compare(node10DisplayNameSpy.count, 1);
+            node10.displayName.text = "FullyWritableTest"; // Setting back to default
+
+            node10.description.text = "modifiedDescription";
+            node10DescriptionSpy.wait();
+            compare(node10DescriptionSpy.count, 1);
+            node10.description.text = "Description for ns=3;s=Demo.Static.Scalar.FullyWritable"; // Setting back to default
+        }
+
+        QtOpcUa.ValueNode {
+            connection: connection
+            nodeId: QtOpcUa.NodeId {
+                ns: "Test Namespace"
+                identifier: "s=Demo.Static.Scalar.FullyWritable"
+            }
+            id: node10
+        }
+    }
 }

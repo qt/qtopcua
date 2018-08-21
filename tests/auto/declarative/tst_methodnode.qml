@@ -39,18 +39,67 @@ import QtTest 1.0
 import QtOpcUa 5.12 as QtOpcUa
 
 Item {
+
+    QtOpcUa.Connection {
+        id: connection
+        backend: connection.availableBackends[0]
+        defaultConnection: true
+    }
+
+    Component.onCompleted: {
+        connection.connectToEndpoint("opc.tcp://127.0.0.1:43344");
+    }
+
     TestCase {
-        name: "Enum exports to QML"
+        name: "Standard attributes on method node"
+        when: node1.readyToUse
 
-        function test_enumExports() {
-            compare(QtOpcUa.Constants.NodeClass.Method, 4);
-            compare(QtOpcUa.Constants.NodeAttribute.DisplayName, 8);
-
-            // Test return value of undefined node
-            compare(node1.nodeClass, QtOpcUa.Constants.NodeClass.Undefined);
+        SignalSpy {
+            id: node1BrowseNameSpy
+            target: node1
+            signalName: "browseNameChanged"
         }
 
-        QtOpcUa.Node {
+        SignalSpy {
+            id: node1NodeClassSpy
+            target: node1
+            signalName: "nodeClassChanged"
+        }
+
+        SignalSpy {
+            id: node1DisplayNameSpy
+            target: node1
+            signalName: "displayNameChanged"
+        }
+
+        SignalSpy {
+            id: node1DescriptionSpy
+            target: node1
+            signalName: "descriptionChanged"
+        }
+
+        function test_nodeTest() {
+            compare(node1.browseName, "TestFolder");
+            compare(node1.nodeClass, QtOpcUa.Constants.NodeClass.Object);
+            compare(node1.displayName.text, "TestFolder");
+            compare(node1.description.text, "");
+
+            compare(node1BrowseNameSpy.count, 1)
+            compare(node1NodeClassSpy.count, 1)
+            compare(node1DisplayNameSpy.count, 1)
+            compare(node1DescriptionSpy.count, 1)
+        }
+
+        QtOpcUa.MethodNode {
+            connection: connection
+            nodeId: QtOpcUa.NodeId {
+                ns: "Test Namespace"
+                identifier: "s=TestFolder"
+            }
+            objectNodeId: QtOpcUa.NodeId {
+                ns: "Test Namespace"
+                identifier: "s=Test.Method.Multiply"
+            }
             id: node1
         }
     }

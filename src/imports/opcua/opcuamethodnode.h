@@ -60,6 +60,7 @@ signals:
 
 private:
     void setupNode(const QString &absolutePath) override;
+    void objectNodePathResolved(const QString &);
 
 private:
     void retrieveObjectNodePath();
