@@ -54,6 +54,8 @@ Q_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML, "qt.opcua.plugins.qml")
 namespace Constants {
     Q_NAMESPACE
     Q_ENUM_NS(QOpcUa::ReferenceTypeId)
+    // Only one type declaration is needed because all other
+    // types of the same meta object will be added automatically.
 }
 
 void OpcUaPlugin::registerTypes(const char *uri)
