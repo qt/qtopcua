@@ -34,48 +34,17 @@
 **
 ****************************************************************************/
 
-#include "opcua_plugin.h"
-#include "opcuavaluenode.h"
-#include "opcuamethodnode.h"
-#include "opcuanodeid.h"
-#include "opcuanodeidtype.h"
-#include "opcuaconnection.h"
-#include "opcuarelativenodepath.h"
-#include "opcuarelativenodeid.h"
-#include <qopcuatype.h>
-#include <QLoggingCategory>
+import QtQuick 2.3
+import QtTest 1.0
+import QtOpcUa 5.12 as QtOpcUa
 
-#include <qqml.h>
+Item {
+    TestCase {
+        name: "Enum exports to QML"
 
-QT_BEGIN_NAMESPACE
-
-Q_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML, "qt.opcua.plugins.qml")
-
-namespace Constants {
-    Q_NAMESPACE
-    Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
-    Q_ENUM_NS(QOpcUa::ReferenceTypeId)
-    // Only one type declaration is needed because all other
-    // types of the same meta object will be added automatically.
+        function test_enumExports() {
+            compare(QtOpcUa.Constants.NodeClass.Method, 4);
+            compare(QtOpcUa.Constants.NodeAttribute.DisplayName, 8);
+        }
+    }
 }
-
-void OpcUaPlugin::registerTypes(const char *uri)
-{
-    const int major = 5;
-    const int minor = 12;
-
-    qmlRegisterType<OpcUaConnection>(uri, major, minor, "Connection");
-    qmlRegisterType<OpcUaValueNode>(uri, major, minor, "ValueNode");
-    qmlRegisterType<OpcUaMethodNode>(uri, major, minor, "MethodNode");
-    qmlRegisterType<OpcUaNode>(uri, major, minor, "Node");
-    qmlRegisterType<OpcUaNodeId>(uri, major, minor, "NodeId");
-    qmlRegisterUncreatableType<OpcUaNodeIdType>(uri, major, minor, "NodeIdType",
-                      "The type 'NodeIdType' is not creatable. Use 'NodeId' or 'RelativeNodeId' instead.");
-    qmlRegisterType<OpcUaRelativeNodePath>(uri, major, minor, "RelativeNodePath");
-    qmlRegisterType<OpcUaRelativeNodeId>(uri, major, minor, "RelativeNodeId");
-    qmlRegisterUncreatableMetaObject(Constants::staticMetaObject, uri, major, minor, "Constants", "This type can not be created.");
-}
-
-#include "opcua_plugin.moc"
-
-QT_END_NAMESPACE

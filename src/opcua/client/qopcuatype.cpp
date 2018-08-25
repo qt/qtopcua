@@ -908,7 +908,7 @@ bool QOpcUa::nodeIdStringSplit(const QString &nodeIdString, quint16 *nsIndex, QS
 }
 
 /*!
-    Returns \c true if the two node ids have the same namespace index and identifier.
+    Returns \c true if the two node ids \a first and \a second have the same namespace index and identifier.
     A node id string without a namespace index is assumed to be in namespace 0.
 */
 bool QOpcUa::nodeIdEquals(const QString &first, const QString &second)
