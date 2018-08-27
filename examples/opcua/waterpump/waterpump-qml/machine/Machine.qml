@@ -70,38 +70,38 @@ Item {
     }
 
     QtOpcUa.MethodNode {
-        nodeId: machineNodeId
-        objectNodeId : QtOpcUa.NodeId {
+        nodeId: QtOpcUa.NodeId {
             identifier: "s=Machine.Start"
             ns: "Demo Namespace"
         }
+        objectNodeId: machineNodeId
         id: startMethod
     }
 
     QtOpcUa.MethodNode {
-        nodeId: machineNodeId
-        objectNodeId : QtOpcUa.NodeId {
+        nodeId: QtOpcUa.NodeId {
             identifier: "s=Machine.Stop"
             ns: "Demo Namespace"
         }
+        objectNodeId: machineNodeId
         id: stopMethod
     }
 
     QtOpcUa.MethodNode {
-        nodeId: machineNodeId
-        objectNodeId : QtOpcUa.NodeId {
+        nodeId: QtOpcUa.NodeId {
             identifier: "s=Machine.FlushTank2"
             ns: "Demo Namespace"
         }
+        objectNodeId: machineNodeId
         id: flushMethod
     }
 
     QtOpcUa.MethodNode {
-        nodeId: machineNodeId
-        objectNodeId : QtOpcUa.NodeId {
+        nodeId: QtOpcUa.NodeId {
             identifier: "s=Machine.Reset"
             ns: "Demo Namespace"
         }
+        objectNodeId: machineNodeId
         id: resetMethod
     }
 

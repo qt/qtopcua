@@ -84,6 +84,9 @@ public:
     // This function is not exposed to QML
     const UniversalNode &resolvedNode() const;
 
+    // This function is not exposed to QML
+    QOpcUaNode* node() const;
+
 public slots:
     void setNodeId(OpcUaNodeIdType *nodeId);
     void setConnection(OpcUaConnection *);

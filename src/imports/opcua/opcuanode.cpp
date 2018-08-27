@@ -293,6 +293,11 @@ const UniversalNode &OpcUaNode::resolvedNode() const
     return m_resolvedNode;
 }
 
+QOpcUaNode *OpcUaNode::node() const
+{
+    return m_node;
+}
+
 void OpcUaNode::setAttributesToRead(QOpcUa::NodeAttributes attributes)
 {
     m_attributesToRead = attributes;
