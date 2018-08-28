@@ -92,20 +92,14 @@ void OpcUaValueNode::setValue(const QVariant &value)
 
 void OpcUaValueNode::setupNode(const QString &absolutePath)
 {
+    // Additionally read the value attribute
+    setAttributesToRead(attributesToRead()
+                        | QOpcUa::NodeAttribute::Value
+                        | QOpcUa::NodeAttribute::DataType);
+
     OpcUaNode::setupNode(absolutePath);
     if (!m_node)
         return;
-
-    connect(m_node, &QOpcUaNode::attributeRead, this, [this](){setReadyToUse(true);});
-
-    if (!m_node->readAttributes(QOpcUa::NodeAttribute::Value
-                            | QOpcUa::NodeAttribute::NodeClass
-                            | QOpcUa::NodeAttribute::Description
-                            | QOpcUa::NodeAttribute::DataType
-                            | QOpcUa::NodeAttribute::BrowseName
-                            | QOpcUa::NodeAttribute::DisplayName
-                            ))
-        qCWarning(QT_OPCUA_PLUGINS_QML) << "Reading attributes" << m_node->nodeId() << "failed";
 
     if (!m_node->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(100)))
         qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed monitoring" << m_node->nodeId();

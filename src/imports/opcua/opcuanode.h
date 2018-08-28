@@ -103,6 +103,8 @@ protected slots:
     void updateNode();
 
 protected:
+    void setAttributesToRead(QOpcUa::NodeAttributes attributes);
+    QOpcUa::NodeAttributes attributesToRead() const;
     void retrieveAbsoluteNodePath(OpcUaNodeIdType *, std::function<void (const QString &)>);
     void setReadyToUse(bool value = true);
 
@@ -113,6 +115,7 @@ protected:
     bool m_readyToUse = false;
     UniversalNode m_resolvedNode;
     OpcUaAttributeCache m_attributeCache;
+    QOpcUa::NodeAttributes m_attributesToRead;
 };
 
 QT_END_NAMESPACE

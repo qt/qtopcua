@@ -138,8 +138,10 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML)
 
 OpcUaNode::OpcUaNode(QObject *parent):
     QObject(parent),
-    m_nodeId(new OpcUaNodeIdType(this))
+    m_nodeId(new OpcUaNodeIdType(this)),
+    m_attributesToRead(QOpcUaNode::mandatoryBaseAttributes())
 {
+    m_attributesToRead |= QOpcUa::NodeAttribute::Description;
     connect(&m_resolvedNode, &UniversalNode::nodeChanged, this, &OpcUaNode::nodeChanged);
     connect(m_attributeCache.attribute(QOpcUa::NodeAttribute::BrowseName), &OpcUaAttributeValue::changed, this, &OpcUaNode::browseNameChanged);
     connect(m_attributeCache.attribute(QOpcUa::NodeAttribute::NodeClass), &OpcUaAttributeValue::changed, this, &OpcUaNode::nodeClassChanged);
@@ -272,6 +274,13 @@ void OpcUaNode::setupNode(const QString &absoluteNodePath)
     }
 
     connect(m_node, &QOpcUaNode::attributeUpdated, &m_attributeCache, &OpcUaAttributeCache::setAttributeValue);
+    connect(m_node, &QOpcUaNode::attributeRead, this, [this](){
+        setReadyToUse(true);
+    });
+
+    // Read mandatory attributes
+    if (!m_node->readAttributes(m_attributesToRead))
+        qCWarning(QT_OPCUA_PLUGINS_QML) << "Reading attributes" << m_node->nodeId() << "failed";
 }
 
 void OpcUaNode::updateNode()
@@ -282,6 +291,16 @@ void OpcUaNode::updateNode()
 const UniversalNode &OpcUaNode::resolvedNode() const
 {
     return m_resolvedNode;
+}
+
+void OpcUaNode::setAttributesToRead(QOpcUa::NodeAttributes attributes)
+{
+    m_attributesToRead = attributes;
+}
+
+QOpcUa::NodeAttributes OpcUaNode::attributesToRead() const
+{
+    return m_attributesToRead;
 }
 
 void OpcUaNode::retrieveAbsoluteNodePath(OpcUaNodeIdType *node, std::function<void (const QString &)> functor)
