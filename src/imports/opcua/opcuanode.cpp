@@ -279,6 +279,11 @@ void OpcUaNode::updateNode()
     retrieveAbsoluteNodePath(m_nodeId, [this](const QString &absoluteNodePath) {setupNode(absoluteNodePath);});
 }
 
+const UniversalNode &OpcUaNode::resolvedNode() const
+{
+    return m_resolvedNode;
+}
+
 void OpcUaNode::retrieveAbsoluteNodePath(OpcUaNodeIdType *node, std::function<void (const QString &)> functor)
 {
     auto conn = connection();

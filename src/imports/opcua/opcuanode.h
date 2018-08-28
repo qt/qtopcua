@@ -81,6 +81,9 @@ public:
     void setDescription(const LocalizedText &value);
     LocalizedText description();
 
+    // This function is not exposed to QML
+    const UniversalNode &resolvedNode() const;
+
 public slots:
     void setNodeId(OpcUaNodeIdType *nodeId);
     void setConnection(OpcUaConnection *);
