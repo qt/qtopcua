@@ -123,9 +123,9 @@ UA_NodeId DemoServer::addObject(const QString &parent, const QString &nodeString
     UA_NodeId resultNode;
     UA_ObjectAttributes oAttr = UA_ObjectAttributes_default;
 
-    oAttr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", displayName.toUtf8().constData());
+    oAttr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", displayName.toUtf8().constData());
     if (description.size())
-        oAttr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
+        oAttr.description = UA_LOCALIZEDTEXT_ALLOC("en-US", description.toUtf8().constData());
 
     UA_StatusCode result;
     UA_NodeId requestedNodeId = Open62541Utils::nodeIdFromQString(nodeString);
@@ -163,7 +163,7 @@ UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variab
 
     UA_VariableAttributes attr = UA_VariableAttributes_default;
     attr.value = QOpen62541ValueConverter::toOpen62541Variant(value, type);
-    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", displayName.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", displayName.toUtf8().constData());
     attr.dataType = attr.value.type ? attr.value.type->typeId : UA_TYPES[UA_TYPES_BOOLEAN].typeId;
     attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
 
@@ -347,8 +347,8 @@ UA_NodeId DemoServer::addMethod(const UA_NodeId &folder, const QString &variable
 
     UA_MethodAttributes attr = UA_MethodAttributes_default;
 
-    attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
-    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", displayName.toUtf8().constData());
+    attr.description = UA_LOCALIZEDTEXT_ALLOC("en-US", description.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", displayName.toUtf8().constData());
     attr.executable = true;
     UA_QualifiedName methodBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.namespaceIndex, browseName.toUtf8().constData());
 

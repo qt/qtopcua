@@ -112,9 +112,9 @@ UA_NodeId TestServer::addFolder(const QString &nodeString, const QString &displa
     UA_NodeId resultNode;
     UA_ObjectAttributes oAttr = UA_ObjectAttributes_default;
 
-    oAttr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", displayName.toUtf8().constData());
+    oAttr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", displayName.toUtf8().constData());
     if (description.size())
-        oAttr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
+        oAttr.description = UA_LOCALIZEDTEXT_ALLOC("en-US", description.toUtf8().constData());
 
     UA_StatusCode result;
     UA_NodeId requestedNodeId = Open62541Utils::nodeIdFromQString(nodeString);
@@ -148,7 +148,7 @@ UA_NodeId TestServer::addObject(const UA_NodeId &parentFolder, int namespaceInde
     UA_ObjectAttributes oAttr = UA_ObjectAttributes_default;
 
     if (objectName.size())
-        oAttr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", objectName.toUtf8().constData());
+        oAttr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", objectName.toUtf8().constData());
 
     UA_QualifiedName nodeBrowseName = UA_QUALIFIEDNAME_ALLOC(namespaceIndex, objectName.toUtf8().constData());
 
@@ -181,10 +181,10 @@ UA_NodeId TestServer::addVariableWithWriteMask(const UA_NodeId &folder, const QS
 
     UA_VariableAttributes attr = UA_VariableAttributes_default;
     attr.value = QOpen62541ValueConverter::toOpen62541Variant(value, type);
-    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", name.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", name.toUtf8().constData());
     attr.dataType = attr.value.type ? attr.value.type->typeId : UA_TYPES[UA_TYPES_BOOLEAN].typeId;
     attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
-    attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
+    attr.description = UA_LOCALIZEDTEXT_ALLOC("en-US", description.toUtf8().constData());
     attr.writeMask = writeMask;
 
     UA_QualifiedName variableName;
@@ -223,10 +223,10 @@ UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variab
 
     UA_VariableAttributes attr = UA_VariableAttributes_default;
     attr.value = QOpen62541ValueConverter::toOpen62541Variant(value, type);
-    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", name.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", name.toUtf8().constData());
     attr.dataType = attr.value.type ? attr.value.type->typeId : UA_TYPES[UA_TYPES_BOOLEAN].typeId;
     attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
-    attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
+    attr.description = UA_LOCALIZEDTEXT_ALLOC("en-US", description.toUtf8().constData());
 
     if (arrayDimensions.size()) {
         attr.arrayDimensionsSize = arrayDimensions.size();
@@ -268,7 +268,7 @@ UA_NodeId TestServer::addEmptyArrayVariable(const UA_NodeId &folder, const QStri
     UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
     UA_VariableAttributes attr = UA_VariableAttributes_default;
-    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", name.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", name.toUtf8().constData());
     attr.dataType = UA_TYPES[UA_TYPES_BOOLEAN].typeId;
     attr.accessLevel = UA_ACCESSLEVELMASK_READ;
     attr.valueRank = 1;
@@ -356,8 +356,8 @@ UA_NodeId TestServer::addMultiplyMethod(const UA_NodeId &folder, const QString &
 
     UA_MethodAttributes attr = UA_MethodAttributes_default;
 
-    attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
-    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", variableNode.toUtf8().constData());
+    attr.description = UA_LOCALIZEDTEXT_ALLOC("en-US", description.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", variableNode.toUtf8().constData());
     attr.executable = true;
 
     UA_QualifiedName nodeBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.namespaceIndex, "multiplyArguments");
@@ -407,8 +407,8 @@ UA_NodeId TestServer::addAddNamespaceMethod(const UA_NodeId &folder, const QStri
 
     UA_MethodAttributes attr = UA_MethodAttributes_default;
 
-    attr.description = UA_LOCALIZEDTEXT_ALLOC("en_US", description.toUtf8().constData());
-    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", variableNode.toUtf8().constData());
+    attr.description = UA_LOCALIZEDTEXT_ALLOC("en-US", description.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", variableNode.toUtf8().constData());
     attr.executable = true;
 
     UA_QualifiedName nodeBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.namespaceIndex, "addNamespace");

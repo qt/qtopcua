@@ -90,8 +90,8 @@ int main(int argc, char **argv)
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.String", "StringArrayTest",
                        QVariantList({QStringLiteral("Value 1"), QStringLiteral("Value 2")}), QOpcUa::Types::String);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.LocalizedText", "LocalizedTextArrayTest",
-                       QVariantList({QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en_US"), QStringLiteral("Value 1"))),
-                                     QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en_US"), QStringLiteral("Value 2")))}),
+                       QVariantList({QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en-US"), QStringLiteral("Value 1"))),
+                                     QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en-US"), QStringLiteral("Value 2")))}),
                        QOpcUa::Types::LocalizedText);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.ByteString", "ByteStringArrayTest",
                        QVariantList({QByteArray("Value 1"), QByteArray("Value 2")}), QOpcUa::Types::ByteString);
@@ -157,7 +157,7 @@ int main(int argc, char **argv)
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.UInt64", "UInt64ScalarTest", 1, QOpcUa::Types::UInt64);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.String", "StringScalarTest", QStringLiteral("Value"), QOpcUa::Types::String);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.LocalizedText", "LocalizedTextScalarTest",
-                                                  QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en_US"), QStringLiteral("Value"))),
+                                                  QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en-US"), QStringLiteral("Value"))),
                        QOpcUa::Types::LocalizedText);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.ByteString", "ByteStringScalarTest", QByteArray("Value 1"), QOpcUa::Types::ByteString);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.DateTime", "DateTimeScalarTest", QDateTime::currentDateTime(), QOpcUa::Types::DateTime);
