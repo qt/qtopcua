@@ -61,8 +61,13 @@ namespace Constants {
 
 void OpcUaPlugin::registerTypes(const char *uri)
 {
+    Q_ASSERT(uri == QStringLiteral("QtOpcUa"));
+
+    // @uri QtOpcUa
     const int major = 5;
     const int minor = 12;
+
+    // Register the 5.12 types
 
     qmlRegisterType<OpcUaConnection>(uri, major, minor, "Connection");
     qmlRegisterType<OpcUaValueNode>(uri, major, minor, "ValueNode");
@@ -70,11 +75,16 @@ void OpcUaPlugin::registerTypes(const char *uri)
     qmlRegisterType<OpcUaNode>(uri, major, minor, "Node");
     qmlRegisterType<OpcUaNodeId>(uri, major, minor, "NodeId");
     qmlRegisterUncreatableType<OpcUaNodeIdType>(uri, major, minor, "NodeIdType",
-                      "The type 'NodeIdType' is not creatable. Use 'NodeId' or 'RelativeNodeId' instead.");
+                  "The type 'NodeIdType' is not creatable. Use 'NodeId' or 'RelativeNodeId' instead.");
     qmlRegisterType<OpcUaRelativeNodePath>(uri, major, minor, "RelativeNodePath");
     qmlRegisterType<OpcUaRelativeNodeId>(uri, major, minor, "RelativeNodeId");
     qmlRegisterUncreatableMetaObject(Constants::staticMetaObject, uri, major, minor, "Constants", "This type can not be created.");
     qmlRegisterUncreatableType<LocalizedText>(uri, major, minor, "LocalizedText", "This type can only be accessed as member of other elements");
+
+    // insert new versions here
+
+    // Register the latest Qt version as QML type version
+    qmlRegisterModule(uri, QT_VERSION_MAJOR, QT_VERSION_MINOR);
 }
 
 #include "opcua_plugin.moc"
