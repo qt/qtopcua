@@ -34,24 +34,48 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.3
-import QtTest 1.0
-import QtOpcUa 5.12 as QtOpcUa
+#include "opcuatype.h"
 
-Item {
-    TestCase {
-        name: "Enum exports to QML"
+QT_BEGIN_NAMESPACE
 
-        function test_enumExports() {
-            compare(QtOpcUa.Constants.NodeClass.Method, 4);
-            compare(QtOpcUa.Constants.NodeAttribute.DisplayName, 8);
+/*!
+    \qmltype LocalizedText
+    \inqmlmodule QtOpcUa
+    \brief Contains a text with associated locale.
+    \since QtOpcUa 5.12
 
-            // Test return value of undefined node
-            compare(node1.nodeClass, QtOpcUa.Constants.NodeClass.Undefined);
-        }
+    The two members of this type contain the actual text and the locale of the text.
+*/
 
-        QtOpcUa.Node {
-            id: node1
-        }
-    }
+/*!
+    \qmlproperty string LocalizedText::text
+
+    Textual content.
+*/
+
+/*!
+    \qmlproperty string LocalizedText::locale
+
+    Locale of the contained text.
+    This has to be in a modified ISO standard notation, for example \c en-US.
+    See OPC UA specification part 3, 8.4 for details.
+*/
+
+LocalizedText::LocalizedText()
+{
 }
+
+LocalizedText::LocalizedText(const QOpcUa::QLocalizedText &other)
+    : QLocalizedText(other)
+{
+}
+
+LocalizedText &LocalizedText::operator=(const LocalizedText &rhs)
+{
+    if (this != &rhs)
+        QLocalizedText::operator =(rhs);
+    return *this;
+}
+
+QT_END_NAMESPACE
+

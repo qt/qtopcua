@@ -34,24 +34,25 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.3
-import QtTest 1.0
-import QtOpcUa 5.12 as QtOpcUa
+#pragma once
 
-Item {
-    TestCase {
-        name: "Enum exports to QML"
+#include <qopcuatype.h>
 
-        function test_enumExports() {
-            compare(QtOpcUa.Constants.NodeClass.Method, 4);
-            compare(QtOpcUa.Constants.NodeAttribute.DisplayName, 8);
+QT_BEGIN_NAMESPACE
 
-            // Test return value of undefined node
-            compare(node1.nodeClass, QtOpcUa.Constants.NodeClass.Undefined);
-        }
+class LocalizedText : public QOpcUa::QLocalizedText
+{
+    Q_GADGET
+    Q_PROPERTY(QString locale READ locale WRITE setLocale)
+    Q_PROPERTY(QString text READ text WRITE setText)
 
-        QtOpcUa.Node {
-            id: node1
-        }
-    }
-}
+public:
+    LocalizedText();
+    LocalizedText(const QLocalizedText &other);
+    LocalizedText &operator=(const LocalizedText &);
+};
+
+QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(LocalizedText)
+

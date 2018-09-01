@@ -34,24 +34,53 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.3
-import QtTest 1.0
-import QtOpcUa 5.12 as QtOpcUa
+#include "opcuaattributecache.h"
+#include "opcuaattributevalue.h"
 
-Item {
-    TestCase {
-        name: "Enum exports to QML"
+QT_BEGIN_NAMESPACE
 
-        function test_enumExports() {
-            compare(QtOpcUa.Constants.NodeClass.Method, 4);
-            compare(QtOpcUa.Constants.NodeAttribute.DisplayName, 8);
+/*!
+    \class OpcUaAttributeCache
+    \inqmlmodule QtOpcUa
+    \brief Flexible attribute value cache providing signals.
+    \internal
 
-            // Test return value of undefined node
-            compare(node1.nodeClass, QtOpcUa.Constants.NodeClass.Undefined);
-        }
+    This class is just for internal use in the declarative backend and not exposed to users.
 
-        QtOpcUa.Node {
-            id: node1
-        }
-    }
+    It caches node attribute values and provides accesss. Main purpose is to
+    let \l OpcUaAttributeValue provide separate value change signals for each attribute.
+
+    \sa OpcUaAttributeValue
+*/
+
+OpcUaAttributeCache::OpcUaAttributeCache(QObject *parent) : QObject(parent)
+{
 }
+
+void OpcUaAttributeCache::setAttributeValue(QOpcUa::NodeAttribute attr, const QVariant &value)
+{
+    attribute(attr)->setValue(value);
+}
+
+void OpcUaAttributeCache::invalidate()
+{
+    // Reset all values in the cache to invalid.
+    // Do not clear() the cache because there are still objects with
+    // connections waiting for notifications
+    for (auto i = m_attributeCache.constBegin(); i != m_attributeCache.constEnd(); ++i)
+        i.value()->invalidate();
+}
+
+OpcUaAttributeValue *OpcUaAttributeCache::attribute(QOpcUa::NodeAttribute attr)
+{
+    if (!m_attributeCache.contains(attr))
+        m_attributeCache.insert(attr, new OpcUaAttributeValue(this));
+    return m_attributeCache.value(attr);
+}
+
+const QVariant &OpcUaAttributeCache::attributeValue(QOpcUa::NodeAttribute attr)
+{
+    return attribute(attr)->value();
+}
+
+QT_END_NAMESPACE

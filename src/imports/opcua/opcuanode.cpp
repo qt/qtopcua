@@ -41,6 +41,8 @@
 #include "opcuarelativenodepath.h"
 #include "opcuarelativenodeid.h"
 #include "opcuapathresolver.h"
+#include "opcuaattributevalue.h"
+#include <qopcuatype.h>
 #include <QOpcUaNode>
 #include <QOpcUaClient>
 #include <QLoggingCategory>
@@ -103,13 +105,48 @@ QT_BEGIN_NAMESPACE
     This happens when the namespace or identifier of the \l NodeId changed.
 */
 
+/*!
+    \qmlproperty  QOpcUa::NodeClass Node::nodeClass
+    \readonly
+
+    The node class of the node. In case the information is not available
+    \c QtOpcUa.Constants.NodeClass.Undefined is returned.
+*/
+
+/*!
+    \qmlproperty string Node::browseName
+
+    The browse name of the node. In case the information is not available
+    an empty string is returned.
+*/
+
+/*!
+    \qmlproperty LocalizedText Node::displayName
+
+    The localized text of the node. In case the information is not available
+    a default constructed \l LocalizedText is returned.
+*/
+
+/*!
+    \qmlproperty LocalizedText Node::description
+
+    The description of the node. In case the information is not available
+    a default constructed \l LocalizedText is returned.
+*/
+
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML)
 
 OpcUaNode::OpcUaNode(QObject *parent):
     QObject(parent),
-    m_nodeId(new OpcUaNodeIdType(this))
+    m_nodeId(new OpcUaNodeIdType(this)),
+    m_attributesToRead(QOpcUaNode::mandatoryBaseAttributes())
 {
+    m_attributesToRead |= QOpcUa::NodeAttribute::Description;
     connect(&m_resolvedNode, &UniversalNode::nodeChanged, this, &OpcUaNode::nodeChanged);
+    connect(m_attributeCache.attribute(QOpcUa::NodeAttribute::BrowseName), &OpcUaAttributeValue::changed, this, &OpcUaNode::browseNameChanged);
+    connect(m_attributeCache.attribute(QOpcUa::NodeAttribute::NodeClass), &OpcUaAttributeValue::changed, this, &OpcUaNode::nodeClassChanged);
+    connect(m_attributeCache.attribute(QOpcUa::NodeAttribute::DisplayName), &OpcUaAttributeValue::changed, this, &OpcUaNode::displayNameChanged);
+    connect(m_attributeCache.attribute(QOpcUa::NodeAttribute::Description), &OpcUaAttributeValue::changed, this, &OpcUaNode::descriptionChanged);
 }
 
 OpcUaNode::~OpcUaNode()
@@ -133,6 +170,50 @@ OpcUaConnection *OpcUaNode::connection()
 bool OpcUaNode::readyToUse() const
 {
     return m_readyToUse;
+}
+
+void OpcUaNode::setBrowseName(const QString &value)
+{
+    if (!m_connection || !m_node)
+        return;
+    if (!m_resolvedNode.isNamespaceIndexValid())
+        return;
+
+    m_node->writeAttribute(QOpcUa::NodeAttribute::BrowseName, QOpcUa::QQualifiedName(m_resolvedNode.namespaceIndex(), value));
+}
+
+QString OpcUaNode::browseName()
+{
+    return m_attributeCache.attributeValue(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>().name();
+}
+
+QOpcUa::NodeClass OpcUaNode::nodeClass()
+{
+    return m_attributeCache.attributeValue(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>();
+}
+
+void OpcUaNode::setDisplayName(const LocalizedText &value)
+{
+    if (!m_connection || !m_node)
+        return;
+    m_node->writeAttribute(QOpcUa::NodeAttribute::DisplayName, value);
+}
+
+LocalizedText OpcUaNode::displayName()
+{
+    return m_attributeCache.attributeValue(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>();
+}
+
+void OpcUaNode::setDescription(const LocalizedText &value)
+{
+    if (!m_connection || !m_node)
+        return;
+    m_node->writeAttribute(QOpcUa::NodeAttribute::Description, value);
+}
+
+LocalizedText OpcUaNode::description()
+{
+    return m_attributeCache.attributeValue(QOpcUa::NodeAttribute::Description).value<QOpcUa::QLocalizedText>();
 }
 
 void OpcUaNode::setNodeId(OpcUaNodeIdType *nodeId)
@@ -161,8 +242,6 @@ void OpcUaNode::setConnection(OpcUaConnection *connection)
 
     m_connection = connection;
     connect(connection, SIGNAL(connectedChanged()), this, SLOT(updateNode()));
-    // Existing namespaces are not allowed to change during a connection
-    // connect(connection, &OpcUaConnection::namespacesChanged, this, &OpcUaNode::updateNode);
 
     updateNode();
     emit connectionChanged(connection);
@@ -170,6 +249,7 @@ void OpcUaNode::setConnection(OpcUaConnection *connection)
 
 void OpcUaNode::setupNode(const QString &absoluteNodePath)
 {
+    m_attributeCache.invalidate();
     m_absoluteNodePath = absoluteNodePath;
 
     if (m_node) {
@@ -192,11 +272,35 @@ void OpcUaNode::setupNode(const QString &absoluteNodePath)
         qCWarning(QT_OPCUA_PLUGINS_QML) << "Invalid node:" << m_absoluteNodePath;
         return;
     }
+
+    connect(m_node, &QOpcUaNode::attributeUpdated, &m_attributeCache, &OpcUaAttributeCache::setAttributeValue);
+    connect(m_node, &QOpcUaNode::attributeRead, this, [this](){
+        setReadyToUse(true);
+    });
+
+    // Read mandatory attributes
+    if (!m_node->readAttributes(m_attributesToRead))
+        qCWarning(QT_OPCUA_PLUGINS_QML) << "Reading attributes" << m_node->nodeId() << "failed";
 }
 
 void OpcUaNode::updateNode()
 {
     retrieveAbsoluteNodePath(m_nodeId, [this](const QString &absoluteNodePath) {setupNode(absoluteNodePath);});
+}
+
+const UniversalNode &OpcUaNode::resolvedNode() const
+{
+    return m_resolvedNode;
+}
+
+void OpcUaNode::setAttributesToRead(QOpcUa::NodeAttributes attributes)
+{
+    m_attributesToRead = attributes;
+}
+
+QOpcUa::NodeAttributes OpcUaNode::attributesToRead() const
+{
+    return m_attributesToRead;
 }
 
 void OpcUaNode::retrieveAbsoluteNodePath(OpcUaNodeIdType *node, std::function<void (const QString &)> functor)

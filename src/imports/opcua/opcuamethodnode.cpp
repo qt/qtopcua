@@ -132,6 +132,11 @@ void OpcUaMethodNode::callMethod()
     m_node->callMethod(m_objectNodePath, QVector<QOpcUa::TypedVariant> ());
 }
 
+void OpcUaMethodNode::objectNodePathResolved(const QString &str)
+{
+    m_objectNodePath = str;
+}
+
 void OpcUaMethodNode::setupNode(const QString &absolutePath)
 {
     OpcUaNode::setupNode(absolutePath);
@@ -140,7 +145,9 @@ void OpcUaMethodNode::setupNode(const QString &absolutePath)
 
 void OpcUaMethodNode::retrieveObjectNodePath()
 {
-    retrieveAbsoluteNodePath(m_objectNodeId, [&](const QString &str) { m_objectNodePath = str;});
+    retrieveAbsoluteNodePath(m_objectNodeId, [this](const QString &str) {
+        this->objectNodePathResolved(str);
+    });
 }
 
 QT_END_NAMESPACE

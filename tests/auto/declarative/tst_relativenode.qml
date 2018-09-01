@@ -124,12 +124,18 @@ Item {
             node3PathSpy.clear();
             node3.nodeId.startNode.identifier = "s=TestFolder2";
             node3ValueSpy.wait();
+
+            // value has to be undefined because when node IDs are changed
+            // all attributes become undefined before they get the new values.
+            verify(!node3.value);
+
+            node3ValueSpy.wait();
             compare(node3NodeIdSpy.count, 1);
             compare(node3NamespaceSpy.count, 0);
             verify(node3NodeChangedSpy.count > 0);
             compare(node3PathSpy.count, 0);
             compare(node3NodeIdChangedSpy.count, 1);
-            compare(node3ValueSpy.count, 1);
+            compare(node3ValueSpy.count, 2); // first undefined, then the real value
             compare(node3.value, 0.1);
         }
 
@@ -200,11 +206,17 @@ Item {
             node4.nodeId.startNode.path = replacementNode.createObject(parent);
             node4NodeChangedSpy.wait();
             node4ValueSpy.wait();
+
+            // value has to be undefined because when node IDs are changed
+            // all attributes become undefined before they get the new values.
+            verify(!node4.value);
+
+            node4ValueSpy.wait();
             compare(node4NodeIdSpy.count, 2);
             compare(node4NamespaceSpy.count, 0);
             verify(node4NodeChangedSpy.count > 0);
             compare(node4NodeIdChangedSpy.count, 1);
-            compare(node4ValueSpy.count, 1);
+            compare(node4ValueSpy.count, 2); // first undefined, then the real value
             compare(node4.value, 0.1);
             compare(node4PathSpy.count, 2);
         }

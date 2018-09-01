@@ -34,82 +34,55 @@
 **
 ****************************************************************************/
 
-#include "opcuavaluenode.h"
-#include "opcuaconnection.h"
-#include "opcuanodeid.h"
 #include "opcuaattributevalue.h"
-#include <QLoggingCategory>
 
 QT_BEGIN_NAMESPACE
 
 /*!
-    \qmltype ValueNode
+    \class OpcUaAttributeValue
     \inqmlmodule QtOpcUa
-    \brief Represents a value node from a server.
-    \inherits Node
-    \since QtOpcUa 5.12
+    \brief Stores an attribute value and provides a changed signal.
+    \internal
 
-    \code
-    import QtOpcUa 5.12 as QtOpcUa
+    This class is just for internal use in the declarative backend and not exposed to users.
 
-    QtOpcUa.ValueNode {
-        nodeId: QtOpcUa.NodeId {
-            ns: "Test Namespace"
-            identifier: "s=TestName"
-        }
-        connection: myConnection
+    When setting the value it will emit a changed signal if the value has changed.
+
+    \sa OpcUaAttributeCache
+*/
+
+OpcUaAttributeValue::OpcUaAttributeValue(QObject *parent)
+    : QObject(parent)
+{
+
+}
+
+bool OpcUaAttributeValue::operator ==(const OpcUaAttributeValue &rhs)
+{
+    return m_value == rhs.m_value;
+}
+
+void OpcUaAttributeValue::setValue(const QVariant &value)
+{
+    if (value != m_value) {
+        m_value = value;
+        emit changed(m_value);
     }
-    \endcode
-
-    A subscription will be created on the server in order to track value changes on the server.
-
-    \sa NodeId, Connection, Node
-*/
-
-/*!
-    \qmlproperty variant ValueNode::value
-
-    Value of this node.
-    Reading and writing this property will access the node on the server.
-*/
-
-Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML)
-
-OpcUaValueNode::OpcUaValueNode(QObject *parent):
-    OpcUaNode(parent)
-{
-    connect(m_attributeCache.attribute(QOpcUa::NodeAttribute::Value), &OpcUaAttributeValue::changed, this, &OpcUaValueNode::valueChanged);
 }
 
-OpcUaValueNode::~OpcUaValueNode()
+void OpcUaAttributeValue::invalidate()
 {
+    setValue(QVariant());
 }
 
-void OpcUaValueNode::setValue(const QVariant &value)
+const QVariant &OpcUaAttributeValue::value() const
 {
-    m_node->writeAttribute(QOpcUa::NodeAttribute::Value, value, QOpcUa::Types::Undefined);
+    return m_value;
 }
 
-void OpcUaValueNode::setupNode(const QString &absolutePath)
+OpcUaAttributeValue::operator QVariant() const
 {
-    // Additionally read the value attribute
-    setAttributesToRead(attributesToRead()
-                        | QOpcUa::NodeAttribute::Value
-                        | QOpcUa::NodeAttribute::DataType);
-
-    OpcUaNode::setupNode(absolutePath);
-    if (!m_node)
-        return;
-
-    if (!m_node->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(100)))
-        qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed monitoring" << m_node->nodeId();
-}
-
-QVariant OpcUaValueNode::value() const
-{
-    if (!m_node)
-        return QVariant();
-    return m_node->attribute(QOpcUa::NodeAttribute::Value);
+    return value();
 }
 
 QT_END_NAMESPACE

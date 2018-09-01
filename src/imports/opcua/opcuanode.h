@@ -37,8 +37,9 @@
 #pragma once
 
 #include <QObject>
-#include <qopcuatype.h>
+#include "opcuatype.h"
 #include "universalnode.h"
+#include "opcuaattributecache.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -54,12 +55,34 @@ class OpcUaNode : public QObject
     Q_PROPERTY(OpcUaConnection* connection READ connection WRITE setConnection NOTIFY connectionChanged)
     Q_PROPERTY(bool readyToUse READ readyToUse NOTIFY readyToUseChanged)
 
+    // basic node properties
+    Q_PROPERTY(QString browseName READ browseName WRITE setBrowseName NOTIFY browseNameChanged)
+    Q_PROPERTY(QOpcUa::NodeClass nodeClass READ nodeClass NOTIFY nodeClassChanged)
+    Q_PROPERTY(LocalizedText displayName READ displayName WRITE setDisplayName NOTIFY displayNameChanged)
+    Q_PROPERTY(LocalizedText description READ description WRITE setDescription NOTIFY descriptionChanged)
+
+    Q_ENUM(QOpcUa::NodeClass);
+
 public:
     OpcUaNode(QObject *parent = nullptr);
     ~OpcUaNode();
     OpcUaNodeIdType *nodeId() const;
     OpcUaConnection *connection();
     bool readyToUse() const;
+
+    void setBrowseName(const QString &value);
+    QString browseName();
+
+    QOpcUa::NodeClass nodeClass();
+
+    void setDisplayName(const LocalizedText &value);
+    LocalizedText displayName();
+
+    void setDescription(const LocalizedText &value);
+    LocalizedText description();
+
+    // This function is not exposed to QML
+    const UniversalNode &resolvedNode() const;
 
 public slots:
     void setNodeId(OpcUaNodeIdType *nodeId);
@@ -70,12 +93,18 @@ signals:
     void connectionChanged(OpcUaConnection *);
     void nodeChanged();
     void readyToUseChanged();
+    void browseNameChanged();
+    void nodeClassChanged();
+    void displayNameChanged();
+    void descriptionChanged();
 
 protected slots:
     virtual void setupNode(const QString &absoluteNodePath);
     void updateNode();
 
 protected:
+    void setAttributesToRead(QOpcUa::NodeAttributes attributes);
+    QOpcUa::NodeAttributes attributesToRead() const;
     void retrieveAbsoluteNodePath(OpcUaNodeIdType *, std::function<void (const QString &)>);
     void setReadyToUse(bool value = true);
 
@@ -85,6 +114,8 @@ protected:
     QString m_absoluteNodePath; // not exposed
     bool m_readyToUse = false;
     UniversalNode m_resolvedNode;
+    OpcUaAttributeCache m_attributeCache;
+    QOpcUa::NodeAttributes m_attributesToRead;
 };
 
 QT_END_NAMESPACE
