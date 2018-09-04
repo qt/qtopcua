@@ -390,7 +390,7 @@
         OPEN62541_INCDIR=/path/to/open62541/build OPEN62541_LIBDIR=/path/to/open62541/build/bin
     \endcode
 
-    Check the output of the configuration step if the detection was successful:
+    The output of the configuration step indicates whether the detection was successful:
 
     \code
         Open62541 .............................. yes
@@ -415,7 +415,7 @@
         qmake </path/to/qtopcua> -- UACPP_PREFIX=/path/to/sdk
     \endcode
 
-    Check the output of the configuration step if the detection was successful:
+    The output of the configuration step indicates whether the detection was successful:
 
     \code
         Unified Automation C++ SDK ............. yes
