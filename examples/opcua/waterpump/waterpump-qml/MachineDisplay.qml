@@ -65,6 +65,8 @@ RowLayout {
                             machine.tank1.percentFilled > 0 && machine.tank2.percentFilled < machine.tank2.targetPercent
         stopButtonEnabled: connection.connected && machine.state === Machine.MachineState.Pumping
         percentFilled: machine.tank1.percentFilled
+        startButtonText: machine.startMethod.displayName.text
+        stopButtonText: machine.stopMethod.displayName.text
 
         id: tank1unit
         Layout.fillHeight: true
@@ -86,6 +88,7 @@ RowLayout {
         flushButtonEnabled: connection.connected && machine.state === Machine.MachineState.Idle && machine.tank2.percentFilled > machine.tank2.targetPercent
         percentFilled: machine.tank2.percentFilled
         valveState: machine.tank2valveState
+        flushButtonText: machine.flushMethod.displayName.text
 
         Layout.fillHeight: true
         Layout.fillWidth: true

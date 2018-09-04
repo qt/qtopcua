@@ -58,6 +58,7 @@ RowLayout {
     readonly property alias backend: backendSelector.currentText
     property QtOpcUa.Connection connection
     signal resetSimulation()
+    property alias resetButtonText: resetButton.text
 
     TextField {
         id: uaUrl
@@ -80,6 +81,7 @@ RowLayout {
         }
     }
     Button {
+        id: resetButton
         text: "Reset simulation"
         enabled: connection.connected
         onClicked: resetSimulation()

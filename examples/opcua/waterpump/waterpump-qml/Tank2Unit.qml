@@ -56,6 +56,7 @@ import QtQuick.Layouts 1.3
 Item {
     property alias flushButtonEnabled: flushButton.enabled
     property alias percentFilled: tank2.percentFilled
+    property alias flushButtonText: flushButton.text
     property bool valveState
     signal flushTank()
 

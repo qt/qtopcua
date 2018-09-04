@@ -58,6 +58,8 @@ Item {
     property alias startButtonEnabled: startButton.enabled
     property alias stopButtonEnabled: stopButton.enabled
     property alias percentFilled: tank1.percentFilled
+    property alias startButtonText: startButton.text
+    property alias stopButtonText: stopButton.text
     signal startPump()
     signal stopPump()
 
