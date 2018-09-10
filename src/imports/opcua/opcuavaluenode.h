@@ -59,6 +59,9 @@ signals:
 
 private slots:
     void setupNode(const QString &absolutePath) override;
+
+private:
+    bool checkValidity() override;
 };
 
 QT_END_NAMESPACE

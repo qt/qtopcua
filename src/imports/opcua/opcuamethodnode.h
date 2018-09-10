@@ -63,6 +63,7 @@ private slots:
 
 private:
     void setupNode(const QString &absolutePath) override;
+    bool checkValidity() override;
 
 private:
     OpcUaNodeIdType *m_objectNodeId = nullptr;

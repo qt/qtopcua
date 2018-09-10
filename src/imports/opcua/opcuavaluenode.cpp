@@ -101,8 +101,21 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
     if (!m_node)
         return;
 
-    if (!m_node->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(100)))
+    if (!m_node->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(100))) {
         qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed monitoring" << m_node->nodeId();
+        setStatus(Status::FailedToSetupMonitoring);
+    }
+}
+
+bool OpcUaValueNode::checkValidity()
+{
+    if (m_node->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>() != QOpcUa::NodeClass::Variable) {
+        setStatus(Status::InvalidNodeType);
+        return false;
+    } else {
+        return true;
+    }
+
 }
 
 QVariant OpcUaValueNode::value() const

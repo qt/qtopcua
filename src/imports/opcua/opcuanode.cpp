@@ -134,12 +134,50 @@ QT_BEGIN_NAMESPACE
     a default constructed \l LocalizedText is returned.
 */
 
+/*!
+    \qmlproperty Status Node::status
+    \readonly
+
+    Current status of the node. The node is only usable when the status is \c Valid.
+    In any other case it indicates an error.
+
+    \sa errorMessage, Status
+*/
+
+/*!
+    \qmlproperty string Node::errorMessage
+    \readonly
+
+    A string representation of the current status code.
+
+    \sa status, Status
+*/
+
+/*!
+    \qmlproperty enumeration Node::Status
+
+    Status of a node.
+
+    \value Node.Status.Valid Node is ready for use
+    \value Node.Status.InvalidNodeId Node id is invalid
+    \value Node.Status.NoConnection Not connected to a server
+    \value Node.Status.InvalidNodeType Node type on the server does not match the QML type
+    \value Node.Status.InvalidClient Invalid connection client
+    \value Node.Status.FailedToResolveNode Failed to resolve node
+    \value Node.Status.InvalidObjectNode The object node is invalid or its type does not match the expected type
+    \value Node.Status.FailedToReadAttributes Failed to read attributes
+    \value Node.Status.FailedToSetupMonitoring Failed to setup monitoring
+
+    \sa status, errorMessage
+*/
+
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML)
 
 OpcUaNode::OpcUaNode(QObject *parent):
     QObject(parent),
     m_nodeId(new OpcUaNodeIdType(this)),
-    m_attributesToRead(QOpcUaNode::mandatoryBaseAttributes())
+    m_attributesToRead(QOpcUaNode::mandatoryBaseAttributes()),
+    m_status(Status::InvalidNodeId)
 {
     m_attributesToRead |= QOpcUa::NodeAttribute::Description;
     connect(&m_resolvedNode, &UniversalNode::nodeChanged, this, &OpcUaNode::nodeChanged);
@@ -216,6 +254,16 @@ QOpcUa::QLocalizedText OpcUaNode::description()
     return m_attributeCache.attributeValue(QOpcUa::NodeAttribute::Description).value<QOpcUa::QLocalizedText>();
 }
 
+OpcUaNode::Status OpcUaNode::status() const
+{
+    return m_status;
+}
+
+const QString &OpcUaNode::errorMessage() const
+{
+    return m_errorMessage;
+}
+
 void OpcUaNode::setNodeId(OpcUaNodeIdType *nodeId)
 {
     if (m_nodeId == nodeId)
@@ -279,13 +327,70 @@ void OpcUaNode::setupNode(const QString &absoluteNodePath)
     });
 
     // Read mandatory attributes
-    if (!m_node->readAttributes(m_attributesToRead))
+    if (!m_node->readAttributes(m_attributesToRead)) {
         qCWarning(QT_OPCUA_PLUGINS_QML) << "Reading attributes" << m_node->nodeId() << "failed";
+        setStatus(Status::FailedToReadAttributes);
+    }
 }
 
 void OpcUaNode::updateNode()
 {
     retrieveAbsoluteNodePath(m_nodeId, [this](const QString &absoluteNodePath) {setupNode(absoluteNodePath);});
+}
+
+void OpcUaNode::setStatus(OpcUaNode::Status status, const QString &message)
+{
+    QString errorMessage(message);
+    bool emitStatusChanged = false;
+    bool emitErrorMessageChanged = false;
+
+    if (m_status != status) {
+        m_status = status;
+        emitStatusChanged = true;
+    }
+
+    // if error message is not given, use default error message
+    if (errorMessage.isEmpty()) {
+        switch (m_status) {
+        case Status::Valid:
+            errorMessage = tr("Node is valid");
+            break;
+        case Status::InvalidNodeId:
+            errorMessage = tr("Node Id is invalid");
+            break;
+        case Status::NoConnection:
+            errorMessage = tr("Not connected to server");
+            break;
+        case Status::InvalidNodeType:
+            errorMessage = tr("QML element does not match node type on the server");
+            break;
+        case Status::InvalidClient:
+            errorMessage = tr("Connecting client is invalid");
+            break;
+        case Status::FailedToResolveNode:
+            errorMessage = tr("Failed to resolve node");
+            break;
+        case Status::InvalidObjectNode:
+            errorMessage = tr("Invalid object node");
+            break;
+        case Status::FailedToReadAttributes:
+            errorMessage = tr("Failed to read attributes");
+            break;
+        case Status::FailedToSetupMonitoring:
+            errorMessage = tr("Failed to setup monitoring");
+            break;
+        }
+    }
+
+    if (errorMessage != m_errorMessage) {
+        m_errorMessage = errorMessage;
+        emitErrorMessageChanged = true;
+    }
+
+    if (emitStatusChanged)
+        emit statusChanged();
+    if (emitErrorMessageChanged)
+        emit errorMessageChanged();
 }
 
 const UniversalNode &OpcUaNode::resolvedNode() const
@@ -311,8 +416,19 @@ QOpcUa::NodeAttributes OpcUaNode::attributesToRead() const
 void OpcUaNode::retrieveAbsoluteNodePath(OpcUaNodeIdType *node, std::function<void (const QString &)> functor)
 {
     auto conn = connection();
-    if (!conn || !m_nodeId || !conn->m_client) {
-        qCWarning(QT_OPCUA_PLUGINS_QML) << "connection, nodeID or client is invalid";
+    if (!conn) {
+        qCWarning(QT_OPCUA_PLUGINS_QML) << "No connection to server";
+        setStatus(Status::NoConnection);
+        return;
+    }
+    if (!m_nodeId) {
+        qCWarning(QT_OPCUA_PLUGINS_QML) << "Invalid node ID";
+        setStatus(Status::InvalidNodeId);
+        return;
+    }
+    if (!conn->m_client) {
+        qCWarning(QT_OPCUA_PLUGINS_QML) << "Client instance is invalid";
+        setStatus(Status::InvalidClient);
         return;
     }
 
@@ -336,6 +452,7 @@ void OpcUaNode::retrieveAbsoluteNodePath(OpcUaNodeIdType *node, std::function<vo
 
             if (!errorMessage.isEmpty()) {
                 qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to resolve node:" << errorMessage;
+                setStatus(Status::FailedToResolveNode, errorMessage);
                 functor(QString());
                 return;
             }
@@ -353,10 +470,22 @@ void OpcUaNode::retrieveAbsoluteNodePath(OpcUaNodeIdType *node, std::function<vo
 
 void OpcUaNode::setReadyToUse(bool value)
 {
+    if (value && !checkValidity())
+        value = false;
+
     bool old = m_readyToUse;
     m_readyToUse = value;
+
+    if (value)
+        setStatus(Status::Valid);
+
     if (!old && value)
         emit readyToUseChanged();
+}
+
+bool OpcUaNode::checkValidity()
+{
+    return true;
 }
 
 QT_END_NAMESPACE

@@ -60,6 +60,7 @@ Item {
             compare(node1.nodeClass, QtOpcUa.Constants.NodeClass.Variable);
             compare(node1.displayName.text, "theStringId");
             compare(node1.description.text, "Description for ns=3;s=theStringId");
+            compare(node1.status, QtOpcUa.Node.Status.Valid);
         }
 
         QtOpcUa.ValueNode {

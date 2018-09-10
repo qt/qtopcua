@@ -45,6 +45,7 @@ Item {
         function test_enumExports() {
             compare(QtOpcUa.Constants.NodeClass.Method, 4);
             compare(QtOpcUa.Constants.NodeAttribute.DisplayName, 8);
+            compare(QtOpcUa.Node.Status.Valid, 0);
 
             // Test return value of undefined node
             compare(node1.nodeClass, QtOpcUa.Constants.NodeClass.Undefined);

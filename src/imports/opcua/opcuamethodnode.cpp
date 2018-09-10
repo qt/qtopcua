@@ -120,8 +120,19 @@ void OpcUaMethodNode::setObjectNodeId(OpcUaNodeIdType *node)
 
 void OpcUaMethodNode::callMethod()
 {
-    if (!m_objectNode || !m_objectNode->node() || !m_node) {
-        qCWarning(QT_OPCUA_PLUGINS_QML) << "No node or no object";
+    if (!m_objectNode) {
+        qCWarning(QT_OPCUA_PLUGINS_QML) << "No object node";
+        setStatus(Status::InvalidObjectNode);
+        return;
+    }
+    if (!m_objectNode->node()) {
+        qCWarning(QT_OPCUA_PLUGINS_QML) << "Invalid object node";
+        setStatus(Status::InvalidObjectNode);
+        return;
+    }
+    if (!m_node) {
+        qCWarning(QT_OPCUA_PLUGINS_QML) << "Invalid node Id";
+        setStatus(Status::InvalidNodeId);
         return;
     }
 
@@ -139,6 +150,26 @@ void OpcUaMethodNode::handleObjectNodeIdChanged()
 void OpcUaMethodNode::setupNode(const QString &absolutePath)
 {
     OpcUaNode::setupNode(absolutePath);
+}
+
+bool OpcUaMethodNode::checkValidity()
+{
+    if (m_node->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>() != QOpcUa::NodeClass::Method) {
+        setStatus(Status::InvalidNodeType);
+        return false;
+    }
+    if (!m_objectNode || !m_objectNode->node()) {
+        setStatus(Status::InvalidObjectNode);
+        return false;
+    }
+
+    const auto objectNodeClass = m_objectNode->node()->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>();
+    if (objectNodeClass != QOpcUa::NodeClass::Object && objectNodeClass != QOpcUa::NodeClass::ObjectType) {
+        setStatus(Status::InvalidObjectNode, tr("Object node is not of type `Object' or `ObjectType'"));
+        return false;
+    }
+
+    return true;
 }
 
 QT_END_NAMESPACE

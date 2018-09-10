@@ -52,9 +52,25 @@ Module {
         prototype: "QObject"
         exports: ["QtOpcUa/Node 5.12"]
         exportMetaObjectRevisions: [0]
+        Enum {
+            name: "Status"
+            values: {
+                "Valid": 0,
+                "InvalidNodeId": 1,
+                "NoConnection": 2,
+                "InvalidNodeType": 3,
+                "InvalidClient": 4,
+                "FailedToResolveNode": 5,
+                "InvalidObjectNode": 6,
+                "FailedToReadAttributes": 7,
+                "FailedToSetupMonitoring": 8
+            }
+        }
         Property { name: "nodeId"; type: "OpcUaNodeIdType"; isPointer: true }
         Property { name: "connection"; type: "OpcUaConnection"; isPointer: true }
         Property { name: "readyToUse"; type: "bool"; isReadonly: true }
+        Property { name: "status"; type: "OpcUaNode::Status"; isReadonly: true }
+        Property { name: "errorMessage"; type: "string"; isReadonly: true }
         Property { name: "browseName"; type: "string" }
         Property { name: "nodeClass"; type: "QOpcUa::NodeClass"; isReadonly: true }
         Property { name: "displayName"; type: "QOpcUa::QLocalizedText" }
