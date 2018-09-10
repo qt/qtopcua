@@ -1789,7 +1789,7 @@ void Tst_QOpcUaClient::writeArray()
 
     list.clear();
     list.append(std::numeric_limits<quint8>::min());
-    list.append(std::numeric_limits<quint8>::max());
+    list.append((std::numeric_limits<quint8>::max)());
     list.append(10);
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Byte"));
     QVERIFY(node != nullptr);
@@ -1821,7 +1821,7 @@ void Tst_QOpcUaClient::writeArray()
 
     list.clear();
     list.append(std::numeric_limits<qint16>::min());
-    list.append(std::numeric_limits<qint16>::max());
+    list.append((std::numeric_limits<qint16>::max)());
     list.append(10);
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int16"));
     QVERIFY(node != nullptr);
@@ -1829,7 +1829,7 @@ void Tst_QOpcUaClient::writeArray()
 
     list.clear();
     list.append(std::numeric_limits<qint32>::min());
-    list.append(std::numeric_limits<qint32>::max());
+    list.append((std::numeric_limits<qint32>::max)());
     list.append(10);
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int32"));
     QVERIFY(node != nullptr);
@@ -1837,7 +1837,7 @@ void Tst_QOpcUaClient::writeArray()
 
     list.clear();
     list.append(std::numeric_limits<qint64>::min());
-    list.append(std::numeric_limits<qint64>::max());
+    list.append((std::numeric_limits<qint64>::max)());
     list.append(10);
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int64"));
     QVERIFY(node != nullptr);
@@ -1845,7 +1845,7 @@ void Tst_QOpcUaClient::writeArray()
 
     list.clear();
     list.append(std::numeric_limits<qint8>::min());
-    list.append(std::numeric_limits<qint8>::max());
+    list.append((std::numeric_limits<qint8>::max)());
     list.append(10);
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.SByte"));
     QVERIFY(node != nullptr);
@@ -1861,7 +1861,7 @@ void Tst_QOpcUaClient::writeArray()
 
     list.clear();
     list.append(std::numeric_limits<quint16>::min());
-    list.append(std::numeric_limits<quint16>::max());
+    list.append((std::numeric_limits<quint16>::max)());
     list.append(10);
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt16"));
     QVERIFY(node != nullptr);
@@ -1869,7 +1869,7 @@ void Tst_QOpcUaClient::writeArray()
 
     list.clear();
     list.append(std::numeric_limits<quint32>::min());
-    list.append(std::numeric_limits<quint32>::max());
+    list.append((std::numeric_limits<quint32>::max)());
     list.append(10);
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt32"));
     QVERIFY(node != nullptr);
@@ -1877,7 +1877,7 @@ void Tst_QOpcUaClient::writeArray()
 
     list.clear();
     list.append(std::numeric_limits<quint64>::min());
-    list.append(std::numeric_limits<quint64>::max());
+    list.append((std::numeric_limits<quint64>::max)());
     list.append(10);
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt64"));
     QVERIFY(node != nullptr);
@@ -2052,7 +2052,7 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(int32Array.toList().length() == 3);
     QCOMPARE(int32Array.toList()[0].type(), QVariant::Int);
     QCOMPARE(int32Array.toList()[0].toInt(), std::numeric_limits<qint32>::min());
-    QCOMPARE(int32Array.toList()[1].toInt(), std::numeric_limits<qint32>::max());
+    QCOMPARE(int32Array.toList()[1].toInt(), (std::numeric_limits<qint32>::max)());
     QCOMPARE(int32Array.toList()[2].toInt(), 10);
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt32"));
@@ -2063,7 +2063,7 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(uint32Array.toList().length() == 3);
     QCOMPARE(uint32Array.toList()[0].type(), QVariant::UInt);
     QCOMPARE(uint32Array.toList()[0].toUInt(), std::numeric_limits<quint32>::min());
-    QCOMPARE(uint32Array.toList()[1].toUInt(), std::numeric_limits<quint32>::max());
+    QCOMPARE(uint32Array.toList()[1].toUInt(), (std::numeric_limits<quint32>::max)());
     QCOMPARE(uint32Array.toList()[2].toUInt(), quint32(10));
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Double"));
@@ -2125,7 +2125,7 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(uint16Array.toList().length() == 3);
     QVERIFY(uint16Array.toList()[0].userType() == QMetaType::UShort);
     QVERIFY(uint16Array.toList()[0] == std::numeric_limits<quint16>::min());
-    QVERIFY(uint16Array.toList()[1] == std::numeric_limits<quint16>::max());
+    QVERIFY(uint16Array.toList()[1] == (std::numeric_limits<quint16>::max)());
     QVERIFY(uint16Array.toList()[2] == quint16(10));
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int16"));
@@ -2136,7 +2136,7 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(int16Array.toList().length() == 3);
     QVERIFY(int16Array.toList()[0].userType() == QMetaType::Short);
     QVERIFY(int16Array.toList()[0] == std::numeric_limits<qint16>::min());
-    QVERIFY(int16Array.toList()[1] == std::numeric_limits<qint16>::max());
+    QVERIFY(int16Array.toList()[1] == (std::numeric_limits<qint16>::max)());
     QVERIFY(int16Array.toList()[2] == qint16(10));
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.UInt64"));
@@ -2147,7 +2147,7 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(uint64Array.toList().length(), 3);
     QCOMPARE(uint64Array.toList()[0].type(), QVariant::ULongLong);
     QVERIFY(uint64Array.toList()[0] == std::numeric_limits<quint64>::min());
-    QVERIFY(uint64Array.toList()[1] == std::numeric_limits<quint64>::max());
+    QVERIFY(uint64Array.toList()[1] == (std::numeric_limits<quint64>::max)());
     QVERIFY(uint64Array.toList()[2] == quint64(10));
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Int64"));
@@ -2157,7 +2157,7 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(int64Array.type() == QVariant::List && int64Array.toList().length() == 3);
     QCOMPARE(int64Array.toList()[0].type(), QVariant::LongLong);
     QVERIFY(int64Array.toList()[0] == std::numeric_limits<qint64>::min());
-    QVERIFY(int64Array.toList()[1] == std::numeric_limits<qint64>::max());
+    QVERIFY(int64Array.toList()[1] == (std::numeric_limits<qint64>::max)());
     QVERIFY(int64Array.toList()[2] == qint64(10));
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Byte"));
@@ -2168,7 +2168,7 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(byteArray.toList().length() == 3);
     QVERIFY(byteArray.toList()[0].userType() == QMetaType::UChar);
     QVERIFY(byteArray.toList()[0] == std::numeric_limits<quint8>::min());
-    QVERIFY(byteArray.toList()[1] == std::numeric_limits<quint8>::max());
+    QVERIFY(byteArray.toList()[1] == (std::numeric_limits<quint8>::max)());
     QVERIFY(byteArray.toList()[2] == quint8(10));
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.ByteString"));
@@ -2203,7 +2203,7 @@ void Tst_QOpcUaClient::readArray()
     QVERIFY(sbyteArray.toList().length() == 3);
     QVERIFY(sbyteArray.toList()[0].userType() == QMetaType::SChar);
     QVERIFY(sbyteArray.toList()[0] == std::numeric_limits<qint8>::min());
-    QVERIFY(sbyteArray.toList()[1] == std::numeric_limits<qint8>::max());
+    QVERIFY(sbyteArray.toList()[1] == (std::numeric_limits<qint8>::max)());
     QVERIFY(sbyteArray.toList()[2] == qint8(10));
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.NodeId"));
@@ -2365,7 +2365,7 @@ void Tst_QOpcUaClient::writeScalar()
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt32"));
     QVERIFY(node != nullptr);
-    WRITE_VALUE_ATTRIBUTE(node, std::numeric_limits<quint32>::max(), QOpcUa::UInt32);
+    WRITE_VALUE_ATTRIBUTE(node, (std::numeric_limits<quint32>::max)(), QOpcUa::UInt32);
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
     QVERIFY(node != nullptr);
@@ -2385,7 +2385,7 @@ void Tst_QOpcUaClient::writeScalar()
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt16"));
     QVERIFY(node != nullptr);
-    WRITE_VALUE_ATTRIBUTE(node, std::numeric_limits<quint16>::max(), QOpcUa::UInt16);
+    WRITE_VALUE_ATTRIBUTE(node, (std::numeric_limits<quint16>::max)(), QOpcUa::UInt16);
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int16"));
     QVERIFY(node != nullptr);
@@ -2393,7 +2393,7 @@ void Tst_QOpcUaClient::writeScalar()
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.UInt64"));
     QVERIFY(node != nullptr);
-    WRITE_VALUE_ATTRIBUTE(node, std::numeric_limits<quint64>::max(), QOpcUa::UInt64);
+    WRITE_VALUE_ATTRIBUTE(node, (std::numeric_limits<quint64>::max)(), QOpcUa::UInt64);
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int64"));
     QVERIFY(node != nullptr);
@@ -2401,7 +2401,7 @@ void Tst_QOpcUaClient::writeScalar()
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Byte"));
     QVERIFY(node != nullptr);
-    WRITE_VALUE_ATTRIBUTE(node, std::numeric_limits<quint8>::max(), QOpcUa::Byte);
+    WRITE_VALUE_ATTRIBUTE(node, (std::numeric_limits<quint8>::max)(), QOpcUa::Byte);
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.SByte"));
     QVERIFY(node != nullptr);
@@ -2517,7 +2517,7 @@ void Tst_QOpcUaClient::readScalar()
     QVariant uint32Scalar = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(uint32Scalar.isValid());
     QCOMPARE(uint32Scalar.type(), QVariant::UInt);
-    QCOMPARE(uint32Scalar.toUInt(), std::numeric_limits<quint32>::max());
+    QCOMPARE(uint32Scalar.toUInt(), (std::numeric_limits<quint32>::max)());
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
     QVERIFY(node != nullptr);
@@ -2563,7 +2563,7 @@ void Tst_QOpcUaClient::readScalar()
     QVariant uint16Scalar = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(uint16Scalar.isValid());
     QVERIFY(uint16Scalar.userType() == QMetaType::UShort);
-    QVERIFY(uint16Scalar == std::numeric_limits<quint16>::max());
+    QVERIFY(uint16Scalar == (std::numeric_limits<quint16>::max)());
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int16"));
     QVERIFY(node != nullptr);
@@ -2579,7 +2579,7 @@ void Tst_QOpcUaClient::readScalar()
     QVariant uint64Scalar = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(uint64Scalar.isValid());
     QCOMPARE(uint64Scalar.type(), QVariant::ULongLong);
-    QVERIFY(uint64Scalar == std::numeric_limits<quint64>::max());
+    QVERIFY(uint64Scalar == (std::numeric_limits<quint64>::max)());
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int64"));
     QVERIFY(node != nullptr);
@@ -2595,7 +2595,7 @@ void Tst_QOpcUaClient::readScalar()
     QVariant byteScalar = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(byteScalar.isValid());
     QVERIFY(byteScalar.userType() == QMetaType::UChar);
-    QVERIFY(byteScalar == std::numeric_limits<quint8>::max());
+    QVERIFY(byteScalar == (std::numeric_limits<quint8>::max)());
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.SByte"));
     QVERIFY(node != nullptr);
@@ -3551,7 +3551,7 @@ void Tst_QOpcUaClient::resolveBrowsePath()
     QCOMPARE(spy.size(), 1);
     QVector<QOpcUa::QBrowsePathTarget> results = spy.at(0).at(0).value<QVector<QOpcUa::QBrowsePathTarget>>();
     QCOMPARE(results.size(), 1);
-    QCOMPARE(results.at(0).remainingPathIndex(), std::numeric_limits<quint32>::max());
+    QCOMPARE(results.at(0).remainingPathIndex(), (std::numeric_limits<quint32>::max)());
     QCOMPARE(results.at(0).targetId().nodeId(), QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::BaseDataType));
     QVERIFY(results.at(0).targetId().namespaceUri().isEmpty());
     QCOMPARE(results.at(0).targetId().serverIndex(), 0U);

@@ -50,7 +50,7 @@ QOpcUaClientImpl::~QOpcUaClientImpl()
 
 bool QOpcUaClientImpl::registerNode(QPointer<QOpcUaNodeImpl> obj)
 {
-    if (m_handles.count() == std::numeric_limits<int>::max())
+    if (m_handles.count() == (std::numeric_limits<int>::max)())
         return false;
 
     while (true) {
