@@ -55,6 +55,7 @@ namespace Constants {
     Q_NAMESPACE
     Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
     Q_ENUM_NS(QOpcUa::ReferenceTypeId)
+    Q_ENUM_NS(QOpcUa::Types)
     // Only one type declaration is needed because all other
     // types of the same meta object will be added automatically.
 }
@@ -64,8 +65,8 @@ void OpcUaPlugin::registerTypes(const char *uri)
     Q_ASSERT(uri == QStringLiteral("QtOpcUa"));
 
     // @uri QtOpcUa
-    const int major = 5;
-    const int minor = 12;
+    int major = 5;
+    int minor = 12;
 
     // Register the 5.12 types
 
@@ -79,6 +80,13 @@ void OpcUaPlugin::registerTypes(const char *uri)
     qmlRegisterType<OpcUaRelativeNodePath>(uri, major, minor, "RelativeNodePath");
     qmlRegisterType<OpcUaRelativeNodeId>(uri, major, minor, "RelativeNodeId");
     qmlRegisterUncreatableMetaObject(Constants::staticMetaObject, uri, major, minor, "Constants", "This type can not be created.");
+
+    // Register the 5.13 types
+
+    major = 5;
+    minor = 13;
+
+    qmlRegisterType<OpcUaMethodArgument>(uri, major, minor, "MethodArgument");
 
     // insert new versions here
 

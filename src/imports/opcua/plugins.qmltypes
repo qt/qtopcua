@@ -36,11 +36,34 @@ Module {
         Method { name: "setDefaultConnection" }
     }
     Component {
+        name: "OpcUaMethodArgument"
+        prototype: "QObject"
+        exports: ["QtOpcUa/MethodArgument 5.13"]
+        exportMetaObjectRevisions: [0]
+        Property { name: "value"; type: "QVariant" }
+        Property { name: "type"; type: "QOpcUa::Types" }
+        Method {
+            name: "setValue"
+            Parameter { name: "value"; type: "QVariant" }
+        }
+        Method {
+            name: "setType"
+            Parameter { name: "type"; type: "QOpcUa::Types" }
+        }
+    }
+    Component {
         name: "OpcUaMethodNode"
         prototype: "OpcUaNode"
         exports: ["QtOpcUa/MethodNode 5.12"]
         exportMetaObjectRevisions: [0]
         Property { name: "objectNodeId"; type: "OpcUaNodeIdType"; isPointer: true }
+        Property { name: "inputArguments"; type: "OpcUaMethodArgument"; isList: true; isReadonly: true }
+        Property { name: "outputArguments"; type: "QVariantList"; isReadonly: true }
+        Property { name: "resultStatusCode"; type: "QOpcUa::UaStatusCode"; isReadonly: true }
+        Signal {
+            name: "resultStatusCodeChanged"
+            Parameter { name: "statusCode"; type: "QOpcUa::UaStatusCode" }
+        }
         Method {
             name: "setObjectNodeId"
             Parameter { name: "nodeId"; type: "OpcUaNodeIdType"; isPointer: true }

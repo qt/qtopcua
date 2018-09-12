@@ -34,27 +34,71 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.3
-import QtTest 1.0
-import QtOpcUa 5.13 as QtOpcUa
+#include "opcuamethodargument.h"
 
-Item {
-    TestCase {
-        name: "Enum exports to QML"
+/*!
+    \qmltype MethodArgument
+    \inqmlmodule QtOpcUa
+    \brief Arguments for OpcUa method calls
+    \since QtOpcUa 5.13
 
-        function test_enumExports() {
-            compare(QtOpcUa.Constants.NodeClass.Method, 4);
-            compare(QtOpcUa.Constants.NodeAttribute.DisplayName, 8);
-            compare(QtOpcUa.Node.Status.Valid, 0);
-            compare(QtOpcUa.Constants.Good, 0);
-            compare(QtOpcUa.Constants.Double, 3);
+    When calling methods which require arguments, this type is used.
 
-            // Test return value of undefined node
-            compare(node1.nodeClass, QtOpcUa.Constants.NodeClass.Undefined);
-        }
-
-        QtOpcUa.Node {
-            id: node1
-        }
+    This example shows how to call a method with two double arguments.
+    \code
+    QtOpcUa.MethodNode {
+        ...
+        inputArguments: [
+            QtOpcUa.MethodArgument {
+                value: 3
+                type: QtOpcUa.Constants.Double
+            },
+            QtOpcUa.MethodArgument {
+                value: 4
+                type: QtOpcUa.Constants.Double
+            }
+        ]
     }
+    \endcode
+*/
+
+/*!
+    \qmlproperty variant MethodArgument::value
+
+    The value of the argument.
+*/
+
+/*!
+    \qmlproperty QOpcUa::Types MethodNode::type
+
+    Sets the type of the argument that is expected by the server.
+    The value variant is converted to that type when calling the method.
+    The type has to match the method on the server exactly, otherwise
+    the method call will fail.
+
+    \sa MethodNode::callMethod
+*/
+
+OpcUaMethodArgument::OpcUaMethodArgument(QObject *parent) : QObject(parent)
+{
+}
+
+QVariant OpcUaMethodArgument::value() const
+{
+    return m_value;
+}
+
+QOpcUa::Types OpcUaMethodArgument::type() const
+{
+    return m_type;
+}
+
+void OpcUaMethodArgument::setValue(QVariant value)
+{
+    m_value = value;
+}
+
+void OpcUaMethodArgument::setType(QOpcUa::Types type)
+{
+    m_type = type;
 }

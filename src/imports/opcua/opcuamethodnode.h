@@ -37,6 +37,9 @@
 #pragma once
 
 #include "opcuanode.h"
+#include "opcuamethodargument.h"
+#include "qopcuatype.h"
+#include <QQmlListProperty>
 
 QT_BEGIN_NAMESPACE
 
@@ -46,10 +49,17 @@ class OpcUaMethodNode : public OpcUaNode
 {
     Q_OBJECT
     Q_PROPERTY(OpcUaNodeIdType* objectNodeId READ objectNodeId WRITE setObjectNodeId NOTIFY objectNodeIdChanged)
+    Q_PROPERTY(QQmlListProperty<OpcUaMethodArgument> inputArguments READ inputArguments NOTIFY inputArgumentsChanged)
+    Q_PROPERTY(QVariantList outputArguments READ outputArguments NOTIFY outputArgumentsChanged)
+    Q_PROPERTY(QOpcUa::UaStatusCode resultStatusCode READ resultStatusCode NOTIFY resultStatusCodeChanged)
 
 public:
     OpcUaMethodNode(QObject *parent = nullptr);
     OpcUaNodeIdType *objectNodeId() const;
+
+    QQmlListProperty<OpcUaMethodArgument> inputArguments();
+    QVariantList outputArguments();
+    QOpcUa::UaStatusCode resultStatusCode() const;
 
 public slots:
     void setObjectNodeId(OpcUaNodeIdType *nodeId);
@@ -57,17 +67,30 @@ public slots:
 
 signals:
     void objectNodeIdChanged();
+    void inputArgumentsChanged();
+    void outputArgumentsChanged();
+
+    void resultStatusCodeChanged(QOpcUa::UaStatusCode statusCode);
 
 private slots:
     void handleObjectNodeIdChanged();
+    void handleMethodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
 
 private:
     void setupNode(const QString &absolutePath) override;
     bool checkValidity() override;
 
+    static void appendArgument(QQmlListProperty<OpcUaMethodArgument>*, OpcUaMethodArgument *);
+    static int argumentCount(QQmlListProperty<OpcUaMethodArgument>*);
+    static OpcUaMethodArgument* argument(QQmlListProperty<OpcUaMethodArgument>*, int);
+    static void clearArguments(QQmlListProperty<OpcUaMethodArgument>*);
+
 private:
     OpcUaNodeIdType *m_objectNodeId = nullptr;
     OpcUaNode *m_objectNode = nullptr;
+    QVector<OpcUaMethodArgument*> m_inputArguments;
+    QVariantList m_outputArguments;
+    QOpcUa::UaStatusCode m_resultStatusCode = QOpcUa::Good;
 };
 
 QT_END_NAMESPACE

@@ -34,27 +34,31 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.3
-import QtTest 1.0
-import QtOpcUa 5.13 as QtOpcUa
+#pragma once
 
-Item {
-    TestCase {
-        name: "Enum exports to QML"
+#include "qopcuatype.h"
+#include <QObject>
 
-        function test_enumExports() {
-            compare(QtOpcUa.Constants.NodeClass.Method, 4);
-            compare(QtOpcUa.Constants.NodeAttribute.DisplayName, 8);
-            compare(QtOpcUa.Node.Status.Valid, 0);
-            compare(QtOpcUa.Constants.Good, 0);
-            compare(QtOpcUa.Constants.Double, 3);
+QT_BEGIN_NAMESPACE
 
-            // Test return value of undefined node
-            compare(node1.nodeClass, QtOpcUa.Constants.NodeClass.Undefined);
-        }
+class OpcUaMethodArgument : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QVariant value READ value WRITE setValue)
+    Q_PROPERTY(QOpcUa::Types type READ type WRITE setType)
 
-        QtOpcUa.Node {
-            id: node1
-        }
-    }
-}
+public:
+    explicit OpcUaMethodArgument(QObject *parent = nullptr);
+    QVariant value() const;
+    QOpcUa::Types type() const;
+
+public slots:
+    void setValue(QVariant value);
+    void setType(QOpcUa::Types type);
+
+private:
+    QVariant m_value;
+    QOpcUa::Types m_type;
+};
+
+QT_END_NAMESPACE

@@ -116,4 +116,103 @@ Item {
             id: node1
         }
     }
+
+    TestCase {
+        name: "Use method arguments"
+        when: node2.readyToUse
+
+        SignalSpy {
+            id: node2resultStatusCodeSpy
+            target: node2
+            signalName: "resultStatusCodeChanged"
+        }
+
+        function test_nodeTest() {
+            compare(node2.browseName, "multiplyArguments");
+            compare(node2.nodeClass, QtOpcUa.Constants.NodeClass.Method);
+            compare(node2.resultStatusCode, QtOpcUa.Constants.Good);
+
+            node2.callMethod();
+
+            node2resultStatusCodeSpy.wait();
+            compare(node2resultStatusCodeSpy.count, 1);
+            compare(node2.resultStatusCode, QtOpcUa.Constants.Good);
+            compare(node2.outputArguments.length, 1);
+            compare(node2.outputArguments[0], 12);
+        }
+
+        QtOpcUa.MethodNode {
+            connection: connection
+            nodeId: QtOpcUa.NodeId {
+                ns: "Test Namespace"
+                identifier: "s=Test.Method.Multiply"
+            }
+            objectNodeId: QtOpcUa.NodeId {
+                                ns: "Test Namespace"
+                                identifier: "s=TestFolder"
+                        }
+            inputArguments: [
+                QtOpcUa.MethodArgument {
+                    value: 3
+                    type: QtOpcUa.Constants.Double
+                },
+                QtOpcUa.MethodArgument {
+                    value: 4
+                    type: QtOpcUa.Constants.Double
+                }
+            ]
+            id: node2
+        }
+    }
+
+    TestCase {
+        name: "Multiple Output Arguments"
+        when: node3.readyToUse
+
+        SignalSpy {
+            id: node3resultStatusCodeSpy
+            target: node3
+            signalName: "resultStatusCodeChanged"
+        }
+
+        function test_nodeTest() {
+            compare(node3.browseName, "multipleOutputArguments");
+            compare(node3.nodeClass, QtOpcUa.Constants.NodeClass.Method);
+            compare(node3.resultStatusCode, QtOpcUa.Constants.Good);
+
+            node3.callMethod();
+
+            node3resultStatusCodeSpy.wait();
+            compare(node3resultStatusCodeSpy.count, 1);
+            compare(node3.resultStatusCode, QtOpcUa.Constants.Good);
+            // Check for two output arguments
+            compare(node3.outputArguments.length, 2);
+            compare(node3.outputArguments[0], 12);
+            compare(node3.outputArguments[1].text, "some text argument");
+        }
+
+        QtOpcUa.MethodNode {
+            connection: connection
+            nodeId: QtOpcUa.NodeId {
+                ns: "Test Namespace"
+                identifier: "s=Test.Method.MultipleOutputArguments"
+            }
+            objectNodeId: QtOpcUa.NodeId {
+                                ns: "Test Namespace"
+                                identifier: "s=TestFolder"
+                        }
+            inputArguments: [
+                QtOpcUa.MethodArgument {
+                    value: 3
+                    type: QtOpcUa.Constants.Double
+                },
+                QtOpcUa.MethodArgument {
+                    value: 4
+                    type: QtOpcUa.Constants.Double
+                }
+            ]
+            id: node3
+        }
+    }
+
 }
