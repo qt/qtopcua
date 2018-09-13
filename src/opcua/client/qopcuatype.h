@@ -513,6 +513,10 @@ private:
 class QLocalizedTextData;
 class Q_OPCUA_EXPORT QLocalizedText
 {
+    Q_GADGET
+    Q_PROPERTY(QString locale READ locale WRITE setLocale)
+    Q_PROPERTY(QString text READ text WRITE setText)
+
 public:
     QLocalizedText();
     QLocalizedText(const QOpcUa::QLocalizedText &);

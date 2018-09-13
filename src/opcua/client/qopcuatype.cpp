@@ -621,6 +621,29 @@ void QOpcUa::QQualifiedName::setName(const QString &name)
     It can be used to provide multiple text strings in different languages for a value using an array of LocalizedText elements.
 */
 
+/*!
+    \qmltype LocalizedText
+    \inqmlmodule QtOpcUa
+    \brief Contains a text with associated locale.
+    \since QtOpcUa 5.12
+
+    The two members of this type contain the actual text and the locale of the text.
+*/
+
+/*!
+    \qmlproperty string LocalizedText::text
+
+    Textual content.
+*/
+
+/*!
+    \qmlproperty string LocalizedText::locale
+
+    Locale of the contained text.
+    This has to be in a modified ISO standard notation, for example \c en-US.
+    See OPC UA specification part 3, 8.4 for details.
+*/
+
 class QOpcUa::QLocalizedTextData : public QSharedData
 {
 public:

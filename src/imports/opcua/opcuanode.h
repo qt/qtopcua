@@ -37,7 +37,7 @@
 #pragma once
 
 #include <QObject>
-#include "opcuatype.h"
+#include "qopcuatype.h"
 #include "universalnode.h"
 #include "opcuaattributecache.h"
 
@@ -58,8 +58,8 @@ class OpcUaNode : public QObject
     // basic node properties
     Q_PROPERTY(QString browseName READ browseName WRITE setBrowseName NOTIFY browseNameChanged)
     Q_PROPERTY(QOpcUa::NodeClass nodeClass READ nodeClass NOTIFY nodeClassChanged)
-    Q_PROPERTY(LocalizedText displayName READ displayName WRITE setDisplayName NOTIFY displayNameChanged)
-    Q_PROPERTY(LocalizedText description READ description WRITE setDescription NOTIFY descriptionChanged)
+    Q_PROPERTY(QOpcUa::QLocalizedText displayName READ displayName WRITE setDisplayName NOTIFY displayNameChanged)
+    Q_PROPERTY(QOpcUa::QLocalizedText description READ description WRITE setDescription NOTIFY descriptionChanged)
 
     Q_ENUM(QOpcUa::NodeClass);
 
@@ -75,11 +75,11 @@ public:
 
     QOpcUa::NodeClass nodeClass();
 
-    void setDisplayName(const LocalizedText &value);
-    LocalizedText displayName();
+    void setDisplayName(const QOpcUa::QLocalizedText &value);
+    QOpcUa::QLocalizedText displayName();
 
-    void setDescription(const LocalizedText &value);
-    LocalizedText description();
+    void setDescription(const QOpcUa::QLocalizedText &value);
+    QOpcUa::QLocalizedText description();
 
     // This function is not exposed to QML
     const UniversalNode &resolvedNode() const;
