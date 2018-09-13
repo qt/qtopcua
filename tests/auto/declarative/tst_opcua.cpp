@@ -38,6 +38,7 @@
 #include <QObject>
 #include <QProcess>
 #include <QTcpServer>
+#include <QTcpSocket>
 
 class QQmlEngine;
 
