@@ -66,9 +66,16 @@ public:
     UA_NodeId addEmptyArrayVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name);
 
     UA_NodeId addMultiplyMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
+    UA_NodeId addMultipleOutputArgumentsMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
     UA_NodeId addAddNamespaceMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
 
     static UA_StatusCode multiplyMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle,
+                                            const UA_NodeId *methodId, void *methodContext,
+                                            const UA_NodeId *objectId, void *objectContext,
+                                            size_t inputSize, const UA_Variant *input,
+                                            size_t outputSize, UA_Variant *output);
+
+    static UA_StatusCode multipleOutputArgumentsMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle,
                                             const UA_NodeId *methodId, void *methodContext,
                                             const UA_NodeId *objectId, void *objectContext,
                                             size_t inputSize, const UA_Variant *input,
