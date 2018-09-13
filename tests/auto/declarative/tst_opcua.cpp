@@ -93,6 +93,7 @@ public slots:
             server.close();
 
             qDebug() << "Starting test server";
+            m_serverProcess.setProcessChannelMode(QProcess::ForwardedChannels);
             m_serverProcess.start(m_testServerPath);
             QVERIFY2(m_serverProcess.waitForStarted(), qPrintable(m_serverProcess.errorString()));
             // Let the server come up
