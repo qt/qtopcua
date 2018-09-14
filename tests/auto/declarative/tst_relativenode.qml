@@ -211,9 +211,11 @@ Item {
 
             // value has to be undefined because when node IDs are changed
             // all attributes become undefined before they get the new values.
-            verify(!node4.value);
+            if (node4ValueSpy.count < 2)
+                node4ValueSpy.wait();
+            verify(!node4ValueSpy.signalArguments[0][0]);
+            compare(node4ValueSpy.signalArguments[1][0], 0.1);
 
-            node4ValueSpy.wait();
             compare(node4NodeIdSpy.count, 2);
             compare(node4NamespaceSpy.count, 0);
             verify(node4NodeChangedSpy.count > 0);
