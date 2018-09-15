@@ -223,6 +223,7 @@ enum Types
     Argument        = 28,
     Undefined       = 0xFFFFFFFF
 };
+Q_ENUM_NS(Types)
 
 enum UaStatusCode : quint32
 {

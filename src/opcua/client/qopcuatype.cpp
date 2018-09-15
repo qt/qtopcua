@@ -886,7 +886,7 @@ bool QOpcUa::nodeIdStringSplit(const QString &nodeIdString, quint16 *nsIndex, QS
     if (components.size() == 2 && components.at(0).contains(QRegularExpression(QLatin1String("^ns=[0-9]+")))) {
         bool success = false;
         uint ns = components.at(0).midRef(3).toString().toUInt(&success);
-        if (!success || ns > std::numeric_limits<quint16>::max())
+        if (!success || ns > (std::numeric_limits<quint16>::max)())
             return false;
         namespaceIndex = ns;
     }
@@ -2021,7 +2021,7 @@ class QOpcUa::QBrowsePathTargetData : public QSharedData
 {
 public:
     QOpcUa::QExpandedNodeId targetId;
-    quint32 remainingPathIndex{std::numeric_limits<quint32>::max()};
+    quint32 remainingPathIndex{(std::numeric_limits<quint32>::max)()};
 };
 
 QOpcUa::QBrowsePathTarget::QBrowsePathTarget()
@@ -2083,7 +2083,7 @@ void QOpcUa::QBrowsePathTarget::setRemainingPathIndex(quint32 remainingPathIndex
 */
 bool QOpcUa::QBrowsePathTarget::isFullyResolved() const
 {
-    return (data->remainingPathIndex == std::numeric_limits<quint32>::max());
+    return (data->remainingPathIndex == (std::numeric_limits<quint32>::max)());
 }
 
 /*!
@@ -3988,8 +3988,8 @@ void QOpcUa::QMultiDimensionalArray::setValueArray(const QVariantList &value)
 int QOpcUa::QMultiDimensionalArray::arrayIndex(const QVector<quint32> &indices) const
 {
     // A QList can store INT_MAX values. Depending on the platform, this allows a size > UINT32_MAX
-    if (data->expectedArrayLength > static_cast<quint64>(std::numeric_limits<int>::max()) ||
-            static_cast<quint64>(data->value.size()) > std::numeric_limits<quint32>::max())
+    if (data->expectedArrayLength > static_cast<quint64>((std::numeric_limits<int>::max)()) ||
+            static_cast<quint64>(data->value.size()) > (std::numeric_limits<quint32>::max)())
         return -1;
 
     // Check number of dimensions and data size
@@ -4011,7 +4011,7 @@ int QOpcUa::QMultiDimensionalArray::arrayIndex(const QVector<quint32> &indices) 
         index += stride * indices.at(i);
     }
 
-    return (index <= static_cast<quint64>(std::numeric_limits<int>::max())) ?
+    return (index <= static_cast<quint64>((std::numeric_limits<int>::max)())) ?
                 static_cast<int>(index) : -1;
 }
 
@@ -4050,8 +4050,8 @@ bool QOpcUa::QMultiDimensionalArray::setValue(const QVector<quint32> &indices, c
 bool QOpcUa::QMultiDimensionalArray::isValid() const
 {
     return static_cast<quint64>(data->value.size()) == data->expectedArrayLength &&
-            static_cast<quint64>(data->value.size()) <= std::numeric_limits<quint32>::max() &&
-            static_cast<quint64>(data->arrayDimensions.size()) <= std::numeric_limits<quint32>::max();
+            static_cast<quint64>(data->value.size()) <= (std::numeric_limits<quint32>::max)() &&
+            static_cast<quint64>(data->arrayDimensions.size()) <= (std::numeric_limits<quint32>::max)();
 }
 
 QT_END_NAMESPACE

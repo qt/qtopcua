@@ -385,6 +385,98 @@ UA_NodeId TestServer::addMultiplyMethod(const UA_NodeId &folder, const QString &
     return resultId;
 }
 
+UA_StatusCode TestServer::multipleOutputArgumentsMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle, const UA_NodeId *methodId, void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize, const UA_Variant *input, size_t outputSize, UA_Variant *output)
+{
+    Q_UNUSED(server);
+    Q_UNUSED(sessionId);
+    Q_UNUSED(sessionHandle);
+    Q_UNUSED(methodId);
+    Q_UNUSED(methodContext);
+    Q_UNUSED(objectId);
+    Q_UNUSED(objectContext);
+
+    if (inputSize < 2)
+        return QOpcUa::UaStatusCode::BadArgumentsMissing;
+    if (inputSize > 2)
+        return QOpcUa::UaStatusCode::BadTooManyArguments;
+    if (outputSize != 2)
+        return QOpcUa::UaStatusCode::BadInvalidArgument;
+
+    double arg1 = *static_cast<double *>(input[0].data);
+    double arg2 = *static_cast<double *>(input[1].data);
+
+    double product = arg1 * arg2;
+    auto someText = UA_LOCALIZEDTEXT_ALLOC("en-US", "some text argument");
+    UA_Variant_setScalarCopy(&output[0], &product, &UA_TYPES[UA_TYPES_DOUBLE]);
+    UA_Variant_setScalarCopy(&output[1], &someText, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
+
+    return UA_STATUSCODE_GOOD;
+}
+
+UA_NodeId TestServer::addMultipleOutputArgumentsMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description)
+{
+    UA_NodeId methodNodeId = Open62541Utils::nodeIdFromQString(variableNode);
+
+    UA_Argument inputArguments[2];
+    UA_Argument_init(&inputArguments[0]);
+    UA_Argument_init(&inputArguments[1]);
+
+    inputArguments[0].description = UA_LOCALIZEDTEXT_ALLOC("en", "First value");
+    inputArguments[0].name = UA_STRING_ALLOC("The first double");
+    inputArguments[0].dataType = UA_TYPES[UA_TYPES_DOUBLE].typeId;
+    inputArguments[0].valueRank = -1;
+
+    inputArguments[1].description = UA_LOCALIZEDTEXT_ALLOC("en", "Second value");
+    inputArguments[1].name = UA_STRING_ALLOC("The second double");
+    inputArguments[1].dataType = UA_TYPES[UA_TYPES_DOUBLE].typeId;
+    inputArguments[1].valueRank = -1;
+
+    UA_Argument outputArgument[2];
+    UA_Argument_init(&outputArgument[0]);
+    UA_Argument_init(&outputArgument[1]);
+
+    outputArgument[0].description = UA_LOCALIZEDTEXT_ALLOC("en", "The product of the two arguments");
+    outputArgument[0].name = UA_STRING_ALLOC("The product of the two arguments");
+    outputArgument[0].dataType = UA_TYPES[UA_TYPES_DOUBLE].typeId;
+    outputArgument[0].valueRank = -1;
+
+    outputArgument[1].description = UA_LOCALIZEDTEXT_ALLOC("en", "Some additional text argument");
+    outputArgument[1].name = UA_STRING_ALLOC("Text argument");
+    outputArgument[1].dataType = UA_TYPES[UA_TYPES_LOCALIZEDTEXT].typeId;
+    outputArgument[1].valueRank = -1;
+
+    UA_MethodAttributes attr = UA_MethodAttributes_default;
+
+    attr.description = UA_LOCALIZEDTEXT_ALLOC("en-US", description.toUtf8().constData());
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", variableNode.toUtf8().constData());
+    attr.executable = true;
+
+    UA_QualifiedName nodeBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.namespaceIndex, "multipleOutputArguments");
+
+    UA_NodeId resultId;
+    UA_StatusCode result = UA_Server_addMethodNode(m_server, methodNodeId, folder,
+                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT),
+                                                     nodeBrowseName,
+                                                     attr, &multipleOutputArgumentsMethod,
+                                                     2, inputArguments,
+                                                     2, outputArgument,
+                                                     nullptr, &resultId);
+
+    UA_QualifiedName_deleteMembers(&nodeBrowseName);
+    UA_NodeId_deleteMembers(&methodNodeId);
+    UA_MethodAttributes_deleteMembers(&attr);
+    UA_Argument_deleteMembers(&inputArguments[0]);
+    UA_Argument_deleteMembers(&inputArguments[1]);
+    UA_Argument_deleteMembers(&outputArgument[0]);
+    UA_Argument_deleteMembers(&outputArgument[1]);
+
+    if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not add variable:" << result;
+        return UA_NODEID_NULL;
+    }
+    return resultId;
+}
+
 UA_NodeId TestServer::addAddNamespaceMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description)
 {
     UA_NodeId methodNodeId = Open62541Utils::nodeIdFromQString(variableNode);

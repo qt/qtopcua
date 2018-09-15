@@ -216,6 +216,15 @@ QT_BEGIN_NAMESPACE
     \a statusCode contains the status code from the method call, \a result contains the output
     arguments of the method. \a result is empty if the method has no output arguments or \a statusCode
     is not \l {QOpcUa::UaStatusCode} {Good}.
+    The \a result variant is either a single value if there is only one output argument or it contains a list of
+    variants in case the called function returned multiple output arguments.
+    \code
+        if (result.canConvert<QVariantList>()) {
+            // handle list type
+        } else {
+            // handle value type
+        }
+    \endcode
 */
 
 /*!

@@ -86,7 +86,7 @@ QOpcUa::Types QOpcUaBackend::attributeIdToTypeId(QOpcUa::NodeAttribute attr)
 
 double QOpcUaBackend::revisePublishingInterval(double requestedValue, double minimumValue)
 {
-    return std::max(requestedValue, minimumValue);
+    return (std::max)(requestedValue, minimumValue);
 }
 
 QT_END_NAMESPACE

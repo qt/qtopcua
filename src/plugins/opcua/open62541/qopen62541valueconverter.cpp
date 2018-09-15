@@ -103,7 +103,7 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
 
         if (!data.arrayDimensions().isEmpty()) {
             // Ensure that the array dimensions size is < UINT32_MAX
-            if (static_cast<quint64>(data.arrayDimensions().size()) > std::numeric_limits<quint32>::max())
+            if (static_cast<quint64>(data.arrayDimensions().size()) > (std::numeric_limits<quint32>::max)())
                 return open62541value;
             result.arrayDimensionsSize = data.arrayDimensions().size();
             result.arrayDimensions = static_cast<UA_UInt32 *>(UA_Array_new(result.arrayDimensionsSize, &UA_TYPES[UA_TYPES_UINT32]));

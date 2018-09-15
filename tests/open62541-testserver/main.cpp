@@ -200,7 +200,7 @@ int main(int argc, char **argv)
 
     // Add a method to the test folder
     server.addMultiplyMethod(testFolder, "ns=3;s=Test.Method.Multiply", "MultiplyDoubles");
-
+    server.addMultipleOutputArgumentsMethod(testFolder, "ns=3;s=Test.Method.MultipleOutputArguments", "MultipleOutputArguments");
     server.addEmptyArrayVariable(testFolder, "ns=2;s=EmptyBoolArray", "EmptyBoolArrayTest");
 
     const QVector<quint32> arrayDimensions({2, 2, 3});

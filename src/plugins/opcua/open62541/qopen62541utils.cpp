@@ -63,7 +63,7 @@ UA_NodeId Open62541Utils::nodeIdFromQString(const QString &name)
     case 'i': {
         bool isNumber;
         uint identifier = identifierString.toUInt(&isNumber);
-        if (isNumber && identifier <= std::numeric_limits<quint32>::max())
+        if (isNumber && identifier <= ((std::numeric_limits<quint32>::max)()))
             return UA_NODEID_NUMERIC(namespaceIndex, static_cast<UA_UInt32>(identifier));
         else
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << name << "does not contain a valid numeric identifier";

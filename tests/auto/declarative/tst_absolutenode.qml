@@ -200,9 +200,11 @@ Item {
 
             // value has to be undefined because when node IDs are changed
             // all attributes become undefined before they get the new values.
-            verify(!node8.value);
+            if (node8ValueSpy.count < 2)
+                node8ValueSpy.wait();
+            verify(!node8ValueSpy.signalArguments[0][0]);
+            compare(node8ValueSpy.signalArguments[1][0], "Value");
 
-            node8ValueSpy.wait();
             compare(node8IdentifierSpy.count, 1);
             compare(node8NodeIdSpy.count, 1);
             compare(node8NamespaceSpy.count, 0);

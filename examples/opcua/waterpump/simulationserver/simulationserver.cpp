@@ -387,25 +387,25 @@ void DemoServer::launch()
 
      UA_NodeId machineObject = addObject(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::ObjectsFolder), "ns=2;s=Machine",
                                          "Machine", "Machine", "The machine simulator", UA_NS0ID_ORGANIZES);
-     UA_NodeId tank1Object = addObject("ns=2;s=Machine", "ns=2;s=Machine.Tank1", "Tank1", "Machine.Tank1");
-     UA_NodeId tank2Object = addObject("ns=2;s=Machine", "ns=2;s=Machine.Tank2", "Tank2", "Machine.Tank2");
+     UA_NodeId tank1Object = addObject("ns=2;s=Machine", "ns=2;s=Machine.Tank1", "Tank1", "Tank 1");
+     UA_NodeId tank2Object = addObject("ns=2;s=Machine", "ns=2;s=Machine.Tank2", "Tank2", "Tank 2");
 
-     m_percentFilledTank1Node = addVariable(tank1Object, "ns=2;s=Machine.Tank1.PercentFilled", "PercentFilled", "Machine.Tank1.PercentFilled", 100.0, QOpcUa::Types::Double);
-     m_percentFilledTank2Node = addVariable(tank2Object, "ns=2;s=Machine.Tank2.PercentFilled", "PercentFilled", "Machine.Tank2.PercentFilled", 0.0, QOpcUa::Types::Double);
-     m_tank2TargetPercentNode = addVariable(tank2Object, "ns=2;s=Machine.Tank2.TargetPercent", "TargetPercent", "Machine.Tank2.TargetPercent", 0.0, QOpcUa::Types::Double);
-     m_tank2ValveStateNode = addVariable(tank2Object, "ns=2;s=Machine.Tank2.ValveState", "ValveState", "Machine.Tank2.ValveState", false, QOpcUa::Types::Boolean);
-     m_machineStateNode = addVariable(machineObject, "ns=2;s=Machine.State", "State", "Machine.State", static_cast<quint32>(MachineState::Idle), QOpcUa::Types::UInt32);
+     m_percentFilledTank1Node = addVariable(tank1Object, "ns=2;s=Machine.Tank1.PercentFilled", "PercentFilled", "Tank 1 Fill Level", 100.0, QOpcUa::Types::Double);
+     m_percentFilledTank2Node = addVariable(tank2Object, "ns=2;s=Machine.Tank2.PercentFilled", "PercentFilled", "Tank 2 Fill Level", 0.0, QOpcUa::Types::Double);
+     m_tank2TargetPercentNode = addVariable(tank2Object, "ns=2;s=Machine.Tank2.TargetPercent", "TargetPercent", "Tank 2 Target Level", 0.0, QOpcUa::Types::Double);
+     m_tank2ValveStateNode = addVariable(tank2Object, "ns=2;s=Machine.Tank2.ValveState", "ValveState", "Tank 2 Valve State", false, QOpcUa::Types::Boolean);
+     m_machineStateNode = addVariable(machineObject, "ns=2;s=Machine.State", "State", "Machine State", static_cast<quint32>(MachineState::Idle), QOpcUa::Types::UInt32);
      UA_NodeId tempId;
-     tempId = addVariable(machineObject, "ns=2;s=Machine.Designation", "Designation", "Machine.Designation", "TankExample", QOpcUa::Types::String);
+     tempId = addVariable(machineObject, "ns=2;s=Machine.Designation", "Designation", "Machine Designation", "TankExample", QOpcUa::Types::String);
      UA_NodeId_deleteMembers(&tempId);
 
-     tempId = addMethod(machineObject, "ns=2;s=Machine.Start", "Starts the pump", "Start", "Machine.Start", &startPumpMethod);
+     tempId = addMethod(machineObject, "ns=2;s=Machine.Start", "Starts the pump", "Start", "Start Pump", &startPumpMethod);
      UA_NodeId_deleteMembers(&tempId);
-     tempId = addMethod(machineObject, "ns=2;s=Machine.Stop", "Stops the pump", "Stop", "Machine.Stop", &stopPumpMethod);
+     tempId = addMethod(machineObject, "ns=2;s=Machine.Stop", "Stops the pump", "Stop", "Stop Pump", &stopPumpMethod);
      UA_NodeId_deleteMembers(&tempId);
-     tempId = addMethod(machineObject, "ns=2;s=Machine.FlushTank2", "Flushes tank 2", "FlushTank2", "Machine.FlushTank2", &flushTank2Method);
+     tempId = addMethod(machineObject, "ns=2;s=Machine.FlushTank2", "Flushes tank 2", "FlushTank2", "Flush Tank 2", &flushTank2Method);
      UA_NodeId_deleteMembers(&tempId);
-     tempId = addMethod(machineObject, "ns=2;s=Machine.Reset", "Resets the simulation", "Reset", "Machine.Reset", &resetMethod);
+     tempId = addMethod(machineObject, "ns=2;s=Machine.Reset", "Resets the simulation", "Reset", "Reset Simulation", &resetMethod);
      UA_NodeId_deleteMembers(&tempId);
 
      UA_NodeId_deleteMembers(&machineObject);

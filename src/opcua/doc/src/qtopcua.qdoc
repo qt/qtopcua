@@ -370,7 +370,27 @@
         qmake </path/to/qtopcua> -- OPEN62541_PREFIX=/path/to/sdk
     \endcode
 
-    Check the output of the configuration step if the detection was successful:
+    If the open62541 header and library files are located in a custom path, different settings must be used:
+
+    \table
+    \header
+    \li Setting
+    \li Value
+    \row
+    \li OPEN62541_INCDIR
+    \li The directory which contains open62541.h
+    \row
+    \li OPEN62541_LIBDIR
+    \li The directory which contains the library file
+    \endtable
+
+    For example, the following settings can be used for building the open62541 plugin using a static build
+    directly from its build directory without installing it:
+    \code
+        OPEN62541_INCDIR=/path/to/open62541/build OPEN62541_LIBDIR=/path/to/open62541/build/bin
+    \endcode
+
+    The output of the configuration step indicates whether the detection was successful:
 
     \code
         Open62541 .............................. yes
@@ -395,7 +415,7 @@
         qmake </path/to/qtopcua> -- UACPP_PREFIX=/path/to/sdk
     \endcode
 
-    Check the output of the configuration step if the detection was successful:
+    The output of the configuration step indicates whether the detection was successful:
 
     \code
         Unified Automation C++ SDK ............. yes
