@@ -522,8 +522,8 @@ void QOpcUaMonitoringParameters::setSamplingInterval(double samplingInterval)
     Enumerates the possible triggers for a \l DataChangeFilter.
 
     \value Status Triggers if the value's status code changes.
-    \value StatusValue Triggers if the value's status code or the value itself changes.
-    \value StatusValueTimestamp Triggers if the value's status code, the value itself or the source timestamp changes.
+    \value StatusOrValue Triggers if the value's status code or the value itself changes.
+    \value StatusOrValueOrTimestamp Triggers if the value's status code, the value itself or the source timestamp changes.
 */
 
 /*!

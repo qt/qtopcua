@@ -2854,7 +2854,7 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
 
     QOpcUaMonitoringParameters::DataChangeFilter filter;
     filter.setDeadbandType(QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType::Absolute);
-    filter.setTrigger(QOpcUaMonitoringParameters::DataChangeFilter::DataChangeTrigger::StatusValue);
+    filter.setTrigger(QOpcUaMonitoringParameters::DataChangeFilter::DataChangeTrigger::StatusOrValue);
     filter.setDeadbandValue(1.0);
     doubleNode->modifyDataChangeFilter(QOpcUa::NodeAttribute::Value, filter);
     monitoringModifiedSpy.wait();
