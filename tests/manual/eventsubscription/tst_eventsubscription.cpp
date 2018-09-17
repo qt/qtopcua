@@ -183,7 +183,7 @@ void EventsubscriptionTest::eventSubscription()
 //    filter << whereElement;
 
     QOpcUaMonitoringParameters p(0);
-    p.setEventFilter(filter);
+    p.setFilter(filter);
 
     serverNode->enableMonitoring(QOpcUa::NodeAttribute::EventNotifier, p);
     enabledSpy.wait();
@@ -191,9 +191,12 @@ void EventsubscriptionTest::eventSubscription()
     QCOMPARE(enabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::EventNotifier);
     QCOMPARE(enabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
 
+    QCOMPARE(serverNode->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filter().value<QOpcUaMonitoringParameters::EventFilter>(),
+             filter);
+
 //    Disabled because the open62541 server does not currently return an EventFilterResult
-//    QVERIFY(serverNode->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filter().isValid());
-//    QOpcUa::QEventFilterResult res = serverNode->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filter().value<QOpcUa::QEventFilterResult>();
+//    QVERIFY(serverNode->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filterResult().isValid());
+//    QOpcUa::QEventFilterResult res = serverNode->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filterResult().value<QOpcUa::QEventFilterResult>();
 //    QVERIFY(res.isGood() == true);
 
     qDebug() << "Monitoring enabled, waiting for event...";
@@ -224,6 +227,8 @@ void EventsubscriptionTest::eventSubscription()
     QCOMPARE(modifySpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::EventNotifier);
     QVERIFY(modifySpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>().testFlag(QOpcUaMonitoringParameters::Parameter::Filter) == true);
     QCOMPARE(modifySpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(serverNode->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filter().value<QOpcUaMonitoringParameters::EventFilter>(),
+             filter);
     qDebug() << "EventFilter modified, waiting for event with additional SourceNode field...";
 
     objectsNode->callMethod(QStringLiteral("ns=1;i=62541")); // Trigger event

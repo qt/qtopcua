@@ -124,6 +124,7 @@ public:
         EventFilter(const EventFilter &);
         EventFilter &operator=(const EventFilter &);
         operator QVariant const();
+        bool operator==(const QOpcUaMonitoringParameters::EventFilter &rhs) const;
         EventFilter &operator<<(const QOpcUa::QContentFilterElement &whereClauseElement);
         EventFilter &operator<<(const QOpcUa::QSimpleAttributeOperand &selectClauseElement);
         ~EventFilter();
@@ -149,9 +150,12 @@ public:
     double samplingInterval() const;
     void setSamplingInterval(double samplingInterval);
     QVariant filter() const;
-    void setDataChangeFilter(const QOpcUaMonitoringParameters::DataChangeFilter &filter);
-    void setEventFilter(const QOpcUaMonitoringParameters::EventFilter &eventFilter);
-    void setFilter(const QVariant &filter);
+    void setFilter(const QOpcUaMonitoringParameters::DataChangeFilter &filter);
+    void setFilter(const QOpcUaMonitoringParameters::EventFilter &eventFilter);
+    void clearFilter();
+    QVariant filterResult() const;
+    void setFilterResult(const QOpcUa::QEventFilterResult &eventFilterResult);
+    void clearFilterResult();
     quint32 queueSize() const;
     void setQueueSize(quint32 queueSize);
     bool discardOldest() const;

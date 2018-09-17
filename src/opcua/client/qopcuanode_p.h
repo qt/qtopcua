@@ -149,8 +149,18 @@ public:
                     it->setPriority(param.priority());
                 if (items & QOpcUaMonitoringParameters::Parameter::SamplingInterval)
                     it->setSamplingInterval(param.samplingInterval());
-                if (items & QOpcUaMonitoringParameters::Parameter::Filter)
-                    it->setFilter(param.filter());
+                if (items & QOpcUaMonitoringParameters::Parameter::Filter) {
+                    if (param.filter().canConvert<QOpcUaMonitoringParameters::DataChangeFilter>())
+                        it->setFilter(param.filter().value<QOpcUaMonitoringParameters::DataChangeFilter>());
+                    else if (param.filter().canConvert<QOpcUaMonitoringParameters::EventFilter>())
+                        it->setFilter(param.filter().value<QOpcUaMonitoringParameters::EventFilter>());
+                    else if (param.filter().isNull())
+                        it->clearFilter();
+                    if (param.filterResult().canConvert<QOpcUa::QEventFilterResult>())
+                        it->setFilterResult(param.filterResult().value<QOpcUa::QEventFilterResult>());
+                    else if (param.filterResult().isNull())
+                        it->clearFilterResult();
+                }
                 if (items & QOpcUaMonitoringParameters::Parameter::QueueSize)
                     it->setQueueSize(param.queueSize());
                 if (items & QOpcUaMonitoringParameters::Parameter::DiscardOldest)

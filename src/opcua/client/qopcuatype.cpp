@@ -2208,6 +2208,14 @@ QOpcUa::QContentFilterElement &QOpcUa::QContentFilterElement::operator=(const QO
 }
 
 /*!
+    Returns \c true if this content filter element has the same value as \a rhs.
+*/
+bool QOpcUa::QContentFilterElement::operator==(const QOpcUa::QContentFilterElement &rhs) const
+{
+    return filterOperator() == rhs.filterOperator() && filterOperands() == rhs.filterOperands();
+}
+
+/*!
     Converts this content filter element to \l QVariant.
 */
 QOpcUa::QContentFilterElement::operator QVariant() const
@@ -2573,6 +2581,15 @@ QOpcUa::QSimpleAttributeOperand &QOpcUa::QSimpleAttributeOperand::operator=(cons
     if (this != &rhs)
         data.operator=(rhs.data);
     return *this;
+}
+
+/*!
+    Returns \c true if this simple attribute operand has the same value as \a rhs.
+*/
+bool QOpcUa::QSimpleAttributeOperand::operator==(const QOpcUa::QSimpleAttributeOperand &rhs) const
+{
+    return attributeId() == rhs.attributeId() && browsePath() == rhs.browsePath() &&
+            indexRange() == rhs.indexRange() && typeId() == rhs.typeId();
 }
 
 /*!

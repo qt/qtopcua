@@ -451,7 +451,8 @@ void QOpcUaMonitoringParameters::setQueueSize(quint32 queueSize)
 }
 
 /*!
-    Returns the filter result. Empty for DataChangeFilter.
+    Returns the current filter.
+    \sa setFilter()
 */
 QVariant QOpcUaMonitoringParameters::filter() const
 {
@@ -459,33 +460,75 @@ QVariant QOpcUaMonitoringParameters::filter() const
 }
 
 /*!
-    Request \l DataChangeFilter \a filter as filter for the monitored item.
-    \sa setFilter() setEventFilter()
+    Sets \l DataChangeFilter \a filter as filter for the monitored item.
+    If another data change filter or an event filter is present, it will be replaced.
+
+    If the server does not accept the filter, this will be indicated by the
+    status code after the \l enableMonitoring() request has finished.
+
+    \sa filter()
 */
-void QOpcUaMonitoringParameters::setDataChangeFilter(const QOpcUaMonitoringParameters::DataChangeFilter &filter)
+void QOpcUaMonitoringParameters::setFilter(const QOpcUaMonitoringParameters::DataChangeFilter &filter)
 {
     d_ptr->filter = QVariant::fromValue(filter);
 }
 
 /*!
     Request \a eventFilter as filter for the monitored item.
-    \sa setFilter() setDataChangeFilter()
+    If another event filter or a data change filter is present, it will be replaced.
+    If the server does not accept the filter, this will be indicated by the
+    status code and the event filter result after the \l enableMonitoring()
+    request has finished.
+
+    \sa filter()
 */
-void QOpcUaMonitoringParameters::setEventFilter(const EventFilter &eventFilter)
+void QOpcUaMonitoringParameters::setFilter(const EventFilter &eventFilter)
 {
     d_ptr->filter = QVariant::fromValue(eventFilter);
 }
 
 /*!
-    Request \a filter as filter for the monitored item.
+    Removes the current filter from the monitoring parameters.
 
-    For general use, the type-safe versions that are listed below are preferred.
-
-    \sa setDataChangeFilter() setEventFilter()
+    \sa filter() setFilter()
 */
-void QOpcUaMonitoringParameters::setFilter(const QVariant &filter)
+void QOpcUaMonitoringParameters::clearFilter()
 {
-    d_ptr->filter = filter;
+    d_ptr->filter.clear();
+}
+
+/*!
+    Returns the filter result.
+
+    This value is empty for an attribute monitoring. In case of an event monitoring,
+    the filter result can be empty if the server did not detect any errors in the filter.
+*/
+QVariant QOpcUaMonitoringParameters::filterResult() const
+{
+    return d_ptr->filterResult;
+}
+
+/*!
+    Sets the event filter result to \a eventFilterResult.
+
+    This method must only be used by the backend, setting an event filter result as a user
+    does not have any effect.
+
+    \sa filterResult()
+*/
+void QOpcUaMonitoringParameters::setFilterResult(const QOpcUa::QEventFilterResult &eventFilterResult)
+{
+    d_ptr->filterResult = QVariant::fromValue(eventFilterResult);
+}
+
+/*!
+    Removes the current filter result from the monitoring parameters.
+
+    \sa filterResult() setFilterResult()
+*/
+void QOpcUaMonitoringParameters::clearFilterResult()
+{
+    d_ptr->filterResult.clear();
 }
 
 /*!
@@ -728,6 +771,14 @@ QOpcUaMonitoringParameters::EventFilter &QOpcUaMonitoringParameters::EventFilter
     if (this != &rhs)
         data.operator=(rhs.data);
     return *this;
+}
+
+/*!
+    Returns \c true if this event filter has the same value as \a rhs.
+*/
+bool QOpcUaMonitoringParameters::EventFilter::operator==(const QOpcUaMonitoringParameters::EventFilter &rhs) const
+{
+    return selectClauses() == rhs.selectClauses() && whereClause() == rhs.whereClause();
 }
 
 /*!

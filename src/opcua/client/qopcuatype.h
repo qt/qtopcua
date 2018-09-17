@@ -825,6 +825,7 @@ public:
     QSimpleAttributeOperand(QOpcUa::NodeAttribute attributeId,
                             const QString &typeId = QStringLiteral("ns=0;i=2041")); // BaseEventType
     QSimpleAttributeOperand &operator=(const QOpcUa::QSimpleAttributeOperand &);
+    bool operator==(const QSimpleAttributeOperand &rhs) const;
     operator QVariant() const;
     ~QSimpleAttributeOperand();
 
@@ -883,6 +884,7 @@ public:
     QContentFilterElement();
     QContentFilterElement(const QContentFilterElement &);
     QContentFilterElement &operator=(const QContentFilterElement &);
+    bool operator==(const QContentFilterElement &rhs) const;
     operator QVariant() const;
     ~QContentFilterElement();
 
