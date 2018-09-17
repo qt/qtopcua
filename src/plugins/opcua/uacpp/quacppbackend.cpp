@@ -556,7 +556,7 @@ void UACppAsyncBackend::resolveBrowsePath(quint64 handle, const UaNodeId &startN
 
 QUACppSubscription *UACppAsyncBackend::getSubscription(const QOpcUaMonitoringParameters &settings)
 {
-    if (settings.shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared) {
+    if (settings.subscriptionType() == QOpcUaMonitoringParameters::SubscriptionType::Shared) {
         // Requesting multiple subscriptions with publishing interval < minimum publishing interval breaks subscription sharing
         double interval = revisePublishingInterval(settings.publishingInterval(), m_minPublishingInterval);
         for (auto entry : qAsConst(m_subscriptions)) {

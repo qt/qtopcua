@@ -142,7 +142,7 @@ public:
 
     QOpcUaMonitoringParameters();
     ~QOpcUaMonitoringParameters();
-    QOpcUaMonitoringParameters(double publishingInterval, SubscriptionType shared = SubscriptionType::Shared, quint32 subscriptionId = 0);
+    QOpcUaMonitoringParameters(double publishingInterval, SubscriptionType subscriptionType = SubscriptionType::Shared, quint32 subscriptionId = 0);
     QOpcUaMonitoringParameters(const QOpcUaMonitoringParameters &other);
     QOpcUaMonitoringParameters &operator=(const QOpcUaMonitoringParameters &other);
 
@@ -176,8 +176,8 @@ public:
     void setPublishingEnabled(bool publishingEnabled);
     QOpcUa::UaStatusCode statusCode() const;
     void setStatusCode(QOpcUa::UaStatusCode statusCode);
-    QOpcUaMonitoringParameters::SubscriptionType shared() const;
-    void setShared(SubscriptionType subscriptionType);
+    QOpcUaMonitoringParameters::SubscriptionType subscriptionType() const;
+    void setSubscriptionType(SubscriptionType subscriptionType);
     QString indexRange() const;
     void setIndexRange(const QString &indexRange);
 

@@ -222,7 +222,7 @@ QOpcUaMonitoringParameters &QOpcUaMonitoringParameters::operator=(const QOpcUaMo
 /*!
     Returns the subscription type.
 */
-QOpcUaMonitoringParameters::SubscriptionType QOpcUaMonitoringParameters::shared() const
+QOpcUaMonitoringParameters::SubscriptionType QOpcUaMonitoringParameters::subscriptionType() const
 {
     return d_ptr->shared;
 }
@@ -230,7 +230,7 @@ QOpcUaMonitoringParameters::SubscriptionType QOpcUaMonitoringParameters::shared(
 /*!
     Request \a shared as subscription type for the subscription.
 */
-void QOpcUaMonitoringParameters::setShared(SubscriptionType shared)
+void QOpcUaMonitoringParameters::setSubscriptionType(SubscriptionType shared)
 {
     d_ptr->shared = shared;
 }

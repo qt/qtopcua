@@ -236,7 +236,7 @@ void QOpcUaClientPrivate::setupNamespaceArrayMonitoring()
 
     if (m_enableNamespaceArrayAutoupdate && !m_namespaceArrayAutoupdateEnabled) {
         QOpcUaMonitoringParameters options;
-        options.setShared(QOpcUaMonitoringParameters::SubscriptionType::Exclusive);
+        options.setSubscriptionType(QOpcUaMonitoringParameters::SubscriptionType::Exclusive);
         options.setMaxKeepAliveCount((std::numeric_limits<quint32>::max)() - 1);
         options.setPublishingInterval(m_namespaceArrayUpdateInterval);
         m_namespaceArrayAutoupdateEnabled = true;

@@ -91,7 +91,7 @@ QOpen62541Subscription::QOpen62541Subscription(Open62541AsyncBackend *backend, c
     , m_subscriptionId(0)
     , m_lifetimeCount(settings.lifetimeCount() ? settings.lifetimeCount() : UA_SubscriptionSettings_default.requestedLifetimeCount)
     , m_maxKeepaliveCount(settings.maxKeepAliveCount() ? settings.maxKeepAliveCount() : UA_SubscriptionSettings_default.requestedMaxKeepAliveCount)
-    , m_shared(settings.shared())
+    , m_shared(settings.subscriptionType())
     , m_priority(settings.priority())
     , m_maxNotificationsPerPublish(settings.maxNotificationsPerPublish())
     , m_clientHandle(0)

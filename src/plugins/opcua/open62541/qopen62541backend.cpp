@@ -270,7 +270,7 @@ void Open62541AsyncBackend::modifyMonitoring(quint64 handle, QOpcUa::NodeAttribu
 
 QOpen62541Subscription *Open62541AsyncBackend::getSubscription(const QOpcUaMonitoringParameters &settings)
 {
-    if (settings.shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared) {
+    if (settings.subscriptionType() == QOpcUaMonitoringParameters::SubscriptionType::Shared) {
         // Requesting multiple subscriptions with publishing interval < minimum publishing interval breaks subscription sharing
         double interval = revisePublishingInterval(settings.publishingInterval(), m_minPublishingInterval);
         for (auto entry : qAsConst(m_subscriptions)) {

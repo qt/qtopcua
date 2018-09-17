@@ -294,7 +294,7 @@ int QUACppSubscription::monitoredItemsCount() const
 
 QOpcUaMonitoringParameters::SubscriptionType QUACppSubscription::shared() const
 {
-    return m_subscriptionParameters.shared();
+    return m_subscriptionParameters.subscriptionType();
 }
 
 void QUACppSubscription::subscriptionStatusChanged(OpcUa_UInt32 clientSubscriptionHandle, const UaStatus &status)
