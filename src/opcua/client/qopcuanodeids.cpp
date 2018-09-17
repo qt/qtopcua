@@ -46,17 +46,17 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QOpcUa::NodeIds::NS0
+    \enum QOpcUa::NodeIds::Namespace0
 
     Contains all numeric node identifiers from namespace 0 defined in the OPC Foundation's
     \l {https://opcfoundation.org/UA/schemas/1.03/NodeIds.csv} {NodeIds.csv} file.
 
     The values in this enum follow the naming from the CSV file and can be converted between
-    enum and node id string using \l QOpcUa::ns0ID() and \l QOpcUa::ns0IDFromNodeId().
-    \l QOpcUa::ns0IDName() provides a conversion from enum value to the name string from the CSV file.
+    enum and node id string using \l QOpcUa::namespace0Id() and \l QOpcUa::namespace0IdFromNodeId().
+    \l QOpcUa::namespace0IdName() provides a conversion from enum value to the name string from the CSV file.
 
     \code
-    QScopedPointer<QOpcUaNode> rootNode(client->node(QOpcUa::ns0ID(QOpcUa::NodeIds::RootFolder)));
+    QScopedPointer<QOpcUaNode> rootNode(client->node(QOpcUa::namespace0Id(QOpcUa::NodeIds::RootFolder)));
     \endcode
 
     \value Unknown

@@ -482,9 +482,9 @@ Q_OPCUA_EXPORT QString nodeIdFromReferenceType(QOpcUa::ReferenceTypeId reference
 Q_OPCUA_EXPORT bool nodeIdStringSplit(const QString &nodeIdString, quint16 *nsIndex,
                                       QString *identifier, char *identifierType);
 Q_OPCUA_EXPORT bool nodeIdEquals(const QString &first, const QString &second);
-Q_OPCUA_EXPORT QString ns0ID(QOpcUa::NodeIds::NS0 id);
-Q_OPCUA_EXPORT QOpcUa::NodeIds::NS0 ns0IDFromNodeId(const QString &nodeId);
-Q_OPCUA_EXPORT QString ns0IDName(QOpcUa::NodeIds::NS0 id);
+Q_OPCUA_EXPORT QString namespace0Id(QOpcUa::NodeIds::Namespace0 id);
+Q_OPCUA_EXPORT QOpcUa::NodeIds::Namespace0 namespace0IdFromNodeId(const QString &nodeId);
+Q_OPCUA_EXPORT QString namespace0IdName(QOpcUa::NodeIds::Namespace0 id);
 
 typedef QPair<QVariant, QOpcUa::Types> TypedVariant;
 

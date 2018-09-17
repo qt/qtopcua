@@ -49,7 +49,7 @@ namespace QOpcUa {
         Q_OPCUA_EXPORT Q_NAMESPACE
 #endif
 
-        enum class NS0 : quint32 {
+        enum class Namespace0 : quint32 {
             Unknown = 0,
             Boolean = 1,
             SByte = 2,
@@ -5799,7 +5799,7 @@ namespace QOpcUa {
             Server_Namespaces_OPCUANamespaceUri_NamespaceFile_ExportNamespace = 15211,
         };
 #ifndef QT_OPCUA_NO_NS0IDNAMES
-        Q_ENUM_NS(NS0)
+        Q_ENUM_NS(Namespace0)
 #endif
     }
 }

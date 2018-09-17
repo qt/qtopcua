@@ -138,11 +138,11 @@ QVariant TreeItem::data(int column)
             return tr("Loading ...");
 
         const QString typeId = mOpcNode->attribute(QOpcUa::NodeAttribute::DataType).toString();
-        auto enumEntry = QOpcUa::ns0IDFromNodeId(typeId);
+        auto enumEntry = QOpcUa::namespace0IdFromNodeId(typeId);
         QString name;
-        if (enumEntry == QOpcUa::NodeIds::NS0::Unknown)
+        if (enumEntry == QOpcUa::NodeIds::Namespace0::Unknown)
             return typeId;
-        return QOpcUa::ns0IDName(enumEntry) + " (" + typeId + ")";
+        return QOpcUa::namespace0IdName(enumEntry) + " (" + typeId + ")";
     } else if (column == 4) {
         return mNodeId;
     } else if (column == 5) {

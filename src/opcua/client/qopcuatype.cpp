@@ -947,28 +947,28 @@ bool QOpcUa::nodeIdEquals(const QString &first, const QString &second)
 /*!
     Returns a node id string for the namespace 0 identifier \a id.
 */
-QString QOpcUa::ns0ID(QOpcUa::NodeIds::NS0 id)
+QString QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0 id)
 {
     return QStringLiteral("ns=0;i=%1").arg(quint32(id));
 }
 
 /*!
-    Returns the enum value from \l QOpcUa::NodeIds::NS0 for \a nodeId.
+    Returns the enum value from \l QOpcUa::NodeIds::Namespace0 for \a nodeId.
 
     If the node id is not in namespace 0 or doesn't have a numeric
     identifier which is part of the OPC Foundation's NodeIds.csv file,
-    \l {QOpcUa::NodeIds::NS0} {Unknown} is returned.
+    \l {QOpcUa::NodeIds::Namespace0} {Unknown} is returned.
 
     If Qt OPC UA has been configured with -no-feature-ns0idnames,
     the check if the numeric identifier is part of the NodeIds.csv
     file is omitted. If the node id is in namespace 0 and has a
     numeric identifier, the identifier is returned regardless if it
-    is part of the \l QOpcUa::NodeIds::NS0 enum.
+    is part of the \l QOpcUa::NodeIds::Namespace0 enum.
 */
-QOpcUa::NodeIds::NS0 QOpcUa::ns0IDFromNodeId(const QString &nodeId)
+QOpcUa::NodeIds::Namespace0 QOpcUa::namespace0IdFromNodeId(const QString &nodeId)
 {
     if (!nodeId.startsWith(QLatin1String("ns=0;i=")))
-        return QOpcUa::NodeIds::NS0::Unknown;
+        return QOpcUa::NodeIds::Namespace0::Unknown;
 
     QStringRef sr = nodeId.midRef(7);
 
@@ -976,14 +976,14 @@ QOpcUa::NodeIds::NS0 QOpcUa::ns0IDFromNodeId(const QString &nodeId)
     quint32 identifier = sr.toUInt(&ok);
 
     if (!ok)
-        return QOpcUa::NodeIds::NS0::Unknown;
+        return QOpcUa::NodeIds::Namespace0::Unknown;
 
 #ifndef QT_OPCUA_NO_NS0IDNAMES
-    if (!QMetaEnum::fromType<QOpcUa::NodeIds::NS0>().valueToKey(identifier))
-        return QOpcUa::NodeIds::NS0::Unknown;
+    if (!QMetaEnum::fromType<QOpcUa::NodeIds::Namespace0>().valueToKey(identifier))
+        return QOpcUa::NodeIds::Namespace0::Unknown;
 #endif
 
-    return QOpcUa::NodeIds::NS0(identifier);
+    return QOpcUa::NodeIds::Namespace0(identifier);
 }
 
 /*!
@@ -992,15 +992,15 @@ QOpcUa::NodeIds::NS0 QOpcUa::ns0IDFromNodeId(const QString &nodeId)
     If \a id is unknown or Qt OPC UA has been configured with -no-feature-ns0idnames,
     an empty string is returned.
 */
-QString QOpcUa::ns0IDName(QOpcUa::NodeIds::NS0 id)
+QString QOpcUa::namespace0IdName(QOpcUa::NodeIds::Namespace0 id)
 {
 #ifdef QT_OPCUA_NO_NS0IDNAMES
     Q_UNUSED(id);
     return QString();
 #else
-    if (id == QOpcUa::NodeIds::NS0::Unknown)
+    if (id == QOpcUa::NodeIds::Namespace0::Unknown)
         return QString();
-    return QString::fromUtf8(QMetaEnum::fromType<QOpcUa::NodeIds::NS0>().valueToKey(quint32(id)));
+    return QString::fromUtf8(QMetaEnum::fromType<QOpcUa::NodeIds::Namespace0>().valueToKey(quint32(id)));
 #endif
 }
 

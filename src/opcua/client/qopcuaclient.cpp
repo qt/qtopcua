@@ -488,7 +488,7 @@ QOpcUa::QQualifiedName QOpcUaClient::qualifiedNameFromNamespaceUri(const QString
     attributes.setDisplayName(QOpcUa::QLocalizedText("en", "My new Variable node"));
     attributes.setDescription(QOpcUa::QLocalizedText("en", "A node which has been added at runtime"));
     attributes.setValue(23.0, QOpcUa::Types::Double);
-    attributes.setDataTypeId(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::Double));
+    attributes.setDataTypeId(QOpcUa::ns0ID(QOpcUa::NodeIds::Namespace0::Double));
     attributes.setValueRank(-2); // Scalar or array
     attributes.setAccessLevel(QOpcUa::AccessLevelBit::CurrentRead);
     attributes.setUserAccessLevel(QOpcUa::AccessLevelBit::CurrentRead);
@@ -552,7 +552,7 @@ bool QOpcUaClient::deleteNode(const QString &nodeId, bool deleteTargetReferences
 
     \code
     QOpcUaAddReferenceItem item;
-    item.setSourceNodeId(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::ObjectsFolder));
+    item.setSourceNodeId(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::ObjectsFolder));
     item.setReferenceTypeId(QOpcUa::nodeIdFromInteger(0, static_cast<quint32>(QOpcUa::ReferenceTypeId::Organizes)));
     item.setIsForward(true);
     item.setTargetNodeId(QOpcUa::QExpandedNodeId("ns=3;s=MyNewVariableNode"));
@@ -583,7 +583,7 @@ bool QOpcUaClient::addReference(const QOpcUaAddReferenceItem &referenceToAdd)
 
     \code
     QOpcUaDeleteReferenceItem item;
-    item.setSourceNodeId(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::ObjectsFolder));
+    item.setSourceNodeId(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::ObjectsFolder));
     item.setReferenceTypeId(QOpcUa::nodeIdFromInteger(0, static_cast<quint32>(QOpcUa::ReferenceTypeId::Organizes)));
     item.setIsForward(true);
     item.setTargetNodeId(QOpcUa::QExpandedNodeId("ns=3;s=MyNewVariableNode"));
