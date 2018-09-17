@@ -618,9 +618,7 @@ void Tst_QOpcUaClient::connectInvalidPassword()
     QSignalSpy connectSpy(opcuaClient, &QOpcUaClient::stateChanged);
 
     opcuaClient->connectToEndpoint(url);
-    connectSpy.wait();
-
-    QCOMPARE(connectSpy.count(), 2);
+    QTRY_VERIFY_WITH_TIMEOUT(connectSpy.count() == 2, 3000);
     QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Connecting);
     QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Disconnected);
 
