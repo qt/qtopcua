@@ -474,7 +474,7 @@ QVariant arrayToQVariant(const UA_Variant &var, QMetaType::Type type)
 
         if (var.arrayDimensionsSize > 0) {
             // Ensure that the array dimensions fit in a QVector
-            if (var.arrayDimensionsSize > static_cast<quint64>(std::numeric_limits<int>::max()))
+            if (var.arrayDimensionsSize > static_cast<quint64>((std::numeric_limits<int>::max)()))
                 return QOpcUa::QMultiDimensionalArray();
             QVector<quint32> arrayDimensions;
             std::copy(var.arrayDimensions, var.arrayDimensions+var.arrayDimensionsSize, std::back_inserter(arrayDimensions));
