@@ -54,9 +54,6 @@ public:
 
     ~QOpcUaNodeCreationAttributes();
 
-    // A bitmask containing all set values, see OPC-UA part 4, table 145
-    quint32 mask() const;
-
     QOpcUa::AccessLevel accessLevel() const;
     void setAccessLevel(QOpcUa::AccessLevel accessLevel);
     bool hasAccessLevel() const;

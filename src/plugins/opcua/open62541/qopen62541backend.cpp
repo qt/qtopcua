@@ -968,8 +968,10 @@ UA_ExtensionObject Open62541AsyncBackend::assembleNodeAttributes(const QOpcUaNod
         obj.content.decoded.data = attr;
         obj.content.decoded.type = &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES];
 
-        if (nodeAttributes.hasEventNotifier())
+        if (nodeAttributes.hasEventNotifier()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_EVENTNOTIFIER;
             attr->eventNotifier = nodeAttributes.eventNotifier();
+        }
         break;
     }
     case QOpcUa::NodeClass::Variable: {
@@ -978,23 +980,39 @@ UA_ExtensionObject Open62541AsyncBackend::assembleNodeAttributes(const QOpcUaNod
         obj.content.decoded.data = attr;
         obj.content.decoded.type = &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES];
 
-        if (nodeAttributes.hasValue())
+        if (nodeAttributes.hasValue()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_VALUE;
             attr->value = QOpen62541ValueConverter::toOpen62541Variant(nodeAttributes.value(),
                                                                        nodeAttributes.valueType());
-        if (nodeAttributes.hasDataTypeId())
+        }
+        if (nodeAttributes.hasDataTypeId()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_DATATYPE;
             attr->dataType = Open62541Utils::nodeIdFromQString(nodeAttributes.dataTypeId());
-        if (nodeAttributes.hasValueRank())
+        }
+        if (nodeAttributes.hasValueRank()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_VALUERANK;
             attr->valueRank = nodeAttributes.valueRank();
-        if (nodeAttributes.hasArrayDimensions())
+        }
+        if (nodeAttributes.hasArrayDimensions()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_ARRAYDIMENSIONS;
             attr->arrayDimensions = copyArrayDimensions(nodeAttributes.arrayDimensions(), &attr->arrayDimensionsSize);
-        if (nodeAttributes.hasAccessLevel())
+        }
+        if (nodeAttributes.hasAccessLevel()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_ACCESSLEVEL;
             attr->accessLevel = nodeAttributes.accessLevel();
-        if (nodeAttributes.hasUserAccessLevel())
+        }
+        if (nodeAttributes.hasUserAccessLevel()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_USERACCESSLEVEL;
             attr->userAccessLevel = nodeAttributes.userAccessLevel();
-        if (nodeAttributes.hasMinimumSamplingInterval())
+        }
+        if (nodeAttributes.hasMinimumSamplingInterval()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_MINIMUMSAMPLINGINTERVAL;
             attr->minimumSamplingInterval = nodeAttributes.minimumSamplingInterval();
-        if (nodeAttributes.hasHistorizing())
+        }
+        if (nodeAttributes.hasHistorizing()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_HISTORIZING;
             attr->historizing = nodeAttributes.historizing();
+        }
         break;
     }
     case QOpcUa::NodeClass::Method: {
@@ -1003,10 +1021,14 @@ UA_ExtensionObject Open62541AsyncBackend::assembleNodeAttributes(const QOpcUaNod
         obj.content.decoded.data = attr;
         obj.content.decoded.type = &UA_TYPES[UA_TYPES_METHODATTRIBUTES];
 
-        if (nodeAttributes.hasExecutable())
+        if (nodeAttributes.hasExecutable()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_EXECUTABLE;
             attr->executable = nodeAttributes.executable();
-        if (nodeAttributes.hasUserExecutable())
+        }
+        if (nodeAttributes.hasUserExecutable()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_USEREXECUTABLE;
             attr->userExecutable = nodeAttributes.userExecutable();
+        }
         break;
     }
     case QOpcUa::NodeClass::ObjectType: {
@@ -1015,8 +1037,10 @@ UA_ExtensionObject Open62541AsyncBackend::assembleNodeAttributes(const QOpcUaNod
         obj.content.decoded.data = attr;
         obj.content.decoded.type = &UA_TYPES[UA_TYPES_OBJECTTYPEATTRIBUTES];
 
-        if (nodeAttributes.hasIsAbstract())
+        if (nodeAttributes.hasIsAbstract()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_ISABSTRACT;
             attr->isAbstract = nodeAttributes.isAbstract();
+        }
         break;
     }
     case QOpcUa::NodeClass::VariableType: {
@@ -1025,17 +1049,27 @@ UA_ExtensionObject Open62541AsyncBackend::assembleNodeAttributes(const QOpcUaNod
         obj.content.decoded.data = attr;
         obj.content.decoded.type = &UA_TYPES[UA_TYPES_VARIABLETYPEATTRIBUTES];
 
-        if (nodeAttributes.hasValue())
+        if (nodeAttributes.hasValue()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_VALUE;
             attr->value = QOpen62541ValueConverter::toOpen62541Variant(nodeAttributes.value(),
                                                                        nodeAttributes.valueType());
-        if (nodeAttributes.hasDataTypeId())
+        }
+        if (nodeAttributes.hasDataTypeId()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_DATATYPE;
             attr->dataType = Open62541Utils::nodeIdFromQString(nodeAttributes.dataTypeId());
-        if (nodeAttributes.hasValueRank())
+        }
+        if (nodeAttributes.hasValueRank()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_VALUERANK;
             attr->valueRank = nodeAttributes.valueRank();
-        if (nodeAttributes.hasArrayDimensions())
+        }
+        if (nodeAttributes.hasArrayDimensions()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_ARRAYDIMENSIONS;
             attr->arrayDimensions = copyArrayDimensions(nodeAttributes.arrayDimensions(), &attr->arrayDimensionsSize);
-        if (nodeAttributes.hasIsAbstract())
+        }
+        if (nodeAttributes.hasIsAbstract()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_ISABSTRACT;
             attr->isAbstract = nodeAttributes.isAbstract();
+        }
         break;
     }
     case QOpcUa::NodeClass::ReferenceType: {
@@ -1044,13 +1078,19 @@ UA_ExtensionObject Open62541AsyncBackend::assembleNodeAttributes(const QOpcUaNod
         obj.content.decoded.data = attr;
         obj.content.decoded.type = &UA_TYPES[UA_TYPES_REFERENCETYPEATTRIBUTES];
 
-        if (nodeAttributes.hasIsAbstract())
+        if (nodeAttributes.hasIsAbstract()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_ISABSTRACT;
             attr->isAbstract = nodeAttributes.isAbstract();
-        if (nodeAttributes.hasSymmetric())
+        }
+        if (nodeAttributes.hasSymmetric()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_SYMMETRIC;
             attr->symmetric = nodeAttributes.symmetric();
-        if (nodeAttributes.hasInverseName())
+        }
+        if (nodeAttributes.hasInverseName()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_INVERSENAME;
             QOpen62541ValueConverter::scalarFromQt<UA_LocalizedText, QOpcUa::QLocalizedText>(
                         nodeAttributes.inverseName(), &attr->inverseName);
+        }
         break;
     }
     case QOpcUa::NodeClass::DataType: {
@@ -1059,8 +1099,10 @@ UA_ExtensionObject Open62541AsyncBackend::assembleNodeAttributes(const QOpcUaNod
         obj.content.decoded.data = attr;
         obj.content.decoded.type = &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES];
 
-        if (nodeAttributes.hasIsAbstract())
+        if (nodeAttributes.hasIsAbstract()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_ISABSTRACT;
             attr->isAbstract = nodeAttributes.isAbstract();
+        }
         break;
     }
     case QOpcUa::NodeClass::View: {
@@ -1069,10 +1111,14 @@ UA_ExtensionObject Open62541AsyncBackend::assembleNodeAttributes(const QOpcUaNod
         obj.content.decoded.data = attr;
         obj.content.decoded.type = &UA_TYPES[UA_TYPES_VIEWATTRIBUTES];
 
-        if (nodeAttributes.hasContainsNoLoops())
+        if (nodeAttributes.hasContainsNoLoops()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_CONTAINSNOLOOPS;
             attr->containsNoLoops = nodeAttributes.containsNoLoops();
-        if (nodeAttributes.hasEventNotifier())
+        }
+        if (nodeAttributes.hasEventNotifier()) {
+            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_EVENTNOTIFIER;
             attr->eventNotifier = nodeAttributes.eventNotifier();
+        }
         break;
     }
     default:
@@ -1082,17 +1128,24 @@ UA_ExtensionObject Open62541AsyncBackend::assembleNodeAttributes(const QOpcUaNod
     }
 
     UA_ObjectAttributes *attr = reinterpret_cast<UA_ObjectAttributes *>(obj.content.decoded.data);
-    attr->specifiedAttributes = nodeAttributes.mask();
-    if (nodeAttributes.hasDisplayName())
+    if (nodeAttributes.hasDisplayName()) {
+        attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_DISPLAYNAME;
         QOpen62541ValueConverter::scalarFromQt<UA_LocalizedText, QOpcUa::QLocalizedText>(
                     nodeAttributes.displayName(), &attr->displayName);
-    if (nodeAttributes.hasDescription())
+    }
+    if (nodeAttributes.hasDescription()) {
+        attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_DESCRIPTION;
         QOpen62541ValueConverter::scalarFromQt<UA_LocalizedText, QOpcUa::QLocalizedText>(
                     nodeAttributes.description(), &attr->description);
-    if (nodeAttributes.hasWriteMask())
+    }
+    if (nodeAttributes.hasWriteMask()) {
+        attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_WRITEMASK;
         attr->writeMask = nodeAttributes.writeMask();
-    if (nodeAttributes.hasUserWriteMask())
+    }
+    if (nodeAttributes.hasUserWriteMask()) {
+        attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_USERWRITEMASK;
         attr->userWriteMask = nodeAttributes.userWriteMask();
+    }
 
     return obj;
 }
