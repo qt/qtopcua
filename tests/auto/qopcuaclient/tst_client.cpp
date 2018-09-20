@@ -3596,7 +3596,7 @@ void Tst_QOpcUaClient::addNamespace()
 
     QSignalSpy methodSpy(node.data(), &QOpcUaNode::methodCallFinished);
 
-    opcuaClient->setEnableNamespaceAutoupdate(true);
+    opcuaClient->setNamespaceAutoupdate(true);
     namespaceUpdatedSpy.clear();
     namespaceChangedSpy.clear();
 

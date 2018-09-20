@@ -741,17 +741,17 @@ QString QOpcUaClient::backend() const
 
     \sa namespaceArray() namespaceArrayUpdated()
 */
-void QOpcUaClient::setEnableNamespaceAutoupdate(bool enable)
+void QOpcUaClient::setNamespaceAutoupdate(bool isEnabled)
 {
     Q_D(QOpcUaClient);
-    d->m_enableNamespaceArrayAutoupdate = enable;
+    d->m_enableNamespaceArrayAutoupdate = isEnabled;
     d->setupNamespaceArrayMonitoring();
 }
 
 /*!
-    Returns whether autoupdate of the namespace array is activated.
+    Returns whether autoupdate of the namespace array is enabled.
 */
-bool QOpcUaClient::namespaceAutoupdateEnabled() const
+bool QOpcUaClient::isNamespaceAutoupdateEnabled() const
 {
     Q_D(const QOpcUaClient);
     return d->m_enableNamespaceArrayAutoupdate;
@@ -764,7 +764,7 @@ bool QOpcUaClient::namespaceAutoupdateEnabled() const
 
     \a interval determines the interval to check for changes in milliseconds. The default is once per second.
 
-    \sa QOpcUaClient::setEnableNamespaceAutoupdate(bool enable)
+    \sa QOpcUaClient::setNamespaceAutoupdate(bool isEnabled)
 */
 void QOpcUaClient::setNamespaceAutoupdateInterval(int interval)
 {

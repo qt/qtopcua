@@ -176,7 +176,7 @@ void OpcUaConnection::setBackend(const QString &name)
                 emit connectedChanged();
             }
         });
-        m_client->setEnableNamespaceAutoupdate(true);
+        m_client->setNamespaceAutoupdate(true);
     } else {
         qCWarning(QT_OPCUA_PLUGINS_QML) << tr("Backend '%1' could not be created.").arg(name);
     }

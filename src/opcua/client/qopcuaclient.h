@@ -114,8 +114,8 @@ public:
 
     QString backend() const;
 
-    void setEnableNamespaceAutoupdate(bool enable);
-    bool namespaceAutoupdateEnabled() const;
+    void setNamespaceAutoupdate(bool isEnabled);
+    bool isNamespaceAutoupdateEnabled() const;
     void setNamespaceAutoupdateInterval(int interval);
     int namespaceAutoupdateInterval() const;
 
