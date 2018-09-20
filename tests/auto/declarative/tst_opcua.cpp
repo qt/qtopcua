@@ -52,12 +52,10 @@ class SetupClass : public QObject
     Q_OBJECT
 public:
     SetupClass() {
-        m_serverProcess = new QProcess();
     };
     ~SetupClass() {
-        if (m_serverProcess && m_serverProcess->state() == QProcess::Running)
-            m_serverProcess->kill();
     }
+
 public slots:
     void applicationAvailable() {
         const quint16 defaultPort = 43344;
@@ -94,9 +92,9 @@ public slots:
             server.close();
 
             qDebug() << "Starting test server";
-            m_serverProcess->setProcessChannelMode(QProcess::ForwardedChannels);
-            m_serverProcess->start(m_testServerPath);
-            QVERIFY2(m_serverProcess->waitForStarted(), qPrintable(m_serverProcess->errorString()));
+            m_serverProcess.setProcessChannelMode(QProcess::ForwardedChannels);
+            m_serverProcess.start(m_testServerPath);
+            QVERIFY2(m_serverProcess.waitForStarted(), qPrintable(m_serverProcess.errorString()));
             // Let the server come up
             QTest::qSleep(2000);
         }
@@ -107,8 +105,14 @@ public slots:
         Q_UNUSED(engine);
         // nothing
     }
+    void cleanupTestCase() {
+        if (m_serverProcess.state() == QProcess::Running) {
+            m_serverProcess.kill();
+            m_serverProcess.waitForFinished(2000);
+        }
+    }
 private:
-    QProcess *m_serverProcess = nullptr;
+    QProcess m_serverProcess;
     QString m_testServerPath;
 };
 
