@@ -176,7 +176,7 @@ public:
     void setMaxNotificationsPerPublish(quint32 maxNotificationsPerPublish);
     quint8 priority() const;
     void setPriority(quint8 priority);
-    bool publishingEnabled() const;
+    bool isPublishingEnabled() const;
     void setPublishingEnabled(bool publishingEnabled);
     QOpcUa::UaStatusCode statusCode() const;
     void setStatusCode(QOpcUa::UaStatusCode statusCode);

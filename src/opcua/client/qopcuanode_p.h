@@ -136,7 +136,7 @@ public:
             auto it = m_monitoringStatus.find(attr);
             if (param.statusCode() == QOpcUa::UaStatusCode::Good && it != m_monitoringStatus.end()) {
                 if (items & QOpcUaMonitoringParameters::Parameter::PublishingEnabled)
-                    it->setPublishingEnabled(param.publishingEnabled());
+                    it->setPublishingEnabled(param.isPublishingEnabled());
                 if (items & QOpcUaMonitoringParameters::Parameter::PublishingInterval)
                     it->setPublishingInterval(param.publishingInterval());
                 if (items & QOpcUaMonitoringParameters::Parameter::LifetimeCount)

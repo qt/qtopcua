@@ -271,7 +271,7 @@ void QOpcUaMonitoringParameters::setStatusCode(QOpcUa::UaStatusCode statusCode)
 /*!
     Returns the publishing mode for the subscription.
 */
-bool QOpcUaMonitoringParameters::publishingEnabled() const
+bool QOpcUaMonitoringParameters::isPublishingEnabled() const
 {
     return d_ptr->publishingEnabled;
 }
