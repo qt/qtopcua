@@ -72,7 +72,7 @@ public:
     QOpcUa::QQualifiedName browseName;
     QOpcUa::QLocalizedText displayName;
     QOpcUa::NodeClass nodeClass {QOpcUa::NodeClass::Object};
-    bool isForward {true};
+    bool isForwardReference {true};
 };
 
 /*!
@@ -121,19 +121,19 @@ void QOpcUaReferenceDescription::setNodeClass(QOpcUa::NodeClass nodeClass)
 }
 
 /*!
-    Sets \a isForward as isForward information for the reference.
+    Sets \a isForwardReference as isForwardReference information for the reference.
 */
-void QOpcUaReferenceDescription::setIsForward(bool isForward)
+void QOpcUaReferenceDescription::setIsForwardReference(bool isForwardReference)
 {
-    d_ptr->isForward = isForward;
+    d_ptr->isForwardReference = isForwardReference;
 }
 
 /*!
     Returns \c true if the reference is forward.
 */
-bool QOpcUaReferenceDescription::isForward() const
+bool QOpcUaReferenceDescription::isForwardReference() const
 {
-    return d_ptr->isForward;
+    return d_ptr->isForwardReference;
 }
 
 /*!

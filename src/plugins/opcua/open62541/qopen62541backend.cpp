@@ -642,7 +642,7 @@ void Open62541AsyncBackend::addReference(const QOpcUaAddReferenceItem &reference
     UA_StatusCode res = UA_Client_addReference(m_uaclient,
                                                Open62541Utils::nodeIdFromQString(referenceToAdd.sourceNodeId()),
                                                Open62541Utils::nodeIdFromQString(referenceToAdd.referenceTypeId()),
-                                               referenceToAdd.isForward(), serverUri, target, nodeClass);
+                                               referenceToAdd.isForwardReference(), serverUri, target, nodeClass);
 
     QOpcUa::UaStatusCode statusCode = static_cast<QOpcUa::UaStatusCode>(res);
     if (res != UA_STATUSCODE_GOOD)
@@ -651,7 +651,7 @@ void Open62541AsyncBackend::addReference(const QOpcUaAddReferenceItem &reference
 
     emit addReferenceFinished(referenceToAdd.sourceNodeId(), referenceToAdd.referenceTypeId(),
                               referenceToAdd.targetNodeId(),
-                              referenceToAdd.isForward(), statusCode);
+                              referenceToAdd.isForwardReference(), statusCode);
 }
 
 void Open62541AsyncBackend::deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete)
@@ -665,7 +665,7 @@ void Open62541AsyncBackend::deleteReference(const QOpcUaDeleteReferenceItem &ref
     UA_StatusCode res = UA_Client_deleteReference(m_uaclient,
                                                   Open62541Utils::nodeIdFromQString(referenceToDelete.sourceNodeId()),
                                                   Open62541Utils::nodeIdFromQString(referenceToDelete.referenceTypeId()),
-                                                  referenceToDelete.isForward(),
+                                                  referenceToDelete.isForwardReference(),
                                                   target, referenceToDelete.deleteBidirectional());
 
     QOpcUa::UaStatusCode statusCode = static_cast<QOpcUa::UaStatusCode>(res);
@@ -675,7 +675,7 @@ void Open62541AsyncBackend::deleteReference(const QOpcUaDeleteReferenceItem &ref
 
     emit deleteReferenceFinished(referenceToDelete.sourceNodeId(), referenceToDelete.referenceTypeId(),
                                  referenceToDelete.targetNodeId(),
-                                 referenceToDelete.isForward(), statusCode);
+                                 referenceToDelete.isForwardReference(), statusCode);
 }
 
 static void convertBrowseResult(UA_BrowseResult *src, quint32 referencesSize, QVector<QOpcUaReferenceDescription> &dst)
@@ -691,7 +691,7 @@ static void convertBrowseResult(UA_BrowseResult *src, quint32 referencesSize, QV
         temp.setNodeClass(static_cast<QOpcUa::NodeClass>(src->references[i].nodeClass));
         temp.setBrowseName(QOpen62541ValueConverter::scalarToQt<QOpcUa::QQualifiedName, UA_QualifiedName>(&src->references[i].browseName));
         temp.setDisplayName(QOpen62541ValueConverter::scalarToQt<QOpcUa::QLocalizedText, UA_LocalizedText>(&src->references[i].displayName));
-        temp.setIsForward(src->references[i].isForward);
+        temp.setIsForwardReference(src->references[i].isForward);
         dst.push_back(temp);
     }
 }

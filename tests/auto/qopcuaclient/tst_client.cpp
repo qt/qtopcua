@@ -1082,7 +1082,7 @@ void Tst_QOpcUaClient::inverseBrowse()
     QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
     QCOMPARE(ref.size(), 1);
     QCOMPARE(ref.at(0).targetNodeId().nodeId(), QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::BaseDataType));
-    QCOMPARE(ref.at(0).isForward(), false);
+    QCOMPARE(ref.at(0).isForwardReference(), false);
     QCOMPARE(ref.at(0).browseName().name(), QStringLiteral("BaseDataType"));
     QCOMPARE(ref.at(0).displayName().text(), QStringLiteral("BaseDataType"));
     QCOMPARE(ref.at(0).refTypeId(), QOpcUa::nodeIdFromReferenceType(QOpcUa::ReferenceTypeId::HasSubtype));
@@ -1277,7 +1277,7 @@ void Tst_QOpcUaClient::addAndRemoveReference()
     QOpcUaAddReferenceItem refInfo;
     refInfo.setSourceNodeId(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::RootFolder));
     refInfo.setReferenceTypeId(referenceType);
-    refInfo.setIsForward(true);
+    refInfo.setIsForwardReference(true);
     refInfo.setTargetNodeId(target);
     refInfo.setTargetNodeClass(QOpcUa::NodeClass::Variable);
 
@@ -1319,7 +1319,7 @@ void Tst_QOpcUaClient::addAndRemoveReference()
     QOpcUaDeleteReferenceItem refDelInfo;
     refDelInfo.setSourceNodeId(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::RootFolder));
     refDelInfo.setReferenceTypeId(referenceType);
-    refDelInfo.setIsForward(true);
+    refDelInfo.setIsForwardReference(true);
     refDelInfo.setTargetNodeId(target);
     refDelInfo.setDeleteBidirectional(true);
 

@@ -172,7 +172,7 @@ void UACppAsyncBackend::browse(quint64 handle, const UaNodeId &id, const QOpcUaB
                                    &referenceDescriptions[i].BrowseName, QMetaType::Type::UnknownType).value<QOpcUa::QQualifiedName>());
             temp.setDisplayName(QUACppValueConverter::scalarToQVariant<QOpcUa::QLocalizedText, OpcUa_LocalizedText>(
                                     &referenceDescriptions[i].DisplayName, QMetaType::Type::UnknownType).value<QOpcUa::QLocalizedText>());
-            temp.setIsForward(referenceDescriptions[i].IsForward);
+            temp.setIsForwardReference(referenceDescriptions[i].IsForward);
             ret.append(temp);
         }
     } while (continuationPoint.length() > 0);

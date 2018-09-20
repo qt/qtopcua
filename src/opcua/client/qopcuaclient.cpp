@@ -231,18 +231,18 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
-    \fn void QOpcUaClient::addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForward, QOpcUa::UaStatusCode statusCode)
+    \fn void QOpcUaClient::addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode)
 
     This signal is emitted after an \l addReference() operation has finished.
-    \a sourceNodeId, \a referenceTypeId, \a targetNodeId and \a isForward are the values from the \l addReference() call.
+    \a sourceNodeId, \a referenceTypeId, \a targetNodeId and \a isForwardReference are the values from the \l addReference() call.
     \a statusCode contains the result of the operation.
 */
 
 /*!
-    \fn void QOpcUaClient::deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForward, QOpcUa::UaStatusCode statusCode)
+    \fn void QOpcUaClient::deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode)
 
     This signal is emitted after a \l deleteReference() operation has finished.
-    \a sourceNodeId, \a referenceTypeId, \a targetNodeId and \a isForward are the values from the \l deleteReference() call.
+    \a sourceNodeId, \a referenceTypeId, \a targetNodeId and \a isForwardReference are the values from the \l deleteReference() call.
     \a statusCode contains the result of the operation.
 */
 
@@ -554,7 +554,7 @@ bool QOpcUaClient::deleteNode(const QString &nodeId, bool deleteTargetReferences
     QOpcUaAddReferenceItem item;
     item.setSourceNodeId(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::ObjectsFolder));
     item.setReferenceTypeId(QOpcUa::nodeIdFromInteger(0, static_cast<quint32>(QOpcUa::ReferenceTypeId::Organizes)));
-    item.setIsForward(true);
+    item.setIsForwardReference(true);
     item.setTargetNodeId(QOpcUa::QExpandedNodeId("ns=3;s=MyNewVariableNode"));
     item.setTargetNodeClass(QOpcUa::NodeClass::Variable);
 
@@ -585,7 +585,7 @@ bool QOpcUaClient::addReference(const QOpcUaAddReferenceItem &referenceToAdd)
     QOpcUaDeleteReferenceItem item;
     item.setSourceNodeId(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::ObjectsFolder));
     item.setReferenceTypeId(QOpcUa::nodeIdFromInteger(0, static_cast<quint32>(QOpcUa::ReferenceTypeId::Organizes)));
-    item.setIsForward(true);
+    item.setIsForwardReference(true);
     item.setTargetNodeId(QOpcUa::QExpandedNodeId("ns=3;s=MyNewVariableNode"));
     item.setDeleteBidirectional(true);
 

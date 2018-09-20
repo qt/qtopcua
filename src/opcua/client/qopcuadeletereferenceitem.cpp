@@ -52,7 +52,7 @@ class QOpcUaDeleteReferenceItemData : public QSharedData
 public:
     QString sourceNodeId;
     QString referenceTypeId;
-    bool isForward {true};
+    bool isForwardReference {true};
     QOpcUa::QExpandedNodeId targetNodeId;
     bool deleteBidirectional {true};
 };
@@ -119,19 +119,19 @@ void QOpcUaDeleteReferenceItem::setTargetNodeId(const QOpcUa::QExpandedNodeId &t
 }
 
 /*!
-    Returns the isForward flag.
+    Returns the isForwardReference flag.
 */
-bool QOpcUaDeleteReferenceItem::isForward() const
+bool QOpcUaDeleteReferenceItem::isForwardReference() const
 {
-    return data->isForward;
+    return data->isForwardReference;
 }
 
 /*!
-    Sets the isForward flag to \a isForward.
+    Sets the isForwardReference flag to \a isForwardReference.
 */
-void QOpcUaDeleteReferenceItem::setIsForward(bool isForward)
+void QOpcUaDeleteReferenceItem::setIsForwardReference(bool isForwardReference)
 {
-    data->isForward = isForward;
+    data->isForwardReference = isForwardReference;
 }
 
 /*!

@@ -63,8 +63,8 @@ public:
     void setDisplayName(const QOpcUa::QLocalizedText &displayName);
     QOpcUa::NodeClass nodeClass() const;
     void setNodeClass(QOpcUa::NodeClass nodeClass);
-    void setIsForward(bool isForward);
-    bool isForward() const;
+    void setIsForwardReference(bool isForwardReference);
+    bool isForwardReference() const;
     void setTypeDefinition(const QOpcUa::QExpandedNodeId &typeDefinition);
     QOpcUa::QExpandedNodeId typeDefinition() const;
 
