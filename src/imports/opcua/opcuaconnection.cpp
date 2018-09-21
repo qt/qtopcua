@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
     any connection attempt.
 
     \code
-    import QtOpcUa 5.12 as QtOpcUa
+    import QtOpcUa 5.13 as QtOpcUa
 
     QtOpcUa.Connection {
         backend: "open62541"

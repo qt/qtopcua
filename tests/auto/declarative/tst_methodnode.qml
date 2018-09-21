@@ -36,7 +36,7 @@
 
 import QtQuick 2.3
 import QtTest 1.0
-import QtOpcUa 5.12 as QtOpcUa
+import QtOpcUa 5.13 as QtOpcUa
 
 Item {
 

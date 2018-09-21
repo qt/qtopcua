@@ -52,7 +52,7 @@
 import QtQuick 2.10
 import QtQuick.Layouts 1.3
 import QtQuick.Controls 2.3
-import QtOpcUa 5.12 as QtOpcUa
+import QtOpcUa 5.13 as QtOpcUa
 import "qrc:/machine"
 
 RowLayout {

@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
     \since QtOpcUa 5.12
 
     \code
-    import QtOpcUa 5.12 as QtOpcUa
+    import QtOpcUa 5.13 as QtOpcUa
 
     QtOpcUa.RelativeNodePath {
         ns: "Test Namespace"

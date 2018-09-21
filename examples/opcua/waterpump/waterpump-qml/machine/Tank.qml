@@ -49,7 +49,7 @@
 ****************************************************************************/
 
 import QtQuick 2.10
-import QtOpcUa 5.12 as QtOpcUa
+import QtOpcUa 5.13 as QtOpcUa
 
 Item {
     property QtOpcUa.Node tankNode

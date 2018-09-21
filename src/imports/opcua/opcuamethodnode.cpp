@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
     The target object node ID has to be specified by the \l objectNodeId property.
 
     \code
-    import QtOpcUa 5.12 as QtOpcUa
+    import QtOpcUa 5.13 as QtOpcUa
 
     QtOpcUa.MethodNode {
         nodeId : QtOpcUa.NodeId {
