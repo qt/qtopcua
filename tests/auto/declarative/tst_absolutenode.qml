@@ -344,4 +344,31 @@ Item {
             id: node10
         }
     }
+
+    TestCase {
+        name: "Node timestamps"
+        when: node11.readyToUse
+
+        SignalSpy {
+            id: node11ValueSpy
+            target: node11
+            signalName: "valueChanged"
+        }
+
+        function test_nodeTest() {
+            node11ValueSpy.wait();
+
+            var now = new Date();
+            verify((now - node11.serverTimestamp) < 10000);
+            verify((now - node11.sourceTimestamp) < 10000);
+        }
+
+        QtOpcUa.ValueNode {
+            connection: connection
+            nodeId: QtOpcUa.NodeId {
+                identifier: "ns=3;s=theStringId"
+            }
+            id: node11
+        }
+    }
 }

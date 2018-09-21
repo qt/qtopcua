@@ -40,6 +40,7 @@
 #include "qopcuatype.h"
 #include "universalnode.h"
 #include "opcuaattributecache.h"
+#include <QDateTime>
 
 QT_BEGIN_NAMESPACE
 
@@ -100,6 +101,9 @@ public:
 
     OpcUaNode::Status status() const;
     const QString &errorMessage() const;
+
+    Q_INVOKABLE QDateTime getSourceTimestamp(QOpcUa::NodeAttribute) const;
+    Q_INVOKABLE QDateTime getServerTimestamp(QOpcUa::NodeAttribute) const;
 
     // This function is not exposed to QML
     const UniversalNode &resolvedNode() const;

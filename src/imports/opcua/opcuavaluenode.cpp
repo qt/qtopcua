@@ -73,6 +73,20 @@ QT_BEGIN_NAMESPACE
     Reading and writing this property will access the node on the server.
 */
 
+/*!
+    \qmlproperty Date ValueNode::sourceTimestamp
+    \readonly
+
+    Source timestamp of the value attribute.
+*/
+
+/*!
+    \qmlproperty Date ValueNode::serverTimestamp
+    \readonly
+
+    Server timestamp of the value attribute.
+*/
+
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML)
 
 OpcUaValueNode::OpcUaValueNode(QObject *parent):
@@ -123,6 +137,16 @@ QVariant OpcUaValueNode::value() const
     if (!m_node)
         return QVariant();
     return m_node->attribute(QOpcUa::NodeAttribute::Value);
+}
+
+QDateTime OpcUaValueNode::serverTimestamp() const
+{
+    return getServerTimestamp(QOpcUa::NodeAttribute::Value);
+}
+
+QDateTime OpcUaValueNode::sourceTimestamp() const
+{
+    return getSourceTimestamp(QOpcUa::NodeAttribute::Value);
 }
 
 QT_END_NAMESPACE

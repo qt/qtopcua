@@ -37,6 +37,7 @@
 #pragma once
 
 #include "opcuanode.h"
+#include <QDateTime>
 
 QT_BEGIN_NAMESPACE
 
@@ -45,11 +46,16 @@ class OpcUaValueNode : public OpcUaNode
     Q_OBJECT
     Q_DISABLE_COPY(OpcUaValueNode)
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
+    Q_PROPERTY(QDateTime serverTimestamp READ serverTimestamp)
+    Q_PROPERTY(QDateTime sourceTimestamp READ sourceTimestamp)
 
 public:
     OpcUaValueNode(QObject *parent = nullptr);
     ~OpcUaValueNode();
     QVariant value() const;
+
+    QDateTime serverTimestamp() const;
+    QDateTime sourceTimestamp() const;
 
 public slots:
     void setValue(const QVariant &);

@@ -115,6 +115,16 @@ Module {
             name: "setConnection"
             Parameter { type: "OpcUaConnection"; isPointer: true }
         }
+        Method {
+            name: "getSourceTimestamp"
+            type: "QDateTime"
+            Parameter { type: "QOpcUa::NodeAttribute" }
+        }
+        Method {
+            name: "getServerTimestamp"
+            type: "QDateTime"
+            Parameter { type: "QOpcUa::NodeAttribute" }
+        }
     }
     Component {
         name: "OpcUaNodeId"
@@ -222,6 +232,8 @@ Module {
         exports: ["QtOpcUa/ValueNode 5.12"]
         exportMetaObjectRevisions: [0]
         Property { name: "value"; type: "QVariant" }
+        Property { name: "serverTimestamp"; type: "QDateTime"; isReadonly: true }
+        Property { name: "sourceTimestamp"; type: "QDateTime"; isReadonly: true }
         Signal {
             name: "valueChanged"
             Parameter { name: "value"; type: "QVariant" }

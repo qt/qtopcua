@@ -264,6 +264,30 @@ const QString &OpcUaNode::errorMessage() const
     return m_errorMessage;
 }
 
+/*!
+    \qmlmethod Date Node::getSourceTimestamp(QOpcUa::NodeAttribute attribute)
+
+    Returns the source timestamp of the given \a attribute.
+*/
+QDateTime OpcUaNode::getSourceTimestamp(QOpcUa::NodeAttribute attribute) const
+{
+    if (!m_connection || !m_node)
+        return QDateTime();
+    return m_node->sourceTimestamp(attribute);
+}
+
+/*!
+    \qmlmethod Date Node::getServerTimestamp(Constants::NodeAttribute attribute)
+
+    Returns the server timestamp of the given \a attribute.
+*/
+QDateTime OpcUaNode::getServerTimestamp(QOpcUa::NodeAttribute attribute) const
+{
+    if (!m_connection || !m_node)
+        return QDateTime();
+    return m_node->serverTimestamp(attribute);
+}
+
 void OpcUaNode::setNodeId(OpcUaNodeIdType *nodeId)
 {
     if (m_nodeId == nodeId)
