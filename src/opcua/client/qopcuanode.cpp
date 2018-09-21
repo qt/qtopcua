@@ -357,7 +357,7 @@ QVariant QOpcUaNode::attribute(QOpcUa::NodeAttribute attribute) const
 
     \sa readValueAttribute()  writeValueAttribute() valueAttributeError()
 */
-QVariant QOpcUaNode::value() const
+QVariant QOpcUaNode::valueAttribute() const
 {
     return attribute(QOpcUa::NodeAttribute::Value);
 }
@@ -383,7 +383,7 @@ QOpcUa::UaStatusCode QOpcUaNode::attributeError(QOpcUa::NodeAttribute attribute)
 
 /*!
     Returns the error code for the node's Value attribute.
-    The status code \l {QOpcUa::UaStatusCode} {Good} indicates a valid return value for \l value().
+    The status code \l {QOpcUa::UaStatusCode} {Good} indicates a valid return value for \l valueAttribute().
     If there is no entry in the attribute cache, \l {QOpcUa::UaStatusCode} {BadNoEntryExists} is returned.
 */
 QOpcUa::UaStatusCode QOpcUaNode::valueAttributeError() const
