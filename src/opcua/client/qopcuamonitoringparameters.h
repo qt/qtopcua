@@ -85,8 +85,8 @@ public:
     public:
         enum class DataChangeTrigger {
             Status = 0,
-            StatusValue = 1,
-            StatusValueTimestamp = 2
+            StatusOrValue = 1,
+            StatusOrValueOrTimestamp = 2
         };
 
         enum class DeadbandType {
@@ -124,6 +124,7 @@ public:
         EventFilter(const EventFilter &);
         EventFilter &operator=(const EventFilter &);
         operator QVariant const();
+        bool operator==(const QOpcUaMonitoringParameters::EventFilter &rhs) const;
         EventFilter &operator<<(const QOpcUa::QContentFilterElement &whereClauseElement);
         EventFilter &operator<<(const QOpcUa::QSimpleAttributeOperand &selectClauseElement);
         ~EventFilter();
@@ -142,16 +143,19 @@ public:
 
     QOpcUaMonitoringParameters();
     ~QOpcUaMonitoringParameters();
-    QOpcUaMonitoringParameters(double publishingInterval, SubscriptionType shared = SubscriptionType::Shared, quint32 subscriptionId = 0);
+    QOpcUaMonitoringParameters(double publishingInterval, SubscriptionType subscriptionType = SubscriptionType::Shared, quint32 subscriptionId = 0);
     QOpcUaMonitoringParameters(const QOpcUaMonitoringParameters &other);
     QOpcUaMonitoringParameters &operator=(const QOpcUaMonitoringParameters &other);
 
     double samplingInterval() const;
     void setSamplingInterval(double samplingInterval);
     QVariant filter() const;
-    void setDataChangeFilter(const QOpcUaMonitoringParameters::DataChangeFilter &filter);
-    void setEventFilter(const QOpcUaMonitoringParameters::EventFilter &eventFilter);
-    void setFilter(const QVariant &filter);
+    void setFilter(const QOpcUaMonitoringParameters::DataChangeFilter &filter);
+    void setFilter(const QOpcUaMonitoringParameters::EventFilter &eventFilter);
+    void clearFilter();
+    QVariant filterResult() const;
+    void setFilterResult(const QOpcUa::QEventFilterResult &eventFilterResult);
+    void clearFilterResult();
     quint32 queueSize() const;
     void setQueueSize(quint32 queueSize);
     bool discardOldest() const;
@@ -172,12 +176,12 @@ public:
     void setMaxNotificationsPerPublish(quint32 maxNotificationsPerPublish);
     quint8 priority() const;
     void setPriority(quint8 priority);
-    bool publishingEnabled() const;
+    bool isPublishingEnabled() const;
     void setPublishingEnabled(bool publishingEnabled);
     QOpcUa::UaStatusCode statusCode() const;
     void setStatusCode(QOpcUa::UaStatusCode statusCode);
-    QOpcUaMonitoringParameters::SubscriptionType shared() const;
-    void setShared(SubscriptionType subscriptionType);
+    QOpcUaMonitoringParameters::SubscriptionType subscriptionType() const;
+    void setSubscriptionType(SubscriptionType subscriptionType);
     QString indexRange() const;
     void setIndexRange(const QString &indexRange);
 

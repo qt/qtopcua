@@ -114,8 +114,8 @@ public:
 
     QString backend() const;
 
-    void setEnableNamespaceAutoupdate(bool enable);
-    bool namespaceAutoupdateEnabled() const;
+    void setNamespaceAutoupdate(bool isEnabled);
+    bool isNamespaceAutoupdateEnabled() const;
     void setNamespaceAutoupdateInterval(int interval);
     int namespaceAutoupdateInterval() const;
 
@@ -132,9 +132,9 @@ Q_SIGNALS:
     void batchWriteFinished(QVector<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult);
     void addNodeFinished(QOpcUa::QExpandedNodeId requestedNodeId, QString assignedNodeId, QOpcUa::UaStatusCode statusCode);
     void deleteNodeFinished(QString nodeId, QOpcUa::UaStatusCode statusCode);
-    void addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForward,
+    void addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForwardReference,
                               QOpcUa::UaStatusCode statusCode);
-    void deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForward,
+    void deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForwardReference,
                               QOpcUa::UaStatusCode statusCode);
 
 private:

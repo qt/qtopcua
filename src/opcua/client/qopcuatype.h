@@ -482,9 +482,9 @@ Q_OPCUA_EXPORT QString nodeIdFromReferenceType(QOpcUa::ReferenceTypeId reference
 Q_OPCUA_EXPORT bool nodeIdStringSplit(const QString &nodeIdString, quint16 *nsIndex,
                                       QString *identifier, char *identifierType);
 Q_OPCUA_EXPORT bool nodeIdEquals(const QString &first, const QString &second);
-Q_OPCUA_EXPORT QString ns0ID(QOpcUa::NodeIds::NS0 id);
-Q_OPCUA_EXPORT QOpcUa::NodeIds::NS0 ns0IDFromNodeId(const QString &nodeId);
-Q_OPCUA_EXPORT QString ns0IDName(QOpcUa::NodeIds::NS0 id);
+Q_OPCUA_EXPORT QString namespace0Id(QOpcUa::NodeIds::Namespace0 id);
+Q_OPCUA_EXPORT QOpcUa::NodeIds::Namespace0 namespace0IdFromNodeId(const QString &nodeId);
+Q_OPCUA_EXPORT QString namespace0IdName(QOpcUa::NodeIds::Namespace0 id);
 
 typedef QPair<QVariant, QOpcUa::Types> TypedVariant;
 
@@ -513,6 +513,10 @@ private:
 class QLocalizedTextData;
 class Q_OPCUA_EXPORT QLocalizedText
 {
+    Q_GADGET
+    Q_PROPERTY(QString locale READ locale WRITE setLocale)
+    Q_PROPERTY(QString text READ text WRITE setText)
+
 public:
     QLocalizedText();
     QLocalizedText(const QOpcUa::QLocalizedText &);
@@ -821,6 +825,7 @@ public:
     QSimpleAttributeOperand(QOpcUa::NodeAttribute attributeId,
                             const QString &typeId = QStringLiteral("ns=0;i=2041")); // BaseEventType
     QSimpleAttributeOperand &operator=(const QOpcUa::QSimpleAttributeOperand &);
+    bool operator==(const QSimpleAttributeOperand &rhs) const;
     operator QVariant() const;
     ~QSimpleAttributeOperand();
 
@@ -879,6 +884,7 @@ public:
     QContentFilterElement();
     QContentFilterElement(const QContentFilterElement &);
     QContentFilterElement &operator=(const QContentFilterElement &);
+    bool operator==(const QContentFilterElement &rhs) const;
     operator QVariant() const;
     ~QContentFilterElement();
 

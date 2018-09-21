@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
     \inherits Node
 
     This QML element supports calling method nodes on a server.
-    The target method node has to be specified by the \l objectNodeId property.
+    The target object node ID has to be specified by the \l objectNodeId property.
 
     \code
     import QtOpcUa 5.12 as QtOpcUa
@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
             ns: "Example Namespace"
         }
         objectNodeId : QtOpcUa.NodeId {
-            identifier: "s=Example.Method"
+            identifier: "s=Example.Object"
             ns: "Example Namespace"
         }
         connection: myConnection
@@ -90,10 +90,10 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty OpcUaNodeId MethodNode::objectNodeId
+    \qmlproperty OpcUaNode MethodNode::objectNodeId
 
     Determines the actual node on which the method is called.
-    It can be a relative or absolute node ID.
+    It can be a relative or absolute node Id.
 */
 
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML)
@@ -108,46 +108,37 @@ OpcUaNodeIdType *OpcUaMethodNode::objectNodeId() const
     return m_objectNodeId;
 }
 
-void OpcUaMethodNode::setObjectNodeId(OpcUaNodeIdType *nodeId)
+void OpcUaMethodNode::setObjectNodeId(OpcUaNodeIdType *node)
 {
-    m_objectNodeId = nodeId;
-    m_objectNodePath.clear();
-    emit objectNodeIdChanged(nodeId);
+    if (m_objectNodeId)
+        disconnect(m_objectNodeId);
 
-    retrieveObjectNodePath();
+    m_objectNodeId = node;
+    connect(m_objectNodeId, &OpcUaNodeIdType::nodeChanged, this, &OpcUaMethodNode::handleObjectNodeIdChanged);
+    handleObjectNodeIdChanged();
 }
 
 void OpcUaMethodNode::callMethod()
 {
-    if (!m_objectNodeId || !m_node) {
-        qCWarning(QT_OPCUA_PLUGINS_QML) << "No node or no object ID";
+    if (!m_objectNode || !m_objectNode->node() || !m_node) {
+        qCWarning(QT_OPCUA_PLUGINS_QML) << "No node or no object";
         return;
     }
 
-    if (m_objectNodePath.isEmpty()) {
-        qCWarning(QT_OPCUA_PLUGINS_QML) << "object node path is empty";
-        return;
-    }
-
-    m_node->callMethod(m_objectNodePath, QVector<QOpcUa::TypedVariant> ());
+    m_objectNode->node()->callMethod(m_node->nodeId(), QVector<QOpcUa::TypedVariant>());
 }
 
-void OpcUaMethodNode::objectNodePathResolved(const QString &str)
+void OpcUaMethodNode::handleObjectNodeIdChanged()
 {
-    m_objectNodePath = str;
+    m_objectNode->deleteLater();
+    m_objectNode = new OpcUaNode(this);
+    m_objectNode->setNodeId(m_objectNodeId);
+    emit objectNodeIdChanged();
 }
 
 void OpcUaMethodNode::setupNode(const QString &absolutePath)
 {
     OpcUaNode::setupNode(absolutePath);
-    retrieveObjectNodePath();
-}
-
-void OpcUaMethodNode::retrieveObjectNodePath()
-{
-    retrieveAbsoluteNodePath(m_objectNodeId, [this](const QString &str) {
-        this->objectNodePathResolved(str);
-    });
 }
 
 QT_END_NAMESPACE

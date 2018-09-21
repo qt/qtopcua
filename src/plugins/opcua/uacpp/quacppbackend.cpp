@@ -172,7 +172,7 @@ void UACppAsyncBackend::browse(quint64 handle, const UaNodeId &id, const QOpcUaB
                                    &referenceDescriptions[i].BrowseName, QMetaType::Type::UnknownType).value<QOpcUa::QQualifiedName>());
             temp.setDisplayName(QUACppValueConverter::scalarToQVariant<QOpcUa::QLocalizedText, OpcUa_LocalizedText>(
                                     &referenceDescriptions[i].DisplayName, QMetaType::Type::UnknownType).value<QOpcUa::QLocalizedText>());
-            temp.setIsForward(referenceDescriptions[i].IsForward);
+            temp.setIsForwardReference(referenceDescriptions[i].IsForward);
             ret.append(temp);
         }
     } while (continuationPoint.length() > 0);
@@ -556,7 +556,7 @@ void UACppAsyncBackend::resolveBrowsePath(quint64 handle, const UaNodeId &startN
 
 QUACppSubscription *UACppAsyncBackend::getSubscription(const QOpcUaMonitoringParameters &settings)
 {
-    if (settings.shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared) {
+    if (settings.subscriptionType() == QOpcUaMonitoringParameters::SubscriptionType::Shared) {
         // Requesting multiple subscriptions with publishing interval < minimum publishing interval breaks subscription sharing
         double interval = revisePublishingInterval(settings.publishingInterval(), m_minPublishingInterval);
         for (auto entry : qAsConst(m_subscriptions)) {

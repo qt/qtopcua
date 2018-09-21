@@ -231,18 +231,18 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
-    \fn void QOpcUaClient::addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForward, QOpcUa::UaStatusCode statusCode)
+    \fn void QOpcUaClient::addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode)
 
     This signal is emitted after an \l addReference() operation has finished.
-    \a sourceNodeId, \a referenceTypeId, \a targetNodeId and \a isForward are the values from the \l addReference() call.
+    \a sourceNodeId, \a referenceTypeId, \a targetNodeId and \a isForwardReference are the values from the \l addReference() call.
     \a statusCode contains the result of the operation.
 */
 
 /*!
-    \fn void QOpcUaClient::deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForward, QOpcUa::UaStatusCode statusCode)
+    \fn void QOpcUaClient::deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode)
 
     This signal is emitted after a \l deleteReference() operation has finished.
-    \a sourceNodeId, \a referenceTypeId, \a targetNodeId and \a isForward are the values from the \l deleteReference() call.
+    \a sourceNodeId, \a referenceTypeId, \a targetNodeId and \a isForwardReference are the values from the \l deleteReference() call.
     \a statusCode contains the result of the operation.
 */
 
@@ -488,7 +488,7 @@ QOpcUa::QQualifiedName QOpcUaClient::qualifiedNameFromNamespaceUri(const QString
     attributes.setDisplayName(QOpcUa::QLocalizedText("en", "My new Variable node"));
     attributes.setDescription(QOpcUa::QLocalizedText("en", "A node which has been added at runtime"));
     attributes.setValue(23.0, QOpcUa::Types::Double);
-    attributes.setDataTypeId(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::Double));
+    attributes.setDataTypeId(QOpcUa::ns0ID(QOpcUa::NodeIds::Namespace0::Double));
     attributes.setValueRank(-2); // Scalar or array
     attributes.setAccessLevel(QOpcUa::AccessLevelBit::CurrentRead);
     attributes.setUserAccessLevel(QOpcUa::AccessLevelBit::CurrentRead);
@@ -552,9 +552,9 @@ bool QOpcUaClient::deleteNode(const QString &nodeId, bool deleteTargetReferences
 
     \code
     QOpcUaAddReferenceItem item;
-    item.setSourceNodeId(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::ObjectsFolder));
+    item.setSourceNodeId(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::ObjectsFolder));
     item.setReferenceTypeId(QOpcUa::nodeIdFromInteger(0, static_cast<quint32>(QOpcUa::ReferenceTypeId::Organizes)));
-    item.setIsForward(true);
+    item.setIsForwardReference(true);
     item.setTargetNodeId(QOpcUa::QExpandedNodeId("ns=3;s=MyNewVariableNode"));
     item.setTargetNodeClass(QOpcUa::NodeClass::Variable);
 
@@ -583,9 +583,9 @@ bool QOpcUaClient::addReference(const QOpcUaAddReferenceItem &referenceToAdd)
 
     \code
     QOpcUaDeleteReferenceItem item;
-    item.setSourceNodeId(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::ObjectsFolder));
+    item.setSourceNodeId(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::ObjectsFolder));
     item.setReferenceTypeId(QOpcUa::nodeIdFromInteger(0, static_cast<quint32>(QOpcUa::ReferenceTypeId::Organizes)));
-    item.setIsForward(true);
+    item.setIsForwardReference(true);
     item.setTargetNodeId(QOpcUa::QExpandedNodeId("ns=3;s=MyNewVariableNode"));
     item.setDeleteBidirectional(true);
 
@@ -741,17 +741,17 @@ QString QOpcUaClient::backend() const
 
     \sa namespaceArray() namespaceArrayUpdated()
 */
-void QOpcUaClient::setEnableNamespaceAutoupdate(bool enable)
+void QOpcUaClient::setNamespaceAutoupdate(bool isEnabled)
 {
     Q_D(QOpcUaClient);
-    d->m_enableNamespaceArrayAutoupdate = enable;
+    d->m_enableNamespaceArrayAutoupdate = isEnabled;
     d->setupNamespaceArrayMonitoring();
 }
 
 /*!
-    Returns whether autoupdate of the namespace array is activated.
+    Returns whether autoupdate of the namespace array is enabled.
 */
-bool QOpcUaClient::namespaceAutoupdateEnabled() const
+bool QOpcUaClient::isNamespaceAutoupdateEnabled() const
 {
     Q_D(const QOpcUaClient);
     return d->m_enableNamespaceArrayAutoupdate;
@@ -764,7 +764,7 @@ bool QOpcUaClient::namespaceAutoupdateEnabled() const
 
     \a interval determines the interval to check for changes in milliseconds. The default is once per second.
 
-    \sa QOpcUaClient::setEnableNamespaceAutoupdate(bool enable)
+    \sa QOpcUaClient::setNamespaceAutoupdate(bool isEnabled)
 */
 void QOpcUaClient::setNamespaceAutoupdateInterval(int interval)
 {

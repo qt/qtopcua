@@ -192,26 +192,26 @@ QOpcUa::NodeClass OpcUaNode::nodeClass()
     return m_attributeCache.attributeValue(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>();
 }
 
-void OpcUaNode::setDisplayName(const LocalizedText &value)
+void OpcUaNode::setDisplayName(const QOpcUa::QLocalizedText &value)
 {
     if (!m_connection || !m_node)
         return;
     m_node->writeAttribute(QOpcUa::NodeAttribute::DisplayName, value);
 }
 
-LocalizedText OpcUaNode::displayName()
+QOpcUa::QLocalizedText OpcUaNode::displayName()
 {
     return m_attributeCache.attributeValue(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>();
 }
 
-void OpcUaNode::setDescription(const LocalizedText &value)
+void OpcUaNode::setDescription(const QOpcUa::QLocalizedText &value)
 {
     if (!m_connection || !m_node)
         return;
     m_node->writeAttribute(QOpcUa::NodeAttribute::Description, value);
 }
 
-LocalizedText OpcUaNode::description()
+QOpcUa::QLocalizedText OpcUaNode::description()
 {
     return m_attributeCache.attributeValue(QOpcUa::NodeAttribute::Description).value<QOpcUa::QLocalizedText>();
 }
@@ -291,6 +291,11 @@ void OpcUaNode::updateNode()
 const UniversalNode &OpcUaNode::resolvedNode() const
 {
     return m_resolvedNode;
+}
+
+QOpcUaNode *OpcUaNode::node() const
+{
+    return m_node;
 }
 
 void OpcUaNode::setAttributesToRead(QOpcUa::NodeAttributes attributes)

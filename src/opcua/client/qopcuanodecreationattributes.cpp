@@ -281,15 +281,6 @@ QOpcUaNodeCreationAttributes::~QOpcUaNodeCreationAttributes()
 {}
 
 /*!
-    Returns the bitmask containing information about set attributes.
-    For a mapping of bit positions to attributes, see OPC-UA part 4, table 145.
-*/
-quint32 QOpcUaNodeCreationAttributes::mask() const
-{
-    return data->mask;
-}
-
-/*!
     Returns the value for the AccessLevel attribute.
 */
 QOpcUa::AccessLevel QOpcUaNodeCreationAttributes::accessLevel() const

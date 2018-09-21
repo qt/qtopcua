@@ -154,9 +154,9 @@ bool QUACppSubscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::NodeA
     monitorId++;
 
     if (UaNodeId(createResults[0].FilterResult.TypeId.NodeId) == UaNodeId(OpcUaId_EventFilterResult_Encoding_DefaultBinary, 0))
-        s.setFilter(QVariant::fromValue(convertEventFilterResult(createResults[0].FilterResult)));
+        s.setFilterResult(convertEventFilterResult(createResults[0].FilterResult));
     else
-        s.setFilter(QVariant()); // The server did not return an EventFilterResult
+        s.clearFilterResult(); // The server did not return an EventFilterResult
     emit m_backend->monitoringEnableDisable(handle, attr, true, s);
 
     return true;
@@ -294,7 +294,7 @@ int QUACppSubscription::monitoredItemsCount() const
 
 QOpcUaMonitoringParameters::SubscriptionType QUACppSubscription::shared() const
 {
-    return m_subscriptionParameters.shared();
+    return m_subscriptionParameters.subscriptionType();
 }
 
 void QUACppSubscription::subscriptionStatusChanged(OpcUa_UInt32 clientSubscriptionHandle, const UaStatus &status)
@@ -734,15 +734,19 @@ bool QUACppSubscription::modifyMonitoredItemParameters(quint64 handle, QOpcUa::N
                 p.setDiscardOldest(value.toBool());
                 changed | QOpcUaMonitoringParameters::Parameter::DiscardOldest;
             }
-            if (item == QOpcUaMonitoringParameters::Parameter::Filter &&
-                    UaNodeId(results[0].FilterResult.TypeId.NodeId) == UaNodeId(OpcUaId_EventFilterResult_Encoding_DefaultBinary, 0)) {
-                p.setFilter(QVariant::fromValue(convertEventFilterResult(results[0].FilterResult)));
-                changed | QOpcUaMonitoringParameters::Parameter::Filter;
+
+            if (item == QOpcUaMonitoringParameters::Parameter::Filter) {
+                changed |= QOpcUaMonitoringParameters::Parameter::Filter;
+                if (value.canConvert<QOpcUaMonitoringParameters::DataChangeFilter>())
+                    p.setFilter(value.value<QOpcUaMonitoringParameters::DataChangeFilter>());
+                else if (value.canConvert<QOpcUaMonitoringParameters::EventFilter>())
+                    p.setFilter(value.value<QOpcUaMonitoringParameters::EventFilter>());
+                if (UaNodeId(results[0].FilterResult.TypeId.NodeId) == UaNodeId(OpcUaId_EventFilterResult_Encoding_DefaultBinary, 0))
+                    p.setFilterResult(convertEventFilterResult(results[0].FilterResult));
             }
 
             emit m_backend->monitoringStatusChanged(handle, attr, changed, p);
-            if (item == QOpcUaMonitoringParameters::Parameter::Filter)
-                p.setFilter(m_monitoredItems[key].second.filter()); // Don't overwrite the filter
+
             m_monitoredItems[key].second = p;
         }
         return true;

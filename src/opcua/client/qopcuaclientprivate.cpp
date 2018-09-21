@@ -93,15 +93,15 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
     });
 
     QObject::connect(m_impl.data(), &QOpcUaClientImpl::addReferenceFinished, [this](const QString &sourceNodeId, const QString &referenceTypeId,
-                     const QOpcUa::QExpandedNodeId &targetNodeId, bool isForward, QOpcUa::UaStatusCode statusCode) {
+                     const QOpcUa::QExpandedNodeId &targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode) {
         Q_Q(QOpcUaClient);
-        emit q->addReferenceFinished(sourceNodeId, referenceTypeId, targetNodeId, isForward, statusCode);
+        emit q->addReferenceFinished(sourceNodeId, referenceTypeId, targetNodeId, isForwardReference, statusCode);
     });
 
     QObject::connect(m_impl.data(), &QOpcUaClientImpl::deleteReferenceFinished, [this](const QString &sourceNodeId, const QString &referenceTypeId,
-                     const QOpcUa::QExpandedNodeId &targetNodeId, bool isForward, QOpcUa::UaStatusCode statusCode) {
+                     const QOpcUa::QExpandedNodeId &targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode) {
         Q_Q(QOpcUaClient);
-        emit q->deleteReferenceFinished(sourceNodeId, referenceTypeId, targetNodeId, isForward, statusCode);
+        emit q->deleteReferenceFinished(sourceNodeId, referenceTypeId, targetNodeId, isForwardReference, statusCode);
     });
 }
 
@@ -236,7 +236,7 @@ void QOpcUaClientPrivate::setupNamespaceArrayMonitoring()
 
     if (m_enableNamespaceArrayAutoupdate && !m_namespaceArrayAutoupdateEnabled) {
         QOpcUaMonitoringParameters options;
-        options.setShared(QOpcUaMonitoringParameters::SubscriptionType::Exclusive);
+        options.setSubscriptionType(QOpcUaMonitoringParameters::SubscriptionType::Exclusive);
         options.setMaxKeepAliveCount((std::numeric_limits<quint32>::max)() - 1);
         options.setPublishingInterval(m_namespaceArrayUpdateInterval);
         m_namespaceArrayAutoupdateEnabled = true;

@@ -78,6 +78,7 @@ public:
     // MonitoredItem
     double samplingInterval;
     QVariant filter;
+    QVariant filterResult;
     quint32 queueSize;
     bool discardOldest;
     QOpcUaMonitoringParameters::MonitoringMode monitoringMode;

@@ -51,7 +51,7 @@ class QOpcUaAddReferenceItemData : public QSharedData
 public:
     QString sourceNodeId;
     QString referenceTypeId;
-    bool isForward {true};
+    bool isForwardReference {true};
     QOpcUa::QExpandedNodeId targetNodeId;
     QOpcUa::NodeClass targetNodeClass {QOpcUa::NodeClass::Undefined};
     QString targetServerUri;
@@ -136,21 +136,21 @@ void QOpcUaAddReferenceItem::setTargetNodeId(const QOpcUa::QExpandedNodeId &targ
 }
 
 /*!
-    Returns the isForward flag.
+    Returns the isForwardReference flag.
 */
-bool QOpcUaAddReferenceItem::isForward() const
+bool QOpcUaAddReferenceItem::isForwardReference() const
 {
-    return data->isForward;
+    return data->isForwardReference;
 }
 
 /*!
-    Sets the isForward flag to \a isForward.
+    Sets the isForwardReference flag to \a isForwardReference.
     If the flag is set, a forward reference is created.
     Otherwise, an inverse reference is created.
 */
-void QOpcUaAddReferenceItem::setIsForward(bool isForward)
+void QOpcUaAddReferenceItem::setIsForwardReference(bool isForwardReference)
 {
-    data->isForward = isForward;
+    data->isForwardReference = isForwardReference;
 }
 
 /*!

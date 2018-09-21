@@ -385,7 +385,7 @@ void DemoServer::launch()
          qFatal("Unexpected namespace index for Demo namespace");
      }
 
-     UA_NodeId machineObject = addObject(QOpcUa::ns0ID(QOpcUa::NodeIds::NS0::ObjectsFolder), "ns=2;s=Machine",
+     UA_NodeId machineObject = addObject(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::ObjectsFolder), "ns=2;s=Machine",
                                          "Machine", "Machine", "The machine simulator", UA_NS0ID_ORGANIZES);
      UA_NodeId tank1Object = addObject("ns=2;s=Machine", "ns=2;s=Machine.Tank1", "Tank1", "Tank 1");
      UA_NodeId tank2Object = addObject("ns=2;s=Machine", "ns=2;s=Machine.Tank2", "Tank2", "Tank 2");

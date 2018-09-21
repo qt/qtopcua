@@ -14,7 +14,6 @@ SOURCES += \
     opcuapathresolver.cpp \
     opcuaattributevalue.cpp \
     opcuaattributecache.cpp \
-    opcuatype.cpp \
 
 HEADERS += \
     opcua_plugin.h \
@@ -30,7 +29,6 @@ HEADERS += \
     opcuapathresolver.h \
     opcuaattributecache.h \
     opcuaattributevalue.h \
-    opcuatype.h \
 
 load(qml_plugin)
 

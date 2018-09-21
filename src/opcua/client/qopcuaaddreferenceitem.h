@@ -57,8 +57,8 @@ public:
     QString referenceTypeId() const;
     void setReferenceTypeId(const QString &referenceTypeId);
 
-    bool isForward() const;
-    void setIsForward(bool isForward);
+    bool isForwardReference() const;
+    void setIsForwardReference(bool isForwardReference);
 
     QOpcUa::QExpandedNodeId targetNodeId() const;
     void setTargetNodeId(const QOpcUa::QExpandedNodeId &targetNodeId);

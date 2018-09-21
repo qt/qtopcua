@@ -91,7 +91,7 @@ QOpen62541Subscription::QOpen62541Subscription(Open62541AsyncBackend *backend, c
     , m_subscriptionId(0)
     , m_lifetimeCount(settings.lifetimeCount() ? settings.lifetimeCount() : UA_SubscriptionSettings_default.requestedLifetimeCount)
     , m_maxKeepaliveCount(settings.maxKeepAliveCount() ? settings.maxKeepAliveCount() : UA_SubscriptionSettings_default.requestedMaxKeepAliveCount)
-    , m_shared(settings.shared())
+    , m_shared(settings.subscriptionType())
     , m_priority(settings.priority())
     , m_maxNotificationsPerPublish(settings.maxNotificationsPerPublish())
     , m_clientHandle(0)
@@ -304,10 +304,11 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::N
     temp->parameters = s;
     temp->clientHandle = m_clientHandle;
 
-    if (settings.filter().canConvert<QOpcUaMonitoringParameters::EventFilter>())
-        s.setFilter(QVariant::fromValue(convertEventFilterResult(&res.filterResult)));
+    if (res.filterResult.encoding >= UA_EXTENSIONOBJECT_DECODED &&
+            res.filterResult.content.decoded.type == &UA_TYPES[UA_TYPES_EVENTFILTERRESULT])
+        s.setFilterResult(convertEventFilterResult(&res.filterResult));
     else
-        s.setFilter(QVariant());
+        s.clearFilterResult();
 
     emit m_backend->monitoringEnableDisable(handle, attr, true, s);
 
@@ -830,13 +831,18 @@ bool QOpen62541Subscription::modifyMonitoredItemParameters(quint64 handle, QOpcU
                 changed |= QOpcUaMonitoringParameters::Parameter::DiscardOldest;
             }
 
-            if (res.results[0].filterResult.content.decoded.type == &UA_TYPES[UA_TYPES_EVENTFILTERRESULT]) {
-                if (item == QOpcUaMonitoringParameters::Parameter::Filter)
-                    changed |= QOpcUaMonitoringParameters::Parameter::Filter;
-                p.setFilter(QVariant::fromValue(convertEventFilterResult(&res.results[0].filterResult)));
+            if (item == QOpcUaMonitoringParameters::Parameter::Filter) {
+                changed |= QOpcUaMonitoringParameters::Parameter::Filter;
+                if (value.canConvert<QOpcUaMonitoringParameters::DataChangeFilter>())
+                    p.setFilter(value.value<QOpcUaMonitoringParameters::DataChangeFilter>());
+                else if (value.canConvert<QOpcUaMonitoringParameters::EventFilter>())
+                    p.setFilter(value.value<QOpcUaMonitoringParameters::EventFilter>());
+                if (res.results[0].filterResult.content.decoded.type == &UA_TYPES[UA_TYPES_EVENTFILTERRESULT])
+                    p.setFilterResult(convertEventFilterResult(&res.results[0].filterResult));
             }
 
             emit m_backend->monitoringStatusChanged(handle, attr, changed, p);
+
             monItem->parameters = p;
         }
         return true;

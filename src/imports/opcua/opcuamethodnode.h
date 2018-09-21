@@ -56,17 +56,17 @@ public slots:
     void callMethod();
 
 signals:
-    void objectNodeIdChanged(const OpcUaNodeIdType *nodeId);
+    void objectNodeIdChanged();
+
+private slots:
+    void handleObjectNodeIdChanged();
 
 private:
     void setupNode(const QString &absolutePath) override;
-    void objectNodePathResolved(const QString &);
 
 private:
-    void retrieveObjectNodePath();
-
     OpcUaNodeIdType *m_objectNodeId = nullptr;
-    QString m_objectNodePath; // not exposed
+    OpcUaNode *m_objectNode = nullptr;
 };
 
 QT_END_NAMESPACE

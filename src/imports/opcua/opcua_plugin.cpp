@@ -42,7 +42,7 @@
 #include "opcuaconnection.h"
 #include "opcuarelativenodepath.h"
 #include "opcuarelativenodeid.h"
-#include "opcuatype.h"
+#include "qopcuatype.h"
 #include <QLoggingCategory>
 
 #include <qqml.h>
@@ -79,7 +79,6 @@ void OpcUaPlugin::registerTypes(const char *uri)
     qmlRegisterType<OpcUaRelativeNodePath>(uri, major, minor, "RelativeNodePath");
     qmlRegisterType<OpcUaRelativeNodeId>(uri, major, minor, "RelativeNodeId");
     qmlRegisterUncreatableMetaObject(Constants::staticMetaObject, uri, major, minor, "Constants", "This type can not be created.");
-    qmlRegisterUncreatableType<LocalizedText>(uri, major, minor, "LocalizedText", "This type can only be accessed as member of other elements");
 
     // insert new versions here
 

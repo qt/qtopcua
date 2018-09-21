@@ -72,7 +72,7 @@ public:
     bool readAttributeRange(QOpcUa::NodeAttribute attribute, const QString &indexRange);
     bool readValueAttribute();
     QVariant attribute(QOpcUa::NodeAttribute attribute) const;
-    QVariant value() const;
+    QVariant valueAttribute() const;
     QOpcUa::UaStatusCode attributeError(QOpcUa::NodeAttribute attribute) const;
     QOpcUa::UaStatusCode valueAttributeError() const;
     QDateTime sourceTimestamp(QOpcUa::NodeAttribute attribute) const;

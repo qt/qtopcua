@@ -55,12 +55,12 @@
         },
         "ns0idnames": {
             "label": "Support for namespace 0 NodeId names",
-            "purpose": "Provides names for the QOpcUa::NodeIds::NS0 enum.",
+            "purpose": "Provides names for the QOpcUa::NodeIds::Namespace0 enum.",
             "output": [ "privateFeature" ]
         },
         "ns0idgenerator": {
             "label": "Namespace 0 NodeIds generator",
-            "purpose": "Build a generator for updating the QOpcUa::NodeIds::NS0 enum from the NodeIds.csv file.",
+            "purpose": "Build a generator for updating the QOpcUa::NodeIds::Namespace0 enum from the NodeIds.csv file.",
             "autoDetect": "false",
             "output": [ "privateFeature" ]
         }

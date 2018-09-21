@@ -49,10 +49,6 @@ Module {
         exports: ["QtOpcUa/MethodNode 5.12"]
         exportMetaObjectRevisions: [0]
         Property { name: "objectNodeId"; type: "OpcUaNodeIdType"; isPointer: true }
-        Signal {
-            name: "objectNodeIdChanged"
-            Parameter { name: "nodeId"; type: "const OpcUaNodeIdType"; isPointer: true }
-        }
         Method {
             name: "setObjectNodeId"
             Parameter { name: "nodeId"; type: "OpcUaNodeIdType"; isPointer: true }

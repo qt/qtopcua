@@ -78,28 +78,41 @@ Item {
             signalName: "descriptionChanged"
         }
 
+        SignalSpy {
+            id: node1ObjectNodeIdSpy
+            target: node1
+            signalName: "objectNodeIdChanged"
+        }
+
         function test_nodeTest() {
-            compare(node1.browseName, "TestFolder");
-            compare(node1.nodeClass, QtOpcUa.Constants.NodeClass.Object);
-            compare(node1.displayName.text, "TestFolder");
-            compare(node1.description.text, "");
+            compare(node1.browseName, "multiplyArguments");
+            compare(node1.nodeClass, QtOpcUa.Constants.NodeClass.Method);
+            compare(node1.displayName.text, "ns=3;s=Test.Method.Multiply");
+            compare(node1.description.text, "MultiplyDoubles");
+            compare(node1.objectNodeId.ns, "Test Namespace");
+            compare(node1.objectNodeId.identifier, "s=TestFolder");
 
             compare(node1BrowseNameSpy.count, 1)
             compare(node1NodeClassSpy.count, 1)
             compare(node1DisplayNameSpy.count, 1)
             compare(node1DescriptionSpy.count, 1)
+            compare(node1ObjectNodeIdSpy.count, 0)
+
+            node1.objectNodeId.identifier = "s=foo";
+            node1ObjectNodeIdSpy.wait()
+            compare(node1ObjectNodeIdSpy.count, 1);
         }
 
         QtOpcUa.MethodNode {
             connection: connection
             nodeId: QtOpcUa.NodeId {
                 ns: "Test Namespace"
-                identifier: "s=TestFolder"
-            }
-            objectNodeId: QtOpcUa.NodeId {
-                ns: "Test Namespace"
                 identifier: "s=Test.Method.Multiply"
             }
+            objectNodeId: QtOpcUa.NodeId {
+                                ns: "Test Namespace"
+                                identifier: "s=TestFolder"
+                        }
             id: node1
         }
     }
