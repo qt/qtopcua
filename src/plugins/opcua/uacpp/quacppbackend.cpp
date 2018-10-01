@@ -599,4 +599,66 @@ bool UACppAsyncBackend::removeSubscription(quint32 subscriptionId)
     return false;
 }
 
+void UACppAsyncBackend::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
+{
+    if (nodesToRead.size() == 0) {
+        emit batchReadFinished(QVector<QOpcUaReadResult>(), QOpcUa::UaStatusCode::BadNothingToDo);
+        return;
+    }
+
+    UaReadValueIds nodesToReadNativeType;
+    nodesToReadNativeType.resize(nodesToRead.size());
+
+    for (int i = 0; i < nodesToRead.size(); ++i) {
+        UACppUtils::nodeIdFromQString(nodesToRead[i].nodeId()).copyTo(&nodesToReadNativeType[i].NodeId);
+        nodesToReadNativeType[i].AttributeId = QUACppValueConverter::toUaAttributeId(nodesToRead[i].attribute());
+        if (!nodesToRead[i].indexRange().isEmpty()) {
+            UaString ir(nodesToRead[i].indexRange().toUtf8());
+            ir.copyTo(&nodesToReadNativeType[i].IndexRange);
+        }
+    }
+
+    UaDataValues values;
+    UaDiagnosticInfos diagnosticInfos;
+    ServiceSettings serviceSettings;
+
+    UaStatus result  = m_nativeSession->read(serviceSettings, 0.0 /* maxAge */,
+                                             OpcUa_TimestampsToReturn_Both,
+                                             nodesToReadNativeType, values,
+                                             diagnosticInfos);
+    QOpcUa::UaStatusCode status = static_cast<QOpcUa::UaStatusCode>(result.code());
+
+    if (result.isBad()) {
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Batch read failed:" << result.toString();
+        emit batchReadFinished(QVector<QOpcUaReadResult>(), status);
+    } else {
+        QVector<QOpcUaReadResult> ret;
+
+        for (int i = 0; i < nodesToRead.size(); ++i) {
+            QOpcUaReadResult item;
+            item.setAttribute(nodesToRead.at(i).attribute());
+            item.setNodeId(nodesToRead.at(i).nodeId());
+            item.setIndexRange(nodesToRead.at(i).indexRange());
+
+            if (static_cast<size_t>(i) < values.length()) {
+                UaDataValue dataValue(values[i]);
+                item.setValue(QUACppValueConverter::toQVariant(*dataValue.value()));
+                item.setStatusCode(static_cast<QOpcUa::UaStatusCode>(dataValue.statusCode()));
+                if (dataValue.isServerTimestampSet()) {
+                    auto dt = dataValue.serverTimestamp();
+                    item.setServerTimestamp(QUACppValueConverter::toQDateTime(&dt));
+                }
+                if (dataValue.isSourceTimestampSet()) {
+                    auto dt = dataValue.sourceTimestamp();
+                    item.setSourceTimestamp(QUACppValueConverter::toQDateTime(&dt));
+                }
+            } else {
+                item.setStatusCode(status);
+            }
+            ret.push_back(item);
+        }
+        emit batchReadFinished(ret, status);
+    }
+}
+
 QT_END_NAMESPACE

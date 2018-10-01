@@ -937,10 +937,6 @@ void Tst_QOpcUaClient::batchWrite()
 void Tst_QOpcUaClient::batchRead()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
-
-    if (opcuaClient->backend() == QLatin1String("uacpp"))
-        QSKIP("batchRead is currently not supported in the uacpp backend");
-
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QVector<QOpcUaReadItem> request;

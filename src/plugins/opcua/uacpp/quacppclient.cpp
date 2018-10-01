@@ -102,9 +102,8 @@ bool QUACppClient::findServers(const QUrl &url, const QStringList &localeIds, co
 
 bool QUACppClient::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
 {
-    Q_UNUSED(nodesToRead);
-    qCInfo(QT_OPCUA_PLUGINS_UACPP) << "Batch read is currently not implemented in the uacpp backend";
-    return false;
+    return QMetaObject::invokeMethod(m_backend, "batchRead", Qt::QueuedConnection,
+                                     Q_ARG(QVector<QOpcUaReadItem>, nodesToRead));
 }
 
 bool QUACppClient::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite)
