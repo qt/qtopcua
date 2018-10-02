@@ -66,6 +66,7 @@ public Q_SLOTS:
     bool removeSubscription(quint32 subscriptionId);
 
     void batchRead(const QVector<QOpcUaReadItem> &nodesToRead);
+    void batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite);
 
 public:
     QUACppSubscription *getSubscription(const QOpcUaMonitoringParameters &settings);

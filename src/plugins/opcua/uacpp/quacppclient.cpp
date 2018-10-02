@@ -108,10 +108,8 @@ bool QUACppClient::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
 
 bool QUACppClient::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite)
 {
-    Q_UNUSED(nodesToWrite);
-
-    qCInfo(QT_OPCUA_PLUGINS_UACPP) << "Batch write is currently not implemented in the uacpp backend";
-    return false;
+    return QMetaObject::invokeMethod(m_backend, "batchWrite", Qt::QueuedConnection,
+                                     Q_ARG(QVector<QOpcUaWriteItem>, nodesToWrite));
 }
 
 bool QUACppClient::addNode(const QOpcUaAddNodeItem &nodeToAdd)

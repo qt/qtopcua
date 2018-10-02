@@ -38,6 +38,7 @@
 #include <uaclient/uasession.h>
 #include <uabase/uastring.h>
 #include <uaclient/uadiscovery.h>
+#include <uabase/uadatavalue.h>
 
 #include <limits>
 
@@ -658,6 +659,68 @@ void UACppAsyncBackend::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
             ret.push_back(item);
         }
         emit batchReadFinished(ret, status);
+    }
+}
+
+void UACppAsyncBackend::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite)
+{
+    if (nodesToWrite.isEmpty()) {
+        emit batchWriteFinished(QVector<QOpcUaWriteResult>(), QOpcUa::UaStatusCode::BadNothingToDo);
+        return;
+    }
+
+    UaWriteValues nodesToWriteNativeType;
+    nodesToWriteNativeType.create(nodesToWrite.size());
+
+    for (int i = 0; i < nodesToWrite.size(); ++i) {
+        const auto &currentItem = nodesToWrite[i];
+        UaDataValue dataValue;
+        auto value = QUACppValueConverter::toUACppVariant(currentItem.value(), currentItem.type());
+        dataValue.setValue(value, true); // true == detach value
+        if (currentItem.hasStatusCode())
+            dataValue.setStatusCode(currentItem.statusCode());
+        if (currentItem.serverTimestamp().isValid())
+            dataValue.setServerTimestamp(QUACppValueConverter::toUACppDateTime(currentItem.serverTimestamp()));
+        if (currentItem.sourceTimestamp().isValid())
+            dataValue.setSourceTimestamp(QUACppValueConverter::toUACppDateTime(currentItem.sourceTimestamp()));
+        dataValue.copyTo(&nodesToWriteNativeType[i].Value);
+        UACppUtils::nodeIdFromQString(currentItem.nodeId()).copyTo(&nodesToWriteNativeType[i].NodeId);
+        nodesToWriteNativeType[i].AttributeId = QUACppValueConverter::toUaAttributeId(currentItem.attribute());
+
+        if (!currentItem.indexRange().isEmpty()) {
+            UaString ir(currentItem.indexRange().toUtf8());
+            ir.copyTo(&nodesToWriteNativeType[i].IndexRange);
+        }
+    }
+
+    UaStatusCodeArray results;
+    UaDiagnosticInfos diagnosticInfos;
+    ServiceSettings serviceSettings;
+
+    UaStatus result  = m_nativeSession->write(serviceSettings, nodesToWriteNativeType,
+                                              results, diagnosticInfos);
+    const QOpcUa::UaStatusCode status = static_cast<QOpcUa::UaStatusCode>(result.code());
+
+    if (result.isBad()) {
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Batch write failed:" << result.toString();
+        emit batchWriteFinished(QVector<QOpcUaWriteResult>(), status);
+    } else {
+        QVector<QOpcUaWriteResult> ret;
+
+        for (int i = 0; i < nodesToWrite.size(); ++i) {
+            QOpcUaWriteResult item;
+            item.setAttribute(nodesToWrite.at(i).attribute());
+            item.setNodeId(nodesToWrite.at(i).nodeId());
+            item.setIndexRange(nodesToWrite.at(i).indexRange());
+
+            if (static_cast<size_t>(i) < results.length())
+                item.setStatusCode(static_cast<QOpcUa::UaStatusCode>(results[i]));
+            else
+                item.setStatusCode(status);
+
+            ret.push_back(item);
+        }
+        emit batchWriteFinished(ret, status);
     }
 }
 
