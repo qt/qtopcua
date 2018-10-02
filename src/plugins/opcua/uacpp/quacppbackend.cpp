@@ -277,16 +277,6 @@ void UACppAsyncBackend::requestEndpoints(const QUrl &url)
     emit endpointsRequestFinished(ret, static_cast<QOpcUa::UaStatusCode>(res.code()));
 }
 
-inline OpcUa_UInt32 toUaAttributeId(QOpcUa::NodeAttribute attr)
-{
-    const int attributeIdUsedBits = 22;
-    for (int i = 0; i < attributeIdUsedBits; ++i)
-        if (static_cast<int>(attr) == (1 << i))
-            return static_cast<OpcUa_UInt32>(i + 1);
-
-    return static_cast<OpcUa_UInt32>(0);
-}
-
 void UACppAsyncBackend::readAttributes(quint64 handle, const UaNodeId &id, QOpcUa::NodeAttributes attr, QString indexRange)
 {
     UaStatus result;
@@ -304,7 +294,7 @@ void UACppAsyncBackend::readAttributes(quint64 handle, const UaNodeId &id, QOpcU
         attributeSize++;
         nodeToRead.resize(attributeSize);
         id.copyTo(&nodeToRead[attributeSize - 1].NodeId);
-        nodeToRead[attributeSize - 1].AttributeId = toUaAttributeId(attribute);
+        nodeToRead[attributeSize - 1].AttributeId = QUACppValueConverter::toUaAttributeId(attribute);
         if (indexRange.size()) {
             UaString ir(indexRange.toUtf8().constData());
             ir.copyTo(&nodeToRead[attributeSize - 1].IndexRange);
