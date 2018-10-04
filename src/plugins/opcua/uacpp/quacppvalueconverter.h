@@ -53,6 +53,7 @@ namespace QUACppValueConverter {
     OpcUa_Variant arrayFromQVariant(const QVariant &var, const OpcUa_BuiltInType type);
 
     QDateTime toQDateTime(const OpcUa_DateTime *dt);
+    OpcUa_DateTime toUACppDateTime(const QDateTime &qtDateTime);
 }
 
 QT_END_NAMESPACE

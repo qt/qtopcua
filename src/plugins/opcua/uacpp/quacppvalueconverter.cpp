@@ -476,10 +476,7 @@ void scalarFromQVariant(const QVariant &var, TARGETTYPE *ptr)
 template<>
 void scalarFromQVariant<OpcUa_DateTime, QDateTime>(const QVariant &var, OpcUa_DateTime *ptr)
 {
-    // OPC-UA part 3, Table C.9
-    const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
-    const UaDateTime dt = UaDateTime(var.toDateTime().toMSecsSinceEpoch() - uaEpochStart.toMSecsSinceEpoch());
-    *ptr = dt;
+    *ptr = toUACppDateTime(var.toDateTime());
 }
 
 template<>
@@ -954,6 +951,17 @@ QDateTime toQDateTime(const OpcUa_DateTime *dt)
     const UaDateTime temp(*dt);
     return uaEpochStart.addMSecs(temp).toLocalTime();
 }
+
+OpcUa_DateTime toUACppDateTime(const QDateTime &qtDateTime)
+{
+    // OPC-UA part 3, Table C.9
+    const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
+    UaDateTime tmp(qtDateTime.toMSecsSinceEpoch() - uaEpochStart.toMSecsSinceEpoch());
+    OpcUa_DateTime returnValue;
+    tmp.copyTo(&returnValue);
+    return returnValue;
+}
+
 
 }
 
