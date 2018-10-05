@@ -15,14 +15,6 @@ Module {
         exportMetaObjectRevisions: [0]
     }
     Component {
-        name: "LocalizedText"
-        exports: ["QtOpcUa/LocalizedText 5.12"]
-        isCreatable: false
-        exportMetaObjectRevisions: [0]
-        Property { name: "locale"; type: "string" }
-        Property { name: "text"; type: "string" }
-    }
-    Component {
         name: "OpcUaConnection"
         prototype: "QObject"
         exports: ["QtOpcUa/Connection 5.12"]
@@ -65,8 +57,8 @@ Module {
         Property { name: "readyToUse"; type: "bool"; isReadonly: true }
         Property { name: "browseName"; type: "string" }
         Property { name: "nodeClass"; type: "QOpcUa::NodeClass"; isReadonly: true }
-        Property { name: "displayName"; type: "LocalizedText" }
-        Property { name: "description"; type: "LocalizedText" }
+        Property { name: "displayName"; type: "QOpcUa::QLocalizedText" }
+        Property { name: "description"; type: "QOpcUa::QLocalizedText" }
         Signal {
             name: "nodeIdChanged"
             Parameter { name: "nodeId"; type: "const OpcUaNodeIdType"; isPointer: true }

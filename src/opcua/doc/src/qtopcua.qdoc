@@ -153,7 +153,6 @@
     \li Event subscriptions
     \li X
     \li X
-    \li
     \row
     \li Modify subscriptions / monitored Items
     \li X
@@ -174,6 +173,7 @@
     \li FindServers
     \li X
     \li
+    \row
     \li NodeManagement
     \li X
     \li
