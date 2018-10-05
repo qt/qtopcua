@@ -946,6 +946,10 @@ OpcUa_Variant toUACppVariant(const QVariant &value, QOpcUa::Types type)
 
 QDateTime toQDateTime(const OpcUa_DateTime *dt)
 {
+    // Create an invalid timestamp if both values are zero
+    if (dt->dwHighDateTime == 0 && dt->dwLowDateTime == 0)
+        return QDateTime();
+
     // OPC-UA part 3, Table C.9
     const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
     const UaDateTime temp(*dt);
