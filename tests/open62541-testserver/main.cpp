@@ -189,6 +189,7 @@ int main(int argc, char **argv)
                        QOpcUa::Types::Argument);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.ExtensionObject", "ExtensionObjectScalarTest",
                                                     QOpcUa::QExtensionObject(), QOpcUa::Types::ExtensionObject);
+    server.addNodeWithFixedTimestamp(testFolder, "ns=2;s=Demo.Static.FixedTimestamp", "FixedTimestamp");
 
     // Create folders containing child nodes with string, guid and opaque node ids
     UA_NodeId testStringIdsFolder = server.addFolder("ns=3;s=testStringIdsFolder", "testStringIdsFolder");

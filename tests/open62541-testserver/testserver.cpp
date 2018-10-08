@@ -552,4 +552,37 @@ UA_StatusCode TestServer::addNamespaceMethod(UA_Server *server, const UA_NodeId 
     return UA_STATUSCODE_GOOD;
 }
 
+UA_NodeId TestServer::addNodeWithFixedTimestamp(const UA_NodeId &folder, const QString &nodeId, const QString &displayName)
+{
+    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(nodeId);
+
+    UA_VariableAttributes attr = UA_VariableAttributes_default;
+    attr.value = QOpen62541ValueConverter::toOpen62541Variant(QDateTime(QDate(2012, 12, 19), QTime(13, 37)), QOpcUa::DateTime);
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en_US", displayName.toUtf8().constData());
+    attr.dataType = attr.value.type->typeId;
+    attr.accessLevel = UA_ACCESSLEVELMASK_READ; // Read Only
+
+    UA_QualifiedName variableName;
+    variableName.namespaceIndex = variableNodeId.namespaceIndex;
+    variableName.name = attr.displayName.text;
+
+    UA_NodeId resultId;
+    UA_StatusCode result = UA_Server_addVariableNode(m_server,
+                                                     variableNodeId,
+                                                     folder,
+                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                     variableName,
+                                                     UA_NODEID_NULL,
+                                                     attr,
+                                                     NULL,
+                                                     &resultId);
+
+    if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not add variable:" << result;
+        return UA_NODEID_NULL;
+    }
+
+    return resultId;
+}
+
 QT_END_NAMESPACE

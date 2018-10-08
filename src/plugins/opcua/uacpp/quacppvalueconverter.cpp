@@ -478,7 +478,8 @@ void scalarFromQVariant<OpcUa_DateTime, QDateTime>(const QVariant &var, OpcUa_Da
 {
     // OPC-UA part 3, Table C.9
     const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
-    const UaDateTime dt = UaDateTime(var.toDateTime().toMSecsSinceEpoch() - uaEpochStart.toMSecsSinceEpoch());
+    // OpcUa time is defined in part 6, 5.2.2.5 in 100ns which need to be converted to milliseconds.
+    const UaDateTime dt = UaDateTime((var.toDateTime().toMSecsSinceEpoch() - uaEpochStart.toMSecsSinceEpoch()) * 10000);
     *ptr = dt;
 }
 
@@ -952,7 +953,9 @@ QDateTime toQDateTime(const OpcUa_DateTime *dt)
     // OPC-UA part 3, Table C.9
     const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
     const UaDateTime temp(*dt);
-    return uaEpochStart.addMSecs(temp).toLocalTime();
+
+    // OpcUa time is defined in part 6, 5.2.2.5 in 100ns which need to be converted to milliseconds.
+    return uaEpochStart.addMSecs(((quint64)temp) / 10000).toLocalTime();
 }
 
 }
