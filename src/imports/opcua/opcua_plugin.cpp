@@ -86,6 +86,7 @@ void OpcUaPlugin::registerTypes(const char *uri)
     qmlRegisterModule(uri, QT_VERSION_MAJOR, QT_VERSION_MINOR);
 }
 
+QT_END_NAMESPACE
+
 #include "opcua_plugin.moc"
 
-QT_END_NAMESPACE
