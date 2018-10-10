@@ -633,7 +633,7 @@ OpcUa_Variant arrayFromQVariant(const QVariant &var, const OpcUa_BuiltInType typ
             return opcuavariant;
 
         opcuavariant.Datatype = type;
-        opcuavariant.ArrayType = OpcUa_True;
+        opcuavariant.ArrayType = OpcUa_VariantArrayType_Array;
         opcuavariant.Value.Array.Length = list.size();
         // Use calloc() instead of new because the OPC UA stack uses free() internally when clearing the data
         TARGETTYPE *arr = static_cast<TARGETTYPE *>(calloc(list.size(), sizeof(TARGETTYPE)));
@@ -666,7 +666,7 @@ OpcUa_Variant arrayFromQVariantPointer(const QVariant &var, const OpcUa_BuiltInT
             return opcuavariant;
 
         opcuavariant.Datatype = type;
-        opcuavariant.ArrayType = OpcUa_True;
+        opcuavariant.ArrayType = OpcUa_VariantArrayType_Array;
         opcuavariant.Value.Array.Length = list.size();
         // Use calloc() instead of new because the OPC UA stack uses free() internally when clearing the data
         TARGETTYPE *arr = static_cast<TARGETTYPE *>(calloc(list.size(), sizeof(TARGETTYPE)));
