@@ -3233,10 +3233,6 @@ void Tst_QOpcUaClient::namespaceArray()
 void Tst_QOpcUaClient::multiDimensionalArray()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
-
-    if (opcuaClient->backend() != QStringLiteral("open62541"))
-        QSKIP("Multidimensional arrays are only supported in open62541");
-
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=Demo.Static.Arrays.MultiDimensionalDouble"));

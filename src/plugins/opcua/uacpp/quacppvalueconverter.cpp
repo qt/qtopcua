@@ -334,6 +334,27 @@ QVariant scalarToQVariant<QVariant, OpcUa_ExtensionObject>(OpcUa_ExtensionObject
 template<typename TARGETTYPE, typename UATYPE>
 QVariant arrayToQVariant(const OpcUa_Variant &var, QMetaType::Type type)
 {
+    if (var.ArrayType == OpcUa_VariantArrayType_Matrix) {
+        UaVariant variant(var);
+
+        // Ensure that the array dimensions fit in a QVector
+        if (variant.dimensionSize() > static_cast<OpcUa_Int32>((std::numeric_limits<int>::max)())) {
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "The array dimensions do not fit in a QVector.";
+            return QOpcUa::QMultiDimensionalArray();
+        }
+
+        QVariantList list;
+        for (OpcUa_Int32 i = 0; i < variant.noOfMatrixElements(); ++i) {
+            UATYPE *temp = static_cast<UATYPE *>(var.Value.Matrix.Value.Array);
+            list.append(scalarToQVariant<TARGETTYPE, UATYPE>(&temp[i], type));
+        }
+
+        QVector<quint32> arrayDimensions;
+        for (qint32 i = 0; i < variant.dimensionSize(); ++i)
+            arrayDimensions.append(var.Value.Matrix.Dimensions[i]);
+        return QOpcUa::QMultiDimensionalArray(list, arrayDimensions);
+    }
+
     if (var.ArrayType == OpcUa_VariantArrayType_Array) {
         QVariantList list;
         for (OpcUa_Int32 i = 0; i < var.Value.Array.Length; ++i) {
@@ -862,6 +883,27 @@ OpcUa_Variant toUACppVariant(const QVariant &value, QOpcUa::Types type)
 {
     OpcUa_Variant uacppvalue;
     OpcUa_Variant_Initialize(&uacppvalue);
+
+    if (value.canConvert<QOpcUa::QMultiDimensionalArray>()) {
+        const QOpcUa::QMultiDimensionalArray data = value.value<QOpcUa::QMultiDimensionalArray>();
+        OpcUa_Variant result = toUACppVariant(data.valueArray(), type);
+
+        if (!data.arrayDimensions().isEmpty()) {
+            // Ensure that the array dimensions size is < UINT32_MAX
+            if (static_cast<quint64>(data.arrayDimensions().size()) > (std::numeric_limits<qint32>::max)()){
+                qCWarning(QT_OPCUA_PLUGINS_UACPP) << "The array dimensions do not fit in a QVector.";
+                return uacppvalue;
+            }
+            result.ArrayType = OpcUa_VariantArrayType_Matrix;
+            // Reuse the allocated array from toUaCppVariant().
+            result.Value.Matrix.Value = result.Value.Array.Value;
+            // Set and copy dimension information
+            result.Value.Matrix.NoOfDimensions = static_cast<OpcUa_Int32>(data.arrayDimensions().size());
+            result.Value.Matrix.Dimensions = static_cast<OpcUa_Int32 *>(OpcUa_Alloc(result.Value.Matrix.NoOfDimensions * sizeof(OpcUa_Int32)));
+            std::copy(data.arrayDimensions().constBegin(), data.arrayDimensions().constEnd(), result.Value.Matrix.Dimensions);
+        }
+        return result;
+    }
 
     if (value.type() == QVariant::List && value.toList().size() == 0)
         return uacppvalue;
