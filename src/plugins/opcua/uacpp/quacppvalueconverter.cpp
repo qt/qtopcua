@@ -179,15 +179,8 @@ template<>
 QVariant scalarToQVariant<QString, OpcUa_LocalizedText>(OpcUa_LocalizedText *data, QMetaType::Type type)
 {
     Q_UNUSED(type)
-    UaLocalizedText ualt(*data);
-    const UaString ualtLocal(ualt.locale());
-    const UaString ualtText(ualt.text());
-
-    QOpcUa::QLocalizedText lt;
-
-    lt.setLocale(QString::fromUtf8(ualtLocal.toUtf8(), ualtLocal.size()));
-    lt.setText(QString::fromUtf8(ualtText.toUtf8(), ualtText.size()));
-    return QVariant::fromValue(lt);
+    UaLocalizedText uaLocalizedText(*data);
+    return QVariant::fromValue(toQLocalizedText(&uaLocalizedText));
 }
 
 template<>
@@ -964,6 +957,18 @@ OpcUa_DateTime toUACppDateTime(const QDateTime &qtDateTime)
     OpcUa_DateTime returnValue;
     tmp.copyTo(&returnValue);
     return returnValue;
+}
+
+QOpcUa::QLocalizedText toQLocalizedText(UaLocalizedText *data)
+{
+    const UaString ualtLocal(data->locale());
+    const UaString ualtText(data->text());
+
+    QOpcUa::QLocalizedText lt;
+
+    lt.setLocale(QString::fromUtf8(ualtLocal.toUtf8(), ualtLocal.size()));
+    lt.setText(QString::fromUtf8(ualtText.toUtf8(), ualtText.size()));
+    return lt;
 }
 
 UaStringArray toUaStringArray(const QStringList &value)

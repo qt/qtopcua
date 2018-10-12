@@ -30,6 +30,8 @@
 #include <uabase/uanodeid.h>
 #include <uabase/uaarraytemplates.h> // for UaStringArray
 
+class UaLocalizedText;
+
 QT_BEGIN_NAMESPACE
 
 namespace QUACppValueConverter {
@@ -57,6 +59,7 @@ namespace QUACppValueConverter {
     OpcUa_DateTime toUACppDateTime(const QDateTime &qtDateTime);
 
     UaStringArray toUaStringArray(const QStringList &value);
+    QOpcUa::QLocalizedText toQLocalizedText(UaLocalizedText *data);
 }
 
 QT_END_NAMESPACE
