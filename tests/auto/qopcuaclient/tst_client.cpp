@@ -661,9 +661,6 @@ void Tst_QOpcUaClient::findServers()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
 
-    if (opcuaClient->backend() != QStringLiteral("open62541"))
-        QSKIP("FindServers is not yet supported in uacpp.");
-
     QSignalSpy discoverySpy(opcuaClient, &QOpcUaClient::findServersFinished);
 
     opcuaClient->findServers(m_endpoint);

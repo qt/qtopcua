@@ -600,6 +600,52 @@ bool UACppAsyncBackend::removeSubscription(quint32 subscriptionId)
     return false;
 }
 
+void UACppAsyncBackend::findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris)
+{
+    UaStringArray uaServerUris = QUACppValueConverter::toUaStringArray(serverUris);
+    UaStringArray uaLocaleIds = QUACppValueConverter::toUaStringArray(localeIds);
+    UaDiscovery discovery;
+    ServiceSettings serviceSettings;
+    ClientSecurityInfo clientSecurityInfo;
+    UaApplicationDescriptions applicationDescriptions;
+
+    UaStatus result = discovery.findServers(serviceSettings,
+                                            UaString(url.toString(QUrl::RemoveUserInfo).toUtf8().constData()),
+                                            clientSecurityInfo,
+                                            uaLocaleIds,
+                                            uaServerUris,
+                                            applicationDescriptions);
+
+    QVector<QOpcUa::QApplicationDescription> ret;
+
+    for (OpcUa_UInt32 i = 0; i < applicationDescriptions.length(); ++i) {
+        QOpcUa::QApplicationDescription temp;
+        const UaApplicationDescription desc = applicationDescriptions[i];
+
+        temp.setApplicationUri(QString::fromUtf8(desc.getApplicationUri().toUtf8()));
+        temp.setProductUri(QString::fromUtf8(desc.getProductUri().toUtf8()));
+        UaLocalizedText uaApplicationName(desc.getApplicationName());
+        temp.setApplicationName(QUACppValueConverter::toQLocalizedText(&uaApplicationName));
+        temp.setApplicationType(static_cast<QOpcUa::QApplicationDescription::ApplicationType>(desc.getApplicationType()));
+        temp.setGatewayServerUri(QString::fromUtf8(desc.getGatewayServerUri().toUtf8()));
+        temp.setDiscoveryProfileUri(QString::fromUtf8(desc.getDiscoveryProfileUri().toUtf8()));
+
+        UaStringArray discoveryUrls;
+        desc.getDiscoveryUrls(discoveryUrls);
+
+        for (OpcUa_UInt32 i = 0; i < discoveryUrls.length(); ++i)
+            temp.discoveryUrlsRef().append(QString::fromUtf8(UaString(discoveryUrls[i]).toUtf8()));
+
+        ret.append(temp);
+    }
+
+    if (result.isNotGood()) {
+        qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Failed to get servers:" << static_cast<QOpcUa::UaStatusCode>(result.statusCode());
+    }
+
+    emit findServersFinished(ret, static_cast<QOpcUa::UaStatusCode>(result.statusCode()));
+}
+
 void UACppAsyncBackend::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
 {
     if (nodesToRead.size() == 0) {

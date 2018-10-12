@@ -65,6 +65,8 @@ public Q_SLOTS:
 
     bool removeSubscription(quint32 subscriptionId);
 
+    void findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris);
+
     void batchRead(const QVector<QOpcUaReadItem> &nodesToRead);
     void batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite);
 

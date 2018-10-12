@@ -91,13 +91,10 @@ bool QUACppClient::requestEndpoints(const QUrl &url)
 
 bool QUACppClient::findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris)
 {
-    Q_UNUSED(url);
-    Q_UNUSED(localeIds);
-    Q_UNUSED(serverUris);
-
-    qCInfo(QT_OPCUA_PLUGINS_UACPP) << "The uacpp backend does not yet support the FindServers service.";
-
-    return false;
+    return QMetaObject::invokeMethod(m_backend, "findServers", Qt::QueuedConnection,
+                                     Q_ARG(QUrl, url),
+                                     Q_ARG(QStringList, localeIds),
+                                     Q_ARG(QStringList, serverUris));
 }
 
 bool QUACppClient::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
