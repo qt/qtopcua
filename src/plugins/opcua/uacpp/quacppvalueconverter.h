@@ -28,6 +28,7 @@
 #include <QtCore/QVariant>
 
 #include <uabase/uanodeid.h>
+#include <uabase/uaarraytemplates.h> // for UaStringArray
 
 QT_BEGIN_NAMESPACE
 
@@ -54,6 +55,8 @@ namespace QUACppValueConverter {
 
     QDateTime toQDateTime(const OpcUa_DateTime *dt);
     OpcUa_DateTime toUACppDateTime(const QDateTime &qtDateTime);
+
+    UaStringArray toUaStringArray(const QStringList &value);
 }
 
 QT_END_NAMESPACE

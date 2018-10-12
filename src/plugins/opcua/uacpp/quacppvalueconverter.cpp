@@ -966,6 +966,23 @@ OpcUa_DateTime toUACppDateTime(const QDateTime &qtDateTime)
     return returnValue;
 }
 
+UaStringArray toUaStringArray(const QStringList &value)
+{
+    UaStringArray ret;
+    ret.create(value.size());
+
+    for (int i = 0; i < value.size(); ++i) {
+        OpcUa_String str;
+        const QByteArray utf8Data = value[i].toUtf8();
+
+        // Use QByteArray data buffer directly to form a OpaUa_String.
+        OpcUa_String_AttachReadOnly(&str, utf8Data.constData());
+
+        OpcUa_String_StrnCpy(&ret[i], &str, OPCUA_STRING_LENDONTCARE);
+    }
+    return ret;
+}
+
 
 }
 
