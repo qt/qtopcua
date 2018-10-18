@@ -462,6 +462,9 @@ private slots:
     defineDataMethod(addNamespace_data)
     void addNamespace();
 
+    void fixedTimestamp();
+    defineDataMethod(fixedTimestamp_data)
+
     defineDataMethod(resolveBrowsePath_data)
     void resolveBrowsePath();
 
@@ -3619,6 +3622,20 @@ void Tst_QOpcUaClient::addNamespace()
     QCOMPARE(updatedNamespaceArray.size(), namespaceArray.size() + 1);
     QVERIFY(updatedNamespaceArray.contains(newNamespaceName));
     QCOMPARE(methodSpy.at(0).at(1).value<quint16>(), updatedNamespaceArray.indexOf(newNamespaceName));
+}
+
+void Tst_QOpcUaClient::fixedTimestamp()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=Demo.Static.FixedTimestamp"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node);
+    QVariant value = node->attribute(QOpcUa::NodeAttribute::Value);
+    QVERIFY(value.isValid());
+    QCOMPARE(value.type(), QVariant::DateTime);
+    QCOMPARE(value.toDateTime(), QDateTime(QDate(2012, 12, 19), QTime(13, 37)));
 }
 
 void Tst_QOpcUaClient::connectionLost()

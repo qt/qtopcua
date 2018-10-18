@@ -68,6 +68,7 @@ public:
     UA_NodeId addMultiplyMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
     UA_NodeId addMultipleOutputArgumentsMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
     UA_NodeId addAddNamespaceMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
+    UA_NodeId addNodeWithFixedTimestamp(const UA_NodeId &folder, const QString &nodeId, const QString &displayName);
 
     static UA_StatusCode multiplyMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle,
                                             const UA_NodeId *methodId, void *methodContext,
