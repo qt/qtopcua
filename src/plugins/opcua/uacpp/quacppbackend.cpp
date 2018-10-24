@@ -770,4 +770,311 @@ void UACppAsyncBackend::writeNodeAttributes(const QVector<QOpcUaWriteItem> &node
     }
 }
 
+void UACppAsyncBackend::addNode(const QOpcUaAddNodeItem &nodeToAdd)
+{
+    OpcUa_AddNodesItem* opcUaNodeToAdd = static_cast<OpcUa_AddNodesItem*>(OpcUa_Alloc(1 * sizeof(OpcUa_AddNodesItem)));
+    OpcUa_AddNodesItem_Initialize(opcUaNodeToAdd);
+
+    opcUaNodeToAdd->ParentNodeId = QUACppValueConverter::toUACppExpandedNodeId(nodeToAdd.parentNodeId());
+    UACppUtils::nodeIdFromQString(nodeToAdd.referenceTypeId()).detach(&opcUaNodeToAdd->ReferenceTypeId);
+    opcUaNodeToAdd->RequestedNewNodeId = QUACppValueConverter::toUACppExpandedNodeId(nodeToAdd.requestedNewNodeId());
+    opcUaNodeToAdd->BrowseName = QUACppValueConverter::toUACppQualifiedName(nodeToAdd.browseName());
+    opcUaNodeToAdd->NodeClass = static_cast<OpcUa_NodeClass>(nodeToAdd.nodeClass());
+
+    if (!assembleNodeAttributes(&opcUaNodeToAdd->NodeAttributes, nodeToAdd.nodeAttributes(), nodeToAdd.nodeClass())) {
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to assemble node attributes";
+        emit addNodeFinished(nodeToAdd.requestedNewNodeId(), QString(), QOpcUa::BadUnexpectedError);
+        return;
+    }
+
+    if (!nodeToAdd.typeDefinition().nodeId().isEmpty())
+        opcUaNodeToAdd->TypeDefinition = QUACppValueConverter::toUACppExpandedNodeId(nodeToAdd.typeDefinition());
+
+    UaAddNodesItems itemsToAdd;
+    itemsToAdd.attach(1, opcUaNodeToAdd);
+    UaAddNodesResults results;
+    UaDiagnosticInfos diagnosticInfos;
+    ServiceSettings serviceSettings;
+
+    UaStatus result = m_nativeSession->addNodes(serviceSettings, itemsToAdd, results, diagnosticInfos);
+    QOpcUa::UaStatusCode status = static_cast<QOpcUa::UaStatusCode>(result.code());
+
+    QString resultId;
+
+    if (result.isGood() && results.length() > 0) {
+        if (OpcUa_IsGood(results[0].StatusCode)) {
+            resultId = UACppUtils::nodeIdToQString(results[0].AddedNodeId);
+        } else {
+           status = static_cast<QOpcUa::UaStatusCode>(results[0].StatusCode);
+           qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Failed to add node:" << status;
+        }
+    } else {
+        qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Failed to add node:" << status;
+    }
+
+    emit addNodeFinished(nodeToAdd.requestedNewNodeId(), resultId, status);
+}
+
+void UACppAsyncBackend::deleteNode(const QString &nodeId, bool deleteTargetReferences)
+{
+    UaNodeId id = UACppUtils::nodeIdFromQString(nodeId);
+
+    UaDeleteNodesItems nodesToDelete;
+    nodesToDelete.attach(1, static_cast<OpcUa_DeleteNodesItem*>(OpcUa_Alloc(1 * sizeof(OpcUa_DeleteNodesItem))));
+    OpcUa_DeleteNodesItem_Initialize(&nodesToDelete[0]);
+
+    id.copyTo(&nodesToDelete[0].NodeId);
+    nodesToDelete[0].DeleteTargetReferences = deleteTargetReferences;
+
+    UaDiagnosticInfos diagnosticInfos;
+    ServiceSettings serviceSettings;
+    UaStatusCodeArray results;
+
+    UaStatus res = m_nativeSession->deleteNodes(serviceSettings, nodesToDelete, results, diagnosticInfos);
+
+    QOpcUa::UaStatusCode resultStatus = static_cast<QOpcUa::UaStatusCode>(res.statusCode());
+
+    if (resultStatus != QOpcUa::UaStatusCode::Good) {
+        qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Failed to delete node" << nodeId << "with status code" << resultStatus;
+    }
+
+    emit deleteNodeFinished(nodeId, resultStatus);
+}
+
+void UACppAsyncBackend::addReference(const QOpcUaAddReferenceItem &referenceToAdd)
+{
+    UaAddReferencesItems referencesToAdd;
+    referencesToAdd.attach(1, static_cast<OpcUa_AddReferencesItem*>(OpcUa_Alloc(1 * sizeof(OpcUa_AddReferencesItem))));
+    OpcUa_AddReferencesItem_Initialize(&referencesToAdd[0]);
+
+    UACppUtils::nodeIdFromQString(referenceToAdd.sourceNodeId()).copyTo(&referencesToAdd[0].SourceNodeId);
+    UACppUtils::nodeIdFromQString(referenceToAdd.referenceTypeId()).copyTo(&referencesToAdd[0].ReferenceTypeId);
+    referencesToAdd[0].IsForward = referenceToAdd.isForwardReference();
+    UaString(referenceToAdd.targetServerUri().toUtf8().constData()).detach(&referencesToAdd[0].TargetServerUri);
+    referencesToAdd[0].TargetNodeId = QUACppValueConverter::toUACppExpandedNodeId(referenceToAdd.targetNodeId());
+    referencesToAdd[0].TargetNodeClass = static_cast<OpcUa_NodeClass>(referenceToAdd.targetNodeClass());
+
+    UaDiagnosticInfos diagnosticInfos;
+    ServiceSettings serviceSettings;
+    UaStatusCodeArray results;
+
+    UaStatus res = m_nativeSession->addReferences(serviceSettings, referencesToAdd, results, diagnosticInfos);
+
+    QOpcUa::UaStatusCode statusCode = static_cast<QOpcUa::UaStatusCode>(res.statusCode());
+    if (res.isBad())
+        qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Failed to add reference from" << referenceToAdd.sourceNodeId() << "to"
+                                            << referenceToAdd.targetNodeId().nodeId() << ":" << statusCode;
+
+    emit addReferenceFinished(referenceToAdd.sourceNodeId(), referenceToAdd.referenceTypeId(),
+                              referenceToAdd.targetNodeId(),
+                              referenceToAdd.isForwardReference(), statusCode);
+}
+
+void UACppAsyncBackend::deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete)
+{
+    UaDeleteReferencesItems referencesToDelete;
+    referencesToDelete.attach(1, static_cast<OpcUa_DeleteReferencesItem*>(OpcUa_Alloc(1 * sizeof(OpcUa_DeleteReferencesItem))));
+    OpcUa_DeleteReferencesItem_Initialize(&referencesToDelete[0]);
+
+    UACppUtils::nodeIdFromQString(referenceToDelete.sourceNodeId()).copyTo(&referencesToDelete[0].SourceNodeId);
+    UACppUtils::nodeIdFromQString(referenceToDelete.referenceTypeId()).copyTo(&referencesToDelete[0].ReferenceTypeId);
+    referencesToDelete[0].IsForward = referenceToDelete.isForwardReference();
+    referencesToDelete[0].TargetNodeId = QUACppValueConverter::toUACppExpandedNodeId(referenceToDelete.targetNodeId());
+    referencesToDelete[0].DeleteBidirectional = referenceToDelete.deleteBidirectional();
+
+    UaDiagnosticInfos diagnosticInfos;
+    ServiceSettings serviceSettings;
+    UaStatusCodeArray results;
+
+    UaStatus res = m_nativeSession->deleteReferences(serviceSettings, referencesToDelete, results, diagnosticInfos);
+
+    QOpcUa::UaStatusCode statusCode = static_cast<QOpcUa::UaStatusCode>(res.statusCode());
+    if (res.isBad())
+        qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Failed to delete reference from" << referenceToDelete.sourceNodeId() << "to"
+                                            << referenceToDelete.targetNodeId().nodeId() << ":" << statusCode;
+
+    emit deleteReferenceFinished(referenceToDelete.sourceNodeId(), referenceToDelete.referenceTypeId(),
+                                 referenceToDelete.targetNodeId(),
+                                 referenceToDelete.isForwardReference(), statusCode);
+}
+
+static void copyArrayDimensions(OpcUa_Int32 *noOfDimensions, OpcUa_UInt32 **arrayDimensions, const QVector<quint32> &dimensions)
+{
+    *noOfDimensions = static_cast<OpcUa_Int32>(dimensions.size());
+    *arrayDimensions = static_cast<OpcUa_UInt32 *>(OpcUa_Alloc(*noOfDimensions * sizeof(OpcUa_UInt32)));
+    std::copy(dimensions.constBegin(), dimensions.constEnd(), *arrayDimensions);
+}
+
+#define CREATE_NODE_ATTRIBUTE(TYPE) \
+    OpcUa_ ##TYPE ## Attributes* uaNodeAttributes = nullptr; \
+    OpcUa_EncodeableObject_CreateExtension(&OpcUa_ ##TYPE ## Attributes_EncodeableType, \
+                                           uaExtensionObject, (OpcUa_Void**)&uaNodeAttributes); \
+    if (!uaNodeAttributes) \
+        return false; \
+    \
+    OpcUa_ ##TYPE ## Attributes_Initialize(uaNodeAttributes); \
+    \
+    if (nodeAttributes.hasDisplayName()) { \
+        uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_DisplayName; \
+        uaNodeAttributes->DisplayName = QUACppValueConverter::toUACppLocalizedText(nodeAttributes.displayName()); \
+    } \
+    if (nodeAttributes.hasDescription()) { \
+        uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_Description; \
+        uaNodeAttributes->Description = QUACppValueConverter::toUACppLocalizedText(nodeAttributes.description()); \
+    } \
+    if (nodeAttributes.hasWriteMask()) { \
+        uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_WriteMask; \
+        uaNodeAttributes->WriteMask = nodeAttributes.writeMask(); \
+    } \
+    if (nodeAttributes.hasUserWriteMask()) { \
+        uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_UserWriteMask; \
+        uaNodeAttributes->UserWriteMask = nodeAttributes.userWriteMask(); \
+    } \
+
+bool UACppAsyncBackend::assembleNodeAttributes(OpcUa_ExtensionObject *uaExtensionObject, const QOpcUaNodeCreationAttributes &nodeAttributes,
+                                                                 QOpcUa::NodeClass nodeClass)
+{
+    switch (nodeClass) {
+    case QOpcUa::NodeClass::Object: {
+        CREATE_NODE_ATTRIBUTE(Object);
+
+        if (nodeAttributes.hasEventNotifier()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_EventNotifier;
+            uaNodeAttributes->EventNotifier = nodeAttributes.eventNotifier();
+        }
+        break;
+    }
+    case QOpcUa::NodeClass::Variable: {
+        CREATE_NODE_ATTRIBUTE(Variable);
+
+        if (nodeAttributes.hasValue()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_Value;
+            uaNodeAttributes->Value = QUACppValueConverter::toUACppVariant(nodeAttributes.value(),
+                                                                       nodeAttributes.valueType());
+        }
+        if (nodeAttributes.hasDataTypeId()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_DataType;
+            UACppUtils::nodeIdFromQString(nodeAttributes.dataTypeId()).detach(&uaNodeAttributes->DataType);
+        }
+        if (nodeAttributes.hasValueRank()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_ValueRank;
+            uaNodeAttributes->ValueRank = nodeAttributes.valueRank();
+        }
+        if (nodeAttributes.hasArrayDimensions()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_ArrayDimensions;
+            copyArrayDimensions(&uaNodeAttributes->NoOfArrayDimensions,&uaNodeAttributes->ArrayDimensions, nodeAttributes.arrayDimensions());
+        }
+        if (nodeAttributes.hasAccessLevel()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_AccessLevel;
+            uaNodeAttributes->AccessLevel = nodeAttributes.accessLevel();
+        }
+        if (nodeAttributes.hasUserAccessLevel()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_UserAccessLevel;
+            uaNodeAttributes->UserAccessLevel = nodeAttributes.userAccessLevel();
+        }
+        if (nodeAttributes.hasMinimumSamplingInterval()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_MinimumSamplingInterval;
+            uaNodeAttributes->MinimumSamplingInterval = nodeAttributes.minimumSamplingInterval();
+        }
+        if (nodeAttributes.hasHistorizing()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_Historizing;
+            uaNodeAttributes->Historizing = nodeAttributes.historizing();
+        }
+        break;
+    }
+    case QOpcUa::NodeClass::Method: {
+        CREATE_NODE_ATTRIBUTE(Method);
+
+        if (nodeAttributes.hasExecutable()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_Executable;
+            uaNodeAttributes->Executable = nodeAttributes.executable();
+        }
+        if (nodeAttributes.hasUserExecutable()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_UserExecutable;
+            uaNodeAttributes->UserExecutable = nodeAttributes.userExecutable();
+        }
+        break;
+    }
+    case QOpcUa::NodeClass::ObjectType: {
+        CREATE_NODE_ATTRIBUTE(ObjectType);
+
+        if (nodeAttributes.hasIsAbstract()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_IsAbstract;
+            uaNodeAttributes->IsAbstract = nodeAttributes.isAbstract();
+        }
+        break;
+    }
+    case QOpcUa::NodeClass::VariableType: {
+        CREATE_NODE_ATTRIBUTE(VariableType);
+
+        if (nodeAttributes.hasValue()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_Value;
+            uaNodeAttributes->Value = QUACppValueConverter::toUACppVariant(nodeAttributes.value(),
+                                                                       nodeAttributes.valueType());
+        }
+        if (nodeAttributes.hasDataTypeId()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_DataType;
+            UACppUtils::nodeIdFromQString(nodeAttributes.dataTypeId()).detach(&uaNodeAttributes->DataType);
+        }
+        if (nodeAttributes.hasValueRank()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_ValueRank;
+            uaNodeAttributes->ValueRank = nodeAttributes.valueRank();
+        }
+        if (nodeAttributes.hasArrayDimensions()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_ArrayDimensions;
+            copyArrayDimensions(&uaNodeAttributes->NoOfArrayDimensions, &uaNodeAttributes->ArrayDimensions, nodeAttributes.arrayDimensions());
+        }
+        if (nodeAttributes.hasIsAbstract()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_IsAbstract;
+            uaNodeAttributes->IsAbstract = nodeAttributes.isAbstract();
+        }
+        break;
+    }
+    case QOpcUa::NodeClass::ReferenceType: {
+        CREATE_NODE_ATTRIBUTE(ReferenceType);
+
+        if (nodeAttributes.hasIsAbstract()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_IsAbstract;
+            uaNodeAttributes->IsAbstract = nodeAttributes.isAbstract();
+        }
+        if (nodeAttributes.hasSymmetric()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_Symmetric;
+            uaNodeAttributes->Symmetric = nodeAttributes.symmetric();
+        }
+        if (nodeAttributes.hasInverseName()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_InverseName;
+            uaNodeAttributes->InverseName = QUACppValueConverter::toUACppLocalizedText(nodeAttributes.inverseName());
+        }
+        break;
+    }
+    case QOpcUa::NodeClass::DataType: {
+        CREATE_NODE_ATTRIBUTE(DataType);
+
+        if (nodeAttributes.hasIsAbstract()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_IsAbstract;
+            uaNodeAttributes->IsAbstract = nodeAttributes.isAbstract();
+        }
+        break;
+    }
+    case QOpcUa::NodeClass::View: {
+        CREATE_NODE_ATTRIBUTE(View);
+
+        if (nodeAttributes.hasContainsNoLoops()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_ContainsNoLoops;
+            uaNodeAttributes->ContainsNoLoops = nodeAttributes.containsNoLoops();
+        }
+        if (nodeAttributes.hasEventNotifier()) {
+            uaNodeAttributes->SpecifiedAttributes |= OpcUa_NodeAttributesMask_EventNotifier;
+            uaNodeAttributes->EventNotifier = nodeAttributes.eventNotifier();
+        }
+        break;
+    }
+    default:
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not convert node attributes, unknown node class";
+        return false;
+    }
+
+    return true;
+}
+
 QT_END_NAMESPACE

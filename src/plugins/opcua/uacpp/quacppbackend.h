@@ -70,6 +70,12 @@ public Q_SLOTS:
     void readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead);
     void writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWrite);
 
+    // Node management
+    void addNode(const QOpcUaAddNodeItem &nodeToAdd);
+    void deleteNode(const QString &nodeId, bool deleteTargetReferences);
+    void addReference(const QOpcUaAddReferenceItem &referenceToAdd);
+    void deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete);
+
 public:
     QUACppSubscription *getSubscription(const QOpcUaMonitoringParameters &settings);
     QUACppSubscription *getSubscriptionForItem(quint64 handle, QOpcUa::NodeAttribute attr);
@@ -83,6 +89,9 @@ public:
     static bool m_platformLayerInitialized;
     QMutex m_lifecycleMutex;
     double m_minPublishingInterval;
+
+private:
+    bool assembleNodeAttributes(OpcUa_ExtensionObject *uaExtensionObject, const QOpcUaNodeCreationAttributes &nodeAttributes, QOpcUa::NodeClass nodeClass);
 };
 
 QT_END_NAMESPACE

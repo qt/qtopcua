@@ -1084,10 +1084,6 @@ void Tst_QOpcUaClient::inverseBrowse()
 void Tst_QOpcUaClient::addAndRemoveObjectNode()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
-
-    if (opcuaClient->backend() != QLatin1String("open62541"))
-        QSKIP("NodeManagement is currently only supported in the open62541 backend");
-
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSignalSpy addNodeSpy(opcuaClient, &QOpcUaClient::addNodeFinished);
@@ -1165,10 +1161,6 @@ void Tst_QOpcUaClient::addAndRemoveObjectNode()
 void Tst_QOpcUaClient::addAndRemoveVariableNode()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
-
-    if (opcuaClient->backend() != QLatin1String("open62541"))
-        QSKIP("NodeManagement is currently only supported in the open62541 backend");
-
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSignalSpy addNodeSpy(opcuaClient, &QOpcUaClient::addNodeFinished);
@@ -1253,11 +1245,8 @@ void Tst_QOpcUaClient::addAndRemoveVariableNode()
 
 void Tst_QOpcUaClient::addAndRemoveReference()
 {
+
     QFETCH(QOpcUaClient *, opcuaClient);
-
-    if (opcuaClient->backend() != QLatin1String("open62541"))
-        QSKIP("NodeManagement is currently only supported in the open62541 backend");
-
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSignalSpy addReferenceSpy(opcuaClient, &QOpcUaClient::addReferenceFinished);

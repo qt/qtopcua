@@ -111,35 +111,27 @@ bool QUACppClient::writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWr
 
 bool QUACppClient::addNode(const QOpcUaAddNodeItem &nodeToAdd)
 {
-    Q_UNUSED(nodeToAdd);
-
-    qCInfo(QT_OPCUA_PLUGINS_UACPP) << "AddNode is not yet supported by the uacpp backend";
-    return false;
+    return QMetaObject::invokeMethod(m_backend, "addNode", Qt::QueuedConnection,
+                                     Q_ARG(QOpcUaAddNodeItem, nodeToAdd));
 }
 
 bool QUACppClient::deleteNode(const QString &nodeId, bool deleteTargetReferences)
 {
-    Q_UNUSED(nodeId);
-    Q_UNUSED(deleteTargetReferences);
-
-    qCInfo(QT_OPCUA_PLUGINS_UACPP) << "DeleteNode is not yet supported by the uacpp backend";
-    return false;
+    return QMetaObject::invokeMethod(m_backend, "deleteNode", Qt::QueuedConnection,
+                                                 Q_ARG(QString, nodeId),
+                                                 Q_ARG(bool, deleteTargetReferences));
 }
 
 bool QUACppClient::addReference(const QOpcUaAddReferenceItem &referenceToAdd)
 {
-    Q_UNUSED(referenceToAdd);
-
-    qCInfo(QT_OPCUA_PLUGINS_UACPP) << "AddReference is not yet supported by the uacpp backend";
-    return false;
+    return QMetaObject::invokeMethod(m_backend, "addReference", Qt::QueuedConnection,
+                                                 Q_ARG(QOpcUaAddReferenceItem, referenceToAdd));
 }
 
 bool QUACppClient::deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete)
 {
-    Q_UNUSED(referenceToDelete);
-
-    qCInfo(QT_OPCUA_PLUGINS_UACPP) << "deleteReference is not yet supported by the uacpp backend";
-    return false;
+    return QMetaObject::invokeMethod(m_backend, "deleteReference", Qt::QueuedConnection,
+                                             Q_ARG(QOpcUaDeleteReferenceItem, referenceToDelete));
 }
 
 QT_END_NAMESPACE
