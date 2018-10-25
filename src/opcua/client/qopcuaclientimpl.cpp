@@ -83,8 +83,8 @@ void QOpcUaClientImpl::connectBackendWithClient(QOpcUaBackend *backend)
     connect(backend, &QOpcUaBackend::eventOccurred, this, &QOpcUaClientImpl::handleNewEvent);
     connect(backend, &QOpcUaBackend::endpointsRequestFinished, this, &QOpcUaClientImpl::endpointsRequestFinished);
     connect(backend, &QOpcUaBackend::findServersFinished, this, &QOpcUaClientImpl::findServersFinished);
-    connect(backend, &QOpcUaBackend::batchReadFinished, this, &QOpcUaClientImpl::batchReadFinished);
-    connect(backend, &QOpcUaBackend::batchWriteFinished, this, &QOpcUaClientImpl::batchWriteFinished);
+    connect(backend, &QOpcUaBackend::readNodeAttributesFinished, this, &QOpcUaClientImpl::readNodeAttributesFinished);
+    connect(backend, &QOpcUaBackend::writeNodeAttributesFinished, this, &QOpcUaClientImpl::writeNodeAttributesFinished);
     connect(backend, &QOpcUaBackend::addNodeFinished, this, &QOpcUaClientImpl::addNodeFinished);
     connect(backend, &QOpcUaBackend::deleteNodeFinished, this, &QOpcUaClientImpl::deleteNodeFinished);
     connect(backend, &QOpcUaBackend::addReferenceFinished, this, &QOpcUaClientImpl::addReferenceFinished);

@@ -50,11 +50,11 @@ QT_BEGIN_NAMESPACE
     In addition to the data returned by the server, this class also contains the node id, the attribute and the index
     range from the request to enable a client to match the result with a request.
 
-    Objects of this class are returned in the \l QOpcUaClient::batchReadFinished()
-    signal and contain the result of a read operation that was part of a \l QOpcUaClient::batchRead()
+    Objects of this class are returned in the \l QOpcUaClient::readNodeAttributesFinished()
+    signal and contain the result of a read operation that was part of a \l QOpcUaClient::readNodeAttributes()
     request.
 
-    \sa QOpcUaClient::batchRead() QOpcUaClient::batchReadFinished() QOpcUaReadItem
+    \sa QOpcUaClient::readNodeAttributes() QOpcUaClient::readNodeAttributesFinished() QOpcUaReadItem
 */
 class QOpcUaReadResultData : public QSharedData
 {

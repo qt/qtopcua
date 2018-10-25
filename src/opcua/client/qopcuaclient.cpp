@@ -58,7 +58,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 
     After successfully connecting to a server, QOpcUaClient allows getting \l QOpcUaNode
     objects which enable further interaction with nodes on the OPC UA server.
-    For operations that concern multiple nodes, QOpcUaClient offers a batch API which supports
+    For operations that concern multiple nodes, QOpcUaClient offers an API which supports
     reading multiple attributes of multiple nodes in a single request to the server.
 
     QOpcUaClient also keeps a local copy of the server's namespace array which is created after
@@ -186,23 +186,23 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
-    \fn void QOpcUaClient::batchReadFinished(QVector<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult)
+    \fn void QOpcUaClient::readNodeAttributesFinished(QVector<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult)
 
-    This signal is emitted after a \l batchRead() operation has finished.
+    This signal is emitted after a \l readNodeAttributes() operation has finished.
 
     The elements in \a results have the same order as the elements in the request. For each requested element,
     there is a value together with timestamps and the status code in \a results.
     \a serviceResult contains the status code from the OPC UA Read service.
 
-    \sa batchRead() QOpcUaReadResult QOpcUaReadItem
+    \sa readNodeAttributes() QOpcUaReadResult QOpcUaReadItem
 */
 
 /*!
-    \fn void QOpcUaClient::batchWriteFinished(QVector<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult)
+    \fn void QOpcUaClient::writeNodeAttributesFinished(QVector<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult)
 
-    This signal is emitted after a \l batchWrite() operation has finished.
+    This signal is emitted after a \l writeNodeAttributes() operation has finished.
 
-    The elements in \a results have the same order as the elements in the batch write request.
+    The elements in \a results have the same order as the elements in the write request.
     They contain the value, timestamps and status code received from the server as well as the node id,
     attribute and index range from the write item. This facilitates matching the result with the request.
 
@@ -210,7 +210,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
     \l {QOpcUa::UaStatusCode} {Good}, the entries in \a results also have an invalid status code and must
     not be used.
 
-    \sa batchWrite() QOpcUaWriteResult
+    \sa writeNodeAttributes() QOpcUaWriteResult
 */
 
 /*!
@@ -643,17 +643,17 @@ bool QOpcUaClient::findServers(const QUrl &url, const QStringList &localeIds, co
 }
 
 /*!
-    Starts a batch read of multiple attributes on different nodes.
+    Starts a read of multiple attributes on different nodes.
     The node id, the attribute and an index range can be specified for every entry in \a nodesToRead.
 
     Returns true if the asynchronous request has been successfully dispatched.
-    The results are returned in the \l batchReadFinished() signal.
+    The results are returned in the \l readNodeAttributesFinished() signal.
 
-    The batch read API offers an alternative way to read attributes of nodes which can be used
+    This read function offers an alternative way to read attributes of nodes which can be used
     for scenarios where the values of a large number of node attributes on different nodes must be read
     without requiring the other features of the \l QOpcUaNode based API like monitoring for value changes.
     All read items in the request are sent to the server in a single request and are answered in a single
-    response which generates a single \l batchReadFinished() signal. This reduces the network overhead and
+    response which generates a single \l readNodeAttributesFinished() signal. This reduces the network overhead and
     the number of signal slot connections if many different nodes are involved.
 
     In the following example, the display name attribute and the two index ranges "0:2" and "5:7" of the value
@@ -667,33 +667,33 @@ bool QOpcUaClient::findServers(const QUrl &url, const QStringList &localeIds, co
     request.push_back(QOpcUaReadItem("ns=1;s=MyArrayNode",
                                      QOpcUa::NodeAttribute::Value, "5:7"));
     request.push_back(QOpcUaReadItem("ns=1;s=MyScalarNode));
-    m_client->batchRead(request);
+    m_client->readNodeAttributes(request);
     \endcode
 
-    \sa QOpcUaReadItem batchReadFinished()
+    \sa QOpcUaReadItem readNodeAttributesFinished()
 */
-bool QOpcUaClient::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
+bool QOpcUaClient::readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead)
 {
     if (state() != QOpcUaClient::Connected)
        return false;
 
     Q_D(QOpcUaClient);
-    return d->m_impl->batchRead(nodesToRead);
+    return d->m_impl->readNodeAttributes(nodesToRead);
 }
 
 /*!
-    Starts a batch write for multiple attributes on different nodes.
+    Starts a write for multiple attributes on different nodes.
     The node id, the attribute, the value, the value type and an index range can be specified
     for every entry in \a nodesToWrite.
 
     Returns \c true if the asynchronous request has been successfully dispatched.
-    The results are returned in the \l batchWriteFinished() signal.
+    The results are returned in the \l writeNodeAttributesFinished() signal.
 
-    The batch write API offers an alternative way to write attributes of nodes which can be used
+    This write function offers an alternative way to write attributes of nodes which can be used
     for scenarios where the values of a large number of node attributes on different nodes must be written
     without requiring the other features of the \l QOpcUaNode based API like monitoring for value changes.
     All write items in the request are sent to the server in a single request and are answered in a single
-    response which generates a single \l batchWriteFinished() signal. This reduces the network overhead and
+    response which generates a single \l writeNodeAttributesFinished() signal. This reduces the network overhead and
     the number of signal slot connections if many different nodes are involved.
 
     In the following example, the Values attributes of two different nodes are written in one call.
@@ -707,18 +707,18 @@ bool QOpcUaClient::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
     request.append(QOpcUaWriteItem("ns=2;s=Demo.Static.Arrays.UInt32", QOpcUa::NodeAttribute::Value,
                                       QVariantList({0, 1, 2}), QOpcUa::Types::UInt32, "0:2"));
 
-    m_client->batchWrite(request);
+    m_client->writeNodeAttributes(request);
     \endcode
 
-    \sa QOpcUaWriteItem batchWriteFinished()
+    \sa QOpcUaWriteItem writeNodeAttributesFinished()
 */
-bool QOpcUaClient::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite)
+bool QOpcUaClient::writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWrite)
 {
     if (state() != QOpcUaClient::Connected)
        return false;
 
     Q_D(QOpcUaClient);
-    return d->m_impl->batchWrite(nodesToWrite);
+    return d->m_impl->writeNodeAttributes(nodesToWrite);
 }
 
 /*!

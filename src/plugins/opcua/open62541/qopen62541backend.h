@@ -69,8 +69,8 @@ public Q_SLOTS:
     void resolveBrowsePath(quint64 handle, UA_NodeId startNode, const QVector<QOpcUa::QRelativePathElement> &path);
     void findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris);
 
-    void batchRead(const QVector<QOpcUaReadItem> &nodesToRead);
-    void batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite);
+    void readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead);
+    void writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWrite);
 
     // Node management
     void addNode(const QOpcUaAddNodeItem &nodeToAdd);

@@ -97,15 +97,15 @@ bool QUACppClient::findServers(const QUrl &url, const QStringList &localeIds, co
                                      Q_ARG(QStringList, serverUris));
 }
 
-bool QUACppClient::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
+bool QUACppClient::readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead)
 {
-    return QMetaObject::invokeMethod(m_backend, "batchRead", Qt::QueuedConnection,
+    return QMetaObject::invokeMethod(m_backend, "readNodeAttributes", Qt::QueuedConnection,
                                      Q_ARG(QVector<QOpcUaReadItem>, nodesToRead));
 }
 
-bool QUACppClient::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite)
+bool QUACppClient::writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWrite)
 {
-    return QMetaObject::invokeMethod(m_backend, "batchWrite", Qt::QueuedConnection,
+    return QMetaObject::invokeMethod(m_backend, "writeNodeAttributes", Qt::QueuedConnection,
                                      Q_ARG(QVector<QOpcUaWriteItem>, nodesToWrite));
 }
 

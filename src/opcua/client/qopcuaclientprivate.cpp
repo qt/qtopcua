@@ -72,14 +72,14 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
         emit q->findServersFinished(a, s);
     });
 
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::batchReadFinished, [this](const QVector<QOpcUaReadResult> &results, QOpcUa::UaStatusCode serviceResult) {
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::readNodeAttributesFinished, [this](const QVector<QOpcUaReadResult> &results, QOpcUa::UaStatusCode serviceResult) {
         Q_Q(QOpcUaClient);
-        emit q->batchReadFinished(results, serviceResult);
+        emit q->readNodeAttributesFinished(results, serviceResult);
     });
 
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::batchWriteFinished, [this](const QVector<QOpcUaWriteResult> &results, QOpcUa::UaStatusCode serviceResult) {
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::writeNodeAttributesFinished, [this](const QVector<QOpcUaWriteResult> &results, QOpcUa::UaStatusCode serviceResult) {
         Q_Q(QOpcUaClient);
-        emit q->batchWriteFinished(results, serviceResult);
+        emit q->writeNodeAttributesFinished(results, serviceResult);
     });
 
     QObject::connect(m_impl.data(), &QOpcUaClientImpl::addNodeFinished, [this](const QOpcUa::QExpandedNodeId &requestedNodeId, const QString &assignedNodeId, QOpcUa::UaStatusCode statusCode) {

@@ -47,9 +47,9 @@ QT_BEGIN_NAMESPACE
     attribute of a node on the server. This class contains the necessary information for the backend to make
     a read request to the server.
 
-    One or multiple objects of this class make up the request of a \l QOpcUaClient::batchRead() operation.
+    One or multiple objects of this class make up the request of a \l QOpcUaClient::readNodeAttributes() operation.
 
-    \sa QOpcUaClient::batchRead() QOpcUaReadResult
+    \sa QOpcUaClient::readNodeAttributes() QOpcUaReadResult
 */
 
 class QOpcUaReadItemData : public QSharedData

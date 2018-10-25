@@ -360,10 +360,10 @@ private slots:
     void writeMultipleAttributes();
     defineDataMethod(readEmptyArrayVariable_data)
     void readEmptyArrayVariable();
-    defineDataMethod(batchWrite_data)
-    void batchWrite();
-    defineDataMethod(batchRead_data)
-    void batchRead();
+    defineDataMethod(writeNodeAttributes_data)
+    void writeNodeAttributes();
+    defineDataMethod(readNodeAttributes_data)
+    void readNodeAttributes();
 
     defineDataMethod(getRootNode_data)
     void getRootNode();
@@ -881,7 +881,7 @@ void Tst_QOpcUaClient::readEmptyArrayVariable()
     QVERIFY(node->attribute(QOpcUa::NodeAttribute::Value).toList().isEmpty());
 }
 
-void Tst_QOpcUaClient::batchWrite()
+void Tst_QOpcUaClient::writeNodeAttributes()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
@@ -903,16 +903,16 @@ void Tst_QOpcUaClient::batchWrite()
     QVERIFY (node != nullptr);
     WRITE_VALUE_ATTRIBUTE(node, QVariantList({1, 2, 3, 4, 5}), QOpcUa::Types::UInt32);
 
-    QSignalSpy batchWriteSpy(opcuaClient, &QOpcUaClient::batchWriteFinished);
+    QSignalSpy writeNodeAttributesSpy(opcuaClient, &QOpcUaClient::writeNodeAttributesFinished);
 
-    opcuaClient->batchWrite(request);
+    opcuaClient->writeNodeAttributes(request);
 
-    batchWriteSpy.wait();
+    writeNodeAttributesSpy.wait();
 
-    QCOMPARE(batchWriteSpy.size(), 1);
+    QCOMPARE(writeNodeAttributesSpy.size(), 1);
 
-    QCOMPARE(batchWriteSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
-    QVector<QOpcUaWriteResult> result = batchWriteSpy.at(0).at(0).value<QVector<QOpcUaWriteResult>>();
+    QCOMPARE(writeNodeAttributesSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    QVector<QOpcUaWriteResult> result = writeNodeAttributesSpy.at(0).at(0).value<QVector<QOpcUaWriteResult>>();
 
     QCOMPARE(result.size(), 3);
 
@@ -927,7 +927,7 @@ void Tst_QOpcUaClient::batchWrite()
     }
 }
 
-void Tst_QOpcUaClient::batchRead()
+void Tst_QOpcUaClient::readNodeAttributes()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
@@ -944,16 +944,16 @@ void Tst_QOpcUaClient::batchRead()
     request.push_back(QOpcUaReadItem(QStringLiteral("ns=2;s=Demo.Static.Arrays.UInt32"),
                                      QOpcUa::NodeAttribute::Value, QStringLiteral("0:2")));
 
-    QSignalSpy batchReadSpy(opcuaClient, &QOpcUaClient::batchReadFinished);
+    QSignalSpy readNodeAttributesSpy(opcuaClient, &QOpcUaClient::readNodeAttributesFinished);
 
-    opcuaClient->batchRead(request);
+    opcuaClient->readNodeAttributes(request);
 
-    batchReadSpy.wait();
+    readNodeAttributesSpy.wait();
 
-    QCOMPARE(batchReadSpy.size(), 1);
+    QCOMPARE(readNodeAttributesSpy.size(), 1);
 
-    QCOMPARE(batchReadSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
-    QVector<QOpcUaReadResult> result = batchReadSpy.at(0).at(0).value<QVector<QOpcUaReadResult>>();
+    QCOMPARE(readNodeAttributesSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    QVector<QOpcUaReadResult> result = readNodeAttributesSpy.at(0).at(0).value<QVector<QOpcUaReadResult>>();
 
     QCOMPARE(result.size(), 3);
 

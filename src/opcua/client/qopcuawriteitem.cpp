@@ -47,9 +47,9 @@ QT_BEGIN_NAMESPACE
     attribute of a node on the server. This class contains the necessary information for the backend to make
     a write request to the server.
 
-    One or multiple objects of this class make up the request of a \l QOpcUaClient::batchWrite() operation.
+    One or multiple objects of this class make up the request of a \l QOpcUaClient::writeNodeAttributes() operation.
 
-    \sa QOpcUaClient::batchWrite() QOpcUaWriteResult
+    \sa QOpcUaClient::writeNodeAttributes() QOpcUaWriteResult
 */
 class QOpcUaWriteItemData : public QSharedData
 {

@@ -646,10 +646,10 @@ void UACppAsyncBackend::findServers(const QUrl &url, const QStringList &localeId
     emit findServersFinished(ret, static_cast<QOpcUa::UaStatusCode>(result.statusCode()));
 }
 
-void UACppAsyncBackend::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
+void UACppAsyncBackend::readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead)
 {
     if (nodesToRead.size() == 0) {
-        emit batchReadFinished(QVector<QOpcUaReadResult>(), QOpcUa::UaStatusCode::BadNothingToDo);
+        emit readNodeAttributesFinished(QVector<QOpcUaReadResult>(), QOpcUa::UaStatusCode::BadNothingToDo);
         return;
     }
 
@@ -677,7 +677,7 @@ void UACppAsyncBackend::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
 
     if (result.isBad()) {
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Batch read failed:" << result.toString();
-        emit batchReadFinished(QVector<QOpcUaReadResult>(), status);
+        emit readNodeAttributesFinished(QVector<QOpcUaReadResult>(), status);
     } else {
         QVector<QOpcUaReadResult> ret;
 
@@ -704,14 +704,14 @@ void UACppAsyncBackend::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
             }
             ret.push_back(item);
         }
-        emit batchReadFinished(ret, status);
+        emit readNodeAttributesFinished(ret, status);
     }
 }
 
-void UACppAsyncBackend::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite)
+void UACppAsyncBackend::writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWrite)
 {
     if (nodesToWrite.isEmpty()) {
-        emit batchWriteFinished(QVector<QOpcUaWriteResult>(), QOpcUa::UaStatusCode::BadNothingToDo);
+        emit writeNodeAttributesFinished(QVector<QOpcUaWriteResult>(), QOpcUa::UaStatusCode::BadNothingToDo);
         return;
     }
 
@@ -749,7 +749,7 @@ void UACppAsyncBackend::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite)
 
     if (result.isBad()) {
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Batch write failed:" << result.toString();
-        emit batchWriteFinished(QVector<QOpcUaWriteResult>(), status);
+        emit writeNodeAttributesFinished(QVector<QOpcUaWriteResult>(), status);
     } else {
         QVector<QOpcUaWriteResult> ret;
 
@@ -766,7 +766,7 @@ void UACppAsyncBackend::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite)
 
             ret.push_back(item);
         }
-        emit batchWriteFinished(ret, status);
+        emit writeNodeAttributesFinished(ret, status);
     }
 }
 

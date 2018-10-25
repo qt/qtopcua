@@ -49,11 +49,11 @@ QT_BEGIN_NAMESPACE
     In addition to the status code returned by the server, this class also contains the node id, the attribute and the index
     range from the request to enable a client to match the result with a request.
 
-    Objects of this class are returned in the \l QOpcUaClient::batchWriteFinished()
-    signal and contain the result of a write operation that was part of a \l QOpcUaClient::batchWrite()
+    Objects of this class are returned in the \l QOpcUaClient::writeNodeAttributesFinished()
+    signal and contain the result of a write operation that was part of a \l QOpcUaClient::writeNodeAttributes()
     request.
 
-    \sa QOpcUaClient::batchWrite() QOpcUaClient::batchWriteFinished() QOpcUaWriteItem
+    \sa QOpcUaClient::writeNodeAttributes() QOpcUaClient::writeNodeAttributesFinished() QOpcUaWriteItem
 */
 class QOpcUaWriteResultData : public QSharedData
 {

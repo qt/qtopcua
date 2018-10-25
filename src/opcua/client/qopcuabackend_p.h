@@ -94,8 +94,8 @@ Q_SIGNALS:
                                      const QVector<QOpcUa::QRelativePathElement> &path, QOpcUa::UaStatusCode statusCode);
     void endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
     void findServersFinished(QVector<QOpcUa::QApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
-    void batchReadFinished(QVector<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult);
-    void batchWriteFinished(QVector<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult);
+    void readNodeAttributesFinished(QVector<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult);
+    void writeNodeAttributesFinished(QVector<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult);
 
     void addNodeFinished(QOpcUa::QExpandedNodeId requestedNodeId, QString assignedNodeId, QOpcUa::UaStatusCode statusCode);
     void deleteNodeFinished(QString nodeId, QOpcUa::UaStatusCode statusCode);

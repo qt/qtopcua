@@ -431,10 +431,10 @@ void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &loca
     emit findServersFinished(ret, static_cast<QOpcUa::UaStatusCode>(result));
 }
 
-void Open62541AsyncBackend::batchRead(const QVector<QOpcUaReadItem> &nodesToRead)
+void Open62541AsyncBackend::readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead)
 {
     if (nodesToRead.size() == 0) {
-        emit batchReadFinished(QVector<QOpcUaReadResult>(), QOpcUa::UaStatusCode::BadNothingToDo);
+        emit readNodeAttributesFinished(QVector<QOpcUaReadResult>(), QOpcUa::UaStatusCode::BadNothingToDo);
         return;
     }
 
@@ -462,7 +462,7 @@ void Open62541AsyncBackend::batchRead(const QVector<QOpcUaReadItem> &nodesToRead
 
     if (serviceResult != QOpcUa::UaStatusCode::Good) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Batch read failed:" << serviceResult;
-        emit batchReadFinished(QVector<QOpcUaReadResult>(), serviceResult);
+        emit readNodeAttributesFinished(QVector<QOpcUaReadResult>(), serviceResult);
     } else {
         QVector<QOpcUaReadResult> ret;
 
@@ -487,14 +487,14 @@ void Open62541AsyncBackend::batchRead(const QVector<QOpcUaReadItem> &nodesToRead
             }
             ret.push_back(item);
         }
-        emit batchReadFinished(ret, serviceResult);
+        emit readNodeAttributesFinished(ret, serviceResult);
     }
 }
 
-void Open62541AsyncBackend::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWrite)
+void Open62541AsyncBackend::writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWrite)
 {
     if (nodesToWrite.isEmpty()) {
-        emit batchWriteFinished(QVector<QOpcUaWriteResult>(), QOpcUa::UaStatusCode::BadNothingToDo);
+        emit writeNodeAttributesFinished(QVector<QOpcUaWriteResult>(), QOpcUa::UaStatusCode::BadNothingToDo);
         return;
     }
 
@@ -539,7 +539,7 @@ void Open62541AsyncBackend::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWr
 
     if (serviceResult != QOpcUa::UaStatusCode::Good) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Batch write failed:" << serviceResult;
-        emit batchWriteFinished(QVector<QOpcUaWriteResult>(), serviceResult);
+        emit writeNodeAttributesFinished(QVector<QOpcUaWriteResult>(), serviceResult);
     } else {
         QVector<QOpcUaWriteResult> ret;
 
@@ -554,7 +554,7 @@ void Open62541AsyncBackend::batchWrite(const QVector<QOpcUaWriteItem> &nodesToWr
                 item.setStatusCode(serviceResult);
             ret.push_back(item);
         }
-        emit batchWriteFinished(ret, serviceResult);
+        emit writeNodeAttributesFinished(ret, serviceResult);
     }
 }
 
