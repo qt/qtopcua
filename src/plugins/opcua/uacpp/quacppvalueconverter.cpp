@@ -507,12 +507,7 @@ void scalarFromQVariant<OpcUa_LocalizedText, QString>(const QVariant &var, OpcUa
             ? var.value<QOpcUa::QLocalizedText>()
             : QOpcUa::QLocalizedText(QLatin1String(""), var.value<QString>());
 
-    UaLocalizedText ualt;
-    if (lt.locale().size())
-        ualt.setLocale(UaString(lt.locale().toUtf8().constData()));
-    if (lt.text().size())
-        ualt.setText(UaString(lt.text().toUtf8().constData()));
-    ualt.copyTo(ptr);
+    *ptr = toUACppLocalizedText(lt);
 }
 
 template<>
@@ -1045,6 +1040,17 @@ OpcUa_QualifiedName toUACppQualifiedName(const QOpcUa::QQualifiedName& qtQualifi
     return returnValue;
 }
 
+OpcUa_LocalizedText toUACppLocalizedText(const QOpcUa::QLocalizedText &qtLocalizedText)
+{
+    OpcUa_LocalizedText uaLocalizedText;
+    UaLocalizedText ualt;
+    if (qtLocalizedText.locale().size())
+        ualt.setLocale(UaString(qtLocalizedText.locale().toUtf8().constData()));
+    if (qtLocalizedText.text().size())
+        ualt.setText(UaString(qtLocalizedText.text().toUtf8().constData()));
+    ualt.copyTo(&uaLocalizedText);
+    return uaLocalizedText;
+}
 
 }
 
