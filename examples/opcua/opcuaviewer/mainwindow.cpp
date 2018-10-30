@@ -113,22 +113,27 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &context, co
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   , mServerUrl(new QLineEdit(this))
   , mOpcUaPlugin(new QComboBox(this))
+  , mEndpoints(new QComboBox(this))
+  , mGetEndpointsButton(new QPushButton(tr("Get Endpoints"), this))
   , mConnectButton(new QPushButton(tr("Connect"), this))
   , mLog(new QPlainTextEdit(this))
   , mTreeView(new QTreeView(this))
   , mOpcUaModel(new OpcUaModel(this))
   , mOpcUaProvider(new QOpcUaProvider(this))
+  , mOpcUaClient(nullptr)
   , mClientConnected(false)
 {
     mainWindowGlobal = this;
 
-    auto hbox = new QHBoxLayout;
-    hbox->addWidget(mOpcUaPlugin);
-    hbox->addWidget(mServerUrl);
-    hbox->addWidget(mConnectButton);
+    auto grid = new QGridLayout;
+    grid->addWidget(mOpcUaPlugin, 0, 0);
+    grid->addWidget(mServerUrl, 0, 1);
+    grid->addWidget(mGetEndpointsButton, 0, 2);
+    grid->addWidget(mEndpoints, 1, 1);
+    grid->addWidget(mConnectButton, 1, 2);
 
     auto vbox = new QVBoxLayout;
-    vbox->addLayout(hbox);
+    vbox->addLayout(grid);
     vbox->addWidget(mTreeView);
     vbox->addWidget(new QLabel(tr("Log:")));
     vbox->addWidget(mLog);
@@ -139,7 +144,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     updateUiState();
 
-    mServerUrl->setText("opc.tcp://127.0.0.1:43344");
+    mServerUrl->setText("opc.tcp://127.0.0.1:4840");
     mOpcUaPlugin->addItems(mOpcUaProvider->availableBackends());
     mLog->setReadOnly(true);
     mLog->setLineWrapMode(QPlainTextEdit::NoWrap);
@@ -156,8 +161,62 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         QMessageBox::critical(this, tr("No OPCUA plugins available"), tr("The list of available OPCUA plugins is empty. No connection possible."));
     }
 
+    connect(mGetEndpointsButton, &QPushButton::clicked, this, &MainWindow::getEndpoints);
     connect(mConnectButton, &QPushButton::clicked, this, &MainWindow::connectToServer);
     oldMessageHandler = qInstallMessageHandler(&messageHandler);
+
+}
+
+void MainWindow::getEndpoints()
+{
+    if (mOpcUaClient == nullptr) {
+        mOpcUaClient = mOpcUaProvider->createClient(mOpcUaPlugin->currentText());
+        if (!mOpcUaClient) {
+            const QString message(tr("Connecting to the given sever failed. See the log for details."));
+            log(message, QString(), Qt::red);
+            QMessageBox::critical(this, tr("Failed to connect to server"), message);
+            return;
+        }
+
+        connect(mOpcUaClient, &QOpcUaClient::connected, this, &MainWindow::clientConnected);
+        connect(mOpcUaClient, &QOpcUaClient::disconnected, this, &MainWindow::clientDisconnected);
+        connect(mOpcUaClient, &QOpcUaClient::errorChanged, this, &MainWindow::clientError);
+        connect(mOpcUaClient, &QOpcUaClient::stateChanged, this, &MainWindow::clientState);
+        connect(mOpcUaClient, &QOpcUaClient::endpointsRequestFinished, this, &MainWindow::getEndpointsComplete);
+    }
+
+    mEndpoints->clear();
+    updateUiState();
+
+    mOpcUaClient->requestEndpoints(mServerUrl->text());
+}
+
+void MainWindow::getEndpointsComplete(const QVector<QOpcUa::QEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode)
+{
+    int index = 0;
+    const char *modes[] = {
+        "Invalid",
+        "None",
+        "Sign",
+        "SignAndEncrypt"
+    };
+
+    if (isSuccessStatus(statusCode)) {
+        mEndpointList = endpoints;
+        for (const auto &endpoint : endpoints) {
+            if (endpoint.securityMode() > sizeof(modes)) {
+                qWarning() << "Invalid security mode";
+                continue;
+            }
+
+            const QString EndpointName = QString("%1 (%2)")
+                    .arg(endpoint.securityPolicyUri())
+                    .arg(modes[endpoint.securityMode()]);
+            mEndpoints->addItem(EndpointName, index++);
+        }
+    }
+
+    updateUiState();
 }
 
 void MainWindow::connectToServer()
@@ -167,20 +226,10 @@ void MainWindow::connectToServer()
         return;
     }
 
-    mOpcUaClient = mOpcUaProvider->createClient(mOpcUaPlugin->currentText());
-    if (!mOpcUaClient) {
-        const QString message(tr("Connecting to the given sever failed. See the log for details."));
-        log(message, QString(), Qt::red);
-        QMessageBox::critical(this, tr("Failed to connect to server"), message);
-        return;
+    if (mEndpoints->currentIndex() >= 0) {
+        QOpcUa::QEndpointDescription endpoint = mEndpointList[mEndpoints->currentIndex()];
+        mOpcUaClient->connectToEndpoint(endpoint);
     }
-
-    connect(mOpcUaClient, &QOpcUaClient::connected, this, &MainWindow::clientConnected);
-    connect(mOpcUaClient, &QOpcUaClient::disconnected, this, &MainWindow::clientDisconnected);
-    connect(mOpcUaClient, &QOpcUaClient::errorChanged, this, &MainWindow::clientError);
-    connect(mOpcUaClient, &QOpcUaClient::stateChanged, this, &MainWindow::clientState);
-
-    mOpcUaClient->connectToEndpoint(mServerUrl->text());
 }
 
 void MainWindow::clientConnected()
@@ -195,6 +244,7 @@ void MainWindow::clientDisconnected()
 {
     mClientConnected = false;
     mOpcUaClient->deleteLater();
+    mOpcUaClient = nullptr;
     mOpcUaModel->setOpcUaClient(nullptr);
     updateUiState();
 }
@@ -211,9 +261,12 @@ void MainWindow::clientState(QOpcUaClient::ClientState state)
 
 void MainWindow::updateUiState()
 {
+    mOpcUaPlugin->setEnabled(mOpcUaClient == nullptr);
+    mGetEndpointsButton->setDisabled(mClientConnected || !mOpcUaClient);
+    mConnectButton->setEnabled(mEndpoints->currentIndex() != -1 && mOpcUaClient);
     mConnectButton->setText(mClientConnected?tr("Disconnect"):tr("Connect"));
-    mOpcUaPlugin->setDisabled(mClientConnected);
-    mServerUrl->setDisabled(mClientConnected);
+    mServerUrl->setDisabled(mClientConnected || !mOpcUaClient);
+    mEndpoints->setEnabled(mEndpoints->count() > 0 && mOpcUaClient);
 }
 
 void MainWindow::log(const QString &text, const QString &context, QColor color)

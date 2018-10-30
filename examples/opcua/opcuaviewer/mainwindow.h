@@ -74,6 +74,8 @@ public:
 
 private slots:
     void connectToServer();
+    void getEndpoints();
+    void getEndpointsComplete(const QVector<QOpcUa::QEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode);
     void clientConnected();
     void clientDisconnected();
     void clientError(QOpcUaClient::ClientError);
@@ -85,12 +87,15 @@ private:
 private:
     QLineEdit *mServerUrl;
     QComboBox *mOpcUaPlugin;
+    QComboBox *mEndpoints;
+    QPushButton *mGetEndpointsButton;
     QPushButton *mConnectButton;
     QPlainTextEdit *mLog;
     QTreeView *mTreeView;
     OpcUaModel *mOpcUaModel;
     QOpcUaProvider *mOpcUaProvider;
     QOpcUaClient *mOpcUaClient;
+    QVector<QOpcUa::QEndpointDescription> mEndpointList;
     bool mClientConnected;
 };
 
