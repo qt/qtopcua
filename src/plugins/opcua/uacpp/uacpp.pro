@@ -1,5 +1,6 @@
 TARGET = uacpp_backend
 QT += core core-private opcua opcua-private network
+QT -= gui
 QMAKE_USE += uacpp
 
 win32: DEFINES += _UA_STACK_USE_DLL

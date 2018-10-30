@@ -1,5 +1,6 @@
 TARGET = open62541_backend
 QT += core core-private opcua opcua-private network
+QT -= gui
 
 PLUGIN_TYPE = opcua
 PLUGIN_CLASS_NAME = QOpen62541Plugin
