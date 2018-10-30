@@ -61,6 +61,8 @@ namespace QUACppValueConverter {
     UaStringArray toUaStringArray(const QStringList &value);
     QOpcUa::QLocalizedText toQLocalizedText(UaLocalizedText *data);
 
+    OpcUa_ExpandedNodeId toUACppExpandedNodeId(const QOpcUa::QExpandedNodeId &qtExpandedNodeId);
+
     OpcUa_QualifiedName toUACppQualifiedName(const QOpcUa::QQualifiedName& qtQualifiedName);
 }
 

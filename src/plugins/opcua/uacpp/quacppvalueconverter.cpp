@@ -626,10 +626,7 @@ void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUa::QXValue>(const QVariant &
 template<>
 void scalarFromQVariant<OpcUa_ExpandedNodeId, QOpcUa::QExpandedNodeId>(const QVariant &var, OpcUa_ExpandedNodeId *ptr)
 {
-    const QOpcUa::QExpandedNodeId temp = var.value<QOpcUa::QExpandedNodeId>();
-    ptr->ServerIndex = temp.serverIndex();
-    UACppUtils::nodeIdFromQString(temp.nodeId()).copyTo(&ptr->NodeId);
-    UaString(temp.namespaceUri().toUtf8().constData()).copyTo(&ptr->NamespaceUri);
+    *ptr = toUACppExpandedNodeId(var.value<QOpcUa::QExpandedNodeId>());
 }
 
 template<typename TARGETTYPE, typename QTTYPE>
@@ -1025,6 +1022,17 @@ UaStringArray toUaStringArray(const QStringList &value)
         OpcUa_String_StrnCpy(&ret[i], &str, OPCUA_STRING_LENDONTCARE);
     }
     return ret;
+}
+
+OpcUa_ExpandedNodeId toUACppExpandedNodeId(const QOpcUa::QExpandedNodeId &qtExpandedNodeId)
+{
+    OpcUa_ExpandedNodeId returnValue;
+
+    returnValue.ServerIndex = qtExpandedNodeId.serverIndex();
+    UACppUtils::nodeIdFromQString(qtExpandedNodeId.nodeId()).copyTo(&returnValue.NodeId);
+    UaString namespc(qtExpandedNodeId.namespaceUri().toUtf8().constData());
+    namespc.detach(&returnValue.NamespaceUri);
+    return returnValue;
 }
 
 OpcUa_QualifiedName toUACppQualifiedName(const QOpcUa::QQualifiedName& qtQualifiedName)
