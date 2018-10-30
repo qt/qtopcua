@@ -35,15 +35,19 @@
                 {
                     "type": "uacpp",
                     "builds": {
-                        "debug": "-luaclientd -luabased -lcoremoduled -luastackd -luapkid -lxmlparserd",
-                        "release": "-luaclient -luabase -lcoremodule -luastack -luapki -lxmlparser"
+                        "debug": "-luaclientcppd -luabasecppd -luastackd -luapkicppd -lxmlparsercppd",
+                        "release": " -luaclientcpp -luabasecpp -luastack -luapkicpp -lxmlparsercpp"
                     },
                     "libs": "-lCrypt32 -lOle32 -lOleAut32 -lws2_32 -llibeay32 -llibxml2",
                     "condition": "config.win32 && var.QT_EDITION != 'OpenSource'"
                 },
                 {
                     "type": "uacpp",
-                    "libs": "-luaclient -luamodule -luamodels -lcoremodule -luabase -luastack -lxmlparser -luapki -lcrypto -lssl -lxml2",
+                    "builds": {
+                       "debug": "-luaclientcppd -luabasecppd -luastackd -luapkicppd -lxmlparsercppd",
+                       "release": "-luaclientcpp -luabasecpp -luastack -luapkicpp -lxmlparsercpp"
+                    },
+                    "libs": "-lcrypto -lssl -lxml2",
                     "condition": "!config.win32 && var.QT_EDITION != 'OpenSource'"
                 }
             ]

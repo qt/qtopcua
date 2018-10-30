@@ -36,9 +36,9 @@
 
 #include <stdio.h>
 
-#include <uabase/uaplatformlayer.h>
-#include <uabase/uastring.h>
-#include <uaclient/uasession.h>
+#include <uaplatformlayer.h>
+#include <uastring.h>
+#include <uasession.h>
 
 using namespace UaClientSdk;
 

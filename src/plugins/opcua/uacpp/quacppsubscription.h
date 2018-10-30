@@ -24,8 +24,8 @@
 
 #include <quacppbackend.h>
 
-#include <uabase/uanodeid.h>
-#include <uaclient/uasubscription.h>
+#include <uanodeid.h>
+#include <uasubscription.h>
 
 QT_BEGIN_NAMESPACE
 

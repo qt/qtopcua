@@ -40,7 +40,10 @@ QUACppClient::QUACppClient(const QVariantMap &backendProperties)
     : QOpcUaClientImpl()
     , m_backend(new UACppAsyncBackend(this))
 {
-    Q_UNUSED(backendProperties);
+    if (backendProperties.value(QLatin1String("disableEncryptedPasswordCheck"), false).toBool()) {
+        qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Disabling encrypted password check.";
+        m_backend->m_disableEncryptedPasswordCheck = true;
+    }
 
     m_thread = new QThread();
     connectBackendWithClient(m_backend);

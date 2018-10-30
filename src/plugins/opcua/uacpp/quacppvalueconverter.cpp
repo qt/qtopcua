@@ -28,14 +28,14 @@
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QUuid>
 
-#include <uabase/uastring.h>
-#include <uabase/ualocalizedtext.h>
-#include <uabase/uadatetime.h>
-#include <uabase/uaguid.h>
-#include <uabase/uavariant.h>
-#include <uabase/uaextensionobject.h>
-#include <uabase/uaeuinformation.h>
-#include <uabase/uaaxisinformation.h>
+#include <uastring.h>
+#include <ualocalizedtext.h>
+#include <uadatetime.h>
+#include <uaguid.h>
+#include <uavariant.h>
+#include <uaextensionobject.h>
+#include <uaeuinformation.h>
+#include <uaaxisinformation.h>
 
 QT_BEGIN_NAMESPACE
 

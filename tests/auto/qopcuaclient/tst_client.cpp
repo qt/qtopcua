@@ -49,6 +49,7 @@
 #include <QtTest/QtTest>
 #include <QTcpSocket>
 #include <QTcpServer>
+#include <QVariantMap>
 
 class OpcuaConnector
 {
@@ -535,7 +536,11 @@ void Tst_QOpcUaClient::initTestCase()
     const QHostAddress defaultHost(QHostAddress::LocalHost);
 
     for (const auto &backend: m_backends) {
-        QOpcUaClient *client = m_opcUa.createClient(backend);
+        QVariantMap backendOptions;
+        if (backend == QLatin1String("uacpp"))
+            backendOptions.insert(QLatin1String("disableEncryptedPasswordCheck"), true);
+
+        QOpcUaClient *client = m_opcUa.createClient(backend, backendOptions);
         QVERIFY2(client != nullptr,
                  QString("Loading backend failed: %1").arg(backend).toLatin1().data());
         client->setParent(this);

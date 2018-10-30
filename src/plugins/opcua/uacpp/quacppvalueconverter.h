@@ -27,7 +27,10 @@
 
 #include <QtCore/QVariant>
 
-#include <uabase/uanodeid.h>
+#include <uanodeid.h>
+#include <uaarraytemplates.h> // for UaStringArray
+
+class UaLocalizedText;
 
 QT_BEGIN_NAMESPACE
 

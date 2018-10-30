@@ -29,8 +29,8 @@
 #include <QtCore/QString>
 #include <QtCore/QTimer>
 
-#include <uabase/uabase.h>
-#include <uaclient/uaclientsdk.h>
+#include <uabase.h>
+#include <uaclientsdk.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -78,6 +78,7 @@ public:
     static bool m_platformLayerInitialized;
     QMutex m_lifecycleMutex;
     double m_minPublishingInterval;
+    bool m_disableEncryptedPasswordCheck{false};
 };
 
 QT_END_NAMESPACE

@@ -199,6 +199,19 @@ static QOpcUaPlugin *loadPlugin(const QString &key)
 
     The optional argument \c backendProperties can be used to pass custom backend specific settings as key value pairs.
     Those settings are specific to the backend being instantiated.
+
+    Available settings are
+    \table
+    \header
+        \li Setting string
+        \li Backend
+        \li Description
+    \row
+        \li disableEncryptedPasswordCheck
+        \li Unified Automation
+        \li By default, the backend refuses to connect to endpoints without encryption to avoid
+            sending passwords in clear text. This parameter allows to disable this feature.
+    \endtable
 */
 QOpcUaClient *QOpcUaProvider::createClient(const QString &backend, const QVariantMap &backendProperties)
 {

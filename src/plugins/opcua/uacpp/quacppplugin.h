@@ -24,7 +24,7 @@
 
 #include "qopcuaplugin.h"
 
-#include <uabase/uanodeid.h>
+#include <uanodeid.h>
 
 QT_BEGIN_NAMESPACE
 
