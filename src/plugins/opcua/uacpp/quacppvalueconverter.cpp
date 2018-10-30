@@ -539,10 +539,7 @@ void scalarFromQVariant<OpcUa_NodeId, QString>(const QVariant &var, OpcUa_NodeId
 template<>
 void scalarFromQVariant<OpcUa_QualifiedName, QOpcUa::QQualifiedName>(const QVariant &var, OpcUa_QualifiedName *ptr)
 {
-    QOpcUa::QQualifiedName temp = var.value<QOpcUa::QQualifiedName>();
-    ptr->NamespaceIndex = temp.namespaceIndex();
-    const UaString name(temp.name().toUtf8().constData());
-    name.copyTo(&ptr->Name);
+    *ptr = toUACppQualifiedName(var.value<QOpcUa::QQualifiedName>());
 }
 
 template<>
@@ -1028,6 +1025,16 @@ UaStringArray toUaStringArray(const QStringList &value)
         OpcUa_String_StrnCpy(&ret[i], &str, OPCUA_STRING_LENDONTCARE);
     }
     return ret;
+}
+
+OpcUa_QualifiedName toUACppQualifiedName(const QOpcUa::QQualifiedName& qtQualifiedName)
+{
+    OpcUa_QualifiedName returnValue;
+
+    returnValue.NamespaceIndex = qtQualifiedName.namespaceIndex();
+    UaString name(qtQualifiedName.name().toUtf8().constData());
+    name.detach(&returnValue.Name);
+    return returnValue;
 }
 
 

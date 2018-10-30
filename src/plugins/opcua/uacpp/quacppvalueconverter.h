@@ -60,6 +60,8 @@ namespace QUACppValueConverter {
 
     UaStringArray toUaStringArray(const QStringList &value);
     QOpcUa::QLocalizedText toQLocalizedText(UaLocalizedText *data);
+
+    OpcUa_QualifiedName toUACppQualifiedName(const QOpcUa::QQualifiedName& qtQualifiedName);
 }
 
 QT_END_NAMESPACE
