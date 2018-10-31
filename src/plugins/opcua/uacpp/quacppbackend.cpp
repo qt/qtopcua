@@ -29,6 +29,8 @@
 
 #include <private/qopcuaclient_p.h>
 
+#include <QtCore/QDir>
+#include <QtCore/QFile>
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QStringList>
 #include <QtCore/QUrl>
@@ -41,6 +43,7 @@
 #include <uastring.h>
 #include <uadiscovery.h>
 #include <uadatavalue.h>
+#include <uapkicertificate.h>
 
 #include <limits>
 
@@ -125,6 +128,24 @@ void UACppAsyncBackend::connectionStatusChanged(OpcUa_UInt32 clientConnectionId,
     }
 }
 
+bool UACppAsyncBackend::connectError(OpcUa_UInt32 clientConnectionId, UaClientSdk::UaClient::ConnectServiceType serviceType,
+                                     const UaStatus &error, bool clientSideError)
+{
+    Q_UNUSED(clientConnectionId);
+
+    QOpcUaErrorState errorState;
+    errorState.setConnectionStep(connectionStepFromUaServiceType(serviceType));
+    errorState.setErrorCode(static_cast<QOpcUa::UaStatusCode>(error.statusCode()));
+    errorState.setClientSideError(clientSideError);
+    errorState.setIgnoreError(false);
+
+    // This signal is connected using Qt::BlockingQueuedConnection. It will place a metacall to a different thread and waits
+    // until this metacall is fully handled before returning.
+    emit QOpcUaBackend::connectError(&errorState);
+
+    return errorState.ignoreError();
+}
+
 void UACppAsyncBackend::browse(quint64 handle, const UaNodeId &id, const QOpcUaBrowseRequest &request)
 {
     UaStatus status;
@@ -186,18 +207,26 @@ void UACppAsyncBackend::browse(quint64 handle, const UaNodeId &id, const QOpcUaB
 void UACppAsyncBackend::connectToEndpoint(const QUrl &url)
 {
     UaStatus result;
+    QOpcUaApplicationIdentity identity;
+
+    if (m_clientImpl && m_clientImpl->m_client) {
+        identity = m_clientImpl->m_client->identity();
+    } else {
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect: could not get application identity.";
+        return;
+    }
 
     UaString uaUrl(url.toString().toUtf8().constData());
     SessionConnectInfo sessionConnectInfo;
     UaString sNodeName(QHostInfo::localHostName().toUtf8().constData());
 
-    sessionConnectInfo.sApplicationName = "QtOpcUA Unified Automation Backend";
-    // Use the host name to generate a unique application URI
-    sessionConnectInfo.sApplicationUri  = UaString("urn:%1:Qt:OpcUAClient").arg(sNodeName);
-    sessionConnectInfo.sProductUri      = "urn:Qt:OpcUAClient";
+    sessionConnectInfo.sApplicationName = identity.applicationName().toUtf8().constData();
+    sessionConnectInfo.sApplicationUri  = identity.applicationUri().toUtf8().constData();
+    sessionConnectInfo.sProductUri      = identity.productUri().toUtf8().constData();
     sessionConnectInfo.sSessionName     = sessionConnectInfo.sApplicationUri;
-    sessionConnectInfo.applicationType = OpcUa_ApplicationType_Client;
     sessionConnectInfo.bAutomaticReconnect = OpcUa_False;
+
+    sessionConnectInfo.applicationType = static_cast<OpcUa_ApplicationType>(identity.applicationType());
 
     SessionSecurityInfo sessionSecurityInfo;
     const auto authInfo = m_clientImpl->m_client->authenticationInformation();
@@ -222,6 +251,108 @@ void UACppAsyncBackend::connectToEndpoint(const QUrl &url)
 
     if (result.isNotGood()) {
         // ### TODO: Check for bad syntax, which is the "wrong url" part
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect: " << QString::fromUtf8(result.toString().toUtf8());
+        return;
+    }
+}
+
+void UACppAsyncBackend::connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint)
+{
+    const auto identity = m_clientImpl->m_client->identity();
+    const auto authInfo = m_clientImpl->m_client->authenticationInformation();
+    const auto pkiConfig = m_clientImpl->m_client->pkiConfiguration();
+
+    SessionConnectInfo sessionConnectInfo;
+    sessionConnectInfo.sApplicationName = identity.applicationName().toUtf8().constData();
+    sessionConnectInfo.sApplicationUri  = identity.applicationUri().toUtf8().constData();
+    sessionConnectInfo.sProductUri      = identity.productUri().toUtf8().constData();
+    sessionConnectInfo.sSessionName     = sessionConnectInfo.sApplicationUri;
+    sessionConnectInfo.bAutomaticReconnect = OpcUa_False;
+    sessionConnectInfo.applicationType = static_cast<OpcUa_ApplicationType>(identity.applicationType());
+
+    SessionSecurityInfo sessionSecurityInfo;
+
+    if (pkiConfig.isPkiValid()) {
+        auto result = sessionSecurityInfo.initializePkiProviderOpenSSL(
+                pkiConfig.revocationListLocation().toUtf8().constData(),
+                pkiConfig.trustListLocation().toUtf8().constData(),
+                pkiConfig.issuerRevocationListLocation().toUtf8().constData(),
+                pkiConfig.issuerListLocation().toUtf8().constData());
+
+        if (result.isNotGood()) {
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to set up PKI: " << QString::fromUtf8(result.toString().toUtf8());
+            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
+            return;
+        }
+
+        // set server certificate from endpoint
+        sessionSecurityInfo.serverCertificate = UaByteString(endpoint.serverCertificate().length(), (OpcUa_Byte*)(endpoint.serverCertificate().constData()));
+        // set SecurityPolicyUri
+        sessionSecurityInfo.sSecurityPolicy = endpoint.securityPolicyUri().toUtf8().constData();
+        // set MessageSecurityMode
+        sessionSecurityInfo.messageSecurityMode = static_cast<OpcUa_MessageSecurityMode>(endpoint.securityMode());
+    }
+
+    if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Anonymous) {
+        // nothing to do
+    } else if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Username) {
+        const auto credentials = authInfo.authenticationData().value<QPair<QString, QString>>();
+        UaString username(credentials.first.toUtf8().constData());
+        UaString password(credentials.second.toUtf8().constData());
+        sessionSecurityInfo.setUserPasswordUserIdentity(username, password);
+        if (m_disableEncryptedPasswordCheck)
+            sessionSecurityInfo.disableEncryptedPasswordCheck = OpcUa_True;
+    } else if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Certificate) {
+        // try to load the client certificate
+        const UaString certificateFilePath(pkiConfig.clientCertificateLocation().toUtf8());
+        const UaString privateKeyFilePath(pkiConfig.privateKeyLocation().toUtf8());
+        UaStatus result;
+
+        QFile certFile(certificateFilePath.toUtf8());
+        if (certFile.open(QIODevice::ReadOnly)) {
+            certFile.close();
+        } else {
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to load certificate: " << pkiConfig.clientCertificateLocation();
+            result = OpcUa_BadNotFound;
+        }
+
+        QFile keyFile(privateKeyFilePath.toUtf8());
+        if (keyFile.open(QIODevice::ReadOnly)) {
+            keyFile.close();
+        } else {
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to load private key: " << pkiConfig.privateKeyLocation();
+            result = OpcUa_BadNotFound;
+        }
+
+        if (result.isGood()) {
+
+            if (!result.isGood())
+                qCWarning(QT_OPCUA_PLUGINS_UACPP) << "sessionSecurityInfo.initializePkiProviderOpenSSL failed";
+        }
+
+        if (result.isGood()) {
+            result = sessionSecurityInfo.loadClientCertificateOpenSSL(certificateFilePath, privateKeyFilePath);
+            if (!result.isGood())
+                qCWarning(QT_OPCUA_PLUGINS_UACPP) << "sessionSecurityInfo.loadClientCertificateOpenSSL failed";
+        }
+
+        if (result.isNotGood()) {
+            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect: " << QString::fromUtf8(result.toString().toUtf8());
+            return;
+        }
+    } else {
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnsupportedAuthenticationInformation);
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect: Selected authentication type"
+                                          << authInfo.authenticationType() << "is not supported.";
+        return;
+    }
+
+    const UaString uaUrl(endpoint.endpointUrl().toUtf8().constData());
+    auto result = m_nativeSession->connect(uaUrl, sessionConnectInfo, sessionSecurityInfo, this);
+
+    if (result.isNotGood()) {
         emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect: " << QString::fromUtf8(result.toString().toUtf8());
         return;
@@ -910,6 +1041,23 @@ void UACppAsyncBackend::deleteReference(const QOpcUaDeleteReferenceItem &referen
     emit deleteReferenceFinished(referenceToDelete.sourceNodeId(), referenceToDelete.referenceTypeId(),
                                  referenceToDelete.targetNodeId(),
                                  referenceToDelete.isForwardReference(), statusCode);
+}
+
+QOpcUaErrorState::ConnectionStep UACppAsyncBackend::connectionStepFromUaServiceType(
+        UaClientSdk::UaClient::ConnectServiceType type) const
+{
+    switch (type) {
+    case UaClientSdk::UaClient::ConnectServiceType::CreateSession:
+        return QOpcUaErrorState::ConnectionStep::CreateSession;
+    case UaClientSdk::UaClient::ConnectServiceType::ActivateSession:
+        return QOpcUaErrorState::ConnectionStep::ActivateSession;
+    case UaClientSdk::UaClient::ConnectServiceType::OpenSecureChannel:
+        return QOpcUaErrorState::ConnectionStep::OpenSecureChannel;
+    case UaClientSdk::UaClient::ConnectServiceType::CertificateValidation:
+        return QOpcUaErrorState::ConnectionStep::CertificateValidation;
+    default:
+        return QOpcUaErrorState::ConnectionStep::Unknown;
+    }
 }
 
 static void copyArrayDimensions(OpcUa_Int32 *noOfDimensions, OpcUa_UInt32 **arrayDimensions, const QVector<quint32> &dimensions)

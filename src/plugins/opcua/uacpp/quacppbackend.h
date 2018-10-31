@@ -29,6 +29,8 @@
 #include <QtCore/QString>
 #include <QtCore/QTimer>
 
+#include <QtOpcUa/qopcuaerrorstate.h>
+#include <QtOpcUa/qopcuatype.h>
 #include <uabase.h>
 #include <uaclientsdk.h>
 
@@ -47,9 +49,11 @@ public:
     ~UACppAsyncBackend();
 
     void connectionStatusChanged(OpcUa_UInt32 clientConnectionId, UaClientSdk::UaClient::ServerStatus serverStatus) override;
+    bool connectError(OpcUa_UInt32 clientConnectionId, UaClientSdk::UaClient::ConnectServiceType serviceType, const UaStatus &error, bool clientSideError) override;
 
 public Q_SLOTS:
     void connectToEndpoint(const QUrl &url);
+    void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint);
     void disconnectFromEndpoint();
 
     void browse(quint64 handle, const UaNodeId &id, const QOpcUaBrowseRequest &request);
@@ -75,6 +79,9 @@ public Q_SLOTS:
     void deleteNode(const QString &nodeId, bool deleteTargetReferences);
     void addReference(const QOpcUaAddReferenceItem &referenceToAdd);
     void deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete);
+
+    // Helper
+    QOpcUaErrorState::ConnectionStep connectionStepFromUaServiceType(UaClientSdk::UaClient::ConnectServiceType type) const;
 
 public:
     QUACppSubscription *getSubscription(const QOpcUaMonitoringParameters &settings);

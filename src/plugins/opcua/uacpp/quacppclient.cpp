@@ -66,9 +66,7 @@ void QUACppClient::connectToEndpoint(const QUrl &url)
 
 void QUACppClient::connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint)
 {
-    Q_UNUSED(endpoint);
-    qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Connect to Endpoint using endpoint description is not implemented in UA CPP backend.";
-    emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
+    QMetaObject::invokeMethod(m_backend, "connectToEndpoint", Qt::QueuedConnection, Q_ARG(QOpcUa::QEndpointDescription, endpoint));
 }
 
 void QUACppClient::disconnectFromEndpoint()
