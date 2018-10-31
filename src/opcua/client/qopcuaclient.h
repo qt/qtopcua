@@ -38,6 +38,7 @@
 #define QOPCUACLIENT_H
 
 #include <QtOpcUa/qopcuaglobal.h>
+#include <QtOpcUa/qopcuaapplicationidentity.h>
 #include <QtOpcUa/qopcuanode.h>
 #include <QtOpcUa/qopcuareaditem.h>
 #include <QtOpcUa/qopcuareadresult.h>
@@ -84,6 +85,9 @@ public:
 
     explicit QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent = nullptr);
     ~QOpcUaClient();
+
+    void setIdentity(const QOpcUaApplicationIdentity &identity);
+    QOpcUaApplicationIdentity identity() const;
 
     Q_INVOKABLE void connectToEndpoint(const QUrl &url);
     Q_INVOKABLE void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint);

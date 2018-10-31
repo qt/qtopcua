@@ -39,6 +39,7 @@
 #include <QtOpcUa/qopcuaclient.h>
 #include <QtOpcUa/qopcuanode.h>
 #include <QtOpcUa/qopcuatype.h>
+#include <QtOpcUa/qopcuaapplicationidentity.h>
 #include <private/qopcuanodeimpl_p.h>
 
 #include <private/qfactoryloader_p.h>
@@ -170,6 +171,7 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUaAddReferenceItem>();
     qRegisterMetaType<QOpcUaDeleteReferenceItem>();
     qRegisterMetaType<QVector<QOpcUa::QApplicationDescription>>();
+    qRegisterMetaType<QOpcUaApplicationIdentity>();
 }
 
 QOpcUaProvider::~QOpcUaProvider()

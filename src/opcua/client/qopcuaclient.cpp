@@ -267,6 +267,34 @@ QOpcUaClient::~QOpcUaClient()
 }
 
 /*!
+    Sets the application identity for this \l QOpcUaClient instance.
+    \since QtOpcUa 5.13
+
+    This function is currently available as a Technology Preview, and therefore the API
+    and functionality provided by the class may be subject to change at any time without
+    prior notice.
+*/
+void QOpcUaClient::setIdentity(const QOpcUaApplicationIdentity &identity)
+{
+    Q_D(QOpcUaClient);
+    d->setIdentity(identity);
+}
+
+/*!
+    Returns the application identity of this \l QOpcUaClient instance.
+    \since QtOpcUa 5.13
+
+    This function is currently available as a Technology Preview, and therefore the API
+    and functionality provided by the class may be subject to change at any time without
+    prior notice.
+*/
+QOpcUaApplicationIdentity QOpcUaClient::identity() const
+{
+    Q_D(const QOpcUaClient);
+    return d->identity();
+}
+
+/*!
     Connects to the OPC UA endpoint given in \a url.
 
     If the endpoint requires username authentication, at least a user name must be set in \l QOpcUaAuthenticationInformation.

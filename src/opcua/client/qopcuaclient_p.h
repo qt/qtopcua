@@ -86,12 +86,16 @@ public:
     void namespaceArrayUpdated(QOpcUa::NodeAttributes attr);
     void setupNamespaceArrayMonitoring();
 
+    void setIdentity(const QOpcUaApplicationIdentity &identity);
+    QOpcUaApplicationIdentity identity() const;
+
 private:
     Q_DECLARE_PUBLIC(QOpcUaClient)
     QStringList m_namespaceArray;
     QScopedPointer<QOpcUaNode> m_namespaceArrayNode;
     bool m_namespaceArrayAutoupdateEnabled;
     unsigned int m_namespaceArrayUpdateInterval;
+    QOpcUaApplicationIdentity m_identity;
 };
 
 QT_END_NAMESPACE

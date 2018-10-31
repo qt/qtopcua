@@ -268,4 +268,15 @@ void QOpcUaClientPrivate::setupNamespaceArrayMonitoring()
     }
 }
 
+void QOpcUaClientPrivate::setIdentity(const QOpcUaApplicationIdentity &identity)
+{
+    m_identity = identity;
+}
+
+QOpcUaApplicationIdentity QOpcUaClientPrivate::identity() const
+{
+    return m_identity;
+}
+
+
 QT_END_NAMESPACE
