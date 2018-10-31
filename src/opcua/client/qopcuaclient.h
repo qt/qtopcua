@@ -86,6 +86,7 @@ public:
     ~QOpcUaClient();
 
     Q_INVOKABLE void connectToEndpoint(const QUrl &url);
+    Q_INVOKABLE void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint);
     Q_INVOKABLE void disconnectFromEndpoint();
     QOpcUaNode *node(const QString &nodeId);
     QOpcUaNode *node(const QOpcUa::QExpandedNodeId &expandedNodeId);

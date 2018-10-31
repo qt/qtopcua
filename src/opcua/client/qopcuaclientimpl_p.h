@@ -72,6 +72,7 @@ public:
     virtual ~QOpcUaClientImpl();
 
     virtual void connectToEndpoint(const QUrl &url) = 0;
+    virtual void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint) = 0;
     virtual void disconnectFromEndpoint() = 0;
     virtual QOpcUaNode *node(const QString &nodeId) = 0;
     virtual QString backend() const = 0;

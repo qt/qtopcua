@@ -67,6 +67,7 @@ public:
     ~QOpcUaClientPrivate() override;
 
     void connectToEndpoint(const QUrl &url);
+    void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint);
     void disconnectFromEndpoint();
 
     QScopedPointer<QOpcUaClientImpl> m_impl;

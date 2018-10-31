@@ -121,6 +121,12 @@ void QOpcUaClientPrivate::connectToEndpoint(const QUrl &url)
     }
 }
 
+void QOpcUaClientPrivate::connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint)
+{
+    setStateAndError(QOpcUaClient::Connecting);
+    m_impl->connectToEndpoint(endpoint);
+}
+
 void QOpcUaClientPrivate::disconnectFromEndpoint()
 {
     if (m_state != QOpcUaClient::Connected) {

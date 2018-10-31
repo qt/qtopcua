@@ -291,6 +291,36 @@ void QOpcUaClient::connectToEndpoint(const QUrl &url)
 }
 
 /*!
+    Connects to the OPC UA endpoint given in \a endpoint.
+    \since QtOpcUa 5.13
+
+    \code
+    QEndpointDescription endpointDescription;
+    ...
+    client->connectToEndpoint(endpointDescription);
+    \endcode
+
+    A list of available endpoints is usually obtained by calling \l QOpcUaClient::requestEndpoints().
+
+    If the endpoint requires username authentication, at least a user name must be set in \l QOpcUaAuthenticationInformation.
+    Calling this function before setting an authentication information will use the anonymous authentication.
+
+    \code
+    QOpcUaAuthenticationInformation authInfo;
+    authInfo.setUsernameAuthentication("user", "password");
+
+    client->setAuthenticationInformation(authInfo);
+    \endcode
+
+    \sa setAuthenticationInformation() QEndPointDescription
+*/
+void QOpcUaClient::connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint)
+{
+    Q_D(QOpcUaClient);
+    d->connectToEndpoint(endpoint);
+}
+
+/*!
     Disconnects from the server.
     \sa connectToEndpoint()
 */

@@ -55,6 +55,7 @@ public:
     ~QOpen62541Client();
 
     void connectToEndpoint(const QUrl &url) override;
+    void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint) override;
     void disconnectFromEndpoint() override;
 
     QOpcUaNode *node(const QString &nodeId) override;
