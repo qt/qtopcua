@@ -83,6 +83,9 @@ private slots:
 
 private:
     void updateUiState();
+    void setupPkiConfiguration();
+    bool createPkiFolders();
+    bool createPkiPath(const QString &path);
 
 private:
     QLineEdit *mServerUrl;
@@ -97,6 +100,8 @@ private:
     QOpcUaClient *mOpcUaClient;
     QVector<QOpcUa::QEndpointDescription> mEndpointList;
     bool mClientConnected;
+    QOpcUaApplicationIdentity m_identity;
+    QOpcUaPkiConfiguration m_pkiConfig;
 };
 
 QT_END_NAMESPACE

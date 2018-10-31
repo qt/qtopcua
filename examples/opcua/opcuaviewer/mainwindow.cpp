@@ -51,6 +51,8 @@
 #include "mainwindow.h"
 #include "opcuamodel.h"
 
+#include <QCoreApplication>
+#include <QDir>
 #include <QLineEdit>
 #include <QComboBox>
 #include <QMessageBox>
@@ -64,6 +66,7 @@
 #include <QTreeView>
 #include <QHeaderView>
 #include <QOpcUaProvider>
+#include <QOpcUaAuthenticationInformation>
 
 QT_BEGIN_NAMESPACE
 
@@ -165,7 +168,28 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(mConnectButton, &QPushButton::clicked, this, &MainWindow::connectToServer);
     oldMessageHandler = qInstallMessageHandler(&messageHandler);
 
+    setupPkiConfiguration();
+
+    //! [Application Identity]
+    m_identity = m_pkiConfig.applicationIdentity();
+    //! [Application Identity]
 }
+
+//! [PKI Configuration]
+void MainWindow::setupPkiConfiguration()
+{
+    const QString pkidir = QCoreApplication::applicationDirPath() + "/pki";
+    m_pkiConfig.setClientCertificateLocation(pkidir + "/own/certs/opcuaviewer.der");
+    m_pkiConfig.setPrivateKeyLocation(pkidir + "/own/private/opcuaviewer.pem");
+    m_pkiConfig.setTrustListLocation(pkidir + "/trusted/certs");
+    m_pkiConfig.setRevocationListLocation(pkidir + "/trusted/crl");
+    m_pkiConfig.setIssuerListLocation(pkidir + "/issuers/certs");
+    m_pkiConfig.setIssuerRevocationListLocation(pkidir + "/issuers/crl");
+
+    // create the folders if they don't exist yet
+    createPkiFolders();
+}
+//! [PKI Configuration]
 
 void MainWindow::getEndpoints()
 {
@@ -177,6 +201,13 @@ void MainWindow::getEndpoints()
             QMessageBox::critical(this, tr("Failed to connect to server"), message);
             return;
         }
+
+        mOpcUaClient->setIdentity(m_identity);
+        mOpcUaClient->setPkiConfiguration(m_pkiConfig);
+
+        QOpcUaAuthenticationInformation authInfo;
+        authInfo.setCertificateAuthentication();
+        mOpcUaClient->setAuthenticationInformation(authInfo);
 
         connect(mOpcUaClient, &QOpcUaClient::connected, this, &MainWindow::clientConnected);
         connect(mOpcUaClient, &QOpcUaClient::disconnected, this, &MainWindow::clientDisconnected);
@@ -285,6 +316,42 @@ void MainWindow::log(const QString &text, const QString &context, QColor color)
 void MainWindow::log(const QString &text, QColor color)
 {
     log(text, QString(), color);
+}
+
+bool MainWindow::createPkiPath(const QString &path)
+{
+    const QString msg = tr("Creating PKI path '%1': %2");
+
+    QDir dir;
+    const bool ret = dir.mkpath(path);
+    if (ret) {
+        qDebug() << msg.arg(path).arg("SUCCESS.");
+    } else {
+        qCritical(msg.arg(path).arg("FAILED.").toLocal8Bit());
+    }
+
+    return ret;
+}
+
+bool MainWindow::createPkiFolders()
+{
+    bool result = createPkiPath(m_pkiConfig.trustListLocation());
+    if (!result)
+        return result;
+
+    result = createPkiPath(m_pkiConfig.revocationListLocation());
+    if (!result)
+        return result;
+
+    result = createPkiPath(m_pkiConfig.issuerListLocation());
+    if (!result)
+        return result;
+
+    result = createPkiPath(m_pkiConfig.issuerRevocationListLocation());
+    if (!result)
+        return result;
+
+    return result;
 }
 
 QT_END_NAMESPACE
