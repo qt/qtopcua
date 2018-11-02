@@ -114,9 +114,11 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &context, co
 }
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
-  , mServerUrl(new QLineEdit(this))
   , mOpcUaPlugin(new QComboBox(this))
+  , mHost(new QLineEdit(this))
+  , mServers(new QComboBox(this))
   , mEndpoints(new QComboBox(this))
+  , mFindServersButton(new QPushButton(tr("Find Servers"), this))
   , mGetEndpointsButton(new QPushButton(tr("Get Endpoints"), this))
   , mConnectButton(new QPushButton(tr("Connect"), this))
   , mLog(new QPlainTextEdit(this))
@@ -126,14 +128,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   , mOpcUaClient(nullptr)
   , mClientConnected(false)
 {
+    int row = 0;
     mainWindowGlobal = this;
 
     auto grid = new QGridLayout;
-    grid->addWidget(mOpcUaPlugin, 0, 0);
-    grid->addWidget(mServerUrl, 0, 1);
-    grid->addWidget(mGetEndpointsButton, 0, 2);
-    grid->addWidget(mEndpoints, 1, 1);
-    grid->addWidget(mConnectButton, 1, 2);
+    grid->addWidget(new QLabel(tr("Select OPC UA Backend:")), row, 0);
+    grid->addWidget(mOpcUaPlugin, row, 1);
+    grid->addWidget(new QLabel(tr("Select host to discover:")), ++row, 0);
+    grid->addWidget(mHost, row, 1);
+    grid->addWidget(mFindServersButton, row, 2);
+    grid->addWidget(new QLabel(tr("Select OPC UA Server:")), ++row, 0);
+    grid->addWidget(mServers, row, 1);
+    grid->addWidget(mGetEndpointsButton, row, 2);
+    grid->addWidget(new QLabel(tr("Select OPC UA Endpoint:")), ++row, 0);
+    grid->addWidget(mEndpoints, row, 1);
+    grid->addWidget(mConnectButton, row, 2);
 
     auto vbox = new QVBoxLayout;
     vbox->addLayout(grid);
@@ -145,13 +154,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     widget->setLayout(vbox);
     setCentralWidget(widget);
 
+    mHost->setText("opc.tcp://localhost");
+    mEndpoints->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+
     updateUiState();
 
-    mServerUrl->setText("opc.tcp://127.0.0.1:4840");
     mOpcUaPlugin->addItems(mOpcUaProvider->availableBackends());
     mLog->setReadOnly(true);
     mLog->setLineWrapMode(QPlainTextEdit::NoWrap);
-    setMinimumWidth(500);
+    setMinimumWidth(800);
     mTreeView->setModel(mOpcUaModel);
     mTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
     mTreeView->setTextElideMode(Qt::ElideRight);
@@ -164,6 +175,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         QMessageBox::critical(this, tr("No OPCUA plugins available"), tr("The list of available OPCUA plugins is empty. No connection possible."));
     }
 
+    connect(mFindServersButton, &QPushButton::clicked, this, &MainWindow::findServers);
     connect(mGetEndpointsButton, &QPushButton::clicked, this, &MainWindow::getEndpoints);
     connect(mConnectButton, &QPushButton::clicked, this, &MainWindow::connectToServer);
     oldMessageHandler = qInstallMessageHandler(&messageHandler);
@@ -191,7 +203,7 @@ void MainWindow::setupPkiConfiguration()
 }
 //! [PKI Configuration]
 
-void MainWindow::getEndpoints()
+void MainWindow::createClient()
 {
     if (mOpcUaClient == nullptr) {
         mOpcUaClient = mOpcUaProvider->createClient(mOpcUaPlugin->currentText());
@@ -214,12 +226,54 @@ void MainWindow::getEndpoints()
         connect(mOpcUaClient, &QOpcUaClient::errorChanged, this, &MainWindow::clientError);
         connect(mOpcUaClient, &QOpcUaClient::stateChanged, this, &MainWindow::clientState);
         connect(mOpcUaClient, &QOpcUaClient::endpointsRequestFinished, this, &MainWindow::getEndpointsComplete);
+        connect(mOpcUaClient, &QOpcUaClient::findServersFinished, this, &MainWindow::findServersComplete);
+    }
+}
+
+void MainWindow::findServers()
+{
+    QStringList localeIds;
+    QStringList serverUris;
+    QUrl url(mHost->text());
+
+    updateUiState();
+
+    createClient();
+    // set default port if missing
+    if (url.port() == -1) url.setPort(4840);
+
+    if (mOpcUaClient) {
+        mOpcUaClient->findServers(url, localeIds, serverUris);
+        qDebug() << "Discovering servers on " << url.toString();
+    }
+}
+
+void MainWindow::findServersComplete(const QVector<QOpcUa::QApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode)
+{
+    QOpcUa::QApplicationDescription server;
+
+    if (isSuccessStatus(statusCode)) {
+        mServers->clear();
+        for (const auto &server : servers) {
+            QVector<QString> urls = server.discoveryUrls();
+            if (urls.length() > 0)
+                mServers->addItem(urls[0]);
+        }
     }
 
+    updateUiState();
+}
+
+void MainWindow::getEndpoints()
+{
     mEndpoints->clear();
     updateUiState();
 
-    mOpcUaClient->requestEndpoints(mServerUrl->text());
+    if (mServers->currentIndex() >= 0) {
+        const QString serverUrl = mServers->currentText();
+        createClient();
+        mOpcUaClient->requestEndpoints(serverUrl);
+    }
 }
 
 void MainWindow::getEndpointsComplete(const QVector<QOpcUa::QEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode)
@@ -259,6 +313,7 @@ void MainWindow::connectToServer()
 
     if (mEndpoints->currentIndex() >= 0) {
         QOpcUa::QEndpointDescription endpoint = mEndpointList[mEndpoints->currentIndex()];
+        createClient();
         mOpcUaClient->connectToEndpoint(endpoint);
     }
 }
@@ -292,12 +347,35 @@ void MainWindow::clientState(QOpcUaClient::ClientState state)
 
 void MainWindow::updateUiState()
 {
+    // allow changing the backend only if it was not already created
     mOpcUaPlugin->setEnabled(mOpcUaClient == nullptr);
-    mGetEndpointsButton->setDisabled(mClientConnected || !mOpcUaClient);
-    mConnectButton->setEnabled(mEndpoints->currentIndex() != -1 && mOpcUaClient);
     mConnectButton->setText(mClientConnected?tr("Disconnect"):tr("Connect"));
-    mServerUrl->setDisabled(mClientConnected || !mOpcUaClient);
-    mEndpoints->setEnabled(mEndpoints->count() > 0 && mOpcUaClient);
+
+    if (mClientConnected) {
+        mHost->setEnabled(false);
+        mServers->setEnabled(false);
+        mEndpoints->setEnabled(false);
+        mFindServersButton->setEnabled(false);
+        mGetEndpointsButton->setEnabled(false);
+        mConnectButton->setEnabled(true);
+        mConnectButton->setText(tr("Disconnect"));
+    } else {
+        mHost->setEnabled(true);
+        mServers->setEnabled(mServers->count() > 0);
+        mEndpoints->setEnabled(mEndpoints->count() > 0);
+
+        mFindServersButton->setDisabled(mHost->text().isEmpty());
+        mGetEndpointsButton->setEnabled(mServers->currentIndex() != -1);
+        mConnectButton->setEnabled(mEndpoints->currentIndex() != -1);
+        mConnectButton->setText(tr("Connect"));
+    }
+
+    if (!mOpcUaClient) {
+        mServers->setEnabled(false);
+        mEndpoints->setEnabled(false);
+        mGetEndpointsButton->setEnabled(false);
+        mConnectButton->setEnabled(false);
+    }
 }
 
 void MainWindow::log(const QString &text, const QString &context, QColor color)

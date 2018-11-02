@@ -74,6 +74,8 @@ public:
 
 private slots:
     void connectToServer();
+    void findServers();
+    void findServersComplete(const QVector<QOpcUa::QApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode);
     void getEndpoints();
     void getEndpointsComplete(const QVector<QOpcUa::QEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode);
     void clientConnected();
@@ -82,15 +84,18 @@ private slots:
     void clientState(QOpcUaClient::ClientState);
 
 private:
+    void createClient();
     void updateUiState();
     void setupPkiConfiguration();
     bool createPkiFolders();
     bool createPkiPath(const QString &path);
 
 private:
-    QLineEdit *mServerUrl;
     QComboBox *mOpcUaPlugin;
+    QLineEdit *mHost;
+    QComboBox *mServers;
     QComboBox *mEndpoints;
+    QPushButton *mFindServersButton;
     QPushButton *mGetEndpointsButton;
     QPushButton *mConnectButton;
     QPlainTextEdit *mLog;

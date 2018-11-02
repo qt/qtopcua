@@ -36,5 +36,5 @@
     This example uses the model/view approach to display all nodes of an
     OPC UA server in a \l QTreeView.
 
-    \image opcuaviewer.jpg
+    \image opcuaviewer.png
 */
