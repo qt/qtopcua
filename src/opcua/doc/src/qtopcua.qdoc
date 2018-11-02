@@ -449,6 +449,9 @@
     \title Building Qt OPC UA UACPP Plugin
     \brief Build instructions for the Qt OPC UA UACPP plugin.
 
+    See \l {Creating OPC UA Clients with security support} for detailed instructions for setting up the Unified Automation SDK including
+    security extensions.
+
     When building at the top level, you have to specify the path to the UACPP SDK:
 
     \code
