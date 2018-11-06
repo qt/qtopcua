@@ -734,10 +734,12 @@ QString QOpcUaClient::backend() const
 /*!
     Enables automatic update of the namespace table.
 
-    A subscription will be made to the server node and \l namespaceArrayUpdated will be emitted
-    when the array changed without calling \l updateNamespaceArray first.
+    Enabling this will keep the local copy of the namespace table updated automatically.
+    \l namespaceArrayUpdated will be emitted when the array changed.
 
-    \a enable Determines whether to enable or disable the autoupdate functionality.
+    A subscription will be made on the node on the server to keep track of changes.
+    In case a server does not support subscriptions this will not work and
+    \l isNamespaceAutoupdateEnabled returns \c false.
 
     \sa namespaceArray() namespaceArrayUpdated()
 */
