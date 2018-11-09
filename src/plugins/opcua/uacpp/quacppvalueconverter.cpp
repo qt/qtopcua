@@ -36,6 +36,7 @@
 #include <uabase/uaextensionobject.h>
 #include <uabase/uaeuinformation.h>
 #include <uabase/uaaxisinformation.h>
+#include <uabase/uaargument.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -137,6 +138,7 @@ OpcUa_BuiltInType toDataType(QOpcUa::Types valueType)
     case QOpcUa::DoubleComplexNumber:
     case QOpcUa::AxisInformation:
     case QOpcUa::XV:
+    case QOpcUa::Argument:
         return OpcUa_BuiltInType::OpcUaType_ExtensionObject;
     case QOpcUa::ExpandedNodeId:
         return OpcUa_BuiltInType::OpcUaType_ExpandedNodeId;
@@ -319,6 +321,13 @@ QVariant scalarToQVariant<QVariant, OpcUa_ExtensionObject>(OpcUa_ExtensionObject
     case Namespace0::XVType_Encoding_DefaultBinary:
         result = QVariant::fromValue(decoder.decode<QOpcUa::QXValue>(success));
         break;
+    case Namespace0::Argument_Encoding_DefaultBinary: {
+        // This type is decoded transparently and must not be decoded binary
+        UaArgument uaArgument(*data);
+        QOpcUa::QArgument argument = toQArgument(&uaArgument);
+        result = QVariant::fromValue(argument);
+        break;
+    }
     default:
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Unknown extension object type, returning raw data:" << UACppUtils::nodeIdToQString(data->TypeId.NodeId);
         result = QByteArray(buffer.constData(), buffer.size());
@@ -755,6 +764,12 @@ OpcUa_Variant arrayFromQVariant<OpcUa_ExpandedNodeId, QOpcUa::QExpandedNodeId>(c
     return arrayFromQVariantPointer<OpcUa_ExpandedNodeId, QOpcUa::QExpandedNodeId>(var, type);
 }
 
+template<>
+OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QArgument>(const QVariant &var, const OpcUa_BuiltInType type)
+{
+    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUa::QArgument>(var, type);
+}
+
 QVariant toQVariant(const OpcUa_Variant &value)
 {
     switch (value.Datatype) {
@@ -958,6 +973,8 @@ OpcUa_Variant toUACppVariant(const QVariant &value, QOpcUa::Types type)
         return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QXValue>(value, dt);
     case QOpcUa::ExpandedNodeId:
         return arrayFromQVariant<OpcUa_ExpandedNodeId, QOpcUa::QExpandedNodeId>(value, dt);
+    case QOpcUa::Argument:
+        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QArgument>(value, dt);
     default:
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Variant conversion to UACpp for typeIndex" << type << " not implemented";
     }
@@ -1050,6 +1067,35 @@ OpcUa_LocalizedText toUACppLocalizedText(const QOpcUa::QLocalizedText &qtLocaliz
         ualt.setText(UaString(qtLocalizedText.text().toUtf8().constData()));
     ualt.copyTo(&uaLocalizedText);
     return uaLocalizedText;
+}
+
+template<>
+void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUa::QArgument>(const QVariant &var, OpcUa_ExtensionObject *ptr)
+{
+    const auto value = var.value<QOpcUa::QArgument>();
+    QByteArray temp;
+    QOpcUaBinaryDataEncoding encoder(&temp);
+    encoder.encode<QOpcUa::QArgument>(value);
+    createExtensionObject(temp, Namespace0::Argument_Encoding_DefaultBinary, ptr);
+}
+
+QOpcUa::QArgument toQArgument(const UaArgument *data)
+{
+    QVector<quint32> arrayDimensions;
+    UaUInt32Array dataArrayDimensions;
+    data->getArrayDimensions(dataArrayDimensions);
+    for (quint32 i = 0; i < dataArrayDimensions.length(); ++i)
+        arrayDimensions.append(dataArrayDimensions[i]);
+
+    QOpcUa::QArgument argument;
+    argument.setName(QString::fromUtf8(data->getName().toUtf8()));
+    argument.setDataTypeId(UACppUtils::nodeIdToQString(data->getDataType()));
+    argument.setValueRank(data->getValueRank());
+    argument.setArrayDimensions(arrayDimensions);
+
+    UaLocalizedText localizedText = data->getDescription();
+    argument.setDescription(toQLocalizedText(&localizedText));
+    return argument;
 }
 
 }

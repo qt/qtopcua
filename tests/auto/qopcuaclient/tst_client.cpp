@@ -1606,10 +1606,6 @@ void Tst_QOpcUaClient::methodCallInvalid()
 void Tst_QOpcUaClient::readMethodArguments()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
-
-    if (opcuaClient->backend() != QStringLiteral("open62541"))
-        QSKIP("The argument type is currently only supported in the open62541 backend");
-
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> node(
@@ -1997,17 +1993,13 @@ void Tst_QOpcUaClient::writeArray()
     QVERIFY(node != nullptr);
     WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::ExpandedNodeId);
 
-    if (opcuaClient->backend() == QStringLiteral("open62541")) {
-        list.clear();
-        list.append(testArguments[0]);
-        list.append(testArguments[1]);
-        list.append(testArguments[2]);
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Argument"));
-        QVERIFY(node != nullptr);
-        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::Argument);
-    } else {
-        qInfo("The argument type is currently only supported in the open62541 backend");
-    }
+    list.clear();
+    list.append(testArguments[0]);
+    list.append(testArguments[1]);
+    list.append(testArguments[2]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Argument"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::Argument);
 }
 
 void Tst_QOpcUaClient::readArray()
@@ -2318,19 +2310,15 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(expandedNodeIdArray.toList()[1].value<QOpcUa::QExpandedNodeId>(), testExpandedNodeId[1]);
     QCOMPARE(expandedNodeIdArray.toList()[2].value<QOpcUa::QExpandedNodeId>(), testExpandedNodeId[2]);
 
-    if (opcuaClient->backend() == QStringLiteral("open62541")) {
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Argument"));
-        QVERIFY(node != nullptr);
-        READ_MANDATORY_VARIABLE_NODE(node)
-        QVariant argumentArray = node->attribute(QOpcUa::NodeAttribute::Value);
-        QCOMPARE(argumentArray.type(), QVariant::List);
-        QCOMPARE(argumentArray.toList().length(), 3);
-        QCOMPARE(argumentArray.toList()[0].value<QOpcUa::QArgument>(), testArguments[0]);
-        QCOMPARE(argumentArray.toList()[1].value<QOpcUa::QArgument>(), testArguments[1]);
-        QCOMPARE(argumentArray.toList()[2].value<QOpcUa::QArgument>(), testArguments[2]);
-    } else {
-        qInfo("The argument type is currently only supported in the open62541 backend");
-    }
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Argument"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    QVariant argumentArray = node->attribute(QOpcUa::NodeAttribute::Value);
+    QCOMPARE(argumentArray.type(), QVariant::List);
+    QCOMPARE(argumentArray.toList().length(), 3);
+    QCOMPARE(argumentArray.toList()[0].value<QOpcUa::QArgument>(), testArguments[0]);
+    QCOMPARE(argumentArray.toList()[1].value<QOpcUa::QArgument>(), testArguments[1]);
+    QCOMPARE(argumentArray.toList()[2].value<QOpcUa::QArgument>(), testArguments[2]);
 }
 
 void Tst_QOpcUaClient::writeScalar()
@@ -2464,13 +2452,9 @@ void Tst_QOpcUaClient::writeScalar()
     QVERIFY(node != nullptr);
     WRITE_VALUE_ATTRIBUTE(node, testExpandedNodeId[0], QOpcUa::ExpandedNodeId);
 
-    if (opcuaClient->backend() == QStringLiteral("open62541")) {
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Argument"));
-        QVERIFY(node != nullptr);
-        WRITE_VALUE_ATTRIBUTE(node, testArguments[0], QOpcUa::Argument);
-    } else {
-        qInfo("The argument type is currently only supported in the open62541 backend");
-    }
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Argument"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, testArguments[0], QOpcUa::Argument);
 }
 
 void Tst_QOpcUaClient::readScalar()
@@ -2685,16 +2669,12 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(expandedNodeIdScalar.isValid());
     QCOMPARE(expandedNodeIdScalar.value<QOpcUa::QExpandedNodeId>(), testExpandedNodeId[0]);
 
-    if (opcuaClient->backend() == QStringLiteral("open62541")) {
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Argument"));
-        QVERIFY(node != nullptr);
-        READ_MANDATORY_VARIABLE_NODE(node)
-        QVariant argumentScalar = node->attribute(QOpcUa::NodeAttribute::Value);
-        QVERIFY(argumentScalar.isValid());
-        QCOMPARE(argumentScalar.value<QOpcUa::QArgument>(), testArguments[0]);
-    } else {
-        qInfo("The argument type is currently only supported in the open62541 backend");
-    }
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Argument"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    QVariant argumentScalar = node->attribute(QOpcUa::NodeAttribute::Value);
+    QVERIFY(argumentScalar.isValid());
+    QCOMPARE(argumentScalar.value<QOpcUa::QArgument>(), testArguments[0]);
 }
 
 void Tst_QOpcUaClient::indexRange()

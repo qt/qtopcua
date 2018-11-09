@@ -31,6 +31,7 @@
 #include <uabase/uaarraytemplates.h> // for UaStringArray
 
 class UaLocalizedText;
+class UaArgument;
 
 QT_BEGIN_NAMESPACE
 
@@ -64,6 +65,8 @@ namespace QUACppValueConverter {
     OpcUa_ExpandedNodeId toUACppExpandedNodeId(const QOpcUa::QExpandedNodeId &qtExpandedNodeId);
     OpcUa_LocalizedText toUACppLocalizedText(const QOpcUa::QLocalizedText &qtLocalizedText);
     OpcUa_QualifiedName toUACppQualifiedName(const QOpcUa::QQualifiedName& qtQualifiedName);
+
+    QOpcUa::QArgument toQArgument(const UaArgument *data);
 }
 
 QT_END_NAMESPACE
