@@ -31,6 +31,7 @@ SOURCES += \
     client/qopcuaauthenticationinformation.cpp \
     client/qopcuaapplicationidentity.cpp \
     client/qopcuapkiconfiguration.cpp \
+    client/qopcuaerrorstate.cpp \
 
 HEADERS += \
     client/qopcuaclient_p.h \
@@ -56,3 +57,4 @@ HEADERS += \
     client/qopcuaauthenticationinformation.h \
     client/qopcuaapplicationidentity.h \
     client/qopcuapkiconfiguration.h \
+    client/qopcuaerrorstate.h \

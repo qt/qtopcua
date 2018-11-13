@@ -57,6 +57,7 @@ QT_BEGIN_NAMESPACE
 class QOpcUaAuthenticationInformation;
 class QOpcUaClientPrivate;
 class QOpcUaClientImpl;
+class QOpcUaErrorState;
 
 class Q_OPCUA_EXPORT QOpcUaClient : public QObject
 {
@@ -138,6 +139,7 @@ Q_SIGNALS:
     void disconnected();
     void stateChanged(QOpcUaClient::ClientState state);
     void errorChanged(QOpcUaClient::ClientError error);
+    void connectError(QOpcUaErrorState *errorState);
     void namespaceArrayUpdated(QStringList namespaces);
     void namespaceArrayChanged(QStringList namespaces);
     void endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);

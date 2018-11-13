@@ -37,6 +37,8 @@
 #include <private/qopcuabackend_p.h>
 #include <private/qopcuaclientimpl_p.h>
 #include <QtOpcUa/qopcuamonitoringparameters.h>
+#include "qopcuaclient_p.h"
+#include "qopcuaerrorstate.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -90,6 +92,8 @@ void QOpcUaClientImpl::connectBackendWithClient(QOpcUaBackend *backend)
     connect(backend, &QOpcUaBackend::deleteNodeFinished, this, &QOpcUaClientImpl::deleteNodeFinished);
     connect(backend, &QOpcUaBackend::addReferenceFinished, this, &QOpcUaClientImpl::addReferenceFinished);
     connect(backend, &QOpcUaBackend::deleteReferenceFinished, this, &QOpcUaClientImpl::deleteReferenceFinished);
+    // This needs to be blocking queued because it is called from another thread, which needs to wait for a result.
+    connect(backend, &QOpcUaBackend::connectError, this, &QOpcUaClientImpl::connectError, Qt::BlockingQueuedConnection);
 }
 
 void QOpcUaClientImpl::handleAttributesRead(quint64 handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)

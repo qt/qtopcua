@@ -103,6 +103,8 @@ Q_SIGNALS:
                               QOpcUa::UaStatusCode statusCode);
     void deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForwardReference,
                               QOpcUa::UaStatusCode statusCode);
+    void connectError(QOpcUaErrorState *errorState);
+
 
 private:
     Q_DISABLE_COPY(QOpcUaBackend)

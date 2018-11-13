@@ -38,6 +38,8 @@
 
 #include <QtCore/qloggingcategory.h>
 
+#include "qopcuaerrorstate.h"
+
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
@@ -103,6 +105,11 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
                      const QOpcUa::QExpandedNodeId &targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode) {
         Q_Q(QOpcUaClient);
         emit q->deleteReferenceFinished(sourceNodeId, referenceTypeId, targetNodeId, isForwardReference, statusCode);
+    });
+
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::connectError, [this](QOpcUaErrorState *errorState) {
+        Q_Q(QOpcUaClient);
+        emit q->connectError(errorState);
     });
 }
 

@@ -150,6 +150,25 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
+    \fn QOpcUaClient::connectError(QOpcUaErrorState errorState)
+    \since QtOpcUa 5.13
+
+    This function is currently available as a Technology Preview, and therefore the API
+    and functionality provided by the class may be subject to change at any time without
+    prior notice.
+
+    This signal is emitted when an error happended during connection establishment.
+    The parameter \a errorState contains information about the error.
+
+    In case of client side errors, these can be ignored by calling
+    \l QOpcUaErrorState::setIgnoreError on the object.
+
+    During execution of a slot connected to this signal the backend is stopped and
+    waits for all slots to return. This allows to pop up a user dialog to ask the
+    enduser for example if to trust an unknown certificate before the backend continues.
+ */
+
+/*!
     \fn void QOpcUaClient::namespaceArrayUpdated(QStringList namespaces)
 
     This signal is emitted after an updateNamespaceArray operation has finished.
