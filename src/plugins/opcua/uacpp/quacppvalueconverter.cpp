@@ -1011,7 +1011,7 @@ UaStringArray toUaStringArray(const QStringList &value)
         OpcUa_String str;
         const QByteArray utf8Data = value[i].toUtf8();
 
-        // Use QByteArray data buffer directly to form a OpaUa_String.
+        // Use QByteArray data buffer directly to form a OpcUa_String.
         OpcUa_String_AttachReadOnly(&str, utf8Data.constData());
 
         OpcUa_String_StrnCpy(&ret[i], &str, OPCUA_STRING_LENDONTCARE);
