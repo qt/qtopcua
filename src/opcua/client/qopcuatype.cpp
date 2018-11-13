@@ -4094,4 +4094,20 @@ bool QOpcUa::QMultiDimensionalArray::isValid() const
             static_cast<quint64>(data->arrayDimensions.size()) <= (std::numeric_limits<quint32>::max)();
 }
 
+/*!
+    Returns a textual representation of \a statusCode.
+
+    Currently, this is the name of the enum value but may be a real message in future releases.
+*/
+QString QOpcUa::statusToString(QOpcUa::UaStatusCode statusCode)
+{
+    const auto enumerator = QMetaEnum::fromType<QOpcUa::UaStatusCode>();
+    const auto key = enumerator.valueToKey(statusCode);
+    if (key)
+        return QString::fromLatin1(key);
+    else
+        return QLatin1String("Invalid enum value for UaStatusCode");
+}
+
 QT_END_NAMESPACE
+

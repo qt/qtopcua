@@ -468,6 +468,8 @@ private slots:
     defineDataMethod(resolveBrowsePath_data)
     void resolveBrowsePath();
 
+    void statusStrings();
+
     // This test case restarts the server. It must be run last to avoid
     // destroying state required by other test cases.
     defineDataMethod(connectionLost_data)
@@ -3533,6 +3535,12 @@ void Tst_QOpcUaClient::resolveBrowsePath()
     QCOMPARE(results.at(0).targetId().serverIndex(), 0U);
     QCOMPARE(spy.at(0).at(1).value<QVector<QOpcUa::QRelativePathElement>>(), path);
     QCOMPARE(spy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+}
+
+void Tst_QOpcUaClient::statusStrings()
+{
+    QCOMPARE(statusToString(QOpcUa::Good), "Good");
+    QCOMPARE(statusToString(QOpcUa::BadAggregateConfigurationRejected), "BadAggregateConfigurationRejected");
 }
 
 void Tst_QOpcUaClient::addNamespace()
