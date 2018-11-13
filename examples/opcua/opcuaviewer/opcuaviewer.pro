@@ -7,7 +7,8 @@ INCLUDEPATH += \
 SOURCES += main.cpp \
     mainwindow.cpp \
     opcuamodel.cpp \
-    treeitem.cpp
+    treeitem.cpp \
+    certificatedialog.cpp
 
 #install
 target.path = $$[QT_INSTALL_EXAMPLES]/opcua/opcuaviewer
@@ -16,4 +17,8 @@ INSTALLS += target
 HEADERS += \
     mainwindow.h \
     opcuamodel.h \
-    treeitem.h
+    treeitem.h \
+    certificatedialog.h
+
+FORMS += \
+    certificatedialog.ui

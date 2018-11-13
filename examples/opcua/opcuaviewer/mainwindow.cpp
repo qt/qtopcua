@@ -50,6 +50,7 @@
 
 #include "mainwindow.h"
 #include "opcuamodel.h"
+#include "certificatedialog.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -155,7 +156,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     widget->setLayout(vbox);
     setCentralWidget(widget);
 
-    mHost->setText("opc.tcp://localhost");
+    mHost->setText("opc.tcp://localhost:48010");
     mEndpoints->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
     updateUiState();
@@ -314,9 +315,9 @@ void MainWindow::connectToServer()
     }
 
     if (mEndpoints->currentIndex() >= 0) {
-        QOpcUa::QEndpointDescription endpoint = mEndpointList[mEndpoints->currentIndex()];
+        m_endpoint = mEndpointList[mEndpoints->currentIndex()];
         createClient();
-        mOpcUaClient->connectToEndpoint(endpoint);
+        mOpcUaClient->connectToEndpoint(m_endpoint);
     }
 }
 
@@ -450,8 +451,8 @@ bool MainWindow::createPkiFolders()
 void MainWindow::showErrorDialog(QOpcUaErrorState *errorState)
 {
     QString msg;
-    QMessageBox::StandardButtons buttons     = QMessageBox::Ok;
-    QMessageBox::StandardButton  defaultButton = QMessageBox::Ok;
+    CertificateDialog dlg;
+    int result = 0;
 
     const QString statuscode = QOpcUa::statusToString(errorState->errorCode());
 
@@ -463,29 +464,23 @@ void MainWindow::showErrorDialog(QOpcUaErrorState *errorState)
     switch (errorState->connectionStep()) {
     case QOpcUaErrorState::ConnectionStep::CertificateValidation:
         msg += tr("Server certificate validation failed with error 0x%1 (%2).\nClick 'Abort' to abort the connect, or 'Ignore' to continue connecting.")
-                 .arg(static_cast<ulong>(errorState->errorCode()), 8, 16, QLatin1Char('0')).arg(statuscode);
-        buttons = QMessageBox::Ignore | QMessageBox::Abort;
-        defaultButton = QMessageBox::Abort;
+                  .arg(static_cast<ulong>(errorState->errorCode()), 8, 16, QLatin1Char('0')).arg(statuscode);
+        result = dlg.showCertificate(msg, m_endpoint.serverCertificate(), m_pkiConfig.trustListLocation());
+        errorState->setIgnoreError(result == 1);
         break;
     case QOpcUaErrorState::ConnectionStep::OpenSecureChannel:
         msg += tr("OpenSecureChannel failed with error 0x%1 (%2).").arg(errorState->errorCode(), 8, 16, QLatin1Char('0')).arg(statuscode);
+        QMessageBox::warning(this, tr("Connection Error"), msg);
         break;
     case QOpcUaErrorState::ConnectionStep::CreateSession:
         msg += tr("CreateSession failed with error 0x%1 (%2).").arg(errorState->errorCode(), 8, 16, QLatin1Char('0')).arg(statuscode);
+        QMessageBox::warning(this, tr("Connection Error"), msg);
         break;
     case QOpcUaErrorState::ConnectionStep::ActivateSession:
         msg += tr("ActivateSession failed with error 0x%1 (%2).").arg(errorState->errorCode(), 8, 16, QLatin1Char('0')).arg(statuscode);
+        QMessageBox::warning(this, tr("Connection Error"), msg);
         break;
     }
-
-    QMessageBox::StandardButton result = QMessageBox::warning(
-            this,
-            tr("Connect Error"),
-            msg,
-            buttons,
-            defaultButton);
-
-    errorState->setIgnoreError(result == QMessageBox::Ignore);
 }
 
 QT_END_NAMESPACE

@@ -109,6 +109,7 @@ private:
     bool mClientConnected;
     QOpcUaApplicationIdentity m_identity;
     QOpcUaPkiConfiguration m_pkiConfig;
+    QOpcUa::QEndpointDescription m_endpoint; // current endpoint used to connect
 };
 
 QT_END_NAMESPACE
