@@ -67,6 +67,7 @@
 #include <QHeaderView>
 #include <QOpcUaProvider>
 #include <QOpcUaAuthenticationInformation>
+#include <QOpcUaErrorState>
 
 QT_BEGIN_NAMESPACE
 
@@ -214,6 +215,7 @@ void MainWindow::createClient()
             return;
         }
 
+        connect(mOpcUaClient, &QOpcUaClient::connectError, this, &MainWindow::showErrorDialog);
         mOpcUaClient->setIdentity(m_identity);
         mOpcUaClient->setPkiConfiguration(m_pkiConfig);
 
@@ -430,6 +432,47 @@ bool MainWindow::createPkiFolders()
         return result;
 
     return result;
+}
+
+void MainWindow::showErrorDialog(QOpcUaErrorState *errorState)
+{
+    QString msg;
+    QMessageBox::StandardButtons buttons     = QMessageBox::Ok;
+    QMessageBox::StandardButton  defaultButton = QMessageBox::Ok;
+
+    const QString statuscode = QOpcUa::statusToString(errorState->errorCode());
+
+    if (errorState->isClientSideError())
+        msg = tr("The client reported: ");
+    else
+        msg = tr("The server reported: ");
+
+    switch (errorState->connectionStep()) {
+    case QOpcUaErrorState::ConnectionStep::CertificateValidation:
+        msg += tr("Server certificate validation failed with error 0x%1 (%2).\nClick 'Abort' to abort the connect, or 'Ignore' to continue connecting.")
+                 .arg(static_cast<ulong>(errorState->errorCode()), 8, 16, QLatin1Char('0')).arg(statuscode);
+        buttons = QMessageBox::Ignore | QMessageBox::Abort;
+        defaultButton = QMessageBox::Abort;
+        break;
+    case QOpcUaErrorState::ConnectionStep::OpenSecureChannel:
+        msg += tr("OpenSecureChannel failed with error 0x%1 (%2).").arg(errorState->errorCode(), 8, 16, QLatin1Char('0')).arg(statuscode);
+        break;
+    case QOpcUaErrorState::ConnectionStep::CreateSession:
+        msg += tr("CreateSession failed with error 0x%1 (%2).").arg(errorState->errorCode(), 8, 16, QLatin1Char('0')).arg(statuscode);
+        break;
+    case QOpcUaErrorState::ConnectionStep::ActivateSession:
+        msg += tr("ActivateSession failed with error 0x%1 (%2).").arg(errorState->errorCode(), 8, 16, QLatin1Char('0')).arg(statuscode);
+        break;
+    }
+
+    QMessageBox::StandardButton result = QMessageBox::warning(
+            this,
+            tr("Connect Error"),
+            msg,
+            buttons,
+            defaultButton);
+
+    errorState->setIgnoreError(result == QMessageBox::Ignore);
 }
 
 QT_END_NAMESPACE

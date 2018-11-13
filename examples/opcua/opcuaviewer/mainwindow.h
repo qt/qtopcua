@@ -82,6 +82,7 @@ private slots:
     void clientDisconnected();
     void clientError(QOpcUaClient::ClientError);
     void clientState(QOpcUaClient::ClientState);
+    void showErrorDialog(QOpcUaErrorState *errorState);
 
 private:
     void createClient();
