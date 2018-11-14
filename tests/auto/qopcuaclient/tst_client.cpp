@@ -1978,22 +1978,18 @@ void Tst_QOpcUaClient::writeArray()
     QVERIFY(node != nullptr);
     WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::XV);
 
-    if (opcuaClient->backend() != QLatin1String("open62541"))
-        qInfo("The uacpp backend currently does not support writing extension objects");
-    else {
-        node.reset(opcuaClient->node(QStringLiteral("ns=2;s=Demo.Static.Arrays.ExtensionObject")));
-        QVERIFY(node != nullptr);
+    node.reset(opcuaClient->node(QStringLiteral("ns=2;s=Demo.Static.Arrays.ExtensionObject")));
+    QVERIFY(node != nullptr);
 
-        QVariantList value;
+    QVariantList value;
 
-        for (int i = 0; i < testRanges.size(); ++i) {
-            QOpcUa::QExtensionObject obj;
-            ENCODE_EXTENSION_OBJECT(obj, i);
-            value.append(obj);
-        }
-
-        WRITE_VALUE_ATTRIBUTE(node, value, QOpcUa::Types::ExtensionObject); // Write value to check for
+    for (int i = 0; i < testRanges.size(); ++i) {
+        QOpcUa::QExtensionObject obj;
+        ENCODE_EXTENSION_OBJECT(obj, i);
+        value.append(obj);
     }
+
+    WRITE_VALUE_ATTRIBUTE(node, value, QOpcUa::Types::ExtensionObject); // Write value to check for
 
     list.clear();
     list.append(xmlElements[0]);
@@ -2290,21 +2286,17 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(xVArray.toList()[1].value<QOpcUa::QXValue>(), testXV[1]);
     QCOMPARE(xVArray.toList()[2].value<QOpcUa::QXValue>(), testXV[2]);
 
-    if (opcuaClient->backend() != QLatin1String("open62541"))
-        qInfo("The uacpp backend currently does not support reading extension objects");
-    else {
-        node.reset(opcuaClient->node(QStringLiteral("ns=2;s=Demo.Static.Arrays.ExtensionObject")));
-        QVERIFY(node != nullptr);
+    node.reset(opcuaClient->node(QStringLiteral("ns=2;s=Demo.Static.Arrays.ExtensionObject")));
+    QVERIFY(node != nullptr);
 
-        READ_MANDATORY_VARIABLE_NODE(node);
+    READ_MANDATORY_VARIABLE_NODE(node);
 
-        QVariantList list = node->attribute(QOpcUa::NodeAttribute::Value).toList();
-        QCOMPARE(list.size(), testRanges.size());
+    QVariantList list = node->attribute(QOpcUa::NodeAttribute::Value).toList();
+    QCOMPARE(list.size(), testRanges.size());
 
-        for (int i = 0; i < testRanges.size(); ++i) {
-            QOpcUa::QExtensionObject obj = list.at(i).value<QOpcUa::QExtensionObject>();
-            VERIFY_EXTENSION_OBJECT(obj, i);
-        }
+    for (int i = 0; i < testRanges.size(); ++i) {
+        QOpcUa::QExtensionObject obj = list.at(i).value<QOpcUa::QExtensionObject>();
+        VERIFY_EXTENSION_OBJECT(obj, i);
     }
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.XmlElement"));
@@ -2450,17 +2442,13 @@ void Tst_QOpcUaClient::writeScalar()
     QVERIFY(node != nullptr);
     WRITE_VALUE_ATTRIBUTE(node, QVariant::fromValue(testXV[0]), QOpcUa::XV);
 
-    if (opcuaClient->backend() != QLatin1String("open62541"))
-        qInfo("The uacpp backend currently does not support writing extension objects");
-    else {
-        node.reset(opcuaClient->node(QStringLiteral("ns=2;s=Demo.Static.Scalar.ExtensionObject")));
-        QVERIFY(node != nullptr);
+    node.reset(opcuaClient->node(QStringLiteral("ns=2;s=Demo.Static.Scalar.ExtensionObject")));
+    QVERIFY(node != nullptr);
 
-        QOpcUa::QExtensionObject obj;
-        ENCODE_EXTENSION_OBJECT(obj, 0);
+    QOpcUa::QExtensionObject obj;
+    ENCODE_EXTENSION_OBJECT(obj, 0);
 
-        WRITE_VALUE_ATTRIBUTE(node, obj, QOpcUa::Types::ExtensionObject); // Write value to check for
-    }
+    WRITE_VALUE_ATTRIBUTE(node, obj, QOpcUa::Types::ExtensionObject); // Write value to check for
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XmlElement"));
     QVERIFY(node != nullptr);
@@ -2660,17 +2648,13 @@ void Tst_QOpcUaClient::readScalar()
     READ_MANDATORY_VARIABLE_NODE(node);
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QXValue>(), testXV[0]);
 
-    if (opcuaClient->backend() != QLatin1String("open62541"))
-        qInfo("The uacpp backend currently does not support reading extension objects");
-    else {
-        node.reset(opcuaClient->node(QStringLiteral("ns=2;s=Demo.Static.Scalar.ExtensionObject")));
-        QVERIFY(node != nullptr);
+    node.reset(opcuaClient->node(QStringLiteral("ns=2;s=Demo.Static.Scalar.ExtensionObject")));
+    QVERIFY(node != nullptr);
 
-        READ_MANDATORY_VARIABLE_NODE(node);
+    READ_MANDATORY_VARIABLE_NODE(node);
 
-        QOpcUa::QExtensionObject obj = node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QExtensionObject>();
-        VERIFY_EXTENSION_OBJECT(obj, 0);
-    }
+    QOpcUa::QExtensionObject obj = node->attribute(QOpcUa::NodeAttribute::Value).value<QOpcUa::QExtensionObject>();
+    VERIFY_EXTENSION_OBJECT(obj, 0);
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.XmlElement"));
     QVERIFY(node != nullptr);
