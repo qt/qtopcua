@@ -556,15 +556,20 @@ void scalarFromQVariant<OpcUa_Guid, QUuid>(const QVariant &var, OpcUa_Guid *ptr)
     memcpy(ptr->Data4, uuid.data4, sizeof(uuid.data4));
 }
 
-void createExtensionObject(const QByteArray &data, Namespace0 id, OpcUa_ExtensionObject *ptr)
+void createExtensionObject(const QByteArray &data, const UaNodeId &typeId, OpcUa_ExtensionObject *ptr)
 {
     OpcUa_ExtensionObject_Initialize(ptr);
     UaByteArray arr(data.data(), data.length());
     arr.copyTo(&ptr->Body.Binary);
     ptr->Encoding = OpcUa_ExtensionObjectEncoding_Binary;
     ptr->BodySize = data.length();
+    typeId.copyTo(&ptr->TypeId.NodeId);
+}
+
+void createExtensionObject(const QByteArray &data, Namespace0 id, OpcUa_ExtensionObject *ptr)
+{
     const UaNodeId temp(static_cast<OpcUa_UInt32>(id));
-    temp.copyTo(&ptr->TypeId.NodeId);
+    createExtensionObject(data, temp, ptr);
 }
 
 template<>
