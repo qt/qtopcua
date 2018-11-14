@@ -547,7 +547,7 @@ void scalarFromQVariant<OpcUa_Guid, QUuid>(const QVariant &var, OpcUa_Guid *ptr)
     memcpy(ptr->Data4, uuid.data4, sizeof(uuid.data4));
 }
 
-void createExtensionObject(QByteArray &data, Namespace0 id, OpcUa_ExtensionObject *ptr)
+void createExtensionObject(const QByteArray &data, Namespace0 id, OpcUa_ExtensionObject *ptr)
 {
     OpcUa_ExtensionObject_Initialize(ptr);
     UaByteArray arr(data.data(), data.length());
