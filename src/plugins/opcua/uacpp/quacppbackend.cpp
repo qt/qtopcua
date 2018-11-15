@@ -791,7 +791,7 @@ void UACppAsyncBackend::addNode(const QOpcUaAddNodeItem &nodeToAdd)
         opcUaNodeToAdd->TypeDefinition = QUACppValueConverter::toUACppExpandedNodeId(nodeToAdd.typeDefinition());
 
     UaAddNodesItems itemsToAdd;
-    itemsToAdd.attach(1, opcUaNodeToAdd);
+    itemsToAdd.attach((OpcUa_UInt32)1, opcUaNodeToAdd);
     UaAddNodesResults results;
     UaDiagnosticInfos diagnosticInfos;
     ServiceSettings serviceSettings;
@@ -820,7 +820,7 @@ void UACppAsyncBackend::deleteNode(const QString &nodeId, bool deleteTargetRefer
     UaNodeId id = UACppUtils::nodeIdFromQString(nodeId);
 
     UaDeleteNodesItems nodesToDelete;
-    nodesToDelete.attach(1, static_cast<OpcUa_DeleteNodesItem*>(OpcUa_Alloc(1 * sizeof(OpcUa_DeleteNodesItem))));
+    nodesToDelete.attach((OpcUa_UInt32)1, static_cast<OpcUa_DeleteNodesItem*>(OpcUa_Alloc(1 * sizeof(OpcUa_DeleteNodesItem))));
     OpcUa_DeleteNodesItem_Initialize(&nodesToDelete[0]);
 
     id.copyTo(&nodesToDelete[0].NodeId);
@@ -844,7 +844,7 @@ void UACppAsyncBackend::deleteNode(const QString &nodeId, bool deleteTargetRefer
 void UACppAsyncBackend::addReference(const QOpcUaAddReferenceItem &referenceToAdd)
 {
     UaAddReferencesItems referencesToAdd;
-    referencesToAdd.attach(1, static_cast<OpcUa_AddReferencesItem*>(OpcUa_Alloc(1 * sizeof(OpcUa_AddReferencesItem))));
+    referencesToAdd.attach((OpcUa_UInt32)1, static_cast<OpcUa_AddReferencesItem*>(OpcUa_Alloc(1 * sizeof(OpcUa_AddReferencesItem))));
     OpcUa_AddReferencesItem_Initialize(&referencesToAdd[0]);
 
     UACppUtils::nodeIdFromQString(referenceToAdd.sourceNodeId()).copyTo(&referencesToAdd[0].SourceNodeId);
@@ -873,7 +873,7 @@ void UACppAsyncBackend::addReference(const QOpcUaAddReferenceItem &referenceToAd
 void UACppAsyncBackend::deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete)
 {
     UaDeleteReferencesItems referencesToDelete;
-    referencesToDelete.attach(1, static_cast<OpcUa_DeleteReferencesItem*>(OpcUa_Alloc(1 * sizeof(OpcUa_DeleteReferencesItem))));
+    referencesToDelete.attach((OpcUa_UInt32)1, static_cast<OpcUa_DeleteReferencesItem*>(OpcUa_Alloc(1 * sizeof(OpcUa_DeleteReferencesItem))));
     OpcUa_DeleteReferencesItem_Initialize(&referencesToDelete[0]);
 
     UACppUtils::nodeIdFromQString(referenceToDelete.sourceNodeId()).copyTo(&referencesToDelete[0].SourceNodeId);
