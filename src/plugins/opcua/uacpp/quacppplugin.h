@@ -39,7 +39,7 @@ public:
     explicit QUACppPlugin(QObject *parent = 0);
     ~QUACppPlugin() override;
 
-    QOpcUaClient *createClient() override;
+    QOpcUaClient *createClient(const QVariantMap &backendProperties) override;
 private:
 };
 

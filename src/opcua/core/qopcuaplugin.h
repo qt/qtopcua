@@ -54,7 +54,7 @@ public:
     explicit QOpcUaPlugin(QObject *parent = nullptr);
     ~QOpcUaPlugin() override;
 
-    virtual QOpcUaClient *createClient() = 0;
+    virtual QOpcUaClient *createClient(const QVariantMap &backendProperties) = 0;
 };
 Q_DECLARE_INTERFACE(QOpcUaPlugin, QOpcUaProviderFactory_iid)
 

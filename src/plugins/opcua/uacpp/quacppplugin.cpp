@@ -38,9 +38,9 @@ QUACppPlugin::~QUACppPlugin()
 {
 }
 
-QOpcUaClient *QUACppPlugin::createClient()
+QOpcUaClient *QUACppPlugin::createClient(const QVariantMap &backendProperties)
 {
-    return new QOpcUaClient(new QUACppClient());
+    return new QOpcUaClient(new QUACppClient(backendProperties));
 }
 
 QT_END_NAMESPACE

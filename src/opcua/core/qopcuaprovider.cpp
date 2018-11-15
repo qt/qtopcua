@@ -196,8 +196,11 @@ static QOpcUaPlugin *loadPlugin(const QString &key)
 
     The user is responsible for deleting the returned \l QOpcUaClient object
     when it is no longer needed.
+
+    The optional argument \c backendProperties can be used to pass custom backend specific settings as key value pairs.
+    Those settings are specific to the backend being instantiated.
 */
-QOpcUaClient *QOpcUaProvider::createClient(const QString &backend)
+QOpcUaClient *QOpcUaProvider::createClient(const QString &backend, const QVariantMap &backendProperties)
 {
     QOpcUaPlugin *plugin;
     auto it = m_plugins.find(backend);
@@ -213,7 +216,7 @@ QOpcUaClient *QOpcUaProvider::createClient(const QString &backend)
     else {
         plugin = it.value();
     }
-    return plugin->createClient();
+    return plugin->createClient(backendProperties);
 }
 
 /*!

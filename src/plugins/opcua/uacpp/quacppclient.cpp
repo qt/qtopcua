@@ -36,10 +36,12 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_UACPP)
 
-QUACppClient::QUACppClient()
+QUACppClient::QUACppClient(const QVariantMap &backendProperties)
     : QOpcUaClientImpl()
     , m_backend(new UACppAsyncBackend(this))
 {
+    Q_UNUSED(backendProperties);
+
     m_thread = new QThread();
     connectBackendWithClient(m_backend);
     m_backend->moveToThread(m_thread);
