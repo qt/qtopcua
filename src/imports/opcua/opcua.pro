@@ -15,6 +15,8 @@ SOURCES += \
     opcuaattributevalue.cpp \
     opcuaattributecache.cpp \
     opcuamethodargument.cpp \
+    opcuareaditem.cpp \
+    opcuareadresult.cpp \
     opcuastatus.cpp \
 
 HEADERS += \
@@ -32,6 +34,8 @@ HEADERS += \
     opcuaattributecache.h \
     opcuaattributevalue.h \
     opcuamethodargument.h \
+    opcuareaditem.h \
+    opcuareadresult.h \
     opcuastatus.h \
 
 load(qml_plugin)

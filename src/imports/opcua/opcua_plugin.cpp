@@ -44,6 +44,8 @@
 #include "opcuarelativenodeid.h"
 #include "qopcuatype.h"
 #include "opcuastatus.h"
+#include "opcuareaditem.h"
+#include "opcuareadresult.h"
 #include <QLoggingCategory>
 
 #include <qqml.h>
@@ -119,6 +121,14 @@ void OpcUaPlugin::registerTypes(const char *uri)
     qmlRegisterUncreatableType<QOpcUaApplicationDescription>(uri, major, minor, "ApplicationDescription", "This type can not be created.");
     qRegisterMetaType<OpcUaStatus>();
     qmlRegisterUncreatableType<OpcUaStatus>(uri, major, minor, "Status", "This type can not be created.");
+    qmlRegisterSingletonType<OpcUaReadItemFactory>(uri, major, minor, "ReadItem", [](QQmlEngine *engine, QJSEngine *scriptEngine) -> QObject* {
+        Q_UNUSED(engine)
+        Q_UNUSED(scriptEngine)
+
+        return new OpcUaReadItemFactory();
+    });
+    qRegisterMetaType<OpcUaReadItem>();
+    qRegisterMetaType<OpcUaReadResult>();
 
     // insert new versions here
 

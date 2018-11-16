@@ -35,8 +35,13 @@
 ****************************************************************************/
 
 #include "opcuaconnection.h"
-#include <QOpcUaProvider>
+#include "opcuareadresult.h"
+#include "universalnode.h"
+#include <QJSEngine> // for qjsvalue_cast<>()
 #include <QLoggingCategory>
+#include <QOpcUaProvider>
+#include <QOpcUaReadItem>
+#include <QOpcUaReadResult>
 
 QT_BEGIN_NAMESPACE
 
@@ -128,6 +133,28 @@ QT_BEGIN_NAMESPACE
     and invalid \l AuthenticationInformation.
 */
 
+/*!
+    \qmlsignal Connection::readNodeAttributesFinished(readResults)
+
+    Emitted when the read request, started using \l readNodeAttributes(), is finished.
+    The parameter of this signal is an array of \l ReadResult, which contains the
+    values requested from the server.
+
+    \code
+    connection.onReadNodeAttributesFinished(results) {
+        for (var i = 0; results.length; i++) {
+            if (results[i].status.isGood) {
+                console.log(results[i].value);
+            } else {
+                // handle error
+            }
+        }
+    }
+    \endcode
+
+    \sa readNodeAttributes(), ReadResult
+*/
+
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML)
 
 OpcUaConnection* OpcUaConnection::m_defaultConnection = nullptr;
@@ -189,6 +216,7 @@ void OpcUaConnection::setBackend(const QString &name)
             }
         });
         m_client->setNamespaceAutoupdate(true);
+        connect(m_client, &QOpcUaClient::readNodeAttributesFinished, this, &OpcUaConnection::handleReadNodeAttributesFinished);
     } else {
         qCWarning(QT_OPCUA_PLUGINS_QML) << tr("Backend '%1' could not be created.").arg(name);
     }
@@ -310,6 +338,98 @@ QOpcUaAuthenticationInformation OpcUaConnection::authenticationInformation() con
         return QOpcUaAuthenticationInformation();
 
     return m_client->authenticationInformation();
+}
+
+/*!
+    \qmlmethod Connection::readNodeAttributes(valuesToBeRead)
+
+    This function is used to read multiple values from a server in one go.
+    Returns \c true if the read request was dispatched successfully.
+
+    The values to be read have to be passed as JavaScript array of \l ReadItem.
+
+    \code
+    // List of items to read
+    var readItemList = [];
+    // Item to be added to the list of items to be read
+    var readItem;
+
+    // Prepare an item to be read
+
+    // Create a new read item and fill properties
+    readItem = QtOpcUa.ReadItem.create();
+    readItem.ns = "http://qt-project.org";
+    readItem.nodeId = "s=Demo.Static.Scalar.Double";
+    readItem.attribute = QtOpcUa.Constants.NodeAttribute.DisplayName;
+
+    // Add the prepared item to the list of items to be read
+    readItemList.push(readItem);
+
+    // Add further items
+    [...]
+
+    if (!connection.readNodeAttributes(readItemList)) {
+        // handle error
+    }
+    \endcode
+
+    The result of the read request are provided by the signal
+    \l readNodeAttributesFinished().
+
+    \sa readNodeAttributesFinished(), ReadItem
+*/
+bool OpcUaConnection::readNodeAttributes(const QJSValue &value)
+{
+    if (!m_client || !m_connected) {
+        qCWarning(QT_OPCUA_PLUGINS_QML) << tr("Not connected to server.");
+        return false;
+    }
+    if (!value.isArray()) {
+        qCWarning(QT_OPCUA_PLUGINS_QML) << tr("List of ReadItems it not an array.");
+        return false;
+    }
+
+    QVector<QOpcUaReadItem> readItemList;
+
+    for (int i = 0; i < value.property("length").toInt(); ++i){
+        const auto &readItem = qjsvalue_cast<OpcUaReadItem>(value.property(i));
+        if (readItem.nodeId().isEmpty()) {
+            qCWarning(QT_OPCUA_PLUGINS_QML) << tr("Invalid ReadItem in list of items at index %1").arg(i);
+            return false;
+        }
+
+        QString finalNode;
+        bool ok;
+        int index = readItem.namespaceIdentifier().toInt(&ok);
+        if (ok) {
+            QString identifier;
+            UniversalNode::splitNodeIdAndNamespace(readItem.nodeId(), nullptr, &identifier);
+            finalNode = UniversalNode::createNodeString(index, identifier);
+        } else {
+            finalNode = UniversalNode::resolveNamespaceToNode(readItem.nodeId(), readItem.namespaceIdentifier().toString(), m_client);
+        }
+
+        if (finalNode.isEmpty()) {
+            qCWarning(QT_OPCUA_PLUGINS_QML) << tr("Failed to resolve node.");
+            return false;
+        }
+        readItemList.push_back(QOpcUaReadItem(finalNode,
+                                              readItem.attribute(),
+                                              readItem.indexRange())
+                               );
+    }
+
+    return m_client->readNodeAttributes(readItemList);
+}
+
+void OpcUaConnection::handleReadNodeAttributesFinished(const QVector<QOpcUaReadResult> &results)
+{
+    QVariantList returnValue;
+
+    for (const auto &result : results)
+        returnValue.append(QVariant::fromValue(OpcUaReadResult(result, m_client)));
+
+    emit readNodeAttributesFinished(QVariant::fromValue(returnValue));
 }
 
 QT_END_NAMESPACE

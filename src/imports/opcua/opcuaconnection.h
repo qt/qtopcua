@@ -36,11 +36,15 @@
 
 #pragma once
 
+#include "opcuareaditem.h"
+#include <QJSValue>
 #include <QObject>
 #include <QOpcUaClient>
 #include <QOpcUaAuthenticationInformation>
 
 QT_BEGIN_NAMESPACE
+
+class QOpcUaReadResult;
 
 class OpcUaConnection : public QObject
 {
@@ -65,6 +69,7 @@ public:
     QStringList namespaces() const;
 
     QOpcUaAuthenticationInformation authenticationInformation() const;
+    Q_INVOKABLE bool readNodeAttributes(const QJSValue &value);
 
 public slots:
     void connectToEndpoint(const QUrl &url);
@@ -78,10 +83,12 @@ signals:
     void backendChanged();
     void defaultConnectionChanged();
     void namespacesChanged();
+    void readNodeAttributesFinished(const QVariant &value);
 
 private slots:
     void clientStateHandler(QOpcUaClient::ClientState state);
     void requestEndpointsFinishedHandler(const QVector<QOpcUaEndpointDescription> &endpoints);
+    void handleReadNodeAttributesFinished(const QVector<QOpcUaReadResult> &results);
 
 private:
     QOpcUaClient *m_client = nullptr;

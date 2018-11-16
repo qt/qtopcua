@@ -25,6 +25,10 @@ Module {
         Property { name: "defaultConnection"; type: "bool" }
         Property { name: "namespaces"; type: "QStringList"; isReadonly: true }
         Property { name: "authenticationInformation"; type: "QOpcUaAuthenticationInformation" }
+        Signal {
+            name: "readNodeAttributesFinished"
+            Parameter { name: "value"; type: "QVariant" }
+        }
         Method {
             name: "connectToEndpoint"
             Parameter { name: "url"; type: "QUrl" }
@@ -38,6 +42,11 @@ Module {
         Method {
             name: "setAuthenticationInformation"
             Parameter { name: "authenticationInformation"; type: "QOpcUaAuthenticationInformation" }
+        }
+        Method {
+            name: "readNodeAttributes"
+            type: "bool"
+            Parameter { name: "value"; type: "QJSValue" }
         }
     }
     Component {
@@ -163,6 +172,15 @@ Module {
             Parameter { type: "string" }
         }
         Signal { name: "nodeChanged" }
+    }
+    Component {
+        name: "OpcUaReadItemFactory"
+        prototype: "QObject"
+        exports: ["QtOpcUa/ReadItem 5.13"]
+        isCreatable: false
+        isSingleton: true
+        exportMetaObjectRevisions: [0]
+        Method { name: "create"; type: "OpcUaReadItem" }
     }
     Component {
         name: "OpcUaRelativeNodeId"
