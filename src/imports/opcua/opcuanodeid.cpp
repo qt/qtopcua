@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty string NodeId::namespace
+    \qmlproperty string NodeId::ns
 
     Namespace of the node identifier.
     The identifier can be the index as a number or the name as string.
