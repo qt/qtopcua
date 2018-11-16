@@ -35,7 +35,6 @@
 ****************************************************************************/
 
 #include "opcuanodeid.h"
-#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
