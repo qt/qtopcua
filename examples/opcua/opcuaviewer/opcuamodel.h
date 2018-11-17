@@ -48,8 +48,8 @@
 **
 ****************************************************************************/
 
-#ifndef OPAUAMODEL_H
-#define OPAUAMODEL_H
+#ifndef OPCUAMODEL_H
+#define OPCUAMODEL_H
 
 #include "treeitem.h"
 #include <QAbstractItemModel>
@@ -86,4 +86,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // OPAUAMODEL_H
+#endif // OPCUAMODEL_H
