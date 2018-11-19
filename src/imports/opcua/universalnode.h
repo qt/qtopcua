@@ -94,6 +94,8 @@ public:
     UniversalNode& operator=(const UniversalNode&);
     bool operator==(const UniversalNode &rhs) const;
 
+    static bool splitNodeIdAndNamespace(const QString nodeIdentifier, int *namespaceIndex, QString *identifier);
+
 signals:
     void namespaceNameChanged(const QString &);
     void namespaceIndexChanged(quint16);
@@ -105,7 +107,6 @@ private:
     void setMembers(bool setNamespaceIndex, quint16 namespaceIndex,
                     bool setNamespaceName, const QString &namespaceName,
                     bool setNodeIdentifier, const QString &nodeIdentifier);
-    bool splitNodeIdAndNamespace(const QString nodeIdentifier, int *namespaceIndex, QString *identifier);
 
     QString m_namespaceName;
     QString m_nodeIdentifier;
