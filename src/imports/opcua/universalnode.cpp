@@ -274,7 +274,7 @@ QString UniversalNode::fullNodeId() const
         return QString();
     }
 
-    return QString("ns=%1;%2").arg(m_namespaceIndex).arg(m_nodeIdentifier);
+    return createNodeString(m_namespaceIndex, m_nodeIdentifier);
 }
 
 QOpcUaNode *UniversalNode::createNode(QOpcUaClient *client)

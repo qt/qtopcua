@@ -94,6 +94,9 @@ public:
     UniversalNode& operator=(const UniversalNode&);
     bool operator==(const UniversalNode &rhs) const;
 
+    inline static QString createNodeString(int namespaceIndex, const QString &nodeIdentifier) {
+            return QString("ns=%1;%2").arg(namespaceIndex).arg(nodeIdentifier);
+    }
     static bool splitNodeIdAndNamespace(const QString nodeIdentifier, int *namespaceIndex, QString *identifier);
 
 signals:
