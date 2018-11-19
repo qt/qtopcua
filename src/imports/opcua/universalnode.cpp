@@ -161,25 +161,35 @@ void UniversalNode::resolveNamespaceNameToIndex(QOpcUaClient *client)
     if (m_namespaceIndexValid)
         return; // Namespace index already resolved, nothing to do
 
+    int index = resolveNamespaceNameToIndex(m_namespaceName, client);
+    if (index < 0) {
+        qCWarning(QT_OPCUA_PLUGINS_QML) << "Could not resolve namespace for node" << (m_nodeIdentifier.isEmpty() ? QString() : (QString("(") + m_nodeIdentifier + ")"));
+        return;
+    }
+    setMembers(true, index, true, m_namespaceName, false, QString());
+}
+
+int UniversalNode::resolveNamespaceNameToIndex(const QString &namespaceName, QOpcUaClient *client)
+{
     const auto namespaceArray = client->namespaceArray();
 
     if (!namespaceArray.size()) {
         qCWarning(QT_OPCUA_PLUGINS_QML) << "Namespaces table missing, unable to resolve namespace name.";
-        return;
+        return -1;
     }
 
-    if (m_namespaceName.isEmpty()) {
-        qCWarning(QT_OPCUA_PLUGINS_QML) << "Could not resolve namespace: Namespace name is empty" << (m_nodeIdentifier.isEmpty() ? QString() : (QString("(") + m_nodeIdentifier + ")"));
-        return;
+    if (namespaceName.isEmpty()) {
+        qCWarning(QT_OPCUA_PLUGINS_QML) << "Could not resolve namespace: Namespace name is empty";
+        return -1;
     }
 
-    int index = namespaceArray.indexOf(m_namespaceName);
+    int index = namespaceArray.indexOf(namespaceName);
     if (index < 0) {
-        qCWarning(QT_OPCUA_PLUGINS_QML) << "Could not resolve namespace: Namespace" << m_namespaceName << "not found in" << namespaceArray;
-        return;
+        qCWarning(QT_OPCUA_PLUGINS_QML) << "Could not resolve namespace: Namespace" << namespaceName << "not found in" << namespaceArray;
+        return -1;
     }
 
-    setMembers(true, index, true, m_namespaceName, false, QString());
+    return index;
 }
 
 bool UniversalNode::isNamespaceNameValid() const
@@ -380,6 +390,28 @@ bool UniversalNode::operator==(const UniversalNode &rhs) const
             this->m_nodeIdentifier == rhs.m_nodeIdentifier &&
             this->m_namespaceIndex == rhs.m_namespaceIndex &&
             this->m_namespaceIndexValid == rhs.m_namespaceIndexValid;
+}
+
+/*
+    Constructs a full node id string out of id and namespace.
+    A string based namespace will be preferred and resolved.
+*/
+QString UniversalNode::resolveNamespaceToNode(const QString &nodeId, const QString &namespaceName, QOpcUaClient *client)
+{
+    int namespaceIndex = 0;
+    QString identifier;
+
+    if (!splitNodeIdAndNamespace(nodeId, &namespaceIndex, &identifier)) {
+        // Splitting of node id failed. Consider the whole node id as name.
+        identifier = nodeId;
+    }
+
+    if (!namespaceName.isEmpty()) {
+        namespaceIndex = resolveNamespaceNameToIndex(namespaceName, client);
+        if (namespaceIndex < 0)
+            return QString();
+    }
+    return createNodeString(namespaceIndex, identifier);
 }
 
 QT_END_NAMESPACE

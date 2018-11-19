@@ -76,6 +76,7 @@ public:
     void resolveNamespaceIndexToName(QOpcUaClient *client);
     void resolveNamespaceNameToIndex(QOpcUaClient *client);
     void resolveNamespace(QOpcUaClient *client);
+    static int resolveNamespaceNameToIndex(const QString &namespaceName, QOpcUaClient *client);
 
     QOpcUaQualifiedName toQualifiedName() const;
     void from(const QOpcUaQualifiedName &qualifiedName);
@@ -94,6 +95,7 @@ public:
     UniversalNode& operator=(const UniversalNode&);
     bool operator==(const UniversalNode &rhs) const;
 
+    static QString resolveNamespaceToNode(const QString &nodeId, const QString &namespaceName, QOpcUaClient *client);
     inline static QString createNodeString(int namespaceIndex, const QString &nodeIdentifier) {
             return QString("ns=%1;%2").arg(namespaceIndex).arg(nodeIdentifier);
     }
