@@ -225,6 +225,8 @@ enum Types
 };
 Q_ENUM_NS(Types)
 
+// OpcUa Specification Part 4, Chapter 7.34 "Status Code"
+// OpcUa Specification Part 6, Annex A.2 "Status Codes
 enum UaStatusCode : quint32
 {
     Good = 0,
