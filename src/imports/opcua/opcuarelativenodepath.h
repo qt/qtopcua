@@ -43,6 +43,7 @@
 QT_BEGIN_NAMESPACE
 
 class QOpcUaClient;
+class QOpcUaRelativePathElement;
 
 class OpcUaRelativeNodePath : public QObject
 {
@@ -60,7 +61,7 @@ public:
     QOpcUa::ReferenceTypeId referenceType() const;
     bool includeSubtypes() const;
     bool isInverse() const;
-    QOpcUa::QRelativePathElement toRelativePathElement(QOpcUaClient *client) const;
+    QOpcUaRelativePathElement toRelativePathElement(QOpcUaClient *client) const;
 
 signals:
     void nodeNamespaceChanged(QString ns);

@@ -251,9 +251,9 @@ void MainWindow::findServers()
     }
 }
 
-void MainWindow::findServersComplete(const QVector<QOpcUa::QApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode)
+void MainWindow::findServersComplete(const QVector<QOpcUaApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode)
 {
-    QOpcUa::QApplicationDescription server;
+    QOpcUaApplicationDescription server;
 
     if (isSuccessStatus(statusCode)) {
         mServers->clear();
@@ -279,7 +279,7 @@ void MainWindow::getEndpoints()
     }
 }
 
-void MainWindow::getEndpointsComplete(const QVector<QOpcUa::QEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode)
+void MainWindow::getEndpointsComplete(const QVector<QOpcUaEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode)
 {
     int index = 0;
     const char *modes[] = {

@@ -39,6 +39,8 @@
 
 #include <QtOpcUa/qopcuanodecreationattributes.h>
 #include <QtOpcUa/qopcuatype.h>
+#include <QtOpcUa/qopcuaexpandednodeid.h>
+#include <QtOpcUa/qopcuaqualifiedname.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -51,17 +53,17 @@ public:
     QOpcUaAddNodeItem &operator=(const QOpcUaAddNodeItem &);
     ~QOpcUaAddNodeItem();
 
-    QOpcUa::QExpandedNodeId parentNodeId() const;
-    void setParentNodeId(const QOpcUa::QExpandedNodeId &parentNodeId);
+    QOpcUaExpandedNodeId parentNodeId() const;
+    void setParentNodeId(const QOpcUaExpandedNodeId &parentNodeId);
 
     QString referenceTypeId() const;
     void setReferenceTypeId(const QString &referenceTypeId);
 
-    QOpcUa::QExpandedNodeId requestedNewNodeId() const;
-    void setRequestedNewNodeId(const QOpcUa::QExpandedNodeId &requestedNewNodeId);
+    QOpcUaExpandedNodeId requestedNewNodeId() const;
+    void setRequestedNewNodeId(const QOpcUaExpandedNodeId &requestedNewNodeId);
 
-    QOpcUa::QQualifiedName browseName() const;
-    void setBrowseName(const QOpcUa::QQualifiedName &browseName);
+    QOpcUaQualifiedName browseName() const;
+    void setBrowseName(const QOpcUaQualifiedName &browseName);
 
     QOpcUa::NodeClass nodeClass() const;
     void setNodeClass(const QOpcUa::NodeClass &nodeClass);
@@ -70,8 +72,8 @@ public:
     QOpcUaNodeCreationAttributes &nodeAttributesRef();
     void setNodeAttributes(const QOpcUaNodeCreationAttributes &nodeAttributes);
 
-    QOpcUa::QExpandedNodeId typeDefinition() const;
-    void setTypeDefinition(const QOpcUa::QExpandedNodeId &typeDefinition);
+    QOpcUaExpandedNodeId typeDefinition() const;
+    void setTypeDefinition(const QOpcUaExpandedNodeId &typeDefinition);
 
 private:
     QSharedDataPointer<QOpcUaAddNodeItemData> data;

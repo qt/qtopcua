@@ -36,6 +36,7 @@
 
 #include "qopcuanodecreationattributes.h"
 #include "qopcuaaddreferenceitem.h"
+#include "qopcuaexpandednodeid.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -52,7 +53,7 @@ public:
     QString sourceNodeId;
     QString referenceTypeId;
     bool isForwardReference {true};
-    QOpcUa::QExpandedNodeId targetNodeId;
+    QOpcUaExpandedNodeId targetNodeId;
     QOpcUa::NodeClass targetNodeClass {QOpcUa::NodeClass::Undefined};
     QString targetServerUri;
 };
@@ -122,7 +123,7 @@ void QOpcUaAddReferenceItem::setTargetServerUri(const QString &targetServerUri)
 /*!
     Returns the target node id.
 */
-QOpcUa::QExpandedNodeId QOpcUaAddReferenceItem::targetNodeId() const
+QOpcUaExpandedNodeId QOpcUaAddReferenceItem::targetNodeId() const
 {
     return data->targetNodeId;
 }
@@ -130,7 +131,7 @@ QOpcUa::QExpandedNodeId QOpcUaAddReferenceItem::targetNodeId() const
 /*!
     Sets the node id of the target node to \a targetNodeId.
 */
-void QOpcUaAddReferenceItem::setTargetNodeId(const QOpcUa::QExpandedNodeId &targetNodeId)
+void QOpcUaAddReferenceItem::setTargetNodeId(const QOpcUaExpandedNodeId &targetNodeId)
 {
     data->targetNodeId = targetNodeId;
 }

@@ -264,12 +264,12 @@ void OpcUaConnection::clientStateHandler(QOpcUaClient::ClientState state)
     }
 }
 
-void OpcUaConnection::requestEndpointsFinishedHandler(const QVector<QOpcUa::QEndpointDescription> &endpoints)
+void OpcUaConnection::requestEndpointsFinishedHandler(const QVector<QOpcUaEndpointDescription> &endpoints)
 {
     disconnect(m_client, &QOpcUaClient::endpointsRequestFinished, this, &OpcUaConnection::requestEndpointsFinishedHandler);
 
     bool found = false;
-    QOpcUa::QEndpointDescription chosenEndpoint;
+    QOpcUaEndpointDescription chosenEndpoint;
 
     for (const auto &endpoint : qAsConst(endpoints)) {
         if (QUrl(endpoint.endpointUrl()).scheme() != QLatin1String("opc.tcp"))

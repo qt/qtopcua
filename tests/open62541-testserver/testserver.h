@@ -44,6 +44,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QTimer>
 #include <QtCore/QVariant>
+#include <QtCore/QVector>
 
 QT_BEGIN_NAMESPACE
 

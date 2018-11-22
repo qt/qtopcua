@@ -23,6 +23,7 @@
 #include "quacpputils.h"
 
 #include <QtOpcUa/qopcuabinarydataencoding.h>
+#include <QtOpcUa/qopcuamultidimensionalarray.h>
 
 #include <QtCore/QDateTime>
 #include <QtCore/QLoggingCategory>
@@ -183,18 +184,18 @@ QVariant scalarToQVariant<QString, OpcUa_LocalizedText>(OpcUa_LocalizedText *dat
 {
     Q_UNUSED(type)
     UaLocalizedText uaLocalizedText(*data);
-    return QVariant::fromValue(toQLocalizedText(&uaLocalizedText));
+    return QVariant::fromValue(toQOpcUaLocalizedText(&uaLocalizedText));
 }
 
 template<>
-QVariant scalarToQVariant<QOpcUa::QLocalizedText, OpcUa_LocalizedText>(OpcUa_LocalizedText *data, QMetaType::Type type)
+QVariant scalarToQVariant<QOpcUaLocalizedText, OpcUa_LocalizedText>(OpcUa_LocalizedText *data, QMetaType::Type type)
 {
     Q_UNUSED(type)
     UaLocalizedText ualt(*data);
     const UaString ualtLocal(ualt.locale());
     const UaString ualtText(ualt.text());
 
-    QOpcUa::QLocalizedText lt;
+    QOpcUaLocalizedText lt;
 
     lt.setLocale(QString::fromUtf8(ualtLocal.toUtf8(), ualtLocal.size()));
     lt.setText(QString::fromUtf8(ualtText.toUtf8(), ualtText.size()));
@@ -226,10 +227,10 @@ QVariant scalarToQVariant<QUuid, OpcUa_Guid>(OpcUa_Guid *data, QMetaType::Type t
 }
 
 template<>
-QVariant scalarToQVariant<QOpcUa::QExpandedNodeId, OpcUa_ExpandedNodeId>(OpcUa_ExpandedNodeId *data, QMetaType::Type type)
+QVariant scalarToQVariant<QOpcUaExpandedNodeId, OpcUa_ExpandedNodeId>(OpcUa_ExpandedNodeId *data, QMetaType::Type type)
 {
     Q_UNUSED(type)
-    QOpcUa::QExpandedNodeId temp;
+    QOpcUaExpandedNodeId temp;
     temp.setServerIndex(data->ServerIndex);
     temp.setNodeId(UACppUtils::nodeIdToQString(data->NodeId));
     temp.setNamespaceUri(QString::fromUtf8(UaString(data->NamespaceUri).toUtf8(),
@@ -238,26 +239,26 @@ QVariant scalarToQVariant<QOpcUa::QExpandedNodeId, OpcUa_ExpandedNodeId>(OpcUa_E
 }
 
 template<>
-QVariant scalarToQVariant<QOpcUa::QQualifiedName, OpcUa_QualifiedName>(OpcUa_QualifiedName *data, QMetaType::Type type)
+QVariant scalarToQVariant<QOpcUaQualifiedName, OpcUa_QualifiedName>(OpcUa_QualifiedName *data, QMetaType::Type type)
 {
     Q_UNUSED(type);
-    QOpcUa::QQualifiedName temp;
+    QOpcUaQualifiedName temp;
     temp.setNamespaceIndex(data->NamespaceIndex);
     temp.setName(scalarToQVariant<QString, OpcUa_String>(&data->Name, QMetaType::Type::QString).toString());
     return QVariant::fromValue(temp);
 }
 
-inline QOpcUa::QEUInformation UaEUInformationToQEUInformation(const UaEUInformation &info)
+inline QOpcUaEUInformation UaEUInformationToQOpcUaEUInformation(const UaEUInformation &info)
 {
     const UaLocalizedText desc = info.getDescription();
     const UaLocalizedText dispName = info.getDisplayName();
     const UaString namespaceUri = info.getNamespaceUri();
 
     quint32 qunitId = info.getUnitId();
-    QOpcUa::QLocalizedText qDesc = scalarToQVariant<QOpcUa::QLocalizedText, OpcUa_LocalizedText>(const_cast<OpcUa_LocalizedText *>(&*desc)).value<QOpcUa::QLocalizedText>();
-    QOpcUa::QLocalizedText qDisp = scalarToQVariant<QOpcUa::QLocalizedText, OpcUa_LocalizedText>(const_cast<OpcUa_LocalizedText *>(&*dispName)).value<QOpcUa::QLocalizedText>();
+    QOpcUaLocalizedText qDesc = scalarToQVariant<QOpcUaLocalizedText, OpcUa_LocalizedText>(const_cast<OpcUa_LocalizedText *>(&*desc)).value<QOpcUaLocalizedText>();
+    QOpcUaLocalizedText qDisp = scalarToQVariant<QOpcUaLocalizedText, OpcUa_LocalizedText>(const_cast<OpcUa_LocalizedText *>(&*dispName)).value<QOpcUaLocalizedText>();
     QString qNamespaceUri = QString::fromUtf8(namespaceUri.toUtf8(), namespaceUri.size());
-    QOpcUa::QEUInformation euinfo(qNamespaceUri, qunitId, qDisp, qDesc);
+    QOpcUaEUInformation euinfo(qNamespaceUri, qunitId, qDisp, qDesc);
     return euinfo;
 }
 
@@ -267,8 +268,8 @@ QVariant scalarToQVariant<QVariant, OpcUa_ExtensionObject>(OpcUa_ExtensionObject
     Q_UNUSED(type);
 
     if (data->Encoding == OpcUa_ExtensionObjectEncoding_Binary) {
-        QOpcUa::QExtensionObject obj;
-        obj.setEncoding(static_cast<QOpcUa::QExtensionObject::Encoding>(data->Encoding));
+        QOpcUaExtensionObject obj;
+        obj.setEncoding(static_cast<QOpcUaExtensionObject::Encoding>(data->Encoding));
         const UaExpandedNodeId uaExpandedNodeId(data->TypeId);
         const UaNodeId uaTypeId(uaExpandedNodeId.nodeId());
         obj.setEncodingTypeId(UACppUtils::nodeIdToQString(uaTypeId));
@@ -299,18 +300,18 @@ QVariant scalarToQVariant<QVariant, OpcUa_ExtensionObject>(OpcUa_ExtensionObject
         // already decoded object. For non ns=0, we might be able to use the generic decoder from the module.
         // Same for AxisInformation
         UaEUInformation info(*data);
-        QOpcUa::QEUInformation euinfo = UaEUInformationToQEUInformation(info);
+        QOpcUaEUInformation euinfo = UaEUInformationToQOpcUaEUInformation(info);
         result = QVariant::fromValue(euinfo);
         break;
     }
     case Namespace0::Range_Encoding_DefaultBinary:
-        result = QVariant::fromValue(decoder.decode<QOpcUa::QRange>(success));
+        result = QVariant::fromValue(decoder.decode<QOpcUaRange>(success));
         break;
     case Namespace0::ComplexNumberType_Encoding_DefaultBinary:
-        result = QVariant::fromValue(decoder.decode<QOpcUa::QComplexNumber>(success));
+        result = QVariant::fromValue(decoder.decode<QOpcUaComplexNumber>(success));
         break;
     case Namespace0::DoubleComplexNumberType_Encoding_DefaultBinary:
-        result = QVariant::fromValue(decoder.decode<QOpcUa::QDoubleComplexNumber>(success));
+        result = QVariant::fromValue(decoder.decode<QOpcUaDoubleComplexNumber>(success));
         break;
     case Namespace0::AxisInformation_Encoding_DefaultBinary: {
         UaAxisInformation info(*data);
@@ -319,25 +320,25 @@ QVariant scalarToQVariant<QVariant, OpcUa_ExtensionObject>(OpcUa_ExtensionObject
         UaDoubleArray uaDoubleArray;
         info.getAxisSteps(uaDoubleArray);
 
-        const QOpcUa::QEUInformation qEuInfo = UaEUInformationToQEUInformation(info.getEngineeringUnits());
-        const QOpcUa::QRange qRange(uaRange.getLow(), uaRange.getHigh());
-        const QOpcUa::QLocalizedText qTitle = scalarToQVariant<QOpcUa::QLocalizedText, OpcUa_LocalizedText>(const_cast<OpcUa_LocalizedText *>(&*uaTitle)).value<QOpcUa::QLocalizedText>();;
+        const QOpcUaEUInformation qEuInfo = UaEUInformationToQOpcUaEUInformation(info.getEngineeringUnits());
+        const QOpcUaRange qRange(uaRange.getLow(), uaRange.getHigh());
+        const QOpcUaLocalizedText qTitle = scalarToQVariant<QOpcUaLocalizedText, OpcUa_LocalizedText>(const_cast<OpcUa_LocalizedText *>(&*uaTitle)).value<QOpcUaLocalizedText>();;
         const QOpcUa::AxisScale qScale = static_cast<QOpcUa::AxisScale>(info.getAxisScaleType());
         QVector<double> qAxisSteps;
         for (OpcUa_UInt32 i = 0; i < uaDoubleArray.length(); ++i)
             qAxisSteps.append(uaDoubleArray[i]);
 
-        QOpcUa::QAxisInformation qAxisInfo(qEuInfo, qRange, qTitle, qScale, qAxisSteps);
+        QOpcUaAxisInformation qAxisInfo(qEuInfo, qRange, qTitle, qScale, qAxisSteps);
         result = QVariant::fromValue(qAxisInfo);
         break;
     }
     case Namespace0::XVType_Encoding_DefaultBinary:
-        result = QVariant::fromValue(decoder.decode<QOpcUa::QXValue>(success));
+        result = QVariant::fromValue(decoder.decode<QOpcUaXValue>(success));
         break;
     case Namespace0::Argument_Encoding_DefaultBinary: {
         // This type is decoded transparently and must not be decoded binary
         UaArgument uaArgument(*data);
-        QOpcUa::QArgument argument = toQArgument(&uaArgument);
+        QOpcUaArgument argument = toQArgument(&uaArgument);
         result = QVariant::fromValue(argument);
         break;
     }
@@ -362,7 +363,7 @@ QVariant arrayToQVariant(const OpcUa_Variant &var, QMetaType::Type type)
         // Ensure that the array dimensions fit in a QVector
         if (variant.dimensionSize() > static_cast<OpcUa_Int32>((std::numeric_limits<int>::max)())) {
             qCWarning(QT_OPCUA_PLUGINS_UACPP) << "The array dimensions do not fit in a QVector.";
-            return QOpcUa::QMultiDimensionalArray();
+            return QOpcUaMultiDimensionalArray();
         }
 
         QVariantList list;
@@ -374,7 +375,7 @@ QVariant arrayToQVariant(const OpcUa_Variant &var, QMetaType::Type type)
         QVector<quint32> arrayDimensions;
         for (qint32 i = 0; i < variant.dimensionSize(); ++i)
             arrayDimensions.append(var.Value.Matrix.Dimensions[i]);
-        return QOpcUa::QMultiDimensionalArray(list, arrayDimensions);
+        return QOpcUaMultiDimensionalArray(list, arrayDimensions);
     }
 
     if (var.ArrayType == OpcUa_VariantArrayType_Array) {
@@ -450,13 +451,13 @@ QVariant arrayToQVariant<QUuid, OpcUa_Guid *>(const OpcUa_Variant &var, QMetaTyp
 }
 
 template<>
-QVariant arrayToQVariant<QOpcUa::QQualifiedName, OpcUa_QualifiedName *>(const OpcUa_Variant &var, QMetaType::Type type)
+QVariant arrayToQVariant<QOpcUaQualifiedName, OpcUa_QualifiedName *>(const OpcUa_Variant &var, QMetaType::Type type)
 {
     if (var.ArrayType == OpcUa_VariantArrayType_Array) {
         QVariantList list;
         for (OpcUa_Int32 i = 0; i < var.Value.Array.Length; ++i) {
             OpcUa_QualifiedName *temp = var.Value.Array.Value.QualifiedNameArray;
-            list.append(scalarToQVariant<QOpcUa::QQualifiedName, OpcUa_QualifiedName>(&temp[i], type));
+            list.append(scalarToQVariant<QOpcUaQualifiedName, OpcUa_QualifiedName>(&temp[i], type));
         }
         if (list.size() == 1)
             return list.at(0);
@@ -464,7 +465,7 @@ QVariant arrayToQVariant<QOpcUa::QQualifiedName, OpcUa_QualifiedName *>(const Op
             return list;
     }
     OpcUa_QualifiedName *temp = var.Value.QualifiedName;
-    return scalarToQVariant<QOpcUa::QQualifiedName, OpcUa_QualifiedName>(temp, type);
+    return scalarToQVariant<QOpcUaQualifiedName, OpcUa_QualifiedName>(temp, type);
 }
 
 template<>
@@ -486,13 +487,13 @@ QVariant arrayToQVariant<QVariant, OpcUa_ExtensionObject *>(const OpcUa_Variant 
 }
 
 template<>
-QVariant arrayToQVariant<QOpcUa::QExpandedNodeId, OpcUa_ExpandedNodeId *>(const OpcUa_Variant &var, QMetaType::Type type)
+QVariant arrayToQVariant<QOpcUaExpandedNodeId, OpcUa_ExpandedNodeId *>(const OpcUa_Variant &var, QMetaType::Type type)
 {
     if (var.ArrayType == OpcUa_VariantArrayType_Array) {
         QVariantList list;
         for (OpcUa_Int32 i = 0; i < var.Value.Array.Length; ++i) {
             OpcUa_ExpandedNodeId *temp = var.Value.Array.Value.ExpandedNodeIdArray;
-            list.append(scalarToQVariant<QOpcUa::QExpandedNodeId, OpcUa_ExpandedNodeId>(&temp[i], type));
+            list.append(scalarToQVariant<QOpcUaExpandedNodeId, OpcUa_ExpandedNodeId>(&temp[i], type));
         }
         if (list.size() == 1)
             return list.at(0);
@@ -500,7 +501,7 @@ QVariant arrayToQVariant<QOpcUa::QExpandedNodeId, OpcUa_ExpandedNodeId *>(const 
             return list;
     }
     OpcUa_ExpandedNodeId *temp = var.Value.ExpandedNodeId;
-    return scalarToQVariant<QOpcUa::QExpandedNodeId, OpcUa_ExpandedNodeId>(temp, type);
+    return scalarToQVariant<QOpcUaExpandedNodeId, OpcUa_ExpandedNodeId>(temp, type);
 }
 
 template<typename TARGETTYPE, typename QTTYPE>
@@ -525,9 +526,9 @@ void scalarFromQVariant<OpcUa_String, QString>(const QVariant &var, OpcUa_String
 template<>
 void scalarFromQVariant<OpcUa_LocalizedText, QString>(const QVariant &var, OpcUa_LocalizedText *ptr)
 {
-    QOpcUa::QLocalizedText lt = var.canConvert<QOpcUa::QLocalizedText>()
-            ? var.value<QOpcUa::QLocalizedText>()
-            : QOpcUa::QLocalizedText(QLatin1String(""), var.value<QString>());
+    QOpcUaLocalizedText lt = var.canConvert<QOpcUaLocalizedText>()
+            ? var.value<QOpcUaLocalizedText>()
+            : QOpcUaLocalizedText(QLatin1String(""), var.value<QString>());
 
     *ptr = toUACppLocalizedText(lt);
 }
@@ -554,9 +555,9 @@ void scalarFromQVariant<OpcUa_NodeId, QString>(const QVariant &var, OpcUa_NodeId
 }
 
 template<>
-void scalarFromQVariant<OpcUa_QualifiedName, QOpcUa::QQualifiedName>(const QVariant &var, OpcUa_QualifiedName *ptr)
+void scalarFromQVariant<OpcUa_QualifiedName, QOpcUaQualifiedName>(const QVariant &var, OpcUa_QualifiedName *ptr)
 {
-    *ptr = toUACppQualifiedName(var.value<QOpcUa::QQualifiedName>());
+    *ptr = toUACppQualifiedName(var.value<QOpcUaQualifiedName>());
 }
 
 template<>
@@ -586,69 +587,69 @@ void createExtensionObject(const QByteArray &data, Namespace0 id, OpcUa_Extensio
 }
 
 template<>
-void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUa::QRange>(const QVariant &var, OpcUa_ExtensionObject *ptr)
+void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUaRange>(const QVariant &var, OpcUa_ExtensionObject *ptr)
 {
-    const QOpcUa::QRange range = var.value<QOpcUa::QRange>();
+    const QOpcUaRange range = var.value<QOpcUaRange>();
     QByteArray temp;
     QOpcUaBinaryDataEncoding encoder(&temp);
-    encoder.encode<QOpcUa::QRange>(range);
+    encoder.encode<QOpcUaRange>(range);
     return createExtensionObject(temp, Namespace0::Range_Encoding_DefaultBinary, ptr);
 }
 
 template<>
-void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUa::QEUInformation>(const QVariant &var, OpcUa_ExtensionObject *ptr)
+void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUaEUInformation>(const QVariant &var, OpcUa_ExtensionObject *ptr)
 {
-    const QOpcUa::QEUInformation info = var.value<QOpcUa::QEUInformation>();
+    const QOpcUaEUInformation info = var.value<QOpcUaEUInformation>();
     QByteArray temp;
     QOpcUaBinaryDataEncoding encoder(&temp);
-    encoder.encode<QOpcUa::QEUInformation>(info);
+    encoder.encode<QOpcUaEUInformation>(info);
     return createExtensionObject(temp, Namespace0::EUInformation_Encoding_DefaultBinary, ptr);
 }
 
 template<>
-void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUa::QComplexNumber>(const QVariant &var, OpcUa_ExtensionObject *ptr)
+void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUaComplexNumber>(const QVariant &var, OpcUa_ExtensionObject *ptr)
 {
-    const QOpcUa::QComplexNumber num = var.value<QOpcUa::QComplexNumber>();
+    const QOpcUaComplexNumber num = var.value<QOpcUaComplexNumber>();
     QByteArray temp;
     QOpcUaBinaryDataEncoding encoder(&temp);
-    encoder.encode<QOpcUa::QComplexNumber>(num);
+    encoder.encode<QOpcUaComplexNumber>(num);
     return createExtensionObject(temp, Namespace0::ComplexNumberType_Encoding_DefaultBinary, ptr);
 }
 
 template<>
-void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUa::QDoubleComplexNumber>(const QVariant &var, OpcUa_ExtensionObject *ptr)
+void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUaDoubleComplexNumber>(const QVariant &var, OpcUa_ExtensionObject *ptr)
 {
-    const QOpcUa::QDoubleComplexNumber num = var.value<QOpcUa::QDoubleComplexNumber>();
+    const QOpcUaDoubleComplexNumber num = var.value<QOpcUaDoubleComplexNumber>();
     QByteArray temp;
     QOpcUaBinaryDataEncoding encoder(&temp);
-    encoder.encode<QOpcUa::QDoubleComplexNumber>(num);
+    encoder.encode<QOpcUaDoubleComplexNumber>(num);
     return createExtensionObject(temp, Namespace0::DoubleComplexNumberType_Encoding_DefaultBinary, ptr);
 }
 
 template<>
-void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUa::QAxisInformation>(const QVariant &var, OpcUa_ExtensionObject *ptr)
+void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUaAxisInformation>(const QVariant &var, OpcUa_ExtensionObject *ptr)
 {
-    const QOpcUa::QAxisInformation num = var.value<QOpcUa::QAxisInformation>();
+    const QOpcUaAxisInformation num = var.value<QOpcUaAxisInformation>();
     QByteArray temp;
     QOpcUaBinaryDataEncoding encoder(&temp);
-    encoder.encode<QOpcUa::QAxisInformation>(num);
+    encoder.encode<QOpcUaAxisInformation>(num);
     return createExtensionObject(temp, Namespace0::AxisInformation_Encoding_DefaultBinary, ptr);
 }
 
 template<>
-void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUa::QXValue>(const QVariant &var, OpcUa_ExtensionObject *ptr)
+void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUaXValue>(const QVariant &var, OpcUa_ExtensionObject *ptr)
 {
-    const QOpcUa::QXValue num = var.value<QOpcUa::QXValue>();
+    const QOpcUaXValue num = var.value<QOpcUaXValue>();
     QByteArray temp;
     QOpcUaBinaryDataEncoding encoder(&temp);
-    encoder.encode<QOpcUa::QXValue>(num);
+    encoder.encode<QOpcUaXValue>(num);
     return createExtensionObject(temp, Namespace0::XVType_Encoding_DefaultBinary, ptr);
 }
 
 template<>
-void scalarFromQVariant<OpcUa_ExpandedNodeId, QOpcUa::QExpandedNodeId>(const QVariant &var, OpcUa_ExpandedNodeId *ptr)
+void scalarFromQVariant<OpcUa_ExpandedNodeId, QOpcUaExpandedNodeId>(const QVariant &var, OpcUa_ExpandedNodeId *ptr)
 {
-    *ptr = toUACppExpandedNodeId(var.value<QOpcUa::QExpandedNodeId>());
+    *ptr = toUACppExpandedNodeId(var.value<QOpcUaExpandedNodeId>());
 }
 
 template<typename TARGETTYPE, typename QTTYPE>
@@ -723,9 +724,9 @@ OpcUa_Variant arrayFromQVariant<OpcUa_Guid, QUuid>(const QVariant &var, const Op
 }
 
 template<>
-OpcUa_Variant arrayFromQVariant<OpcUa_QualifiedName, QOpcUa::QQualifiedName>(const QVariant &var, const OpcUa_BuiltInType type)
+OpcUa_Variant arrayFromQVariant<OpcUa_QualifiedName, QOpcUaQualifiedName>(const QVariant &var, const OpcUa_BuiltInType type)
 {
-    return arrayFromQVariantPointer<OpcUa_QualifiedName, QOpcUa::QQualifiedName>(var, type);
+    return arrayFromQVariantPointer<OpcUa_QualifiedName, QOpcUaQualifiedName>(var, type);
 }
 
 template<>
@@ -741,57 +742,57 @@ OpcUa_Variant arrayFromQVariant<OpcUa_LocalizedText, QString>(const QVariant &va
 }
 
 template<>
-OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QRange>(const QVariant &var, const OpcUa_BuiltInType type)
+OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaRange>(const QVariant &var, const OpcUa_BuiltInType type)
 {
-    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUa::QRange>(var, type);
+    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUaRange>(var, type);
 }
 
 template<>
-OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QEUInformation>(const QVariant &var, const OpcUa_BuiltInType type)
+OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaEUInformation>(const QVariant &var, const OpcUa_BuiltInType type)
 {
-    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUa::QEUInformation>(var, type);
+    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUaEUInformation>(var, type);
 }
 
 template<>
-OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QComplexNumber>(const QVariant &var, const OpcUa_BuiltInType type)
+OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaComplexNumber>(const QVariant &var, const OpcUa_BuiltInType type)
 {
-    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUa::QComplexNumber>(var, type);
+    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUaComplexNumber>(var, type);
 }
 
 template<>
-OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QDoubleComplexNumber>(const QVariant &var, const OpcUa_BuiltInType type)
+OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaDoubleComplexNumber>(const QVariant &var, const OpcUa_BuiltInType type)
 {
-    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUa::QDoubleComplexNumber>(var, type);
+    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUaDoubleComplexNumber>(var, type);
 }
 
 template<>
-OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QAxisInformation>(const QVariant &var, const OpcUa_BuiltInType type)
+OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaAxisInformation>(const QVariant &var, const OpcUa_BuiltInType type)
 {
-    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUa::QAxisInformation>(var, type);
+    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUaAxisInformation>(var, type);
 }
 
 template<>
-OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QXValue>(const QVariant &var, const OpcUa_BuiltInType type)
+OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaXValue>(const QVariant &var, const OpcUa_BuiltInType type)
 {
-    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUa::QXValue>(var, type);
+    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUaXValue>(var, type);
 }
 
 template<>
-OpcUa_Variant arrayFromQVariant<OpcUa_ExpandedNodeId, QOpcUa::QExpandedNodeId>(const QVariant &var, const OpcUa_BuiltInType type)
+OpcUa_Variant arrayFromQVariant<OpcUa_ExpandedNodeId, QOpcUaExpandedNodeId>(const QVariant &var, const OpcUa_BuiltInType type)
 {
-    return arrayFromQVariantPointer<OpcUa_ExpandedNodeId, QOpcUa::QExpandedNodeId>(var, type);
+    return arrayFromQVariantPointer<OpcUa_ExpandedNodeId, QOpcUaExpandedNodeId>(var, type);
 }
 
 template<>
-OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QArgument>(const QVariant &var, const OpcUa_BuiltInType type)
+OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaArgument>(const QVariant &var, const OpcUa_BuiltInType type)
 {
-    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUa::QArgument>(var, type);
+    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUaArgument>(var, type);
 }
 
 template<>
-OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QExtensionObject>(const QVariant &var, const OpcUa_BuiltInType type)
+OpcUa_Variant arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaExtensionObject>(const QVariant &var, const OpcUa_BuiltInType type)
 {
-    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUa::QExtensionObject>(var, type);
+    return arrayFromQVariantPointer<OpcUa_ExtensionObject, QOpcUaExtensionObject>(var, type);
 }
 
 QVariant toQVariant(const OpcUa_Variant &value)
@@ -834,13 +835,13 @@ QVariant toQVariant(const OpcUa_Variant &value)
     case OpcUa_BuiltInType::OpcUaType_XmlElement:
         return arrayToQVariant<QString, OpcUa_XmlElement>(value, QMetaType::QString);
     case OpcUa_BuiltInType::OpcUaType_QualifiedName:
-        return arrayToQVariant<QOpcUa::QQualifiedName, OpcUa_QualifiedName *>(value);
+        return arrayToQVariant<QOpcUaQualifiedName, OpcUa_QualifiedName *>(value);
     case OpcUa_BuiltInType::OpcUaType_StatusCode:
         return arrayToQVariant<QOpcUa::UaStatusCode, OpcUa_StatusCode>(value, QMetaType::UInt);
     case OpcUa_BuiltInType::OpcUaType_ExtensionObject:
         return arrayToQVariant<QVariant, OpcUa_ExtensionObject *>(value);
     case OpcUa_BuiltInType::OpcUaType_ExpandedNodeId:
-        return arrayToQVariant<QOpcUa::QExpandedNodeId, OpcUa_ExpandedNodeId *>(value);
+        return arrayToQVariant<QOpcUaExpandedNodeId, OpcUa_ExpandedNodeId *>(value);
     default:
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Variant conversion from UACpp for typeIndex" << value.Datatype << " not implemented";
         return QVariant();
@@ -912,8 +913,8 @@ OpcUa_Variant toUACppVariant(const QVariant &value, QOpcUa::Types type)
     OpcUa_Variant uacppvalue;
     OpcUa_Variant_Initialize(&uacppvalue);
 
-    if (value.canConvert<QOpcUa::QMultiDimensionalArray>()) {
-        const QOpcUa::QMultiDimensionalArray data = value.value<QOpcUa::QMultiDimensionalArray>();
+    if (value.canConvert<QOpcUaMultiDimensionalArray>()) {
+        const QOpcUaMultiDimensionalArray data = value.value<QOpcUaMultiDimensionalArray>();
         OpcUa_Variant result = toUACppVariant(data.valueArray(), type);
 
         if (!data.arrayDimensions().isEmpty()) {
@@ -980,27 +981,27 @@ OpcUa_Variant toUACppVariant(const QVariant &value, QOpcUa::Types type)
     case QOpcUa::XmlElement:
         return arrayFromQVariant<OpcUa_XmlElement, QString>(value, dt);
     case QOpcUa::QualifiedName:
-        return arrayFromQVariant<OpcUa_QualifiedName, QOpcUa::QQualifiedName>(value, dt);
+        return arrayFromQVariant<OpcUa_QualifiedName, QOpcUaQualifiedName>(value, dt);
     case QOpcUa::StatusCode:
         return arrayFromQVariant<OpcUa_StatusCode, QOpcUa::UaStatusCode>(value, dt);
     case QOpcUa::Range:
-        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QRange>(value, dt);
+        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaRange>(value, dt);
     case QOpcUa::EUInformation:
-        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QEUInformation>(value, dt);
+        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaEUInformation>(value, dt);
     case QOpcUa::ComplexNumber:
-        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QComplexNumber>(value, dt);
+        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaComplexNumber>(value, dt);
     case QOpcUa::DoubleComplexNumber:
-        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QDoubleComplexNumber>(value, dt);
+        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaDoubleComplexNumber>(value, dt);
     case QOpcUa::AxisInformation:
-        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QAxisInformation>(value, dt);
+        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaAxisInformation>(value, dt);
     case QOpcUa::XV:
-        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QXValue>(value, dt);
+        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaXValue>(value, dt);
     case QOpcUa::ExpandedNodeId:
-        return arrayFromQVariant<OpcUa_ExpandedNodeId, QOpcUa::QExpandedNodeId>(value, dt);
+        return arrayFromQVariant<OpcUa_ExpandedNodeId, QOpcUaExpandedNodeId>(value, dt);
     case QOpcUa::Argument:
-        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QArgument>(value, dt);
+        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaArgument>(value, dt);
     case QOpcUa::ExtensionObject:
-        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUa::QExtensionObject>(value, dt);
+        return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaExtensionObject>(value, dt);
     default:
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Variant conversion to UACpp for typeIndex" << type << " not implemented";
     }
@@ -1033,12 +1034,12 @@ OpcUa_DateTime toUACppDateTime(const QDateTime &qtDateTime)
     return returnValue;
 }
 
-QOpcUa::QLocalizedText toQLocalizedText(UaLocalizedText *data)
+QOpcUaLocalizedText toQOpcUaLocalizedText(UaLocalizedText *data)
 {
     const UaString ualtLocal(data->locale());
     const UaString ualtText(data->text());
 
-    QOpcUa::QLocalizedText lt;
+    QOpcUaLocalizedText lt;
 
     lt.setLocale(QString::fromUtf8(ualtLocal.toUtf8(), ualtLocal.size()));
     lt.setText(QString::fromUtf8(ualtText.toUtf8(), ualtText.size()));
@@ -1062,7 +1063,7 @@ UaStringArray toUaStringArray(const QStringList &value)
     return ret;
 }
 
-OpcUa_ExpandedNodeId toUACppExpandedNodeId(const QOpcUa::QExpandedNodeId &qtExpandedNodeId)
+OpcUa_ExpandedNodeId toUACppExpandedNodeId(const QOpcUaExpandedNodeId &qtExpandedNodeId)
 {
     OpcUa_ExpandedNodeId returnValue;
 
@@ -1073,7 +1074,7 @@ OpcUa_ExpandedNodeId toUACppExpandedNodeId(const QOpcUa::QExpandedNodeId &qtExpa
     return returnValue;
 }
 
-OpcUa_QualifiedName toUACppQualifiedName(const QOpcUa::QQualifiedName& qtQualifiedName)
+OpcUa_QualifiedName toUACppQualifiedName(const QOpcUaQualifiedName& qtQualifiedName)
 {
     OpcUa_QualifiedName returnValue;
 
@@ -1083,7 +1084,7 @@ OpcUa_QualifiedName toUACppQualifiedName(const QOpcUa::QQualifiedName& qtQualifi
     return returnValue;
 }
 
-OpcUa_LocalizedText toUACppLocalizedText(const QOpcUa::QLocalizedText &qtLocalizedText)
+OpcUa_LocalizedText toUACppLocalizedText(const QOpcUaLocalizedText &qtLocalizedText)
 {
     OpcUa_LocalizedText uaLocalizedText;
     UaLocalizedText ualt;
@@ -1096,16 +1097,16 @@ OpcUa_LocalizedText toUACppLocalizedText(const QOpcUa::QLocalizedText &qtLocaliz
 }
 
 template<>
-void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUa::QArgument>(const QVariant &var, OpcUa_ExtensionObject *ptr)
+void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUaArgument>(const QVariant &var, OpcUa_ExtensionObject *ptr)
 {
-    const auto value = var.value<QOpcUa::QArgument>();
+    const auto value = var.value<QOpcUaArgument>();
     QByteArray temp;
     QOpcUaBinaryDataEncoding encoder(&temp);
-    encoder.encode<QOpcUa::QArgument>(value);
+    encoder.encode<QOpcUaArgument>(value);
     createExtensionObject(temp, Namespace0::Argument_Encoding_DefaultBinary, ptr);
 }
 
-QOpcUa::QArgument toQArgument(const UaArgument *data)
+QOpcUaArgument toQArgument(const UaArgument *data)
 {
     QVector<quint32> arrayDimensions;
     UaUInt32Array dataArrayDimensions;
@@ -1113,21 +1114,21 @@ QOpcUa::QArgument toQArgument(const UaArgument *data)
     for (quint32 i = 0; i < dataArrayDimensions.length(); ++i)
         arrayDimensions.append(dataArrayDimensions[i]);
 
-    QOpcUa::QArgument argument;
+    QOpcUaArgument argument;
     argument.setName(QString::fromUtf8(data->getName().toUtf8()));
     argument.setDataTypeId(UACppUtils::nodeIdToQString(data->getDataType()));
     argument.setValueRank(data->getValueRank());
     argument.setArrayDimensions(arrayDimensions);
 
     UaLocalizedText localizedText = data->getDescription();
-    argument.setDescription(toQLocalizedText(&localizedText));
+    argument.setDescription(toQOpcUaLocalizedText(&localizedText));
     return argument;
 }
 
 template<>
-void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUa::QExtensionObject>(const QVariant &var, OpcUa_ExtensionObject *ptr)
+void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUaExtensionObject>(const QVariant &var, OpcUa_ExtensionObject *ptr)
 {
-    const auto value = var.value<QOpcUa::QExtensionObject>();
+    const auto value = var.value<QOpcUaExtensionObject>();
     const QByteArray temp = value.encodedBody();
     createExtensionObject(temp, UACppUtils::nodeIdFromQString(value.encodingTypeId()), ptr);
 }

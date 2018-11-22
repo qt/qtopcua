@@ -69,10 +69,10 @@ QOpen62541Client::~QOpen62541Client()
         m_thread->quit();
 }
 
-void QOpen62541Client::connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint)
+void QOpen62541Client::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
 {
     QMetaObject::invokeMethod(m_backend, "connectToEndpoint", Qt::QueuedConnection,
-                                     Q_ARG(QOpcUa::QEndpointDescription, endpoint));
+                                     Q_ARG(QOpcUaEndpointDescription, endpoint));
 }
 
 void QOpen62541Client::disconnectFromEndpoint()

@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
     identity.setProductUri(QUrl::toPercentEncoding(productUri));
     identity.setApplicationUri(QUrl::toPercentEncoding(applicationUri));
     identity.setApplicationName(QCoreApplication::applicationName());
-    identity.setApplicationType(QOpcUa::QApplicationDescription::Client);
+    identity.setApplicationType(QOpcUaApplicationDescription::Client);
     \endcode
 
     In case your application authenticates using certificates the application identity has to match
@@ -83,8 +83,8 @@ class QOpcUaApplicationIdentityData : public QSharedData
 public:
     QOpcUaApplicationIdentityData() {}
 
-    QOpcUa::QApplicationDescription::ApplicationType m_applicationType
-        {QOpcUa::QApplicationDescription::ApplicationType::Client};
+    QOpcUaApplicationDescription::ApplicationType m_applicationType
+        {QOpcUaApplicationDescription::ApplicationType::Client};
     QString m_applicationUri;
     QString m_applicationName;
     QString m_productUri;
@@ -105,7 +105,7 @@ QOpcUaApplicationIdentity::QOpcUaApplicationIdentity(const QOpcUaApplicationIden
 {}
 
 /*!
-    Sets the values of \a rhs in this \l QOpcUa::QApplicationIdentity.
+    Sets the values of \a rhs in this \l QOpcUaApplicationIdentity.
 */
 QOpcUaApplicationIdentity &QOpcUaApplicationIdentity::operator=(const QOpcUaApplicationIdentity &rhs)
 {
@@ -173,18 +173,18 @@ void QOpcUaApplicationIdentity::setProductUri(const QString &value)
 /*!
     Returns the application's type.
 */
-QOpcUa::QApplicationDescription::ApplicationType QOpcUaApplicationIdentity::applicationType() const
+QOpcUaApplicationDescription::ApplicationType QOpcUaApplicationIdentity::applicationType() const
 {
     return data->m_applicationType;
 }
 
 /*!
     Sets the type of the application.
-    Client applications should set this to \l {QOpcUa::QApplicationDescription::Client}{Client}.
+    Client applications should set this to \l {QOpcUaApplicationDescription::Client}{Client}.
 
-    The default value is \l{QOpcUa::QApplicationDescription::Client}{Client}.
+    The default value is \l{QOpcUaApplicationDescription::Client}{Client}.
 */
-void QOpcUaApplicationIdentity::setApplicationType(QOpcUa::QApplicationDescription::ApplicationType value)
+void QOpcUaApplicationIdentity::setApplicationType(QOpcUaApplicationDescription::ApplicationType value)
 {
     data->m_applicationType = value;
 }

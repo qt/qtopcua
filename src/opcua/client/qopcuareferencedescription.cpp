@@ -35,6 +35,9 @@
 ****************************************************************************/
 
 #include "qopcuareferencedescription.h"
+#include <QtOpcUa/qopcuaexpandednodeid.h>
+#include <QtOpcUa/qopcuaqualifiedname.h>
+#include <QtOpcUa/qopcualocalizedtext.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,10 +70,10 @@ class QOpcUaReferenceDescriptionPrivate : public QSharedData
 {
 public:
     QString refTypeId;
-    QOpcUa::QExpandedNodeId targetNodeId;
-    QOpcUa::QExpandedNodeId typeDefinition;
-    QOpcUa::QQualifiedName browseName;
-    QOpcUa::QLocalizedText displayName;
+    QOpcUaExpandedNodeId targetNodeId;
+    QOpcUaExpandedNodeId typeDefinition;
+    QOpcUaQualifiedName browseName;
+    QOpcUaLocalizedText displayName;
     QOpcUa::NodeClass nodeClass {QOpcUa::NodeClass::Object};
     bool isForwardReference {true};
 };
@@ -139,7 +142,7 @@ bool QOpcUaReferenceDescription::isForwardReference() const
 /*!
     Sets \a typeDefinition as id of the type definition.
 */
-void QOpcUaReferenceDescription::setTypeDefinition(const QOpcUa::QExpandedNodeId &typeDefinition)
+void QOpcUaReferenceDescription::setTypeDefinition(const QOpcUaExpandedNodeId &typeDefinition)
 {
     d_ptr->typeDefinition = typeDefinition;
 }
@@ -147,7 +150,7 @@ void QOpcUaReferenceDescription::setTypeDefinition(const QOpcUa::QExpandedNodeId
 /*!
     Returns the type definition id.
 */
-QOpcUa::QExpandedNodeId QOpcUaReferenceDescription::typeDefinition() const
+QOpcUaExpandedNodeId QOpcUaReferenceDescription::typeDefinition() const
 {
     return d_ptr->typeDefinition;
 }
@@ -155,7 +158,7 @@ QOpcUa::QExpandedNodeId QOpcUaReferenceDescription::typeDefinition() const
 /*!
     Returns the display name of the node.
 */
-QOpcUa::QLocalizedText QOpcUaReferenceDescription::displayName() const
+QOpcUaLocalizedText QOpcUaReferenceDescription::displayName() const
 {
     return d_ptr->displayName;
 }
@@ -163,7 +166,7 @@ QOpcUa::QLocalizedText QOpcUaReferenceDescription::displayName() const
 /*!
     Sets the display name of the node to \a displayName.
 */
-void QOpcUaReferenceDescription::setDisplayName(const QOpcUa::QLocalizedText &displayName)
+void QOpcUaReferenceDescription::setDisplayName(const QOpcUaLocalizedText &displayName)
 {
     d_ptr->displayName = displayName;
 }
@@ -171,7 +174,7 @@ void QOpcUaReferenceDescription::setDisplayName(const QOpcUa::QLocalizedText &di
 /*!
     Returns the browse name of the node.
 */
-QOpcUa::QQualifiedName QOpcUaReferenceDescription::browseName() const
+QOpcUaQualifiedName QOpcUaReferenceDescription::browseName() const
 {
     return d_ptr->browseName;
 }
@@ -179,7 +182,7 @@ QOpcUa::QQualifiedName QOpcUaReferenceDescription::browseName() const
 /*!
     Sets the browse name of the node to \a browseName.
 */
-void QOpcUaReferenceDescription::setBrowseName(const QOpcUa::QQualifiedName &browseName)
+void QOpcUaReferenceDescription::setBrowseName(const QOpcUaQualifiedName &browseName)
 {
     d_ptr->browseName = browseName;
 }
@@ -187,7 +190,7 @@ void QOpcUaReferenceDescription::setBrowseName(const QOpcUa::QQualifiedName &bro
 /*!
     Returns the node id of the node.
 */
-QOpcUa::QExpandedNodeId QOpcUaReferenceDescription::targetNodeId() const
+QOpcUaExpandedNodeId QOpcUaReferenceDescription::targetNodeId() const
 {
     return d_ptr->targetNodeId;
 }
@@ -195,7 +198,7 @@ QOpcUa::QExpandedNodeId QOpcUaReferenceDescription::targetNodeId() const
 /*!
     Sets the node id of the node to \a nodeId.
 */
-void QOpcUaReferenceDescription::setTargetNodeId(const QOpcUa::QExpandedNodeId &nodeId)
+void QOpcUaReferenceDescription::setTargetNodeId(const QOpcUaExpandedNodeId &nodeId)
 {
     d_ptr->targetNodeId = nodeId;
 }

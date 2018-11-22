@@ -36,6 +36,7 @@
 
 #include "qopcuanodecreationattributes.h"
 #include "qopcuadeletereferenceitem.h"
+#include "qopcuaexpandednodeid.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -53,7 +54,7 @@ public:
     QString sourceNodeId;
     QString referenceTypeId;
     bool isForwardReference {true};
-    QOpcUa::QExpandedNodeId targetNodeId;
+    QOpcUaExpandedNodeId targetNodeId;
     bool deleteBidirectional {true};
 };
 
@@ -105,7 +106,7 @@ void QOpcUaDeleteReferenceItem::setDeleteBidirectional(bool deleteBidirectional)
 /*!
     Returns the target node id.
 */
-QOpcUa::QExpandedNodeId QOpcUaDeleteReferenceItem::targetNodeId() const
+QOpcUaExpandedNodeId QOpcUaDeleteReferenceItem::targetNodeId() const
 {
     return data->targetNodeId;
 }
@@ -113,7 +114,7 @@ QOpcUa::QExpandedNodeId QOpcUaDeleteReferenceItem::targetNodeId() const
 /*!
     Sets the node id of the target node to \a targetNodeId.
 */
-void QOpcUaDeleteReferenceItem::setTargetNodeId(const QOpcUa::QExpandedNodeId &targetNodeId)
+void QOpcUaDeleteReferenceItem::setTargetNodeId(const QOpcUaExpandedNodeId &targetNodeId)
 {
     data->targetNodeId = targetNodeId;
 }

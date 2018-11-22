@@ -35,7 +35,6 @@
 ****************************************************************************/
 
 #include "opcuarelativenodepath.h"
-#include "qopcuatype.h"
 #include "qopcuaclient.h"
 
 QT_BEGIN_NAMESPACE
@@ -152,11 +151,11 @@ bool OpcUaRelativeNodePath::isInverse() const
     return m_isInverse;
 }
 
-QOpcUa::QRelativePathElement OpcUaRelativeNodePath::toRelativePathElement(QOpcUaClient *client) const
+QOpcUaRelativePathElement OpcUaRelativeNodePath::toRelativePathElement(QOpcUaClient *client) const
 {
     m_browseNode.resolveNamespaceNameToIndex(client);
 
-    QOpcUa::QRelativePathElement x;
+    QOpcUaRelativePathElement x;
     x.setIsInverse(isInverse());
     x.setIncludeSubtypes(includeSubtypes());
     x.setTargetName(m_browseNode.toQualifiedName());

@@ -52,7 +52,7 @@ public:
     ~Open62541AsyncBackend();
 
 public Q_SLOTS:
-    void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint);
+    void connectToEndpoint(const QOpcUaEndpointDescription &endpoint);
     void disconnectFromEndpoint();
     void requestEndpoints(const QUrl &url);
 
@@ -66,7 +66,7 @@ public Q_SLOTS:
     void disableMonitoring(quint64 handle, QOpcUa::NodeAttributes attr);
     void modifyMonitoring(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
     void callMethod(quint64 handle, UA_NodeId objectId, UA_NodeId methodId, QVector<QOpcUa::TypedVariant> args);
-    void resolveBrowsePath(quint64 handle, UA_NodeId startNode, const QVector<QOpcUa::QRelativePathElement> &path);
+    void resolveBrowsePath(quint64 handle, UA_NodeId startNode, const QVector<QOpcUaRelativePathElement> &path);
     void findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris);
 
     void readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead);
@@ -93,7 +93,7 @@ public:
 
 private:
     QOpen62541Subscription *getSubscriptionForItem(quint64 handle, QOpcUa::NodeAttribute attr);
-    QOpcUa::QApplicationDescription convertApplicationDescription(UA_ApplicationDescription &desc);
+    QOpcUaApplicationDescription convertApplicationDescription(UA_ApplicationDescription &desc);
 
     UA_ExtensionObject assembleNodeAttributes(const QOpcUaNodeCreationAttributes &nodeAttributes, QOpcUa::NodeClass nodeClass);
     UA_UInt32 *copyArrayDimensions(const QVector<quint32> &arrayDimensions, size_t *outputSize);

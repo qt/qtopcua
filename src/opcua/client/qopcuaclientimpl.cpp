@@ -145,8 +145,8 @@ void QOpcUaClientImpl::handleBrowseFinished(quint64 handle, const QVector<QOpcUa
         emit (*it)->browseFinished(children, statusCode);
 }
 
-void QOpcUaClientImpl::handleResolveBrowsePathFinished(quint64 handle, QVector<QOpcUa::QBrowsePathTarget> targets,
-                                                         QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode status)
+void QOpcUaClientImpl::handleResolveBrowsePathFinished(quint64 handle, QVector<QOpcUaBrowsePathTarget> targets,
+                                                         QVector<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode status)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())

@@ -39,6 +39,8 @@
 
 #include <QtOpcUa/qopcuatype.h>
 
+#include <QtCore/qshareddata.h>
+
 QT_BEGIN_NAMESPACE
 
 class QOpcUaWriteResultData;

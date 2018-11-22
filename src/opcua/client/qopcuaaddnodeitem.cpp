@@ -50,13 +50,13 @@ QT_BEGIN_NAMESPACE
 class QOpcUaAddNodeItemData : public QSharedData
 {
 public:
-    QOpcUa::QExpandedNodeId parentNodeId;
+    QOpcUaExpandedNodeId parentNodeId;
     QString referenceTypeId;
-    QOpcUa::QExpandedNodeId requestedNewNodeId;
-    QOpcUa::QQualifiedName browseName;
+    QOpcUaExpandedNodeId requestedNewNodeId;
+    QOpcUaQualifiedName browseName;
     QOpcUa::NodeClass nodeClass {QOpcUa::NodeClass::Object};
     QOpcUaNodeCreationAttributes nodeAttributes;
-    QOpcUa::QExpandedNodeId typeDefinition;
+    QOpcUaExpandedNodeId typeDefinition;
 };
 
 QOpcUaAddNodeItem::QOpcUaAddNodeItem()
@@ -89,7 +89,7 @@ QOpcUaAddNodeItem::~QOpcUaAddNodeItem()
 /*!
     Returns the node id of the type definition node.
 */
-QOpcUa::QExpandedNodeId QOpcUaAddNodeItem::typeDefinition() const
+QOpcUaExpandedNodeId QOpcUaAddNodeItem::typeDefinition() const
 {
     return data->typeDefinition;
 }
@@ -98,7 +98,7 @@ QOpcUa::QExpandedNodeId QOpcUaAddNodeItem::typeDefinition() const
     Sets the node id of the type definition node to \a typeDefinition. This value shall be set if the node class
     is not Object or Variable.
 */
-void QOpcUaAddNodeItem::setTypeDefinition(const QOpcUa::QExpandedNodeId &typeDefinition)
+void QOpcUaAddNodeItem::setTypeDefinition(const QOpcUaExpandedNodeId &typeDefinition)
 {
     data->typeDefinition = typeDefinition;
 }
@@ -147,7 +147,7 @@ void QOpcUaAddNodeItem::setNodeClass(const QOpcUa::NodeClass &nodeClass)
 /*!
     Returns the browse name of the new node.
 */
-QOpcUa::QQualifiedName QOpcUaAddNodeItem::browseName() const
+QOpcUaQualifiedName QOpcUaAddNodeItem::browseName() const
 {
     return data->browseName;
 }
@@ -155,7 +155,7 @@ QOpcUa::QQualifiedName QOpcUaAddNodeItem::browseName() const
 /*!
     Sets the browse name of the new node to \a browseName.
 */
-void QOpcUaAddNodeItem::setBrowseName(const QOpcUa::QQualifiedName &browseName)
+void QOpcUaAddNodeItem::setBrowseName(const QOpcUaQualifiedName &browseName)
 {
     data->browseName = browseName;
 }
@@ -163,7 +163,7 @@ void QOpcUaAddNodeItem::setBrowseName(const QOpcUa::QQualifiedName &browseName)
 /*!
     Returns the requested new node id.
 */
-QOpcUa::QExpandedNodeId QOpcUaAddNodeItem::requestedNewNodeId() const
+QOpcUaExpandedNodeId QOpcUaAddNodeItem::requestedNewNodeId() const
 {
     return data->requestedNewNodeId;
 }
@@ -171,7 +171,7 @@ QOpcUa::QExpandedNodeId QOpcUaAddNodeItem::requestedNewNodeId() const
 /*!
     Sets the requested new node id to \a requestedNewNodeId.
 */
-void QOpcUaAddNodeItem::setRequestedNewNodeId(const QOpcUa::QExpandedNodeId &requestedNewNodeId)
+void QOpcUaAddNodeItem::setRequestedNewNodeId(const QOpcUaExpandedNodeId &requestedNewNodeId)
 {
     data->requestedNewNodeId = requestedNewNodeId;
 }
@@ -196,7 +196,7 @@ void QOpcUaAddNodeItem::setReferenceTypeId(const QString &referenceTypeId)
 /*!
     Returns the parent node id.
 */
-QOpcUa::QExpandedNodeId QOpcUaAddNodeItem::parentNodeId() const
+QOpcUaExpandedNodeId QOpcUaAddNodeItem::parentNodeId() const
 {
     return data->parentNodeId;
 }
@@ -207,7 +207,7 @@ QOpcUa::QExpandedNodeId QOpcUaAddNodeItem::parentNodeId() const
 
     \sa setReferenceTypeId()
 */
-void QOpcUaAddNodeItem::setParentNodeId(const QOpcUa::QExpandedNodeId &parentNodeId)
+void QOpcUaAddNodeItem::setParentNodeId(const QOpcUaExpandedNodeId &parentNodeId)
 {
     data->parentNodeId = parentNodeId;
 }

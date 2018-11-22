@@ -96,8 +96,8 @@ Module {
         Property { name: "errorMessage"; type: "string"; isReadonly: true }
         Property { name: "browseName"; type: "string" }
         Property { name: "nodeClass"; type: "QOpcUa::NodeClass"; isReadonly: true }
-        Property { name: "displayName"; type: "QOpcUa::QLocalizedText" }
-        Property { name: "description"; type: "QOpcUa::QLocalizedText" }
+        Property { name: "displayName"; type: "QOpcUaLocalizedText" }
+        Property { name: "description"; type: "QOpcUaLocalizedText" }
         Signal {
             name: "nodeIdChanged"
             Parameter { name: "nodeId"; type: "const OpcUaNodeIdType"; isPointer: true }

@@ -43,6 +43,11 @@
 #include "qopen62541utils.h"
 #include <private/qopcuanode_p.h>
 
+#include "qopcuaelementoperand.h"
+#include "qopcualiteraloperand.h"
+#include "qopcuaattributeoperand.h"
+#include "qopcuacontentfilterelementresult.h"
+
 #include <QtCore/qloggingcategory.h>
 
 QT_BEGIN_NAMESPACE
@@ -483,7 +488,7 @@ bool QOpen62541Subscription::convertSelectClause(const QOpcUaMonitoringParameter
                 select[i].browsePath = static_cast<UA_QualifiedName *>(
                             UA_Array_new(select[i].browsePathSize, &UA_TYPES[UA_TYPES_QUALIFIEDNAME]));
                 for (size_t j = 0; j < select[i].browsePathSize; ++j)
-                    QOpen62541ValueConverter::scalarFromQt<UA_QualifiedName, QOpcUa::QQualifiedName>(
+                    QOpen62541ValueConverter::scalarFromQt<UA_QualifiedName, QOpcUaQualifiedName>(
                                 filter.selectClauses().at(i).browsePath().at(j), &select[i].browsePath[j]);
             }
             QOpen62541ValueConverter::scalarFromQt<UA_String, QString>(filter.selectClauses().at(i).indexRange(),
@@ -518,23 +523,23 @@ bool QOpen62541Subscription::convertWhereClause(const QOpcUaMonitoringParameters
                 UA_ExtensionObject_init(&result->elements[i].filterOperands[j]);
                 result->elements[i].filterOperands[j].encoding = UA_EXTENSIONOBJECT_DECODED;
                 const QVariant &currentOperand = filter.whereClause().at(i).filterOperands().at(j);
-                if (currentOperand.canConvert<QOpcUa::QElementOperand>()) {
+                if (currentOperand.canConvert<QOpcUaElementOperand>()) {
                     UA_ElementOperand *op = UA_ElementOperand_new();
                     UA_ElementOperand_init(op);
-                    op->index = currentOperand.value<QOpcUa::QElementOperand>().index();
+                    op->index = currentOperand.value<QOpcUaElementOperand>().index();
                     result->elements[i].filterOperands[j].content.decoded.data = op;
                     result->elements[i].filterOperands[j].content.decoded.type = &UA_TYPES[UA_TYPES_ELEMENTOPERAND];
-                } else if (currentOperand.canConvert<QOpcUa::QLiteralOperand>()) {
+                } else if (currentOperand.canConvert<QOpcUaLiteralOperand>()) {
                     UA_LiteralOperand *op = UA_LiteralOperand_new();
                     UA_LiteralOperand_init(op);
-                    QOpcUa::QLiteralOperand litOp = currentOperand.value<QOpcUa::QLiteralOperand>();
+                    QOpcUaLiteralOperand litOp = currentOperand.value<QOpcUaLiteralOperand>();
                     op->value = QOpen62541ValueConverter::toOpen62541Variant(litOp.value(), litOp.type());
                     result->elements[i].filterOperands[j].content.decoded.data = op;
                     result->elements[i].filterOperands[j].content.decoded.type = &UA_TYPES[UA_TYPES_LITERALOPERAND];
-                } else if (currentOperand.canConvert<QOpcUa::QSimpleAttributeOperand>()) {
+                } else if (currentOperand.canConvert<QOpcUaSimpleAttributeOperand>()) {
                     UA_SimpleAttributeOperand *op = UA_SimpleAttributeOperand_new();
                     UA_SimpleAttributeOperand_init(op);
-                    QOpcUa::QSimpleAttributeOperand operand = currentOperand.value<QOpcUa::QSimpleAttributeOperand>();
+                    QOpcUaSimpleAttributeOperand operand = currentOperand.value<QOpcUaSimpleAttributeOperand>();
                     op->attributeId = QOpen62541ValueConverter::toUaAttributeId(operand.attributeId());
                     QOpen62541ValueConverter::scalarFromQt<UA_String, QString>(operand.indexRange(), &op->indexRange);
                     if (!operand.typeId().isEmpty())
@@ -543,14 +548,14 @@ bool QOpen62541Subscription::convertWhereClause(const QOpcUaMonitoringParameters
                     op->browsePath = static_cast<UA_QualifiedName *>(UA_Array_new(operand.browsePath().size(),
                                                                                   &UA_TYPES[UA_TYPES_QUALIFIEDNAME]));
                     for (int k = 0; k < operand.browsePath().size(); ++k)
-                        QOpen62541ValueConverter::scalarFromQt<UA_QualifiedName, QOpcUa::QQualifiedName>(
+                        QOpen62541ValueConverter::scalarFromQt<UA_QualifiedName, QOpcUaQualifiedName>(
                                     operand.browsePath().at(k), &op->browsePath[k]);
                     result->elements[i].filterOperands[j].content.decoded.data = op;
                     result->elements[i].filterOperands[j].content.decoded.type = &UA_TYPES[UA_TYPES_SIMPLEATTRIBUTEOPERAND];
-                } else if (currentOperand.canConvert<QOpcUa::QAttributeOperand>()) {
+                } else if (currentOperand.canConvert<QOpcUaAttributeOperand>()) {
                     UA_AttributeOperand *op = UA_AttributeOperand_new();
                     UA_AttributeOperand_init(op);
-                    QOpcUa::QAttributeOperand operand = currentOperand.value<QOpcUa::QAttributeOperand>();
+                    QOpcUaAttributeOperand operand = currentOperand.value<QOpcUaAttributeOperand>();
                     op->attributeId = QOpen62541ValueConverter::toUaAttributeId(operand.attributeId());
                     QOpen62541ValueConverter::scalarFromQt<UA_String, QString>(operand.indexRange(), &op->indexRange);
                     op->alias = UA_STRING_ALLOC(operand.alias().toUtf8().constData());
@@ -567,7 +572,7 @@ bool QOpen62541Subscription::convertWhereClause(const QOpcUaMonitoringParameters
                         if (!operand.browsePath().at(k).referenceTypeId().isEmpty())
                             op->browsePath.elements[k].referenceTypeId = Open62541Utils::nodeIdFromQString(
                                         operand.browsePath().at(k).referenceTypeId());
-                        QOpen62541ValueConverter::scalarFromQt<UA_QualifiedName, QOpcUa::QQualifiedName>(
+                        QOpen62541ValueConverter::scalarFromQt<UA_QualifiedName, QOpcUaQualifiedName>(
                                     operand.browsePath().at(k).targetName(), &op->browsePath.elements[k].targetName);
                     }
 
@@ -585,9 +590,9 @@ bool QOpen62541Subscription::convertWhereClause(const QOpcUaMonitoringParameters
     return true;
 }
 
-QOpcUa::QEventFilterResult QOpen62541Subscription::convertEventFilterResult(UA_ExtensionObject *obj)
+QOpcUaEventFilterResult QOpen62541Subscription::convertEventFilterResult(UA_ExtensionObject *obj)
 {
-    QOpcUa::QEventFilterResult result;
+    QOpcUaEventFilterResult result;
 
     if (!obj)
         return result;
@@ -599,7 +604,7 @@ QOpcUa::QEventFilterResult QOpen62541Subscription::convertEventFilterResult(UA_E
             result.selectClauseResultsRef().append(static_cast<QOpcUa::UaStatusCode>(filterResult->selectClauseResults[i]));
 
         for (size_t i = 0; i < filterResult->whereClauseResult.elementResultsSize; ++i) {
-            QOpcUa::QContentFilterElementResult temp;
+            QOpcUaContentFilterElementResult temp;
             temp.setStatusCode(static_cast<QOpcUa::UaStatusCode>(filterResult->whereClauseResult.elementResults[i].statusCode));
             for (size_t j = 0; j < filterResult->whereClauseResult.elementResults[i].operandStatusCodesSize; ++j)
                 temp.operandStatusCodesRef().append(static_cast<QOpcUa::UaStatusCode>(

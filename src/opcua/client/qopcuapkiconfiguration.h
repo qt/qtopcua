@@ -38,7 +38,6 @@
 #define QOPCUAPKICONFIGURATION_H
 
 #include <QtOpcUa/qopcuaglobal.h>
-#include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/qmetatype.h>
 #include <QtCore/qshareddata.h>

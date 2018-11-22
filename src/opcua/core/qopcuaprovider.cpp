@@ -42,6 +42,19 @@
 #include <QtOpcUa/qopcuaapplicationidentity.h>
 #include <QtOpcUa/qopcuapkiconfiguration.h>
 #include <private/qopcuanodeimpl_p.h>
+#include <QtOpcUa/qopcuaqualifiedname.h>
+#include <QtOpcUa/qopcuarange.h>
+#include <QtOpcUa/qopcuaeuinformation.h>
+#include <QtOpcUa/qopcuacomplexnumber.h>
+#include <QtOpcUa/qopcuadoublecomplexnumber.h>
+#include <QtOpcUa/qopcuaaxisinformation.h>
+#include <QtOpcUa/qopcuaxvalue.h>
+#include <QtOpcUa/qopcuaargument.h>
+#include <QtOpcUa/qopcuaextensionobject.h>
+#include <QtOpcUa/qopcuaendpointdescription.h>
+#include <QtOpcUa/qopcuaexpandednodeid.h>
+#include <QtOpcUa/qopcuarelativepathelement.h>
+#include <QtOpcUa/qopcuabrowsepathtarget.h>
 
 #include <private/qfactoryloader_p.h>
 #include <QtCore/qjsonarray.h>
@@ -129,7 +142,7 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUa::UaStatusCode>();
     qRegisterMetaType<QOpcUa::NodeClass>();
     qRegisterMetaType<QOpcUa::NodeClasses>();
-    qRegisterMetaType<QOpcUa::QQualifiedName>();
+    qRegisterMetaType<QOpcUaQualifiedName>();
     qRegisterMetaType<QOpcUa::NodeAttribute>();
     qRegisterMetaType<QOpcUa::NodeAttributes>();
     qRegisterMetaType<QOpcUaNode::AttributeMap>();
@@ -144,21 +157,21 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUaReferenceDescription>();
     qRegisterMetaType<QVector<QOpcUaReferenceDescription>>();
     qRegisterMetaType<QOpcUa::ReferenceTypeId>();
-    qRegisterMetaType<QOpcUa::QRange>();
-    qRegisterMetaType<QOpcUa::QEUInformation>();
-    qRegisterMetaType<QOpcUa::QComplexNumber>();
-    qRegisterMetaType<QOpcUa::QDoubleComplexNumber>();
-    qRegisterMetaType<QOpcUa::QAxisInformation>();
-    qRegisterMetaType<QOpcUa::QXValue>();
-    qRegisterMetaType<QOpcUa::QExpandedNodeId>();
-    qRegisterMetaType<QOpcUa::QRelativePathElement>();
-    qRegisterMetaType<QVector<QOpcUa::QRelativePathElement>>();
-    qRegisterMetaType<QOpcUa::QBrowsePathTarget>();
-    qRegisterMetaType<QVector<QOpcUa::QBrowsePathTarget>>();
-    qRegisterMetaType<QOpcUa::QEndpointDescription>();
-    qRegisterMetaType<QVector<QOpcUa::QEndpointDescription>>();
-    qRegisterMetaType<QOpcUa::QArgument>();
-    qRegisterMetaType<QOpcUa::QExtensionObject>();
+    qRegisterMetaType<QOpcUaRange>();
+    qRegisterMetaType<QOpcUaEUInformation>();
+    qRegisterMetaType<QOpcUaComplexNumber>();
+    qRegisterMetaType<QOpcUaDoubleComplexNumber>();
+    qRegisterMetaType<QOpcUaAxisInformation>();
+    qRegisterMetaType<QOpcUaXValue>();
+    qRegisterMetaType<QOpcUaExpandedNodeId>();
+    qRegisterMetaType<QOpcUaRelativePathElement>();
+    qRegisterMetaType<QVector<QOpcUaRelativePathElement>>();
+    qRegisterMetaType<QOpcUaBrowsePathTarget>();
+    qRegisterMetaType<QVector<QOpcUaBrowsePathTarget>>();
+    qRegisterMetaType<QOpcUaEndpointDescription>();
+    qRegisterMetaType<QVector<QOpcUaEndpointDescription>>();
+    qRegisterMetaType<QOpcUaArgument>();
+    qRegisterMetaType<QOpcUaExtensionObject>();
     qRegisterMetaType<QOpcUaBrowseRequest>();
     qRegisterMetaType<QOpcUaReadItem>();
     qRegisterMetaType<QOpcUaReadResult>();
@@ -172,7 +185,7 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUaAddNodeItem>();
     qRegisterMetaType<QOpcUaAddReferenceItem>();
     qRegisterMetaType<QOpcUaDeleteReferenceItem>();
-    qRegisterMetaType<QVector<QOpcUa::QApplicationDescription>>();
+    qRegisterMetaType<QVector<QOpcUaApplicationDescription>>();
     qRegisterMetaType<QOpcUaApplicationIdentity>();
     qRegisterMetaType<QOpcUaPkiConfiguration>();
 }

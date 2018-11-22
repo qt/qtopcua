@@ -383,7 +383,7 @@ bool QOpcUaNodeCreationAttributes::hasDataTypeId() const
 /*!
     Returns the value for the Description attribute.
 */
-QOpcUa::QLocalizedText QOpcUaNodeCreationAttributes::description() const
+QOpcUaLocalizedText QOpcUaNodeCreationAttributes::description() const
 {
     return data->description;
 }
@@ -391,7 +391,7 @@ QOpcUa::QLocalizedText QOpcUaNodeCreationAttributes::description() const
 /*!
     Sets the value for the Description attribute to \a description.
 */
-void QOpcUaNodeCreationAttributes::setDescription(const QOpcUa::QLocalizedText &description)
+void QOpcUaNodeCreationAttributes::setDescription(const QOpcUaLocalizedText &description)
 {
     data->description = description;
     data->setAttributeInMask(QOpcUaNodeCreationAttributesPrivate::BitMask::Description);
@@ -408,7 +408,7 @@ bool QOpcUaNodeCreationAttributes::hasDescription() const
 /*!
     Returns the value for the DisplayName attribute.
 */
-QOpcUa::QLocalizedText QOpcUaNodeCreationAttributes::displayName() const
+QOpcUaLocalizedText QOpcUaNodeCreationAttributes::displayName() const
 {
     return data->displayName;
 }
@@ -416,7 +416,7 @@ QOpcUa::QLocalizedText QOpcUaNodeCreationAttributes::displayName() const
 /*!
     Sets the value for the DisplayName attribute to \a displayName.
 */
-void QOpcUaNodeCreationAttributes::setDisplayName(const QOpcUa::QLocalizedText &displayName)
+void QOpcUaNodeCreationAttributes::setDisplayName(const QOpcUaLocalizedText &displayName)
 {
     data->displayName = displayName;
     data->setAttributeInMask(QOpcUaNodeCreationAttributesPrivate::BitMask::DisplayName);
@@ -508,7 +508,7 @@ bool QOpcUaNodeCreationAttributes::hasHistorizing() const
 /*!
     Returns the value for the InverseName attribute.
 */
-QOpcUa::QLocalizedText QOpcUaNodeCreationAttributes::inverseName() const
+QOpcUaLocalizedText QOpcUaNodeCreationAttributes::inverseName() const
 {
     return data->inverseName;
 }
@@ -516,7 +516,7 @@ QOpcUa::QLocalizedText QOpcUaNodeCreationAttributes::inverseName() const
 /*!
     Sets the value for the InverseName attribute to \a inverseName.
 */
-void QOpcUaNodeCreationAttributes::setInverseName(const QOpcUa::QLocalizedText &inverseName)
+void QOpcUaNodeCreationAttributes::setInverseName(const QOpcUaLocalizedText &inverseName)
 {
     data->inverseName = inverseName;
     data->setAttributeInMask(QOpcUaNodeCreationAttributesPrivate::BitMask::InverseName);

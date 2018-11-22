@@ -346,7 +346,7 @@ void Open62541AsyncBackend::callMethod(quint64 handle, UA_NodeId objectId, UA_No
     emit methodCallFinished(handle, Open62541Utils::nodeIdToQString(methodId), result, static_cast<QOpcUa::UaStatusCode>(res));
 }
 
-void Open62541AsyncBackend::resolveBrowsePath(quint64 handle, UA_NodeId startNode, const QVector<QOpcUa::QRelativePathElement> &path)
+void Open62541AsyncBackend::resolveBrowsePath(quint64 handle, UA_NodeId startNode, const QVector<QOpcUaRelativePathElement> &path)
 {
     UA_TranslateBrowsePathsToNodeIdsRequest req;
     UA_TranslateBrowsePathsToNodeIdsRequest_init(&req);
@@ -374,14 +374,14 @@ void Open62541AsyncBackend::resolveBrowsePath(quint64 handle, UA_NodeId startNod
 
     if (res.responseHeader.serviceResult != UA_STATUSCODE_GOOD || res.resultsSize != 1) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Translate browse path failed:" << UA_StatusCode_name(res.responseHeader.serviceResult);
-        emit resolveBrowsePathFinished(handle, QVector<QOpcUa::QBrowsePathTarget>(), path,
+        emit resolveBrowsePathFinished(handle, QVector<QOpcUaBrowsePathTarget>(), path,
                                          static_cast<QOpcUa::UaStatusCode>(res.responseHeader.serviceResult));
         return;
     }
 
-    QVector<QOpcUa::QBrowsePathTarget> ret;
+    QVector<QOpcUaBrowsePathTarget> ret;
     for (size_t i = 0; i < res.results[0].targetsSize ; ++i) {
-        QOpcUa::QBrowsePathTarget temp;
+        QOpcUaBrowsePathTarget temp;
         temp.setRemainingPathIndex(res.results[0].targets[i].remainingPathIndex);
         temp.targetIdRef().setNamespaceUri(QString::fromUtf8(reinterpret_cast<char *>(res.results[0].targets[i].targetId.namespaceUri.data)));
         temp.targetIdRef().setServerIndex(res.results[0].targets[i].targetId.serverIndex);
@@ -422,7 +422,7 @@ void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &loca
 
     UaArrayDeleter<UA_TYPES_APPLICATIONDESCRIPTION> serversDeleter(servers, serversSize);
 
-    QVector<QOpcUa::QApplicationDescription> ret;
+    QVector<QOpcUaApplicationDescription> ret;
 
     for (size_t i = 0; i < serversSize; ++i)
         ret.append(convertApplicationDescription(servers[i]));
@@ -570,15 +570,15 @@ void Open62541AsyncBackend::addNode(const QOpcUaAddNodeItem &nodeToAdd)
     req.nodesToAdd = UA_AddNodesItem_new();
     UA_AddNodesItem_init(req.nodesToAdd);
 
-    QOpen62541ValueConverter::scalarFromQt<UA_ExpandedNodeId, QOpcUa::QExpandedNodeId>(
+    QOpen62541ValueConverter::scalarFromQt<UA_ExpandedNodeId, QOpcUaExpandedNodeId>(
                 nodeToAdd.parentNodeId(), &req.nodesToAdd->parentNodeId);
 
     req.nodesToAdd->referenceTypeId = Open62541Utils::nodeIdFromQString(nodeToAdd.referenceTypeId());
 
-    QOpen62541ValueConverter::scalarFromQt<UA_ExpandedNodeId, QOpcUa::QExpandedNodeId>(
+    QOpen62541ValueConverter::scalarFromQt<UA_ExpandedNodeId, QOpcUaExpandedNodeId>(
                 nodeToAdd.requestedNewNodeId(), &req.nodesToAdd->requestedNewNodeId);
 
-    QOpen62541ValueConverter::scalarFromQt<UA_QualifiedName, QOpcUa::QQualifiedName>(
+    QOpen62541ValueConverter::scalarFromQt<UA_QualifiedName, QOpcUaQualifiedName>(
                 nodeToAdd.browseName(), &req.nodesToAdd->browseName);
 
     req.nodesToAdd->nodeClass = static_cast<UA_NodeClass>(nodeToAdd.nodeClass());
@@ -587,7 +587,7 @@ void Open62541AsyncBackend::addNode(const QOpcUaAddNodeItem &nodeToAdd)
                                                             nodeToAdd.nodeClass());
 
     if (!nodeToAdd.typeDefinition().nodeId().isEmpty())
-        QOpen62541ValueConverter::scalarFromQt<UA_ExpandedNodeId, QOpcUa::QExpandedNodeId>(
+        QOpen62541ValueConverter::scalarFromQt<UA_ExpandedNodeId, QOpcUaExpandedNodeId>(
                     nodeToAdd.typeDefinition(), &req.nodesToAdd->typeDefinition);
 
     UA_AddNodesResponse res = UA_Client_Service_addNodes(m_uaclient, req);
@@ -632,7 +632,7 @@ void Open62541AsyncBackend::addReference(const QOpcUaAddReferenceItem &reference
     UA_ExpandedNodeId_init(&target);
     UaDeleter<UA_ExpandedNodeId> nodeIdDeleter(&target, UA_ExpandedNodeId_deleteMembers);
 
-    QOpen62541ValueConverter::scalarFromQt<UA_ExpandedNodeId, QOpcUa::QExpandedNodeId>(
+    QOpen62541ValueConverter::scalarFromQt<UA_ExpandedNodeId, QOpcUaExpandedNodeId>(
                 referenceToAdd.targetNodeId(), &target);
 
     UA_String serverUri;
@@ -662,7 +662,7 @@ void Open62541AsyncBackend::deleteReference(const QOpcUaDeleteReferenceItem &ref
     UA_ExpandedNodeId target;
     UA_ExpandedNodeId_init(&target);
     UaDeleter<UA_ExpandedNodeId> targetDeleter(&target, UA_ExpandedNodeId_deleteMembers);
-    QOpen62541ValueConverter::scalarFromQt<UA_ExpandedNodeId, QOpcUa::QExpandedNodeId>(
+    QOpen62541ValueConverter::scalarFromQt<UA_ExpandedNodeId, QOpcUaExpandedNodeId>(
                 referenceToDelete.targetNodeId(), &target);
 
     UA_StatusCode res = UA_Client_deleteReference(m_uaclient,
@@ -688,12 +688,12 @@ static void convertBrowseResult(UA_BrowseResult *src, quint32 referencesSize, QV
 
     for (size_t i = 0; i < referencesSize; ++i) {
         QOpcUaReferenceDescription temp;
-        temp.setTargetNodeId(QOpen62541ValueConverter::scalarToQt<QOpcUa::QExpandedNodeId>(&src->references[i].nodeId));
-        temp.setTypeDefinition(QOpen62541ValueConverter::scalarToQt<QOpcUa::QExpandedNodeId>(&src->references[i].typeDefinition));
+        temp.setTargetNodeId(QOpen62541ValueConverter::scalarToQt<QOpcUaExpandedNodeId>(&src->references[i].nodeId));
+        temp.setTypeDefinition(QOpen62541ValueConverter::scalarToQt<QOpcUaExpandedNodeId>(&src->references[i].typeDefinition));
         temp.setRefTypeId(Open62541Utils::nodeIdToQString(src->references[i].referenceTypeId));
         temp.setNodeClass(static_cast<QOpcUa::NodeClass>(src->references[i].nodeClass));
-        temp.setBrowseName(QOpen62541ValueConverter::scalarToQt<QOpcUa::QQualifiedName, UA_QualifiedName>(&src->references[i].browseName));
-        temp.setDisplayName(QOpen62541ValueConverter::scalarToQt<QOpcUa::QLocalizedText, UA_LocalizedText>(&src->references[i].displayName));
+        temp.setBrowseName(QOpen62541ValueConverter::scalarToQt<QOpcUaQualifiedName, UA_QualifiedName>(&src->references[i].browseName));
+        temp.setDisplayName(QOpen62541ValueConverter::scalarToQt<QOpcUaLocalizedText, UA_LocalizedText>(&src->references[i].displayName));
         temp.setIsForwardReference(src->references[i].isForward);
         dst.push_back(temp);
     }
@@ -765,7 +765,7 @@ static void clientStateCallback(UA_Client *client, UA_ClientState state)
     }
 }
 
-void Open62541AsyncBackend::connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint)
+void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
 {
     const QString nonePolicyUri = QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#None");
 
@@ -789,13 +789,13 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUa::QEndpointDescription
     UA_StatusCode ret;
     const auto authInfo = m_clientImpl->m_client->authenticationInformation();
 
-    if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Anonymous) {
+    if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Anonymous) {
         ret = UA_Client_connect(m_uaclient, endpoint.endpointUrl().toUtf8().constData());
-    } else if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Username) {
+    } else if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Username) {
 
         bool suitableTokenFound = false;
         for (const auto token : endpoint.userIdentityTokens()) {
-            if (token.tokenType() == QOpcUa::QUserTokenPolicy::Username && token.securityPolicyUri() == nonePolicyUri) {
+            if (token.tokenType() == QOpcUaUserTokenPolicy::Username && token.securityPolicyUri() == nonePolicyUri) {
                 suitableTokenFound = true;
                 break;
             }
@@ -868,19 +868,19 @@ void Open62541AsyncBackend::requestEndpoints(const QUrl &url)
     UA_EndpointDescription *endpoints = nullptr;
     UA_StatusCode res = UA_Client_getEndpoints(tmpClient, url.toString(QUrl::RemoveUserInfo).toUtf8().constData(), &numEndpoints, &endpoints);
     UaArrayDeleter<UA_TYPES_ENDPOINTDESCRIPTION> endpointDescriptionDeleter(endpoints, numEndpoints);
-    QVector<QOpcUa::QEndpointDescription> ret;
+    QVector<QOpcUaEndpointDescription> ret;
 
     namespace vc = QOpen62541ValueConverter;
     using namespace QOpcUa;
     if (res == UA_STATUSCODE_GOOD && numEndpoints) {
         for (size_t i = 0; i < numEndpoints ; ++i) {
-            QOpcUa::QEndpointDescription epd;
-            QOpcUa::QApplicationDescription &apd = epd.serverRef();
+            QOpcUaEndpointDescription epd;
+            QOpcUaApplicationDescription &apd = epd.serverRef();
 
             apd.setApplicationUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].server.applicationUri));
             apd.setProductUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].server.productUri));
-            apd.setApplicationName(vc::scalarToQt<QLocalizedText, UA_LocalizedText>(&endpoints[i].server.applicationName));
-            apd.setApplicationType(static_cast<QApplicationDescription::ApplicationType>(endpoints[i].server.applicationType));
+            apd.setApplicationName(vc::scalarToQt<QOpcUaLocalizedText, UA_LocalizedText>(&endpoints[i].server.applicationName));
+            apd.setApplicationType(static_cast<QOpcUaApplicationDescription::ApplicationType>(endpoints[i].server.applicationType));
             apd.setGatewayServerUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].server.gatewayServerUri));
             apd.setDiscoveryProfileUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].server.discoveryProfileUri));
             for (size_t j = 0; j < endpoints[i].server.discoveryUrlsSize; ++j)
@@ -888,13 +888,13 @@ void Open62541AsyncBackend::requestEndpoints(const QUrl &url)
 
             epd.setEndpointUrl(vc::scalarToQt<QString, UA_String>(&endpoints[i].endpointUrl));
             epd.setServerCertificate(vc::scalarToQt<QByteArray, UA_ByteString>(&endpoints[i].serverCertificate));
-            epd.setSecurityMode(static_cast<QEndpointDescription::MessageSecurityMode>(endpoints[i].securityMode));
+            epd.setSecurityMode(static_cast<QOpcUaEndpointDescription::MessageSecurityMode>(endpoints[i].securityMode));
             epd.setSecurityPolicyUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].securityPolicyUri));
             for (size_t j = 0; j < endpoints[i].userIdentityTokensSize; ++j) {
-                QUserTokenPolicy policy;
+                QOpcUaUserTokenPolicy policy;
                 UA_UserTokenPolicy *policySrc = &endpoints[i].userIdentityTokens[j];
                 policy.setPolicyId(vc::scalarToQt<QString, UA_String>(&policySrc->policyId));
-                policy.setTokenType(static_cast<QUserTokenPolicy::TokenType>(endpoints[i].userIdentityTokens[j].tokenType));
+                policy.setTokenType(static_cast<QOpcUaUserTokenPolicy::TokenType>(endpoints[i].userIdentityTokens[j].tokenType));
                 policy.setIssuedTokenType(vc::scalarToQt<QString, UA_String>(&endpoints[i].userIdentityTokens[j].issuedTokenType));
                 policy.setIssuerEndpointUrl(vc::scalarToQt<QString, UA_String>(&endpoints[i].userIdentityTokens[j].issuerEndpointUrl));
                 policy.setSecurityPolicyUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].userIdentityTokens[j].securityPolicyUri));
@@ -972,14 +972,14 @@ QOpen62541Subscription *Open62541AsyncBackend::getSubscriptionForItem(quint64 ha
     return subscription.value();
 }
 
-QOpcUa::QApplicationDescription Open62541AsyncBackend::convertApplicationDescription(UA_ApplicationDescription &desc)
+QOpcUaApplicationDescription Open62541AsyncBackend::convertApplicationDescription(UA_ApplicationDescription &desc)
 {
-    QOpcUa::QApplicationDescription temp;
+    QOpcUaApplicationDescription temp;
 
     temp.setApplicationUri(QOpen62541ValueConverter::scalarToQt<QString, UA_String>(&desc.applicationUri));
     temp.setProductUri(QOpen62541ValueConverter::scalarToQt<QString, UA_String>(&desc.productUri));
-    temp.setApplicationName(QOpen62541ValueConverter::scalarToQt<QOpcUa::QLocalizedText, UA_LocalizedText>(&desc.applicationName));
-    temp.setApplicationType(static_cast<QOpcUa::QApplicationDescription::ApplicationType>(desc.applicationType));
+    temp.setApplicationName(QOpen62541ValueConverter::scalarToQt<QOpcUaLocalizedText, UA_LocalizedText>(&desc.applicationName));
+    temp.setApplicationType(static_cast<QOpcUaApplicationDescription::ApplicationType>(desc.applicationType));
     temp.setGatewayServerUri(QOpen62541ValueConverter::scalarToQt<QString, UA_String>(&desc.gatewayServerUri));
     temp.setDiscoveryProfileUri(QOpen62541ValueConverter::scalarToQt<QString, UA_String>(&desc.discoveryProfileUri));
 
@@ -1132,7 +1132,7 @@ UA_ExtensionObject Open62541AsyncBackend::assembleNodeAttributes(const QOpcUaNod
         }
         if (nodeAttributes.hasInverseName()) {
             attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_INVERSENAME;
-            QOpen62541ValueConverter::scalarFromQt<UA_LocalizedText, QOpcUa::QLocalizedText>(
+            QOpen62541ValueConverter::scalarFromQt<UA_LocalizedText, QOpcUaLocalizedText>(
                         nodeAttributes.inverseName(), &attr->inverseName);
         }
         break;
@@ -1174,12 +1174,12 @@ UA_ExtensionObject Open62541AsyncBackend::assembleNodeAttributes(const QOpcUaNod
     UA_ObjectAttributes *attr = reinterpret_cast<UA_ObjectAttributes *>(obj.content.decoded.data);
     if (nodeAttributes.hasDisplayName()) {
         attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_DISPLAYNAME;
-        QOpen62541ValueConverter::scalarFromQt<UA_LocalizedText, QOpcUa::QLocalizedText>(
+        QOpen62541ValueConverter::scalarFromQt<UA_LocalizedText, QOpcUaLocalizedText>(
                     nodeAttributes.displayName(), &attr->displayName);
     }
     if (nodeAttributes.hasDescription()) {
         attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_DESCRIPTION;
-        QOpen62541ValueConverter::scalarFromQt<UA_LocalizedText, QOpcUa::QLocalizedText>(
+        QOpen62541ValueConverter::scalarFromQt<UA_LocalizedText, QOpcUaLocalizedText>(
                     nodeAttributes.description(), &attr->description);
     }
     if (nodeAttributes.hasWriteMask()) {

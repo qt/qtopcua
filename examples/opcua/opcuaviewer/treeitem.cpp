@@ -50,7 +50,17 @@
 
 #include "treeitem.h"
 #include "opcuamodel.h"
+#include <QOpcUaArgument>
+#include <QOpcUaAxisInformation>
 #include <QOpcUaClient>
+#include <QOpcUaComplexNumber>
+#include <QOpcUaDoubleComplexNumber>
+#include <QOpcUaEUInformation>
+#include <QOpcUaExtensionObject>
+#include <QOpcUaLocalizedText>
+#include <QOpcUaQualifiedName>
+#include <QOpcUaRange>
+#include <QOpcUaXValue>
 #include <QMetaEnum>
 #include <QPixmap>
 
@@ -151,7 +161,7 @@ QVariant TreeItem::data(int column)
         if (!mAttributesReady)
             return tr("Loading ...");
 
-        return mOpcNode->attribute(QOpcUa::NodeAttribute::Description).value<QOpcUa::QLocalizedText>().text();
+        return mOpcNode->attribute(QOpcUa::NodeAttribute::Description).value<QOpcUaLocalizedText>().text();
     }
     return QVariant();
 }
@@ -228,9 +238,9 @@ void TreeItem::handleAttributes(QOpcUa::NodeAttributes attr)
     if (attr & QOpcUa::NodeAttribute::NodeClass)
         mNodeClass = mOpcNode->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>();
     if (attr & QOpcUa::NodeAttribute::BrowseName)
-        mNodeBrowseName = mOpcNode->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>().name();
+        mNodeBrowseName = mOpcNode->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUaQualifiedName>().name();
     if (attr & QOpcUa::NodeAttribute::DisplayName)
-        mNodeDisplayName = mOpcNode->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>().text();
+        mNodeDisplayName = mOpcNode->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUaLocalizedText>().text();
 
     mAttributesReady = true;
     emit mModel->dataChanged(mModel->createIndex(row(), 0, this), mModel->createIndex(row(), numberOfDisplayColumns - 1, this));
@@ -294,48 +304,48 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
         return QLatin1String("0x") + value.toByteArray().toHex();
     else if (value.type() == QVariant::DateTime)
         return value.toDateTime().toString(Qt::ISODate);
-    else if (value.canConvert<QOpcUa::QQualifiedName>()) {
-        const auto name = value.value<QOpcUa::QQualifiedName>();
+    else if (value.canConvert<QOpcUaQualifiedName>()) {
+        const auto name = value.value<QOpcUaQualifiedName>();
         return QStringLiteral("[NamespaceIndex: %1, Name: \"%2\"]").arg(name.namespaceIndex()).arg(name.name());
-    } else if (value.canConvert<QOpcUa::QLocalizedText>()) {
-        const auto text = value.value<QOpcUa::QLocalizedText>();
+    } else if (value.canConvert<QOpcUaLocalizedText>()) {
+        const auto text = value.value<QOpcUaLocalizedText>();
         return localizedTextToString(text);
-    } else if (value.canConvert<QOpcUa::QRange>()) {
-        const auto range = value.value<QOpcUa::QRange>();
+    } else if (value.canConvert<QOpcUaRange>()) {
+        const auto range = value.value<QOpcUaRange>();
         return rangeToString(range);
-    } else if (value.canConvert<QOpcUa::QComplexNumber>()) {
-        const auto complex = value.value<QOpcUa::QComplexNumber>();
+    } else if (value.canConvert<QOpcUaComplexNumber>()) {
+        const auto complex = value.value<QOpcUaComplexNumber>();
         return QStringLiteral("[Real: %1, Imaginary: %2]").arg(complex.real()).arg(complex.imaginary());
-    } else if (value.canConvert<QOpcUa::QDoubleComplexNumber>()) {
-        const auto complex = value.value<QOpcUa::QDoubleComplexNumber>();
+    } else if (value.canConvert<QOpcUaDoubleComplexNumber>()) {
+        const auto complex = value.value<QOpcUaDoubleComplexNumber>();
         return QStringLiteral("[Real: %1, Imaginary: %2]").arg(complex.real()).arg(complex.imaginary());
-    } else if (value.canConvert<QOpcUa::QXValue>()) {
-        const auto xv = value.value<QOpcUa::QXValue>();
+    } else if (value.canConvert<QOpcUaXValue>()) {
+        const auto xv = value.value<QOpcUaXValue>();
         return QStringLiteral("[X: %1, Value: %2]").arg(xv.x()).arg(xv.value());
-    } else if (value.canConvert<QOpcUa::QEUInformation>()) {
-        const auto info = value.value<QOpcUa::QEUInformation>();
+    } else if (value.canConvert<QOpcUaEUInformation>()) {
+        const auto info = value.value<QOpcUaEUInformation>();
         return euInformationToString(info);
-    } else if (value.canConvert<QOpcUa::QAxisInformation>()) {
-        const auto info = value.value<QOpcUa::QAxisInformation>();
+    } else if (value.canConvert<QOpcUaAxisInformation>()) {
+        const auto info = value.value<QOpcUaAxisInformation>();
         return QStringLiteral("[EUInformation: %1, EURange: %2, Title: %3 , AxisScaleType: %4, AxisSteps: %5]").arg(
                     euInformationToString(info.engineeringUnits())).arg(rangeToString(info.eURange())).arg(localizedTextToString(info.title())).arg(
                         info.axisScaleType() == QOpcUa::AxisScale::Linear ? "Linear" : (info.axisScaleType() == QOpcUa::AxisScale::Ln) ? "Ln" : "Log").arg(
                         numberArrayToString(info.axisSteps()));
-    } else if (value.canConvert<QOpcUa::QExpandedNodeId>()) {
-        const auto id = value.value<QOpcUa::QExpandedNodeId>();
+    } else if (value.canConvert<QOpcUaExpandedNodeId>()) {
+        const auto id = value.value<QOpcUaExpandedNodeId>();
         return QStringLiteral("[NodeId: \"%1\", ServerIndex: \"%2\", NamespaceUri: \"%3\"]").arg(
                     id.nodeId()).arg(id.serverIndex()).arg(id.namespaceUri());
-    } else if (value.canConvert<QOpcUa::QArgument>()) {
-        const auto a = value.value<QOpcUa::QArgument>();
+    } else if (value.canConvert<QOpcUaArgument>()) {
+        const auto a = value.value<QOpcUaArgument>();
 
         return QStringLiteral("[Name: \"%1\", DataType: \"%2\", ValueRank: \"%3\", ArrayDimensions: %4, Description: %5]").arg(
                     a.name()).arg(a.dataTypeId()).arg(a.valueRank()).arg(numberArrayToString(a.arrayDimensions())).arg(
                     localizedTextToString(a.description()));
-    } else if (value.canConvert<QOpcUa::QExtensionObject>()) {
-        const auto obj = value.value<QOpcUa::QExtensionObject>();
+    } else if (value.canConvert<QOpcUaExtensionObject>()) {
+        const auto obj = value.value<QOpcUaExtensionObject>();
         return QStringLiteral("[TypeId: \"%1\", Encoding: %2, Body: 0x%3]").arg(obj.encodingTypeId()).arg(
-                    obj.encoding() == QOpcUa::QExtensionObject::Encoding::NoBody ?
-                        "NoBody" : (obj.encoding() == QOpcUa::QExtensionObject::Encoding::ByteString ?
+                    obj.encoding() == QOpcUaExtensionObject::Encoding::NoBody ?
+                        "NoBody" : (obj.encoding() == QOpcUaExtensionObject::Encoding::ByteString ?
                             "ByteString" : "XML")).arg(obj.encodedBody().isEmpty() ? "0" : QString(obj.encodedBody().toHex()));
     }
 
@@ -345,17 +355,17 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
     return QString();
 }
 
-QString TreeItem::localizedTextToString(const QOpcUa::QLocalizedText &text) const
+QString TreeItem::localizedTextToString(const QOpcUaLocalizedText &text) const
 {
     return QStringLiteral("[Locale: \"%1\", Text: \"%2\"]").arg(text.locale()).arg(text.text());
 }
 
-QString TreeItem::rangeToString(const QOpcUa::QRange &range) const
+QString TreeItem::rangeToString(const QOpcUaRange &range) const
 {
     return QStringLiteral("[Low: %1, High: %2]").arg(range.low()).arg(range.high());
 }
 
-QString TreeItem::euInformationToString(const QOpcUa::QEUInformation &info) const
+QString TreeItem::euInformationToString(const QOpcUaEUInformation &info) const
 {
     return QStringLiteral("[UnitId: %1, NamespaceUri: \"%2\", DisplayName: %3, Description: %4]").arg(info.unitId()).arg(
                 info.namespaceUri()).arg(localizedTextToString(info.displayName())).arg(localizedTextToString(info.description()));

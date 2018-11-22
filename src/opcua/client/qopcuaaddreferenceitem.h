@@ -40,7 +40,11 @@
 #include <QtOpcUa/qopcuanodecreationattributes.h>
 #include <QtOpcUa/qopcuatype.h>
 
+#include <QtCore/qshareddata.h>
+
 QT_BEGIN_NAMESPACE
+
+class QOpcUaExpandedNodeId;
 
 class QOpcUaAddReferenceItemData;
 class Q_OPCUA_EXPORT QOpcUaAddReferenceItem
@@ -60,8 +64,8 @@ public:
     bool isForwardReference() const;
     void setIsForwardReference(bool isForwardReference);
 
-    QOpcUa::QExpandedNodeId targetNodeId() const;
-    void setTargetNodeId(const QOpcUa::QExpandedNodeId &targetNodeId);
+    QOpcUaExpandedNodeId targetNodeId() const;
+    void setTargetNodeId(const QOpcUaExpandedNodeId &targetNodeId);
 
     QOpcUa::NodeClass targetNodeClass() const;
     void setTargetNodeClass(QOpcUa::NodeClass targetNodeClass);

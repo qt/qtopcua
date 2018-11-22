@@ -37,6 +37,7 @@
 #include <private/qopcuaclient_p.h>
 
 #include <QtCore/qloggingcategory.h>
+#include <QtOpcUa/qopcuaendpointdescription.h>
 
 #include "qopcuaerrorstate.h"
 
@@ -65,12 +66,12 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
     });
 
     QObject::connect(m_impl.data(), &QOpcUaClientImpl::endpointsRequestFinished, m_impl.data(),
-                     [this](const QVector<QOpcUa::QEndpointDescription> &e, QOpcUa::UaStatusCode s) {
+                     [this](const QVector<QOpcUaEndpointDescription> &e, QOpcUa::UaStatusCode s) {
         Q_Q(QOpcUaClient);
         emit q->endpointsRequestFinished(e, s);
     });
 
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::findServersFinished, [this](const QVector<QOpcUa::QApplicationDescription> &a, QOpcUa::UaStatusCode s) {
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::findServersFinished, [this](const QVector<QOpcUaApplicationDescription> &a, QOpcUa::UaStatusCode s) {
         Q_Q(QOpcUaClient);
         emit q->findServersFinished(a, s);
     });
@@ -85,7 +86,7 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
         emit q->writeNodeAttributesFinished(results, serviceResult);
     });
 
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::addNodeFinished, [this](const QOpcUa::QExpandedNodeId &requestedNodeId, const QString &assignedNodeId, QOpcUa::UaStatusCode statusCode) {
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::addNodeFinished, [this](const QOpcUaExpandedNodeId &requestedNodeId, const QString &assignedNodeId, QOpcUa::UaStatusCode statusCode) {
         Q_Q(QOpcUaClient);
         emit q->addNodeFinished(requestedNodeId, assignedNodeId, statusCode);
     });
@@ -96,13 +97,13 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
     });
 
     QObject::connect(m_impl.data(), &QOpcUaClientImpl::addReferenceFinished, [this](const QString &sourceNodeId, const QString &referenceTypeId,
-                     const QOpcUa::QExpandedNodeId &targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode) {
+                     const QOpcUaExpandedNodeId &targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode) {
         Q_Q(QOpcUaClient);
         emit q->addReferenceFinished(sourceNodeId, referenceTypeId, targetNodeId, isForwardReference, statusCode);
     });
 
     QObject::connect(m_impl.data(), &QOpcUaClientImpl::deleteReferenceFinished, [this](const QString &sourceNodeId, const QString &referenceTypeId,
-                     const QOpcUa::QExpandedNodeId &targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode) {
+                     const QOpcUaExpandedNodeId &targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode) {
         Q_Q(QOpcUaClient);
         emit q->deleteReferenceFinished(sourceNodeId, referenceTypeId, targetNodeId, isForwardReference, statusCode);
     });
@@ -117,7 +118,7 @@ QOpcUaClientPrivate::~QOpcUaClientPrivate()
 {
 }
 
-void QOpcUaClientPrivate::connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint)
+void QOpcUaClientPrivate::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
 {
     m_endpoint = endpoint;
     setStateAndError(QOpcUaClient::Connecting);

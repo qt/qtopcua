@@ -24,6 +24,12 @@
 #include "quacpputils.h"
 #include "quacppvalueconverter.h"
 
+#include "qopcuaattributeoperand.h"
+#include "qopcuacontentfilterelementresult.h"
+#include "qopcuaelementoperand.h"
+#include "qopcualiteraloperand.h"
+#include "qopcuaeventfilterresult.h"
+
 #include <QtCore/QLoggingCategory>
 
 #include <uasession.h>
@@ -427,7 +433,7 @@ void QUACppSubscription::createEventFilter(const QOpcUaMonitoringParameters::Eve
             operands.create(filter.whereClause()[i].filterOperandsRef().size());
 
             for (int j = 0; j < filter.whereClause()[i].filterOperandsRef().size(); ++j) {
-                if (filter.whereClause()[i].filterOperandsRef()[j].canConvert<QOpcUa::QElementOperand>()) {
+                if (filter.whereClause()[i].filterOperandsRef()[j].canConvert<QOpcUaElementOperand>()) {
                     OpcUa_ElementOperand *op;
                     OpcUa_EncodeableObject_CreateExtension(&OpcUa_ElementOperand_EncodeableType,
                                                            &operands[j],
@@ -437,8 +443,8 @@ void QUACppSubscription::createEventFilter(const QOpcUaMonitoringParameters::Eve
                         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not allocate an ElementOperand for the event filter";
                         return;
                     }
-                    op->Index = filter.whereClause()[i].filterOperandsRef()[j].value<QOpcUa::QElementOperand>().index();
-                } else if (filter.whereClause()[i].filterOperandsRef()[j].canConvert<QOpcUa::QLiteralOperand>()) {
+                    op->Index = filter.whereClause()[i].filterOperandsRef()[j].value<QOpcUaElementOperand>().index();
+                } else if (filter.whereClause()[i].filterOperandsRef()[j].canConvert<QOpcUaLiteralOperand>()) {
                     OpcUa_LiteralOperand *op;
                     OpcUa_EncodeableObject_CreateExtension(&OpcUa_LiteralOperand_EncodeableType,
                                                            &operands[j],
@@ -448,9 +454,9 @@ void QUACppSubscription::createEventFilter(const QOpcUaMonitoringParameters::Eve
                         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not allocate a LiteralOperand for the event filter";
                         return ;
                     }
-                    QOpcUa::QLiteralOperand litOp = filter.whereClause()[i].filterOperandsRef()[j].value<QOpcUa::QLiteralOperand>();
+                    QOpcUaLiteralOperand litOp = filter.whereClause()[i].filterOperandsRef()[j].value<QOpcUaLiteralOperand>();
                     op->Value = QUACppValueConverter::toUACppVariant(litOp.value(), litOp.type());
-                } else if (filter.whereClause()[i].filterOperandsRef()[j].canConvert<QOpcUa::QSimpleAttributeOperand>()) {
+                } else if (filter.whereClause()[i].filterOperandsRef()[j].canConvert<QOpcUaSimpleAttributeOperand>()) {
                     OpcUa_SimpleAttributeOperand *op;
                     OpcUa_EncodeableObject_CreateExtension(&OpcUa_SimpleAttributeOperand_EncodeableType,
                                                            &operands[j],
@@ -460,7 +466,7 @@ void QUACppSubscription::createEventFilter(const QOpcUaMonitoringParameters::Eve
                         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not allocate a SimpleAttributeOperand for the event filter";
                         return;
                     }
-                    QOpcUa::QSimpleAttributeOperand operand = filter.whereClause()[i].filterOperandsRef()[j].value<QOpcUa::QSimpleAttributeOperand>();
+                    QOpcUaSimpleAttributeOperand operand = filter.whereClause()[i].filterOperandsRef()[j].value<QOpcUaSimpleAttributeOperand>();
                     op->AttributeId = QUACppValueConverter::toUaAttributeId(operand.attributeId());
                     UaString(operand.indexRange().toUtf8().constData()).copyTo(&op->IndexRange);
                     if (!operand.typeId().isEmpty())
@@ -472,7 +478,7 @@ void QUACppSubscription::createEventFilter(const QOpcUaMonitoringParameters::Eve
                     }
                     op->NoOfBrowsePath = operand.browsePathRef().size();
                     op->BrowsePath = path.detach();
-                } else if (filter.whereClause()[i].filterOperandsRef()[j].canConvert<QOpcUa::QAttributeOperand>()) {
+                } else if (filter.whereClause()[i].filterOperandsRef()[j].canConvert<QOpcUaAttributeOperand>()) {
                     OpcUa_AttributeOperand *op;
                     OpcUa_EncodeableObject_CreateExtension(&OpcUa_AttributeOperand_EncodeableType,
                                                            &operands[j],
@@ -482,7 +488,7 @@ void QUACppSubscription::createEventFilter(const QOpcUaMonitoringParameters::Eve
                         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not allocate an AttributeOperand for the event filter";
                         return;
                     }
-                    QOpcUa::QAttributeOperand operand = filter.whereClause()[i].filterOperandsRef()[j].value<QOpcUa::QAttributeOperand>();
+                    QOpcUaAttributeOperand operand = filter.whereClause()[i].filterOperandsRef()[j].value<QOpcUaAttributeOperand>();
                     op->AttributeId = QUACppValueConverter::toUaAttributeId(operand.attributeId());
                     UaString(operand.indexRange().toUtf8().constData()).copyTo(&op->IndexRange);
                     if (!operand.nodeId().isEmpty())
@@ -512,9 +518,9 @@ void QUACppSubscription::createEventFilter(const QOpcUaMonitoringParameters::Eve
     }
 }
 
-QOpcUa::QEventFilterResult QUACppSubscription::convertEventFilterResult(const OpcUa_ExtensionObject &obj)
+QOpcUaEventFilterResult QUACppSubscription::convertEventFilterResult(const OpcUa_ExtensionObject &obj)
 {
-    QOpcUa::QEventFilterResult result;
+    QOpcUaEventFilterResult result;
 
     if (UaNodeId(obj.TypeId.NodeId) == UaNodeId(OpcUaId_EventFilterResult_Encoding_DefaultBinary, 0)) {
         UaEventFilterResult filterResult(obj);
@@ -530,7 +536,7 @@ QOpcUa::QEventFilterResult QUACppSubscription::convertEventFilterResult(const Op
         contentFilterResult.getElementResults(elementResults);
 
         for (size_t i = 0; i < elementResults.length(); ++i) {
-            QOpcUa::QContentFilterElementResult temp;
+            QOpcUaContentFilterElementResult temp;
             temp.setStatusCode(static_cast<QOpcUa::UaStatusCode>(elementResults[i].StatusCode));
             for (int j = 0; j < elementResults[i].NoOfOperandStatusCodes; ++j)
                 temp.operandStatusCodesRef().append(static_cast<QOpcUa::UaStatusCode>(elementResults[i].OperandStatusCodes[j]));

@@ -102,7 +102,7 @@ private:
 
     bool modifySubscriptionParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
     bool modifyMonitoredItemParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
-    QOpcUa::QEventFilterResult convertEventFilterResult(UA_ExtensionObject *obj);
+    QOpcUaEventFilterResult convertEventFilterResult(UA_ExtensionObject *obj);
 
     Open62541AsyncBackend *m_backend;
     double m_interval;

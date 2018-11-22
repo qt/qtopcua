@@ -50,6 +50,7 @@
 
 #include <QtOpcUa/qopcuaclient.h>
 #include <QtOpcUa/qopcuanode.h>
+#include <QtOpcUa/qopcuaeventfilterresult.h>
 #include <private/qopcuanodeimpl_p.h>
 
 #include <private/qobject_p.h>
@@ -156,8 +157,8 @@ public:
                         it->setFilter(param.filter().value<QOpcUaMonitoringParameters::EventFilter>());
                     else if (param.filter().isNull())
                         it->clearFilter();
-                    if (param.filterResult().canConvert<QOpcUa::QEventFilterResult>())
-                        it->setFilterResult(param.filterResult().value<QOpcUa::QEventFilterResult>());
+                    if (param.filterResult().canConvert<QOpcUaEventFilterResult>())
+                        it->setFilterResult(param.filterResult().value<QOpcUaEventFilterResult>());
                     else if (param.filterResult().isNull())
                         it->clearFilterResult();
                 }
@@ -189,7 +190,7 @@ public:
         });
 
         m_resolveBrowsePathFinishedConnection = QObject::connect(impl, &QOpcUaNodeImpl::resolveBrowsePathFinished,
-                [this](QVector<QOpcUa::QBrowsePathTarget> targets, QVector<QOpcUa::QRelativePathElement> path,
+                [this](QVector<QOpcUaBrowsePathTarget> targets, QVector<QOpcUaRelativePathElement> path,
                                                                    QOpcUa::UaStatusCode statusCode)
         {
             Q_Q(QOpcUaNode);

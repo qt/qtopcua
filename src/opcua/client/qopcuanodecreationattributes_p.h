@@ -101,12 +101,12 @@ public:
     QVector<quint32> arrayDimensions;
     bool containsNoLoops {false};
     QString dataTypeId;
-    QOpcUa::QLocalizedText description;
-    QOpcUa::QLocalizedText displayName;
+    QOpcUaLocalizedText description;
+    QOpcUaLocalizedText displayName;
     QOpcUa::EventNotifier eventNotifier {QOpcUa::EventNotifierBit::None};
     bool executable {false};
     bool historizing {false};
-    QOpcUa::QLocalizedText inverseName;
+    QOpcUaLocalizedText inverseName;
     bool isAbstract {false};
     double minimumSamplingInterval {0};
     bool symmetric {false};

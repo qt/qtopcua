@@ -85,28 +85,28 @@ QT_BEGIN_NAMESPACE
             \li QString
             \li String
         \row
-            \li QOpcUa::QQualifiedName
+            \li QOpcUaQualifiedName
             \li QualifiedName
         \row
-            \li QOpcUa::QLocalizedText
+            \li QOpcUaLocalizedText
             \li LocalizedText
         \row
-            \li QOpcUa::QEUInformation
+            \li QOpcUaEUInformation
             \li EUInformation
         \row
-            \li QOpcUa::QRange
+            \li QOpcUaRange
             \li Range
         \row
-            \li QOpcUa::QComplexNumber
+            \li QOpcUaComplexNumber
             \li ComplexNumber
         \row
-            \li QOpcUa::QDoubleComplexNumber
+            \li QOpcUaDoubleComplexNumber
             \li DoubleComplexNumber
         \row
-            \li QOpcUa::QAxisInformation
+            \li QOpcUaAxisInformation
             \li AxisInformation
         \row
-            \li QOpcUa::QXValue
+            \li QOpcUaXValue
             \li XV
         \row
             \li QUuid
@@ -124,13 +124,13 @@ QT_BEGIN_NAMESPACE
             \li QOpcUa::UaStatusCode
             \li StatusCode
         \row
-            \li QOpcUa::QExpandedNodeId
+            \li QOpcUaExpandedNodeId
             \li ExpandedNodeId
         \row
-            \li QOpcUa::QExtensionObject
+            \li QOpcUaExtensionObject
             \li ExtensionObject
         \row
-            \li QOpcUa::QArgument
+            \li QOpcUaArgument
             \li Argument
     \endtable
 */
@@ -190,7 +190,7 @@ QOpcUaBinaryDataEncoding::QOpcUaBinaryDataEncoding(QByteArray *buffer)
 
     \a object must not be deleted as long as this binary data encoding oject is used.
 */
-QOpcUaBinaryDataEncoding::QOpcUaBinaryDataEncoding(QOpcUa::QExtensionObject &object)
+QOpcUaBinaryDataEncoding::QOpcUaBinaryDataEncoding(QOpcUaExtensionObject &object)
     : m_data(&object.encodedBodyRef())
 {
 }

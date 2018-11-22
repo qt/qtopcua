@@ -37,9 +37,9 @@
 #pragma once
 
 #include <QObject>
-#include "qopcuatype.h"
 #include "universalnode.h"
 #include "opcuaattributecache.h"
+#include "qopcualocalizedtext.h"
 #include <QDateTime>
 
 QT_BEGIN_NAMESPACE
@@ -63,8 +63,8 @@ class OpcUaNode : public QObject
     // basic node properties
     Q_PROPERTY(QString browseName READ browseName WRITE setBrowseName NOTIFY browseNameChanged)
     Q_PROPERTY(QOpcUa::NodeClass nodeClass READ nodeClass NOTIFY nodeClassChanged)
-    Q_PROPERTY(QOpcUa::QLocalizedText displayName READ displayName WRITE setDisplayName NOTIFY displayNameChanged)
-    Q_PROPERTY(QOpcUa::QLocalizedText description READ description WRITE setDescription NOTIFY descriptionChanged)
+    Q_PROPERTY(QOpcUaLocalizedText displayName READ displayName WRITE setDisplayName NOTIFY displayNameChanged)
+    Q_PROPERTY(QOpcUaLocalizedText description READ description WRITE setDescription NOTIFY descriptionChanged)
 
     Q_ENUM(QOpcUa::NodeClass);
 
@@ -93,11 +93,11 @@ public:
 
     QOpcUa::NodeClass nodeClass();
 
-    void setDisplayName(const QOpcUa::QLocalizedText &value);
-    QOpcUa::QLocalizedText displayName();
+    void setDisplayName(const QOpcUaLocalizedText &value);
+    QOpcUaLocalizedText displayName();
 
-    void setDescription(const QOpcUa::QLocalizedText &value);
-    QOpcUa::QLocalizedText description();
+    void setDescription(const QOpcUaLocalizedText &value);
+    QOpcUaLocalizedText description();
 
     OpcUaNode::Status status() const;
     const QString &errorMessage() const;

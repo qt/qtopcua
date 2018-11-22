@@ -24,6 +24,7 @@
 
 #include "qopcuanode.h"
 #include "qopcuatype.h"
+#include "qopcuaargument.h"
 
 #include <QtCore/QVariant>
 
@@ -60,13 +61,13 @@ namespace QUACppValueConverter {
     OpcUa_DateTime toUACppDateTime(const QDateTime &qtDateTime);
 
     UaStringArray toUaStringArray(const QStringList &value);
-    QOpcUa::QLocalizedText toQLocalizedText(UaLocalizedText *data);
+    QOpcUaLocalizedText toQOpcUaLocalizedText(UaLocalizedText *data);
 
-    OpcUa_ExpandedNodeId toUACppExpandedNodeId(const QOpcUa::QExpandedNodeId &qtExpandedNodeId);
-    OpcUa_LocalizedText toUACppLocalizedText(const QOpcUa::QLocalizedText &qtLocalizedText);
-    OpcUa_QualifiedName toUACppQualifiedName(const QOpcUa::QQualifiedName& qtQualifiedName);
+    OpcUa_ExpandedNodeId toUACppExpandedNodeId(const QOpcUaExpandedNodeId &qtExpandedNodeId);
+    OpcUa_LocalizedText toUACppLocalizedText(const QOpcUaLocalizedText &qtLocalizedText);
+    OpcUa_QualifiedName toUACppQualifiedName(const QOpcUaQualifiedName& qtQualifiedName);
 
-    QOpcUa::QArgument toQArgument(const UaArgument *data);
+    QOpcUaArgument toQArgument(const UaArgument *data);
 }
 
 QT_END_NAMESPACE

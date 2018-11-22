@@ -57,7 +57,7 @@ private:
     OpcUa_ExtensionObject createFilter(const QVariant &filterData);
     void createDataChangeFilter(const QOpcUaMonitoringParameters::DataChangeFilter &filter, OpcUa_ExtensionObject *out);
     void createEventFilter(const QOpcUaMonitoringParameters::EventFilter &filter, OpcUa_ExtensionObject *out);
-    QOpcUa::QEventFilterResult convertEventFilterResult(const OpcUa_ExtensionObject &obj);
+    QOpcUaEventFilterResult convertEventFilterResult(const OpcUa_ExtensionObject &obj);
 
     bool modifySubscriptionParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
     bool modifyMonitoredItemParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);

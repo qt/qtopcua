@@ -36,6 +36,7 @@
 
 #include "qopcuamonitoringparameters.h"
 #include "private/qopcuamonitoringparameters_p.h"
+#include <QtOpcUa/qopcuaeventfilterresult.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -516,7 +517,7 @@ QVariant QOpcUaMonitoringParameters::filterResult() const
 
     \sa filterResult()
 */
-void QOpcUaMonitoringParameters::setFilterResult(const QOpcUa::QEventFilterResult &eventFilterResult)
+void QOpcUaMonitoringParameters::setFilterResult(const QOpcUaEventFilterResult &eventFilterResult)
 {
     d_ptr->filterResult = QVariant::fromValue(eventFilterResult);
 }
@@ -713,7 +714,7 @@ QOpcUaMonitoringParameters::DataChangeFilter::operator QVariant() const
     It consists of \c select clauses and a \c where clause.
 
     The \c select clauses are used to specify the data the user wants to receive when an event occurs.
-    It consists of \l {QOpcUa::QSimpleAttributeOperand} simple attribute operands which select
+    It consists of \l {QOpcUaSimpleAttributeOperand} simple attribute operands which select
     attributes of child nodes of an event type, for example the value attribute of the "Message"
     property of BaseEventType.
 
@@ -721,33 +722,33 @@ QOpcUaMonitoringParameters::DataChangeFilter::operator QVariant() const
     Several operators and four different operand types allow filtering based on the values of the
     attributes of the child nodes of an event type.
 
-    Filters can be constructed using the setter or the streaming operator. Streaming a \l QOpcUa::QSimpleAttributeOperand
-    into an event filter adds a new \c select clause to the filter, a \l QOpcUa::QContentFilterElement is appended to the \c where clause.
-    A content filter element can be constructed by streaming operands of the types \l QOpcUa::QLiteralOperand,
-    \l QOpcUa::QElementOperand, \l QOpcUa::QAttributeOperand and \l QOpcUa::QSimpleAttributeOperand and an operator into a content
+    Filters can be constructed using the setter or the streaming operator. Streaming a \l QOpcUaSimpleAttributeOperand
+    into an event filter adds a new \c select clause to the filter, a \l QOpcUaContentFilterElement is appended to the \c where clause.
+    A content filter element can be constructed by streaming operands of the types \l QOpcUaLiteralOperand,
+    \l QOpcUaElementOperand, \l QOpcUaAttributeOperand and \l QOpcUaSimpleAttributeOperand and an operator into a content
     filter element. Only the last operator is used, previous operators will be discarded.
 
     The following EventFilter tells the server to report the value of the "Message" field for events that have a "Severity" field with value >= 500:
 
     \code
         QOpcUaMonitoringParameters::EventFilter filter;
-        filter << QOpcUa::QSimpleAttributeOperand("Message"); // Select clause of the filter
+        filter << QOpcUaSimpleAttributeOperand("Message"); // Select clause of the filter
 
-        QOpcUa::QContentFilterElement condition;
-        condition << OpcUa::QContentFilterElement::FilterOperator::GreaterThanOrEqual;
-        condition << QOpcUa::QSimpleAttributeOperand("Severity");
-        condition << QOpcUa::QLiteralOperand(500, QOpcUa::Types::UInt16);
+        QOpcUaContentFilterElement condition;
+        condition << QOpcUaContentFilterElement::FilterOperator::GreaterThanOrEqual;
+        condition << QOpcUaSimpleAttributeOperand("Severity");
+        condition << QOpcUaLiteralOperand(500, QOpcUa::Types::UInt16);
         filter << condition; // Where clause of the filter
     \endcode
 
-    For a more complex example with two conditions, see \l QOpcUa::QElementOperand.
+    For a more complex example with two conditions, see \l QOpcUaElementOperand.
 */
 
 class QOpcUaMonitoringParameters::EventFilterData : public QSharedData
 {
 public:
-    QVector<QOpcUa::QSimpleAttributeOperand> selectClauses;
-    QVector<QOpcUa::QContentFilterElement> whereClause;
+    QVector<QOpcUaSimpleAttributeOperand> selectClauses;
+    QVector<QOpcUaContentFilterElement> whereClause;
 };
 
 QOpcUaMonitoringParameters::EventFilter::EventFilter()
@@ -784,7 +785,7 @@ bool QOpcUaMonitoringParameters::EventFilter::operator==(const QOpcUaMonitoringP
 /*!
     Adds the content filter element \a whereClauseElement to the where clause of this event filter.
 */
-QOpcUaMonitoringParameters::EventFilter &QOpcUaMonitoringParameters::EventFilter::operator<<(const QOpcUa::QContentFilterElement &whereClauseElement)
+QOpcUaMonitoringParameters::EventFilter &QOpcUaMonitoringParameters::EventFilter::operator<<(const QOpcUaContentFilterElement &whereClauseElement)
 {
     whereClauseRef().append(whereClauseElement);
     return *this;
@@ -793,7 +794,7 @@ QOpcUaMonitoringParameters::EventFilter &QOpcUaMonitoringParameters::EventFilter
 /*!
     Adds the simple attribute operand \a selectClauseElement to the select clause of this content filter element.
 */
-QOpcUaMonitoringParameters::EventFilter &QOpcUaMonitoringParameters::EventFilter::operator<<(const QOpcUa::QSimpleAttributeOperand &selectClauseElement)
+QOpcUaMonitoringParameters::EventFilter &QOpcUaMonitoringParameters::EventFilter::operator<<(const QOpcUaSimpleAttributeOperand &selectClauseElement)
 {
     selectClausesRef().append(selectClauseElement);
     return *this;
@@ -814,7 +815,7 @@ QOpcUaMonitoringParameters::EventFilter::~EventFilter()
 /*!
     Returns the content filter used to restrict the reported events to events matching certain criteria.
 */
-QVector<QOpcUa::QContentFilterElement> QOpcUaMonitoringParameters::EventFilter::whereClause() const
+QVector<QOpcUaContentFilterElement> QOpcUaMonitoringParameters::EventFilter::whereClause() const
 {
     return data->whereClause;
 }
@@ -824,7 +825,7 @@ QVector<QOpcUa::QContentFilterElement> QOpcUaMonitoringParameters::EventFilter::
 
     \sa whereClause()
 */
-QVector<QOpcUa::QContentFilterElement> &QOpcUaMonitoringParameters::EventFilter::whereClauseRef()
+QVector<QOpcUaContentFilterElement> &QOpcUaMonitoringParameters::EventFilter::whereClauseRef()
 {
     return data->whereClause;
 }
@@ -832,7 +833,7 @@ QVector<QOpcUa::QContentFilterElement> &QOpcUaMonitoringParameters::EventFilter:
 /*!
     Sets the where clause to \a whereClause.
 */
-void QOpcUaMonitoringParameters::EventFilter::setWhereClause(const QVector<QOpcUa::QContentFilterElement> &whereClause)
+void QOpcUaMonitoringParameters::EventFilter::setWhereClause(const QVector<QOpcUaContentFilterElement> &whereClause)
 {
     data->whereClause = whereClause;
 }
@@ -840,7 +841,7 @@ void QOpcUaMonitoringParameters::EventFilter::setWhereClause(const QVector<QOpcU
 /*!
     Returns the selected event fields that shall be included when a new event is reported.
 */
-QVector<QOpcUa::QSimpleAttributeOperand> QOpcUaMonitoringParameters::EventFilter::selectClauses() const
+QVector<QOpcUaSimpleAttributeOperand> QOpcUaMonitoringParameters::EventFilter::selectClauses() const
 {
     return data->selectClauses;
 }
@@ -848,7 +849,7 @@ QVector<QOpcUa::QSimpleAttributeOperand> QOpcUaMonitoringParameters::EventFilter
 /*!
     Returns a reference to the select clauses.
 */
-QVector<QOpcUa::QSimpleAttributeOperand> &QOpcUaMonitoringParameters::EventFilter::selectClausesRef()
+QVector<QOpcUaSimpleAttributeOperand> &QOpcUaMonitoringParameters::EventFilter::selectClausesRef()
 {
     return data->selectClauses;
 }
@@ -856,7 +857,7 @@ QVector<QOpcUa::QSimpleAttributeOperand> &QOpcUaMonitoringParameters::EventFilte
 /*!
     Sets the select clauses to \a selectClauses.
 */
-void QOpcUaMonitoringParameters::EventFilter::setSelectClauses(const QVector<QOpcUa::QSimpleAttributeOperand> &selectClauses)
+void QOpcUaMonitoringParameters::EventFilter::setSelectClauses(const QVector<QOpcUaSimpleAttributeOperand> &selectClauses)
 {
     data->selectClauses = selectClauses;
 }

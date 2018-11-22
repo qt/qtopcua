@@ -41,7 +41,7 @@
 #include <QtCore/qshareddata.h>
 #include <QtCore/qvariant.h>
 
-#include <QtOpcUa/qopcuatype.h>
+#include <QtOpcUa/QOpcUaUserTokenPolicy>
 
 QT_BEGIN_NAMESPACE
 
@@ -62,7 +62,7 @@ public:
     Q_INVOKABLE void setCertificateAuthentication();
 
     const QVariant &authenticationData() const;
-    Q_INVOKABLE QOpcUa::QUserTokenPolicy::TokenType authenticationType() const;
+    Q_INVOKABLE QOpcUaUserTokenPolicy::TokenType authenticationType() const;
 
 private:
     QSharedDataPointer<QOpcUaAuthenticationInformationData> data;

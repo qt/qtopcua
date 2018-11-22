@@ -49,6 +49,7 @@
 //
 
 #include <QtOpcUa/qopcuaclient.h>
+#include <QtOpcUa/qopcuaendpointdescription.h>
 #include <private/qopcuanodeimpl_p.h>
 
 #include <QtCore/qobject.h>
@@ -90,18 +91,18 @@ Q_SIGNALS:
                            QOpcUaMonitoringParameters param);
     void browseFinished(quint64 handle, QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
 
-    void resolveBrowsePathFinished(quint64 handle, const QVector<QOpcUa::QBrowsePathTarget> &targets,
-                                     const QVector<QOpcUa::QRelativePathElement> &path, QOpcUa::UaStatusCode statusCode);
-    void endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
-    void findServersFinished(QVector<QOpcUa::QApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
+    void resolveBrowsePathFinished(quint64 handle, const QVector<QOpcUaBrowsePathTarget> &targets,
+                                     const QVector<QOpcUaRelativePathElement> &path, QOpcUa::UaStatusCode statusCode);
+    void endpointsRequestFinished(QVector<QOpcUaEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
+    void findServersFinished(QVector<QOpcUaApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
     void readNodeAttributesFinished(QVector<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult);
     void writeNodeAttributesFinished(QVector<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult);
 
-    void addNodeFinished(QOpcUa::QExpandedNodeId requestedNodeId, QString assignedNodeId, QOpcUa::UaStatusCode statusCode);
+    void addNodeFinished(QOpcUaExpandedNodeId requestedNodeId, QString assignedNodeId, QOpcUa::UaStatusCode statusCode);
     void deleteNodeFinished(QString nodeId, QOpcUa::UaStatusCode statusCode);
-    void addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForwardReference,
+    void addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUaExpandedNodeId targetNodeId, bool isForwardReference,
                               QOpcUa::UaStatusCode statusCode);
-    void deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForwardReference,
+    void deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUaExpandedNodeId targetNodeId, bool isForwardReference,
                               QOpcUa::UaStatusCode statusCode);
     void connectError(QOpcUaErrorState *errorState);
 

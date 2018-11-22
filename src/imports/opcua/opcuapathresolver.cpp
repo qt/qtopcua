@@ -153,7 +153,7 @@ void OpcUaPathResolver::startNodeResolved(UniversalNode startNode, const QString
     }
 
     // construct path vector
-    QVector<QOpcUa::QRelativePathElement> path;
+    QVector<QOpcUaRelativePathElement> path;
     for (int i = 0; i < m_relativeNode->pathCount(); ++i)
         path.append(m_relativeNode->path(i)->toRelativePathElement(m_client));
 
@@ -166,7 +166,7 @@ void OpcUaPathResolver::startNodeResolved(UniversalNode startNode, const QString
     }
 }
 
-void OpcUaPathResolver::browsePathFinished(QVector<QOpcUa::QBrowsePathTarget> results, QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode status)
+void OpcUaPathResolver::browsePathFinished(QVector<QOpcUaBrowsePathTarget> results, QVector<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode status)
 {
     Q_UNUSED(path);
     UniversalNode nodeToUse;

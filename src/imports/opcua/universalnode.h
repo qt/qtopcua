@@ -37,12 +37,15 @@
 #pragma once
 
 #include <QObject>
-#include "qopcuatype.h"
 
 QT_BEGIN_NAMESPACE
 
 class QOpcUaClient;
 class QOpcUaNode;
+class QOpcUaQualifiedName;
+class QOpcUaExpandedNodeId;
+class QOpcUaBrowsePathTarget;
+class QOpcUaLocalizedText;
 class OpcUaNodeIdType;
 
 class UniversalNode : public QObject
@@ -74,13 +77,13 @@ public:
     void resolveNamespaceNameToIndex(QOpcUaClient *client);
     void resolveNamespace(QOpcUaClient *client);
 
-    QOpcUa::QQualifiedName toQualifiedName() const;
-    void from(const QOpcUa::QQualifiedName &qualifiedName);
+    QOpcUaQualifiedName toQualifiedName() const;
+    void from(const QOpcUaQualifiedName &qualifiedName);
 
-    QOpcUa::QExpandedNodeId toExpandedNodeId() const;
-    void from(const QOpcUa::QExpandedNodeId &expandedNodeId);
+    QOpcUaExpandedNodeId toExpandedNodeId() const;
+    void from(const QOpcUaExpandedNodeId &expandedNodeId);
 
-    void from(const QOpcUa::QBrowsePathTarget &browsePathTarget);
+    void from(const QOpcUaBrowsePathTarget &browsePathTarget);
     void from(const OpcUaNodeIdType &);
     void from(const OpcUaNodeIdType *);
     void from(const UniversalNode &);

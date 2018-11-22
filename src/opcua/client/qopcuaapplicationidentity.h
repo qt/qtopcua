@@ -38,10 +38,10 @@
 #define QOPCUAAPPLICATIONIDENTITY_H
 
 #include <QtOpcUa/qopcuaglobal.h>
-#include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/qshareddata.h>
 #include <QtCore/qmetatype.h>
+#include <QtOpcUa/qopcuaapplicationdescription.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -64,8 +64,8 @@ public:
     QString productUri() const;
     void setProductUri(const QString &value);
 
-    QOpcUa::QApplicationDescription::ApplicationType applicationType() const;
-    void setApplicationType(QOpcUa::QApplicationDescription::ApplicationType value);
+    QOpcUaApplicationDescription::ApplicationType applicationType() const;
+    void setApplicationType(QOpcUaApplicationDescription::ApplicationType value);
 
     bool isValid() const;
 

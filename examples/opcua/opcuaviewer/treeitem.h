@@ -58,6 +58,8 @@
 QT_BEGIN_NAMESPACE
 
 class OpcUaModel;
+class QOpcUaRange;
+class QOpcUaEUInformation;
 
 class TreeItem : public QObject
 {
@@ -89,9 +91,9 @@ protected:
 
 private:
     QString variantToString(const QVariant &value, const QString &typeNodeId = QString()) const;
-    QString localizedTextToString(const QOpcUa::QLocalizedText &text) const;
-    QString rangeToString(const QOpcUa::QRange &range) const;
-    QString euInformationToString(const QOpcUa::QEUInformation &info) const;
+    QString localizedTextToString(const QOpcUaLocalizedText &text) const;
+    QString rangeToString(const QOpcUaRange &range) const;
+    QString euInformationToString(const QOpcUaEUInformation &info) const;
     template <typename T>
     QString numberArrayToString(const QVector<T> &vec) const;
 

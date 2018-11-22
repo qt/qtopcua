@@ -50,6 +50,7 @@
 
 #include <QtOpcUa/qopcuaclient.h>
 #include <QtOpcUa/qopcuaglobal.h>
+#include <QtOpcUa/qopcuaendpointdescription.h>
 #include <private/qopcuanodeimpl_p.h>
 
 #include <QtCore/qobject.h>
@@ -71,7 +72,7 @@ public:
     QOpcUaClientImpl(QObject *parent = 0);
     virtual ~QOpcUaClientImpl();
 
-    virtual void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint) = 0;
+    virtual void connectToEndpoint(const QOpcUaEndpointDescription &endpoint) = 0;
     virtual void disconnectFromEndpoint() = 0;
     virtual QOpcUaNode *node(const QString &nodeId) = 0;
     virtual QString backend() const = 0;
@@ -103,8 +104,8 @@ private Q_SLOTS:
     void handleMethodCallFinished(quint64 handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
     void handleBrowseFinished(quint64 handle, const QVector<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode);
 
-    void handleResolveBrowsePathFinished(quint64 handle, QVector<QOpcUa::QBrowsePathTarget> targets,
-                                           QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode status);
+    void handleResolveBrowsePathFinished(quint64 handle, QVector<QOpcUaBrowsePathTarget> targets,
+                                           QVector<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode status);
 
     void handleNewEvent(quint64 handle, QVariantList eventFields);
 
@@ -113,15 +114,15 @@ signals:
     void disconnected();
     void stateAndOrErrorChanged(QOpcUaClient::ClientState state,
                                 QOpcUaClient::ClientError error);
-    void endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
-    void findServersFinished(QVector<QOpcUa::QApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
+    void endpointsRequestFinished(QVector<QOpcUaEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
+    void findServersFinished(QVector<QOpcUaApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
     void readNodeAttributesFinished(QVector<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult);
     void writeNodeAttributesFinished(QVector<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult);
-    void addNodeFinished(QOpcUa::QExpandedNodeId requestedNodeId, QString assignedNodeId, QOpcUa::UaStatusCode statusCode);
+    void addNodeFinished(QOpcUaExpandedNodeId requestedNodeId, QString assignedNodeId, QOpcUa::UaStatusCode statusCode);
     void deleteNodeFinished(QString nodeId, QOpcUa::UaStatusCode statusCode);
-    void addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForwardReference,
+    void addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUaExpandedNodeId targetNodeId, bool isForwardReference,
                               QOpcUa::UaStatusCode statusCode);
-    void deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForwardReference,
+    void deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUaExpandedNodeId targetNodeId, bool isForwardReference,
                               QOpcUa::UaStatusCode statusCode);
     void connectError(QOpcUaErrorState *errorState);
 

@@ -49,10 +49,12 @@
 //
 
 #include <QtOpcUa/qopcuaglobal.h>
+#include <QtOpcUa/qopcuabrowsepathtarget.h>
 #include <QtOpcUa/qopcuamonitoringparameters.h>
 #include <QtOpcUa/qopcuanode.h>
 #include <QtOpcUa/qopcuareaditem.h>
 #include <QtOpcUa/qopcuareadresult.h>
+#include <QtOpcUa/qopcuarelativepathelement.h>
 #include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/qvariant.h>
@@ -79,7 +81,7 @@ public:
 
     virtual bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args) = 0;
 
-    virtual bool resolveBrowsePath(const QVector<QOpcUa::QRelativePathElement> &path) = 0;
+    virtual bool resolveBrowsePath(const QVector<QOpcUaRelativePathElement> &path) = 0;
 
     quint64 handle() const;
     void setHandle(quint64 handle);
@@ -98,8 +100,8 @@ Q_SIGNALS:
     void monitoringStatusChanged(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                            QOpcUaMonitoringParameters param);
     void methodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
-    void resolveBrowsePathFinished(QVector<QOpcUa::QBrowsePathTarget> targets,
-                                     QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode status);
+    void resolveBrowsePathFinished(QVector<QOpcUaBrowsePathTarget> targets,
+                                     QVector<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode status);
 
 private:
     quint64 m_handle;

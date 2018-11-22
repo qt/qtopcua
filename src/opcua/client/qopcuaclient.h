@@ -48,6 +48,7 @@
 #include <QtOpcUa/qopcuaaddnodeitem.h>
 #include <QtOpcUa/qopcuaaddreferenceitem.h>
 #include <QtOpcUa/qopcuadeletereferenceitem.h>
+#include <QtOpcUa/qopcuaendpointdescription.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -55,9 +56,13 @@
 QT_BEGIN_NAMESPACE
 
 class QOpcUaAuthenticationInformation;
+class QOpcUaApplicationDescription;
 class QOpcUaClientPrivate;
 class QOpcUaClientImpl;
 class QOpcUaErrorState;
+class QOpcUaExpandedNodeId;
+class QOpcUaQualifiedName;
+class QOpcUaEndpointDescription;
 
 class Q_OPCUA_EXPORT QOpcUaClient : public QObject
 {
@@ -94,16 +99,16 @@ public:
     void setPkiConfiguration(const QOpcUaPkiConfiguration &config);
     QOpcUaPkiConfiguration pkiConfiguration() const;
 
-    Q_INVOKABLE void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint);
+    Q_INVOKABLE void connectToEndpoint(const QOpcUaEndpointDescription &endpoint);
     Q_INVOKABLE void disconnectFromEndpoint();
     QOpcUaNode *node(const QString &nodeId);
-    QOpcUaNode *node(const QOpcUa::QExpandedNodeId &expandedNodeId);
+    QOpcUaNode *node(const QOpcUaExpandedNodeId &expandedNodeId);
 
     bool updateNamespaceArray();
     QStringList namespaceArray() const;
 
-    QString resolveExpandedNodeId(const QOpcUa::QExpandedNodeId &expandedNodeId, bool *ok = nullptr) const;
-    QOpcUa::QQualifiedName qualifiedNameFromNamespaceUri(const QString &namespaceUri, const QString &name, bool *ok = nullptr) const;
+    QString resolveExpandedNodeId(const QOpcUaExpandedNodeId &expandedNodeId, bool *ok = nullptr) const;
+    QOpcUaQualifiedName qualifiedNameFromNamespaceUri(const QString &namespaceUri, const QString &name, bool *ok = nullptr) const;
 
     bool requestEndpoints(const QUrl &url);
     bool findServers(const QUrl &url, const QStringList &localeIds = QStringList(),
@@ -118,7 +123,7 @@ public:
     bool addReference(const QOpcUaAddReferenceItem &referenceToAdd);
     bool deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete);
 
-    QOpcUa::QEndpointDescription endpoint() const;
+    QOpcUaEndpointDescription endpoint() const;
 
     ClientState state() const;
     ClientError error() const;
@@ -141,15 +146,15 @@ Q_SIGNALS:
     void connectError(QOpcUaErrorState *errorState);
     void namespaceArrayUpdated(QStringList namespaces);
     void namespaceArrayChanged(QStringList namespaces);
-    void endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
-    void findServersFinished(QVector<QOpcUa::QApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
+    void endpointsRequestFinished(QVector<QOpcUaEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode);
+    void findServersFinished(QVector<QOpcUaApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
     void readNodeAttributesFinished(QVector<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult);
     void writeNodeAttributesFinished(QVector<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult);
-    void addNodeFinished(QOpcUa::QExpandedNodeId requestedNodeId, QString assignedNodeId, QOpcUa::UaStatusCode statusCode);
+    void addNodeFinished(QOpcUaExpandedNodeId requestedNodeId, QString assignedNodeId, QOpcUa::UaStatusCode statusCode);
     void deleteNodeFinished(QString nodeId, QOpcUa::UaStatusCode statusCode);
-    void addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForwardReference,
+    void addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUaExpandedNodeId targetNodeId, bool isForwardReference,
                               QOpcUa::UaStatusCode statusCode);
-    void deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForwardReference,
+    void deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUaExpandedNodeId targetNodeId, bool isForwardReference,
                               QOpcUa::UaStatusCode statusCode);
 
 private:

@@ -43,6 +43,10 @@
 
 QT_BEGIN_NAMESPACE
 
+class QOpcUaExpandedNodeId;
+class QOpcUaQualifiedName;
+class QOpcUaLocalizedText;
+
 class QOpcUaReferenceDescriptionPrivate;
 class Q_OPCUA_EXPORT QOpcUaReferenceDescription
 {
@@ -55,18 +59,18 @@ public:
 
     QString refTypeId() const;
     void setRefTypeId(const QString &refTypeId);
-    QOpcUa::QExpandedNodeId targetNodeId() const;
-    void setTargetNodeId(const QOpcUa::QExpandedNodeId &targetNodeId);
-    QOpcUa::QQualifiedName browseName() const;
-    void setBrowseName(const QOpcUa::QQualifiedName &browseName);
-    QOpcUa::QLocalizedText displayName() const;
-    void setDisplayName(const QOpcUa::QLocalizedText &displayName);
+    QOpcUaExpandedNodeId targetNodeId() const;
+    void setTargetNodeId(const QOpcUaExpandedNodeId &targetNodeId);
+    QOpcUaQualifiedName browseName() const;
+    void setBrowseName(const QOpcUaQualifiedName &browseName);
+    QOpcUaLocalizedText displayName() const;
+    void setDisplayName(const QOpcUaLocalizedText &displayName);
     QOpcUa::NodeClass nodeClass() const;
     void setNodeClass(QOpcUa::NodeClass nodeClass);
     void setIsForwardReference(bool isForwardReference);
     bool isForwardReference() const;
-    void setTypeDefinition(const QOpcUa::QExpandedNodeId &typeDefinition);
-    QOpcUa::QExpandedNodeId typeDefinition() const;
+    void setTypeDefinition(const QOpcUaExpandedNodeId &typeDefinition);
+    QOpcUaExpandedNodeId typeDefinition() const;
 
 private:
     QSharedDataPointer<QOpcUaReferenceDescriptionPrivate> d_ptr;

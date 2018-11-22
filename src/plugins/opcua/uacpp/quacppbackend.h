@@ -52,7 +52,7 @@ public:
     bool connectError(OpcUa_UInt32 clientConnectionId, UaClientSdk::UaClient::ConnectServiceType serviceType, const UaStatus &error, bool clientSideError) override;
 
 public Q_SLOTS:
-    void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint);
+    void connectToEndpoint(const QOpcUaEndpointDescription &endpoint);
     void disconnectFromEndpoint();
 
     void browse(quint64 handle, const UaNodeId &id, const QOpcUaBrowseRequest &request);
@@ -63,7 +63,7 @@ public Q_SLOTS:
     void modifyMonitoring(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
     void disableMonitoring(quint64 handle, QOpcUa::NodeAttributes attr);
     void callMethod(quint64 handle, const UaNodeId &objectId, const UaNodeId &methodId, QVector<QOpcUa::TypedVariant> args);
-    void resolveBrowsePath(quint64 handle, const UaNodeId &startNode, const QVector<QOpcUa::QRelativePathElement> &path);
+    void resolveBrowsePath(quint64 handle, const UaNodeId &startNode, const QVector<QOpcUaRelativePathElement> &path);
     void requestEndpoints(const QUrl &url);
 
     bool removeSubscription(quint32 subscriptionId);

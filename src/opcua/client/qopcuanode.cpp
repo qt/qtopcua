@@ -41,6 +41,8 @@
 #include <private/qopcuanode_p.h>
 #include <private/qopcuanodeimpl_p.h>
 
+#include "qopcuarelativepathelement.h"
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -134,7 +136,7 @@ QT_BEGIN_NAMESPACE
             qDebug() << "Failed to read attribute:" << rootNode->attributeError(QOpcUa::NodeAttribute::BrowseName);
             client->disconnectFromEndpoint();
         }
-        qDebug() << "Browse name:" << rootNode->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>().name();
+        qDebug() << "Browse name:" << rootNode->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUaQualifiedName>().name();
     });
     rootNode->readAttributes(QOpcUa::NodeAttribute::BrowseName); // Start a read operation for the node's BrowseName attribute.
     \endcode
@@ -239,11 +241,11 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QOpcUaNode::resolveBrowsePathFinished(QVector<QOpcUa::QBrowsePathTarget> targets, QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode statusCode)
+    \fn void QOpcUaNode::resolveBrowsePathFinished(QVector<QOpcUaBrowsePathTarget> targets, QVector<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode statusCode)
 
     This signal is emitted after a \l resolveBrowsePath() call has finished.
 
-    \l QOpcUa::QBrowsePathTarget \a targets contains the matches, \a statusCode is the status code of the operation.
+    \l QOpcUaBrowsePathTarget \a targets contains the matches, \a statusCode is the status code of the operation.
     If \a statusCode is not \l {QOpcUa::UaStatusCode} {Good}, \a targets is empty.
     The browse path \a path is the browse path from the request. It can be used to associate results with requests.
 */
@@ -721,9 +723,9 @@ bool QOpcUaNode::callMethod(const QString &methodNodeId, const QVector<QOpcUa::T
     \code
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=1;s=machine1"));
 
-    QVector<QOpcUa::QRelativePathElement> path;
-    path.append(QOpcUa::QRelativePathElement(QOpcUa::QQualifiedName(1, "Fan"), QOpcUa::ReferenceTypeId::HasComponent));
-    path.append(QOpcUa::QRelativePathElement(QOpcUa::QQualifiedName(1, "RPM"), QOpcUa::ReferenceTypeId::HasComponent));
+    QVector<QOpcUaRelativePathElement> path;
+    path.append(QOpcUaRelativePathElement(QOpcUaQualifiedName(1, "Fan"), QOpcUa::ReferenceTypeId::HasComponent));
+    path.append(QOpcUaRelativePathElement(QOpcUaQualifiedName(1, "RPM"), QOpcUa::ReferenceTypeId::HasComponent));
     node->resolveBrowsePath(path);
     \endcode
 
@@ -749,7 +751,7 @@ bool QOpcUaNode::callMethod(const QString &methodNodeId, const QVector<QOpcUa::T
     }
     \endcode
 */
-bool QOpcUaNode::resolveBrowsePath(const QVector<QOpcUa::QRelativePathElement> &path)
+bool QOpcUaNode::resolveBrowsePath(const QVector<QOpcUaRelativePathElement> &path)
 {
     Q_D(QOpcUaNode);
     if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)

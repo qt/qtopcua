@@ -75,9 +75,9 @@ public:
 private slots:
     void connectToServer();
     void findServers();
-    void findServersComplete(const QVector<QOpcUa::QApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode);
+    void findServersComplete(const QVector<QOpcUaApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode);
     void getEndpoints();
-    void getEndpointsComplete(const QVector<QOpcUa::QEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode);
+    void getEndpointsComplete(const QVector<QOpcUaEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode);
     void clientConnected();
     void clientDisconnected();
     void namespacesArrayUpdated(const QStringList &namespaceArray);
@@ -105,11 +105,11 @@ private:
     OpcUaModel *mOpcUaModel;
     QOpcUaProvider *mOpcUaProvider;
     QOpcUaClient *mOpcUaClient;
-    QVector<QOpcUa::QEndpointDescription> mEndpointList;
+    QVector<QOpcUaEndpointDescription> mEndpointList;
     bool mClientConnected;
     QOpcUaApplicationIdentity m_identity;
     QOpcUaPkiConfiguration m_pkiConfig;
-    QOpcUa::QEndpointDescription m_endpoint; // current endpoint used to connect
+    QOpcUaEndpointDescription m_endpoint; // current endpoint used to connect
 };
 
 QT_END_NAMESPACE

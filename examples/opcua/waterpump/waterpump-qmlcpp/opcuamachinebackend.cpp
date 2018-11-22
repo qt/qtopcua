@@ -284,7 +284,7 @@ void OpcUaMachineBackend::resetSimulation()
         m_machineNode->callMethod("ns=2;s=Machine.Reset");
 }
 
-void OpcUaMachineBackend::requestEndpointsFinished(const QVector<QOpcUa::QEndpointDescription> &endpoints)
+void OpcUaMachineBackend::requestEndpointsFinished(const QVector<QOpcUaEndpointDescription> &endpoints)
 {
     if (endpoints.isEmpty()) {
        qWarning() << "The server did not return any endpoints";

@@ -38,7 +38,7 @@
 #define QOPCUANODECREATIONATTRIBUTES_H
 
 #include <QtOpcUa/qopcuatype.h>
-
+#include <QtOpcUa/qopcualocalizedtext.h>
 #include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
@@ -70,12 +70,12 @@ public:
     void setDataTypeId(const QString &dataTypeId);
     bool hasDataTypeId() const;
 
-    QOpcUa::QLocalizedText description() const;
-    void setDescription(const QOpcUa::QLocalizedText &description);
+    QOpcUaLocalizedText description() const;
+    void setDescription(const QOpcUaLocalizedText &description);
     bool hasDescription() const;
 
-    QOpcUa::QLocalizedText displayName() const;
-    void setDisplayName(const QOpcUa::QLocalizedText &displayName);
+    QOpcUaLocalizedText displayName() const;
+    void setDisplayName(const QOpcUaLocalizedText &displayName);
     bool hasDisplayName() const;
 
     QOpcUa::EventNotifier eventNotifier() const;
@@ -90,8 +90,8 @@ public:
     void setHistorizing(bool historizing);
     bool hasHistorizing() const;
 
-    QOpcUa::QLocalizedText inverseName() const;
-    void setInverseName(const QOpcUa::QLocalizedText &inverseName);
+    QOpcUaLocalizedText inverseName() const;
+    void setInverseName(const QOpcUaLocalizedText &inverseName);
     bool hasInverseName() const;
 
     bool isAbstract() const;

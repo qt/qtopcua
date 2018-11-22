@@ -61,7 +61,7 @@ public:
     bool writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType) override;
     bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args) override;
 
-    bool resolveBrowsePath(const QVector<QOpcUa::QRelativePathElement> &path) override;
+    bool resolveBrowsePath(const QVector<QOpcUaRelativePathElement> &path) override;
 
 private:
     QPointer<QOpen62541Client> m_client;

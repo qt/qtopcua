@@ -81,7 +81,7 @@ signals:
 
 private slots:
     void clientStateHandler(QOpcUaClient::ClientState state);
-    void requestEndpointsFinishedHandler(const QVector<QOpcUa::QEndpointDescription> &endpoints);
+    void requestEndpointsFinishedHandler(const QVector<QOpcUaEndpointDescription> &endpoints);
 
 private:
     QOpcUaClient *m_client = nullptr;

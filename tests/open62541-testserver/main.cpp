@@ -43,6 +43,19 @@
 #include <QtCore/QVariant>
 #include <QUuid>
 
+#include <QtOpcUa/QOpcUaArgument>
+#include <QtOpcUa/QOpcUaAxisInformation>
+#include <QtOpcUa/QOpcUaComplexNumber>
+#include <QtOpcUa/QOpcUaDoubleComplexNumber>
+#include <QtOpcUa/QOpcUaExpandedNodeId>
+#include <QtOpcUa/QOpcUaExtensionObject>
+#include <QtOpcUa/QOpcUaEUInformation>
+#include <QtOpcUa/QOpcUaLocalizedText>
+#include <QtOpcUa/QOpcUaMultiDimensionalArray>
+#include <QtOpcUa/QOpcUaQualifiedName>
+#include <QtOpcUa/QOpcUaRange>
+#include <QtOpcUa/QOpcUaXValue>
+
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
@@ -90,8 +103,8 @@ int main(int argc, char **argv)
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.String", "StringArrayTest",
                        QVariantList({QStringLiteral("Value 1"), QStringLiteral("Value 2")}), QOpcUa::Types::String);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.LocalizedText", "LocalizedTextArrayTest",
-                       QVariantList({QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en-US"), QStringLiteral("Value 1"))),
-                                     QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en-US"), QStringLiteral("Value 2")))}),
+                       QVariantList({QVariant::fromValue(QOpcUaLocalizedText(QStringLiteral("en-US"), QStringLiteral("Value 1"))),
+                                     QVariant::fromValue(QOpcUaLocalizedText(QStringLiteral("en-US"), QStringLiteral("Value 2")))}),
                        QOpcUa::Types::LocalizedText);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.ByteString", "ByteStringArrayTest",
                        QVariantList({QByteArray("Value 1"), QByteArray("Value 2")}), QOpcUa::Types::ByteString);
@@ -106,41 +119,41 @@ int main(int argc, char **argv)
                        QVariantList({QStringLiteral("<?xml version=\"1\" encoding=\"UTF-8\"?>"),
                                      QStringLiteral("<?xml version=\"1\" encoding=\"UTF-8\"?>")}), QOpcUa::Types::XmlElement);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.QualifiedName", "QualifiedNameArrayTest",
-                       QVariantList({QVariant::fromValue(QOpcUa::QQualifiedName(0, QStringLiteral("Value 1"))),
-                                     QVariant::fromValue(QOpcUa::QQualifiedName(0, QStringLiteral("Value 2")))}), QOpcUa::Types::QualifiedName);
+                       QVariantList({QVariant::fromValue(QOpcUaQualifiedName(0, QStringLiteral("Value 1"))),
+                                     QVariant::fromValue(QOpcUaQualifiedName(0, QStringLiteral("Value 2")))}), QOpcUa::Types::QualifiedName);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.StatusCode", "StatusCodeArrayTest",
                        QVariantList({QVariant::fromValue(QOpcUa::UaStatusCode::Good),
                                      QVariant::fromValue(QOpcUa::UaStatusCode::BadInvalidArgument)}), QOpcUa::Types::StatusCode);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Range", "RangeArrayTest",
-                       QVariantList({QVariant::fromValue(QOpcUa::QRange(0, 100)),
-                                     QVariant::fromValue(QOpcUa::QRange(100, 200))}), QOpcUa::Types::Range);
+                       QVariantList({QVariant::fromValue(QOpcUaRange(0, 100)),
+                                     QVariant::fromValue(QOpcUaRange(100, 200))}), QOpcUa::Types::Range);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.EUInformation", "EUInformationArrayTest",
-                       QVariantList({QVariant::fromValue(QOpcUa::QEUInformation()),
-                                     QVariant::fromValue(QOpcUa::QEUInformation())}), QOpcUa::Types::EUInformation);
+                       QVariantList({QVariant::fromValue(QOpcUaEUInformation()),
+                                     QVariant::fromValue(QOpcUaEUInformation())}), QOpcUa::Types::EUInformation);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.ComplexNumber", "ComplexNumberArrayTest",
-                       QVariantList({QVariant::fromValue(QOpcUa::QComplexNumber(1, 2)),
-                                     QVariant::fromValue(QOpcUa::QComplexNumber(2, 3))}), QOpcUa::Types::ComplexNumber);
+                       QVariantList({QVariant::fromValue(QOpcUaComplexNumber(1, 2)),
+                                     QVariant::fromValue(QOpcUaComplexNumber(2, 3))}), QOpcUa::Types::ComplexNumber);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.DoubleComplexNumber", "DoubleComplexNumberArrayTest",
-                       QVariantList({QVariant::fromValue(QOpcUa::QDoubleComplexNumber(1, 2)),
-                                     QVariant::fromValue(QOpcUa::QDoubleComplexNumber(2, 3))}), QOpcUa::Types::DoubleComplexNumber);
+                       QVariantList({QVariant::fromValue(QOpcUaDoubleComplexNumber(1, 2)),
+                                     QVariant::fromValue(QOpcUaDoubleComplexNumber(2, 3))}), QOpcUa::Types::DoubleComplexNumber);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.AxisInformation", "AxisInformationArrayTest",
-                       QVariantList({QVariant::fromValue(QOpcUa::QAxisInformation()),
-                                     QVariant::fromValue(QOpcUa::QAxisInformation())}), QOpcUa::Types::AxisInformation);
+                       QVariantList({QVariant::fromValue(QOpcUaAxisInformation()),
+                                     QVariant::fromValue(QOpcUaAxisInformation())}), QOpcUa::Types::AxisInformation);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.XV", "XVArrayTest",
-                       QVariantList({QVariant::fromValue(QOpcUa::QXValue(1, 2)),
-                                     QVariant::fromValue(QOpcUa::QXValue(2, 3))}), QOpcUa::Types::XV);
+                       QVariantList({QVariant::fromValue(QOpcUaXValue(1, 2)),
+                                     QVariant::fromValue(QOpcUaXValue(2, 3))}), QOpcUa::Types::XV);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.ExpandedNodeId", "ExpandedNodeIdArrayTest",
-                       QVariantList({QOpcUa::QExpandedNodeId(QStringLiteral("ns1"), QStringLiteral("ns=0;i=64"), 1),
-                                     QOpcUa::QExpandedNodeId(QString(), QStringLiteral("ns=1;i=84"))}),
+                       QVariantList({QOpcUaExpandedNodeId(QStringLiteral("ns1"), QStringLiteral("ns=0;i=64"), 1),
+                                     QOpcUaExpandedNodeId(QString(), QStringLiteral("ns=1;i=84"))}),
                        QOpcUa::Types::ExpandedNodeId);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.Argument", "ArgumentArrayTest",
-                       QVariantList({QOpcUa::QArgument(QStringLiteral("Argument1"), QStringLiteral("ns=0;i=12"), -1,
-                                                       {},QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("Description1"))),
-                                     QOpcUa::QArgument(QStringLiteral("Argument2"), QStringLiteral("ns=0;i=12"), 2,
-                                                       {2, 2}, QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("Description2")))}),
+                       QVariantList({QOpcUaArgument(QStringLiteral("Argument1"), QStringLiteral("ns=0;i=12"), -1,
+                                                       {},QOpcUaLocalizedText(QStringLiteral("en"), QStringLiteral("Description1"))),
+                                     QOpcUaArgument(QStringLiteral("Argument2"), QStringLiteral("ns=0;i=12"), 2,
+                                                       {2, 2}, QOpcUaLocalizedText(QStringLiteral("en"), QStringLiteral("Description2")))}),
                        QOpcUa::Types::Argument);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.ExtensionObject", "ExtensionObjectArrayTest",
-                                                    QVariantList({QOpcUa::QExtensionObject(), QOpcUa::QExtensionObject()}),
+                                                    QVariantList({QOpcUaExtensionObject(), QOpcUaExtensionObject()}),
                        QOpcUa::Types::ExtensionObject);
 
     // Test variables containing scalar values of various types
@@ -157,7 +170,7 @@ int main(int argc, char **argv)
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.UInt64", "UInt64ScalarTest", 1, QOpcUa::Types::UInt64);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.String", "StringScalarTest", QStringLiteral("Value"), QOpcUa::Types::String);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.LocalizedText", "LocalizedTextScalarTest",
-                                                  QVariant::fromValue(QOpcUa::QLocalizedText(QStringLiteral("en-US"), QStringLiteral("Value"))),
+                                                  QVariant::fromValue(QOpcUaLocalizedText(QStringLiteral("en-US"), QStringLiteral("Value"))),
                        QOpcUa::Types::LocalizedText);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.ByteString", "ByteStringScalarTest", QByteArray("Value 1"), QOpcUa::Types::ByteString);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.DateTime", "DateTimeScalarTest", QDateTime::currentDateTime(), QOpcUa::Types::DateTime);
@@ -166,29 +179,29 @@ int main(int argc, char **argv)
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.XmlElement", "XmlElementScalarTest",
                        QStringLiteral("<?xml version=\"1\" encoding=\"UTF-8\"?>"), QOpcUa::Types::XmlElement);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.QualifiedName", "QualifiedNameScalarTest",
-                                                  QVariant::fromValue(QOpcUa::QQualifiedName(0, QStringLiteral("Value"))), QOpcUa::Types::QualifiedName);
+                                                  QVariant::fromValue(QOpcUaQualifiedName(0, QStringLiteral("Value"))), QOpcUa::Types::QualifiedName);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.StatusCode", "StatusCodeScalarTest", QVariant::fromValue(QOpcUa::UaStatusCode::Good),
                        QOpcUa::Types::StatusCode);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Range", "RangeScalarTest", QVariant::fromValue(QOpcUa::QRange(0, 100)), QOpcUa::Types::Range);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Range", "RangeScalarTest", QVariant::fromValue(QOpcUaRange(0, 100)), QOpcUa::Types::Range);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.EUInformation", "EUInformationScalarTest",
-                                                    QVariant::fromValue(QOpcUa::QEUInformation()), QOpcUa::Types::EUInformation);
+                                                    QVariant::fromValue(QOpcUaEUInformation()), QOpcUa::Types::EUInformation);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.ComplexNumber", "ComplexNumberArrayTest",
-                                                    QVariant::fromValue(QOpcUa::QComplexNumber(1, 2)), QOpcUa::Types::ComplexNumber);
+                                                    QVariant::fromValue(QOpcUaComplexNumber(1, 2)), QOpcUa::Types::ComplexNumber);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.DoubleComplexNumber", "DoubleComplexNumberScalarTest",
-                                                    QVariant::fromValue(QOpcUa::QDoubleComplexNumber(1, 2)), QOpcUa::Types::DoubleComplexNumber);
+                                                    QVariant::fromValue(QOpcUaDoubleComplexNumber(1, 2)), QOpcUa::Types::DoubleComplexNumber);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.AxisInformation", "AxisInformationScalarTest",
-                                                    QVariant::fromValue(QOpcUa::QAxisInformation()), QOpcUa::Types::AxisInformation);
+                                                    QVariant::fromValue(QOpcUaAxisInformation()), QOpcUa::Types::AxisInformation);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.XV", "XVScalarTest",
-                                                    QVariant::fromValue(QOpcUa::QXValue(1, 2)), QOpcUa::Types::XV);
+                                                    QVariant::fromValue(QOpcUaXValue(1, 2)), QOpcUa::Types::XV);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.ExpandedNodeId", "ExpandedNodeIdScalarTest",
-                                                    QOpcUa::QExpandedNodeId(QStringLiteral("ns1"), QStringLiteral("ns=0;i=64"), 1),
+                                                    QOpcUaExpandedNodeId(QStringLiteral("ns1"), QStringLiteral("ns=0;i=64"), 1),
                        QOpcUa::Types::ExpandedNodeId);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Argument", "ArgumentScalarTest",
-                       QOpcUa::QArgument(QStringLiteral("Argument1"), QStringLiteral("ns=0;i=12"), -1,
-                                         {},QOpcUa::QLocalizedText(QStringLiteral("en"), QStringLiteral("Description1"))),
+                       QOpcUaArgument(QStringLiteral("Argument1"), QStringLiteral("ns=0;i=12"), -1,
+                                         {},QOpcUaLocalizedText(QStringLiteral("en"), QStringLiteral("Description1"))),
                        QOpcUa::Types::Argument);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.ExtensionObject", "ExtensionObjectScalarTest",
-                                                    QOpcUa::QExtensionObject(), QOpcUa::Types::ExtensionObject);
+                                                    QOpcUaExtensionObject(), QOpcUa::Types::ExtensionObject);
     server.addNodeWithFixedTimestamp(testFolder, "ns=2;s=Demo.Static.FixedTimestamp", "FixedTimestamp");
 
     // Create folders containing child nodes with string, guid and opaque node ids
@@ -207,7 +220,7 @@ int main(int argc, char **argv)
     const QVector<quint32> arrayDimensions({2, 2, 3});
     const QVariantList value({0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0});
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.MultiDimensionalDouble", "MultiDimensionalDoubleTest",
-                       QOpcUa::QMultiDimensionalArray(value, arrayDimensions), QOpcUa::Types::Double, QVector<quint32>({2, 2, 3}), 3);
+                       QOpcUaMultiDimensionalArray(value, arrayDimensions), QOpcUa::Types::Double, QVector<quint32>({2, 2, 3}), 3);
 
     // Add folders for relative nodes
     const UA_NodeId testFolder2 = server.addFolder("ns=3;s=TestFolder2", "TestFolder2");

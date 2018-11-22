@@ -42,6 +42,8 @@
 #include <QtOpcUa/qopcuamonitoringparameters.h>
 #include <QtOpcUa/qopcuareferencedescription.h>
 #include <QtOpcUa/qopcuatype.h>
+#include <QtOpcUa/qopcuabrowsepathtarget.h>
+#include <QtOpcUa/qopcuarelativepathelement.h>
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
@@ -98,7 +100,7 @@ public:
 
     bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args = QVector<QOpcUa::TypedVariant>());
 
-    bool resolveBrowsePath(const QVector<QOpcUa::QRelativePathElement> &path);
+    bool resolveBrowsePath(const QVector<QOpcUaRelativePathElement> &path);
 
     bool browse(const QOpcUaBrowseRequest &request);
 
@@ -115,8 +117,8 @@ Q_SIGNALS:
     void disableMonitoringFinished(QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode);
     void methodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
     void browseFinished(QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
-    void resolveBrowsePathFinished(QVector<QOpcUa::QBrowsePathTarget> targets,
-                                     QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode statusCode);
+    void resolveBrowsePathFinished(QVector<QOpcUaBrowsePathTarget> targets,
+                                     QVector<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode statusCode);
 
 private:
     Q_DISABLE_COPY(QOpcUaNode)

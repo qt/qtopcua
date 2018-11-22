@@ -40,12 +40,13 @@
 #include <QPointer>
 #include "qopcuatype.h"
 #include "universalnode.h"
+#include "qopcuabrowsepathtarget.h"
+#include "qopcuarelativepathelement.h"
 
 QT_BEGIN_NAMESPACE
 
 class QOpcUaNode;
 class QOpcUaClient;
-class QRelativePathElement;
 class OpcUaRelativeNodeId;
 class QOpcUaClient;
 
@@ -63,7 +64,7 @@ signals:
 
 private slots:
     void startNodeResolved(UniversalNode startNode, const QString &errorMessage);
-    void browsePathFinished(QVector<QOpcUa::QBrowsePathTarget> results, QVector<QOpcUa::QRelativePathElement> path, QOpcUa::UaStatusCode status);
+    void browsePathFinished(QVector<QOpcUaBrowsePathTarget> results, QVector<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode status);
 
 private:
     OpcUaPathResolver(int level, OpcUaRelativeNodeId *relativeNode, QOpcUaClient *client, QObject *target);

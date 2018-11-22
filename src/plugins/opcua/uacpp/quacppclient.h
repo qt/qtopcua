@@ -38,7 +38,7 @@ public:
     explicit QUACppClient(const QVariantMap &backendProperties);
     ~QUACppClient();
 
-    void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint) override;
+    void connectToEndpoint(const QOpcUaEndpointDescription &endpoint) override;
     void disconnectFromEndpoint() override;
 
     QOpcUaNode *node(const QString &nodeId) override;

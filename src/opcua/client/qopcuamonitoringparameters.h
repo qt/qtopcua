@@ -37,11 +37,14 @@
 #ifndef QOPCUAMONITORINGPARAMETERS_H
 #define QOPCUAMONITORINGPARAMETERS_H
 
-#include <QtOpcUa/qopcuatype.h>
+#include <QtOpcUa/qopcuacontentfilterelement.h>
+#include <QtOpcUa/qopcuasimpleattributeoperand.h>
 
 #include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
+
+class QOpcUaEventFilterResult;
 
 class QOpcUaMonitoringParametersPrivate;
 
@@ -125,17 +128,17 @@ public:
         EventFilter &operator=(const EventFilter &);
         operator QVariant const();
         bool operator==(const QOpcUaMonitoringParameters::EventFilter &rhs) const;
-        EventFilter &operator<<(const QOpcUa::QContentFilterElement &whereClauseElement);
-        EventFilter &operator<<(const QOpcUa::QSimpleAttributeOperand &selectClauseElement);
+        EventFilter &operator<<(const QOpcUaContentFilterElement &whereClauseElement);
+        EventFilter &operator<<(const QOpcUaSimpleAttributeOperand &selectClauseElement);
         ~EventFilter();
 
-        QVector<QOpcUa::QSimpleAttributeOperand> selectClauses() const;
-        QVector<QOpcUa::QSimpleAttributeOperand> &selectClausesRef();
-        void setSelectClauses(const QVector<QOpcUa::QSimpleAttributeOperand> &selectClauses);
+        QVector<QOpcUaSimpleAttributeOperand> selectClauses() const;
+        QVector<QOpcUaSimpleAttributeOperand> &selectClausesRef();
+        void setSelectClauses(const QVector<QOpcUaSimpleAttributeOperand> &selectClauses);
 
-        QVector<QOpcUa::QContentFilterElement> whereClause() const;
-        QVector<QOpcUa::QContentFilterElement> &whereClauseRef();
-        void setWhereClause(const QVector<QOpcUa::QContentFilterElement> &whereClause);
+        QVector<QOpcUaContentFilterElement> whereClause() const;
+        QVector<QOpcUaContentFilterElement> &whereClauseRef();
+        void setWhereClause(const QVector<QOpcUaContentFilterElement> &whereClause);
 
     private:
         QSharedDataPointer<QOpcUaMonitoringParameters::EventFilterData> data;
@@ -154,7 +157,7 @@ public:
     void setFilter(const QOpcUaMonitoringParameters::EventFilter &eventFilter);
     void clearFilter();
     QVariant filterResult() const;
-    void setFilterResult(const QOpcUa::QEventFilterResult &eventFilterResult);
+    void setFilterResult(const QOpcUaEventFilterResult &eventFilterResult);
     void clearFilterResult();
     quint32 queueSize() const;
     void setQueueSize(quint32 queueSize);

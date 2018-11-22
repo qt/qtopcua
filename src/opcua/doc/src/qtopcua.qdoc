@@ -237,7 +237,7 @@
     \li LocalizedText
     \li X
     \li X
-    \li \l QOpcUa::QLocalizedText
+    \li \l QOpcUaLocalizedText
     \row
     \li DateTime
     \li X
@@ -267,7 +267,7 @@
     \li QualifiedName
     \li X
     \li X
-    \li \l QOpcUa::QQualifiedName
+    \li \l QOpcUaQualifiedName
     \row
     \li StatusCode
     \li X
@@ -277,47 +277,47 @@
     \li Range
     \li X
     \li X
-    \li \l QOpcUa::QRange
+    \li \l QOpcUaRange
     \row
     \li EUInformation
     \li X
     \li X
-    \li \l QOpcUa::QEUInformation
+    \li \l QOpcUaEUInformation
     \row
     \li ComplexNumber
     \li X
     \li X
-    \li \l QOpcUa::QComplexNumber
+    \li \l QOpcUaComplexNumber
     \row
     \li DoubleComplexNumber
     \li X
     \li X
-    \li \l QOpcUa::QDoubleComplexNumber
+    \li \l QOpcUaDoubleComplexNumber
     \row
     \li AxisInformation
     \li X
     \li X
-    \li \l QOpcUa::QAxisInformation
+    \li \l QOpcUaAxisInformation
     \row
     \li XV
     \li X
     \li X
-    \li \l QOpcUa::QXValue
+    \li \l QOpcUaXValue
     \row
     \li Argument
     \li X
     \li X
-    \li QOpcUa::QArgument
+    \li QOpcUaArgument
     \row
     \li ExpandedNodeId
     \li X
     \li X
-    \li QOpcUa::QExpandedNodeId
+    \li QOpcUaExpandedNodeId
     \row
     \li ExtensionObject
     \li X
     \li X
-    \li QOpcUa::QExtensionObject
+    \li QOpcUaExtensionObject
     \endtable
 
     \section1 Classes and ownership

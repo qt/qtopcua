@@ -192,12 +192,12 @@ bool UniversalNode::isNamespaceIndexValid() const
     return m_namespaceIndexValid;
 }
 
-QOpcUa::QQualifiedName UniversalNode::toQualifiedName() const
+QOpcUaQualifiedName UniversalNode::toQualifiedName() const
 {
-    QOpcUa::QQualifiedName qualifiedName;
+    QOpcUaQualifiedName qualifiedName;
 
     if (!m_namespaceIndexValid || m_nodeIdentifier.isEmpty()) {
-        qCWarning(QT_OPCUA_PLUGINS_QML) << "Insufficient information to create a QQualifiedName";
+        qCWarning(QT_OPCUA_PLUGINS_QML) << "Insufficient information to create a QOpcUaQualifiedName";
         return qualifiedName;
     }
 
@@ -206,12 +206,12 @@ QOpcUa::QQualifiedName UniversalNode::toQualifiedName() const
     return qualifiedName;
 }
 
-QOpcUa::QExpandedNodeId UniversalNode::toExpandedNodeId() const
+QOpcUaExpandedNodeId UniversalNode::toExpandedNodeId() const
 {
-    QOpcUa::QExpandedNodeId expandedNodeId;
+    QOpcUaExpandedNodeId expandedNodeId;
 
     if (m_namespaceName.isEmpty() || m_nodeIdentifier.isEmpty()) {
-        qCWarning(QT_OPCUA_PLUGINS_QML) << "Insufficient information to create a QExpandedNodeId";
+        qCWarning(QT_OPCUA_PLUGINS_QML) << "Insufficient information to create a QOpcUaExpandedNodeId";
         return expandedNodeId;
     }
 
@@ -221,17 +221,17 @@ QOpcUa::QExpandedNodeId UniversalNode::toExpandedNodeId() const
     return expandedNodeId;
 }
 
-void UniversalNode::from(const QOpcUa::QQualifiedName &qualifiedName)
+void UniversalNode::from(const QOpcUaQualifiedName &qualifiedName)
 {
     setMembers(true, qualifiedName.namespaceIndex(), false, QString(), true, qualifiedName.name());
 }
 
-void UniversalNode::from(const QOpcUa::QExpandedNodeId &expandedNodeId)
+void UniversalNode::from(const QOpcUaExpandedNodeId &expandedNodeId)
 {
     setMembers(false, 0, true, expandedNodeId.namespaceUri(), true, expandedNodeId.nodeId());
 }
 
-void UniversalNode::from(const QOpcUa::QBrowsePathTarget &browsePathTarget)
+void UniversalNode::from(const QOpcUaBrowsePathTarget &browsePathTarget)
 {
     // QExpandedNodeId is too unreliable and needs some casehandling around it to get a common information
     int index = 0;

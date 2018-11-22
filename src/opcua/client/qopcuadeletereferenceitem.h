@@ -38,9 +38,12 @@
 #define QOPCUADELETEREFERENCEITEM_H
 
 #include <QtOpcUa/qopcuanodecreationattributes.h>
-#include <QtOpcUa/qopcuatype.h>
+
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
+
+class QOpcUaExpandedNodeId;
 
 class QOpcUaDeleteReferenceItemData;
 class Q_OPCUA_EXPORT QOpcUaDeleteReferenceItem
@@ -60,8 +63,8 @@ public:
     bool isForwardReference() const;
     void setIsForwardReference(bool isForwardReference);
 
-    QOpcUa::QExpandedNodeId targetNodeId() const;
-    void setTargetNodeId(const QOpcUa::QExpandedNodeId &targetNodeId);
+    QOpcUaExpandedNodeId targetNodeId() const;
+    void setTargetNodeId(const QOpcUaExpandedNodeId &targetNodeId);
 
     bool deleteBidirectional() const;
     void setDeleteBidirectional(bool deleteBidirectional);

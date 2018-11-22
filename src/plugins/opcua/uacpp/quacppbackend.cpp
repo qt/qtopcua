@@ -181,7 +181,7 @@ void UACppAsyncBackend::browse(quint64 handle, const UaNodeId &id, const QOpcUaB
             result.append(QString::fromUtf8(uastr.toUtf8(), uastr.size()));
 
             QOpcUaReferenceDescription temp;
-            QOpcUa::QExpandedNodeId expandedId;
+            QOpcUaExpandedNodeId expandedId;
             expandedId.setNamespaceUri(QString::fromUtf8(UaString(referenceDescriptions[i].NodeId.NamespaceUri).toUtf8()));
             expandedId.setServerIndex(referenceDescriptions[i].NodeId.ServerIndex);
             expandedId.setNodeId(UACppUtils::nodeIdToQString(referenceDescriptions[i].NodeId.NodeId));
@@ -192,10 +192,10 @@ void UACppAsyncBackend::browse(quint64 handle, const UaNodeId &id, const QOpcUaB
             temp.setTypeDefinition(expandedId);
             temp.setRefTypeId(UACppUtils::nodeIdToQString(UaNodeId(referenceDescriptions[i].ReferenceTypeId)));
             temp.setNodeClass(static_cast<QOpcUa::NodeClass>(referenceDescriptions[i].NodeClass));
-            temp.setBrowseName(QUACppValueConverter::scalarToQVariant<QOpcUa::QQualifiedName, OpcUa_QualifiedName>(
-                                   &referenceDescriptions[i].BrowseName, QMetaType::Type::UnknownType).value<QOpcUa::QQualifiedName>());
-            temp.setDisplayName(QUACppValueConverter::scalarToQVariant<QOpcUa::QLocalizedText, OpcUa_LocalizedText>(
-                                    &referenceDescriptions[i].DisplayName, QMetaType::Type::UnknownType).value<QOpcUa::QLocalizedText>());
+            temp.setBrowseName(QUACppValueConverter::scalarToQVariant<QOpcUaQualifiedName, OpcUa_QualifiedName>(
+                                   &referenceDescriptions[i].BrowseName, QMetaType::Type::UnknownType).value<QOpcUaQualifiedName>());
+            temp.setDisplayName(QUACppValueConverter::scalarToQVariant<QOpcUaLocalizedText, OpcUa_LocalizedText>(
+                                    &referenceDescriptions[i].DisplayName, QMetaType::Type::UnknownType).value<QOpcUaLocalizedText>());
             temp.setIsForwardReference(referenceDescriptions[i].IsForward);
             ret.append(temp);
         }
@@ -204,7 +204,7 @@ void UACppAsyncBackend::browse(quint64 handle, const UaNodeId &id, const QOpcUaB
     emit browseFinished(handle, ret, static_cast<QOpcUa::UaStatusCode>(status.statusCode()));
 }
 
-void UACppAsyncBackend::connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint)
+void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
 {
     const auto identity = m_clientImpl->m_client->identity();
     const auto authInfo = m_clientImpl->m_client->authenticationInformation();
@@ -241,16 +241,16 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUa::QEndpointDescription &en
         sessionSecurityInfo.messageSecurityMode = static_cast<OpcUa_MessageSecurityMode>(endpoint.securityMode());
     }
 
-    if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Anonymous) {
+    if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Anonymous) {
         // nothing to do
-    } else if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Username) {
+    } else if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Username) {
         const auto credentials = authInfo.authenticationData().value<QPair<QString, QString>>();
         UaString username(credentials.first.toUtf8().constData());
         UaString password(credentials.second.toUtf8().constData());
         sessionSecurityInfo.setUserPasswordUserIdentity(username, password);
         if (m_disableEncryptedPasswordCheck)
             sessionSecurityInfo.disableEncryptedPasswordCheck = OpcUa_True;
-    } else if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Certificate) {
+    } else if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Certificate) {
         // try to load the client certificate
         const UaString certificateFilePath(pkiConfig.clientCertificateLocation().toUtf8());
         const UaString privateKeyFilePath(pkiConfig.privateKeyLocation().toUtf8());
@@ -324,19 +324,19 @@ void UACppAsyncBackend::requestEndpoints(const QUrl &url)
     ServiceSettings ServiceSettings;
     ClientSecurityInfo clientSecurityInfo;
     UaEndpointDescriptions endpoints;
-    QVector<QOpcUa::QEndpointDescription> ret;
+    QVector<QOpcUaEndpointDescription> ret;
 
     UaStatus res = discovery.getEndpoints(ServiceSettings, UaString(url.toString(QUrl::RemoveUserInfo).toUtf8().data()), clientSecurityInfo, endpoints);
 
     if (res.isGood() && endpoints.length()) {
         for (size_t i = 0; i < endpoints.length() ; ++i) {
-            QOpcUa::QEndpointDescription temp;
+            QOpcUaEndpointDescription temp;
             temp.setEndpointUrl(QString::fromUtf8(UaString(endpoints[i].EndpointUrl).toUtf8()));
             temp.serverRef().setApplicationUri(QString::fromUtf8(UaString(endpoints[i].Server.ApplicationUri).toUtf8()));
             temp.serverRef().setProductUri(QString::fromUtf8(UaString(endpoints[i].Server.ProductUri).toUtf8()));
-            temp.serverRef().setApplicationName(QOpcUa::QLocalizedText(QString::fromUtf8(UaString(endpoints[i].Server.ApplicationName.Locale).toUtf8()),
+            temp.serverRef().setApplicationName(QOpcUaLocalizedText(QString::fromUtf8(UaString(endpoints[i].Server.ApplicationName.Locale).toUtf8()),
                                                                  QString::fromUtf8(UaString(endpoints[i].Server.ApplicationName.Text).toUtf8())));
-            temp.serverRef().setApplicationType(static_cast<QOpcUa::QApplicationDescription::ApplicationType>(endpoints[i].Server.ApplicationType));
+            temp.serverRef().setApplicationType(static_cast<QOpcUaApplicationDescription::ApplicationType>(endpoints[i].Server.ApplicationType));
             temp.serverRef().setGatewayServerUri(QString::fromUtf8(UaString(endpoints[i].Server.GatewayServerUri).toUtf8()));
             temp.serverRef().setDiscoveryProfileUri(QString::fromUtf8(UaString(endpoints[i].Server.DiscoveryProfileUri).toUtf8()));
             for (int j = 0; j < endpoints[i].Server.NoOfDiscoveryUrls; ++j) {
@@ -344,12 +344,12 @@ void UACppAsyncBackend::requestEndpoints(const QUrl &url)
                 temp.serverRef().discoveryUrlsRef().append(url);
             }
             temp.setServerCertificate(QByteArray(reinterpret_cast<char *>(endpoints[i].ServerCertificate.Data), endpoints[i].ServerCertificate.Length));
-            temp.setSecurityMode(static_cast<QOpcUa::QEndpointDescription::MessageSecurityMode>(endpoints[i].SecurityMode));
+            temp.setSecurityMode(static_cast<QOpcUaEndpointDescription::MessageSecurityMode>(endpoints[i].SecurityMode));
             temp.setSecurityPolicyUri(QString::fromUtf8(UaString(endpoints[i].SecurityPolicyUri).toUtf8()));
             for (int j = 0; j < endpoints[i].NoOfUserIdentityTokens; ++j) {
-                QOpcUa::QUserTokenPolicy policy;
+                QOpcUaUserTokenPolicy policy;
                 policy.setPolicyId(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].PolicyId).toUtf8()));
-                policy.setTokenType(static_cast<QOpcUa::QUserTokenPolicy::TokenType>(endpoints[i].UserIdentityTokens[j].TokenType));
+                policy.setTokenType(static_cast<QOpcUaUserTokenPolicy::TokenType>(endpoints[i].UserIdentityTokens[j].TokenType));
                 policy.setIssuedTokenType(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].IssuedTokenType).toUtf8()));
                 policy.setIssuerEndpointUrl(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].IssuerEndpointUrl).toUtf8()));
                 policy.setSecurityPolicyUri(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].SecurityPolicyUri).toUtf8()));
@@ -589,7 +589,7 @@ void UACppAsyncBackend::callMethod(quint64 handle, const UaNodeId &objectId, con
     emit methodCallFinished(handle, UACppUtils::nodeIdToQString(methodId), result, static_cast<QOpcUa::UaStatusCode>(status.statusCode()));
 }
 
-void UACppAsyncBackend::resolveBrowsePath(quint64 handle, const UaNodeId &startNode, const QVector<QOpcUa::QRelativePathElement> &path)
+void UACppAsyncBackend::resolveBrowsePath(quint64 handle, const UaNodeId &startNode, const QVector<QOpcUaRelativePathElement> &path)
 {
     ServiceSettings settings;
     UaDiagnosticInfos diagnosticInfos;
@@ -614,12 +614,12 @@ void UACppAsyncBackend::resolveBrowsePath(quint64 handle, const UaNodeId &startN
     UaStatusCode serviceResult = m_nativeSession->translateBrowsePathsToNodeIds(settings, paths, result, diagnosticInfos);
     QOpcUa::UaStatusCode status = static_cast<QOpcUa::UaStatusCode>(serviceResult.code());
 
-    QVector<QOpcUa::QBrowsePathTarget> ret;
+    QVector<QOpcUaBrowsePathTarget> ret;
 
     if (status == QOpcUa::UaStatusCode::Good && result.length()) {
         status = static_cast<QOpcUa::UaStatusCode>(result[0].StatusCode);
         for (int i = 0; i < result[0].NoOfTargets; ++i) {
-            QOpcUa::QBrowsePathTarget temp;
+            QOpcUaBrowsePathTarget temp;
             temp.setRemainingPathIndex(result[0].Targets[i].RemainingPathIndex);
             temp.targetIdRef().setNamespaceUri(QString::fromUtf8(UaString(result[0].Targets[i].TargetId.NamespaceUri).toUtf8()));
             temp.targetIdRef().setServerIndex(result[0].Targets[i].TargetId.ServerIndex);
@@ -702,17 +702,17 @@ void UACppAsyncBackend::findServers(const QUrl &url, const QStringList &localeId
                                             uaServerUris,
                                             applicationDescriptions);
 
-    QVector<QOpcUa::QApplicationDescription> ret;
+    QVector<QOpcUaApplicationDescription> ret;
 
     for (OpcUa_UInt32 i = 0; i < applicationDescriptions.length(); ++i) {
-        QOpcUa::QApplicationDescription temp;
+        QOpcUaApplicationDescription temp;
         const UaApplicationDescription desc = applicationDescriptions[i];
 
         temp.setApplicationUri(QString::fromUtf8(desc.getApplicationUri().toUtf8()));
         temp.setProductUri(QString::fromUtf8(desc.getProductUri().toUtf8()));
         UaLocalizedText uaApplicationName(desc.getApplicationName());
-        temp.setApplicationName(QUACppValueConverter::toQLocalizedText(&uaApplicationName));
-        temp.setApplicationType(static_cast<QOpcUa::QApplicationDescription::ApplicationType>(desc.getApplicationType()));
+        temp.setApplicationName(QUACppValueConverter::toQOpcUaLocalizedText(&uaApplicationName));
+        temp.setApplicationType(static_cast<QOpcUaApplicationDescription::ApplicationType>(desc.getApplicationType()));
         temp.setGatewayServerUri(QString::fromUtf8(desc.getGatewayServerUri().toUtf8()));
         temp.setDiscoveryProfileUri(QString::fromUtf8(desc.getDiscoveryProfileUri().toUtf8()));
 

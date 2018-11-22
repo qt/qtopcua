@@ -77,7 +77,7 @@ namespace QOpen62541ValueConverter {
     UA_Variant arrayFromQVariant(const QVariant &var, const UA_DataType *type);
 
     void createExtensionObject(QByteArray &data, const UA_NodeId &typeEncodingId, UA_ExtensionObject *ptr,
-                               QOpcUa::QExtensionObject::Encoding encoding = QOpcUa::QExtensionObject::Encoding::ByteString);
+                               QOpcUaExtensionObject::Encoding encoding = QOpcUaExtensionObject::Encoding::ByteString);
 }
 
 QT_END_NAMESPACE

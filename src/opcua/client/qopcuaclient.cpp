@@ -35,6 +35,9 @@
 ****************************************************************************/
 
 #include "qopcuaclient.h"
+#include "qopcuaexpandednodeid.h"
+#include "qopcuaqualifiedname.h"
+
 #include <private/qopcuaclient_p.h>
 
 #include <QtCore/qloggingcategory.h>
@@ -92,7 +95,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
     });
 
     QObject::connect(client, &QOpcUaClient::endpointsRequestFinished,
-                     [client](QVector<QOpcUa::QEndpointDescription> endpoints) {
+                     [client](QVector<QOpcUaEndpointDescription> endpoints) {
         qDebug() << "Endpoints returned:" << endpoints.count();
         if (endpoints.size())
             client->connectToEndpoint(endpoints.first()); // Connect to the first endpoint in the list
@@ -200,7 +203,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
-    \fn void QOpcUaClient::endpointsRequestFinished(QVector<QOpcUa::QEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode)
+    \fn void QOpcUaClient::endpointsRequestFinished(QVector<QOpcUaEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode)
 
     This signal is emitted after a \l requestEndpoints() operation has finished.
     \a statusCode contains the result of the operation. If the result is \l {QOpcUa::UaStatusCode} {Good},
@@ -208,7 +211,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
-    \fn void QOpcUaClient::findServersFinished(QVector<QOpcUa::QApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
+    \fn void QOpcUaClient::findServersFinished(QVector<QOpcUaApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
 
     This signal is emitted after a \l findServers() operation has finished.
     \a statusCode contains the result of the operation. If the result is \l {QOpcUa::UaStatusCode} {Good},
@@ -244,7 +247,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
-    \fn void QOpcUaClient::addNodeFinished(QOpcUa::QExpandedNodeId requestedNodeId, QString assignedNodeId, QOpcUa::UaStatusCode statusCode)
+    \fn void QOpcUaClient::addNodeFinished(QOpcUaExpandedNodeId requestedNodeId, QString assignedNodeId, QOpcUa::UaStatusCode statusCode)
 
     This signal is emitted after an \l addNode() operation has finished.
     \a requestedNodeId is the requested node id from the \l addNode() call, \a assignedNodeId is the node id the server has assigned to the new node.
@@ -261,7 +264,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
-    \fn void QOpcUaClient::addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode)
+    \fn void QOpcUaClient::addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUaExpandedNodeId targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode)
 
     This signal is emitted after an \l addReference() operation has finished.
     \a sourceNodeId, \a referenceTypeId, \a targetNodeId and \a isForwardReference are the values from the \l addReference() call.
@@ -269,7 +272,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
-    \fn void QOpcUaClient::deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUa::QExpandedNodeId targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode)
+    \fn void QOpcUaClient::deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUaExpandedNodeId targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode)
 
     This signal is emitted after a \l deleteReference() operation has finished.
     \a sourceNodeId, \a referenceTypeId, \a targetNodeId and \a isForwardReference are the values from the \l deleteReference() call.
@@ -374,7 +377,7 @@ QOpcUaPkiConfiguration QOpcUaClient::pkiConfiguration() const
 
     \sa setAuthenticationInformation() QEndPointDescription
 */
-void QOpcUaClient::connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint)
+void QOpcUaClient::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
 {
     Q_D(QOpcUaClient);
     d->connectToEndpoint(endpoint);
@@ -394,7 +397,7 @@ void QOpcUaClient::disconnectFromEndpoint()
     Returns the description of the endpoint the client is currently connected to
     or was last connected to.
 */
-QOpcUa::QEndpointDescription QOpcUaClient::endpoint() const
+QOpcUaEndpointDescription QOpcUaClient::endpoint() const
 {
     Q_D(const QOpcUaClient);
     return d->m_endpoint;
@@ -440,7 +443,7 @@ QOpcUaNode *QOpcUaClient::node(const QString &nodeId)
 
     \sa updateNamespaceArray()
 */
-QOpcUaNode *QOpcUaClient::node(const QOpcUa::QExpandedNodeId &expandedNodeId)
+QOpcUaNode *QOpcUaClient::node(const QOpcUaExpandedNodeId &expandedNodeId)
 {
     if (expandedNodeId.serverIndex()) {
         qCWarning(QT_OPCUA) << "Can't create a QOpcuaNode for a node on a different server.";
@@ -493,7 +496,7 @@ QStringList QOpcUaClient::namespaceArray() const
     of the expanded node id is malformed. \a ok will be set to \c true if the conversion has been successful.
     If the expanded node id could not be resolved, \a ok will be set to \c false.
 */
-QString QOpcUaClient::resolveExpandedNodeId(const QOpcUa::QExpandedNodeId &expandedNodeId, bool *ok) const
+QString QOpcUaClient::resolveExpandedNodeId(const QOpcUaExpandedNodeId &expandedNodeId, bool *ok) const
 {
     if (expandedNodeId.serverIndex() && !expandedNodeId.namespaceUri().isEmpty()) {
         qCWarning(QT_OPCUA) << "Can't resolve a namespace index on a different server.";
@@ -545,13 +548,13 @@ QString QOpcUaClient::resolveExpandedNodeId(const QOpcUa::QExpandedNodeId &expan
     \a ok will be set to \c true if the namespace URI resolution has been successful.
     If the namespace URI could not be resolved, \a ok will be set to \c false.
 */
-QOpcUa::QQualifiedName QOpcUaClient::qualifiedNameFromNamespaceUri(const QString &namespaceUri, const QString &name, bool *ok) const
+QOpcUaQualifiedName QOpcUaClient::qualifiedNameFromNamespaceUri(const QString &namespaceUri, const QString &name, bool *ok) const
 {
     if (namespaceArray().isEmpty()) {
         qCWarning(QT_OPCUA) << "Namespaces table missing, unable to resolve namespace URI.";
         if (ok)
             *ok = false;
-        return QOpcUa::QQualifiedName();
+        return QOpcUaQualifiedName();
     }
 
     int index = namespaceArray().indexOf(namespaceUri);
@@ -560,13 +563,13 @@ QOpcUa::QQualifiedName QOpcUaClient::qualifiedNameFromNamespaceUri(const QString
         qCWarning(QT_OPCUA) << "Failed to resolve namespace" << namespaceUri;
         if (ok)
             *ok = false;
-        return QOpcUa::QQualifiedName();
+        return QOpcUaQualifiedName();
     }
 
     if (ok)
         *ok = true;
 
-    return QOpcUa::QQualifiedName(index, name);
+    return QOpcUaQualifiedName(index, name);
 };
 
 /*!
@@ -580,8 +583,8 @@ QOpcUa::QQualifiedName QOpcUaClient::qualifiedNameFromNamespaceUri(const QString
 
     \code
     QOpcUaNodeCreationAttributes attributes;
-    attributes.setDisplayName(QOpcUa::QLocalizedText("en", "My new Variable node"));
-    attributes.setDescription(QOpcUa::QLocalizedText("en", "A node which has been added at runtime"));
+    attributes.setDisplayName(QOpcUaLocalizedText("en", "My new Variable node"));
+    attributes.setDescription(QOpcUaLocalizedText("en", "A node which has been added at runtime"));
     attributes.setValue(23.0, QOpcUa::Types::Double);
     attributes.setDataTypeId(QOpcUa::ns0ID(QOpcUa::NodeIds::Namespace0::Double));
     attributes.setValueRank(-2); // Scalar or array
@@ -589,10 +592,10 @@ QOpcUa::QQualifiedName QOpcUaClient::qualifiedNameFromNamespaceUri(const QString
     attributes.setUserAccessLevel(QOpcUa::AccessLevelBit::CurrentRead);
 
     QOpcUaAddNodeItem item;
-    item.setParentNodeId(QOpcUa::QExpandedNodeId("ns=3;s=TestFolder"));
+    item.setParentNodeId(QOpcUaExpandedNodeId("ns=3;s=TestFolder"));
     item.setReferenceTypeId(QOpcUa::nodeIdFromReferenceType(QOpcUa::ReferenceTypeId::Organizes));
-    item.setRequestedNewNodeId(QOpcUa::QExpandedNodeId("ns=3;s=MyNewVariableNode"));
-    item.setBrowseName(QOpcUa::QQualifiedName(3, "MyNewVariableNode"));
+    item.setRequestedNewNodeId(QOpcUaExpandedNodeId("ns=3;s=MyNewVariableNode"));
+    item.setBrowseName(QOpcUaQualifiedName(3, "MyNewVariableNode"));
     item.setNodeClass(QOpcUa::NodeClass::Variable);
     item.setNodeAttributes(attributes);
 
@@ -622,7 +625,7 @@ bool QOpcUaClient::addNode(const QOpcUaAddNodeItem &nodeToAdd)
     The following example code deletes a node and all references to it from the server:
 
     \code
-    m_client->deleteNode(QOpcUa::QExpandedNodeId("ns=3;s=MyNewVariableNode"), true);
+    m_client->deleteNode(QOpcUaExpandedNodeId("ns=3;s=MyNewVariableNode"), true);
     \endcode
 
     \sa addNode() deleteNodeFinished()
@@ -650,7 +653,7 @@ bool QOpcUaClient::deleteNode(const QString &nodeId, bool deleteTargetReferences
     item.setSourceNodeId(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::ObjectsFolder));
     item.setReferenceTypeId(QOpcUa::nodeIdFromInteger(0, static_cast<quint32>(QOpcUa::ReferenceTypeId::Organizes)));
     item.setIsForwardReference(true);
-    item.setTargetNodeId(QOpcUa::QExpandedNodeId("ns=3;s=MyNewVariableNode"));
+    item.setTargetNodeId(QOpcUaExpandedNodeId("ns=3;s=MyNewVariableNode"));
     item.setTargetNodeClass(QOpcUa::NodeClass::Variable);
 
     m_client->addReference(item);
@@ -681,7 +684,7 @@ bool QOpcUaClient::addReference(const QOpcUaAddReferenceItem &referenceToAdd)
     item.setSourceNodeId(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::ObjectsFolder));
     item.setReferenceTypeId(QOpcUa::nodeIdFromInteger(0, static_cast<quint32>(QOpcUa::ReferenceTypeId::Organizes)));
     item.setIsForwardReference(true);
-    item.setTargetNodeId(QOpcUa::QExpandedNodeId("ns=3;s=MyNewVariableNode"));
+    item.setTargetNodeId(QOpcUaExpandedNodeId("ns=3;s=MyNewVariableNode"));
     item.setDeleteBidirectional(true);
 
     m_client->deleteReference(item);

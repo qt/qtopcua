@@ -217,12 +217,12 @@ void OpcUaNode::setBrowseName(const QString &value)
     if (!m_resolvedNode.isNamespaceIndexValid())
         return;
 
-    m_node->writeAttribute(QOpcUa::NodeAttribute::BrowseName, QOpcUa::QQualifiedName(m_resolvedNode.namespaceIndex(), value));
+    m_node->writeAttribute(QOpcUa::NodeAttribute::BrowseName, QOpcUaQualifiedName(m_resolvedNode.namespaceIndex(), value));
 }
 
 QString OpcUaNode::browseName()
 {
-    return m_attributeCache.attributeValue(QOpcUa::NodeAttribute::BrowseName).value<QOpcUa::QQualifiedName>().name();
+    return m_attributeCache.attributeValue(QOpcUa::NodeAttribute::BrowseName).value<QOpcUaQualifiedName>().name();
 }
 
 QOpcUa::NodeClass OpcUaNode::nodeClass()
@@ -230,28 +230,28 @@ QOpcUa::NodeClass OpcUaNode::nodeClass()
     return m_attributeCache.attributeValue(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>();
 }
 
-void OpcUaNode::setDisplayName(const QOpcUa::QLocalizedText &value)
+void OpcUaNode::setDisplayName(const QOpcUaLocalizedText &value)
 {
     if (!m_connection || !m_node)
         return;
     m_node->writeAttribute(QOpcUa::NodeAttribute::DisplayName, value);
 }
 
-QOpcUa::QLocalizedText OpcUaNode::displayName()
+QOpcUaLocalizedText OpcUaNode::displayName()
 {
-    return m_attributeCache.attributeValue(QOpcUa::NodeAttribute::DisplayName).value<QOpcUa::QLocalizedText>();
+    return m_attributeCache.attributeValue(QOpcUa::NodeAttribute::DisplayName).value<QOpcUaLocalizedText>();
 }
 
-void OpcUaNode::setDescription(const QOpcUa::QLocalizedText &value)
+void OpcUaNode::setDescription(const QOpcUaLocalizedText &value)
 {
     if (!m_connection || !m_node)
         return;
     m_node->writeAttribute(QOpcUa::NodeAttribute::Description, value);
 }
 
-QOpcUa::QLocalizedText OpcUaNode::description()
+QOpcUaLocalizedText OpcUaNode::description()
 {
-    return m_attributeCache.attributeValue(QOpcUa::NodeAttribute::Description).value<QOpcUa::QLocalizedText>();
+    return m_attributeCache.attributeValue(QOpcUa::NodeAttribute::Description).value<QOpcUaLocalizedText>();
 }
 
 OpcUaNode::Status OpcUaNode::status() const

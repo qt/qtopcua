@@ -97,7 +97,7 @@ class QOpcUaAuthenticationInformationData : public QSharedData
 {
 public:
     QVariant authenticationData;
-    QOpcUa::QUserTokenPolicy::TokenType authenticationType;
+    QOpcUaUserTokenPolicy::TokenType authenticationType;
 };
 
 QOpcUaAuthenticationInformation::QOpcUaAuthenticationInformation()
@@ -148,7 +148,7 @@ QOpcUaAuthenticationInformation::~QOpcUaAuthenticationInformation()
 */
 void QOpcUaAuthenticationInformation::setAnonymousAuthentication()
 {
-    data->authenticationType = QOpcUa::QUserTokenPolicy::TokenType::Anonymous;
+    data->authenticationType = QOpcUaUserTokenPolicy::TokenType::Anonymous;
     data->authenticationData = QVariant();
 }
 
@@ -163,7 +163,7 @@ void QOpcUaAuthenticationInformation::setAnonymousAuthentication()
 */
 void QOpcUaAuthenticationInformation::setUsernameAuthentication(const QString &username, const QString &password)
 {
-    data->authenticationType = QOpcUa::QUserTokenPolicy::TokenType::Username;
+    data->authenticationType = QOpcUaUserTokenPolicy::TokenType::Username;
     data->authenticationData = QVariant::fromValue(qMakePair(username, password));
 }
 
@@ -182,7 +182,7 @@ void QOpcUaAuthenticationInformation::setUsernameAuthentication(const QString &u
 void QOpcUaAuthenticationInformation::setCertificateAuthentication()
 {
     data->authenticationData = QVariant();
-    data->authenticationType = QOpcUa::QUserTokenPolicy::TokenType::Certificate;
+    data->authenticationType = QOpcUaUserTokenPolicy::TokenType::Certificate;
 }
 
 /*!
@@ -196,9 +196,9 @@ const QVariant &QOpcUaAuthenticationInformation::authenticationData() const
 /*!
     Returns the current authentication type.
 
-    \sa QOpcUa::QUserTokenPolicy::TokenType
+    \sa QOpcUaUserTokenPolicy::TokenType
  */
-QOpcUa::QUserTokenPolicy::TokenType QOpcUaAuthenticationInformation::authenticationType() const
+QOpcUaUserTokenPolicy::TokenType QOpcUaAuthenticationInformation::authenticationType() const
 {
     return data->authenticationType;
 }
