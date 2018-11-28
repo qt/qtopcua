@@ -42,6 +42,7 @@ QT_BEGIN_NAMESPACE
 
 QOpcUaClientImpl::QOpcUaClientImpl(QObject *parent)
     : QObject(parent)
+    , m_client(nullptr)
     , m_handleCounter(0)
 {}
 
