@@ -66,6 +66,7 @@
     \since 5.7
     \title Qt OPC UA
     \brief Implements OPC UA connectivity through a Qt API.
+    \preliminary
 
     The Qt \l{Qt OPC UA#A short introduction to OPC UA}{OPC UA} module
     implements a Qt API to interact with OPC UA on top of a 3rd party
@@ -78,6 +79,9 @@
     \li Open62541 v0.3, MPLv2
     \li Unified Automation C++ SDK (UACpp), Commercial
     \endlist
+
+    This module is still in development but is available as a technology preview.
+    This means it is unstable, likely to change and provided as a convenience only.
 
     \section1 Getting started
 
