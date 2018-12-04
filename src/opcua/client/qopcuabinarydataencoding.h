@@ -368,7 +368,20 @@ inline QString QOpcUaBinaryDataEncoding::decode<QString, QOpcUa::Types::NodeId>(
 
     identifierType &= ~(0x40 | 0x80); // Remove expanded node id flags
 
-    quint16 namespaceIndex = decode<quint16>(success);
+    quint16 namespaceIndex;
+
+    if (identifierType == 0x00) {
+        // encodingType 0x00 does not transfer the namespace index, it has to be zero
+        // Part 6, Chapter 5.2.2.9, Section "Two Byte NodeId Binary DataEncoding"
+        namespaceIndex = 0;
+    } else if (identifierType == 0x01){
+        // encodingType 0x01 transfers only one byte namespace index, has to be in range 0-255
+        // Part 6, Chapter 5.2.2.9, Section "Four Byte NodeId Binary DataEncoding"
+        namespaceIndex = decode<quint8>(success);
+    } else {
+        namespaceIndex = decode<quint16>(success);
+    }
+
     if (!success)
         return QString();
 
@@ -739,12 +752,16 @@ inline bool QOpcUaBinaryDataEncoding::encode<QString, QOpcUa::Types::NodeId>(con
         if (!isNumber || integerIdentifier > upperBound<quint32>())
             return false;
 
-        if (integerIdentifier <= 255) {
+        if (integerIdentifier <= 255 && index == 0) {
+            // encodingType 0x00 does not transfer the namespace index, it has to be zero
+            // Part 6, Chapter 5.2.2.9, Section "Two Byte NodeId Binary DataEncoding"
             if (!encoder.encode<quint8>(integerIdentifier))
                 return false;
             encodingType = 0x00; // 8 bit numeric
             break;
-        } else if (integerIdentifier <= 65535) {
+        } else if (integerIdentifier <= 65535 && index <= 255) {
+            // encodingType 0x01 transfers only one byte namespace index, has to be in range 0-255
+            // Part 6, Chapter 5.2.2.9, Section "Four Byte NodeId Binary DataEncoding"
             if (!encoder.encode<quint16>(integerIdentifier))
                 return false;
             encodingType = 0x01; // 16 bit numeric
@@ -788,8 +805,18 @@ inline bool QOpcUaBinaryDataEncoding::encode<QString, QOpcUa::Types::NodeId>(con
 
     if (!encode<quint8>(encodingType))
         return false;
-    if (!encode<quint16>(index))
-        return false;
+
+    if (encodingType == 0x00) {
+        // encodingType == 0x00 skips namespace completely, defaults to zero
+        // Part 6, Chapter 5.2.2.9, Section "Two Byte NodeId Binary DataEncoding"
+    } else if (encodingType == 0x01) {
+        if (!encode<quint8>(index))
+            return false;
+    } else {
+        if (!encode<quint16>(index))
+            return false;
+    }
+
     m_data->append(encodedIdentifier);
     return true;
 }
