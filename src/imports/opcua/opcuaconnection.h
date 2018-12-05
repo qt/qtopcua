@@ -38,6 +38,7 @@
 
 #include <QObject>
 #include <QOpcUaClient>
+#include <QOpcUaAuthenticationInformation>
 
 QT_BEGIN_NAMESPACE
 
@@ -50,6 +51,7 @@ class OpcUaConnection : public QObject
     Q_PROPERTY(QString backend READ backend WRITE setBackend NOTIFY backendChanged)
     Q_PROPERTY(bool defaultConnection READ defaultConnection WRITE setDefaultConnection NOTIFY defaultConnectionChanged)
     Q_PROPERTY(QStringList namespaces READ namespaces NOTIFY namespacesChanged)
+    Q_PROPERTY(QOpcUaAuthenticationInformation authenticationInformation READ authenticationInformation WRITE setAuthenticationInformation)
 
 public:
     OpcUaConnection(QObject *parent = nullptr);
@@ -62,10 +64,13 @@ public:
     bool isDefaultConnection() const;
     QStringList namespaces() const;
 
+    QOpcUaAuthenticationInformation authenticationInformation() const;
+
 public slots:
     void connectToEndpoint(const QUrl &url);
     void disconnectFromEndpoint();
     void setDefaultConnection(bool defaultConnection = true);
+    void setAuthenticationInformation(const QOpcUaAuthenticationInformation &authenticationInformation);
 
 signals:
     void availableBackendsChanged();

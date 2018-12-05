@@ -25,7 +25,8 @@ SOURCES += \
     client/qopcuanodecreationattributes.cpp \
     client/qopcuaaddreferenceitem.cpp \
     client/qopcuadeletereferenceitem.cpp \
-    client/qopcuaaddnodeitem.cpp
+    client/qopcuaaddnodeitem.cpp \
+    client/qopcuaauthenticationinformation.cpp
 
 HEADERS += \
     client/qopcuaclient_p.h \
@@ -47,4 +48,5 @@ HEADERS += \
     client/qopcuanodecreationattributes_p.h \
     client/qopcuaaddnodeitem.h \
     client/qopcuaaddreferenceitem.h \
-    client/qopcuadeletereferenceitem.h
+    client/qopcuadeletereferenceitem.h \
+    client/qopcuaauthenticationinformation.h

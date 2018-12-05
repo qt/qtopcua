@@ -50,6 +50,7 @@
 
 #include <QtOpcUa/qopcuaclient.h>
 #include <QtOpcUa/qopcuaglobal.h>
+#include <QtOpcUa/qopcuaauthenticationinformation.h>
 #include <private/qopcuaclientimpl_p.h>
 
 #include <QtCore/qobject.h>
@@ -73,6 +74,7 @@ public:
     QOpcUaClient::ClientError m_error;
     QUrl m_url;
     bool m_enableNamespaceArrayAutoupdate;
+    QOpcUaAuthenticationInformation m_authenticationInformation;
 
     bool checkAndSetUrl(const QUrl &url);
     void setStateAndError(QOpcUaClient::ClientState state,

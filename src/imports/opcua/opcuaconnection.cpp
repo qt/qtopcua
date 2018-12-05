@@ -116,6 +116,18 @@ QT_BEGIN_NAMESPACE
     List of strings of all namespace URIs registered on the connected server.
 */
 
+/*!
+    \qmlproperty AuthenticationInformation Connection::authenticationInformation
+
+    Set the authentication information to this connection. The authentication information has
+    to be set before calling \l connectToEndpoint. If no authentication information is set,
+    the anonymous mode will be used.
+    It has no effect on the current connection. If the client is disconnected and then reconnected,
+    the new credentials are used.
+    Reading and writing this property before a \l backend is set, writes are ignored and reads return
+    and invalid \l AuthenticationInformation.
+*/
+
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML)
 
 OpcUaConnection* OpcUaConnection::m_defaultConnection = nullptr;
@@ -256,6 +268,21 @@ QStringList OpcUaConnection::namespaces() const
         return QStringList();
 
     return m_client->namespaceArray();
+}
+
+void OpcUaConnection::setAuthenticationInformation(const QOpcUaAuthenticationInformation &authenticationInformation)
+{
+    if (!m_client)
+        return;
+    m_client->setAuthenticationInformation(authenticationInformation);
+}
+
+QOpcUaAuthenticationInformation OpcUaConnection::authenticationInformation() const
+{
+    if (!m_client)
+        return QOpcUaAuthenticationInformation();
+
+    return m_client->authenticationInformation();
 }
 
 QT_END_NAMESPACE

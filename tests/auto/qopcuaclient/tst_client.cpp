@@ -34,6 +34,7 @@
 **
 ****************************************************************************/
 
+#include <QtOpcUa/QOpcUaAuthenticationInformation>
 #include <QtOpcUa/QOpcUaClient>
 #include <QtOpcUa/QOpcUaNode>
 #include <QtOpcUa/QOpcUaProvider>
@@ -616,18 +617,18 @@ void Tst_QOpcUaClient::connectInvalidPassword()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
 
-    QUrl url(m_endpoint);
-    url.setUserName("invaliduser");
-    url.setPassword("wrongpassword");
+    QOpcUaAuthenticationInformation authInfo;
+    authInfo.setUsernameAuthentication("invaliduser", "wrongpassword");
+    opcuaClient->setAuthenticationInformation(authInfo);
 
     QSignalSpy connectSpy(opcuaClient, &QOpcUaClient::stateChanged);
 
-    opcuaClient->connectToEndpoint(url);
+    opcuaClient->connectToEndpoint(QUrl(m_endpoint));
     QTRY_VERIFY_WITH_TIMEOUT(connectSpy.count() == 2, 3000);
     QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Connecting);
     QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Disconnected);
 
-    QCOMPARE(opcuaClient->url(), url);
+    QCOMPARE(opcuaClient->url(), QUrl(m_endpoint));
     QCOMPARE(opcuaClient->error(), QOpcUaClient::AccessDenied);
 }
 
@@ -635,20 +636,20 @@ void Tst_QOpcUaClient::connectAndDisconnectPassword()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
 
-    QUrl url(m_endpoint);
-    url.setUserName("user1");
-    url.setPassword("password");
+    QOpcUaAuthenticationInformation authInfo;
+    authInfo.setUsernameAuthentication("user1", "password");
+    opcuaClient->setAuthenticationInformation(authInfo);
 
     QSignalSpy connectSpy(opcuaClient, &QOpcUaClient::stateChanged);
 
-    opcuaClient->connectToEndpoint(url);
+    opcuaClient->connectToEndpoint(QUrl(m_endpoint));
     connectSpy.wait();
 
     QCOMPARE(connectSpy.count(), 2);
     QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Connecting);
     QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Connected);
 
-    QCOMPARE(opcuaClient->url(), url);
+    QCOMPARE(opcuaClient->url(), QUrl(m_endpoint));
     QCOMPARE(opcuaClient->error(), QOpcUaClient::NoError);
 
     connectSpy.clear();

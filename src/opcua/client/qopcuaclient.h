@@ -52,6 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QOpcUaAuthenticationInformation;
 class QOpcUaClientPrivate;
 class QOpcUaClientImpl;
 
@@ -76,7 +77,8 @@ public:
         InvalidUrl,
         AccessDenied,
         ConnectionError,
-        UnknownError
+        UnknownError,
+        UnsupportedAuthenticationInformation
     };
     Q_ENUM(ClientError)
 
@@ -118,6 +120,9 @@ public:
     bool isNamespaceAutoupdateEnabled() const;
     void setNamespaceAutoupdateInterval(int interval);
     int namespaceAutoupdateInterval() const;
+
+    void setAuthenticationInformation(const QOpcUaAuthenticationInformation &authenticationInformation);
+    const QOpcUaAuthenticationInformation &authenticationInformation() const;
 
 Q_SIGNALS:
     void connected();

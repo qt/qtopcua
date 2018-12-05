@@ -123,6 +123,8 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
            An error occurred with the connection.
     \value UnknownError
            An unknown error occurred.
+    \value UnsupportedAuthenticationInformation
+           The given type or data of authentication information is not supported.
 */
 
 /*!
@@ -267,17 +269,20 @@ QOpcUaClient::~QOpcUaClient()
 /*!
     Connects to the OPC UA endpoint given in \a url.
 
-    If the endpoint requires username and password, they must be included in \a url.
+    If the endpoint requires username authentication, at least a user name must be set in \l QOpcUaAuthenticationInformation.
+    Calling this function before setting an authentication information will use the anonymous authentication.
 
     \code
     QUrl url("opc.tcp://localhost:4840");
-    url.setUserName("user");
-    url.setPassword("password");
 
+    QOpcUaAuthenticationInformation authInfo;
+    authInfo.setUsernameAuthentication("user", "password");
+
+    m_client->setAuthenticationInformation(authInfo);
     m_client->connectToEndpoint(url);
     \endcode
 
-    \sa disconnectFromEndpoint()
+    \sa disconnectFromEndpoint() setAuthenticationInformation()
 */
 void QOpcUaClient::connectToEndpoint(const QUrl &url)
 {
@@ -784,6 +789,26 @@ int QOpcUaClient::namespaceAutoupdateInterval() const
 {
     Q_D(const QOpcUaClient);
     return d->m_namespaceArrayUpdateInterval;
+}
+
+/*!
+    Sets the authentication information of this client to \a authenticationInformation.
+
+    \sa connectToEndpoint()
+*/
+void QOpcUaClient::setAuthenticationInformation(const QOpcUaAuthenticationInformation &authenticationInformation)
+{
+    Q_D(QOpcUaClient);
+    d->m_authenticationInformation = authenticationInformation;
+}
+
+/*!
+    Returns the current authentication information.
+*/
+const QOpcUaAuthenticationInformation &QOpcUaClient::authenticationInformation() const
+{
+    Q_D(const QOpcUaClient);
+    return d->m_authenticationInformation;
 }
 
 QT_END_NAMESPACE

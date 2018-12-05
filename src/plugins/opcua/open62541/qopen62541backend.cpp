@@ -40,6 +40,8 @@
 #include "qopen62541valueconverter.h"
 #include <private/qopcuaclient_p.h>
 
+#include "qopcuaauthenticationinformation.h"
+
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qurl.h>
@@ -776,12 +778,20 @@ void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
     conf.stateCallback = &clientStateCallback;
     m_uaclient = UA_Client_new(conf);
     UA_StatusCode ret;
+    const auto authInfo = m_clientImpl->m_client->authenticationInformation();
 
-    if (url.userName().length())
-        ret = UA_Client_connect_username(m_uaclient, url.toString(QUrl::RemoveUserInfo).toUtf8().constData(),
-                                         url.userName().toUtf8().constData(), url.password().toUtf8().constData());
-    else
+    if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Anonymous) {
         ret = UA_Client_connect(m_uaclient, url.toString().toUtf8().constData());
+    } else if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Username) {
+        const auto credentials = authInfo.authenticationData().value<QPair<QString, QString>>();
+        ret = UA_Client_connect_username(m_uaclient, url.toString().toUtf8().constData(),
+                                         credentials.first.toUtf8().constData(), credentials.second.toUtf8().constData());
+    } else {
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnsupportedAuthenticationInformation);
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to connect: Selected authentication type"
+                                          << authInfo.authenticationType() << "is not supported.";
+        return;
+    }
 
     if (ret != UA_STATUSCODE_GOOD) {
         UA_Client_delete(m_uaclient);

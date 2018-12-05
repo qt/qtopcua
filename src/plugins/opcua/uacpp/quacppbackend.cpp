@@ -25,6 +25,8 @@
 #include "quacpputils.h"
 #include "quacppvalueconverter.h"
 
+#include "qopcuaauthenticationinformation.h"
+
 #include <private/qopcuaclient_p.h>
 
 #include <QtCore/QLoggingCategory>
@@ -185,7 +187,7 @@ void UACppAsyncBackend::connectToEndpoint(const QUrl &url)
 {
     UaStatus result;
 
-    UaString uaUrl(url.toString(QUrl::RemoveUserInfo).toUtf8().constData());
+    UaString uaUrl(url.toString().toUtf8().constData());
     SessionConnectInfo sessionConnectInfo;
     UaString sNodeName(QHostInfo::localHostName().toUtf8().constData());
 
@@ -198,10 +200,20 @@ void UACppAsyncBackend::connectToEndpoint(const QUrl &url)
     sessionConnectInfo.bAutomaticReconnect = OpcUa_False;
 
     SessionSecurityInfo sessionSecurityInfo;
-    if (url.userName().length()) {
-        UaString username(url.userName().toUtf8().constData());
-        UaString password(url.password().toUtf8().constData());
+    const auto authInfo = m_clientImpl->m_client->authenticationInformation();
+
+    if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Anonymous) {
+        // nothing to do
+    } else if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Username) {
+        const auto credentials = authInfo.authenticationData().value<QPair<QString, QString>>();
+        UaString username(credentials.first.toUtf8().constData());
+        UaString password(credentials.second.toUtf8().constData());
         sessionSecurityInfo.setUserPasswordUserIdentity(username, password);
+    } else {
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnsupportedAuthenticationInformation);
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect: Selected authentication type"
+                                          << authInfo.authenticationType() << "is not supported.";
+        return;
     }
 
     result = m_nativeSession->connect(uaUrl, sessionConnectInfo, sessionSecurityInfo, this);
