@@ -1,7 +1,12 @@
 TARGET = open62541_backend
 QT += core core-private opcua opcua-private network
 
-QMAKE_USE_PRIVATE += open62541
+qtConfig(open62541):!qtConfig(system-open62541) {
+    include($$PWD/../../../3rdparty/open62541.pri)
+} else {
+    QMAKE_USE_PRIVATE += open62541
+    win32-msvc: LIBS += open62541.lib
+}
 
 HEADERS += \
     qopen62541backend.h \
