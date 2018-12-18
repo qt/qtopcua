@@ -35,7 +35,7 @@
 ****************************************************************************/
 
 #include <stdio.h>
-#include "open62541/open62541.h"
+#include "open62541.h"
 
 int main(int argc, char *argv[])
 {

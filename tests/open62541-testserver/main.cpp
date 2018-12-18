@@ -207,7 +207,7 @@ int main(int argc, char **argv)
     const QVector<quint32> arrayDimensions({2, 2, 3});
     const QVariantList value({0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0});
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.MultiDimensionalDouble", "MultiDimensionalDoubleTest",
-                       QOpcUa::QMultiDimensionalArray(value, arrayDimensions), QOpcUa::Types::Double, QVector<quint32>({2, 2, 3}));
+                       QOpcUa::QMultiDimensionalArray(value, arrayDimensions), QOpcUa::Types::Double, QVector<quint32>({2, 2, 3}), 3);
 
     // Add folders for relative nodes
     const UA_NodeId testFolder2 = server.addFolder("ns=3;s=TestFolder2", "TestFolder2");
