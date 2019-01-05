@@ -1,6 +1,6 @@
 defineTest(qtConfLibrary_uacpp) {
-    !qtConfLibrary_inline($$1, $$2): \
-        return(false)
+    input = $$eval($${2}.alias)
+    prefix = $$eval(config.input.$${input}.prefix)
 
     # The Windows SDK ships its dependencies and locates the libraries outside of lib
     win32 {
@@ -9,20 +9,26 @@ defineTest(qtConfLibrary_uacpp) {
             return(false)
         }
 
-        input = $$eval($${2}.alias)
-        !isEmpty(config.input.$${input}.prefix) {
-            prefix = $$val_escape(config.input.$${input}.prefix)
-
-            $${1}.libs += -L$${prefix}/third-party/win32/vs2015/openssl/out32dll \
-                          -L$${prefix}/third-party/win32/vs2015/libxml2/out32dll
-            export($${1}.libs)
+        !isEmpty(prefix) {
+            config.input.$${input}.libdir += \
+                $${prefix}/third-party/win32/vs2015/openssl/out32dll \
+                $${prefix}/third-party/win32/vs2015/libxml2/out32dll
         } else {
             qtLog("No UACPP_PREFIX specified; relying on user-provided library path.")
         }
     }
 
-    inc = $$eval($${1}.includedir)
-    $${1}.includedir += $$inc/uabase $$inc/uaclient $$inc/uastack $$inc/uapki
-    export($${1}.includedir)
+    inc = $$eval(config.input.$${input}.incdir)
+    isEmpty(inc):!isEmpty(prefix): \
+        inc = $${prefix}/include
+    !isEmpty(inc) {
+        config.input.$${input}.incdir += \
+            $$inc/uabase $$inc/uaclient $$inc/uastack $$inc/uapki
+    } else {
+        qtLog("No UACPP_PREFIX and no UACPP_INCDIR specified; relying on global include paths.")
+    }
+
+    !qtConfLibrary_inline($$1, $$2): \
+        return(false)
     return(true)
 }

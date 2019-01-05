@@ -2,12 +2,7 @@ TARGET = open62541_backend
 QT += core core-private opcua opcua-private network
 QT -= gui
 
-PLUGIN_TYPE = opcua
-PLUGIN_CLASS_NAME = QOpen62541Plugin
-load(qt_plugin)
-
 QMAKE_USE_PRIVATE += open62541
-win32-msvc: LIBS += open62541.lib ws2_32.lib
 
 HEADERS += \
     qopen62541backend.h \
@@ -29,3 +24,7 @@ SOURCES += \
     qopen62541utils.cpp
 
 OTHER_FILES = open62541-metadata.json
+
+PLUGIN_TYPE = opcua
+PLUGIN_CLASS_NAME = QOpen62541Plugin
+load(qt_plugin)
