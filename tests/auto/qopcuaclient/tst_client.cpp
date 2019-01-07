@@ -881,6 +881,12 @@ void Tst_QOpcUaClient::writeMultipleAttributes()
 void Tst_QOpcUaClient::readEmptyArrayVariable()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
+
+    // open62541 indicates an empty array with an array length of 0 and a data pointer with value 0x1.
+    // This test makes sure that empty arrays are handled correctly without causing a segfault.
+    if (opcuaClient->backend() == QLatin1String("uacpp"))
+        QSKIP("This test is only necessary for open62541");
+
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=EmptyBoolArray"));
