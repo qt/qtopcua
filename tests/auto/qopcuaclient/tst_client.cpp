@@ -545,12 +545,19 @@ void Tst_QOpcUaClient::initTestCase()
 
     if (qEnvironmentVariableIsEmpty("OPCUA_HOST") && qEnvironmentVariableIsEmpty("OPCUA_PORT")) {
         m_testServerPath = qApp->applicationDirPath()
+
+#if defined(Q_OS_MACOS)
+                                     + QLatin1String("/../../open62541-testserver/open62541-testserver.app/Contents/MacOS/open62541-testserver")
+#else
+
 #ifdef Q_OS_WIN
                                      + QLatin1String("/..")
 #endif
                                      + QLatin1String("/../../open62541-testserver/open62541-testserver")
 #ifdef Q_OS_WIN
                                      + QLatin1String(".exe")
+#endif
+
 #endif
                 ;
         if (!QFile::exists(m_testServerPath)) {
