@@ -39,6 +39,7 @@
 
 #include <QtOpcUa/qopcuaglobal.h>
 #include <QtOpcUa/qopcuaapplicationidentity.h>
+#include <QtOpcUa/qopcuapkiconfiguration.h>
 #include <QtOpcUa/qopcuanode.h>
 #include <QtOpcUa/qopcuareaditem.h>
 #include <QtOpcUa/qopcuareadresult.h>
@@ -88,6 +89,9 @@ public:
 
     void setIdentity(const QOpcUaApplicationIdentity &identity);
     QOpcUaApplicationIdentity identity() const;
+
+    void setPkiConfiguration(const QOpcUaPkiConfiguration &config);
+    QOpcUaPkiConfiguration pkiConfiguration() const;
 
     Q_INVOKABLE void connectToEndpoint(const QUrl &url);
     Q_INVOKABLE void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint);

@@ -89,6 +89,9 @@ public:
     void setIdentity(const QOpcUaApplicationIdentity &identity);
     QOpcUaApplicationIdentity identity() const;
 
+    void setPkiConfiguration(const QOpcUaPkiConfiguration &config);
+    QOpcUaPkiConfiguration pkiConfiguration() const;
+
 private:
     Q_DECLARE_PUBLIC(QOpcUaClient)
     QStringList m_namespaceArray;
@@ -96,6 +99,7 @@ private:
     bool m_namespaceArrayAutoupdateEnabled;
     unsigned int m_namespaceArrayUpdateInterval;
     QOpcUaApplicationIdentity m_identity;
+    QOpcUaPkiConfiguration m_pkiConfig;
 };
 
 QT_END_NAMESPACE

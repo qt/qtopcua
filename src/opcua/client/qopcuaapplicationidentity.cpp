@@ -67,6 +67,15 @@ QT_BEGIN_NAMESPACE
     identity.setApplicationName(QCoreApplication::applicationName());
     identity.setApplicationType(QOpcUa::QApplicationDescription::Client);
     \endcode
+
+    In case your application authenticates using certificates the application identity has to match
+    the used certificate. In this case all information is extracted from the certificate given in the
+    PKI configuration.
+
+    \code
+    QOpcUaApplicationIdentity identity;
+    identity = pkiConfig.applicationIdentity();
+    \endcode
 */
 
 class QOpcUaApplicationIdentityData : public QSharedData

@@ -295,6 +295,34 @@ QOpcUaApplicationIdentity QOpcUaClient::identity() const
 }
 
 /*!
+    Sets the application PKI configuration for this \l QOpcUaClient instance.
+    \since QtOpcUa 5.13
+
+    This function is currently available as a Technology Preview, and therefore the API
+    and functionality provided by the class may be subject to change at any time without
+    prior notice.
+*/
+void QOpcUaClient::setPkiConfiguration(const QOpcUaPkiConfiguration &config)
+{
+    Q_D(QOpcUaClient);
+    d->setPkiConfiguration(config);
+}
+
+/*!
+    Returns the application's PKI configuration of this \l QOpcUaClient instance.
+    \since QtOpcUa 5.13
+
+    This function is currently available as a Technology Preview, and therefore the API
+    and functionality provided by the class may be subject to change at any time without
+    prior notice.
+*/
+QOpcUaPkiConfiguration QOpcUaClient::pkiConfiguration() const
+{
+    Q_D(const QOpcUaClient);
+    return d->pkiConfiguration();
+}
+
+/*!
     Connects to the OPC UA endpoint given in \a url.
 
     If the endpoint requires username authentication, at least a user name must be set in \l QOpcUaAuthenticationInformation.

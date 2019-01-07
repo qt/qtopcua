@@ -278,5 +278,14 @@ QOpcUaApplicationIdentity QOpcUaClientPrivate::identity() const
     return m_identity;
 }
 
+void QOpcUaClientPrivate::setPkiConfiguration(const QOpcUaPkiConfiguration &config)
+{
+    m_pkiConfig = config;
+}
+
+QOpcUaPkiConfiguration QOpcUaClientPrivate::pkiConfiguration() const
+{
+    return m_pkiConfig;
+}
 
 QT_END_NAMESPACE

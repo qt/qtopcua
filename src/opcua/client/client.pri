@@ -4,6 +4,7 @@ PUBLIC_HEADERS += \
     client/qopcuaclient.h \
     client/qopcuanode.h \
     client/qopcuaapplicationidentity.h \
+    client/qopcuapkiconfiguration.h \
     client/qopcuatype.h
 
 SOURCES += \
@@ -29,6 +30,7 @@ SOURCES += \
     client/qopcuaaddnodeitem.cpp \
     client/qopcuaauthenticationinformation.cpp \
     client/qopcuaapplicationidentity.cpp \
+    client/qopcuapkiconfiguration.cpp \
 
 HEADERS += \
     client/qopcuaclient_p.h \
@@ -53,3 +55,4 @@ HEADERS += \
     client/qopcuadeletereferenceitem.h \
     client/qopcuaauthenticationinformation.h \
     client/qopcuaapplicationidentity.h \
+    client/qopcuapkiconfiguration.h \

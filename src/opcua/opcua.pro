@@ -1,5 +1,5 @@
 TARGET = QtOpcUa
-QT += core-private
+QT += core-private network
 QT -= gui
 
 include(core/core.pri)

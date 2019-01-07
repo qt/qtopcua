@@ -40,6 +40,7 @@
 #include <QtOpcUa/qopcuanode.h>
 #include <QtOpcUa/qopcuatype.h>
 #include <QtOpcUa/qopcuaapplicationidentity.h>
+#include <QtOpcUa/qopcuapkiconfiguration.h>
 #include <private/qopcuanodeimpl_p.h>
 
 #include <private/qfactoryloader_p.h>
@@ -50,6 +51,7 @@
 QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(QT_OPCUA, "qt.opcua")
+Q_LOGGING_CATEGORY(QT_OPCUA_SECURITY, "qt.opcua.security")
 
 /*!
     \class QOpcUaProvider
@@ -172,6 +174,7 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUaDeleteReferenceItem>();
     qRegisterMetaType<QVector<QOpcUa::QApplicationDescription>>();
     qRegisterMetaType<QOpcUaApplicationIdentity>();
+    qRegisterMetaType<QOpcUaPkiConfiguration>();
 }
 
 QOpcUaProvider::~QOpcUaProvider()
