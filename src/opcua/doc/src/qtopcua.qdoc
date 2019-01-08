@@ -368,7 +368,9 @@
     \section2 UA CPP
 
     The UA CPP plugin is available under commercial licenses from \l{The Qt Company}.
-    The UA CPP library itself is available under commercial licenses from \l {https://www.unified-automation.com}{Unified Automation}.
+    In addition, it is available under the \l{GNU General Public License, version 3}.
+    The UA CPP library itself is available under commercial licenses from
+    \l {https://www.unified-automation.com}{Unified Automation}.
 
     \section1 Related Information
 
