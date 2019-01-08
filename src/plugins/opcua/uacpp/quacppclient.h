@@ -35,7 +35,7 @@ class QUACppClient : public QOpcUaClientImpl
     Q_OBJECT
 
 public:
-    explicit QUACppClient();
+    explicit QUACppClient(const QVariantMap &backendProperties);
     ~QUACppClient();
 
     void connectToEndpoint(const QUrl &url) override;

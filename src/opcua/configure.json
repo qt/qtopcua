@@ -2,6 +2,12 @@
     "module": "opcua",
     "testDir": "../../config.tests",
 
+    "commandline": {
+        "options": {
+            "open62541": { "type": "enum", "values": [ "no", "qt", "system"] }
+        }
+    },
+
     "libraries": {
         "open62541": {
             "label": "Open62541",
@@ -9,15 +15,16 @@
             "sources": [
                 {
                     "libs": "-lopen62541",
-                    "condition": "!config.win32"
+                    "condition": "!config.win32 && input.open62541 == 'system'"
                 },
                 {
                     "libs": "-lopen62541 -lws2_32",
-                    "condition": "config.win32"
+                    "condition": "config.win32 && input.open62541 == 'system'"
                 },
                 {
                     "type": "pkgConfig",
-                    "args": "open62541"
+                    "args": "open62541",
+                    "condition": "input.open62541 == 'system'"
                 }
             ]
         },
@@ -28,8 +35,8 @@
                 {
                     "type": "uacpp",
                     "builds": {
-                        "debug": "-luaclientd -luabased -luastackd -luapkid -lxmlparserd",
-                        "release": "-luaclient -luabase -luastack -luapki -lxmlparser"
+                        "debug": "-luaclientcppd -luabasecppd -luastackd -luapkicppd -lxmlparsercppd",
+                        "release": " -luaclientcpp -luabasecpp -luastack -luapkicpp -lxmlparsercpp"
                     },
                     "libs": "-lCrypt32 -lOle32 -lOleAut32 -lws2_32 -llibeay32 -llibxml2",
                     "condition": "config.win32 && var.QT_EDITION != 'OpenSource'"
@@ -37,8 +44,8 @@
                 {
                     "type": "uacpp",
                     "builds": {
-                       "debug": "-luaclientd -luabased -luastackd -luapkid -lxmlparserd",
-                       "release": "-luaclient -luabase -luastack -luapki -lxmlparser"
+                       "debug": "-luaclientcppd -luabasecppd -luastackd -luapkicppd -lxmlparsercppd",
+                       "release": "-luaclientcpp -luabasecpp -luastack -luapkicpp -lxmlparsercpp"
                     },
                     "libs": "-lcrypto -lssl -lxml2",
                     "condition": "!config.win32 && var.QT_EDITION != 'OpenSource'"
@@ -50,7 +57,13 @@
     "features": {
         "open62541": {
             "label": "Open62541",
-            "condition": "libs.open62541",
+            "output": [ "privateFeature", "feature" ]
+        },
+        "system-open62541": {
+            "label": "Using provided Open62541",
+            "enable": "input.open62541 == 'system'",
+            "disable": "input.open62541 == 'qt'",
+            "condition": "features.open62541 && libs.open62541",
             "output": [ "privateFeature" ]
         },
         "uacpp": {

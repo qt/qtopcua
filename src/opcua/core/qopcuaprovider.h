@@ -58,7 +58,7 @@ public:
     explicit QOpcUaProvider(QObject *parent = nullptr);
     ~QOpcUaProvider() override;
 
-    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend);
+    Q_INVOKABLE QOpcUaClient *createClient(const QString &backend, const QVariantMap &backendProperties = QVariantMap());
 
 private:
     QHash<QString, QOpcUaPlugin *> m_plugins;

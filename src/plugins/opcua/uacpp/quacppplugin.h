@@ -24,7 +24,7 @@
 
 #include "qopcuaplugin.h"
 
-#include <uabase/uanodeid.h>
+#include <uanodeid.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -39,7 +39,7 @@ public:
     explicit QUACppPlugin(QObject *parent = 0);
     ~QUACppPlugin() override;
 
-    QOpcUaClient *createClient() override;
+    QOpcUaClient *createClient(const QVariantMap &backendProperties) override;
 private:
 };
 

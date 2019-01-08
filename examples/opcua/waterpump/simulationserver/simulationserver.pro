@@ -9,7 +9,11 @@ CONFIG += c++11 console
 
 QT += opcua opcua-private
 
-QMAKE_USE_PRIVATE += open62541
+qtConfig(open62541):!qtConfig(system-open62541) {
+    include($$PWD/../../../../src/3rdparty/open62541.pri)
+} else {
+    QMAKE_USE_PRIVATE += open62541
+}
 
 SOURCES += main.cpp \
     simulationserver.cpp \

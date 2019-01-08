@@ -36,11 +36,11 @@
 
 #include <QtNetwork/QHostInfo>
 
-#include <uabase/uaplatformlayer.h>
-#include <uaclient/uasession.h>
-#include <uabase/uastring.h>
-#include <uaclient/uadiscovery.h>
-#include <uabase/uadatavalue.h>
+#include <uaplatformlayer.h>
+#include <uasession.h>
+#include <uastring.h>
+#include <uadiscovery.h>
+#include <uadatavalue.h>
 
 #include <limits>
 
@@ -209,6 +209,8 @@ void UACppAsyncBackend::connectToEndpoint(const QUrl &url)
         UaString username(credentials.first.toUtf8().constData());
         UaString password(credentials.second.toUtf8().constData());
         sessionSecurityInfo.setUserPasswordUserIdentity(username, password);
+        if (m_disableEncryptedPasswordCheck)
+            sessionSecurityInfo.disableEncryptedPasswordCheck = OpcUa_True;
     } else {
         emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnsupportedAuthenticationInformation);
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect: Selected authentication type"

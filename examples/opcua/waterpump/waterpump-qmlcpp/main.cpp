@@ -66,6 +66,8 @@ int main(int argc, char *argv[])
     #else
         serverExePath = app.applicationDirPath().append("/../../simulationserver/release/simulationserver.exe");
     #endif
+#elif defined(Q_OS_MACOS)
+    serverExePath = app.applicationDirPath().append("/../../../../simulationserver/simulationserver.app/Contents/MacOS/simulationserver");
 #else
     serverExePath = app.applicationDirPath().append("/../simulationserver/simulationserver");
 #endif

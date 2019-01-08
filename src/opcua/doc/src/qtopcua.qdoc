@@ -353,6 +353,12 @@
 
     Furthermore Qt OPC UA contains plugins under following licenses:
 
+    Qt OPC Ua in Qt \QtVersion may contain third party modules under following permissive licenses:
+
+    \generatelist{groupsbymodule attributions-qtopcua}
+
+    Linking to external libraries involves licenses from the backend providers:
+
     \section2 Open62541
 
     The Open62541 plugin is available under the same licenses as Qt OPC UA. The Open62541 library itself
@@ -381,18 +387,33 @@
     \title Building Qt OPC UA Open62541 Plugin
     \brief Build instructions for the Qt OPC UA Open62541 plugin.
 
-    The Open62541 plugin requires Open62541 v0.3 built with UA_ENABLE_AMALGAMATION=ON.
+    The Open62541 plugin is built by default from the included 3rd party sources and has no external dependencies.
+    The Open62541 source and header files bundled with Qt OPC UA have been generated from the v0.3.0 tag using the following commands:
+
+    \code
+        cmake -DCMAKE_BUILD_TYPE=Release -DUA_ENABLE_AMALGAMATION=ON
+        make
+    \endcode
+
+    In order to disable the Open62541 plugin completely use:
+
+    \code
+        qmake </path/to/qtopcua> -- -no-open62541
+    \encode
+
+    In case you want to you a custom version of the Open62541 plugin, Open62541 v0.3 built with UA_ENABLE_AMALGAMATION=ON
+    is required.
 
     When building at the top level, you have to specify the path to the Open62541 SDK:
 
     \code
-        configure OPEN62541_PREFIX=/path/to/sdk
+        configure -system-open62541 OPEN62541_PREFIX=/path/to/sdk
     \endcode
 
     If you are not building at the top level, this setting has to be given to qmake:
 
     \code
-        qmake </path/to/qtopcua> -- OPEN62541_PREFIX=/path/to/sdk
+        qmake </path/to/qtopcua> -- -system-open62541 OPEN62541_PREFIX=/path/to/sdk
     \endcode
 
     If the open62541 header and library files are located in a custom path, different settings must be used:

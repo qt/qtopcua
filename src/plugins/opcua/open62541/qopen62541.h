@@ -49,7 +49,7 @@
 #pragma clang diagnostic ignored "-Wunused-parameter"
 #endif
 
-#include <open62541/open62541.h>
+#include <open62541.h>
 
 #if defined(_MSC_VER)
 #pragma warning(pop)

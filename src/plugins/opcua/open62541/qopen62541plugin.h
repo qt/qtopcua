@@ -53,7 +53,7 @@ public:
     explicit QOpen62541Plugin(QObject *parent = nullptr);
     ~QOpen62541Plugin() override;
 
-    QOpcUaClient *createClient() override;
+    QOpcUaClient *createClient(const QVariantMap &backendProperties) override;
 };
 
 QT_END_NAMESPACE

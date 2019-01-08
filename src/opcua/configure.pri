@@ -23,7 +23,7 @@ defineTest(qtConfLibrary_uacpp) {
         inc = $${prefix}/include
     !isEmpty(inc) {
         config.input.$${input}.incdir += \
-            $$inc/uabase $$inc/uaclient $$inc/uastack $$inc/uapki
+            $$inc/uabasecpp $$inc/uaclientcpp $$inc/uastack $$inc/uapkicpp
     } else {
         qtLog("No UACPP_PREFIX and no UACPP_INCDIR specified; relying on global include paths.")
     }

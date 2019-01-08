@@ -27,7 +27,7 @@
 #include <QtCore/QString>
 #include <QtCore/QUuid>
 
-#include <uabase/uaguid.h>
+#include <uaguid.h>
 #include <cstring>
 
 QT_BEGIN_NAMESPACE

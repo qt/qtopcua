@@ -50,6 +50,7 @@
 #include <QtTest/QtTest>
 #include <QTcpSocket>
 #include <QTcpServer>
+#include <QVariantMap>
 
 class OpcuaConnector
 {
@@ -538,7 +539,11 @@ void Tst_QOpcUaClient::initTestCase()
     const QHostAddress defaultHost(QHostAddress::LocalHost);
 
     for (const auto &backend: m_backends) {
-        QOpcUaClient *client = m_opcUa.createClient(backend);
+        QVariantMap backendOptions;
+        if (backend == QLatin1String("uacpp"))
+            backendOptions.insert(QLatin1String("disableEncryptedPasswordCheck"), true);
+
+        QOpcUaClient *client = m_opcUa.createClient(backend, backendOptions);
         QVERIFY2(client != nullptr,
                  QString("Loading backend failed: %1").arg(backend).toLatin1().data());
         client->setParent(this);
@@ -548,12 +553,19 @@ void Tst_QOpcUaClient::initTestCase()
 
     if (qEnvironmentVariableIsEmpty("OPCUA_HOST") && qEnvironmentVariableIsEmpty("OPCUA_PORT")) {
         m_testServerPath = qApp->applicationDirPath()
+
+#if defined(Q_OS_MACOS)
+                                     + QLatin1String("/../../open62541-testserver/open62541-testserver.app/Contents/MacOS/open62541-testserver")
+#else
+
 #ifdef Q_OS_WIN
                                      + QLatin1String("/..")
 #endif
                                      + QLatin1String("/../../open62541-testserver/open62541-testserver")
 #ifdef Q_OS_WIN
                                      + QLatin1String(".exe")
+#endif
+
 #endif
                 ;
         if (!QFile::exists(m_testServerPath)) {
@@ -874,6 +886,12 @@ void Tst_QOpcUaClient::writeMultipleAttributes()
 void Tst_QOpcUaClient::readEmptyArrayVariable()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
+
+    // open62541 indicates an empty array with an array length of 0 and a data pointer with value 0x1.
+    // This test makes sure that empty arrays are handled correctly without causing a segfault.
+    if (opcuaClient->backend() == QLatin1String("uacpp"))
+        QSKIP("This test is only necessary for open62541");
+
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=EmptyBoolArray"));

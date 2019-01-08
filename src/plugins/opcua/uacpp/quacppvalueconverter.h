@@ -27,8 +27,8 @@
 
 #include <QtCore/QVariant>
 
-#include <uabase/uanodeid.h>
-#include <uabase/uaarraytemplates.h> // for UaStringArray
+#include <uanodeid.h>
+#include <uaarraytemplates.h> // for UaStringArray
 
 class UaLocalizedText;
 class UaArgument;

@@ -26,7 +26,7 @@
 
 #include <QtCore/QLoggingCategory>
 
-#include <uaclient/uasession.h>
+#include <uasession.h>
 #include <uaeventfilterresult.h>
 
 using namespace UaClientSdk;
