@@ -146,6 +146,9 @@ private slots:
     defineDataMethod(connectAndDisconnectUsingCertificate_data)
     void connectAndDisconnectUsingCertificate();
 
+    defineDataMethod(connectAndDisconnectUsingEncryptedPassword_data)
+    void connectAndDisconnectUsingEncryptedPassword();
+
 private:
     QString envOrDefault(const char *env, QString def)
     {
@@ -279,6 +282,13 @@ void Tst_QOpcUaSecurity::connectAndDisconnectUsingCertificate()
 
     qDebug() << "Testing security policy" << endpoint.securityPolicyUri();
     QSignalSpy connectSpy(client.data(), &QOpcUaClient::stateChanged);
+    int passwordRequestSpy = 0;
+    connect(client.data(), &QOpcUaClient::passwordForPrivateKeyRequired, [&passwordRequestSpy](const QString &privateKeyFilePath, QString *password, bool previousTryFailed) {
+        Q_UNUSED(privateKeyFilePath);
+        Q_UNUSED(previousTryFailed);
+        Q_UNUSED(password);
+        ++passwordRequestSpy;
+    });
 
     client->connectToEndpoint(endpoint);
     connectSpy.wait();
@@ -289,6 +299,81 @@ void Tst_QOpcUaSecurity::connectAndDisconnectUsingCertificate()
     QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Connecting);
     connectSpy.wait();
     QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Connected);
+
+    QCOMPARE(passwordRequestSpy, 0);
+
+    QCOMPARE(client->endpoint(), endpoint);
+    QCOMPARE(client->error(), QOpcUaClient::NoError);
+    qDebug() << "connected";
+
+    connectSpy.clear();
+    client->disconnectFromEndpoint();
+    connectSpy.wait();
+    QCOMPARE(connectSpy.count(), 2);
+    QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Closing);
+    QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Disconnected);
+}
+
+void Tst_QOpcUaSecurity::connectAndDisconnectUsingEncryptedPassword()
+{
+    QFETCH(QString, backend);
+    QFETCH(QOpcUaEndpointDescription, endpoint);
+
+    QScopedPointer<QOpcUaClient> client(m_opcUa.createClient(backend));
+    QVERIFY2(client, QString("Loading backend failed: %1").arg(backend).toLatin1().data());
+
+    if (!client->supportedUserTokenTypes().contains(QOpcUaUserTokenPolicy::TokenType::Certificate))
+        QSKIP(QString("This test is skipped because backend %1 does not support certificate authentication").arg(client->backend()).toLatin1().constData());
+
+    const QString pkidir = m_pkiData->path();
+    QOpcUaPkiConfiguration pkiConfig;
+    pkiConfig.setClientCertificateLocation(pkidir + "/own/certs/tst_security.der");
+    pkiConfig.setPrivateKeyLocation(pkidir + "/own/private/privateKeyWithPassword:secret.pem");
+    pkiConfig.setTrustListLocation(pkidir + "/trusted/certs");
+    pkiConfig.setRevocationListLocation(pkidir + "/trusted/crl");
+    pkiConfig.setIssuerListLocation(pkidir + "/issuers/certs");
+    pkiConfig.setIssuerRevocationListLocation(pkidir + "/issuers/crl");
+
+    const auto identity = pkiConfig.applicationIdentity();
+    QOpcUaAuthenticationInformation authInfo;
+    authInfo.setCertificateAuthentication();
+
+    client->setAuthenticationInformation(authInfo);
+    client->setIdentity(identity);
+    client->setPkiConfiguration(pkiConfig);
+
+    qDebug() << "Testing security policy" << endpoint.securityPolicyUri();
+    QSignalSpy connectSpy(client.data(), &QOpcUaClient::stateChanged);
+    int passwordRequestSpy = 0;
+    connect(client.data(), &QOpcUaClient::passwordForPrivateKeyRequired, [&passwordRequestSpy, &pkiConfig](const QString &privateKeyFilePath, QString *password, bool previousTryFailed) {
+        qDebug() << "Password requested";
+        if (passwordRequestSpy == 0) {
+            QVERIFY(password->isEmpty());
+            QVERIFY(previousTryFailed == false);
+        } else {
+            QVERIFY(*password == QLatin1String("wrong password"));
+            QVERIFY(previousTryFailed == true);
+        }
+
+        QCOMPARE(privateKeyFilePath, pkiConfig.privateKeyLocation());
+
+        if (passwordRequestSpy < 1)
+            *password = "wrong password";
+        else
+            *password = "secret";
+        ++passwordRequestSpy;
+    });
+
+    client->connectToEndpoint(endpoint);
+    connectSpy.wait();
+    if (client->state() == QOpcUaClient::Connecting)
+        connectSpy.wait();
+
+    QCOMPARE(connectSpy.count(), 2);
+    QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Connecting);
+    QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Connected);
+
+    QCOMPARE(passwordRequestSpy, 2);
 
     QCOMPARE(client->endpoint(), endpoint);
     QCOMPARE(client->error(), QOpcUaClient::NoError);

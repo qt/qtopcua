@@ -112,6 +112,11 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
         Q_Q(QOpcUaClient);
         emit q->connectError(errorState);
     });
+
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::passwordForPrivateKeyRequired, [this](QString privateKeyFilePath, QString *password, bool previousTryWasInvalid) {
+        Q_Q(QOpcUaClient);
+        emit q->passwordForPrivateKeyRequired(privateKeyFilePath, password, previousTryWasInvalid);
+    });
 }
 
 QOpcUaClientPrivate::~QOpcUaClientPrivate()

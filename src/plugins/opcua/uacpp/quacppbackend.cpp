@@ -294,8 +294,26 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
 
         if (result.isGood()) {
             result = sessionSecurityInfo.loadClientCertificateOpenSSL(certificateFilePath, privateKeyFilePath);
-            if (!result.isGood())
+            if (!result.isGood()) {
                 qCWarning(QT_OPCUA_PLUGINS_UACPP) << "sessionSecurityInfo.loadClientCertificateOpenSSL failed";
+                QString password;
+
+                do {
+                    // This signal is connected using Qt::BlockingQueuedConnection. It will place a metacall to a different thread and waits
+                    // until this metacall is fully handled before returning.
+                    emit QOpcUaBackend::passwordForPrivateKeyRequired(pkiConfig.privateKeyLocation(), &password, !password.isEmpty());
+
+                    if (password.isEmpty())
+                        break;
+
+                    result = sessionSecurityInfo.loadClientCertificateOpenSSL(certificateFilePath, privateKeyFilePath, UaString(password.toUtf8()));
+
+                    if (result.isGood())
+                        break;
+
+                    qCWarning(QT_OPCUA_PLUGINS_UACPP) << "sessionSecurityInfo.loadClientCertificateOpenSSL failed";
+                } while (true);
+            }
         }
 
         if (result.isNotGood()) {

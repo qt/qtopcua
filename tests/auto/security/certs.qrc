@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file>pki/own/certs/tst_security.der</file>
         <file>pki/own/private/privateKeyWithoutPassword.pem</file>
+        <file>pki/own/private/privateKeyWithPassword:secret.pem</file>
         <file>pki/trusted/certs/ca.der</file>
         <file>pki/trusted/certs/open62541-testserver.der</file>
         <file>pki/trusted/crl/ca.crl.pem</file>
