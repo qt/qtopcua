@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
     \list
     \li Anonymous
     \li Username
+    \li Certificate
     \endlist
 
     The anonymous method is used by default but also can be set manually.
@@ -66,7 +67,7 @@ QT_BEGIN_NAMESPACE
     m_client->connectToEndpoint(url);
     \endcode
 
-    \sa setAnonymousAuthentication setUsernameAuthentication
+    \sa setAnonymousAuthentication() setUsernameAuthentication() setCertificateAuthentication()
 */
 
 /*!
@@ -88,9 +89,10 @@ QT_BEGIN_NAMESPACE
     \list
     \li anonymous
     \li usernane
+    \li Certificate
     \endlist
 
-    \sa setAnonymousAuthentication() setUsernameAuthentication()
+    \sa setAnonymousAuthentication() setUsernameAuthentication() setCertificateAuthentication()
 */
 
 class QOpcUaAuthenticationInformationData : public QSharedData
@@ -165,6 +167,24 @@ void QOpcUaAuthenticationInformation::setUsernameAuthentication(const QString &u
 {
     data->authenticationType = QOpcUa::QUserTokenPolicy::TokenType::Username;
     data->authenticationData = QVariant::fromValue(qMakePair(username, password));
+}
+
+/*!
+    Sets the authentication method to use certificates.
+
+    This function is currently available as a Technology Preview, and therefore the API
+    and functionality provided by the class may be subject to change at any time without
+    prior notice.
+
+    When using this authentication type a proper configured \l QOpcUaPkiConfiguration has to be set to
+    the \l QOpcUaClient.
+
+    \sa QOpcUaPkiConfiguration QOpcUaClient::setPkiConfiguration()
+*/
+void QOpcUaAuthenticationInformation::setCertificateAuthentication()
+{
+    data->authenticationData = QVariant();
+    data->authenticationType = QOpcUa::QUserTokenPolicy::TokenType::Certificate;
 }
 
 /*!
