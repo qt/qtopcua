@@ -41,6 +41,7 @@
 #include <private/qopcuaclient_p.h>
 
 #include "qopcuaauthenticationinformation.h"
+#include <qopcuaerrorstate.h>
 
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qstringlist.h>
@@ -797,6 +798,82 @@ void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
         UA_Client_delete(m_uaclient);
         m_uaclient = nullptr;
         QOpcUaClient::ClientError error = ret == UA_STATUSCODE_BADUSERACCESSDENIED ? QOpcUaClient::AccessDenied : QOpcUaClient::UnknownError;
+
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to connect";
+        return;
+    }
+
+    m_useStateCallback = true;
+    emit stateAndOrErrorChanged(QOpcUaClient::Connected, QOpcUaClient::NoError);
+}
+
+void Open62541AsyncBackend::connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint)
+{
+    const QString nonePolicyUri = QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#None");
+
+    if (endpoint.securityPolicyUri() != nonePolicyUri) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "open62541 does not yet support secure connections";
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::NoError);
+        return;
+    }
+
+    cleanupSubscriptions();
+
+    if (m_uaclient)
+        UA_Client_delete(m_uaclient);
+
+    m_useStateCallback = false;
+
+    UA_ClientConfig conf = UA_ClientConfig_default;
+    conf.clientContext = this;
+    conf.stateCallback = &clientStateCallback;
+    m_uaclient = UA_Client_new(conf);
+    UA_StatusCode ret;
+    const auto authInfo = m_clientImpl->m_client->authenticationInformation();
+
+    if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Anonymous) {
+        ret = UA_Client_connect(m_uaclient, endpoint.endpointUrl().toUtf8().constData());
+    } else if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Username) {
+
+        bool suitableTokenFound = false;
+        for (const auto token : endpoint.userIdentityTokens()) {
+            if (token.tokenType() == QOpcUa::QUserTokenPolicy::Username && token.securityPolicyUri() == nonePolicyUri) {
+                suitableTokenFound = true;
+                break;
+            }
+        }
+
+        if (!suitableTokenFound) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "open62541 does not yet support encrypted passwords";
+            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::NoError);
+            return;
+        }
+
+        const auto credentials = authInfo.authenticationData().value<QPair<QString, QString>>();
+        ret = UA_Client_connect_username(m_uaclient, endpoint.endpointUrl().toUtf8().constData(),
+                                         credentials.first.toUtf8().constData(), credentials.second.toUtf8().constData());
+    } else {
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnsupportedAuthenticationInformation);
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to connect: Selected authentication type"
+                                          << authInfo.authenticationType() << "is not supported.";
+        return;
+    }
+
+    if (ret != UA_STATUSCODE_GOOD) {
+        UA_Client_delete(m_uaclient);
+        m_uaclient = nullptr;
+        QOpcUaClient::ClientError error = ret == UA_STATUSCODE_BADUSERACCESSDENIED ? QOpcUaClient::AccessDenied : QOpcUaClient::UnknownError;
+
+        QOpcUaErrorState errorState;
+        errorState.setConnectionStep(QOpcUaErrorState::ConnectionStep::Unknown);
+        errorState.setErrorCode(static_cast<QOpcUa::UaStatusCode>(ret));
+        errorState.setClientSideError(false);
+        errorState.setIgnoreError(false);
+
+        // This signal is connected using Qt::BlockingQueuedConnection. It will place a metacall to a different thread and waits
+        // until this metacall is fully handled before returning.
+        emit QOpcUaBackend::connectError(&errorState);
 
         emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to connect";

@@ -76,9 +76,8 @@ void QOpen62541Client::connectToEndpoint(const QUrl &url)
 
 void QOpen62541Client::connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint)
 {
-    Q_UNUSED(endpoint);
-    qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Connect to Endpoint using endpoint description is not implemented in open62541 backend.";
-    emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
+    QMetaObject::invokeMethod(m_backend, "connectToEndpoint", Qt::QueuedConnection,
+                                     Q_ARG(QOpcUa::QEndpointDescription, endpoint));
 }
 
 void QOpen62541Client::disconnectFromEndpoint()
