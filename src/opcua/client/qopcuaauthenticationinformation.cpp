@@ -85,8 +85,8 @@ QT_BEGIN_NAMESPACE
     Current supported authentication methods are:
 
     \list
-    \li anonymous
-    \li usernane
+    \li Anonymous
+    \li Usernane
     \li Certificate
     \endlist
 
