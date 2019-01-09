@@ -3078,6 +3078,18 @@ QOpcUa::QUserTokenPolicy &QOpcUa::QUserTokenPolicy::operator=(const QOpcUa::QUse
     return *this;
 }
 
+/*!
+    Returns \c true if this user token policy has the same value as \a rhs.
+*/
+bool QOpcUa::QUserTokenPolicy::operator==(const QOpcUa::QUserTokenPolicy &rhs) const
+{
+    return rhs.policyId() == policyId() &&
+            rhs.tokenType() == tokenType() &&
+            rhs.issuedTokenType() == issuedTokenType() &&
+            rhs.issuerEndpointUrl() == issuerEndpointUrl() &&
+            rhs.securityPolicyUri() == securityPolicyUri();
+}
+
 QOpcUa::QUserTokenPolicy::~QUserTokenPolicy()
 {
 }
@@ -3212,6 +3224,20 @@ QOpcUa::QApplicationDescription &QOpcUa::QApplicationDescription::operator=(cons
 {
     this->data = other.data;
     return *this;
+}
+
+/*!
+    Returns \c true if this application description has the same value as \a rhs.
+*/
+bool QOpcUa::QApplicationDescription::operator==(const QOpcUa::QApplicationDescription &rhs) const
+{
+    return rhs.productUri() == productUri() &&
+            rhs.discoveryUrls() == discoveryUrls() &&
+            rhs.applicationUri() == applicationUri() &&
+            rhs.applicationName() == applicationName() &&
+            rhs.applicationType() == applicationType() &&
+            rhs.gatewayServerUri() == gatewayServerUri() &&
+            rhs.discoveryProfileUri() == rhs.discoveryProfileUri();
 }
 
 QOpcUa::QApplicationDescription::~QApplicationDescription()
@@ -3390,6 +3416,21 @@ QOpcUa::QEndpointDescription &QOpcUa::QEndpointDescription::operator=(const QOpc
     if (this != &rhs)
         data.operator=(rhs.data);
     return *this;
+}
+
+/*!
+    Returns \c true if this endpoint description has the same value as \a rhs.
+ */
+bool QOpcUa::QEndpointDescription::operator==(const QOpcUa::QEndpointDescription &rhs) const
+{
+    return rhs.server() == server() &&
+            rhs.endpointUrl() == endpointUrl() &&
+            rhs.securityMode() == securityMode() &&
+            rhs.securityLevel() == securityLevel() &&
+            rhs.securityPolicyUri() == securityPolicyUri() &&
+            rhs.serverCertificate() == serverCertificate() &&
+            rhs.userIdentityTokens() == userIdentityTokens() &&
+            rhs.transportProfileUri() == transportProfileUri();
 }
 
 QOpcUa::QEndpointDescription::~QEndpointDescription()

@@ -981,6 +981,7 @@ public:
     QUserTokenPolicy();
     QUserTokenPolicy(const QUserTokenPolicy &);
     QUserTokenPolicy &operator=(const QUserTokenPolicy &);
+    bool operator==(const QUserTokenPolicy &) const;
     ~QUserTokenPolicy();
 
     enum TokenType {
@@ -1016,6 +1017,7 @@ public:
     QApplicationDescription();
     QApplicationDescription(const QApplicationDescription &);
     QApplicationDescription &operator=(const QApplicationDescription &);
+    bool operator==(const QApplicationDescription &) const;
     ~QApplicationDescription();
 
     enum ApplicationType {
@@ -1058,6 +1060,7 @@ public:
     QEndpointDescription();
     QEndpointDescription(const QEndpointDescription &);
     QEndpointDescription &operator=(const QEndpointDescription &);
+    bool operator==(const QEndpointDescription &) const;
     ~QEndpointDescription();
 
     enum MessageSecurityMode {
