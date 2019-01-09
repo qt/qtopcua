@@ -38,7 +38,6 @@ public:
     explicit QUACppClient(const QVariantMap &backendProperties);
     ~QUACppClient();
 
-    void connectToEndpoint(const QUrl &url) override;
     void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint) override;
     void disconnectFromEndpoint() override;
 

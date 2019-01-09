@@ -52,7 +52,6 @@ public:
     ~Open62541AsyncBackend();
 
 public Q_SLOTS:
-    void connectToEndpoint(const QUrl &url);
     void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint);
     void disconnectFromEndpoint();
     void requestEndpoints(const QUrl &url);

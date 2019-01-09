@@ -204,59 +204,6 @@ void UACppAsyncBackend::browse(quint64 handle, const UaNodeId &id, const QOpcUaB
     emit browseFinished(handle, ret, static_cast<QOpcUa::UaStatusCode>(status.statusCode()));
 }
 
-void UACppAsyncBackend::connectToEndpoint(const QUrl &url)
-{
-    UaStatus result;
-    QOpcUaApplicationIdentity identity;
-
-    if (m_clientImpl && m_clientImpl->m_client) {
-        identity = m_clientImpl->m_client->identity();
-    } else {
-        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect: could not get application identity.";
-        return;
-    }
-
-    UaString uaUrl(url.toString().toUtf8().constData());
-    SessionConnectInfo sessionConnectInfo;
-    UaString sNodeName(QHostInfo::localHostName().toUtf8().constData());
-
-    sessionConnectInfo.sApplicationName = identity.applicationName().toUtf8().constData();
-    sessionConnectInfo.sApplicationUri  = identity.applicationUri().toUtf8().constData();
-    sessionConnectInfo.sProductUri      = identity.productUri().toUtf8().constData();
-    sessionConnectInfo.sSessionName     = sessionConnectInfo.sApplicationUri;
-    sessionConnectInfo.bAutomaticReconnect = OpcUa_False;
-
-    sessionConnectInfo.applicationType = static_cast<OpcUa_ApplicationType>(identity.applicationType());
-
-    SessionSecurityInfo sessionSecurityInfo;
-    const auto authInfo = m_clientImpl->m_client->authenticationInformation();
-
-    if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Anonymous) {
-        // nothing to do
-    } else if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Username) {
-        const auto credentials = authInfo.authenticationData().value<QPair<QString, QString>>();
-        UaString username(credentials.first.toUtf8().constData());
-        UaString password(credentials.second.toUtf8().constData());
-        sessionSecurityInfo.setUserPasswordUserIdentity(username, password);
-        if (m_disableEncryptedPasswordCheck)
-            sessionSecurityInfo.disableEncryptedPasswordCheck = OpcUa_True;
-    } else {
-        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnsupportedAuthenticationInformation);
-        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect: Selected authentication type"
-                                          << authInfo.authenticationType() << "is not supported.";
-        return;
-    }
-
-    result = m_nativeSession->connect(uaUrl, sessionConnectInfo, sessionSecurityInfo, this);
-
-    if (result.isNotGood()) {
-        // ### TODO: Check for bad syntax, which is the "wrong url" part
-        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
-        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect: " << QString::fromUtf8(result.toString().toUtf8());
-        return;
-    }
-}
-
 void UACppAsyncBackend::connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint)
 {
     const auto identity = m_clientImpl->m_client->identity();

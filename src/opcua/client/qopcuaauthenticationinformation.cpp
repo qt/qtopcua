@@ -58,13 +58,11 @@ QT_BEGIN_NAMESPACE
     This is an example authentication using username and password.
 
     \code
-    QUrl url("opc.tcp://localhost:4840");
-
     QOpcUaAuthenticationInformation authInfo;
     authInfo.setUsernameAuthentication("user", "password");
 
     m_client->setAuthenticationInformation(authInfo);
-    m_client->connectToEndpoint(url);
+    m_client->connectToEndpoint(endpoint);
     \endcode
 
     \sa setAnonymousAuthentication() setUsernameAuthentication() setCertificateAuthentication()

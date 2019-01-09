@@ -55,7 +55,7 @@
 class OpcuaConnector
 {
 public:
-    OpcuaConnector(QOpcUaClient *client, const QString &endPoint)
+    OpcuaConnector(QOpcUaClient *client, const QOpcUa::QEndpointDescription &endPoint)
         : opcuaClient(client)
     {
         QVERIFY(opcuaClient != nullptr);
@@ -64,7 +64,8 @@ public:
         QSignalSpy stateSpy(opcuaClient, &QOpcUaClient::stateChanged);
 
         QTest::qWait(500);
-        opcuaClient->connectToEndpoint(QUrl(endPoint));
+
+        opcuaClient->connectToEndpoint(endPoint);
         QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
 
         QCOMPARE(connectedSpy.count(), 1); // one connected signal fired
@@ -80,7 +81,7 @@ public:
         connectedSpy.clear();
         disconnectedSpy.clear();
 
-        QVERIFY(opcuaClient->url() == QUrl(endPoint));
+        QVERIFY(opcuaClient->endpoint() == endPoint);
     }
 
     ~OpcuaConnector()
@@ -483,12 +484,13 @@ private:
         return qEnvironmentVariableIsSet(env) ? qgetenv(env).constData() : def;
     }
 
-    QString m_endpoint;
+    QString m_discoveryEndpoint;
     QOpcUaProvider m_opcUa;
     QStringList m_backends;
     QVector<QOpcUaClient *> m_clients;
     QProcess m_serverProcess;
     QString m_testServerPath;
+    QOpcUa::QEndpointDescription m_endpoint;
 };
 
 #define READ_MANDATORY_BASE_NODE(NODE) \
@@ -595,14 +597,30 @@ void Tst_QOpcUaClient::initTestCase()
     }
     QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
     QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-    m_endpoint = QString("opc.tcp://%1:%2").arg(host).arg(port);
-    qDebug() << "Using endpoint:" << m_endpoint;
+    m_discoveryEndpoint = QString("opc.tcp://%1:%2").arg(host).arg(port);
+    qDebug() << "Using endpoint:" << m_discoveryEndpoint;
+
+    QOpcUaClient *client = m_clients.first();
+    if (client) {
+        QSignalSpy endpointSpy(m_clients.first(), &QOpcUaClient::endpointsRequestFinished);
+
+        client->requestEndpoints(m_discoveryEndpoint);
+        endpointSpy.wait();
+        QCOMPARE(endpointSpy.size(), 1);
+
+        const QVector<QOpcUa::QEndpointDescription> desc = endpointSpy.at(0).at(0).value<QVector<QOpcUa::QEndpointDescription>>();
+        QVERIFY(desc.size() > 0);
+
+        m_endpoint = desc.first();
+    }
 }
 
 void Tst_QOpcUaClient::connectToInvalid()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
-    opcuaClient->connectToEndpoint(QUrl("opc.tcp:127.0.0.1:1234"));
+    QOpcUa::QEndpointDescription invalidEndpoint;
+    invalidEndpoint.setEndpointUrl(QLatin1String("opc.tcp:127.0.0.1:1234"));
+    opcuaClient->connectToEndpoint(invalidEndpoint);
     // Depending on the event loop the client might have switched to Disconnected already
     QVERIFY(opcuaClient->state() == QOpcUaClient::Connecting || opcuaClient->state() == QOpcUaClient::Disconnected);
 
@@ -615,8 +633,7 @@ void Tst_QOpcUaClient::connectToInvalid()
     QVERIFY(opcuaClient->state() == QOpcUaClient::Connected ||
             opcuaClient->state() == QOpcUaClient::Disconnected);
 
-    QUrl url = opcuaClient->url();
-    QCOMPARE(url, QUrl("opc.tcp:127.0.0.1:1234"));
+    QCOMPARE(opcuaClient->endpoint(), invalidEndpoint);
 }
 
 void Tst_QOpcUaClient::connectAndDisconnect()
@@ -635,12 +652,12 @@ void Tst_QOpcUaClient::connectInvalidPassword()
 
     QSignalSpy connectSpy(opcuaClient, &QOpcUaClient::stateChanged);
 
-    opcuaClient->connectToEndpoint(QUrl(m_endpoint));
+    opcuaClient->connectToEndpoint(m_endpoint);
     QTRY_VERIFY_WITH_TIMEOUT(connectSpy.count() == 2, 3000);
     QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Connecting);
     QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Disconnected);
 
-    QCOMPARE(opcuaClient->url(), QUrl(m_endpoint));
+    QCOMPARE(opcuaClient->endpoint(), m_endpoint);
     QCOMPARE(opcuaClient->error(), QOpcUaClient::AccessDenied);
 }
 
@@ -654,14 +671,14 @@ void Tst_QOpcUaClient::connectAndDisconnectPassword()
 
     QSignalSpy connectSpy(opcuaClient, &QOpcUaClient::stateChanged);
 
-    opcuaClient->connectToEndpoint(QUrl(m_endpoint));
+    opcuaClient->connectToEndpoint(m_endpoint);
     connectSpy.wait();
 
     QCOMPARE(connectSpy.count(), 2);
     QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Connecting);
     QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Connected);
 
-    QCOMPARE(opcuaClient->url(), QUrl(m_endpoint));
+    QCOMPARE(opcuaClient->endpoint(), m_endpoint);
     QCOMPARE(opcuaClient->error(), QOpcUaClient::NoError);
 
     connectSpy.clear();
@@ -678,7 +695,7 @@ void Tst_QOpcUaClient::findServers()
 
     QSignalSpy discoverySpy(opcuaClient, &QOpcUaClient::findServersFinished);
 
-    opcuaClient->findServers(m_endpoint);
+    opcuaClient->findServers(m_discoveryEndpoint);
 
     discoverySpy.wait();
 
@@ -699,7 +716,7 @@ void Tst_QOpcUaClient::requestEndpoints()
 
     QSignalSpy endpointSpy(opcuaClient, &QOpcUaClient::endpointsRequestFinished);
 
-    opcuaClient->requestEndpoints(m_endpoint);
+    opcuaClient->requestEndpoints(m_discoveryEndpoint);
     endpointSpy.wait();
     QCOMPARE(endpointSpy.size(), 1);
 

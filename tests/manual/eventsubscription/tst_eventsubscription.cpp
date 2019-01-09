@@ -42,7 +42,7 @@
 class OpcuaConnector
 {
 public:
-    OpcuaConnector(QOpcUaClient *client, const QString &endPoint)
+    OpcuaConnector(QOpcUaClient *client, const QOpcUa::QEndpointDescription &endPoint)
         : opcuaClient(client)
     {
         QVERIFY(opcuaClient != nullptr);
@@ -51,7 +51,7 @@ public:
         QSignalSpy stateSpy(opcuaClient, &QOpcUaClient::stateChanged);
 
         QTest::qWait(500);
-        opcuaClient->connectToEndpoint(QUrl(endPoint));
+        opcuaClient->connectToEndpoint(endPoint);
         QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
 
         QCOMPARE(connectedSpy.count(), 1); // one connected signal fired
@@ -67,7 +67,7 @@ public:
         connectedSpy.clear();
         disconnectedSpy.clear();
 
-        QVERIFY(opcuaClient->url() == QUrl(endPoint));
+        QVERIFY(opcuaClient->endpoint() == endPoint);
     }
 
     ~OpcuaConnector()
@@ -116,6 +116,7 @@ private Q_SLOTS:
 private:
     QVector<QOpcUaClient *> m_clients;
     QString m_serverUrl;
+    QOpcUa::QEndpointDescription m_endpoint;
 };
 
 EventsubscriptionTest::EventsubscriptionTest()
@@ -135,6 +136,20 @@ void EventsubscriptionTest::initTestCase()
             m_clients.append(temp);
         else
             QFAIL(QStringLiteral("Failed to create client for backend %1").arg(it).toUtf8().constData());
+    }
+
+    QOpcUaClient *client = m_clients.first();
+    if (client) {
+        QSignalSpy endpointSpy(m_clients.first(), &QOpcUaClient::endpointsRequestFinished);
+
+        client->requestEndpoints(m_serverUrl);
+        endpointSpy.wait();
+        QCOMPARE(endpointSpy.size(), 1);
+
+        const QVector<QOpcUa::QEndpointDescription> desc = endpointSpy.at(0).at(0).value<QVector<QOpcUa::QEndpointDescription>>();
+        QVERIFY(desc.size() > 0);
+
+        m_endpoint = desc.first();
     }
 }
 
@@ -158,7 +173,7 @@ void EventsubscriptionTest::eventSubscription_data()
 void EventsubscriptionTest::eventSubscription()
 {
     QFETCH(QOpcUaClient *, client);
-    OpcuaConnector connector(client, m_serverUrl);
+    OpcuaConnector connector(client, m_endpoint);
 
     QScopedPointer<QOpcUaNode> serverNode(client->node("ns=0;i=2253")); // Server object
     QVERIFY(serverNode != nullptr);

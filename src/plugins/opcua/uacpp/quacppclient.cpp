@@ -59,11 +59,6 @@ QUACppClient::~QUACppClient()
         m_thread->quit();
 }
 
-void QUACppClient::connectToEndpoint(const QUrl &url)
-{
-    QMetaObject::invokeMethod(m_backend, "connectToEndpoint", Qt::QueuedConnection, Q_ARG(QUrl, url));
-}
-
 void QUACppClient::connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint)
 {
     QMetaObject::invokeMethod(m_backend, "connectToEndpoint", Qt::QueuedConnection, Q_ARG(QOpcUa::QEndpointDescription, endpoint));

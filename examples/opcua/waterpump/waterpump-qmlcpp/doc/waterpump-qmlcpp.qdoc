@@ -148,11 +148,20 @@
     \printuntil setBackends
     \dots
 
-    Before attempting a connection, a QOpcUaClient with the selected backend is created. Its \l QOpcUaClient::stateChanged signal must be
-    connected to the backend's clientStateHandler slot.
+    Before attempting a connection, a QOpcUaClient with the selected backend is created.
+    Its \l QOpcUaClient::endpointsRequestFinished signal is connected to the backend's requestEndpointsFinished slot.
+    The \l QOpcUaClient::stateChanged signal must be connected to the backend's clientStateHandler slot.
 
     \quotefromfile waterpump/waterpump-qmlcpp/opcuamachinebackend.cpp
     \skipto OpcUaMachineBackend::connectToEndpoint
+    \printuntil m_client->requestEndpoints
+    \printuntil }
+
+    The \l requestEndpointsFinished slot receives the list of available endpoints on the server and starts a connection
+    to the first entry in the list. If there are no available endpoints, the connection establishment is aborted.
+
+    \quotefromfile waterpump/waterpump-qmlcpp/opcuamachinebackend.cpp
+    \skipto void OpcUaMachineBackend::requestEndpointsFinished
     \printuntil m_client->connectToEndpoint
     \printuntil }
 

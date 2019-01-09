@@ -102,6 +102,7 @@ public:
     Q_INVOKABLE void resetSimulation();
 
 public slots:
+    void requestEndpointsFinished(const QVector<QOpcUa::QEndpointDescription> &endpoints);
     void clientStateHandler(QOpcUaClient::ClientState state);
     void machineStateUpdated(QOpcUa::NodeAttribute attr, const QVariant &value);
     void percentFilledTank1Updated(QOpcUa::NodeAttribute attr, const QVariant &value);

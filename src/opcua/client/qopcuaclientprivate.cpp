@@ -117,19 +117,9 @@ QOpcUaClientPrivate::~QOpcUaClientPrivate()
 {
 }
 
-void QOpcUaClientPrivate::connectToEndpoint(const QUrl &url)
-{
-    bool result = checkAndSetUrl(url);
-    if (result) {
-        setStateAndError(QOpcUaClient::Connecting);
-        m_impl->connectToEndpoint(url);
-    } else {
-        setStateAndError(QOpcUaClient::Disconnected, QOpcUaClient::InvalidUrl);
-    }
-}
-
 void QOpcUaClientPrivate::connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint)
 {
+    m_endpoint = endpoint;
     setStateAndError(QOpcUaClient::Connecting);
     m_impl->connectToEndpoint(endpoint);
 }
@@ -143,17 +133,6 @@ void QOpcUaClientPrivate::disconnectFromEndpoint()
 
     setStateAndError(QOpcUaClient::Closing);
     m_impl->disconnectFromEndpoint();
-}
-
-bool QOpcUaClientPrivate::checkAndSetUrl(const QUrl &url)
-{
-    if (url.scheme() != QStringLiteral("opc.tcp")) {
-        qCWarning(QT_OPCUA) << "Wrong url scheme, could not connect";
-        return false;
-    }
-
-    m_url = url;
-    return true;
 }
 
 void QOpcUaClientPrivate::setStateAndError(QOpcUaClient::ClientState state,

@@ -52,7 +52,6 @@ public:
     bool connectError(OpcUa_UInt32 clientConnectionId, UaClientSdk::UaClient::ConnectServiceType serviceType, const UaStatus &error, bool clientSideError) override;
 
 public Q_SLOTS:
-    void connectToEndpoint(const QUrl &url);
     void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint);
     void disconnectFromEndpoint();
 

@@ -284,6 +284,16 @@ void OpcUaMachineBackend::resetSimulation()
         m_machineNode->callMethod("ns=2;s=Machine.Reset");
 }
 
+void OpcUaMachineBackend::requestEndpointsFinished(const QVector<QOpcUa::QEndpointDescription> &endpoints)
+{
+    if (endpoints.isEmpty()) {
+       qWarning() << "The server did not return any endpoints";
+       clientStateHandler(QOpcUaClient::ClientState::Disconnected);
+       return;
+    }
+    m_client->connectToEndpoint(endpoints.at(0));
+}
+
 void OpcUaMachineBackend::setMessage(const QString &message)
 {
     if (message != m_message) {
@@ -324,8 +334,10 @@ void OpcUaMachineBackend::connectToEndpoint(const QString &url, qint32 index)
 
     if (!m_client || (m_client && m_client->backend() != m_backends.at(index))) {
         m_client.reset(provider.createClient(m_backends.at(index)));
-        if (m_client)
+        if (m_client) {
+            QObject::connect(m_client.data(), &QOpcUaClient::endpointsRequestFinished, this, &OpcUaMachineBackend::requestEndpointsFinished);
             QObject::connect(m_client.data(), &QOpcUaClient::stateChanged, this, &OpcUaMachineBackend::clientStateHandler);
+        }
     }
 
     if (!m_client) {
@@ -335,7 +347,7 @@ void OpcUaMachineBackend::connectToEndpoint(const QString &url, qint32 index)
     }
 
     m_successfullyCreated = true;
-    m_client->connectToEndpoint(QUrl(url));
+    m_client->requestEndpoints(url);
 }
 
 void OpcUaMachineBackend::disconnectFromEndpoint()

@@ -71,7 +71,8 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
     For an introduction to nodes and node ids, see \l QOpcUaNode.
 
     \section1 Usage
-    Create a \l QOpcUaClient using \l QOpcUaProvider and call \l connectToEndpoint() to connect to a server.
+    Create a \l QOpcUaClient using \l QOpcUaProvider, request a list of endpoints from the server
+    using \l requestEndpoints and call \l connectToEndpoint() to connect to one of the available endpoints.
     After the connection is established, a \l QOpcUaNode object for the root node is requested.
     \code
     QOpcUaProvider provider;
@@ -89,7 +90,15 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
                 qDebug() << "A node object has been created";
         }
     });
-    client->connectToEndpoint(QUrl("opc.tcp://127.0.0.1:4840")); // Connect the client to the server
+
+    QObject::connect(client, &QOpcUaClient::endpointsRequestFinished,
+                     [client](QVector<QOpcUa::QEndpointDescription> endpoints) {
+        qDebug() << "Endpoints returned:" << endpoints.count();
+        if (endpoints.size())
+            client->connectToEndpoint(endpoints.first()); // Connect to the first endpoint in the list
+    });
+
+    client->requestEndpoints(QUrl("opc.tcp://127.0.0.1:4840")); // Request a list of endpoints from the server
     \endcode
 */
 
@@ -342,30 +351,6 @@ QOpcUaPkiConfiguration QOpcUaClient::pkiConfiguration() const
 }
 
 /*!
-    Connects to the OPC UA endpoint given in \a url.
-
-    If the endpoint requires username authentication, at least a user name must be set in \l QOpcUaAuthenticationInformation.
-    Calling this function before setting an authentication information will use the anonymous authentication.
-
-    \code
-    QUrl url("opc.tcp://localhost:4840");
-
-    QOpcUaAuthenticationInformation authInfo;
-    authInfo.setUsernameAuthentication("user", "password");
-
-    m_client->setAuthenticationInformation(authInfo);
-    m_client->connectToEndpoint(url);
-    \endcode
-
-    \sa disconnectFromEndpoint() setAuthenticationInformation()
-*/
-void QOpcUaClient::connectToEndpoint(const QUrl &url)
-{
-    Q_D(QOpcUaClient);
-    d->connectToEndpoint(url);
-}
-
-/*!
     Connects to the OPC UA endpoint given in \a endpoint.
     \since QtOpcUa 5.13
 
@@ -406,13 +391,13 @@ void QOpcUaClient::disconnectFromEndpoint()
 }
 
 /*!
-    Returns the URL of the OPC UA server the client is currently connected to
+    Returns the description of the endpoint the client is currently connected to
     or was last connected to.
 */
-QUrl QOpcUaClient::url() const
+QOpcUa::QEndpointDescription QOpcUaClient::endpoint() const
 {
     Q_D(const QOpcUaClient);
-    return d->m_url;
+    return d->m_endpoint;
 }
 
 QOpcUaClient::ClientState QOpcUaClient::state() const

@@ -94,7 +94,6 @@ public:
     void setPkiConfiguration(const QOpcUaPkiConfiguration &config);
     QOpcUaPkiConfiguration pkiConfiguration() const;
 
-    Q_INVOKABLE void connectToEndpoint(const QUrl &url);
     Q_INVOKABLE void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint);
     Q_INVOKABLE void disconnectFromEndpoint();
     QOpcUaNode *node(const QString &nodeId);
@@ -119,7 +118,7 @@ public:
     bool addReference(const QOpcUaAddReferenceItem &referenceToAdd);
     bool deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete);
 
-    QUrl url() const;
+    QOpcUa::QEndpointDescription endpoint() const;
 
     ClientState state() const;
     ClientError error() const;

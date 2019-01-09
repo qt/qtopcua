@@ -765,49 +765,6 @@ static void clientStateCallback(UA_Client *client, UA_ClientState state)
     }
 }
 
-void Open62541AsyncBackend::connectToEndpoint(const QUrl &url)
-{
-    cleanupSubscriptions();
-
-    if (m_uaclient)
-        UA_Client_delete(m_uaclient);
-
-    m_useStateCallback = false;
-
-    UA_ClientConfig conf = UA_ClientConfig_default;
-    conf.clientContext = this;
-    conf.stateCallback = &clientStateCallback;
-    m_uaclient = UA_Client_new(conf);
-    UA_StatusCode ret;
-    const auto authInfo = m_clientImpl->m_client->authenticationInformation();
-
-    if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Anonymous) {
-        ret = UA_Client_connect(m_uaclient, url.toString().toUtf8().constData());
-    } else if (authInfo.authenticationType() == QOpcUa::QUserTokenPolicy::TokenType::Username) {
-        const auto credentials = authInfo.authenticationData().value<QPair<QString, QString>>();
-        ret = UA_Client_connect_username(m_uaclient, url.toString().toUtf8().constData(),
-                                         credentials.first.toUtf8().constData(), credentials.second.toUtf8().constData());
-    } else {
-        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnsupportedAuthenticationInformation);
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to connect: Selected authentication type"
-                                          << authInfo.authenticationType() << "is not supported.";
-        return;
-    }
-
-    if (ret != UA_STATUSCODE_GOOD) {
-        UA_Client_delete(m_uaclient);
-        m_uaclient = nullptr;
-        QOpcUaClient::ClientError error = ret == UA_STATUSCODE_BADUSERACCESSDENIED ? QOpcUaClient::AccessDenied : QOpcUaClient::UnknownError;
-
-        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to connect";
-        return;
-    }
-
-    m_useStateCallback = true;
-    emit stateAndOrErrorChanged(QOpcUaClient::Connected, QOpcUaClient::NoError);
-}
-
 void Open62541AsyncBackend::connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint)
 {
     const QString nonePolicyUri = QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#None");

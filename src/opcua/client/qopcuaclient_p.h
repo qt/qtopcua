@@ -66,14 +66,13 @@ public:
     QOpcUaClientPrivate(QOpcUaClientImpl *impl);
     ~QOpcUaClientPrivate() override;
 
-    void connectToEndpoint(const QUrl &url);
     void connectToEndpoint(const QOpcUa::QEndpointDescription &endpoint);
     void disconnectFromEndpoint();
 
     QScopedPointer<QOpcUaClientImpl> m_impl;
     QOpcUaClient::ClientState m_state;
     QOpcUaClient::ClientError m_error;
-    QUrl m_url;
+    QOpcUa::QEndpointDescription m_endpoint;
     bool m_enableNamespaceArrayAutoupdate;
     QOpcUaAuthenticationInformation m_authenticationInformation;
 
