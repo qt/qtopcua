@@ -10,9 +10,12 @@ defineTest(qtConfLibrary_uacpp) {
         }
 
         !isEmpty(prefix) {
+            contains(QMAKE_TARGET.arch, x86_64): archdir = win64
+            else: archdir = win32
+
             config.input.$${input}.libdir += \
-                $${prefix}/third-party/win32/vs2015/openssl/out32dll \
-                $${prefix}/third-party/win32/vs2015/libxml2/out32dll
+                $${prefix}/third-party/$${archdir}/vs2015/openssl/out32dll \
+                $${prefix}/third-party/$${archdir}/vs2015/libxml2/out32dll
         } else {
             qtLog("No UACPP_PREFIX specified; relying on user-provided library path.")
         }
