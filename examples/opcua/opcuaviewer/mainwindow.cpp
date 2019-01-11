@@ -324,8 +324,9 @@ void MainWindow::clientConnected()
 {
     mClientConnected = true;
     updateUiState();
-    mOpcUaModel->setOpcUaClient(mOpcUaClient);
-    mTreeView->header()->setSectionResizeMode(1 /* Value column*/, QHeaderView::Interactive);
+
+    connect(mOpcUaClient, &QOpcUaClient::namespaceArrayUpdated, this, &MainWindow::namespacesArrayUpdated);
+    mOpcUaClient->updateNamespaceArray();
 }
 
 void MainWindow::clientDisconnected()
@@ -335,6 +336,18 @@ void MainWindow::clientDisconnected()
     mOpcUaClient = nullptr;
     mOpcUaModel->setOpcUaClient(nullptr);
     updateUiState();
+}
+
+void MainWindow::namespacesArrayUpdated(const QStringList &namespaceArray)
+{
+    if (namespaceArray.isEmpty()) {
+        qWarning() << "Failed to retrieve the namespaces array";
+        return;
+    }
+
+    disconnect(mOpcUaClient, &QOpcUaClient::namespaceArrayUpdated, this, &MainWindow::namespacesArrayUpdated);
+    mOpcUaModel->setOpcUaClient(mOpcUaClient);
+    mTreeView->header()->setSectionResizeMode(1 /* Value column*/, QHeaderView::Interactive);
 }
 
 void MainWindow::clientError(QOpcUaClient::ClientError error)

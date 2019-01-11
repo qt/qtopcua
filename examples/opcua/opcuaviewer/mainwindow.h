@@ -80,6 +80,7 @@ private slots:
     void getEndpointsComplete(const QVector<QOpcUa::QEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode);
     void clientConnected();
     void clientDisconnected();
+    void namespacesArrayUpdated(const QStringList &namespaceArray);
     void clientError(QOpcUaClient::ClientError);
     void clientState(QOpcUaClient::ClientState);
     void showErrorDialog(QOpcUaErrorState *errorState);
