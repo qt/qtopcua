@@ -258,8 +258,8 @@ void MainWindow::findServersComplete(const QVector<QOpcUa::QApplicationDescripti
         mServers->clear();
         for (const auto &server : servers) {
             QVector<QString> urls = server.discoveryUrls();
-            if (urls.length() > 0)
-                mServers->addItem(urls[0]);
+            for (const auto &url : qAsConst(urls))
+                mServers->addItem(url);
         }
     }
 
