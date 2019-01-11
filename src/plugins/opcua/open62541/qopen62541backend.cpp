@@ -410,8 +410,8 @@ void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &loca
     }
     UaArrayDeleter<UA_TYPES_STRING> localeIdsDeleter(uaLocaleIds, localeIds.size());
 
-    size_t serversSize;
-    UA_ApplicationDescription *servers;
+    size_t serversSize = 0;
+    UA_ApplicationDescription *servers = nullptr;
 
     UA_StatusCode result = UA_Client_findServers(tmpClient, url.toString(QUrl::RemoveUserInfo).toUtf8().constData(),
                                                  serverUris.size(), uaServerUris, localeIds.size(), uaLocaleIds,
