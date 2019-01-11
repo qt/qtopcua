@@ -41,7 +41,7 @@
 #include <QtCore/qshareddata.h>
 #include <QtCore/qvariant.h>
 
-#include "qopcuatype.h"
+#include <QtOpcUa/qopcuatype.h>
 
 QT_BEGIN_NAMESPACE
 

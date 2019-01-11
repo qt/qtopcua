@@ -43,7 +43,7 @@
 #include <QtCore/qmetatype.h>
 #include <QtCore/qshareddata.h>
 
-#include "qopcuaapplicationidentity.h"
+#include <QtOpcUa/qopcuaapplicationidentity.h>
 
 QT_BEGIN_NAMESPACE
 
