@@ -49,6 +49,7 @@ class Q_OPCUA_EXPORT QOpcUaErrorState
 {
 public:
     enum class ConnectionStep {
+        Unknown = 0x00,
         CertificateValidation,
         OpenSecureChannel,
         CreateSession,
