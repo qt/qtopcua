@@ -43,6 +43,7 @@
 #include "opcuarelativenodepath.h"
 #include "opcuarelativenodeid.h"
 #include "qopcuatype.h"
+#include "opcuastatus.h"
 #include <QLoggingCategory>
 
 #include <qqml.h>
@@ -116,6 +117,8 @@ void OpcUaPlugin::registerTypes(const char *uri)
 
     qmlRegisterType<OpcUaMethodArgument>(uri, major, minor, "MethodArgument");
     qmlRegisterUncreatableType<QOpcUaApplicationDescription>(uri, major, minor, "ApplicationDescription", "This type can not be created.");
+    qRegisterMetaType<OpcUaStatus>();
+    qmlRegisterUncreatableType<OpcUaStatus>(uri, major, minor, "Status", "This type can not be created.");
 
     // insert new versions here
 

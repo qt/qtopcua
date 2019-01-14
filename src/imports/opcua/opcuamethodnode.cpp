@@ -97,14 +97,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty QOpcUa::UaStatusCode MethodNode::resultStatusCode
+    \qmlproperty Status MethodNode::resultStatus
     \readonly
 
     Status of the last method call. This property has to be checked
     to determine if the method call was successful.
-    On success, the value is \c QtOpcua.Constants.Good.
 
-    \sa QOpcUa::UaStatusCode
+    \sa QOpcUa::Status
 */
 
 /*!
@@ -137,11 +136,11 @@ QT_BEGIN_NAMESPACE
     \readonly
 
     Returns values from the method call. Depending on the output arguments,
-    this list may contain zero or more values. The \l resultStatusCode has to be checked
+    this list may contain zero or more values. The \l resultStatus has to be checked
     separately. In case the method call failed, the list will be empty.
 
     \code
-    if (node.statusCode == QtOpcUa.Constants.Good) {
+    if (node.status.isGood) {
         // print two arguments
         console.log("Number of return values:", node.outputArguments.length)
         console.log("Return value #1:", node.outputArguments[0])
@@ -149,7 +148,7 @@ QT_BEGIN_NAMESPACE
     }
     \endcode
 
-    \sa callMethod, resultStatusCode
+    \sa callMethod, resultStatus
 */
 
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML)
@@ -228,14 +227,14 @@ void OpcUaMethodNode::handleObjectNodeIdChanged()
 void OpcUaMethodNode::handleMethodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode)
 {
     Q_UNUSED(methodNodeId);
-    m_resultStatusCode = statusCode;
+    m_resultStatus = OpcUaStatus(statusCode);
 
     m_outputArguments.clear();
     if (result.canConvert<QVariantList>())
         m_outputArguments = result.value<QVariantList>();
     else
         m_outputArguments.append(result);
-    emit resultStatusCodeChanged(m_resultStatusCode);
+    emit resultStatusChanged(m_resultStatus);
     emit outputArgumentsChanged();
 }
 
@@ -263,9 +262,9 @@ bool OpcUaMethodNode::checkValidity()
     return true;
 }
 
-QOpcUa::UaStatusCode OpcUaMethodNode::resultStatusCode() const
+OpcUaStatus OpcUaMethodNode::resultStatus() const
 {
-    return m_resultStatusCode;
+    return m_resultStatus;
 }
 
 void OpcUaMethodNode::appendArgument(QQmlListProperty<OpcUaMethodArgument>* list, OpcUaMethodArgument* p) {

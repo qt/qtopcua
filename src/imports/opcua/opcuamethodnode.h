@@ -38,7 +38,7 @@
 
 #include "opcuanode.h"
 #include "opcuamethodargument.h"
-#include "qopcuatype.h"
+#include "opcuastatus.h"
 #include <QQmlListProperty>
 #include <QVector>
 
@@ -52,7 +52,7 @@ class OpcUaMethodNode : public OpcUaNode
     Q_PROPERTY(OpcUaNodeIdType* objectNodeId READ objectNodeId WRITE setObjectNodeId NOTIFY objectNodeIdChanged)
     Q_PROPERTY(QQmlListProperty<OpcUaMethodArgument> inputArguments READ inputArguments NOTIFY inputArgumentsChanged)
     Q_PROPERTY(QVariantList outputArguments READ outputArguments NOTIFY outputArgumentsChanged)
-    Q_PROPERTY(QOpcUa::UaStatusCode resultStatusCode READ resultStatusCode NOTIFY resultStatusCodeChanged)
+    Q_PROPERTY(OpcUaStatus resultStatus READ resultStatus NOTIFY resultStatusChanged)
 
 public:
     OpcUaMethodNode(QObject *parent = nullptr);
@@ -60,7 +60,7 @@ public:
 
     QQmlListProperty<OpcUaMethodArgument> inputArguments();
     QVariantList outputArguments();
-    QOpcUa::UaStatusCode resultStatusCode() const;
+    OpcUaStatus resultStatus() const;
 
 public slots:
     void setObjectNodeId(OpcUaNodeIdType *nodeId);
@@ -71,7 +71,7 @@ signals:
     void inputArgumentsChanged();
     void outputArgumentsChanged();
 
-    void resultStatusCodeChanged(QOpcUa::UaStatusCode statusCode);
+    void resultStatusChanged(OpcUaStatus status);
 
 private slots:
     void handleObjectNodeIdChanged();
@@ -91,7 +91,7 @@ private:
     OpcUaNode *m_objectNode = nullptr;
     QVector<OpcUaMethodArgument*> m_inputArguments;
     QVariantList m_outputArguments;
-    QOpcUa::UaStatusCode m_resultStatusCode = QOpcUa::Good;
+    OpcUaStatus m_resultStatus;
 };
 
 QT_END_NAMESPACE

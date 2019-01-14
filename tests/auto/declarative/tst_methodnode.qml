@@ -122,21 +122,23 @@ Item {
         when: node2.readyToUse
 
         SignalSpy {
-            id: node2resultStatusCodeSpy
+            id: node2resultStatusSpy
             target: node2
-            signalName: "resultStatusCodeChanged"
+            signalName: "resultStatusChanged"
         }
 
         function test_nodeTest() {
             compare(node2.browseName, "multiplyArguments");
             compare(node2.nodeClass, QtOpcUa.Constants.NodeClass.Method);
-            compare(node2.resultStatusCode, QtOpcUa.Constants.Good);
+            compare(node2.resultStatus.status, QtOpcUa.Status.Good);
+            verify(node2.resultStatus.isGood);
 
             node2.callMethod();
 
-            node2resultStatusCodeSpy.wait();
-            compare(node2resultStatusCodeSpy.count, 1);
-            compare(node2.resultStatusCode, QtOpcUa.Constants.Good);
+            node2resultStatusSpy.wait();
+            compare(node2resultStatusSpy.count, 1);
+            compare(node2.resultStatus.status, QtOpcUa.Status.Good);
+            verify(node2.resultStatus.isGood);
             compare(node2.outputArguments.length, 1);
             compare(node2.outputArguments[0], 12);
         }
@@ -170,21 +172,23 @@ Item {
         when: node3.readyToUse
 
         SignalSpy {
-            id: node3resultStatusCodeSpy
+            id: node3resultStatusSpy
             target: node3
-            signalName: "resultStatusCodeChanged"
+            signalName: "resultStatusChanged"
         }
 
         function test_nodeTest() {
             compare(node3.browseName, "multipleOutputArguments");
             compare(node3.nodeClass, QtOpcUa.Constants.NodeClass.Method);
-            compare(node3.resultStatusCode, QtOpcUa.Constants.Good);
+            compare(node3.resultStatus.status, QtOpcUa.Status.Good);
+            verify(node3.resultStatus.isGood);
 
             node3.callMethod();
 
-            node3resultStatusCodeSpy.wait();
-            compare(node3resultStatusCodeSpy.count, 1);
-            compare(node3.resultStatusCode, QtOpcUa.Constants.Good);
+            node3resultStatusSpy.wait();
+            compare(node3resultStatusSpy.count, 1);
+            compare(node3.resultStatus.status, QtOpcUa.Status.Good);
+            verify(node3.resultStatus.isGood);
             // Check for two output arguments
             compare(node3.outputArguments.length, 2);
             compare(node3.outputArguments[0], 12);
