@@ -256,7 +256,7 @@ QOpcUaApplicationIdentity QOpcUaPkiConfiguration::applicationIdentity() const
 }
 
 /*!
-    Return true if the public key infrastructure to validate the server certificate
+    Return true if the public key information required to validate the server certificate
     is set.
 */
 bool QOpcUaPkiConfiguration::isPkiValid() const

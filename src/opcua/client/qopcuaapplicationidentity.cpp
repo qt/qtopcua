@@ -66,6 +66,8 @@ QT_BEGIN_NAMESPACE
     identity.setApplicationUri(QUrl::toPercentEncoding(applicationUri));
     identity.setApplicationName(QCoreApplication::applicationName());
     identity.setApplicationType(QOpcUaApplicationDescription::Client);
+
+    client->setIdentity(identity);
     \endcode
 
     In case your application authenticates using certificates the application identity has to match
