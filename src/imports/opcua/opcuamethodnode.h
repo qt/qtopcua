@@ -40,6 +40,7 @@
 #include "opcuamethodargument.h"
 #include "qopcuatype.h"
 #include <QQmlListProperty>
+#include <QVector>
 
 QT_BEGIN_NAMESPACE
 
