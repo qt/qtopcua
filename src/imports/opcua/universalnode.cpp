@@ -343,6 +343,10 @@ void UniversalNode::setMembers(bool setNamespaceIndex, quint16 namespaceIndex,
     }
 }
 
+/*
+    This function splits up a node identifier into namespace index and node name.
+    Returns true if successful, otherwise false.
+ */
 bool UniversalNode::splitNodeIdAndNamespace(const QString nodeIdentifier, int *namespaceIndex, QString *identifier)
 {
     if (nodeIdentifier.startsWith(QLatin1String("ns="))) {
