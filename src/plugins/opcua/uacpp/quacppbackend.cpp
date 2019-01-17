@@ -273,12 +273,6 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUa::QEndpointDescription &en
         }
 
         if (result.isGood()) {
-
-            if (!result.isGood())
-                qCWarning(QT_OPCUA_PLUGINS_UACPP) << "sessionSecurityInfo.initializePkiProviderOpenSSL failed";
-        }
-
-        if (result.isGood()) {
             result = sessionSecurityInfo.loadClientCertificateOpenSSL(certificateFilePath, privateKeyFilePath);
             if (!result.isGood())
                 qCWarning(QT_OPCUA_PLUGINS_UACPP) << "sessionSecurityInfo.loadClientCertificateOpenSSL failed";
