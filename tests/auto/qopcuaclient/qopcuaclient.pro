@@ -1,6 +1,7 @@
 TARGET = tst_qopcuaclient
 
-QT += testlib opcua network
+QT += testlib opcua
+QT -= gui
 CONFIG += testcase
 
 SOURCES += \
