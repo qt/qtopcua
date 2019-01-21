@@ -115,6 +115,7 @@ void OpcUaPlugin::registerTypes(const char *uri)
     minor = 13;
 
     qmlRegisterType<OpcUaMethodArgument>(uri, major, minor, "MethodArgument");
+    qmlRegisterUncreatableType<QOpcUaApplicationDescription>(uri, major, minor, "ApplicationDescription", "This type can not be created.");
 
     // insert new versions here
 

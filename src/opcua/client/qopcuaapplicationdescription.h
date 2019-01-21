@@ -47,6 +47,15 @@ QT_BEGIN_NAMESPACE
 class QOpcUaApplicationDescriptionData;
 class Q_OPCUA_EXPORT QOpcUaApplicationDescription
 {
+    Q_GADGET
+    Q_PROPERTY(QString applicationUri READ applicationUri)
+    Q_PROPERTY(QString productUri READ productUri)
+    Q_PROPERTY(QOpcUaLocalizedText applicationName READ applicationName)
+    Q_PROPERTY(QOpcUaApplicationDescription::ApplicationType applicationType READ applicationType)
+    Q_PROPERTY(QString gatewayServerUri READ gatewayServerUri)
+    Q_PROPERTY(QString discoveryProfileUri READ discoveryProfileUri)
+    Q_PROPERTY(QVector<QString> discoveryUrls READ discoveryUrls)
+
 public:
     QOpcUaApplicationDescription();
     QOpcUaApplicationDescription(const QOpcUaApplicationDescription &);
@@ -60,6 +69,7 @@ public:
         ClientAndServer = 2,
         DiscoveryServer = 3
     };
+    Q_ENUM(ApplicationType)
 
     QString applicationUri() const;
     void setApplicationUri(const QString &applicationUri);
