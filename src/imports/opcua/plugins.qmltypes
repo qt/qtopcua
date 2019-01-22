@@ -50,6 +50,30 @@ Module {
         }
     }
     Component {
+        name: "OpcUaEndpointDiscovery"
+        prototype: "QObject"
+        exports: ["QtOpcUa/EndpointDiscovery 5.13"]
+        exportMetaObjectRevisions: [0]
+        Property { name: "serverUrl"; type: "string" }
+        Property { name: "count"; type: "int"; isReadonly: true }
+        Property { name: "status"; type: "OpcUaStatus"; isReadonly: true }
+        Property { name: "connection"; type: "OpcUaConnection"; isPointer: true }
+        Signal {
+            name: "serverUrlChanged"
+            Parameter { name: "serverUrl"; type: "string" }
+        }
+        Signal { name: "endpointsChanged" }
+        Signal {
+            name: "connectionChanged"
+            Parameter { type: "OpcUaConnection"; isPointer: true }
+        }
+        Method {
+            name: "at"
+            type: "QOpcUaEndpointDescription"
+            Parameter { name: "row"; type: "int" }
+        }
+    }
+    Component {
         name: "OpcUaMethodArgument"
         prototype: "QObject"
         exports: ["QtOpcUa/MethodArgument 5.13"]
