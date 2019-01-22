@@ -48,6 +48,13 @@ QT_BEGIN_NAMESPACE
 class QOpcUaEndpointDescriptionData;
 class Q_OPCUA_EXPORT QOpcUaEndpointDescription
 {
+    Q_GADGET
+    Q_PROPERTY(QString endpointUrl READ endpointUrl)
+    Q_PROPERTY(QOpcUaApplicationDescription server READ server)
+    Q_PROPERTY(QOpcUaEndpointDescription::MessageSecurityMode securityMode READ securityMode)
+    Q_PROPERTY(QString securityPolicyUri READ securityPolicyUri)
+    Q_PROPERTY(QVector<QOpcUaUserTokenPolicy> userIdentityTokens READ userIdentityTokens)
+
 public:
     QOpcUaEndpointDescription();
     QOpcUaEndpointDescription(const QOpcUaEndpointDescription &);
@@ -61,6 +68,7 @@ public:
         Sign = 2,
         SignAndEncrypt = 3
     };
+    Q_ENUM(MessageSecurityMode)
 
     QString endpointUrl() const;
     void setEndpointUrl(const QString &endpointUrl);
