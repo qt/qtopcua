@@ -41,6 +41,7 @@
 #include <QObject>
 #include <QOpcUaClient>
 #include <QOpcUaAuthenticationInformation>
+#include "opcuaendpointdiscovery.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -98,6 +99,7 @@ private:
 friend class OpcUaNode;
 friend class OpcUaValueNode;
 friend class OpcUaMethodNode;
+friend class OpcUaEndpointDiscovery;
 };
 
 QT_END_NAMESPACE

@@ -3,6 +3,7 @@ QT += quick opcua
 SOURCES += \
     opcua_plugin.cpp \
     opcuaconnection.cpp \
+    opcuaendpointdiscovery.cpp \
     opcuanode.cpp \
     opcuamethodnode.cpp \
     opcuavaluenode.cpp \
@@ -22,6 +23,7 @@ SOURCES += \
 HEADERS += \
     opcua_plugin.h \
     opcuaconnection.h \
+    opcuaendpointdiscovery.h \
     opcuanode.h \
     opcuamethodnode.h \
     opcuavaluenode.h \

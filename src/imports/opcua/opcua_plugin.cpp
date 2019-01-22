@@ -35,6 +35,7 @@
 ****************************************************************************/
 
 #include "opcua_plugin.h"
+#include "opcuaendpointdiscovery.h"
 #include "opcuavaluenode.h"
 #include "opcuamethodnode.h"
 #include "opcuanodeid.h"
@@ -129,6 +130,7 @@ void OpcUaPlugin::registerTypes(const char *uri)
     });
     qRegisterMetaType<OpcUaReadItem>();
     qRegisterMetaType<OpcUaReadResult>();
+    qmlRegisterType<OpcUaEndpointDiscovery>(uri, major, minor, "EndpointDiscovery");
 
     // insert new versions here
 
