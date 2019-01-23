@@ -243,4 +243,30 @@ Module {
             Parameter { type: "QVariant" }
         }
     }
+    Component {
+        name: "QOpcUaApplicationDescription"
+        exports: ["QtOpcUa/ApplicationDescription 5.13"]
+        isCreatable: false
+        exportMetaObjectRevisions: [0]
+        Enum {
+            name: "ApplicationType"
+            values: {
+                "Server": 0,
+                "Client": 1,
+                "ClientAndServer": 2,
+                "DiscoveryServer": 3
+            }
+        }
+        Property { name: "applicationUri"; type: "string"; isReadonly: true }
+        Property { name: "productUri"; type: "string"; isReadonly: true }
+        Property { name: "applicationName"; type: "QOpcUaLocalizedText"; isReadonly: true }
+        Property {
+            name: "applicationType"
+            type: "QOpcUaApplicationDescription::ApplicationType"
+            isReadonly: true
+        }
+        Property { name: "gatewayServerUri"; type: "string"; isReadonly: true }
+        Property { name: "discoveryProfileUri"; type: "string"; isReadonly: true }
+        Property { name: "discoveryUrls"; type: "QVector<QString>"; isReadonly: true }
+    }
 }
