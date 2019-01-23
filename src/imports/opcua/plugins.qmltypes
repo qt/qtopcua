@@ -24,6 +24,7 @@ Module {
         Property { name: "backend"; type: "string" }
         Property { name: "defaultConnection"; type: "bool" }
         Property { name: "namespaces"; type: "QStringList"; isReadonly: true }
+        Property { name: "authenticationInformation"; type: "QOpcUaAuthenticationInformation" }
         Method {
             name: "connectToEndpoint"
             Parameter { name: "url"; type: "QUrl" }
@@ -34,6 +35,10 @@ Module {
             Parameter { name: "defaultConnection"; type: "bool" }
         }
         Method { name: "setDefaultConnection" }
+        Method {
+            name: "setAuthenticationInformation"
+            Parameter { name: "authenticationInformation"; type: "QOpcUaAuthenticationInformation" }
+        }
     }
     Component {
         name: "OpcUaMethodArgument"
