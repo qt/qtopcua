@@ -346,6 +346,9 @@ void UniversalNode::setMembers(bool setNamespaceIndex, quint16 namespaceIndex,
 /*
     This function splits up a node identifier into namespace index and node name.
     Returns true if successful, otherwise false.
+
+    Whenn passing \nullptr as pointer argument, the assignment of results to that
+    pointer will be skipped.
  */
 bool UniversalNode::splitNodeIdAndNamespace(const QString nodeIdentifier, int *namespaceIndex, QString *identifier)
 {
@@ -358,12 +361,14 @@ bool UniversalNode::splitNodeIdAndNamespace(const QString nodeIdentifier, int *n
 
         const QString ns = token[0].mid(3);
         bool ok;
-        *namespaceIndex = ns.toUInt(&ok);
+        if (namespaceIndex)
+            *namespaceIndex = ns.toUInt(&ok);
         if (!ok) {
             qCWarning(QT_OPCUA_PLUGINS_QML) << "Namespace index is not a number:" << nodeIdentifier;
             return false;
         }
-        *identifier = token[1];
+        if (identifier)
+            *identifier = token[1];
         return true;
     }
     return false;
