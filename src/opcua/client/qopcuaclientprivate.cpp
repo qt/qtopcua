@@ -121,6 +121,11 @@ QOpcUaClientPrivate::~QOpcUaClientPrivate()
 void QOpcUaClientPrivate::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
 {
     m_endpoint = endpoint;
+    if (endpoint.endpointUrl().isEmpty() || endpoint.securityPolicyUri().isEmpty()) {
+        qCWarning(QT_OPCUA) << "Endpoint description is invalid because endpoint URL or security policy URL is empty";
+        setStateAndError(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::InvalidUrl);
+        return;
+    }
     setStateAndError(QOpcUaClient::Connecting);
     m_impl->connectToEndpoint(endpoint);
 }
