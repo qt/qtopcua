@@ -611,6 +611,7 @@ void Tst_QOpcUaClient::initTestCase()
 
         const QVector<QOpcUaEndpointDescription> desc = endpointSpy.at(0).at(0).value<QVector<QOpcUaEndpointDescription>>();
         QVERIFY(desc.size() > 0);
+        QCOMPARE(endpointSpy.at(0).at(2).value<QUrl>(), m_discoveryEndpoint);
 
         m_endpoint = desc.first();
     }
@@ -701,6 +702,7 @@ void Tst_QOpcUaClient::findServers()
     discoverySpy.wait();
 
     QCOMPARE(discoverySpy.size(), 1);
+    QCOMPARE(discoverySpy.at(0).at(2).value<QUrl>(), m_discoveryEndpoint);
 
     QCOMPARE(discoverySpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
     QVector<QOpcUaApplicationDescription> servers = discoverySpy.at(0).at(0).value<QVector<QOpcUaApplicationDescription>>();
@@ -720,6 +722,7 @@ void Tst_QOpcUaClient::requestEndpoints()
     opcuaClient->requestEndpoints(m_discoveryEndpoint);
     endpointSpy.wait();
     QCOMPARE(endpointSpy.size(), 1);
+    QCOMPARE(endpointSpy.at(0).at(2).value<QUrl>(), m_discoveryEndpoint);
 
     QVector<QOpcUaEndpointDescription> desc = endpointSpy.at(0).at(0).value<QVector<QOpcUaEndpointDescription>>();
     QVERIFY(desc.size() > 0);

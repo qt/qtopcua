@@ -361,7 +361,7 @@ void UACppAsyncBackend::requestEndpoints(const QUrl &url)
         }
     }
 
-    emit endpointsRequestFinished(ret, static_cast<QOpcUa::UaStatusCode>(res.code()));
+    emit endpointsRequestFinished(ret, static_cast<QOpcUa::UaStatusCode>(res.code()), url);
 }
 
 void UACppAsyncBackend::readAttributes(quint64 handle, const UaNodeId &id, QOpcUa::NodeAttributes attr, QString indexRange)
@@ -729,7 +729,7 @@ void UACppAsyncBackend::findServers(const QUrl &url, const QStringList &localeId
         qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Failed to get servers:" << static_cast<QOpcUa::UaStatusCode>(result.statusCode());
     }
 
-    emit findServersFinished(ret, static_cast<QOpcUa::UaStatusCode>(result.statusCode()));
+    emit findServersFinished(ret, static_cast<QOpcUa::UaStatusCode>(result.statusCode()), url);
 }
 
 void UACppAsyncBackend::readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead)

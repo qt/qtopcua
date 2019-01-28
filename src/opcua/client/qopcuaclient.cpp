@@ -203,19 +203,21 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
-    \fn void QOpcUaClient::endpointsRequestFinished(QVector<QOpcUaEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode)
+    \fn void QOpcUaClient::endpointsRequestFinished(QVector<QOpcUaEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode, QUrl requestUrl)
 
     This signal is emitted after a \l requestEndpoints() operation has finished.
     \a statusCode contains the result of the operation. If the result is \l {QOpcUa::UaStatusCode} {Good},
     \a endpoints contains the descriptions of all endpoints that are available on the server.
+    \a requestUrl contains the URL that was used in the \l requestEndpoints() call.
 */
 
 /*!
-    \fn void QOpcUaClient::findServersFinished(QVector<QOpcUaApplicationDescription> servers, QOpcUa::UaStatusCode statusCode);
+    \fn void QOpcUaClient::findServersFinished(QVector<QOpcUaApplicationDescription> servers, QOpcUa::UaStatusCode statusCode, QUrl requestUrl);
 
     This signal is emitted after a \l findServers() operation has finished.
     \a statusCode contains the result of the operation. If the result is \l {QOpcUa::UaStatusCode} {Good},
     \a servers contains the application descriptions of all servers known to the queried server that matched the filter criteria.
+    \a requestUrl contains the URL that was used in the \l findServers() call.
 */
 
 /*!

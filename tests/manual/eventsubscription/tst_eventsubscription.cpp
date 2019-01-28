@@ -145,6 +145,7 @@ void EventsubscriptionTest::initTestCase()
         client->requestEndpoints(m_serverUrl);
         endpointSpy.wait();
         QCOMPARE(endpointSpy.size(), 1);
+        QCOMPARE(endpointSpy.at(0).at(2).value<QUrl>(), m_serverUrl);
 
         const QVector<QOpcUaEndpointDescription> desc = endpointSpy.at(0).at(0).value<QVector<QOpcUaEndpointDescription>>();
         QVERIFY(desc.size() > 0);

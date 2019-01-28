@@ -431,7 +431,7 @@ void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &loca
         qCDebug(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to get servers:" << static_cast<QOpcUa::UaStatusCode>(result);
     }
 
-    emit findServersFinished(ret, static_cast<QOpcUa::UaStatusCode>(result));
+    emit findServersFinished(ret, static_cast<QOpcUa::UaStatusCode>(result), url);
 }
 
 void Open62541AsyncBackend::readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead)
@@ -907,7 +907,7 @@ void Open62541AsyncBackend::requestEndpoints(const QUrl &url)
         }
     }
 
-    emit endpointsRequestFinished(ret, static_cast<QOpcUa::UaStatusCode>(res));
+    emit endpointsRequestFinished(ret, static_cast<QOpcUa::UaStatusCode>(res), url);
 
     UA_Client_delete(tmpClient);
 }
