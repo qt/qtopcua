@@ -47,6 +47,7 @@
 #include "opcuastatus.h"
 #include "opcuareaditem.h"
 #include "opcuareadresult.h"
+#include "opcuaserverdiscovery.h"
 #include <QLoggingCategory>
 
 #include <qqml.h>
@@ -131,6 +132,7 @@ void OpcUaPlugin::registerTypes(const char *uri)
     qRegisterMetaType<OpcUaReadItem>();
     qRegisterMetaType<OpcUaReadResult>();
     qmlRegisterType<OpcUaEndpointDiscovery>(uri, major, minor, "EndpointDiscovery");
+    qmlRegisterType<OpcUaServerDiscovery>(uri, major, minor, "ServerDiscovery");
 
     // insert new versions here
 
