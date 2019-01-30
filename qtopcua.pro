@@ -1,4 +1,4 @@
 requires(!qnx)
-requires(!win32-msvc2013)
+requires(!wasm)
 
 load(qt_parts)
