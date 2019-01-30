@@ -1,10 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 basysKom GmbH, opensource@basyskom.com
-** Copyright (C) 2018 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
+** Copyright (C) 2019 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the examples of the QtOpcUa module.
+** This file is part of the examples of the Qt OPC UA module.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** Commercial License Usage
@@ -49,40 +48,55 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.10
-import QtQuick.Controls 2.3
-import QtQuick.Layouts 1.3
+import QtQuick 2.3
 import QtOpcUa 5.13 as QtOpcUa
 
-RowLayout {
-    readonly property alias backend: backendSelector.currentText
-    property QtOpcUa.Connection connection
-    property QtOpcUa.ServerDiscovery serverDiscovery
-    signal resetSimulation()
-
-    TextField {
-        id: uaUrl
-        Layout.fillWidth: true
-        text: "opc.tcp://127.0.0.1:43344"
-    }
-    ComboBox {
-        id: backendSelector
-        model: connection.availableBackends
+Item {
+    //! [Basic discovery]
+    QtOpcUa.Connection {
+        id: connection
+        backend: availableBackends[0]
+        defaultConnection: true
     }
 
-    Button {
-        text: connection.connected ? "Disconnect" : "Connect"
-        enabled: connection.availableBackends.length > 0
-        onClicked: {
-            if (connection.connected)
-                connection.disconnectFromEndpoint()
-            else
-                serverDiscovery.discoveryUrl = uaUrl.text;
+    QtOpcUa.ServerDiscovery {
+        discoveryUrl: "opc.tcp://127.0.0.1:43344"
+        onServersChanged: {
+            if (status.isGood) {
+                if (status.status == QtOpcUa.Status.GoodCompletesAsynchronusly)
+                    return; // wait until finished
+                if (count > 0) {
+                    // choose right server
+                    endpointDiscovery.serverUrl = at(0).discoveryUrls[0];
+                    console.log("Using server URL:", endpointDiscovery.serverUrl);
+                } else {
+                    // no servers retrieved
+                }
+            } else {
+                // Fetching servers failed
+                console.log("Error fetching server:", servers.status.status);
+            }
         }
     }
-    Button {
-        text: "Reset simulation"
-        enabled: connection.connected
-        onClicked: resetSimulation()
+
+    QtOpcUa.EndpointDiscovery {
+        id: endpointDiscovery
+        onEndpointsChanged: {
+            if (status.isGood) {
+                if (status.status == QtOpcUa.Status.GoodCompletesAsynchronusly)
+                    return; // wait until finished
+                if (count > 0) {
+                    // choose right endpoint
+                    console.log("Using endpoint", at(0).endpointUrl, at(0).securityPolicyUri);
+                    connection.connectToEndpoint(at(0));
+                } else {
+                    // no endpoints retrieved
+                }
+            } else {
+                // Fetching endpoints failed
+                console.log("Error fetching endpoints:", status.status);
+            }
+        }
     }
+    //! [Basic discovery]
 }

@@ -31,7 +31,7 @@ Module {
         }
         Method {
             name: "connectToEndpoint"
-            Parameter { name: "url"; type: "QUrl" }
+            Parameter { name: "endpointDescription"; type: "QOpcUaEndpointDescription" }
         }
         Method { name: "disconnectFromEndpoint" }
         Method {

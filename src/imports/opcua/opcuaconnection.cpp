@@ -242,19 +242,19 @@ bool OpcUaConnection::isDefaultConnection() const
 }
 
 /*!
-    \qmlmethod Connection::connectToEndpoint(url)
+    \qmlmethod Connection::connectToEndpoint(endpointDescription)
 
     Connects to the given endpoint.
+
+    \sa EndpointDescription endpoints
 */
 
-void OpcUaConnection::connectToEndpoint(const QUrl &url)
+void OpcUaConnection::connectToEndpoint(const QOpcUaEndpointDescription &endpointDescription)
 {
     if (!m_client)
         return;
 
-    connect(m_client, &QOpcUaClient::endpointsRequestFinished, this,
-            &OpcUaConnection::requestEndpointsFinishedHandler, Qt::UniqueConnection);
-    m_client->requestEndpoints(url.toString());
+    m_client->connectToEndpoint(endpointDescription);
 }
 
 /*!
@@ -289,31 +289,6 @@ void OpcUaConnection::clientStateHandler(QOpcUaClient::ClientState state)
         // array to be updated
         m_connected = (state == QOpcUaClient::ClientState::Connected);
         emit connectedChanged();
-    }
-}
-
-void OpcUaConnection::requestEndpointsFinishedHandler(const QVector<QOpcUaEndpointDescription> &endpoints)
-{
-    disconnect(m_client, &QOpcUaClient::endpointsRequestFinished, this, &OpcUaConnection::requestEndpointsFinishedHandler);
-
-    bool found = false;
-    QOpcUaEndpointDescription chosenEndpoint;
-
-    for (const auto &endpoint : qAsConst(endpoints)) {
-        if (QUrl(endpoint.endpointUrl()).scheme() != QLatin1String("opc.tcp"))
-            continue;
-        if (endpoint.securityPolicyUri() == QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#None")) {
-            found = true;
-            chosenEndpoint = endpoint;
-            break;
-        }
-    }
-
-    if (!found) {
-        m_connected = false;
-        emit connectedChanged();
-    } else {
-        m_client->connectToEndpoint(chosenEndpoint);
     }
 }
 

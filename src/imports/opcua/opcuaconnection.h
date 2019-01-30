@@ -74,7 +74,7 @@ public:
     Q_INVOKABLE bool readNodeAttributes(const QJSValue &value);
 
 public slots:
-    void connectToEndpoint(const QUrl &url);
+    void connectToEndpoint(const QOpcUaEndpointDescription &endpointDescription);
     void disconnectFromEndpoint();
     void setDefaultConnection(bool defaultConnection = true);
     void setAuthenticationInformation(const QOpcUaAuthenticationInformation &authenticationInformation);
@@ -89,7 +89,6 @@ signals:
 
 private slots:
     void clientStateHandler(QOpcUaClient::ClientState state);
-    void requestEndpointsFinishedHandler(const QVector<QOpcUaEndpointDescription> &endpoints);
     void handleReadNodeAttributesFinished(const QVector<QOpcUaReadResult> &results);
 
 private:

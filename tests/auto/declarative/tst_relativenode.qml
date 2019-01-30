@@ -44,10 +44,29 @@ Item {
         id: connection
         backend: availableBackends[0]
         defaultConnection: true
+
+    }
+
+    QtOpcUa.ServerDiscovery {
+        id: serverDiscovery
+        onServersChanged: {
+            if (!count)
+                return;
+            endpointDiscovery.serverUrl = at(0).discoveryUrls[0];
+        }
+    }
+
+    QtOpcUa.EndpointDiscovery {
+        id: endpointDiscovery
+        onEndpointsChanged: {
+            if (!count)
+                return;
+            connection.connectToEndpoint(at(0));
+        }
     }
 
     Component.onCompleted: {
-        connection.connectToEndpoint("opc.tcp://127.0.0.1:43344");
+        serverDiscovery.discoveryUrl = "opc.tcp://127.0.0.1:43344";
     }
 
     TestCase {

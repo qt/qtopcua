@@ -1,10 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 basysKom GmbH, opensource@basyskom.com
-** Copyright (C) 2018 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
+** Copyright (C) 2019 The Qt Company Ltd.
+** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the examples of the QtOpcUa module.
+** This file is part of the examples of the Qt OPC UA module.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** Commercial License Usage
@@ -49,40 +48,46 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.10
-import QtQuick.Controls 2.3
-import QtQuick.Layouts 1.3
-import QtOpcUa 5.13 as QtOpcUa
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
+#include <QFile>
+#include <QDebug>
+#include <QProcess>
 
-RowLayout {
-    readonly property alias backend: backendSelector.currentText
-    property QtOpcUa.Connection connection
-    property QtOpcUa.ServerDiscovery serverDiscovery
-    signal resetSimulation()
+int main(int argc, char *argv[])
+{
+    QGuiApplication app(argc, argv);
 
-    TextField {
-        id: uaUrl
-        Layout.fillWidth: true
-        text: "opc.tcp://127.0.0.1:43344"
-    }
-    ComboBox {
-        id: backendSelector
-        model: connection.availableBackends
+    QString serverExePath;
+#ifdef Q_OS_WIN
+    #ifdef QT_DEBUG
+        serverExePath = app.applicationDirPath().append("/../../../../../../tests/open62541-testserver/debug/open62541-testserver.exe");
+    #else
+        serverExePath = app.applicationDirPath().append("/../../../../../../tests/open62541-testserver/release/open62541-testserver.exe");
+    #endif
+#elif defined(Q_OS_MACOS)
+    serverExePath = app.applicationDirPath().append("/../../../../../../../../tests/open62541-testserver/open62541-testserver.app/Contents/MacOS/open62541-testserver");
+#else
+    serverExePath = app.applicationDirPath().append("/../../../../../tests/open62541-testserver/open62541-testserver");
+#endif
+
+    if (!QFile::exists(serverExePath)) {
+        qWarning() << "Could not find server executable:" << serverExePath;
+        return EXIT_FAILURE;
     }
 
-    Button {
-        text: connection.connected ? "Disconnect" : "Connect"
-        enabled: connection.availableBackends.length > 0
-        onClicked: {
-            if (connection.connected)
-                connection.disconnectFromEndpoint()
-            else
-                serverDiscovery.discoveryUrl = uaUrl.text;
-        }
+    QProcess serverProcess;
+
+    serverProcess.start(serverExePath);
+    if (!serverProcess.waitForStarted()) {
+        qWarning() << "Could not start server:" << serverProcess.errorString();
+        return EXIT_FAILURE;
     }
-    Button {
-        text: "Reset simulation"
-        enabled: connection.connected
-        onClicked: resetSimulation()
-    }
+
+    QQmlApplicationEngine engine;
+    engine.load(QUrl(QStringLiteral("qrc:/basic.qml")));
+    if (engine.rootObjects().isEmpty())
+        return EXIT_FAILURE;
+
+    return app.exec();
 }

@@ -43,12 +43,36 @@ Item {
         name: "Username authentication"
 
         QtOpcUa.Connection {
-            id: connection1
+            id: connection
             backend: availableBackends[0]
+            defaultConnection: true
+
+        }
+
+        QtOpcUa.ServerDiscovery {
+            id: serverDiscovery
+            onServersChanged: {
+                if (!count)
+                    return;
+                endpointDiscovery.serverUrl = at(0).discoveryUrls[0];
+            }
+        }
+
+        QtOpcUa.EndpointDiscovery {
+            id: endpointDiscovery
+            onEndpointsChanged: {
+                if (!count)
+                    return;
+                connection.connectToEndpoint(at(0));
+            }
+        }
+
+        Component.onCompleted: {
+            serverDiscovery.discoveryUrl = "opc.tcp://127.0.0.1:43344";
         }
 
         QtOpcUa.ValueNode {
-              connection: connection1
+              connection: connection
               nodeId: QtOpcUa.NodeId {
                   ns: "Test Namespace"
                   identifier: "s=theStringId"
@@ -58,7 +82,7 @@ Item {
 
         SignalSpy {
             id: connection1ConnectedSpy
-            target: connection1
+            target: connection
             signalName: "connectedChanged"
         }
 
@@ -69,14 +93,14 @@ Item {
         }
 
         function test_nodeTest() {
-            var authInfo = connection1.authenticationInformation;
+            var authInfo = connection.authenticationInformation;
             authInfo.setUsernameAuthentication("user1", "password");
-            connection1.authenticationInformation = authInfo;
+            connection.authenticationInformation = authInfo;
 
-            connection1.connectToEndpoint("opc.tcp://127.0.0.1:43344");
+            serverDiscovery.discoveryUrl = "opc.tcp://127.0.0.1:43344";
 
             connection1ConnectedSpy.wait();
-            verify(connection1.connected);
+            verify(connection.connected);
 
             node1ValueChangedSpy.wait();
             verify(node1ValueChangedSpy.count > 0);
