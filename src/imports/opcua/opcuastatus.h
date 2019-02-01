@@ -41,9 +41,9 @@
 #include <QtOpcUa/qopcuatype.h>
 #include <QOpcUaApplicationDescription>
 
-class OpcUaConnection;
-
 QT_BEGIN_NAMESPACE
+
+class OpcUaConnection;
 
 class OpcUaStatus
 {
