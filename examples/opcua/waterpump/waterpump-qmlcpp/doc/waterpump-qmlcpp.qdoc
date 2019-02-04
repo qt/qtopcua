@@ -36,6 +36,11 @@
     This example shows how to use Qt OPC UA to interact with an OPC UA
     server to build a QML based HMI for a simple machine.
 
+    \section1 Building the Server
+    Before you can use the waterpump examples, you need to build the simulation server.
+    The simulator server project resides next to the waterpump examples.
+    You can open and build it in QtCreator or from the terminal as usual.
+
     \section1 The Simulation
     The OPC UA server included in this example runs a simulation of a machine
     containing two tanks, a water pump and a valve. Water can be pumped from the
