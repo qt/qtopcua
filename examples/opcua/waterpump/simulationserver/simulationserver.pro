@@ -8,6 +8,7 @@ DEPENDPATH += INCLUDEPATH
 CONFIG += c++11 console
 
 QT += opcua opcua-private
+QT -= gui
 
 qtConfig(open62541):!qtConfig(system-open62541) {
     include($$PWD/../../../../src/3rdparty/open62541.pri)
