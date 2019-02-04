@@ -65,7 +65,7 @@
     \code
     [ req ]
     default_bits = 2048
-    default_md = sha512
+    default_md = sha256
     distinguished_name = subject
     req_extensions = req_ext
     x509_extensions = req_ext

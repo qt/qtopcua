@@ -55,6 +55,10 @@ public:
     explicit TestServer(QObject *parent = nullptr);
     ~TestServer();
     bool init();
+    bool createInsecureServerConfig();
+#if defined UA_ENABLE_ENCRYPTION
+    bool createSecureServerConfig();
+#endif
 
     int registerNamespace(const QString &ns);
     UA_NodeId addFolder(const QString &nodeString, const QString &displayName, const QString &description = QString());

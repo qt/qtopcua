@@ -734,7 +734,16 @@ void Tst_QOpcUaClient::requestEndpoints()
     QCOMPARE(desc[0].transportProfileUri(), QStringLiteral("http://opcfoundation.org/UA-Profile/Transport/uatcp-uasc-uabinary"));
     QCOMPARE(desc[0].securityLevel(), 0);
     QCOMPARE(desc[0].securityMode(), QOpcUaEndpointDescription::MessageSecurityMode::None);
+#ifdef SERVER_SUPPORTS_SECURITY
+    QFile file(":/open62541-testserver/pki/own/certs/open62541-testserver.der");
+    QVERIFY(file.open(QFile::ReadOnly));
+    const auto serverCertificate = file.readAll();
+    QVERIFY(serverCertificate.size() > 0);
+    file.close();
+    QCOMPARE(desc[0].serverCertificate(), serverCertificate);
+#else
     QCOMPARE(desc[0].serverCertificate(), QByteArray());
+#endif
 
     QCOMPARE(desc[0].userIdentityTokens().size(), 2);
     QCOMPARE(desc[0].userIdentityTokens()[0].policyId(), QStringLiteral("open62541-anonymous-policy"));

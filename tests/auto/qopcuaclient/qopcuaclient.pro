@@ -12,3 +12,9 @@ HEADERS += \
 
 INCLUDEPATH += \
     $$PWD/../../common
+
+RESOURCES += data.qrc
+
+# This tries to check if the server supports security
+QT += opcua_private
+qtConfig(mbedtls): DEFINES += SERVER_SUPPORTS_SECURITY

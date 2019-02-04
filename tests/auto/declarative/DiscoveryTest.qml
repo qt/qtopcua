@@ -256,7 +256,10 @@ Item {
             compare(endpointsCountSpy2.count, 1);
             compare(endpointsStatusSpy2.count, 2);
             compare(endpointsChangedSpy2.count, 2);
-            compare(myEndpoints2.count, 1);
+            if (SERVER_SUPPORTS_SECURITY)
+                compare(myEndpoints2.count, 5);
+            else
+                compare(myEndpoints2.count, 1);
             verify(myEndpoints2.at(0).endpointUrl.startsWith("opc.tcp://"));
             compare(myEndpoints2.at(0).securityPolicyUri, "http://opcfoundation.org/UA/SecurityPolicy#None");
 
