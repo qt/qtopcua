@@ -51,6 +51,15 @@
                     "condition": "!config.win32"
                 }
             ]
+        },
+        "mbedtls": {
+            "label": "mbedtls",
+            "test": "mbedtls",
+            "sources": [
+                {
+                    "libs": "-lmbedx509 -lmbedcrypto"
+                }
+            ]
         }
     },
 
@@ -71,6 +80,11 @@
             "condition": "libs.uacpp",
             "output": [ "privateFeature" ]
         },
+        "mbedtls": {
+            "label": "mbedtls",
+            "condition": "libs.mbedtls",
+            "output": [ "privateFeature" ]
+        },
         "ns0idnames": {
             "label": "Support for namespace 0 NodeId names",
             "purpose": "Provides names for the QOpcUa::NodeIds::Namespace0 enum.",
@@ -87,7 +101,7 @@
     "summary": [
         {
             "section": "Qt Opcua",
-            "entries": [ "open62541", "uacpp", "ns0idnames", "ns0idgenerator" ]
+            "entries": [ "open62541", "uacpp", "ns0idnames", "ns0idgenerator", "mbedtls" ]
         }
     ]
 }
