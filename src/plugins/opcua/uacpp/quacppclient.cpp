@@ -144,7 +144,40 @@ bool QUACppClient::addReference(const QOpcUaAddReferenceItem &referenceToAdd)
 bool QUACppClient::deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete)
 {
     return QMetaObject::invokeMethod(m_backend, "deleteReference", Qt::QueuedConnection,
-                                             Q_ARG(QOpcUaDeleteReferenceItem, referenceToDelete));
+                                     Q_ARG(QOpcUaDeleteReferenceItem, referenceToDelete));
+}
+
+QStringList QUACppClient::supportedSecurityPolicies() const
+{
+    return QStringList {
+#if OPCUA_SUPPORT_SECURITYPOLICY_BASIC128RSA15
+        "http://opcfoundation.org/UA/SecurityPolicy#Basic128Rsa15",
+#endif
+#if OPCUA_SUPPORT_SECURITYPOLICY_BASIC256
+        "http://opcfoundation.org/UA/SecurityPolicy#Basic256",
+#endif
+#if OPCUA_SUPPORT_SECURITYPOLICY_BASIC256SHA256
+        "http://opcfoundation.org/UA/SecurityPolicy#Basic256Sha256",
+#endif
+#if OPCUA_SUPPORT_SECURITYPOLICY_AES128SHA256RSAOAEP
+        "http://opcfoundation.org/UA/SecurityPolicy#Aes128_Sha256_RsaOaep",
+#endif
+#if OPCUA_SUPPORT_SECURITYPOLICY_AES256SHA256RSAPSS
+        "http://opcfoundation.org/UA/SecurityPolicy#Aes256_Sha256_RsaPss",
+#endif
+#if OPCUA_SUPPORT_SECURITYPOLICY_NONE
+        "http://opcfoundation.org/UA/SecurityPolicy#None",
+#endif
+    };
+}
+
+QVector<QOpcUaUserTokenPolicy::TokenType> QUACppClient::supportedUserTokenTypes() const
+{
+    return QVector<QOpcUaUserTokenPolicy::TokenType> {
+        QOpcUaUserTokenPolicy::TokenType::Certificate,
+        QOpcUaUserTokenPolicy::TokenType::Username,
+        QOpcUaUserTokenPolicy::TokenType::Anonymous
+    };
 }
 
 QT_END_NAMESPACE

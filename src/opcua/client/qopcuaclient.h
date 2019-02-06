@@ -138,6 +138,9 @@ public:
     void setAuthenticationInformation(const QOpcUaAuthenticationInformation &authenticationInformation);
     const QOpcUaAuthenticationInformation &authenticationInformation() const;
 
+    QStringList supportedSecurityPolicies() const;
+    QVector<QOpcUaUserTokenPolicy::TokenType> supportedUserTokenTypes() const;
+
 Q_SIGNALS:
     void connected();
     void disconnected();

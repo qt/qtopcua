@@ -92,6 +92,9 @@ public:
 
     void connectBackendWithClient(QOpcUaBackend *backend);
 
+    virtual QStringList supportedSecurityPolicies() const = 0;
+    virtual QVector<QOpcUaUserTokenPolicy::TokenType> supportedUserTokenTypes() const = 0;
+
     QOpcUaClient *m_client;
 
 private Q_SLOTS:

@@ -74,6 +74,9 @@ public:
     bool addReference(const QOpcUaAddReferenceItem &referenceToAdd) override;
     bool deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete) override;
 
+    QStringList supportedSecurityPolicies() const override;
+    QVector<QOpcUaUserTokenPolicy::TokenType> supportedUserTokenTypes() const override;
+
 private slots:
 
 private:
