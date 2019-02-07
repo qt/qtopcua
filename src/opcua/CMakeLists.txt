@@ -26,6 +26,7 @@ qt_internal_add_module(OpcUa
         client/qopcuacomplexnumber.cpp client/qopcuacomplexnumber.h
         client/qopcuacontentfilterelement.cpp client/qopcuacontentfilterelement.h
         client/qopcuacontentfilterelementresult.cpp client/qopcuacontentfilterelementresult.h
+        client/qopcuadatavalue.cpp client/qopcuadatavalue.h
         client/qopcuadeletereferenceitem.cpp client/qopcuadeletereferenceitem.h
         client/qopcuadoublecomplexnumber.cpp client/qopcuadoublecomplexnumber.h
         client/qopcuaelementoperand.cpp client/qopcuaelementoperand.h
@@ -35,6 +36,11 @@ qt_internal_add_module(OpcUa
         client/qopcuaeventfilterresult.cpp client/qopcuaeventfilterresult.h
         client/qopcuaexpandednodeid.cpp client/qopcuaexpandednodeid.h
         client/qopcuaextensionobject.cpp client/qopcuaextensionobject.h
+        client/qopcuahistorydata.cpp client/qopcuahistorydata.h
+        client/qopcuahistoryreadrawrequest.cpp client/qopcuahistoryreadrawrequest.h
+        client/qopcuahistoryreadresponse.cpp client/qopcuahistoryreadresponse.h
+        client/qopcuahistoryreadresponseimpl.cpp client/qopcuahistoryreadresponseimpl_p.h
+        client/qopcuahistoryreadresponse_p.h
         client/qopcualiteraloperand.cpp client/qopcualiteraloperand.h
         client/qopcualocalizedtext.cpp client/qopcualocalizedtext.h
         client/qopcuamonitoringparameters.cpp client/qopcuamonitoringparameters.h client/qopcuamonitoringparameters_p.h
@@ -59,6 +65,7 @@ qt_internal_add_module(OpcUa
         core/qopcuaplugin.cpp core/qopcuaplugin.h
         core/qopcuaprovider.cpp core/qopcuaprovider.h
         qopcuaglobal.h
+
     DEFINES
         QT_NO_FOREACH
     LIBRARIES

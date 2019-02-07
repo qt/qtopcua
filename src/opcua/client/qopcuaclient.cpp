@@ -935,4 +935,52 @@ QList<QOpcUaUserTokenPolicy::TokenType> QOpcUaClient::supportedUserTokenTypes() 
     return d->m_impl->supportedUserTokenTypes();
 }
 
+/*!
+
+    Starts a read raw history request for one or multiple nodes. This is the Qt OPC UA representation for the OPC UA
+    ReadHistory service for reading raw historical data defined in
+    \l {https://reference.opcfoundation.org/v104/Core/docs/Part4/5.10.3/} {OPC-UA part 4, 5.10.3}.
+
+    The start timestamp, end timestamp, number of values per node, returnBounds and nodes to read
+    can be specified in a \l QOpcUaHistoryReadRawRequest.
+
+    Returns a \l QOpcUaHistoryReadResponse which contains the state of the request if the asynchronous
+    request has been successfully dispatched. The results are returned in the
+    \l QOpcUaHistoryReadResponse::readHistoryDataFinished(QList<QOpcUaHistoryData> results, QOpcUa::UaStatusCode serviceResult)
+    signal.
+
+    In the following example, the historic data from the last two days of two nodes are requested and printed.
+    The result is limited to ten values per node.
+
+    \code
+    QOpcUaHistoryReadRawRequest request(
+                { QOpcUaReadItem("ns=1;s=myValue1"), QOpcUaReadItem("ns=1;s=myValue2") },
+                QDateTime::currentDateTime(),
+                QDateTime::currentDateTime().addDays(-2),
+                10,
+                true);
+
+    QOpcUaHistoryReadResponse *response = m_client->readHistoryData(request);
+    if (response) {
+       QObject::connect(response, &QOpcUaHistoryReadResponse::readHistoryDataFinished,
+                        [] (QList<QOpcUaHistoryData> results, QOpcUa::UaStatusCode serviceResult) {
+                            if (serviceResult != QOpcUa::UaStatusCode::Good) {
+                                qWarning() << "Fetching historical data failed with:" << serviceResult;
+                            } else {
+                                for (const auto& result : results) {
+                                    qInfo() << "NodeId:" << result.nodeId();
+                                    for (const auto &dataValue : result.result())
+                                        qInfo() << "Value:" << dataValue.value();
+                                }
+                            }
+                        });
+    }
+    \endcode
+*/
+QOpcUaHistoryReadResponse *QOpcUaClient::readHistoryData(const QOpcUaHistoryReadRawRequest &request)
+{
+    Q_D(const QOpcUaClient);
+    return d->m_impl->readHistoryData(request);
+}
+
 QT_END_NAMESPACE

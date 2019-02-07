@@ -81,6 +81,8 @@ public:
     virtual bool readNodeAttributes(const QList<QOpcUaReadItem> &nodesToRead) = 0;
     virtual bool writeNodeAttributes(const QList<QOpcUaWriteItem> &nodesToWrite) = 0;
 
+    virtual QOpcUaHistoryReadResponse *readHistoryData(const QOpcUaHistoryReadRawRequest &request) = 0;
+
     bool registerNode(QPointer<QOpcUaNodeImpl> obj);
     void unregisterNode(QPointer<QOpcUaNodeImpl> obj);
 

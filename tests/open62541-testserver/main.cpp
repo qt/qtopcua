@@ -212,6 +212,17 @@ int main()
                                                     QOpcUaExtensionObject(), QOpcUa::Types::ExtensionObject);
     server.addNodeWithFixedTimestamp(testFolder, "ns=2;s=Demo.Static.FixedTimestamp", "FixedTimestamp");
 
+    // Add variables for historizing
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Historizing1", "HistorizingTest1", 0, QOpcUa::Types::Int32,
+                       QList<quint32>(), UA_VALUERANK_ANY, true);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Historizing1.ContinuationPoint", "HistorizingContinuationPointTest1", 0, QOpcUa::Types::Int32,
+                       QList<quint32>(), UA_VALUERANK_ANY, true, 5);
+
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Historizing2", "HistorizingTest2", 0, QOpcUa::Types::Int32,
+                       QList<quint32>(), UA_VALUERANK_ANY, true);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Historizing2.ContinuationPoint", "HistorizingContinuationPointTest2", 0, QOpcUa::Types::Int32,
+                       QList<quint32>(), UA_VALUERANK_ANY, true, 5);
+
     // Create folders containing child nodes with string, guid and opaque node ids
     UA_NodeId testStringIdsFolder = server.addFolder("ns=3;s=testStringIdsFolder", "testStringIdsFolder");
     server.addVariable(testStringIdsFolder, "ns=3;s=theStringId", "theStringId", QStringLiteral("Value"), QOpcUa::Types::String);

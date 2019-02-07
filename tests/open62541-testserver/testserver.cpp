@@ -237,6 +237,10 @@ bool TestServer::init()
     success = createInsecureServerConfig(m_config);
 #endif
 
+    m_gathering = UA_HistoryDataGathering_Default(1);
+    m_config->historyDatabase = UA_HistoryDatabase_default(m_gathering);
+
+
     if (!success || !m_config)
         return false;
 
@@ -356,7 +360,7 @@ UA_NodeId TestServer::addVariableWithWriteMask(const UA_NodeId &folder, const QS
 }
 
 UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
-                                  QOpcUa::Types type, QList<quint32> arrayDimensions, int valueRank)
+                                  QOpcUa::Types type, QList<quint32> arrayDimensions, int valueRank, bool enableHistorizing, quint32 historyNumValuesPerNode)
 {
     UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
@@ -367,8 +371,13 @@ UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variab
     attr.valueRank = valueRank;
     attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", name.toUtf8().constData());
     attr.dataType = attr.value.type ? attr.value.type->typeId : UA_TYPES[UA_TYPES_BOOLEAN].typeId;
-    attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+    if (enableHistorizing) {
+        attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE | UA_ACCESSLEVELMASK_HISTORYREAD;
+    } else {
+        attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+    }
     attr.description = UA_LOCALIZEDTEXT_ALLOC("en-US", description.toUtf8().constData());
+    attr.historizing = enableHistorizing;
 
     if (arrayDimensions.size()) {
         attr.arrayDimensionsSize = arrayDimensions.size();
@@ -393,6 +402,18 @@ UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variab
     // Prevent deletion of the QList's value by UA_VariableAttribute_deleteMembers
     attr.arrayDimensions = nullptr;
     attr.arrayDimensionsSize = 0;
+
+    if (enableHistorizing) {
+        UA_HistorizingNodeIdSettings setting;
+        setting.historizingBackend = UA_HistoryDataBackend_Memory(1, 10);
+        setting.maxHistoryDataResponseSize = historyNumValuesPerNode;
+        setting.historizingUpdateStrategy = UA_HISTORIZINGUPDATESTRATEGY_VALUESET;
+        result = m_gathering.registerNodeId(m_server, m_gathering.context, &resultId, setting);
+        if (result != UA_STATUSCODE_GOOD) {
+            qWarning() << "Could not register node for historical data:" << result << "for node" << variableNode;
+            return UA_NODEID_NULL;
+        }
+    }
 
     UA_NodeId_deleteMembers(&variableNodeId);
     UA_VariableAttributes_deleteMembers(&attr);

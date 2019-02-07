@@ -60,6 +60,8 @@ public:
 
     bool resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path) override;
 
+    QOpcUaHistoryReadResponse *readHistoryRaw(const QDateTime &startTime, const QDateTime &endTime, quint32 numValues, bool returnBounds) override;
+
 private:
     QPointer<QUACppClient> m_client;
     QString m_nodeIdString;

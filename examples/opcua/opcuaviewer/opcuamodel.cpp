@@ -120,6 +120,8 @@ QVariant OpcUaModel::headerData(int section, Qt::Orientation orientation, int ro
         return QStringLiteral("DisplayName");
     case 6:
         return QStringLiteral("Description");
+    case 7:
+        return QStringLiteral("Historizing");
     default:
         break;
     }

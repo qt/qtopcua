@@ -68,6 +68,8 @@ public:
     bool readNodeAttributes(const QList<QOpcUaReadItem> &nodesToRead) override;
     bool writeNodeAttributes(const QList<QOpcUaWriteItem> &nodesToWrite) override;
 
+    QOpcUaHistoryReadResponse *readHistoryData(const QOpcUaHistoryReadRawRequest &request) override;
+
     bool addNode(const QOpcUaAddNodeItem &nodeToAdd) override;
     bool deleteNode(const QString &nodeId, bool deleteTargetReferences) override;
 
@@ -76,6 +78,12 @@ public:
 
     QStringList supportedSecurityPolicies() const override;
     QList<QOpcUaUserTokenPolicy::TokenType> supportedUserTokenTypes() const override;
+
+    Q_INVOKABLE bool handleHistoryReadRawRequested(const QOpcUaHistoryReadRawRequest &request, const QList<QByteArray> &continuationPoints,
+                                                   bool releaseContinuationPoints, quint64 handle);
+
+signals:
+    void historyReadRequestError(quint64 handle);
 
 private slots:
 

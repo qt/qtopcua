@@ -43,7 +43,6 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/quuid.h>
-
 #include <cstring>
 
 QT_BEGIN_NAMESPACE
@@ -326,8 +325,29 @@ template<>
 QDateTime scalarToQt<QDateTime, UA_DateTime>(const UA_DateTime *data)
 {
     // OPC-UA part 3, Table C.9
+    if (*data == (std::numeric_limits<qint64>::min)() || *data == (std::numeric_limits<qint64>::max)())
+        return QDateTime();
+
     const QDateTime epochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
     return epochStart.addMSecs(*data / UA_DATETIME_MSEC).toLocalTime();
+}
+
+template<>
+QOpcUaDataValue scalarToQt<QOpcUaDataValue, UA_DataValue>(const UA_DataValue *data)
+{
+    QOpcUaDataValue result;
+    if (data->hasSourceTimestamp)
+        result.setSourceTimestamp(QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&data->sourceTimestamp));
+    if (data->hasServerTimestamp)
+        result.setServerTimestamp(QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&data->serverTimestamp));
+    if (data->hasValue)
+        result.setValue(QOpen62541ValueConverter::toQVariant(data->value));
+    if (data->hasStatus) {
+        result.setStatusCode(QOpen62541ValueConverter::scalarToQt<QOpcUa::UaStatusCode, UA_StatusCode>(&data->status));
+    } else {
+        result.setStatusCode(QOpcUa::UaStatusCode::Good);
+    }
+    return result;
 }
 
 template<>
@@ -565,6 +585,11 @@ void scalarFromQt(const QTTYPE &value, TARGETTYPE *ptr)
 template<>
 void scalarFromQt<UA_DateTime, QDateTime>(const QDateTime &value, UA_DateTime *ptr)
 {
+    if (!value.isValid()) {
+        *ptr = (std::numeric_limits<qint64>::min)();
+        return;
+    }
+
     // OPC-UA part 3, Table C.9
     const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
 

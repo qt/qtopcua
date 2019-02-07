@@ -40,6 +40,8 @@
 #include "qopen62541utils.h"
 #include "qopen62541valueconverter.h"
 
+#include <private/qopcuahistoryreadresponse_p.h>
+
 #include <QtCore/qdatetime.h>
 #include <QtCore/qstring.h>
 #include <QtCore/qlist.h>
@@ -168,7 +170,9 @@ bool QOpen62541Node::writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QO
                                      Q_ARG(QOpcUa::Types, valueAttributeType));
 }
 
+
 bool QOpen62541Node::callMethod(const QString &methodNodeId, const QList<QOpcUa::TypedVariant> &args)
+
 {
     if (!m_client)
         return false;
@@ -183,6 +187,16 @@ bool QOpen62541Node::callMethod(const QString &methodNodeId, const QList<QOpcUa:
                                      Q_ARG(QList<QOpcUa::TypedVariant>, args));
 }
 
+QOpcUaHistoryReadResponse *QOpen62541Node::readHistoryRaw(const QDateTime &startTime, const QDateTime &endTime,
+                                                          quint32 numValues, bool returnBounds)
+{
+    if (!m_client)
+        return nullptr;
+
+    return m_client->readHistoryData(QOpcUaHistoryReadRawRequest{{QOpcUaReadItem(m_nodeIdString)},
+                                                                 startTime, endTime, numValues, returnBounds});
+}
+
 bool QOpen62541Node::resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path)
 {
     if (!m_client)
@@ -194,7 +208,7 @@ bool QOpen62541Node::resolveBrowsePath(const QList<QOpcUaRelativePathElement> &p
     return QMetaObject::invokeMethod(m_client->m_backend, "resolveBrowsePath", Qt::QueuedConnection,
                                              Q_ARG(quint64, handle()),
                                              Q_ARG(UA_NodeId, start),
-                                             Q_ARG(QList<QOpcUaRelativePathElement>, path));
+                                     Q_ARG(QList<QOpcUaRelativePathElement>, path));
 }
 
 QT_END_NAMESPACE

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2021 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,43 +34,57 @@
 **
 ****************************************************************************/
 
-#ifndef QOPEN62541NODE_H
-#define QOPEN62541NODE_H
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include "qopen62541client.h"
-#include <private/qopcuanodeimpl_p.h>
+#ifndef QOPCUAHISTORYREADRESPONSEPRIVATE_H
+#define QOPCUAHISTORYREADRESPONSEPRIVATE_H
 
-#include <QPointer>
+#include <QtOpcUa/qopcuahistoryreadresponse.h>
+#include <QtOpcUa/qopcuahistoryreadrawrequest.h>
+
+#include "private/qopcuahistoryreadresponseimpl_p.h"
+
+#include <private/qobject_p.h>
+#include <QObject>
+
+#include <QUuid>
 
 QT_BEGIN_NAMESPACE
 
-class QOpen62541Node : public QOpcUaNodeImpl
-{
+class Q_OPCUA_EXPORT QOpcUaHistoryReadResponsePrivate : public QObjectPrivate {
+    Q_DECLARE_PUBLIC(QOpcUaHistoryReadResponse)
+
 public:
-    explicit QOpen62541Node(const UA_NodeId nodeId, QOpen62541Client *client, const QString nodeIdString);
-    ~QOpen62541Node() override;
+    QOpcUaHistoryReadResponsePrivate(QOpcUaHistoryReadResponseImpl *impl)
+        : m_impl(impl)
+    {
+        QObject::connect(impl, &QOpcUaHistoryReadResponseImpl::readHistoryDataFinished, impl,
+                         [this](const QList<QOpcUaHistoryData> &data, QOpcUa::UaStatusCode serviceResult) {
+            if (q_func())
+                emit q_func()->readHistoryDataFinished(data, serviceResult);
+        });
 
-    bool readAttributes(QOpcUa::NodeAttributes attr, const QString &indexRange) override;
-    bool enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings) override;
-    bool disableMonitoring(QOpcUa::NodeAttributes attr) override;
-    bool modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value) override;
-    bool browse(const QOpcUaBrowseRequest &request) override;
-    QString nodeId() const override;
+        QObject::connect(impl, &QOpcUaHistoryReadResponseImpl::stateChanged, impl,
+                         [this](QOpcUaHistoryReadResponse::State state) {
+            if (q_func())
+                emit q_func()->stateChanged(state);
+        });
+    }
 
-    bool writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange) override;
-    bool writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType) override;
-    bool callMethod(const QString &methodNodeId, const QList<QOpcUa::TypedVariant> &args) override;
+    ~QOpcUaHistoryReadResponsePrivate() = default;
 
-    QOpcUaHistoryReadResponse *readHistoryRaw(const QDateTime &startTime, const QDateTime &endTime, quint32 numValues, bool returnBounds) override;
-
-    bool resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path) override;
-
-private:
-    QPointer<QOpen62541Client> m_client;
-    QString m_nodeIdString;
-    UA_NodeId m_nodeId;
+    QScopedPointer<QOpcUaHistoryReadResponseImpl> m_impl;
 };
 
 QT_END_NAMESPACE
 
-#endif // QOPEN62541NODE_H
+#endif // QOPCUAHISTORYREADRESPONSEPRIVATE_H

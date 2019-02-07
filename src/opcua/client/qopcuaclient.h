@@ -49,6 +49,7 @@
 #include <QtOpcUa/qopcuaaddreferenceitem.h>
 #include <QtOpcUa/qopcuadeletereferenceitem.h>
 #include <QtOpcUa/qopcuaendpointdescription.h>
+#include <QtOpcUa/qopcuahistoryreadrawrequest.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -140,6 +141,8 @@ public:
 
     QStringList supportedSecurityPolicies() const;
     QList<QOpcUaUserTokenPolicy::TokenType> supportedUserTokenTypes() const;
+
+    QOpcUaHistoryReadResponse *readHistoryData(const QOpcUaHistoryReadRawRequest &request);
 
 Q_SIGNALS:
     void connected();

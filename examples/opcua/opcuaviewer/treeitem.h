@@ -108,6 +108,7 @@ private:
     QString mNodeBrowseName;
     QString mNodeId;
     QString mNodeDisplayName;
+    bool mHistorizing;
     QOpcUa::NodeClass mNodeClass = QOpcUa::NodeClass::Undefined;
 };
 

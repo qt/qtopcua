@@ -41,6 +41,7 @@
 #include "qopen62541utils.h"
 #include "qopen62541valueconverter.h"
 #include <private/qopcuaclient_p.h>
+#include <private/qopcuahistoryreadresponseimpl_p.h>
 
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qstringlist.h>
@@ -139,6 +140,29 @@ bool QOpen62541Client::writeNodeAttributes(const QList<QOpcUaWriteItem> &nodesTo
                                      Q_ARG(QList<QOpcUaWriteItem>, nodesToWrite));
 }
 
+QOpcUaHistoryReadResponse *QOpen62541Client::readHistoryData(const QOpcUaHistoryReadRawRequest &request)
+{
+    if (!m_client)
+        return nullptr;
+
+    auto impl = new QOpcUaHistoryReadResponseImpl(request);
+    auto result = new QOpcUaHistoryReadResponse(impl);
+
+    // Connect signals
+    QObject::connect(m_backend, &QOpcUaBackend::historyDataAvailable, impl, &QOpcUaHistoryReadResponseImpl::handleDataAvailable);
+    QObject::connect(impl, &QOpcUaHistoryReadResponseImpl::historyReadRawRequested, this, &QOpen62541Client::handleHistoryReadRawRequested);
+    QObject::connect(this, &QOpen62541Client::historyReadRequestError, impl, &QOpcUaHistoryReadResponseImpl::handleRequestError);
+
+    auto success = handleHistoryReadRawRequested(request, {}, false, impl->handle());
+
+    if (!success) {
+        delete result;
+        return nullptr;
+    }
+
+    return result;
+}
+
 bool QOpen62541Client::addNode(const QOpcUaAddNodeItem &nodeToAdd)
 {
     return QMetaObject::invokeMethod(m_backend, "addNode", Qt::QueuedConnection,
@@ -182,6 +206,22 @@ QList<QOpcUaUserTokenPolicy::TokenType> QOpen62541Client::supportedUserTokenType
         QOpcUaUserTokenPolicy::TokenType::Anonymous,
         QOpcUaUserTokenPolicy::TokenType::Username
     };
+}
+
+bool QOpen62541Client::handleHistoryReadRawRequested(const QOpcUaHistoryReadRawRequest &request, const QList<QByteArray> &continuationPoints,
+                                                     bool releaseContinuationPoints, quint64 handle)
+{
+    const auto success = QMetaObject::invokeMethod(m_backend, "readHistoryRaw",
+                                                   Qt::QueuedConnection,
+                                                   Q_ARG(QOpcUaHistoryReadRawRequest, request),
+                                                   Q_ARG(QList<QByteArray>, continuationPoints),
+                                                   Q_ARG(bool, releaseContinuationPoints),
+                                                   Q_ARG(quint64, handle));
+
+    if (!success)
+        emit historyReadRequestError(handle);
+
+    return success;
 }
 
 QT_END_NAMESPACE

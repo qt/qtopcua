@@ -65,7 +65,8 @@ public:
     UA_NodeId addObject(const UA_NodeId &folderId, int namespaceIndex, const QString &objectName = QString());
 
     UA_NodeId addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
-                          QOpcUa::Types type, QList<quint32> arrayDimensions = QList<quint32>(), int valueRank = UA_VALUERANK_ANY);
+                          QOpcUa::Types type, QList<quint32> arrayDimensions = QList<quint32>(), int valueRank = UA_VALUERANK_ANY,
+                          bool enableHistorizing = false, quint32 historyNumValuesPerNode = 100);
     UA_NodeId addVariableWithWriteMask(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
                           QOpcUa::Types type, quint32 writeMask);
     UA_NodeId addEmptyArrayVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name);
@@ -103,6 +104,7 @@ public:
 
     UA_ServerConfig *m_config{nullptr};
     UA_Server *m_server{nullptr};
+    UA_HistoryDataGathering m_gathering;
 
 public slots:
     UA_StatusCode run(volatile bool *running);

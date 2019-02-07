@@ -66,7 +66,7 @@
 
 QT_BEGIN_NAMESPACE
 
-const int numberOfDisplayColumns = 7; // NodeId, Value, NodeClass, DataType, BrowseName, DisplayName, Description
+const int numberOfDisplayColumns = 8; // NodeId, Value, NodeClass, DataType, BrowseName, DisplayName, Description, Historizing
 
 TreeItem::TreeItem(OpcUaModel *model) : QObject(nullptr)
   , mModel(model)
@@ -88,6 +88,7 @@ TreeItem::TreeItem(QOpcUaNode *node, OpcUaModel *model, TreeItem *parent) : QObj
                             | QOpcUa::NodeAttribute::DataType
                             | QOpcUa::NodeAttribute::BrowseName
                             | QOpcUa::NodeAttribute::DisplayName
+                            | QOpcUa::NodeAttribute::Historizing
                             ))
         qWarning() << "Reading attributes" << mOpcNode->nodeId() << "failed";
 }
@@ -98,6 +99,7 @@ TreeItem::TreeItem(QOpcUaNode *node, OpcUaModel *model, const QOpcUaReferenceDes
     mNodeClass = browsingData.nodeClass();
     mNodeId = browsingData.targetNodeId().nodeId();
     mNodeDisplayName = browsingData.displayName().text();
+    mHistorizing = false;
 }
 
 TreeItem::~TreeItem()
@@ -164,6 +166,10 @@ QVariant TreeItem::data(int column)
         return mAttributesReady
             ? mOpcNode->attribute(QOpcUa::NodeAttribute::Description).value<QOpcUaLocalizedText>().text()
             : tr("Loading ...");
+    }
+    if (column == 7) {
+        return mAttributesReady
+            ? mHistorizing ? QString("true") : QString("false") : tr("Loading ...");
     }
     return QVariant();
 }
@@ -272,6 +278,9 @@ void TreeItem::handleAttributes(QOpcUa::NodeAttributes attr)
         mNodeBrowseName = mOpcNode->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUaQualifiedName>().name();
     if (attr & QOpcUa::NodeAttribute::DisplayName)
         mNodeDisplayName = mOpcNode->attribute(QOpcUa::NodeAttribute::DisplayName).value<QOpcUaLocalizedText>().text();
+    if (attr & QOpcUa::NodeAttribute::Historizing) {
+        mHistorizing = mOpcNode->attribute(QOpcUa::NodeAttribute::Historizing).value<bool>();
+    }
 
     mAttributesReady = true;
     emit mModel->dataChanged(mModel->createIndex(row(), 0, this), mModel->createIndex(row(), numberOfDisplayColumns - 1, this));

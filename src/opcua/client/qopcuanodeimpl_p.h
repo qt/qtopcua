@@ -56,6 +56,7 @@
 #include <QtOpcUa/qopcuareadresult.h>
 #include <QtOpcUa/qopcuarelativepathelement.h>
 #include <QtOpcUa/qopcuatype.h>
+#include <QtOpcUa/qopcuahistoryreadrawrequest.h>
 
 #include <QtCore/qvariant.h>
 
@@ -80,6 +81,7 @@ public:
                                           const QVariant &value) = 0;
 
     virtual bool callMethod(const QString &methodNodeId, const QList<QOpcUa::TypedVariant> &args) = 0;
+    virtual QOpcUaHistoryReadResponse *readHistoryRaw(const QDateTime &startTime, const QDateTime &endTime, quint32 numValues, bool returnBounds) = 0;
 
     virtual bool resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path) = 0;
 
@@ -102,6 +104,7 @@ Q_SIGNALS:
     void methodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
     void resolveBrowsePathFinished(QList<QOpcUaBrowsePathTarget> targets,
                                      QList<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode status);
+    void readHistoryRawFinished(QList<QOpcUaHistoryData> results, QOpcUa::UaStatusCode serviceResult);
 
 private:
     quint64 m_handle;

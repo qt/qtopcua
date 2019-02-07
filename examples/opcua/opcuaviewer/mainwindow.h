@@ -53,6 +53,7 @@
 
 #include <QMainWindow>
 #include <QOpcUaClient>
+#include <QItemSelection>
 
 QT_BEGIN_NAMESPACE
 
@@ -86,6 +87,8 @@ private slots:
     void showErrorDialog(QOpcUaErrorState *errorState);
     void openCustomContextMenu(const QPoint &point);
     void toggleMonitoring();
+    void showHistorizing();
+    void handleReadHistoryDataFinished(QList<QOpcUaHistoryData> results, QOpcUa::UaStatusCode serviceResult);
 
 private:
     void createClient();
@@ -105,7 +108,9 @@ private:
     QOpcUaPkiConfiguration m_pkiConfig;
     QOpcUaEndpointDescription m_endpoint; // current endpoint used to connect
     QMenu *mContextMenu;
-    QAction *mContextMenuAction;
+    QAction *mContextMenuMonitoringAction;
+    QAction *mContextMenuHistorizingAction;
+    QScopedPointer<QOpcUaHistoryReadResponse> mHistoryReadResponse;
 };
 
 QT_END_NAMESPACE

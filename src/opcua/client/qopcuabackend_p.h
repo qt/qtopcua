@@ -98,6 +98,7 @@ Q_SIGNALS:
     void findServersFinished(QList<QOpcUaApplicationDescription> servers, QOpcUa::UaStatusCode statusCode, QUrl requestUrl);
     void readNodeAttributesFinished(QList<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult);
     void writeNodeAttributesFinished(QList<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult);
+    void readHistoryDataFinished(quint64 handle, bool isHandleValid, QOpcUaHistoryReadRawRequest request, QList<QOpcUaHistoryData> results, QOpcUa::UaStatusCode serviceResult);
 
     void addNodeFinished(QOpcUaExpandedNodeId requestedNodeId, QString assignedNodeId, QOpcUa::UaStatusCode statusCode);
     void deleteNodeFinished(QString nodeId, QOpcUa::UaStatusCode statusCode);
@@ -107,6 +108,8 @@ Q_SIGNALS:
                               QOpcUa::UaStatusCode statusCode);
     void connectError(QOpcUaErrorState *errorState);
     void passwordForPrivateKeyRequired(QString keyFilePath, QString *password, bool previousTryWasInvalid);
+
+    void historyDataAvailable(QList<QOpcUaHistoryData> data, QList<QByteArray> continuationPoints, QOpcUa::UaStatusCode serviceResult, uintptr_t handle);
 
 private:
     Q_DISABLE_COPY(QOpcUaBackend)

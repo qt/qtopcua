@@ -60,6 +60,8 @@ public:
     bool readNodeAttributes(const QList<QOpcUaReadItem> &nodesToRead) override;
     bool writeNodeAttributes(const QList<QOpcUaWriteItem> &nodesToWrite) override;
 
+    QOpcUaHistoryReadResponse *readHistoryData(const QOpcUaHistoryReadRawRequest &request) override;
+
     bool addNode(const QOpcUaAddNodeItem &nodeToAdd) override;
     bool deleteNode(const QString &nodeId, bool deleteTargetReferences) override;
 

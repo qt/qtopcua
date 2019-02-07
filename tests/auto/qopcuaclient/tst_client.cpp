@@ -483,6 +483,12 @@ private slots:
 
     void statusStrings();
 
+    defineDataMethod(readHistoryDataFromNode_data)
+    void readHistoryDataFromNode();
+
+    defineDataMethod(readHistoryDataFromClient_data)
+    void readHistoryDataFromClient();
+
     // Events
     defineDataMethod(eventSubscription_data)
     void eventSubscription();
@@ -3852,6 +3858,404 @@ void Tst_QOpcUaClient::eventSubscription()
     QCOMPARE(disabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::EventNotifier);
     QCOMPARE(disabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
 }
+
+void Tst_QOpcUaClient::readHistoryDataFromNode()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=Demo.Static.Historizing1"));
+    QVERIFY (node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, 0, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 1, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 2, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 3, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 4, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 5, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 6, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 7, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 8, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 9, QOpcUa::Types::Int32);
+
+    QScopedPointer<QOpcUaNode> nodeWithLimit(opcuaClient->node("ns=2;s=Demo.Static.Historizing1.ContinuationPoint"));
+    QVERIFY (nodeWithLimit != nullptr);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 0, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 1, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 2, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 3, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 4, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 5, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 6, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 7, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 8, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 9, QOpcUa::Types::Int32);
+
+    // All available data in chronological order
+    {
+        QScopedPointer<QOpcUaHistoryReadResponse> response(node->readHistoryRaw(QDateTime::currentDateTime(),
+                                                                                QDateTime::currentDateTime().addDays(-1),
+                                                                                15, false));
+
+        QVERIFY(response != nullptr);
+
+        QSignalSpy readHistoryDataSpy(response.get(), &QOpcUaHistoryReadResponse::readHistoryDataFinished);
+        readHistoryDataSpy.wait(signalSpyTimeout);
+
+        QCOMPARE(readHistoryDataSpy.size(), 1);
+        QCOMPARE(response->hasMoreData(), false);
+        QCOMPARE(readHistoryDataSpy.size(), 1);
+
+        QCOMPARE(readHistoryDataSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+        auto result = readHistoryDataSpy.at(0).at(0).value<QList<QOpcUaHistoryData>>();
+        QCOMPARE(result.size(), 1);
+        QCOMPARE(result[0].statusCode(), QOpcUa::UaStatusCode::Good);
+        QCOMPARE(result[0].count(), 10);
+        QCOMPARE(result[0].result()[0].value(), 9);
+        QCOMPARE(result[0].result()[1].value(), 8);
+        QCOMPARE(result[0].result()[2].value(), 7);
+        QCOMPARE(result[0].result()[3].value(), 6);
+        QCOMPARE(result[0].result()[4].value(), 5);
+        QCOMPARE(result[0].result()[5].value(), 4);
+        QCOMPARE(result[0].result()[6].value(), 3);
+        QCOMPARE(result[0].result()[7].value(), 2);
+        QCOMPARE(result[0].result()[8].value(), 1);
+        QCOMPARE(result[0].result()[9].value(), 0);
+    }
+
+    // All available data in chronological order with continuation point
+    {
+        QScopedPointer<QOpcUaHistoryReadResponse> response(nodeWithLimit->readHistoryRaw(QDateTime::currentDateTime(),
+                                                                                         QDateTime::currentDateTime().addDays(-1),
+                                                                                         15, false));
+
+        QVERIFY(response != nullptr);
+        QCOMPARE(response->state(), QOpcUaHistoryReadResponse::State::Reading);
+
+        QSignalSpy readHistoryDataSpy(response.get(), &QOpcUaHistoryReadResponse::readHistoryDataFinished);
+        QSignalSpy responseStateSpy(response.get(), &QOpcUaHistoryReadResponse::stateChanged);
+        responseStateSpy.wait(signalSpyTimeout);
+        if (readHistoryDataSpy.empty())
+            readHistoryDataSpy.wait(signalSpyTimeout);
+
+        QCOMPARE(responseStateSpy.size(), 1);
+        QCOMPARE(responseStateSpy.at(0).at(0).value<QOpcUaHistoryReadResponse::State>(),
+                 QOpcUaHistoryReadResponse::State::MoreDataAvailable);
+        responseStateSpy.clear();
+
+        QCOMPARE(readHistoryDataSpy.size(), 1);
+
+        QCOMPARE(readHistoryDataSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+        auto result = readHistoryDataSpy.at(0).at(0).value<QList<QOpcUaHistoryData>>();
+        QCOMPARE(result.size(), 1);
+        QCOMPARE(result[0].statusCode(), QOpcUa::UaStatusCode::Good);
+        QCOMPARE(result[0].count(), 5);
+        QCOMPARE(result[0].result()[0].value(), 9);
+        QCOMPARE(result[0].result()[1].value(), 8);
+        QCOMPARE(result[0].result()[2].value(), 7);
+        QCOMPARE(result[0].result()[3].value(), 6);
+        QCOMPARE(result[0].result()[4].value(), 5);
+
+        readHistoryDataSpy.clear();
+        QCOMPARE(response->hasMoreData(), true);
+        response->readMoreData();
+        responseStateSpy.wait(signalSpyTimeout);
+        if (readHistoryDataSpy.empty())
+            readHistoryDataSpy.wait(signalSpyTimeout);
+
+        QCOMPARE(responseStateSpy.size(), 1);
+        QCOMPARE(responseStateSpy.at(0).at(0).value<QOpcUaHistoryReadResponse::State>(),
+                 QOpcUaHistoryReadResponse::State::Finished);
+
+        QCOMPARE(readHistoryDataSpy.size(), 1);
+
+        QCOMPARE(readHistoryDataSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+        result = readHistoryDataSpy.at(0).at(0).value<QList<QOpcUaHistoryData>>();
+        QCOMPARE(result.size(), 1);
+        QCOMPARE(result[0].statusCode(), QOpcUa::UaStatusCode::Good);
+        QCOMPARE(result[0].count(), 10);
+        QCOMPARE(result[0].result()[0].value(), 9);
+        QCOMPARE(result[0].result()[1].value(), 8);
+        QCOMPARE(result[0].result()[2].value(), 7);
+        QCOMPARE(result[0].result()[3].value(), 6);
+        QCOMPARE(result[0].result()[4].value(), 5);
+        QCOMPARE(result[0].result()[5].value(), 4);
+        QCOMPARE(result[0].result()[6].value(), 3);
+        QCOMPARE(result[0].result()[7].value(), 2);
+        QCOMPARE(result[0].result()[8].value(), 1);
+        QCOMPARE(result[0].result()[9].value(), 0);
+
+        readHistoryDataSpy.clear();
+
+        QCOMPARE(response->hasMoreData(), false);
+    }
+
+
+    // All available data in reverse order
+    {
+        QScopedPointer<QOpcUaHistoryReadResponse> response(node->readHistoryRaw(QDateTime::currentDateTime().addDays(-1),
+                                                                                QDateTime::currentDateTime(), 15, false));
+
+        QVERIFY(response != nullptr);
+
+        QSignalSpy readHistoryDataSpy(response.get(), &QOpcUaHistoryReadResponse::readHistoryDataFinished);
+
+        readHistoryDataSpy.wait(signalSpyTimeout);
+
+        QCOMPARE(readHistoryDataSpy.size(), 1);
+
+        QCOMPARE(readHistoryDataSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+        const auto result = readHistoryDataSpy.at(0).at(0).value<QList<QOpcUaHistoryData>>();
+        QCOMPARE(result.size(), 1);
+        QCOMPARE(result[0].statusCode(), QOpcUa::UaStatusCode::Good);
+        QCOMPARE(result[0].count(), 10);
+        QCOMPARE(result[0].result()[0].value(), 0);
+        QCOMPARE(result[0].result()[1].value(), 1);
+        QCOMPARE(result[0].result()[2].value(), 2);
+        QCOMPARE(result[0].result()[3].value(), 3);
+        QCOMPARE(result[0].result()[4].value(), 4);
+        QCOMPARE(result[0].result()[5].value(), 5);
+        QCOMPARE(result[0].result()[6].value(), 6);
+        QCOMPARE(result[0].result()[7].value(), 7);
+        QCOMPARE(result[0].result()[8].value(), 8);
+        QCOMPARE(result[0].result()[9].value(), 9);
+
+        QCOMPARE(response->hasMoreData(), false);
+    }
+
+    // Empty data set for a time range without data
+    {
+        QScopedPointer<QOpcUaHistoryReadResponse> response(node->readHistoryRaw(QDateTime::currentDateTime().addDays(-3),
+                                                                                QDateTime::currentDateTime().addDays(-2),
+                                                                                5, false));
+
+        QVERIFY(response != nullptr);
+        QSignalSpy readHistoryDataSpy(response.get(), &QOpcUaHistoryReadResponse::readHistoryDataFinished);
+
+        readHistoryDataSpy.wait(signalSpyTimeout);
+
+        QCOMPARE(readHistoryDataSpy.size(), 1);
+
+        QCOMPARE(readHistoryDataSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+        const auto resultNoData = readHistoryDataSpy.at(0).at(0).value<QList<QOpcUaHistoryData>>();
+        QCOMPARE(resultNoData.size(), 1);
+        QCOMPARE(resultNoData[0].statusCode(), QOpcUa::UaStatusCode::Good);
+        QCOMPARE(resultNoData[0].count(), 0);
+
+        QCOMPARE(response->hasMoreData(), false);
+    }
+
+    // Only a starting time
+    {
+        QScopedPointer<QOpcUaHistoryReadResponse> response(node->readHistoryRaw(QDateTime::currentDateTime().addDays(-1),
+                                                                                QDateTime(), 15, false));
+
+        QVERIFY(response != nullptr);
+        QSignalSpy readHistoryDataSpy(response.get(), &QOpcUaHistoryReadResponse::readHistoryDataFinished);
+
+        readHistoryDataSpy.wait(signalSpyTimeout);
+
+        QCOMPARE(readHistoryDataSpy.size(), 1);
+
+        QCOMPARE(readHistoryDataSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+        const auto result = readHistoryDataSpy.at(0).at(0).value<QList<QOpcUaHistoryData>>();
+        QCOMPARE(result.size(), 1);
+        QCOMPARE(result[0].statusCode(), QOpcUa::UaStatusCode::Good);
+        QCOMPARE(result[0].count(), 10);
+        QCOMPARE(result[0].result()[0].value(), 0);
+        QCOMPARE(result[0].result()[1].value(), 1);
+        QCOMPARE(result[0].result()[2].value(), 2);
+        QCOMPARE(result[0].result()[3].value(), 3);
+        QCOMPARE(result[0].result()[4].value(), 4);
+        QCOMPARE(result[0].result()[5].value(), 5);
+        QCOMPARE(result[0].result()[6].value(), 6);
+        QCOMPARE(result[0].result()[7].value(), 7);
+        QCOMPARE(result[0].result()[8].value(), 8);
+        QCOMPARE(result[0].result()[9].value(), 9);
+
+        QCOMPARE(response->hasMoreData(), false);
+    }
+
+
+    // Only an end time
+    {
+        QScopedPointer<QOpcUaHistoryReadResponse> response(node->readHistoryRaw(QDateTime(),
+                                                                                QDateTime::currentDateTime().addDays(1), 15, false));
+
+        QVERIFY(response != nullptr);
+        QSignalSpy readHistoryDataSpy(response.get(), &QOpcUaHistoryReadResponse::readHistoryDataFinished);
+
+        readHistoryDataSpy.wait(signalSpyTimeout);
+
+        QCOMPARE(readHistoryDataSpy.size(), 1);
+
+        QCOMPARE(readHistoryDataSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+        const auto result = readHistoryDataSpy.at(0).at(0).value<QList<QOpcUaHistoryData>>();
+        QCOMPARE(result.size(), 1);
+        QCOMPARE(result[0].statusCode(), QOpcUa::UaStatusCode::Good);
+        QCOMPARE(result[0].count(), 10);
+        QCOMPARE(result[0].result()[0].value(), 9);
+        QCOMPARE(result[0].result()[1].value(), 8);
+        QCOMPARE(result[0].result()[2].value(), 7);
+        QCOMPARE(result[0].result()[3].value(), 6);
+        QCOMPARE(result[0].result()[4].value(), 5);
+        QCOMPARE(result[0].result()[5].value(), 4);
+        QCOMPARE(result[0].result()[6].value(), 3);
+        QCOMPARE(result[0].result()[7].value(), 2);
+        QCOMPARE(result[0].result()[8].value(), 1);
+        QCOMPARE(result[0].result()[9].value(), 0);
+
+        QCOMPARE(response->hasMoreData(), false);
+    }
+
+    // Return bounds
+    {
+        QScopedPointer<QOpcUaHistoryReadResponse> response(node->readHistoryRaw(QDateTime::currentDateTime().addDays(-1),
+                                                                                QDateTime(), 15, true));
+
+        QVERIFY(response != nullptr);
+        QSignalSpy readHistoryDataSpy(response.get(), &QOpcUaHistoryReadResponse::readHistoryDataFinished);
+
+        readHistoryDataSpy.wait(signalSpyTimeout);
+
+        QCOMPARE(readHistoryDataSpy.size(), 1);
+
+        QCOMPARE(readHistoryDataSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+        const auto result = readHistoryDataSpy.at(0).at(0).value<QList<QOpcUaHistoryData>>();
+        QCOMPARE(result.size(), 1);
+        QCOMPARE(result[0].statusCode(), QOpcUa::UaStatusCode::Good);
+        QCOMPARE(result[0].count(), 12);
+        QCOMPARE(result[0].result()[0].statusCode(), QOpcUa::UaStatusCode::BadBoundNotFound);
+        QCOMPARE(result[0].result()[0].value(), QVariant());
+        QCOMPARE(result[0].result()[1].value(), 0);
+        QCOMPARE(result[0].result()[2].value(), 1);
+        QCOMPARE(result[0].result()[3].value(), 2);
+        QCOMPARE(result[0].result()[4].value(), 3);
+        QCOMPARE(result[0].result()[5].value(), 4);
+        QCOMPARE(result[0].result()[6].value(), 5);
+        QCOMPARE(result[0].result()[7].value(), 6);
+        QCOMPARE(result[0].result()[8].value(), 7);
+        QCOMPARE(result[0].result()[9].value(), 8);
+        QCOMPARE(result[0].result()[10].value(), 9);
+
+        QCOMPARE(response->hasMoreData(), false);
+    }
+}
+
+void Tst_QOpcUaClient::readHistoryDataFromClient()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=Demo.Static.Historizing2"));
+    QVERIFY (node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, 0, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 1, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 2, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 3, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 4, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 5, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 6, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 7, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 8, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(node, 9, QOpcUa::Types::Int32);
+
+    QScopedPointer<QOpcUaNode> nodeWithLimit(opcuaClient->node("ns=2;s=Demo.Static.Historizing2.ContinuationPoint"));
+    QVERIFY (nodeWithLimit != nullptr);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 10, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 11, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 12, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 13, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 14, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 15, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 16, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 17, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 18, QOpcUa::Types::Int32);
+    WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 19, QOpcUa::Types::Int32);
+
+    // Values for two nodes in chronological order
+    // One of the nodes will require two calls to get all values
+    {
+        QOpcUaHistoryReadRawRequest request(
+                    {QOpcUaReadItem(node->nodeId()), QOpcUaReadItem(nodeWithLimit->nodeId())},
+                    QDateTime::currentDateTime(),
+                    QDateTime::currentDateTime().addDays(-1),
+                    15,
+                    false
+                    );
+
+        QScopedPointer<QOpcUaHistoryReadResponse> response(opcuaClient->readHistoryData(request));
+        QVERIFY(response != nullptr);
+
+        QSignalSpy readHistoryDataSpy(response.get(), &QOpcUaHistoryReadResponse::readHistoryDataFinished);
+        readHistoryDataSpy.wait(signalSpyTimeout);
+
+        QCOMPARE(readHistoryDataSpy.size(), 1);
+
+        QCOMPARE(readHistoryDataSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+        auto result = readHistoryDataSpy.at(0).at(0).value<QList<QOpcUaHistoryData>>();
+        QCOMPARE(result.size(), 2);
+        QCOMPARE(result[0].nodeId(), "ns=2;s=Demo.Static.Historizing2");
+        QCOMPARE(result[0].statusCode(), QOpcUa::UaStatusCode::Good);
+        QCOMPARE(result[0].count(), 10);
+        QCOMPARE(result[0].result()[0].value(), 9);
+        QCOMPARE(result[0].result()[1].value(), 8);
+        QCOMPARE(result[0].result()[2].value(), 7);
+        QCOMPARE(result[0].result()[3].value(), 6);
+        QCOMPARE(result[0].result()[4].value(), 5);
+        QCOMPARE(result[0].result()[5].value(), 4);
+        QCOMPARE(result[0].result()[6].value(), 3);
+        QCOMPARE(result[0].result()[7].value(), 2);
+        QCOMPARE(result[0].result()[8].value(), 1);
+        QCOMPARE(result[0].result()[9].value(), 0);
+        QCOMPARE(result[1].count(), 5);
+        QCOMPARE(result[1].nodeId(), "ns=2;s=Demo.Static.Historizing2.ContinuationPoint");
+        QCOMPARE(result[1].result()[0].value(), 19);
+        QCOMPARE(result[1].result()[1].value(), 18);
+        QCOMPARE(result[1].result()[2].value(), 17);
+        QCOMPARE(result[1].result()[3].value(), 16);
+        QCOMPARE(result[1].result()[4].value(), 15);
+
+        QCOMPARE(response->hasMoreData(), true);
+        readHistoryDataSpy.clear();
+
+        response->readMoreData();
+        readHistoryDataSpy.wait(signalSpyTimeout);
+
+        QCOMPARE(readHistoryDataSpy.size(), 1);
+
+        QCOMPARE(readHistoryDataSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+        result = readHistoryDataSpy.at(0).at(0).value<QList<QOpcUaHistoryData>>();
+        QCOMPARE(result.size(), 2);
+        QCOMPARE(result[0].nodeId(), "ns=2;s=Demo.Static.Historizing2");
+        QCOMPARE(result[0].statusCode(), QOpcUa::UaStatusCode::Good);
+        QCOMPARE(result[0].count(), 10);
+        QCOMPARE(result[0].result()[0].value(), 9);
+        QCOMPARE(result[0].result()[1].value(), 8);
+        QCOMPARE(result[0].result()[2].value(), 7);
+        QCOMPARE(result[0].result()[3].value(), 6);
+        QCOMPARE(result[0].result()[4].value(), 5);
+        QCOMPARE(result[0].result()[5].value(), 4);
+        QCOMPARE(result[0].result()[6].value(), 3);
+        QCOMPARE(result[0].result()[7].value(), 2);
+        QCOMPARE(result[0].result()[8].value(), 1);
+        QCOMPARE(result[0].result()[9].value(), 0);
+        QCOMPARE(result[1].count(), 10);
+        QCOMPARE(result[1].nodeId(), "ns=2;s=Demo.Static.Historizing2.ContinuationPoint");
+        QCOMPARE(result[1].result()[0].value(), 19);
+        QCOMPARE(result[1].result()[1].value(), 18);
+        QCOMPARE(result[1].result()[2].value(), 17);
+        QCOMPARE(result[1].result()[3].value(), 16);
+        QCOMPARE(result[1].result()[4].value(), 15);
+        QCOMPARE(result[1].result()[5].value(), 14);
+        QCOMPARE(result[1].result()[6].value(), 13);
+        QCOMPARE(result[1].result()[7].value(), 12);
+        QCOMPARE(result[1].result()[8].value(), 11);
+        QCOMPARE(result[1].result()[9].value(), 10);
+
+        QCOMPARE(response->hasMoreData(), false);
+    }
+}
+
 
 void Tst_QOpcUaClient::connectionLost()
 {

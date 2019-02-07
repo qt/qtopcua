@@ -62,6 +62,8 @@
 #include <QOpcUaAuthenticationInformation>
 #include <QOpcUaErrorState>
 
+#include <QOpcUaHistoryReadRawRequest>
+
 QT_BEGIN_NAMESPACE
 
 static MainWindow *mainWindowGlobal = nullptr;
@@ -134,13 +136,13 @@ MainWindow::MainWindow(const QString &initialUrl, QWidget *parent) : QMainWindow
     ui->treeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     if (ui->opcUaPlugin->count() == 0) {
-        ui->opcUaPlugin->setDisabled(true);
-        ui->connectButton->setDisabled(true);
         QMessageBox::critical(this, tr("No OPCUA plugins available"), tr("The list of available OPCUA plugins is empty. No connection possible."));
     }
 
     mContextMenu = new QMenu(ui->treeView);
-    mContextMenuAction = mContextMenu->addAction(tr("Enable Monitoring"), this, &MainWindow::toggleMonitoring);
+    mContextMenuMonitoringAction = mContextMenu->addAction(tr("Enable Monitoring"), this, &MainWindow::toggleMonitoring);
+    mContextMenuHistorizingAction = mContextMenu->addAction(tr("Request historic data"), this, &MainWindow::showHistorizing);
+
     ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->treeView, &QTreeView::customContextMenuRequested, this, &MainWindow::openCustomContextMenu);
 
@@ -465,9 +467,13 @@ void MainWindow::openCustomContextMenu(const QPoint &point)
     if (index.isValid() && index.column() == 1) {
         TreeItem* item = static_cast<TreeItem *>(index.internalPointer());
         if (item) {
-            mContextMenuAction->setData(index);
-            mContextMenuAction->setEnabled(item->supportsMonitoring());
-            mContextMenuAction->setText(item->monitoringEnabled() ? tr("Disable Monitoring") : tr("Enable Monitoring"));
+            mContextMenuMonitoringAction->setData(index);
+            mContextMenuMonitoringAction->setEnabled(item->supportsMonitoring());
+            mContextMenuMonitoringAction->setText(item->monitoringEnabled() ? tr("Disable Monitoring") : tr("Enable Monitoring"));
+
+            mContextMenuHistorizingAction->setData(index);
+            QModelIndex isHistoricIndex = mOpcUaModel->index(index.row(), 7, index.parent());
+            mContextMenuHistorizingAction->setEnabled(mOpcUaModel->data(isHistoricIndex, Qt::DisplayRole).toString() == "true");
             mContextMenu->exec(ui->treeView->viewport()->mapToGlobal(point));
         }
     }
@@ -475,11 +481,55 @@ void MainWindow::openCustomContextMenu(const QPoint &point)
 
 void MainWindow::toggleMonitoring()
 {
-    QModelIndex index = mContextMenuAction->data().toModelIndex();
+    QModelIndex index = mContextMenuMonitoringAction->data().toModelIndex();
     if (index.isValid()) {
         TreeItem* item = static_cast<TreeItem *>(index.internalPointer());
         if (item) {
             item->setMonitoringEnabled(!item->monitoringEnabled());
+        }
+    }
+}
+
+void MainWindow::showHistorizing()
+{
+    QModelIndex modelIndex = mContextMenuHistorizingAction->data().toModelIndex();
+    QModelIndex nodeIdIndex = mOpcUaModel->index(modelIndex.row(), 4, modelIndex.parent());
+    QString nodeId = mOpcUaModel->data(nodeIdIndex, Qt::DisplayRole).toString();
+    auto request = QOpcUaHistoryReadRawRequest(
+                {QOpcUaReadItem(nodeId)},
+                QDateTime::currentDateTime(),
+                QDateTime::currentDateTime().addDays(-2),
+                5,
+                false
+                );
+    mHistoryReadResponse.reset(mOpcUaClient->readHistoryData(request));
+
+    if (mHistoryReadResponse) {
+        QObject::connect(mHistoryReadResponse.get(), &QOpcUaHistoryReadResponse::readHistoryDataFinished,
+                         this, &MainWindow::handleReadHistoryDataFinished);
+        QObject::connect(mHistoryReadResponse.get(), &QOpcUaHistoryReadResponse::stateChanged, this, [](QOpcUaHistoryReadResponse::State state) {
+            qDebug() << "History read state changed to" << state;
+        });
+    } else {
+        qWarning() << "Failed to request history data";
+    }
+}
+
+void MainWindow::handleReadHistoryDataFinished(QList<QOpcUaHistoryData> results, QOpcUa::UaStatusCode serviceResult)
+{
+    if (serviceResult != QOpcUa::UaStatusCode::Good) {
+        qWarning() << "readHistoryData request finished with bad status code: " << serviceResult;
+        return;
+    }
+
+    for (int i = 0; i < results.count(); ++i) {
+        qInfo() << "NodeId:" << results.at(i).nodeId() << "; statusCode:" << results.at(i).statusCode() << "; returned values:" << results.at(i).count();
+        for (int j = 0; j < results.at(i).count(); ++j) {
+            qInfo() << j
+                       << "source timestamp:" << results.at(i).result()[j].sourceTimestamp()
+                       << "server timestamp:" <<  results.at(i).result()[j].serverTimestamp()
+                       << "value:" << results.at(i).result()[j].value();
+
         }
     }
 }

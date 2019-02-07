@@ -130,6 +130,13 @@ bool QUACppClient::writeNodeAttributes(const QList<QOpcUaWriteItem> &nodesToWrit
                                      Q_ARG(QList<QOpcUaWriteItem>, nodesToWrite));
 }
 
+QOpcUaHistoryReadResponse *QUACppClient::readHistoryData(const QOpcUaHistoryReadRawRequest &request)
+{
+    Q_UNUSED(request)
+    qCWarning(QT_OPCUA_PLUGINS_UACPP) << "readHistoryData not implemented";
+    return nullptr;
+}
+
 bool QUACppClient::addNode(const QOpcUaAddNodeItem &nodeToAdd)
 {
     return QMetaObject::invokeMethod(m_backend, "addNode", Qt::QueuedConnection,

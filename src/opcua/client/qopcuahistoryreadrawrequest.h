@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 basysKom GmbH, opensource@basyskom.com
+** Copyright (C) 2019 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,41 +34,61 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAREADITEM_H
-#define QOPCUAREADITEM_H
+#ifndef QHISTORYREADRAWREQUEST_H
+#define QHISTORYREADRAWREQUEST_H
 
-#include <QtOpcUa/qopcuatype.h>
+#include <QObject>
+#include <QDateTime>
 #include <QtCore/qshareddata.h>
+
+#include "QtOpcUa/qopcuareaditem.h"
+#include "QtOpcUa/qopcuahistorydata.h"
+
+#include <QtOpcUa/qopcuaglobal.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaReadItemData;
-class Q_OPCUA_EXPORT QOpcUaReadItem
+class QOpcUaHistoryReadRawRequestData;
+class Q_OPCUA_EXPORT QOpcUaHistoryReadRawRequest
 {
 public:
-    QOpcUaReadItem();
-    QOpcUaReadItem(const QOpcUaReadItem &other);
-    QOpcUaReadItem(const QString &nodeId, QOpcUa::NodeAttribute attr = QOpcUa::NodeAttribute::Value,
-                   const QString &indexRange = QString());
-    QOpcUaReadItem &operator=(const QOpcUaReadItem &rhs);
-    bool operator==(const QOpcUaReadItem &other) const;
-    ~QOpcUaReadItem();
+    explicit QOpcUaHistoryReadRawRequest();
+    explicit QOpcUaHistoryReadRawRequest(QList<QOpcUaReadItem> nodesToRead,
+                                         QDateTime startTimestamp,
+                                         QDateTime endTimestamp,
+                                         quint32 numValuesPerNode = 0,
+                                         bool returnBounds = false);
 
-    QString nodeId() const;
-    void setNodeId(const QString &nodeId);
+    QOpcUaHistoryReadRawRequest(const QOpcUaHistoryReadRawRequest &other);
+    ~QOpcUaHistoryReadRawRequest();
 
-    QOpcUa::NodeAttribute attribute() const;
-    void setAttribute(QOpcUa::NodeAttribute attribute);
+    QDateTime startTimestamp() const;
+    void setStartTimestamp(QDateTime startTimestamp);
 
-    QString indexRange() const;
-    void setIndexRange(const QString &indexRange);
+    QDateTime endTimestamp() const;
+    void setEndTimestamp(QDateTime endTimestamp);
+
+    quint32 numValuesPerNode() const;
+    void setNumValuesPerNode(quint32 numValuesPerNode);
+
+    bool returnBounds() const;
+    void setReturnBounds(bool returnBounds);
+
+    QList<QOpcUaReadItem> nodesToRead() const;
+    void setNodesToRead(QList<QOpcUaReadItem> nodesToRead);
+
+    void addNodeToRead(QOpcUaReadItem nodeToRead);
+
+    QOpcUaHistoryReadRawRequest &operator=(const QOpcUaHistoryReadRawRequest &rhs);
+    bool operator==(const QOpcUaHistoryReadRawRequest& other) const;
+    bool operator!=(const QOpcUaHistoryReadRawRequest& other) const;
 
 private:
-    QSharedDataPointer<QOpcUaReadItemData> data;
+    QSharedDataPointer<QOpcUaHistoryReadRawRequestData> data;
 };
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QOpcUaReadItem)
+Q_DECLARE_METATYPE(QOpcUaHistoryReadRawRequest)
 
-#endif // QOPCUAREADITEM_H
+#endif // QHISTORYREADRAWREQUEST_H

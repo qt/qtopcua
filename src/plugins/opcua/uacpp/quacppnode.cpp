@@ -177,4 +177,16 @@ bool QUACppNode::resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path)
                                      Q_ARG(QList<QOpcUaRelativePathElement>, path));
 }
 
+
+
+QOpcUaHistoryReadResponse *QUACppNode::readHistoryRaw(const QDateTime &startTime, const QDateTime &endTime, quint32 numValues, bool returnBounds)
+{
+    Q_UNUSED(startTime)
+    Q_UNUSED(endTime)
+    Q_UNUSED(numValues)
+    Q_UNUSED(returnBounds)
+    qCWarning(QT_OPCUA_PLUGINS_UACPP) << "readHistoryRaw not implemented";
+    return nullptr;
+}
+
 QT_END_NAMESPACE

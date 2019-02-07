@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2021 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,43 +34,42 @@
 **
 ****************************************************************************/
 
-#ifndef QOPEN62541NODE_H
-#define QOPEN62541NODE_H
+#ifndef QOPCUADATAVALUE_H
+#define QOPCUADATAVALUE_H
 
-#include "qopen62541client.h"
-#include <private/qopcuanodeimpl_p.h>
+#include <QtOpcUa/qopcuatype.h>
 
-#include <QPointer>
+#include <QtCore/qdatetime.h>
 
 QT_BEGIN_NAMESPACE
 
-class QOpen62541Node : public QOpcUaNodeImpl
+class QOpcUaDataValueData;
+class Q_OPCUA_EXPORT QOpcUaDataValue
 {
 public:
-    explicit QOpen62541Node(const UA_NodeId nodeId, QOpen62541Client *client, const QString nodeIdString);
-    ~QOpen62541Node() override;
+    QOpcUaDataValue();
+    QOpcUaDataValue(const QOpcUaDataValue &other);
+    QOpcUaDataValue &operator=(const QOpcUaDataValue &rhs);
+    ~QOpcUaDataValue();
 
-    bool readAttributes(QOpcUa::NodeAttributes attr, const QString &indexRange) override;
-    bool enableMonitoring(QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings) override;
-    bool disableMonitoring(QOpcUa::NodeAttributes attr) override;
-    bool modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, const QVariant &value) override;
-    bool browse(const QOpcUaBrowseRequest &request) override;
-    QString nodeId() const override;
+    QDateTime serverTimestamp() const;
+    void setServerTimestamp(const QDateTime &serverTimestamp);
 
-    bool writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange) override;
-    bool writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType) override;
-    bool callMethod(const QString &methodNodeId, const QList<QOpcUa::TypedVariant> &args) override;
+    QDateTime sourceTimestamp() const;
+    void setSourceTimestamp(const QDateTime &sourceTimestamp);
 
-    QOpcUaHistoryReadResponse *readHistoryRaw(const QDateTime &startTime, const QDateTime &endTime, quint32 numValues, bool returnBounds) override;
+    QOpcUa::UaStatusCode statusCode() const;
+    void setStatusCode(QOpcUa::UaStatusCode statusCode);
 
-    bool resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path) override;
+    QVariant value() const;
+    void setValue(const QVariant &value);
 
 private:
-    QPointer<QOpen62541Client> m_client;
-    QString m_nodeIdString;
-    UA_NodeId m_nodeId;
+    QSharedDataPointer<QOpcUaDataValueData> data;
 };
 
 QT_END_NAMESPACE
 
-#endif // QOPEN62541NODE_H
+Q_DECLARE_METATYPE(QOpcUaDataValue)
+
+#endif // QOPCUADATAVALUE_H

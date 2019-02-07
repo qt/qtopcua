@@ -44,6 +44,8 @@
 #include <QtOpcUa/qopcuatype.h>
 #include <QtOpcUa/qopcuabrowsepathtarget.h>
 #include <QtOpcUa/qopcuarelativepathelement.h>
+#include <QtOpcUa/qopcuahistoryreadrawrequest.h>
+#include <QtOpcUa/qopcuahistoryreadresponse.h>
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
@@ -103,6 +105,8 @@ public:
     bool resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path);
 
     bool browse(const QOpcUaBrowseRequest &request);
+
+    QOpcUaHistoryReadResponse *readHistoryRaw(const QDateTime &startTime, const QDateTime &endTime, quint32 numValues, bool returnBounds);
 
 Q_SIGNALS:
     void attributeRead(QOpcUa::NodeAttributes attributes);
