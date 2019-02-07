@@ -34,6 +34,7 @@
 **
 ****************************************************************************/
 
+#include "backend_environment.h"
 #include <QtQuickTest/quicktest.h>
 #include <QObject>
 #include <QProcess>
@@ -58,6 +59,7 @@ public:
 
 public slots:
     void applicationAvailable() {
+        updateEnvironment();
         const quint16 defaultPort = 43344;
         const QHostAddress defaultHost(QHostAddress::LocalHost);
 
