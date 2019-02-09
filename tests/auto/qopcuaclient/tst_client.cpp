@@ -34,6 +34,8 @@
 **
 ****************************************************************************/
 
+#include "backend_environment.h"
+
 #include <QtOpcUa/QOpcUaAuthenticationInformation>
 #include <QtOpcUa/QOpcUaClient>
 #include <QtOpcUa/QOpcUaNode>
@@ -3669,6 +3671,7 @@ void Tst_QOpcUaClient::cleanupTestCase()
 
 int main(int argc, char *argv[])
 {
+    updateEnvironment();
     QCoreApplication app(argc, argv);
 
     QTEST_SET_MAIN_SOURCE_PATH
