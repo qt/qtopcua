@@ -214,6 +214,18 @@ void UACppAsyncBackend::browse(quint64 handle, const UaNodeId &id, const QOpcUaB
 
 void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
 {
+    if (m_nativeSession->isConnected())
+        disconnectFromEndpoint();
+
+    QString errorMessage;
+    if (!verifyEndpointDescription(endpoint, &errorMessage)) {
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << errorMessage;
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::InvalidUrl);
+        return;
+    }
+
+    emit stateAndOrErrorChanged(QOpcUaClient::Connecting, QOpcUaClient::NoError);
+
     const auto identity = m_clientImpl->m_client->identity();
     const auto authInfo = m_clientImpl->m_client->authenticationInformation();
     const auto pkiConfig = m_clientImpl->m_client->pkiConfiguration();

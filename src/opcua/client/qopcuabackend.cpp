@@ -89,4 +89,19 @@ double QOpcUaBackend::revisePublishingInterval(double requestedValue, double min
     return (std::max)(requestedValue, minimumValue);
 }
 
+/*!
+   This function returns if a given endpoint description is valid.
+   If \a message is not \nullptr, an error message will be assigned to it, in case
+   the endpoint description is invalid.
+ */
+bool QOpcUaBackend::verifyEndpointDescription(const QOpcUaEndpointDescription &endpoint, QString *message)
+{
+    if (endpoint.endpointUrl().isEmpty() || endpoint.securityPolicyUri().isEmpty()) {
+        if (message)
+            *message = QLatin1String("Endpoint description is invalid because endpoint URL or security policy URL is empty");
+        return false;
+    }
+    return true;
+}
+
 QT_END_NAMESPACE

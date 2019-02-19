@@ -678,7 +678,7 @@ void Tst_QOpcUaClient::connectAndDisconnectPassword()
     opcuaClient->connectToEndpoint(m_endpoint);
     connectSpy.wait();
 
-    QCOMPARE(connectSpy.count(), 2);
+    QTRY_COMPARE(connectSpy.count(), 2);
     QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Connecting);
     QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Connected);
 

@@ -767,6 +767,18 @@ static void clientStateCallback(UA_Client *client, UA_ClientState state)
 
 void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
 {
+    cleanupSubscriptions();
+
+    if (m_uaclient)
+        UA_Client_delete(m_uaclient);
+
+    QString errorMessage;
+    if (!verifyEndpointDescription(endpoint, &errorMessage)) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << errorMessage;
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::InvalidUrl);
+        return;
+    }
+
     const QString nonePolicyUri = QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#None");
 
     if (endpoint.securityPolicyUri() != nonePolicyUri) {
@@ -775,10 +787,7 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
         return;
     }
 
-    cleanupSubscriptions();
-
-    if (m_uaclient)
-        UA_Client_delete(m_uaclient);
+    emit stateAndOrErrorChanged(QOpcUaClient::Connecting, QOpcUaClient::NoError);
 
     m_useStateCallback = false;
 
