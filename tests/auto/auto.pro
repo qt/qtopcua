@@ -7,3 +7,6 @@ QT_FOR_CONFIG += opcua-private
 qtConfig(open62541)|qtConfig(uacpp) {
     SUBDIRS += declarative
 }
+
+# This tries to check if the server supports security
+qtConfig(mbedtls): SUBDIRS += security
