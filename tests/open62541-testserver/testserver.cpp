@@ -71,6 +71,9 @@ bool TestServer::init()
     if (!m_config)
         return false;
 
+    // This is needed for COIN because the hostname returned by gethostname() is not resolvable.
+    m_config->customHostname = UA_String_fromChars("localhost");
+
     m_server = UA_Server_new(m_config);
 
     if (!m_server)
