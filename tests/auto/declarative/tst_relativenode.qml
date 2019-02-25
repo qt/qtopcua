@@ -42,7 +42,7 @@ Item {
 
     QtOpcUa.Connection {
         id: connection
-        backend: "open62541"
+        backend: availableBackends[0]
         defaultConnection: true
     }
 
