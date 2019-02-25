@@ -274,6 +274,26 @@ Module {
         }
     }
     Component {
+        name: "OpcUaServerDiscovery"
+        prototype: "QStandardItemModel"
+        exports: ["QtOpcUa/ServerDiscovery 5.13"]
+        exportMetaObjectRevisions: [0]
+        Property { name: "discoveryUrl"; type: "string" }
+        Property { name: "count"; type: "int"; isReadonly: true }
+        Property { name: "status"; type: "OpcUaStatus"; isReadonly: true }
+        Property { name: "connection"; type: "OpcUaConnection"; isPointer: true }
+        Signal { name: "serversChanged" }
+        Signal {
+            name: "connectionChanged"
+            Parameter { type: "OpcUaConnection"; isPointer: true }
+        }
+        Method {
+            name: "at"
+            type: "QOpcUaApplicationDescription"
+            Parameter { name: "row"; type: "int" }
+        }
+    }
+    Component {
         name: "OpcUaStatus"
         exports: ["QtOpcUa/Status 5.13"]
         isCreatable: false
@@ -557,5 +577,14 @@ Module {
         Property { name: "gatewayServerUri"; type: "string"; isReadonly: true }
         Property { name: "discoveryProfileUri"; type: "string"; isReadonly: true }
         Property { name: "discoveryUrls"; type: "QVector<QString>"; isReadonly: true }
+    }
+    Component {
+        name: "QStandardItemModel"
+        prototype: "QAbstractItemModel"
+        Property { name: "sortRole"; type: "int" }
+        Signal {
+            name: "itemChanged"
+            Parameter { name: "item"; type: "QStandardItem"; isPointer: true }
+        }
     }
 }

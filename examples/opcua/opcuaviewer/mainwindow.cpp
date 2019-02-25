@@ -220,7 +220,7 @@ void MainWindow::createClient()
         mOpcUaClient->setIdentity(m_identity);
         mOpcUaClient->setPkiConfiguration(m_pkiConfig);
 
-        if (mOpcUaPlugin->currentText() == QStringLiteral("uacpp")) {
+        if (mOpcUaClient->supportedUserTokenTypes().contains(QOpcUaUserTokenPolicy::TokenType::Certificate)) {
             QOpcUaAuthenticationInformation authInfo;
             authInfo.setCertificateAuthentication();
             mOpcUaClient->setAuthenticationInformation(authInfo);

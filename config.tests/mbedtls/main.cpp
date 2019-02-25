@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -34,57 +34,16 @@
 **
 ****************************************************************************/
 
-#ifndef QOPEN62541CLIENT_H
-#define QOPEN62541CLIENT_H
+#include <mbedtls/x509.h>
+#include <mbedtls/x509_crt.h>
 
-#include "qopen62541.h"
-#include <private/qopcuaclientimpl_p.h>
-
-#include <QtCore/qtimer.h>
-
-QT_BEGIN_NAMESPACE
-
-class Open62541AsyncBackend;
-
-class QOpen62541Client : public QOpcUaClientImpl
+int main(int argc, char *argv[])
 {
-    Q_OBJECT
+    mbedtls_pk_context pk;
+    mbedtls_pk_init( &pk );
 
-public:
-    explicit QOpen62541Client();
-    ~QOpen62541Client();
+    mbedtls_x509_crt remoteCertificate;
+    mbedtls_x509_crt_init(&remoteCertificate);
 
-    void connectToEndpoint(const QOpcUaEndpointDescription &endpoint) override;
-    void disconnectFromEndpoint() override;
-
-    QOpcUaNode *node(const QString &nodeId) override;
-
-    QString backend() const override;
-
-    bool requestEndpoints(const QUrl &url) override;
-
-    bool findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris) override;
-
-    bool readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead) override;
-    bool writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWrite) override;
-
-    bool addNode(const QOpcUaAddNodeItem &nodeToAdd) override;
-    bool deleteNode(const QString &nodeId, bool deleteTargetReferences) override;
-
-    bool addReference(const QOpcUaAddReferenceItem &referenceToAdd) override;
-    bool deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete) override;
-
-    QStringList supportedSecurityPolicies() const override;
-    QVector<QOpcUaUserTokenPolicy::TokenType> supportedUserTokenTypes() const override;
-
-private slots:
-
-private:
-    friend class QOpen62541Node;
-    QThread *m_thread;
-    Open62541AsyncBackend *m_backend;
-};
-
-QT_END_NAMESPACE
-
-#endif // QOPEN62541CLIENT_H
+    return 0;
+}

@@ -150,4 +150,19 @@ bool QOpen62541Client::deleteReference(const QOpcUaDeleteReferenceItem &referenc
                                      Q_ARG(QOpcUaDeleteReferenceItem, referenceToDelete));
 }
 
+QStringList QOpen62541Client::supportedSecurityPolicies() const
+{
+    return QStringList {
+        "http://opcfoundation.org/UA/SecurityPolicy#None",
+    };
+}
+
+QVector<QOpcUaUserTokenPolicy::TokenType> QOpen62541Client::supportedUserTokenTypes() const
+{
+    return QVector<QOpcUaUserTokenPolicy::TokenType> {
+        QOpcUaUserTokenPolicy::TokenType::Anonymous,
+        QOpcUaUserTokenPolicy::TokenType::Username
+    };
+}
+
 QT_END_NAMESPACE

@@ -906,4 +906,36 @@ const QOpcUaAuthenticationInformation &QOpcUaClient::authenticationInformation()
     return d->m_authenticationInformation;
 }
 
+/*!
+    \since QtOpcUa 5.14
+
+    Returns the security policies supported by the used backend.
+
+    This function is currently available as a Technology Preview, and therefore the API
+    and functionality provided by the function may be subject to change at any time without
+    prior notice.
+*/
+QStringList QOpcUaClient::supportedSecurityPolicies() const
+{
+    Q_D(const QOpcUaClient);
+    return d->m_impl->supportedSecurityPolicies();
+}
+
+/*!
+    \since QtOpcUa 5.14
+
+    Returns the user token types supported by the used backend.
+
+    This function is currently available as a Technology Preview, and therefore the API
+    and functionality provided by the function may be subject to change at any time without
+    prior notice.
+
+    \sa QOpcUaUserTokenPolicy::TokenType
+*/
+QVector<QOpcUaUserTokenPolicy::TokenType> QOpcUaClient::supportedUserTokenTypes() const
+{
+    Q_D(const QOpcUaClient);
+    return d->m_impl->supportedUserTokenTypes();
+}
+
 QT_END_NAMESPACE

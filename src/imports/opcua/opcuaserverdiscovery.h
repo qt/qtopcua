@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the QtOpcUa module of the Qt Toolkit.
+** This file is part of the Qt OPC UA module.
 **
 ** $QT_BEGIN_LICENSE:LGPL3$
 ** Commercial License Usage
@@ -34,57 +34,59 @@
 **
 ****************************************************************************/
 
-#ifndef QOPEN62541CLIENT_H
-#define QOPEN62541CLIENT_H
+#ifndef OPCUASERVERDISCOVERY_H
+#define OPCUASERVERDISCOVERY_H
 
-#include "qopen62541.h"
-#include <private/qopcuaclientimpl_p.h>
-
-#include <QtCore/qtimer.h>
+#include <QStandardItemModel>
+#include <QtOpcUa/qopcuatype.h>
+#include <QOpcUaApplicationDescription>
+#include "opcuastatus.h"
 
 QT_BEGIN_NAMESPACE
 
-class Open62541AsyncBackend;
+class OpcUaConnection;
 
-class QOpen62541Client : public QOpcUaClientImpl
+class OpcUaServerDiscovery : public QStandardItemModel
 {
     Q_OBJECT
+    Q_PROPERTY(QString discoveryUrl READ discoveryUrl WRITE setDiscoveryUrl NOTIFY discoveryUrlChanged)
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_PROPERTY(OpcUaStatus status READ status NOTIFY statusChanged)
+    Q_PROPERTY(OpcUaConnection* connection READ connection WRITE setConnection NOTIFY connectionChanged)
 
 public:
-    explicit QOpen62541Client();
-    ~QOpen62541Client();
+    OpcUaServerDiscovery(QObject *parent = nullptr);
+    ~OpcUaServerDiscovery();
 
-    void connectToEndpoint(const QOpcUaEndpointDescription &endpoint) override;
-    void disconnectFromEndpoint() override;
+    const QString &discoveryUrl() const;
+    void setDiscoveryUrl(const QString &discoverUrl);
+    int count() const;
+    Q_INVOKABLE QOpcUaApplicationDescription at(int row) const;
+    const OpcUaStatus &status() const;
+    void setConnection(OpcUaConnection *);
+    OpcUaConnection *connection();
 
-    QOpcUaNode *node(const QString &nodeId) override;
-
-    QString backend() const override;
-
-    bool requestEndpoints(const QUrl &url) override;
-
-    bool findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris) override;
-
-    bool readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead) override;
-    bool writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWrite) override;
-
-    bool addNode(const QOpcUaAddNodeItem &nodeToAdd) override;
-    bool deleteNode(const QString &nodeId, bool deleteTargetReferences) override;
-
-    bool addReference(const QOpcUaAddReferenceItem &referenceToAdd) override;
-    bool deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete) override;
-
-    QStringList supportedSecurityPolicies() const override;
-    QVector<QOpcUaUserTokenPolicy::TokenType> supportedUserTokenTypes() const override;
+signals:
+    void discoveryUrlChanged();
+    void serversChanged();
+    void countChanged();
+    void statusChanged();
+    void connectionChanged(OpcUaConnection *);
 
 private slots:
+    void connectSignals();
+    void handleServers(const QVector<QOpcUaApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode, const QUrl &requestUrl);
+    void startFindServers();
 
 private:
-    friend class QOpen62541Node;
-    QThread *m_thread;
-    Open62541AsyncBackend *m_backend;
+    void clearData();
+
+    QString m_discoveryUrl;
+    OpcUaConnection *m_connection = nullptr;
+    OpcUaStatus m_status;
 };
+
 
 QT_END_NAMESPACE
 
-#endif // QOPEN62541CLIENT_H
+#endif // OPCUASERVERDISCOVERY_H
