@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the Qt OPC UA module.
@@ -35,78 +35,7 @@
 ****************************************************************************/
 
 import QtQuick 2.3
-import QtTest 1.0
-import QtOpcUa 5.13 as QtOpcUa
 
-Item {
-    TestCase {
-        name: "Username authentication"
-
-        QtOpcUa.Connection {
-            id: connection
-            backend: availableBackends[0]
-            defaultConnection: true
-
-        }
-
-        QtOpcUa.ServerDiscovery {
-            id: serverDiscovery
-            onServersChanged: {
-                if (!count)
-                    return;
-                endpointDiscovery.serverUrl = at(0).discoveryUrls[0];
-            }
-        }
-
-        QtOpcUa.EndpointDiscovery {
-            id: endpointDiscovery
-            onEndpointsChanged: {
-                if (!count)
-                    return;
-                connection.connectToEndpoint(at(0));
-            }
-        }
-
-        Component.onCompleted: {
-            serverDiscovery.discoveryUrl = "opc.tcp://127.0.0.1:43344";
-        }
-
-        QtOpcUa.ValueNode {
-              connection: connection
-              nodeId: QtOpcUa.NodeId {
-                  ns: "Test Namespace"
-                  identifier: "s=theStringId"
-              }
-              id: node1
-        }
-
-        SignalSpy {
-            id: connection1ConnectedSpy
-            target: connection
-            signalName: "connectedChanged"
-        }
-
-        SignalSpy {
-            id: node1ValueChangedSpy
-            target: node1
-            signalName: "valueChanged"
-        }
-
-        function test_nodeTest() {
-            var authInfo = connection.authenticationInformation;
-            authInfo.setUsernameAuthentication("user1", "password");
-            connection.authenticationInformation = authInfo;
-
-            serverDiscovery.discoveryUrl = "opc.tcp://127.0.0.1:43344";
-
-            connection1ConnectedSpy.wait();
-            verify(connection.connected);
-
-            node1ValueChangedSpy.wait();
-            verify(node1ValueChangedSpy.count > 0);
-
-            compare(node1.value, "Value", "");
-            compare(node1.browseName, "theStringId");
-        }
-    }
+BackendTestMultiplier {
+    testName: "AuthorizationTest"
 }

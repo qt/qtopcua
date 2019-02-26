@@ -34,8 +34,9 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.3
+import QtTest 1.0
 
-BackendTestMultiplier {
-    testName: "AbsoluteNodeTest"
+TestCase {
+    onCompletedChanged: parent.completedTestCases += (completed ? 1 : -1)
+    objectName: "TestCase"
 }
