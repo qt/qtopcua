@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the QtOpcUa module of the Qt Toolkit.
+** This file is part of the Qt OPC UA module.
 **
 ** $QT_BEGIN_LICENSE:LGPL3$
 ** Commercial License Usage
@@ -34,56 +34,8 @@
 **
 ****************************************************************************/
 
-#ifndef QOPCUAUSERTOKENPOLICY_H
-#define QOPCUAUSERTOKENPOLICY_H
+import QtQuick 2.3
 
-#include <QtOpcUa/qopcuaglobal.h>
-
-#include <QtCore/qshareddata.h>
-#include <QtCore/qmetatype.h>
-
-QT_BEGIN_NAMESPACE
-
-class QOpcUaUserTokenPolicyData;
-class Q_OPCUA_EXPORT QOpcUaUserTokenPolicy
-{
-    Q_GADGET
-public:
-    QOpcUaUserTokenPolicy();
-    QOpcUaUserTokenPolicy(const QOpcUaUserTokenPolicy &);
-    QOpcUaUserTokenPolicy &operator=(const QOpcUaUserTokenPolicy &);
-    bool operator==(const QOpcUaUserTokenPolicy &) const;
-    ~QOpcUaUserTokenPolicy();
-
-    enum TokenType {
-        Anonymous = 0,
-        Username = 1,
-        Certificate = 2,
-        IssuedToken = 3
-    };
-    Q_ENUMS(TokenType)
-
-    QString policyId() const;
-    void setPolicyId(const QString &policyId);
-
-    QOpcUaUserTokenPolicy::TokenType tokenType() const;
-    void setTokenType(QOpcUaUserTokenPolicy::TokenType tokenType);
-
-    QString issuedTokenType() const;
-    void setIssuedTokenType(const QString &issuedTokenType);
-
-    QString issuerEndpointUrl() const;
-    void setIssuerEndpointUrl(const QString &issuerEndpointUrl);
-
-    QString securityPolicyUri() const;
-    void setSecurityPolicyUri(const QString &securityPolicyUri);
-
-private:
-    QSharedDataPointer<QOpcUaUserTokenPolicyData> data;
-};
-
-QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QOpcUaUserTokenPolicy)
-
-#endif // QOPCUAUSERTOKENPOLICY_H
+BackendTestMultiplier {
+    testName: "SecurityTest"
+}

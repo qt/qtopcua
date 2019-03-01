@@ -58,6 +58,8 @@ class OpcUaConnection : public QObject
     Q_PROPERTY(bool defaultConnection READ defaultConnection WRITE setDefaultConnection NOTIFY defaultConnectionChanged)
     Q_PROPERTY(QStringList namespaces READ namespaces NOTIFY namespacesChanged)
     Q_PROPERTY(QOpcUaAuthenticationInformation authenticationInformation READ authenticationInformation WRITE setAuthenticationInformation)
+    Q_PROPERTY(QStringList supportedSecurityPolicies READ supportedSecurityPolicies CONSTANT)
+    Q_PROPERTY(QJSValue supportedUserTokenTypes READ supportedUserTokenTypes CONSTANT)
 
 public:
     OpcUaConnection(QObject *parent = nullptr);
@@ -72,6 +74,9 @@ public:
 
     QOpcUaAuthenticationInformation authenticationInformation() const;
     Q_INVOKABLE bool readNodeAttributes(const QJSValue &value);
+
+    QStringList supportedSecurityPolicies() const;
+    QJSValue supportedUserTokenTypes() const;
 
 public slots:
     void connectToEndpoint(const QOpcUaEndpointDescription &endpointDescription);

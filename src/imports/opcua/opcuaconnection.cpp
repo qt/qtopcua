@@ -37,7 +37,7 @@
 #include "opcuaconnection.h"
 #include "opcuareadresult.h"
 #include "universalnode.h"
-#include <QJSEngine> // for qjsvalue_cast<>()
+#include <QJSEngine>
 #include <QLoggingCategory>
 #include <QOpcUaProvider>
 #include <QOpcUaReadItem>
@@ -131,6 +131,28 @@ QT_BEGIN_NAMESPACE
     the new credentials are used.
     Reading and writing this property before a \l backend is set, writes are ignored and reads return
     and invalid \l AuthenticationInformation.
+*/
+
+/*!
+    \qmlproperty stringlist Connection::supportedSecurityPolicies
+    \since 5.13
+
+    A list of strings containing the supported security policies
+
+    This property is currently available as a Technology Preview, and therefore the API
+    and functionality provided may be subject to change at any time without
+    prior notice.
+*/
+
+/*!
+    \qmlproperty array[tokenTypes] Connection::supportedUserTokenTypes
+    \since 5.13
+
+    An array of user token policy types of all supported user token types.
+
+    This property is currently available as a Technology Preview, and therefore the API
+    and functionality provided may be subject to change at any time without
+    prior notice.
 */
 
 /*!
@@ -395,6 +417,30 @@ bool OpcUaConnection::readNodeAttributes(const QJSValue &value)
     }
 
     return m_client->readNodeAttributes(readItemList);
+}
+
+QStringList OpcUaConnection::supportedSecurityPolicies() const
+{
+    if (!m_client)
+        return QStringList();
+    return m_client->supportedSecurityPolicies();
+}
+
+QJSValue OpcUaConnection::supportedUserTokenTypes() const
+{
+    if (!m_client)
+        return QJSValue();
+
+    auto engine = qjsEngine(this);
+    if (!engine)
+        return QJSValue();
+
+    const auto tokenTypes = m_client->supportedUserTokenTypes();
+    auto returnValue = engine->newArray(tokenTypes.size());
+    for (int i = 0; i < tokenTypes.size(); ++i)
+        returnValue.setProperty(i, tokenTypes[i]);
+
+    return returnValue;
 }
 
 void OpcUaConnection::handleReadNodeAttributesFinished(const QVector<QOpcUaReadResult> &results)
