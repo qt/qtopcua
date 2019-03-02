@@ -1,8 +1,6 @@
 QT += opcua widgets
 CONFIG += c++11
 DEPENDPATH += INCLUDEPATH
-INCLUDEPATH += \
-              $$PWD/../../../../src/plugins/opcua/open62541 \
 
 SOURCES += main.cpp \
     mainwindow.cpp \
