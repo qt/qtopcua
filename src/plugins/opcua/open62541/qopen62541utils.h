@@ -59,6 +59,11 @@ public:
         if (m_data)
             m_function(m_data);
     }
+    void release()
+    {
+        m_data = nullptr;
+        m_function = nullptr;
+    }
 private:
     T *m_data {nullptr};
     std::function<void(T *attribute)> m_function;
@@ -78,6 +83,10 @@ public:
     {
         if (m_data && m_arrayLength > 0)
             UA_Array_delete(m_data, m_arrayLength, &UA_TYPES[TYPEINDEX]);
+    }
+    void release() {
+        m_data = nullptr;
+        m_arrayLength = 0;
     }
 private:
     void *m_data {nullptr};
