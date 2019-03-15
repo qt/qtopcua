@@ -93,8 +93,8 @@ public:
     explicit QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent = nullptr);
     ~QOpcUaClient();
 
-    void setIdentity(const QOpcUaApplicationIdentity &identity);
-    QOpcUaApplicationIdentity identity() const;
+    void setApplicationIdentity(const QOpcUaApplicationIdentity &identity);
+    QOpcUaApplicationIdentity applicationIdentity() const;
 
     void setPkiConfiguration(const QOpcUaPkiConfiguration &config);
     QOpcUaPkiConfiguration pkiConfiguration() const;

@@ -259,14 +259,14 @@ void QOpcUaClientPrivate::setupNamespaceArrayMonitoring()
     }
 }
 
-void QOpcUaClientPrivate::setIdentity(const QOpcUaApplicationIdentity &identity)
+void QOpcUaClientPrivate::setApplicationIdentity(const QOpcUaApplicationIdentity &identity)
 {
-    m_identity = identity;
+    m_applicationIdentity = identity;
 }
 
-QOpcUaApplicationIdentity QOpcUaClientPrivate::identity() const
+QOpcUaApplicationIdentity QOpcUaClientPrivate::applicationIdentity() const
 {
-    return m_identity;
+    return m_applicationIdentity;
 }
 
 void QOpcUaClientPrivate::setPkiConfiguration(const QOpcUaPkiConfiguration &config)

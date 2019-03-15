@@ -193,12 +193,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 void MainWindow::setupPkiConfiguration()
 {
     const QString pkidir = QCoreApplication::applicationDirPath() + "/pki";
-    m_pkiConfig.setClientCertificateLocation(pkidir + "/own/certs/opcuaviewer.der");
-    m_pkiConfig.setPrivateKeyLocation(pkidir + "/own/private/opcuaviewer.pem");
-    m_pkiConfig.setTrustListLocation(pkidir + "/trusted/certs");
-    m_pkiConfig.setRevocationListLocation(pkidir + "/trusted/crl");
-    m_pkiConfig.setIssuerListLocation(pkidir + "/issuers/certs");
-    m_pkiConfig.setIssuerRevocationListLocation(pkidir + "/issuers/crl");
+    m_pkiConfig.setClientCertificateFile(pkidir + "/own/certs/opcuaviewer.der");
+    m_pkiConfig.setPrivateKeyFile(pkidir + "/own/private/opcuaviewer.pem");
+    m_pkiConfig.setTrustListDirectory(pkidir + "/trusted/certs");
+    m_pkiConfig.setRevocationListDirectory(pkidir + "/trusted/crl");
+    m_pkiConfig.setIssuerListDirectory(pkidir + "/issuers/certs");
+    m_pkiConfig.setIssuerRevocationListDirectory(pkidir + "/issuers/crl");
 
     // create the folders if they don't exist yet
     createPkiFolders();
@@ -217,7 +217,7 @@ void MainWindow::createClient()
         }
 
         connect(mOpcUaClient, &QOpcUaClient::connectError, this, &MainWindow::showErrorDialog);
-        mOpcUaClient->setIdentity(m_identity);
+        mOpcUaClient->setApplicationIdentity(m_identity);
         mOpcUaClient->setPkiConfiguration(m_pkiConfig);
 
         if (mOpcUaClient->supportedUserTokenTypes().contains(QOpcUaUserTokenPolicy::TokenType::Certificate)) {
@@ -431,19 +431,19 @@ bool MainWindow::createPkiPath(const QString &path)
 
 bool MainWindow::createPkiFolders()
 {
-    bool result = createPkiPath(m_pkiConfig.trustListLocation());
+    bool result = createPkiPath(m_pkiConfig.trustListDirectory());
     if (!result)
         return result;
 
-    result = createPkiPath(m_pkiConfig.revocationListLocation());
+    result = createPkiPath(m_pkiConfig.revocationListDirectory());
     if (!result)
         return result;
 
-    result = createPkiPath(m_pkiConfig.issuerListLocation());
+    result = createPkiPath(m_pkiConfig.issuerListDirectory());
     if (!result)
         return result;
 
-    result = createPkiPath(m_pkiConfig.issuerRevocationListLocation());
+    result = createPkiPath(m_pkiConfig.issuerRevocationListDirectory());
     if (!result)
         return result;
 
@@ -467,7 +467,7 @@ void MainWindow::showErrorDialog(QOpcUaErrorState *errorState)
     case QOpcUaErrorState::ConnectionStep::CertificateValidation:
         msg += tr("Server certificate validation failed with error 0x%1 (%2).\nClick 'Abort' to abort the connect, or 'Ignore' to continue connecting.")
                   .arg(static_cast<ulong>(errorState->errorCode()), 8, 16, QLatin1Char('0')).arg(statuscode);
-        result = dlg.showCertificate(msg, m_endpoint.serverCertificate(), m_pkiConfig.trustListLocation());
+        result = dlg.showCertificate(msg, m_endpoint.serverCertificate(), m_pkiConfig.trustListDirectory());
         errorState->setIgnoreError(result == 1);
         break;
     case QOpcUaErrorState::ConnectionStep::OpenSecureChannel:

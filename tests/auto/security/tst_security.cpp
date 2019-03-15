@@ -265,19 +265,19 @@ void Tst_QOpcUaSecurity::connectAndDisconnectUsingCertificate()
 
     const QString pkidir = m_pkiData->path();
     QOpcUaPkiConfiguration pkiConfig;
-    pkiConfig.setClientCertificateLocation(pkidir + "/own/certs/tst_security.der");
-    pkiConfig.setPrivateKeyLocation(pkidir + "/own/private/privateKeyWithoutPassword.pem");
-    pkiConfig.setTrustListLocation(pkidir + "/trusted/certs");
-    pkiConfig.setRevocationListLocation(pkidir + "/trusted/crl");
-    pkiConfig.setIssuerListLocation(pkidir + "/issuers/certs");
-    pkiConfig.setIssuerRevocationListLocation(pkidir + "/issuers/crl");
+    pkiConfig.setClientCertificateFile(pkidir + "/own/certs/tst_security.der");
+    pkiConfig.setPrivateKeyFile(pkidir + "/own/private/privateKeyWithoutPassword.pem");
+    pkiConfig.setTrustListDirectory(pkidir + "/trusted/certs");
+    pkiConfig.setRevocationListDirectory(pkidir + "/trusted/crl");
+    pkiConfig.setIssuerListDirectory(pkidir + "/issuers/certs");
+    pkiConfig.setIssuerRevocationListDirectory(pkidir + "/issuers/crl");
 
     const auto identity = pkiConfig.applicationIdentity();
     QOpcUaAuthenticationInformation authInfo;
     authInfo.setCertificateAuthentication();
 
     client->setAuthenticationInformation(authInfo);
-    client->setIdentity(identity);
+    client->setApplicationIdentity(identity);
     client->setPkiConfiguration(pkiConfig);
 
     qDebug() << "Testing security policy" << endpoint.securityPolicyUri();
@@ -327,19 +327,19 @@ void Tst_QOpcUaSecurity::connectAndDisconnectUsingEncryptedPassword()
 
     const QString pkidir = m_pkiData->path();
     QOpcUaPkiConfiguration pkiConfig;
-    pkiConfig.setClientCertificateLocation(pkidir + "/own/certs/tst_security.der");
-    pkiConfig.setPrivateKeyLocation(pkidir + "/own/private/privateKeyWithPassword:secret.pem");
-    pkiConfig.setTrustListLocation(pkidir + "/trusted/certs");
-    pkiConfig.setRevocationListLocation(pkidir + "/trusted/crl");
-    pkiConfig.setIssuerListLocation(pkidir + "/issuers/certs");
-    pkiConfig.setIssuerRevocationListLocation(pkidir + "/issuers/crl");
+    pkiConfig.setClientCertificateFile(pkidir + "/own/certs/tst_security.der");
+    pkiConfig.setPrivateKeyFile(pkidir + "/own/private/privateKeyWithPassword:secret.pem");
+    pkiConfig.setTrustListDirectory(pkidir + "/trusted/certs");
+    pkiConfig.setRevocationListDirectory(pkidir + "/trusted/crl");
+    pkiConfig.setIssuerListDirectory(pkidir + "/issuers/certs");
+    pkiConfig.setIssuerRevocationListDirectory(pkidir + "/issuers/crl");
 
     const auto identity = pkiConfig.applicationIdentity();
     QOpcUaAuthenticationInformation authInfo;
     authInfo.setCertificateAuthentication();
 
     client->setAuthenticationInformation(authInfo);
-    client->setIdentity(identity);
+    client->setApplicationIdentity(identity);
     client->setPkiConfiguration(pkiConfig);
 
     qDebug() << "Testing security policy" << endpoint.securityPolicyUri();
@@ -355,7 +355,7 @@ void Tst_QOpcUaSecurity::connectAndDisconnectUsingEncryptedPassword()
             QVERIFY(previousTryFailed == true);
         }
 
-        QCOMPARE(privateKeyFilePath, pkiConfig.privateKeyLocation());
+        QCOMPARE(privateKeyFilePath, pkiConfig.privateKeyFile());
 
         if (passwordRequestSpy < 1)
             *password = "wrong password";

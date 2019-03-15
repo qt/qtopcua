@@ -226,7 +226,7 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
 
     emit stateAndOrErrorChanged(QOpcUaClient::Connecting, QOpcUaClient::NoError);
 
-    const auto identity = m_clientImpl->m_client->identity();
+    const auto identity = m_clientImpl->m_client->applicationIdentity();
     const auto authInfo = m_clientImpl->m_client->authenticationInformation();
     const auto pkiConfig = m_clientImpl->m_client->pkiConfiguration();
 
@@ -242,10 +242,10 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
 
     if (pkiConfig.isPkiValid()) {
         auto result = sessionSecurityInfo.initializePkiProviderOpenSSL(
-                pkiConfig.revocationListLocation().toUtf8().constData(),
-                pkiConfig.trustListLocation().toUtf8().constData(),
-                pkiConfig.issuerRevocationListLocation().toUtf8().constData(),
-                pkiConfig.issuerListLocation().toUtf8().constData());
+                pkiConfig.revocationListDirectory().toUtf8().constData(),
+                pkiConfig.trustListDirectory().toUtf8().constData(),
+                pkiConfig.issuerRevocationListDirectory().toUtf8().constData(),
+                pkiConfig.issuerListDirectory().toUtf8().constData());
 
         if (result.isNotGood()) {
             qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to set up PKI: " << QString::fromUtf8(result.toString().toUtf8());
@@ -272,15 +272,15 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
             sessionSecurityInfo.disableEncryptedPasswordCheck = OpcUa_True;
     } else if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Certificate) {
         // try to load the client certificate
-        const UaString certificateFilePath(pkiConfig.clientCertificateLocation().toUtf8());
-        const UaString privateKeyFilePath(pkiConfig.privateKeyLocation().toUtf8());
+        const UaString certificateFilePath(pkiConfig.clientCertificateFile().toUtf8());
+        const UaString privateKeyFilePath(pkiConfig.privateKeyFile().toUtf8());
         UaStatus result;
 
         QFile certFile(certificateFilePath.toUtf8());
         if (certFile.open(QIODevice::ReadOnly)) {
             certFile.close();
         } else {
-            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to load certificate: " << pkiConfig.clientCertificateLocation();
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to load certificate: " << pkiConfig.clientCertificateFile();
             result = OpcUa_BadNotFound;
         }
 
@@ -288,7 +288,7 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
         if (keyFile.open(QIODevice::ReadOnly)) {
             keyFile.close();
         } else {
-            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to load private key: " << pkiConfig.privateKeyLocation();
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to load private key: " << pkiConfig.privateKeyFile();
             result = OpcUa_BadNotFound;
         }
 
@@ -301,7 +301,7 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
                 do {
                     // This signal is connected using Qt::BlockingQueuedConnection. It will place a metacall to a different thread and waits
                     // until this metacall is fully handled before returning.
-                    emit QOpcUaBackend::passwordForPrivateKeyRequired(pkiConfig.privateKeyLocation(), &password, !password.isEmpty());
+                    emit QOpcUaBackend::passwordForPrivateKeyRequired(pkiConfig.privateKeyFile(), &password, !password.isEmpty());
 
                     if (password.isEmpty())
                         break;

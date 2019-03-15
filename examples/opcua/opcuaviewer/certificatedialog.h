@@ -54,7 +54,7 @@ public:
     explicit CertificateDialog(QWidget *parent = nullptr);
     ~CertificateDialog();
 
-    int showCertificate(const QString &message, const QByteArray &der, const QString &trustListLocation);
+    int showCertificate(const QString &message, const QByteArray &der, const QString &trustListDirectory);
 
 private slots:
     void saveCertificate();
@@ -62,7 +62,7 @@ private slots:
 private:
     Ui::CertificateDialog *ui;
     QSslCertificate m_cert;
-    QString         m_trustListLocation;
+    QString         m_trustListDirectory;
 };
 
 QT_END_NAMESPACE

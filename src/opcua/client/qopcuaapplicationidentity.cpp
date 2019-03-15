@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
     and functionality provided by the class may be subject to change at any time without
     prior notice.
 
-    This info must be configured using \l QOpcUaClient::setIdentity.
+    This info must be configured using \l QOpcUaClient::setApplicationIdentity.
     The application identity can be set up manually or derived from a certificate.
 
     \code
@@ -67,7 +67,7 @@ QT_BEGIN_NAMESPACE
     identity.setApplicationName(QCoreApplication::applicationName());
     identity.setApplicationType(QOpcUaApplicationDescription::Client);
 
-    client->setIdentity(identity);
+    client->setApplicationIdentity(identity);
     \endcode
 
     In case your application authenticates using certificates the application identity has to match

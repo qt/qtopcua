@@ -326,10 +326,10 @@ QOpcUaClient::~QOpcUaClient()
     and functionality provided by the class may be subject to change at any time without
     prior notice.
 */
-void QOpcUaClient::setIdentity(const QOpcUaApplicationIdentity &identity)
+void QOpcUaClient::setApplicationIdentity(const QOpcUaApplicationIdentity &identity)
 {
     Q_D(QOpcUaClient);
-    d->setIdentity(identity);
+    d->setApplicationIdentity(identity);
 }
 
 /*!
@@ -340,10 +340,10 @@ void QOpcUaClient::setIdentity(const QOpcUaApplicationIdentity &identity)
     and functionality provided by the class may be subject to change at any time without
     prior notice.
 */
-QOpcUaApplicationIdentity QOpcUaClient::identity() const
+QOpcUaApplicationIdentity QOpcUaClient::applicationIdentity() const
 {
     Q_D(const QOpcUaClient);
-    return d->identity();
+    return d->applicationIdentity();
 }
 
 /*!
