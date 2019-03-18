@@ -148,6 +148,8 @@ Item {
             endpointsStatusSpy1.wait();
             compare(myEndpoints1.status.status, QtOpcUa.Status.GoodCompletesAsynchronously);
             compare(endpointsCountSpy1.count, 0);
+            if (endpointsStatusSpy1.count == 1)
+                endpointsStatusSpy1.wait();
             compare(endpointsStatusSpy1.count, 2);
             compare(endpointsChangedSpy1.count, 2);
 
