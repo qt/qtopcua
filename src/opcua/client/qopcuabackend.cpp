@@ -101,6 +101,16 @@ bool QOpcUaBackend::verifyEndpointDescription(const QOpcUaEndpointDescription &e
             *message = QLatin1String("Endpoint description is invalid because endpoint URL or security policy URL is empty");
         return false;
     }
+
+    if (endpoint.securityMode() != QOpcUaEndpointDescription::MessageSecurityMode::None &&
+              endpoint.securityMode() != QOpcUaEndpointDescription::MessageSecurityMode::Sign &&
+              endpoint.securityMode() != QOpcUaEndpointDescription::MessageSecurityMode::SignAndEncrypt)
+    {
+        if (message)
+            *message = QLatin1String("Endpoint description contains an invalid message security mode");
+        return false;
+    }
+
     return true;
 }
 

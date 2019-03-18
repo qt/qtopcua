@@ -98,6 +98,10 @@ private:
     UA_ExtensionObject assembleNodeAttributes(const QOpcUaNodeCreationAttributes &nodeAttributes, QOpcUa::NodeClass nodeClass);
     UA_UInt32 *copyArrayDimensions(const QVector<quint32> &arrayDimensions, size_t *outputSize);
 
+    // Helper
+    bool loadFileToByteString(const QString &location, UA_ByteString *target) const;
+    bool loadAllFilesInDirectory(const QString &location, UA_ByteString **target, int *size) const;
+
     QTimer m_subscriptionTimer;
 
     QHash<quint32, QOpen62541Subscription *> m_subscriptions;

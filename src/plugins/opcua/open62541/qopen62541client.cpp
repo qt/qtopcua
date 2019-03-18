@@ -153,7 +153,12 @@ bool QOpen62541Client::deleteReference(const QOpcUaDeleteReferenceItem &referenc
 QStringList QOpen62541Client::supportedSecurityPolicies() const
 {
     return QStringList {
-        "http://opcfoundation.org/UA/SecurityPolicy#None",
+        "http://opcfoundation.org/UA/SecurityPolicy#None"
+#ifdef UA_ENABLE_ENCRYPTION
+        , "http://opcfoundation.org/UA/SecurityPolicy#Basic128Rsa15"
+        , "http://opcfoundation.org/UA/SecurityPolicy#Basic256"
+        , "http://opcfoundation.org/UA/SecurityPolicy#Basic256Sha256"
+#endif
     };
 }
 

@@ -43,6 +43,8 @@
 #include "qopcuaauthenticationinformation.h"
 #include <qopcuaerrorstate.h>
 
+#include <QtCore/QDir>
+#include <QtCore/QFile>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qurl.h>
@@ -780,11 +782,12 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
         return;
     }
 
-    const QString nonePolicyUri = QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#None");
-
-    if (endpoint.securityPolicy() != nonePolicyUri) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "open62541 does not yet support secure connections";
-        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::NoError);
+    if (!m_clientImpl->supportedSecurityPolicies().contains(endpoint.securityPolicy())) {
+#ifndef UA_ENABLE_ENCRYPTION
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "The open62541 plugin has been built without encryption support";
+#endif
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unsupported security policy:" << endpoint.securityPolicy();
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::InvalidUrl);
         return;
     }
 
@@ -794,12 +797,88 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
 
     m_uaclient = UA_Client_new();
     auto conf = UA_Client_getConfig(m_uaclient);
-    UA_ClientConfig_setDefault(conf);
+
+    const auto identity = m_clientImpl->m_client->applicationIdentity();
+    const auto authInfo = m_clientImpl->m_client->authenticationInformation();
+#ifdef UA_ENABLE_ENCRYPTION
+    const auto pkiConfig = m_clientImpl->m_client->pkiConfiguration();
+#endif
+
+#ifdef UA_ENABLE_ENCRYPTION
+    if (pkiConfig.isPkiValid()) {
+        UA_ByteString localCertificate;
+        UA_ByteString privateKey;
+        UA_ByteString *trustList = nullptr;
+        int trustListSize = 0;
+        UA_ByteString *revocationList = nullptr;
+        int revocationListSize = 0;
+
+        bool success = loadFileToByteString(pkiConfig.clientCertificateFile(), &localCertificate);
+
+        if (!success) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load client certificate";
+            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
+            return;
+        }
+
+        UaDeleter<UA_ByteString> clientCertDeleter(&localCertificate, &UA_ByteString_deleteMembers);
+
+        success = loadFileToByteString(pkiConfig.privateKeyFile(), &privateKey);
+
+        if (!success) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load private key";
+            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
+            return;
+        }
+
+        UaDeleter<UA_ByteString> privateKeyDeleter(&privateKey, &UA_ByteString_deleteMembers);
+
+        success = loadAllFilesInDirectory(pkiConfig.trustListDirectory(), &trustList, &trustListSize);
+
+        if (!success) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load trust list";
+            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
+            return;
+        }
+
+        UaArrayDeleter<UA_TYPES_BYTESTRING> trustListDeleter(trustList, trustListSize);
+
+        success = loadAllFilesInDirectory(pkiConfig.revocationListDirectory(), &revocationList, &revocationListSize);
+
+        if (!success) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load revocation list";
+            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
+            return;
+        }
+
+        UaArrayDeleter<UA_TYPES_BYTESTRING> revocationListDeleter(revocationList, revocationListSize);
+
+        UA_StatusCode result = UA_ClientConfig_setDefaultEncryption(conf, localCertificate, privateKey, trustList,
+                                                                    trustListSize, revocationList, revocationListSize);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to initialize PKI:" << static_cast<QOpcUa::UaStatusCode>(result);
+            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
+            return;
+        }
+    } else {
+#else
+    {
+#endif
+        UA_ClientConfig_setDefault(conf);
+    }
+
     conf->clientContext = this;
     conf->stateCallback = &clientStateCallback;
+    conf->clientDescription.applicationName = UA_LOCALIZEDTEXT_ALLOC("", identity.applicationName().toUtf8().constData());
+    conf->clientDescription.applicationUri  = UA_STRING_ALLOC(identity.applicationUri().toUtf8().constData());
+    conf->clientDescription.productUri      = UA_STRING_ALLOC(identity.productUri().toUtf8().constData());
+    conf->clientDescription.applicationType = UA_APPLICATIONTYPE_CLIENT;
+
+    conf->securityPolicyUri = UA_STRING_ALLOC(endpoint.securityPolicy().toUtf8().constData());
+    conf->securityMode = static_cast<UA_MessageSecurityMode>(endpoint.securityMode());
 
     UA_StatusCode ret;
-    const auto authInfo = m_clientImpl->m_client->authenticationInformation();
 
     if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Anonymous) {
         ret = UA_Client_connect(m_uaclient, endpoint.endpointUrl().toUtf8().constData());
@@ -807,14 +886,15 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
 
         bool suitableTokenFound = false;
         for (const auto token : endpoint.userIdentityTokens()) {
-            if (token.tokenType() == QOpcUaUserTokenPolicy::Username && token.securityPolicy() == nonePolicyUri) {
+            if (token.tokenType() == QOpcUaUserTokenPolicy::Username &&
+                    m_clientImpl->supportedSecurityPolicies().contains(token.securityPolicy())) {
                 suitableTokenFound = true;
                 break;
             }
         }
 
         if (!suitableTokenFound) {
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "open62541 does not yet support encrypted passwords";
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "No suitable user token policy found";
             emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::NoError);
             return;
         }
@@ -1015,6 +1095,92 @@ void Open62541AsyncBackend::cleanupSubscriptions()
     m_subscriptions.clear();
     m_attributeMapping.clear();
     m_minPublishingInterval = 0;
+}
+
+bool Open62541AsyncBackend::loadFileToByteString(const QString &location, UA_ByteString *target) const
+{
+    if (location.isEmpty()) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unable to read from empty file path";
+        return false;
+    }
+
+    if (!target) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "No target ByteString given";
+        return false;
+    }
+
+    UA_ByteString_init(target);
+
+    QFile file(location);
+
+    if (!file.open(QFile::ReadOnly)) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to open file" << location << file.errorString();
+        return false;
+    }
+
+    QByteArray data = file.readAll();
+
+    UA_ByteString temp;
+    temp.length = data.length();
+    if (data.isEmpty())
+        temp.data = nullptr;
+    else {
+        if (data.startsWith('-')) { // PEM file
+            // Remove trailing newline, mbedTLS doesn't tolerate this when loading a certificate
+            data = QString::fromLatin1(data).trimmed().toLatin1();
+        }
+        temp.data = reinterpret_cast<unsigned char *>(data.data());
+    }
+
+    return UA_ByteString_copy(&temp, target) == UA_STATUSCODE_GOOD;
+}
+
+bool Open62541AsyncBackend::loadAllFilesInDirectory(const QString &location, UA_ByteString **target, int *size) const
+{
+    if (location.isEmpty()) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unable to read from empty file path";
+        return false;
+    }
+
+    if (!target) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "No target ByteString given";
+        return false;
+    }
+
+    *target = nullptr;
+    *size = 0;
+
+    QDir dir(location);
+
+    auto entries = dir.entryList(QDir::Files);
+
+    if (entries.isEmpty()) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Directory is empty";
+        return true;
+    }
+
+    const int tempSize = entries.size();
+    UA_ByteString *list = static_cast<UA_ByteString *>(UA_Array_new(tempSize, &UA_TYPES[UA_TYPES_BYTESTRING]));
+
+    if (!list) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to allocate memory for loading files in" << location;
+        return false;
+    }
+
+    for (int i = 0; i < entries.size(); ++i) {
+        if (!loadFileToByteString(dir.filePath(entries.at(i)), &list[i])) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to open file" << entries.at(i);
+            UA_Array_delete(list, tempSize, &UA_TYPES[UA_TYPES_BYTESTRING]);
+            size = 0;
+            *target = nullptr;
+            return false;
+        }
+    }
+
+    *target = list;
+    *size = tempSize;
+
+    return true;
 }
 
 UA_ExtensionObject Open62541AsyncBackend::assembleNodeAttributes(const QOpcUaNodeCreationAttributes &nodeAttributes,
