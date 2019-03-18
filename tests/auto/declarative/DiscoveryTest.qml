@@ -152,7 +152,10 @@ Item {
             compare(endpointsChangedSpy1.count, 2);
 
             tryVerify(function() { return myEndpoints1.count > 0;});
-            compare(myEndpoints1.count, 1);
+            if (SERVER_SUPPORTS_SECURITY)
+                compare(myEndpoints1.count, 5);
+            else
+                compare(myEndpoints1.count, 1);
             verify(myEndpoints1.at(0).endpointUrl.startsWith("opc.tcp://"));
             compare(myEndpoints1.at(0).securityPolicyUri, "http://opcfoundation.org/UA/SecurityPolicy#None");
 
