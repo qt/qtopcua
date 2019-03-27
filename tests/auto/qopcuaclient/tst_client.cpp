@@ -1508,6 +1508,16 @@ void Tst_QOpcUaClient::dataChangeSubscription()
         attrs.remove(attrs.indexOf(temp));
     }
     QCOMPARE(attrs.size(), 0);
+
+    // Enable the monitoring again, after it has been disabled. This triggered a bug where a previous subscription
+    // was not completeley removed from the internal data structures
+    monitoringEnabledSpy.clear();
+    node->enableMonitoring(QOpcUa::NodeAttribute::NodeId, QOpcUaMonitoringParameters(100));
+    monitoringEnabledSpy.wait();
+    QCOMPARE(monitoringEnabledSpy.size(), 1);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::NodeId);
+    QVERIFY(node->monitoringStatus(QOpcUa::NodeAttribute::NodeId).subscriptionId() != valueStatus.subscriptionId());
+    QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::NodeId).statusCode(), QOpcUa::UaStatusCode::Good);
 }
 
 void Tst_QOpcUaClient::dataChangeSubscriptionInvalidNode()

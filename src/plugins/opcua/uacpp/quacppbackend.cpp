@@ -584,6 +584,7 @@ void UACppAsyncBackend::disableMonitoring(quint64 handle, QOpcUa::NodeAttributes
         QUACppSubscription *sub = getSubscriptionForItem(handle, attribute);
         if (sub) {
             sub->removeAttributeMonitoredItem(handle, attribute);
+            m_attributeMapping[handle].remove(attribute);
             if (sub->monitoredItemsCount() == 0)
                 removeSubscription(sub->subscriptionId());
         }
