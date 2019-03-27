@@ -93,6 +93,8 @@ Item {
             compare(node1.displayName.text, "theStringId");
             compare(node1.description.text, "Description for ns=3;s=theStringId");
             compare(node1.status, QtOpcUa.Node.Status.Valid);
+            tryCompare(node1, "monitored", true);
+            compare(node1.publishingInterval, 100.0);
         }
 
         QtOpcUa.ValueNode {
