@@ -183,11 +183,23 @@ void OpcUaPathResolver::browsePathFinished(QVector<QOpcUaBrowsePathTarget> resul
         deleteLater();
         return;
     } else if (results.size() == 1) {
+        if (results.at(0).targetId().serverIndex() > 0) {
+            emit resolvedNode(UniversalNode(), QString("Relative path could not be resolved: Resulting node is located on a remote server"));
+            deleteLater();
+            return;
+        }
         nodeToUse.from(results.at(0));
+
     } else { // greater than one
         UniversalNode tmp;
+        QString message = "No resolved node found";
+
         for (const auto &result : results) {
             if (result.isFullyResolved()) {
+                if (result.targetId().serverIndex() > 0) {
+                    message = QString("Relative path could not be resolved: Resulting node is located on a remote server");
+                    continue;
+                }
                 if (!tmp.nodeIdentifier().isEmpty()) {
                     emit resolvedNode(UniversalNode(), QLatin1String("There are multiple resolved nodes"));
                     deleteLater();
@@ -200,7 +212,7 @@ void OpcUaPathResolver::browsePathFinished(QVector<QOpcUaBrowsePathTarget> resul
         if (!tmp.nodeIdentifier().isEmpty()) {
             nodeToUse = tmp;
         } else {
-            emit resolvedNode(UniversalNode(), QString("No resolved node found"));
+            emit resolvedNode(UniversalNode(), message);
             deleteLater();
             return;
         }
