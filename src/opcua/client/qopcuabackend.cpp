@@ -96,7 +96,7 @@ double QOpcUaBackend::revisePublishingInterval(double requestedValue, double min
  */
 bool QOpcUaBackend::verifyEndpointDescription(const QOpcUaEndpointDescription &endpoint, QString *message)
 {
-    if (endpoint.endpointUrl().isEmpty() || endpoint.securityPolicyUri().isEmpty()) {
+    if (endpoint.endpointUrl().isEmpty() || endpoint.securityPolicy().isEmpty()) {
         if (message)
             *message = QLatin1String("Endpoint description is invalid because endpoint URL or security policy URL is empty");
         return false;

@@ -75,8 +75,8 @@ public:
     QString issuerEndpointUrl() const;
     void setIssuerEndpointUrl(const QString &issuerEndpointUrl);
 
-    QString securityPolicyUri() const;
-    void setSecurityPolicyUri(const QString &securityPolicyUri);
+    QString securityPolicy() const;
+    void setSecurityPolicy(const QString &securityPolicy);
 
 private:
     QSharedDataPointer<QOpcUaUserTokenPolicyData> data;

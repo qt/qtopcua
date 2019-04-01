@@ -255,8 +255,8 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
 
         // set server certificate from endpoint
         sessionSecurityInfo.serverCertificate = UaByteString(endpoint.serverCertificate().length(), (OpcUa_Byte*)(endpoint.serverCertificate().constData()));
-        // set SecurityPolicyUri
-        sessionSecurityInfo.sSecurityPolicy = endpoint.securityPolicyUri().toUtf8().constData();
+        // set SecurityPolicy
+        sessionSecurityInfo.sSecurityPolicy = endpoint.securityPolicy().toUtf8().constData();
         // set MessageSecurityMode
         sessionSecurityInfo.messageSecurityMode = static_cast<OpcUa_MessageSecurityMode>(endpoint.securityMode());
     }
@@ -383,14 +383,14 @@ void UACppAsyncBackend::requestEndpoints(const QUrl &url)
             }
             temp.setServerCertificate(QByteArray(reinterpret_cast<char *>(endpoints[i].ServerCertificate.Data), endpoints[i].ServerCertificate.Length));
             temp.setSecurityMode(static_cast<QOpcUaEndpointDescription::MessageSecurityMode>(endpoints[i].SecurityMode));
-            temp.setSecurityPolicyUri(QString::fromUtf8(UaString(endpoints[i].SecurityPolicyUri).toUtf8()));
+            temp.setSecurityPolicy(QString::fromUtf8(UaString(endpoints[i].SecurityPolicyUri).toUtf8()));
             for (int j = 0; j < endpoints[i].NoOfUserIdentityTokens; ++j) {
                 QOpcUaUserTokenPolicy policy;
                 policy.setPolicyId(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].PolicyId).toUtf8()));
                 policy.setTokenType(static_cast<QOpcUaUserTokenPolicy::TokenType>(endpoints[i].UserIdentityTokens[j].TokenType));
                 policy.setIssuedTokenType(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].IssuedTokenType).toUtf8()));
                 policy.setIssuerEndpointUrl(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].IssuerEndpointUrl).toUtf8()));
-                policy.setSecurityPolicyUri(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].SecurityPolicyUri).toUtf8()));
+                policy.setSecurityPolicy(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].SecurityPolicyUri).toUtf8()));
                 temp.userIdentityTokensRef().append(policy);
             }
             temp.setTransportProfileUri(QString::fromUtf8(UaString(endpoints[i].TransportProfileUri).toUtf8()));

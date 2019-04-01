@@ -159,7 +159,7 @@ Item {
             else
                 compare(myEndpoints1.count, 1);
             verify(myEndpoints1.at(0).endpointUrl.startsWith("opc.tcp://"));
-            compare(myEndpoints1.at(0).securityPolicyUri, "http://opcfoundation.org/UA/SecurityPolicy#None");
+            compare(myEndpoints1.at(0).securityPolicy, "http://opcfoundation.org/UA/SecurityPolicy#None");
 
             connection1.connectToEndpoint(myEndpoints1.at(0));
 
@@ -266,7 +266,7 @@ Item {
             else
                 compare(myEndpoints2.count, 1);
             verify(myEndpoints2.at(0).endpointUrl.startsWith("opc.tcp://"));
-            compare(myEndpoints2.at(0).securityPolicyUri, "http://opcfoundation.org/UA/SecurityPolicy#None");
+            compare(myEndpoints2.at(0).securityPolicy, "http://opcfoundation.org/UA/SecurityPolicy#None");
 
             connection2.connectToEndpoint(myEndpoints2.at(0));
 

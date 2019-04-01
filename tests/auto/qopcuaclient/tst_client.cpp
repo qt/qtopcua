@@ -730,7 +730,7 @@ void Tst_QOpcUaClient::requestEndpoints()
     QVERIFY(desc.size() > 0);
 
     QCOMPARE(QUrl(desc[0].endpointUrl()).port(), 43344);
-    QCOMPARE(desc[0].securityPolicyUri(), QStringLiteral("http://opcfoundation.org/UA/SecurityPolicy#None"));
+    QCOMPARE(desc[0].securityPolicy(), QStringLiteral("http://opcfoundation.org/UA/SecurityPolicy#None"));
     QCOMPARE(desc[0].transportProfileUri(), QStringLiteral("http://opcfoundation.org/UA-Profile/Transport/uatcp-uasc-uabinary"));
     QCOMPARE(desc[0].securityLevel(), 0);
     QCOMPARE(desc[0].securityMode(), QOpcUaEndpointDescription::MessageSecurityMode::None);

@@ -52,7 +52,7 @@ class Q_OPCUA_EXPORT QOpcUaEndpointDescription
     Q_PROPERTY(QString endpointUrl READ endpointUrl)
     Q_PROPERTY(QOpcUaApplicationDescription server READ server)
     Q_PROPERTY(QOpcUaEndpointDescription::MessageSecurityMode securityMode READ securityMode)
-    Q_PROPERTY(QString securityPolicyUri READ securityPolicyUri)
+    Q_PROPERTY(QString securityPolicy READ securityPolicy)
     Q_PROPERTY(QVector<QOpcUaUserTokenPolicy> userIdentityTokens READ userIdentityTokens)
 
 public:
@@ -83,8 +83,8 @@ public:
     QOpcUaEndpointDescription::MessageSecurityMode securityMode() const;
     void setSecurityMode(QOpcUaEndpointDescription::MessageSecurityMode securityMode);
 
-    QString securityPolicyUri() const;
-    void setSecurityPolicyUri(const QString &securityPolicyUri);
+    QString securityPolicy() const;
+    void setSecurityPolicy(const QString &securityPolicy);
 
     QVector<QOpcUaUserTokenPolicy> userIdentityTokens() const;
     QVector<QOpcUaUserTokenPolicy> &userIdentityTokensRef();

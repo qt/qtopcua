@@ -62,7 +62,7 @@ public:
     QOpcUaUserTokenPolicy::TokenType tokenType{QOpcUaUserTokenPolicy::TokenType::Anonymous};
     QString issuedTokenType;
     QString issuerEndpointUrl;
-    QString securityPolicyUri;
+    QString securityPolicy;
 };
 
 QOpcUaUserTokenPolicy::QOpcUaUserTokenPolicy()
@@ -97,7 +97,7 @@ bool QOpcUaUserTokenPolicy::operator==(const QOpcUaUserTokenPolicy &rhs) const
             rhs.tokenType() == tokenType() &&
             rhs.issuedTokenType() == issuedTokenType() &&
             rhs.issuerEndpointUrl() == issuerEndpointUrl() &&
-            rhs.securityPolicyUri() == securityPolicyUri();
+            rhs.securityPolicy() == securityPolicy();
 }
 
 QOpcUaUserTokenPolicy::~QOpcUaUserTokenPolicy()
@@ -107,17 +107,17 @@ QOpcUaUserTokenPolicy::~QOpcUaUserTokenPolicy()
 /*!
     Returns the URI of the security policy required when encrypting or signing the token for ActivateSession.
 */
-QString QOpcUaUserTokenPolicy::securityPolicyUri() const
+QString QOpcUaUserTokenPolicy::securityPolicy() const
 {
-    return data->securityPolicyUri;
+    return data->securityPolicy;
 }
 
 /*!
-    Sets the URI of the security policy to \a securityPolicyUri.
+    Sets the URI of the security policy to \a securityPolicy.
 */
-void QOpcUaUserTokenPolicy::setSecurityPolicyUri(const QString &securityPolicyUri)
+void QOpcUaUserTokenPolicy::setSecurityPolicy(const QString &securityPolicy)
 {
-    data->securityPolicyUri = securityPolicyUri;
+    data->securityPolicy = securityPolicy;
 }
 
 /*!

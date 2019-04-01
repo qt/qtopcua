@@ -300,7 +300,7 @@ void MainWindow::getEndpointsComplete(const QVector<QOpcUaEndpointDescription> &
             }
 
             const QString EndpointName = QString("%1 (%2)")
-                    .arg(endpoint.securityPolicyUri())
+                    .arg(endpoint.securityPolicy())
                     .arg(modes[endpoint.securityMode()]);
             mEndpoints->addItem(EndpointName, index++);
         }

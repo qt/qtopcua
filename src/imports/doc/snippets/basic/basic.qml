@@ -87,7 +87,7 @@ Item {
                     return; // wait until finished
                 if (count > 0) {
                     // choose right endpoint
-                    console.log("Using endpoint", at(0).endpointUrl, at(0).securityPolicyUri);
+                    console.log("Using endpoint", at(0).endpointUrl, at(0).securityPolicy);
                     connection.connectToEndpoint(at(0));
                 } else {
                     // no endpoints retrieved

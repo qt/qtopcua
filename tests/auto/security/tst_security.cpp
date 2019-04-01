@@ -127,7 +127,7 @@ static QString messageSecurityModeToString(QOpcUaEndpointDescription::MessageSec
     QTest::addColumn<QOpcUaEndpointDescription>("endpoint");\
     for (auto backend : m_backends)\
         for (auto endpoint : m_endpoints) { \
-            const QString rowName = QString("%1 using %2 %3").arg(backend).arg(endpoint.securityPolicyUri()).arg(messageSecurityModeToString(endpoint.securityMode())); \
+            const QString rowName = QString("%1 using %2 %3").arg(backend).arg(endpoint.securityPolicy()).arg(messageSecurityModeToString(endpoint.securityMode())); \
             QTest::newRow(rowName.toLatin1().constData()) << backend << endpoint; \
         } \
 }
@@ -242,9 +242,9 @@ void Tst_QOpcUaSecurity::initTestCase()
 
         // Select first non-None security policy
         for (const auto &endpoint : qAsConst(desc)) {
-            if (!endpoint.securityPolicyUri().endsWith("#None")) {
+            if (!endpoint.securityPolicy().endsWith("#None")) {
                 m_endpoints.append(endpoint);
-                qDebug() << endpoint.securityPolicyUri();
+                qDebug() << endpoint.securityPolicy();
             }
         }
 
@@ -280,7 +280,7 @@ void Tst_QOpcUaSecurity::connectAndDisconnectUsingCertificate()
     client->setApplicationIdentity(identity);
     client->setPkiConfiguration(pkiConfig);
 
-    qDebug() << "Testing security policy" << endpoint.securityPolicyUri();
+    qDebug() << "Testing security policy" << endpoint.securityPolicy();
     QSignalSpy connectSpy(client.data(), &QOpcUaClient::stateChanged);
     int passwordRequestSpy = 0;
     connect(client.data(), &QOpcUaClient::passwordForPrivateKeyRequired, [&passwordRequestSpy](const QString &privateKeyFilePath, QString *password, bool previousTryFailed) {
@@ -342,7 +342,7 @@ void Tst_QOpcUaSecurity::connectAndDisconnectUsingEncryptedPassword()
     client->setApplicationIdentity(identity);
     client->setPkiConfiguration(pkiConfig);
 
-    qDebug() << "Testing security policy" << endpoint.securityPolicyUri();
+    qDebug() << "Testing security policy" << endpoint.securityPolicy();
     QSignalSpy connectSpy(client.data(), &QOpcUaClient::stateChanged);
     int passwordRequestSpy = 0;
     connect(client.data(), &QOpcUaClient::passwordForPrivateKeyRequired, [&passwordRequestSpy, &pkiConfig](const QString &privateKeyFilePath, QString *password, bool previousTryFailed) {
