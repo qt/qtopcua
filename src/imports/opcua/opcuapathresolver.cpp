@@ -209,6 +209,7 @@ void OpcUaPathResolver::browsePathFinished(QVector<QOpcUaBrowsePathTarget> resul
     nodeToUse.resolveNamespace(m_client);
     qCDebug(QT_OPCUA_PLUGINS_QML) << "Relative node fully resolved to:" << nodeToUse.fullNodeId();
     emit resolvedNode(nodeToUse, QString());
+    deleteLater();
 }
 
 QT_END_NAMESPACE
