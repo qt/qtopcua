@@ -142,4 +142,105 @@ Item {
             compare(results[2].value, [1, 2]);
         }
     }
+
+    CompletionLoggingTestCase {
+        name: "Writing multiple items"
+        when: connection.connected && shouldRun
+
+        SignalSpy {
+            id: writeNodeAttributesFinishedSpy
+            target: connection
+            signalName: "writeNodeAttributesFinished"
+        }
+
+        function test_nodeTest() {
+            var writeItemList = [];
+            var writeItem;
+
+            // Item #0
+            writeItem = QtOpcUa.WriteItem.create();
+            writeItem.ns = "http://qt-project.org";
+            writeItem.nodeId = "s=Demo.Static.Scalar.String";
+            writeItem.attribute = QtOpcUa.Constants.NodeAttribute.Value;
+            writeItem.value = "Writing multiple items";
+            writeItemList.push(writeItem);
+
+            // Item #1
+            writeItem = QtOpcUa.WriteItem.create();
+            writeItem.ns = "http://qt-project.org";
+            writeItem.nodeId = "s=Demo.Static.Scalar.Double";
+            writeItem.value = 15.6;
+            writeItemList.push(writeItem);
+
+            // Item #2
+            writeItem = QtOpcUa.WriteItem.create();
+            writeItem.ns = "http://qt-project.org";
+            writeItem.nodeId = "s=Demo.Static.Arrays.UInt32";
+            writeItem.indexRange = "0:1";
+            writeItem.value = [42, 43];
+            writeItem.valueType = QtOpcUa.Constants.UInt32;
+            writeItemList.push(writeItem);
+
+            verify(connection.writeNodeAttributes(writeItemList))
+            writeNodeAttributesFinishedSpy.wait();
+
+            compare(writeNodeAttributesFinishedSpy.count, 1);
+            compare(writeNodeAttributesFinishedSpy.signalArguments[0].length, 1);
+
+            var results = writeNodeAttributesFinishedSpy.signalArguments[0][0];
+
+            compare(results.length, writeItemList.length);
+            for (var i = 0; i < results.length; i++) {
+                console.log("Comparing result item #" + i);
+                verify(results[i].status.isGood);
+                compare(results[i].nodeId, writeItemList[i].nodeId);
+                compare(results[i].namespaceName, writeItemList[i].ns);
+                compare(results[i].attribute, writeItemList[i].attribute);
+            }
+
+            // Reset to default values
+            //
+            writeItemList = [];
+            // Item #0
+            writeItem = QtOpcUa.WriteItem.create();
+            writeItem.ns = "http://qt-project.org";
+            writeItem.nodeId = "s=Demo.Static.Scalar.String";
+            writeItem.attribute = QtOpcUa.Constants.NodeAttribute.Value;
+            writeItem.value = "Value";
+            writeItemList.push(writeItem);
+
+            // Item #1
+            writeItem = QtOpcUa.WriteItem.create();
+            writeItem.ns = "http://qt-project.org";
+            writeItem.nodeId = "s=Demo.Static.Scalar.Double";
+            writeItem.value = 1.0;
+            writeItem.valueType = QtOpcUa.Constants.Double;
+            writeItemList.push(writeItem);
+
+            // Item #2
+            writeItem = QtOpcUa.WriteItem.create();
+            writeItem.ns = "http://qt-project.org";
+            writeItem.nodeId = "s=Demo.Static.Arrays.UInt32";
+            writeItem.indexRange = "0:1";
+            writeItem.value = [1, 2];
+            writeItem.valueType = QtOpcUa.Constants.UInt32;
+            writeItemList.push(writeItem);
+
+            writeNodeAttributesFinishedSpy.clear();
+            verify(connection.writeNodeAttributes(writeItemList))
+            writeNodeAttributesFinishedSpy.wait();
+
+            var results = writeNodeAttributesFinishedSpy.signalArguments[0][0];
+
+            compare(results.length, writeItemList.length);
+            for (var i = 0; i < results.length; i++) {
+                console.log("Comparing result item #" + i);
+                verify(results[i].status.isGood);
+                compare(results[i].nodeId, writeItemList[i].nodeId);
+                compare(results[i].namespaceName, writeItemList[i].ns);
+                compare(results[i].attribute, writeItemList[i].attribute);
+            }
+
+        }
+    }
 }

@@ -20,6 +20,8 @@ SOURCES += \
     opcuareadresult.cpp \
     opcuaserverdiscovery.cpp \
     opcuastatus.cpp \
+    opcuawriteitem.cpp \
+    opcuawriteresult.cpp \
 
 HEADERS += \
     opcua_plugin.h \
@@ -41,6 +43,8 @@ HEADERS += \
     opcuareadresult.h \
     opcuaserverdiscovery.h \
     opcuastatus.h \
+    opcuawriteitem.h \
+    opcuawriteresult.h \
 
 load(qml_plugin)
 

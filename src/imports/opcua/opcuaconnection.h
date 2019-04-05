@@ -77,6 +77,7 @@ public:
 
     QOpcUaAuthenticationInformation authenticationInformation() const;
     Q_INVOKABLE bool readNodeAttributes(const QJSValue &value);
+    Q_INVOKABLE bool writeNodeAttributes(const QJSValue &value);
 
     QStringList supportedSecurityPolicies() const;
     QJSValue supportedUserTokenTypes() const;
@@ -94,10 +95,12 @@ signals:
     void defaultConnectionChanged();
     void namespacesChanged();
     void readNodeAttributesFinished(const QVariant &value);
+    void writeNodeAttributesFinished(const QVariant &value);
 
 private slots:
     void clientStateHandler(QOpcUaClient::ClientState state);
     void handleReadNodeAttributesFinished(const QVector<QOpcUaReadResult> &results);
+    void handleWriteNodeAttributesFinished(const QVector<QOpcUaWriteResult> &results);
 
 private:
     QOpcUaClient *m_client = nullptr;
