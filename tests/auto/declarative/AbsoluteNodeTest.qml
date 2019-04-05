@@ -364,6 +364,7 @@ Item {
             node10.description.text = "modifiedDescription";
             node10DescriptionSpy.wait();
             compare(node10DescriptionSpy.count, 1);
+            node10DescriptionSpy.clear();
             node10.description.text = "Description for ns=3;s=Demo.Static.Scalar.FullyWritable"; // Setting back to default
             node10DescriptionSpy.wait();
         }
