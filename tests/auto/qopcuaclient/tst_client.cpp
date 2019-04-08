@@ -595,8 +595,22 @@ void Tst_QOpcUaClient::initTestCase()
 
         m_serverProcess.start(m_testServerPath);
         QVERIFY2(m_serverProcess.waitForStarted(), qPrintable(m_serverProcess.errorString()));
-        // Let the server come up
-        QTest::qSleep(2000);
+
+        // Check if server is up and running
+        QVERIFY(m_serverProcess.state() == QProcess::Running);
+
+        QTest::qSleep(100);
+        socket.connectToHost(defaultHost, defaultPort);
+        if (!socket.waitForConnected(5000))
+        {
+            //Try a second time
+            QTest::qSleep(5000);
+            socket.connectToHost(defaultHost, defaultPort);
+            if (!socket.waitForConnected(5000))
+                QFAIL("Server does not run");
+        }
+
+        socket.disconnectFromHost();
     }
     QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
     QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
