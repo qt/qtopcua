@@ -678,7 +678,7 @@ void Tst_QOpcUaClient::connectAndDisconnectPassword()
     opcuaClient->connectToEndpoint(m_endpoint);
     connectSpy.wait();
 
-    QCOMPARE(connectSpy.count(), 2);
+    QTRY_COMPARE(connectSpy.count(), 2);
     QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Connecting);
     QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Connected);
 
@@ -730,11 +730,20 @@ void Tst_QOpcUaClient::requestEndpoints()
     QVERIFY(desc.size() > 0);
 
     QCOMPARE(QUrl(desc[0].endpointUrl()).port(), 43344);
-    QCOMPARE(desc[0].securityPolicyUri(), QStringLiteral("http://opcfoundation.org/UA/SecurityPolicy#None"));
+    QCOMPARE(desc[0].securityPolicy(), QStringLiteral("http://opcfoundation.org/UA/SecurityPolicy#None"));
     QCOMPARE(desc[0].transportProfileUri(), QStringLiteral("http://opcfoundation.org/UA-Profile/Transport/uatcp-uasc-uabinary"));
     QCOMPARE(desc[0].securityLevel(), 0);
     QCOMPARE(desc[0].securityMode(), QOpcUaEndpointDescription::MessageSecurityMode::None);
+#ifdef SERVER_SUPPORTS_SECURITY
+    QFile file(":/open62541-testserver/pki/own/certs/open62541-testserver.der");
+    QVERIFY(file.open(QFile::ReadOnly));
+    const auto serverCertificate = file.readAll();
+    QVERIFY(serverCertificate.size() > 0);
+    file.close();
+    QCOMPARE(desc[0].serverCertificate(), serverCertificate);
+#else
     QCOMPARE(desc[0].serverCertificate(), QByteArray());
+#endif
 
     QCOMPARE(desc[0].userIdentityTokens().size(), 2);
     QCOMPARE(desc[0].userIdentityTokens()[0].policyId(), QStringLiteral("open62541-anonymous-policy"));
@@ -1499,6 +1508,16 @@ void Tst_QOpcUaClient::dataChangeSubscription()
         attrs.remove(attrs.indexOf(temp));
     }
     QCOMPARE(attrs.size(), 0);
+
+    // Enable the monitoring again, after it has been disabled. This triggered a bug where a previous subscription
+    // was not completeley removed from the internal data structures
+    monitoringEnabledSpy.clear();
+    node->enableMonitoring(QOpcUa::NodeAttribute::NodeId, QOpcUaMonitoringParameters(100));
+    monitoringEnabledSpy.wait();
+    QCOMPARE(monitoringEnabledSpy.size(), 1);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::NodeId);
+    QVERIFY(node->monitoringStatus(QOpcUa::NodeAttribute::NodeId).subscriptionId() != valueStatus.subscriptionId());
+    QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::NodeId).statusCode(), QOpcUa::UaStatusCode::Good);
 }
 
 void Tst_QOpcUaClient::dataChangeSubscriptionInvalidNode()

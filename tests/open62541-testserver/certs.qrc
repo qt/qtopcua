@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>pki/own/private/open62541-testserver.der</file>
+        <file>pki/own/certs/open62541-testserver.der</file>
+        <file>pki/trusted/certs/opcuaviewer.der</file>
+        <file>pki/trusted/certs/tst_security.der</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>../../open62541-testserver/pki/own/certs/open62541-testserver.der</file>
+    </qresource>
+</RCC>

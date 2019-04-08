@@ -81,6 +81,8 @@ QOpcUaExpandedNodeId::QOpcUaExpandedNodeId(const QString &nodeId)
 /*!
     Constructs an expanded node id from namespace URI \a namespaceUri, node id string \a nodeId
     and server index \a serverIndex.
+
+    \sa setServerIndex
 */
 QOpcUaExpandedNodeId::QOpcUaExpandedNodeId(const QString &namespaceUri, const QString &nodeId, quint32 serverIndex)
     : data(new QOpcUaExpandedNodeIdData)
@@ -124,6 +126,7 @@ QOpcUaExpandedNodeId::~QOpcUaExpandedNodeId()
 
 /*!
     Returns the index of the server containing the node. This index maps to an entry in the server's server table.
+    The index of the local server is always \c 0. All remote servers have indexes greater than \c 0.
 */
 quint32 QOpcUaExpandedNodeId::serverIndex() const
 {
@@ -132,6 +135,7 @@ quint32 QOpcUaExpandedNodeId::serverIndex() const
 
 /*!
     Sets the server index to \a serverIndex.
+    The index of the local server is always \c 0. All remote servers have indexes greater than \c 0.
 */
 void QOpcUaExpandedNodeId::setServerIndex(quint32 serverIndex)
 {

@@ -112,6 +112,11 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
         Q_Q(QOpcUaClient);
         emit q->connectError(errorState);
     });
+
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::passwordForPrivateKeyRequired, [this](QString privateKeyFilePath, QString *password, bool previousTryWasInvalid) {
+        Q_Q(QOpcUaClient);
+        emit q->passwordForPrivateKeyRequired(privateKeyFilePath, password, previousTryWasInvalid);
+    });
 }
 
 QOpcUaClientPrivate::~QOpcUaClientPrivate()
@@ -121,12 +126,6 @@ QOpcUaClientPrivate::~QOpcUaClientPrivate()
 void QOpcUaClientPrivate::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
 {
     m_endpoint = endpoint;
-    if (endpoint.endpointUrl().isEmpty() || endpoint.securityPolicyUri().isEmpty()) {
-        qCWarning(QT_OPCUA) << "Endpoint description is invalid because endpoint URL or security policy URL is empty";
-        setStateAndError(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::InvalidUrl);
-        return;
-    }
-    setStateAndError(QOpcUaClient::Connecting);
     m_impl->connectToEndpoint(endpoint);
 }
 
@@ -260,14 +259,14 @@ void QOpcUaClientPrivate::setupNamespaceArrayMonitoring()
     }
 }
 
-void QOpcUaClientPrivate::setIdentity(const QOpcUaApplicationIdentity &identity)
+void QOpcUaClientPrivate::setApplicationIdentity(const QOpcUaApplicationIdentity &identity)
 {
-    m_identity = identity;
+    m_applicationIdentity = identity;
 }
 
-QOpcUaApplicationIdentity QOpcUaClientPrivate::identity() const
+QOpcUaApplicationIdentity QOpcUaClientPrivate::applicationIdentity() const
 {
-    return m_identity;
+    return m_applicationIdentity;
 }
 
 void QOpcUaClientPrivate::setPkiConfiguration(const QOpcUaPkiConfiguration &config)

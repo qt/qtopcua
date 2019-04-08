@@ -68,6 +68,25 @@ Window {
         id: connection
         backend: serverControl.backend
         defaultConnection: true
+
+    }
+
+    QtOpcUa.ServerDiscovery {
+        id: serverDiscovery
+        onServersChanged: {
+            if (!count)
+                return;
+            endpointDiscovery.serverUrl = at(0).discoveryUrls[0];
+        }
+    }
+
+    QtOpcUa.EndpointDiscovery {
+        id: endpointDiscovery
+        onEndpointsChanged: {
+            if (!count)
+                return;
+            connection.connectToEndpoint(at(0));
+        }
     }
 
     Machine {
@@ -81,6 +100,7 @@ Window {
         ServerControl {
             id: serverControl
             connection: connection
+            serverDiscovery: serverDiscovery
         }
         MachineDisplay {
             Layout.fillHeight: true

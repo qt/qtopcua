@@ -57,6 +57,7 @@ import QtOpcUa 5.13 as QtOpcUa
 RowLayout {
     readonly property alias backend: backendSelector.currentText
     property QtOpcUa.Connection connection
+    property QtOpcUa.ServerDiscovery serverDiscovery
     signal resetSimulation()
     property alias resetButtonText: resetButton.text
 
@@ -77,7 +78,7 @@ RowLayout {
             if (connection.connected)
                 connection.disconnectFromEndpoint()
             else
-                connection.connectToEndpoint(uaUrl.text)
+                serverDiscovery.discoveryUrl = uaUrl.text;
         }
     }
     Button {

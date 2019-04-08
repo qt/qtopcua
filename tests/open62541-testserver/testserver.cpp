@@ -42,14 +42,23 @@
 #include <QtCore/QDebug>
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QUuid>
+#include <QDir>
+#include <QFile>
+
+#if defined UA_ENABLE_ENCRYPTION
+#include "security_addon.h"
+#endif
 
 #include <cstring>
 
 QT_BEGIN_NAMESPACE
 
+const UA_UInt16 portNumber = 43344;
+
 // Node ID conversion is included from the open62541 plugin but warnings from there should be logged
 // using qt.opcua.testserver instead of qt.opcua.plugins.open62541 for usage in the test server
 Q_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541, "qt.opcua.testserver")
+
 
 TestServer::TestServer(QObject *parent) : QObject(parent)
 {
@@ -65,10 +74,163 @@ TestServer::~TestServer()
     UA_ServerConfig_delete(m_config);
 }
 
+bool TestServer::createInsecureServerConfig()
+{
+    m_config = UA_ServerConfig_new_minimal(portNumber, nullptr);
+    return m_config != nullptr;
+}
+
+#if defined UA_ENABLE_ENCRYPTION
+static UA_ByteString loadFile(const QString &filePath) {
+    UA_ByteString fileContents = UA_STRING_NULL;
+    fileContents.length = 0;
+
+    QFile file(filePath);
+    if (!file.open(QFile::ReadOnly))
+        return fileContents;
+
+    fileContents.length = file.size();
+    fileContents.data = (UA_Byte *)UA_malloc(fileContents.length * sizeof(UA_Byte));
+    if (!fileContents.data)
+        return fileContents;
+
+    if (file.read(reinterpret_cast<char*>(fileContents.data), fileContents.length) != fileContents.length) {
+        UA_ByteString_deleteMembers(&fileContents);
+        fileContents.length = 0;
+        return fileContents;
+    }
+    return fileContents;
+}
+
+bool TestServer::createSecureServerConfig()
+{
+    const QString certificateFilePath = QLatin1String(":/pki/own/certs/open62541-testserver.der");
+    const QString privateKeyFilePath = QLatin1String(":/pki/own/private/open62541-testserver.der");
+
+    UA_ByteString certificate = loadFile(certificateFilePath);
+    UaDeleter<UA_ByteString> certificateDeleter(&certificate, UA_ByteString_deleteMembers);
+    UA_ByteString privateKey = loadFile(privateKeyFilePath);
+    UaDeleter<UA_ByteString> privateKeyDeleter(&privateKey, UA_ByteString_deleteMembers);
+
+    if (certificate.length == 0) {
+        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+           "Failed to load certificate %s", certificateFilePath.toLocal8Bit().constData());
+        return false;
+    }
+    if (privateKey.length == 0) {
+        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+           "Failed to load private key %s", privateKeyFilePath.toLocal8Bit().constData());
+        return false;
+    }
+
+    // Load the trustlist
+    QDir trustDir(":/pki/trusted/certs");
+    if (!trustDir.exists()) {
+        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Trust directory does not exist");
+        return false;
+    }
+
+    const auto trustedCerts = trustDir.entryList(QDir::Files);
+    const size_t trustListSize = trustedCerts.size();
+    int i = 0;
+
+    UA_STACKARRAY(UA_ByteString, trustList, trustListSize);
+    UaArrayDeleter<UA_TYPES_BYTESTRING> trustListDeleter(&trustList, trustListSize);
+
+    for (const auto &entry : trustedCerts) {
+        trustList[i] = loadFile(trustDir.filePath(entry));
+        if (trustList[i].length == 0) {
+            UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Failed to load trusted certificate");
+            return false;
+        } else {
+            UA_LOG_DEBUG(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Trusted certificate %s loaded", entry.toLocal8Bit().constData());
+        }
+        ++i;
+    }
+
+    // Loading of a revocation list currently unsupported
+    UA_ByteString *revocationList = nullptr;
+    size_t revocationListSize = 0;
+
+    m_config = UA_ServerConfig_new_minimal(portNumber, nullptr);
+    if (!m_config)
+        return false;
+
+    UA_StatusCode retval = UA_CertificateVerification_Trustlist(&m_config->certificateVerification,
+                                                                trustList, trustListSize,
+                                                                revocationList, revocationListSize);
+
+    if (retval != UA_STATUSCODE_GOOD)
+        return false;
+
+    retval = UA_Nodestore_default_new(&m_config->nodestore);
+    if (retval != UA_STATUSCODE_GOOD)
+        return false;
+
+    if (trustListSize == 0)
+       UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+          "No CA trust-list provided. Any remote certificate will be accepted.");
+
+    /* Allocate the endpoints */
+    m_config->endpointsSize = 0;
+    m_config->endpoints = (UA_Endpoint *)UA_malloc(sizeof(UA_Endpoint) * 5);
+    if (!m_config->endpoints)
+        return false;
+
+    /* Populate the endpoints */
+    retval = createSecurityPolicyNoneEndpoint(m_config, &m_config->endpoints[m_config->endpointsSize], certificate);
+    ++m_config->endpointsSize;
+    if (retval != UA_STATUSCODE_GOOD)
+        return false;
+
+    retval = createSecurityPolicyBasic128Rsa15Endpoint(m_config, &m_config->endpoints[m_config->endpointsSize],
+                                    UA_MESSAGESECURITYMODE_SIGN, certificate, privateKey);
+    ++m_config->endpointsSize;
+    if (retval != UA_STATUSCODE_GOOD)
+        return false;
+
+    retval = createSecurityPolicyBasic128Rsa15Endpoint(m_config, &m_config->endpoints[m_config->endpointsSize],
+                                    UA_MESSAGESECURITYMODE_SIGNANDENCRYPT, certificate, privateKey);
+    ++m_config->endpointsSize;
+    if (retval != UA_STATUSCODE_GOOD)
+        return false;
+
+    retval = createSecurityPolicyBasic256Sha256Endpoint(m_config, &m_config->endpoints[m_config->endpointsSize],
+                                    UA_MESSAGESECURITYMODE_SIGN, certificate, privateKey);
+    ++m_config->endpointsSize;
+    if (retval != UA_STATUSCODE_GOOD)
+        return false;
+
+    retval = createSecurityPolicyBasic256Sha256Endpoint(m_config, &m_config->endpoints[m_config->endpointsSize],
+                                     UA_MESSAGESECURITYMODE_SIGNANDENCRYPT, certificate, privateKey);
+    ++m_config->endpointsSize;
+    if (retval != UA_STATUSCODE_GOOD)
+        return false;
+
+    // Do not delete items on success.
+    // They will be used by the server.
+    certificateDeleter.release();
+    privateKeyDeleter.release();
+    trustListDeleter.release();
+
+    return true;
+}
+#endif
+
 bool TestServer::init()
 {
-    m_config = UA_ServerConfig_new_minimal(43344, nullptr);
-    if (!m_config)
+    bool success;
+
+#if defined UA_ENABLE_ENCRYPTION
+    success = createSecureServerConfig();
+#else
+    success = createInsecureServerConfig();
+#endif
+
+    // This is needed for COIN because the hostname returned by gethostname() is not resolvable.
+    m_config->customHostname = UA_String_fromChars("localhost");
+
+    if (!success || !m_config)
         return false;
 
     m_server = UA_Server_new(m_config);

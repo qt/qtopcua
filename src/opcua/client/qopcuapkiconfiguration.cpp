@@ -62,12 +62,12 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_SECURITY);
     QOpcUaPkiConfiguration pkiConfig;
     const QString pkiDir = QCoreApplication::applicationDirPath() + "/pki";
 
-    pkiConfig.setClientCertificateLocation(pkidir + "/own/certs/application.der");
-    pkiConfig.setPrivateKeyLocation(pkidir + "/own/private/application.pem");
-    pkiConfig.setTrustListLocation(pkidir + "/trusted/certs");
+    pkiConfig.setClientCertificateDirectory(pkidir + "/own/certs/application.der");
+    pkiConfig.setPrivateKeyDirectory(pkidir + "/own/private/application.pem");
+    pkiConfig.setTrustListDirectory(pkidir + "/trusted/certs");
     pkiConfig.setRevocationListLocation(pkidir + "/trusted/crl");
-    pkiConfig.setIssuerListLocation(pkidir + "/issuers/certs");
-    pkiConfig.setIssuerRevocationListLocation(pkidir + "/issuers/crl");
+    pkiConfig.setIssuerListDirectory(pkidir + "/issuers/certs");
+    pkiConfig.setIssuerRevocationListDirectory(pkidir + "/issuers/crl");
 
     client->setPkiConfiguration(pkiConfig);
     \endcode
@@ -78,12 +78,12 @@ class QOpcUaPkiConfigurationData : public QSharedData
 public:
     QOpcUaPkiConfigurationData() {}
 
-    QString m_clientCertificateLocation;    /**< Own application certificate filename */
-    QString m_privateKeyLocation;           /**< Private key filename which belongs to m_certificateLocation */
-    QString m_trustListLocation;            /**< Path to trust list location */
-    QString m_revocationListLocation;       /**< Path to certificate revocation list */
-    QString m_issuerListLocation;           /**< Path to issuer intermediate certficates (untrusted) */
-    QString m_issuerRevocationListLocation; /**< Path to issure revocation list */
+    QString m_clientCertificateFile;    /**< Own application certificate filename */
+    QString m_privateKeyFile;           /**< Private key filename which belongs to m_certificateFile */
+    QString m_trustListDirectory;            /**< Path to trust list directory */
+    QString m_revocationListDirectory;       /**< Folder containing  certificate revocation list */
+    QString m_issuerListDirectory;           /**< Folder containing issuer intermediate certficates (untrusted) */
+    QString m_issuerRevocationListDirectory; /**< Folder containing issuer revocation list */
 };
 
 QOpcUaPkiConfiguration::QOpcUaPkiConfiguration()
@@ -113,9 +113,9 @@ QOpcUaPkiConfiguration &QOpcUaPkiConfiguration::operator=(const QOpcUaPkiConfigu
 /*!
     Returns the file path of the application's client certificate.
  */
-QString QOpcUaPkiConfiguration::clientCertificateLocation() const
+QString QOpcUaPkiConfiguration::clientCertificateFile() const
 {
-    return data->m_clientCertificateLocation;
+    return data->m_clientCertificateFile;
 }
 
 /*!
@@ -123,17 +123,17 @@ QString QOpcUaPkiConfiguration::clientCertificateLocation() const
 
     This file has to be in X509 DER format.
 */
-void QOpcUaPkiConfiguration::setClientCertificateLocation(const QString &value)
+void QOpcUaPkiConfiguration::setClientCertificateFile(const QString &value)
 {
-    data->m_clientCertificateLocation = value;
+    data->m_clientCertificateFile = value;
 }
 
 /*!
     Returns the file path of the application's private key.
 */
-QString QOpcUaPkiConfiguration::privateKeyLocation() const
+QString QOpcUaPkiConfiguration::privateKeyFile() const
 {
-    return data->m_privateKeyLocation;
+    return data->m_privateKeyFile;
 }
 
 /*!
@@ -141,17 +141,17 @@ QString QOpcUaPkiConfiguration::privateKeyLocation() const
 
     This file has to be in X509 PEM format.
 */
-void QOpcUaPkiConfiguration::setPrivateKeyLocation(const QString &value)
+void QOpcUaPkiConfiguration::setPrivateKeyFile(const QString &value)
 {
-    data->m_privateKeyLocation = value;
+    data->m_privateKeyFile = value;
 }
 
 /*!
-    Returns the path of the certificate trust list directory.
+    Returns the folder of the certificate trust list.
 */
-QString QOpcUaPkiConfiguration::trustListLocation() const
+QString QOpcUaPkiConfiguration::trustListDirectory() const
 {
-    return data->m_trustListLocation;
+    return data->m_trustListDirectory;
 }
 
 /*!
@@ -160,25 +160,25 @@ QString QOpcUaPkiConfiguration::trustListLocation() const
     All certificates in this directory will be trusted.
     Certificates have to be in X509 DER format.
 */
-void QOpcUaPkiConfiguration::setTrustListLocation(const QString &value)
+void QOpcUaPkiConfiguration::setTrustListDirectory(const QString &value)
 {
-    data->m_trustListLocation = value;
+    data->m_trustListDirectory = value;
 }
 
 /*!
     Returns the path of the certificate revocation list directory.
 */
-QString QOpcUaPkiConfiguration::revocationListLocation() const
+QString QOpcUaPkiConfiguration::revocationListDirectory() const
 {
-    return data->m_revocationListLocation;
+    return data->m_revocationListDirectory;
 }
 
 /*!
     Sets the path of the certificate revocation list directory to \a value.
 */
-void QOpcUaPkiConfiguration::setRevocationListLocation(const QString &value)
+void QOpcUaPkiConfiguration::setRevocationListDirectory(const QString &value)
 {
-    data->m_revocationListLocation = value;
+    data->m_revocationListDirectory = value;
 }
 
 /*!
@@ -186,33 +186,33 @@ void QOpcUaPkiConfiguration::setRevocationListLocation(const QString &value)
 
     These issuers will not be trusted.
 */
-QString QOpcUaPkiConfiguration::issuerListLocation() const
+QString QOpcUaPkiConfiguration::issuerListDirectory() const
 {
-    return data->m_issuerListLocation;
+    return data->m_issuerListDirectory;
 }
 
 /*!
     Sets the path of the intermediate issuer list directory to \a value.
 */
-void QOpcUaPkiConfiguration::setIssuerListLocation(const QString &value)
+void QOpcUaPkiConfiguration::setIssuerListDirectory(const QString &value)
 {
-    data->m_issuerListLocation = value;
+    data->m_issuerListDirectory = value;
 }
 
 /*!
     Returns the path of the intermediate issuer revocation list directory.
 */
-QString QOpcUaPkiConfiguration::issuerRevocationListLocation() const
+QString QOpcUaPkiConfiguration::issuerRevocationListDirectory() const
 {
-    return data->m_issuerRevocationListLocation;
+    return data->m_issuerRevocationListDirectory;
 }
 
 /*!
     Sets the path of the intermediate issuer revocation list directory to \a value.
 */
-void QOpcUaPkiConfiguration::setIssuerRevocationListLocation(const QString &value)
+void QOpcUaPkiConfiguration::setIssuerRevocationListDirectory(const QString &value)
 {
-    data->m_issuerRevocationListLocation = value;
+    data->m_issuerRevocationListDirectory = value;
 }
 
 /*!
@@ -225,9 +225,9 @@ QOpcUaApplicationIdentity QOpcUaPkiConfiguration::applicationIdentity() const
 {
     QOpcUaApplicationIdentity identity;
 
-    auto certList = QSslCertificate::fromPath(data->m_clientCertificateLocation, QSsl::Der);
+    auto certList = QSslCertificate::fromPath(clientCertificateFile(), QSsl::Der);
     if (certList.isEmpty()) {
-        qCWarning(QT_OPCUA_SECURITY) << "No client certificate found at" << data->m_clientCertificateLocation
+        qCWarning(QT_OPCUA_SECURITY) << "No client certificate found at" << clientCertificateFile()
                                      << ". Application identity will be invalid.";
         return QOpcUaApplicationIdentity();
     }
@@ -261,10 +261,10 @@ QOpcUaApplicationIdentity QOpcUaPkiConfiguration::applicationIdentity() const
 */
 bool QOpcUaPkiConfiguration::isPkiValid() const
 {
-    return !data->m_issuerListLocation.isEmpty() &&
-           !data->m_issuerRevocationListLocation.isEmpty() &&
-           !data->m_revocationListLocation.isEmpty() &&
-           !data->m_trustListLocation.isEmpty();
+    return !issuerListDirectory().isEmpty() &&
+           !issuerRevocationListDirectory().isEmpty() &&
+           !revocationListDirectory().isEmpty() &&
+           !trustListDirectory().isEmpty();
 }
 
 QT_END_NAMESPACE

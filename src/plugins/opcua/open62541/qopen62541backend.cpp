@@ -767,18 +767,27 @@ static void clientStateCallback(UA_Client *client, UA_ClientState state)
 
 void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
 {
+    cleanupSubscriptions();
+
+    if (m_uaclient)
+        UA_Client_delete(m_uaclient);
+
+    QString errorMessage;
+    if (!verifyEndpointDescription(endpoint, &errorMessage)) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << errorMessage;
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::InvalidUrl);
+        return;
+    }
+
     const QString nonePolicyUri = QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#None");
 
-    if (endpoint.securityPolicyUri() != nonePolicyUri) {
+    if (endpoint.securityPolicy() != nonePolicyUri) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "open62541 does not yet support secure connections";
         emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::NoError);
         return;
     }
 
-    cleanupSubscriptions();
-
-    if (m_uaclient)
-        UA_Client_delete(m_uaclient);
+    emit stateAndOrErrorChanged(QOpcUaClient::Connecting, QOpcUaClient::NoError);
 
     m_useStateCallback = false;
 
@@ -795,7 +804,7 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
 
         bool suitableTokenFound = false;
         for (const auto token : endpoint.userIdentityTokens()) {
-            if (token.tokenType() == QOpcUaUserTokenPolicy::Username && token.securityPolicyUri() == nonePolicyUri) {
+            if (token.tokenType() == QOpcUaUserTokenPolicy::Username && token.securityPolicy() == nonePolicyUri) {
                 suitableTokenFound = true;
                 break;
             }
@@ -889,7 +898,7 @@ void Open62541AsyncBackend::requestEndpoints(const QUrl &url)
             epd.setEndpointUrl(vc::scalarToQt<QString, UA_String>(&endpoints[i].endpointUrl));
             epd.setServerCertificate(vc::scalarToQt<QByteArray, UA_ByteString>(&endpoints[i].serverCertificate));
             epd.setSecurityMode(static_cast<QOpcUaEndpointDescription::MessageSecurityMode>(endpoints[i].securityMode));
-            epd.setSecurityPolicyUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].securityPolicyUri));
+            epd.setSecurityPolicy(vc::scalarToQt<QString, UA_String>(&endpoints[i].securityPolicyUri));
             for (size_t j = 0; j < endpoints[i].userIdentityTokensSize; ++j) {
                 QOpcUaUserTokenPolicy policy;
                 UA_UserTokenPolicy *policySrc = &endpoints[i].userIdentityTokens[j];
@@ -897,7 +906,7 @@ void Open62541AsyncBackend::requestEndpoints(const QUrl &url)
                 policy.setTokenType(static_cast<QOpcUaUserTokenPolicy::TokenType>(endpoints[i].userIdentityTokens[j].tokenType));
                 policy.setIssuedTokenType(vc::scalarToQt<QString, UA_String>(&endpoints[i].userIdentityTokens[j].issuedTokenType));
                 policy.setIssuerEndpointUrl(vc::scalarToQt<QString, UA_String>(&endpoints[i].userIdentityTokens[j].issuerEndpointUrl));
-                policy.setSecurityPolicyUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].userIdentityTokens[j].securityPolicyUri));
+                policy.setSecurityPolicy(vc::scalarToQt<QString, UA_String>(&endpoints[i].userIdentityTokens[j].securityPolicyUri));
                 epd.userIdentityTokensRef().append(policy);
             }
 

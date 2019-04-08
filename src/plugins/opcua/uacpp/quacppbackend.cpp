@@ -214,7 +214,19 @@ void UACppAsyncBackend::browse(quint64 handle, const UaNodeId &id, const QOpcUaB
 
 void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
 {
-    const auto identity = m_clientImpl->m_client->identity();
+    if (m_nativeSession->isConnected())
+        disconnectFromEndpoint();
+
+    QString errorMessage;
+    if (!verifyEndpointDescription(endpoint, &errorMessage)) {
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << errorMessage;
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::InvalidUrl);
+        return;
+    }
+
+    emit stateAndOrErrorChanged(QOpcUaClient::Connecting, QOpcUaClient::NoError);
+
+    const auto identity = m_clientImpl->m_client->applicationIdentity();
     const auto authInfo = m_clientImpl->m_client->authenticationInformation();
     const auto pkiConfig = m_clientImpl->m_client->pkiConfiguration();
 
@@ -230,10 +242,10 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
 
     if (pkiConfig.isPkiValid()) {
         auto result = sessionSecurityInfo.initializePkiProviderOpenSSL(
-                pkiConfig.revocationListLocation().toUtf8().constData(),
-                pkiConfig.trustListLocation().toUtf8().constData(),
-                pkiConfig.issuerRevocationListLocation().toUtf8().constData(),
-                pkiConfig.issuerListLocation().toUtf8().constData());
+                pkiConfig.revocationListDirectory().toUtf8().constData(),
+                pkiConfig.trustListDirectory().toUtf8().constData(),
+                pkiConfig.issuerRevocationListDirectory().toUtf8().constData(),
+                pkiConfig.issuerListDirectory().toUtf8().constData());
 
         if (result.isNotGood()) {
             qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to set up PKI: " << QString::fromUtf8(result.toString().toUtf8());
@@ -243,8 +255,8 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
 
         // set server certificate from endpoint
         sessionSecurityInfo.serverCertificate = UaByteString(endpoint.serverCertificate().length(), (OpcUa_Byte*)(endpoint.serverCertificate().constData()));
-        // set SecurityPolicyUri
-        sessionSecurityInfo.sSecurityPolicy = endpoint.securityPolicyUri().toUtf8().constData();
+        // set SecurityPolicy
+        sessionSecurityInfo.sSecurityPolicy = endpoint.securityPolicy().toUtf8().constData();
         // set MessageSecurityMode
         sessionSecurityInfo.messageSecurityMode = static_cast<OpcUa_MessageSecurityMode>(endpoint.securityMode());
     }
@@ -260,15 +272,15 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
             sessionSecurityInfo.disableEncryptedPasswordCheck = OpcUa_True;
     } else if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Certificate) {
         // try to load the client certificate
-        const UaString certificateFilePath(pkiConfig.clientCertificateLocation().toUtf8());
-        const UaString privateKeyFilePath(pkiConfig.privateKeyLocation().toUtf8());
+        const UaString certificateFilePath(pkiConfig.clientCertificateFile().toUtf8());
+        const UaString privateKeyFilePath(pkiConfig.privateKeyFile().toUtf8());
         UaStatus result;
 
         QFile certFile(certificateFilePath.toUtf8());
         if (certFile.open(QIODevice::ReadOnly)) {
             certFile.close();
         } else {
-            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to load certificate: " << pkiConfig.clientCertificateLocation();
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to load certificate: " << pkiConfig.clientCertificateFile();
             result = OpcUa_BadNotFound;
         }
 
@@ -276,19 +288,37 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
         if (keyFile.open(QIODevice::ReadOnly)) {
             keyFile.close();
         } else {
-            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to load private key: " << pkiConfig.privateKeyLocation();
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to load private key: " << pkiConfig.privateKeyFile();
             result = OpcUa_BadNotFound;
         }
 
         if (result.isGood()) {
             result = sessionSecurityInfo.loadClientCertificateOpenSSL(certificateFilePath, privateKeyFilePath);
-            if (!result.isGood())
+            if (!result.isGood()) {
                 qCWarning(QT_OPCUA_PLUGINS_UACPP) << "sessionSecurityInfo.loadClientCertificateOpenSSL failed";
+                QString password;
+
+                do {
+                    // This signal is connected using Qt::BlockingQueuedConnection. It will place a metacall to a different thread and waits
+                    // until this metacall is fully handled before returning.
+                    emit QOpcUaBackend::passwordForPrivateKeyRequired(pkiConfig.privateKeyFile(), &password, !password.isEmpty());
+
+                    if (password.isEmpty())
+                        break;
+
+                    result = sessionSecurityInfo.loadClientCertificateOpenSSL(certificateFilePath, privateKeyFilePath, UaString(password.toUtf8()));
+
+                    if (result.isGood())
+                        break;
+
+                    qCWarning(QT_OPCUA_PLUGINS_UACPP) << "sessionSecurityInfo.loadClientCertificateOpenSSL failed";
+                } while (true);
+            }
         }
 
         if (result.isNotGood()) {
             emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
-            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect: " << QString::fromUtf8(result.toString().toUtf8());
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect using certificate authentication: " << QString::fromUtf8(result.toString().toUtf8());
             return;
         }
     } else {
@@ -353,14 +383,14 @@ void UACppAsyncBackend::requestEndpoints(const QUrl &url)
             }
             temp.setServerCertificate(QByteArray(reinterpret_cast<char *>(endpoints[i].ServerCertificate.Data), endpoints[i].ServerCertificate.Length));
             temp.setSecurityMode(static_cast<QOpcUaEndpointDescription::MessageSecurityMode>(endpoints[i].SecurityMode));
-            temp.setSecurityPolicyUri(QString::fromUtf8(UaString(endpoints[i].SecurityPolicyUri).toUtf8()));
+            temp.setSecurityPolicy(QString::fromUtf8(UaString(endpoints[i].SecurityPolicyUri).toUtf8()));
             for (int j = 0; j < endpoints[i].NoOfUserIdentityTokens; ++j) {
                 QOpcUaUserTokenPolicy policy;
                 policy.setPolicyId(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].PolicyId).toUtf8()));
                 policy.setTokenType(static_cast<QOpcUaUserTokenPolicy::TokenType>(endpoints[i].UserIdentityTokens[j].TokenType));
                 policy.setIssuedTokenType(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].IssuedTokenType).toUtf8()));
                 policy.setIssuerEndpointUrl(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].IssuerEndpointUrl).toUtf8()));
-                policy.setSecurityPolicyUri(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].SecurityPolicyUri).toUtf8()));
+                policy.setSecurityPolicy(QString::fromUtf8(UaString(endpoints[i].UserIdentityTokens[j].SecurityPolicyUri).toUtf8()));
                 temp.userIdentityTokensRef().append(policy);
             }
             temp.setTransportProfileUri(QString::fromUtf8(UaString(endpoints[i].TransportProfileUri).toUtf8()));
@@ -554,6 +584,7 @@ void UACppAsyncBackend::disableMonitoring(quint64 handle, QOpcUa::NodeAttributes
         QUACppSubscription *sub = getSubscriptionForItem(handle, attribute);
         if (sub) {
             sub->removeAttributeMonitoredItem(handle, attribute);
+            m_attributeMapping[handle].remove(attribute);
             if (sub->monitoredItemsCount() == 0)
                 removeSubscription(sub->subscriptionId());
         }

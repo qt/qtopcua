@@ -181,6 +181,25 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
  */
 
 /*!
+    \fn QOpcUaClient::passwordForPrivateKeyRequired(QString keyFilePath, QString *password, bool previousTryWasInvalid)
+    \since QtOpcUa 5.13
+
+    This function is currently available as a Technology Preview, and therefore the API
+    and functionality provided may be subject to change at any time without
+    prior notice.
+
+    This signal is emitted when a password for an encrypted private key is required.
+    The parameter \a keyFilePath contains the file path to key which is used.
+    The parameter \a wasInvalidOnPreviousTry is true if a previous try to decrypt the key failed (aka invalid pasword).
+    The parameter \a password points to a QString that has to be filled with the actual password for the key.
+    In case the previous try failed it contains the previously used password.
+
+    During execution of a slot connected to this signal the backend is stopped and
+    waits for all slots to return. This allows to pop up a user dialog to ask the
+    enduser for the password.
+ */
+
+/*!
     \fn void QOpcUaClient::namespaceArrayUpdated(QStringList namespaces)
 
     This signal is emitted after an updateNamespaceArray operation has finished.
@@ -307,10 +326,10 @@ QOpcUaClient::~QOpcUaClient()
     and functionality provided by the class may be subject to change at any time without
     prior notice.
 */
-void QOpcUaClient::setIdentity(const QOpcUaApplicationIdentity &identity)
+void QOpcUaClient::setApplicationIdentity(const QOpcUaApplicationIdentity &identity)
 {
     Q_D(QOpcUaClient);
-    d->setIdentity(identity);
+    d->setApplicationIdentity(identity);
 }
 
 /*!
@@ -321,10 +340,10 @@ void QOpcUaClient::setIdentity(const QOpcUaApplicationIdentity &identity)
     and functionality provided by the class may be subject to change at any time without
     prior notice.
 */
-QOpcUaApplicationIdentity QOpcUaClient::identity() const
+QOpcUaApplicationIdentity QOpcUaClient::applicationIdentity() const
 {
     Q_D(const QOpcUaClient);
-    return d->identity();
+    return d->applicationIdentity();
 }
 
 /*!

@@ -85,8 +85,8 @@ public:
     void namespaceArrayUpdated(QOpcUa::NodeAttributes attr);
     void setupNamespaceArrayMonitoring();
 
-    void setIdentity(const QOpcUaApplicationIdentity &identity);
-    QOpcUaApplicationIdentity identity() const;
+    void setApplicationIdentity(const QOpcUaApplicationIdentity &identity);
+    QOpcUaApplicationIdentity applicationIdentity() const;
 
     void setPkiConfiguration(const QOpcUaPkiConfiguration &config);
     QOpcUaPkiConfiguration pkiConfiguration() const;
@@ -97,7 +97,7 @@ private:
     QScopedPointer<QOpcUaNode> m_namespaceArrayNode;
     bool m_namespaceArrayAutoupdateEnabled;
     unsigned int m_namespaceArrayUpdateInterval;
-    QOpcUaApplicationIdentity m_identity;
+    QOpcUaApplicationIdentity m_applicationIdentity;
     QOpcUaPkiConfiguration m_pkiConfig;
 };
 

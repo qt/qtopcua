@@ -101,6 +101,8 @@ OpcUaValueNode::~OpcUaValueNode()
 
 void OpcUaValueNode::setValue(const QVariant &value)
 {
+    if (!m_connection || !m_node)
+        return;
     m_node->writeAttribute(QOpcUa::NodeAttribute::Value, value, QOpcUa::Types::Undefined);
 }
 
@@ -123,6 +125,9 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
 
 bool OpcUaValueNode::checkValidity()
 {
+    if (!m_connection || !m_node)
+        return false;
+
     if (m_node->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>() != QOpcUa::NodeClass::Variable) {
         setStatus(Status::InvalidNodeType);
         return false;
@@ -134,7 +139,7 @@ bool OpcUaValueNode::checkValidity()
 
 QVariant OpcUaValueNode::value() const
 {
-    if (!m_node)
+    if (!m_connection || !m_node)
         return QVariant();
     return m_node->attribute(QOpcUa::NodeAttribute::Value);
 }

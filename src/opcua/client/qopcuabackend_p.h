@@ -76,6 +76,7 @@ public:
     QOpcUa::Types attributeIdToTypeId(QOpcUa::NodeAttribute attr);
 
     double revisePublishingInterval(double requestedValue, double minimumValue);
+    static bool verifyEndpointDescription(const QOpcUaEndpointDescription &endpoint, QString *message = nullptr);
 
 Q_SIGNALS:
     void stateAndOrErrorChanged(QOpcUaClient::ClientState state,
@@ -105,7 +106,7 @@ Q_SIGNALS:
     void deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUaExpandedNodeId targetNodeId, bool isForwardReference,
                               QOpcUa::UaStatusCode statusCode);
     void connectError(QOpcUaErrorState *errorState);
-
+    void passwordForPrivateKeyRequired(QString keyFilePath, QString *password, bool previousTryWasInvalid);
 
 private:
     Q_DISABLE_COPY(QOpcUaBackend)

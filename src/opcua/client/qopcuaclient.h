@@ -93,8 +93,8 @@ public:
     explicit QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent = nullptr);
     ~QOpcUaClient();
 
-    void setIdentity(const QOpcUaApplicationIdentity &identity);
-    QOpcUaApplicationIdentity identity() const;
+    void setApplicationIdentity(const QOpcUaApplicationIdentity &identity);
+    QOpcUaApplicationIdentity applicationIdentity() const;
 
     void setPkiConfiguration(const QOpcUaPkiConfiguration &config);
     QOpcUaPkiConfiguration pkiConfiguration() const;
@@ -159,6 +159,7 @@ Q_SIGNALS:
                               QOpcUa::UaStatusCode statusCode);
     void deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUaExpandedNodeId targetNodeId, bool isForwardReference,
                               QOpcUa::UaStatusCode statusCode);
+    void passwordForPrivateKeyRequired(QString keyFilePath, QString *password, bool previousTryWasInvalid);
 
 private:
     Q_DISABLE_COPY(QOpcUaClient)

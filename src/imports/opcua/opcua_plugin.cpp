@@ -49,6 +49,7 @@
 #include "opcuareadresult.h"
 #include "opcuaserverdiscovery.h"
 #include <QLoggingCategory>
+#include <QOpcUaUserTokenPolicy>
 
 #include <qqml.h>
 
@@ -89,6 +90,7 @@ namespace Constants {
     Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
     Q_ENUM_NS(QOpcUa::ReferenceTypeId)
     Q_ENUM_NS(QOpcUa::Types)
+    Q_ENUM_NS(QOpcUaUserTokenPolicy::TokenType)
     // Only one type declaration is needed because all other
     // types of the same meta object will be added automatically.
 }

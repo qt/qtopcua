@@ -62,7 +62,7 @@ public:
     QOpcUaApplicationDescription server;
     QByteArray serverCertificate;
     QOpcUaEndpointDescription::MessageSecurityMode securityMode{QOpcUaEndpointDescription::MessageSecurityMode::None};
-    QString securityPolicyUri;
+    QString securityPolicy;
     QVector<QOpcUaUserTokenPolicy> userIdentityTokens;
     QString transportProfileUri;
     quint8 securityLevel{0};
@@ -100,7 +100,7 @@ bool QOpcUaEndpointDescription::operator==(const QOpcUaEndpointDescription &rhs)
             rhs.endpointUrl() == endpointUrl() &&
             rhs.securityMode() == securityMode() &&
             rhs.securityLevel() == securityLevel() &&
-            rhs.securityPolicyUri() == securityPolicyUri() &&
+            rhs.securityPolicy() == securityPolicy() &&
             rhs.serverCertificate() == serverCertificate() &&
             rhs.userIdentityTokens() == userIdentityTokens() &&
             rhs.transportProfileUri() == transportProfileUri();
@@ -176,17 +176,17 @@ void QOpcUaEndpointDescription::setUserIdentityTokens(const QVector<QOpcUaUserTo
 /*!
     Returns the URI of the security policy.
 */
-QString QOpcUaEndpointDescription::securityPolicyUri() const
+QString QOpcUaEndpointDescription::securityPolicy() const
 {
-    return data->securityPolicyUri;
+    return data->securityPolicy;
 }
 
 /*!
-    Sets the URI of the security policy to \a securityPolicyUri.
+    Sets the URI of the security policy to \a securityPolicy.
 */
-void QOpcUaEndpointDescription::setSecurityPolicyUri(const QString &securityPolicyUri)
+void QOpcUaEndpointDescription::setSecurityPolicy(const QString &securityPolicy)
 {
-    data->securityPolicyUri = securityPolicyUri;
+    data->securityPolicy = securityPolicy;
 }
 
 /*!

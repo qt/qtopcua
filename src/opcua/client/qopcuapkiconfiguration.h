@@ -57,23 +57,23 @@ public:
     QOpcUaPkiConfiguration(const QOpcUaPkiConfiguration &other);
     QOpcUaPkiConfiguration &operator=(const QOpcUaPkiConfiguration &rhs);
 
-    QString clientCertificateLocation() const;
-    void setClientCertificateLocation(const QString &value);
+    QString clientCertificateFile() const;
+    void setClientCertificateFile(const QString &value);
 
-    QString privateKeyLocation() const;
-    void setPrivateKeyLocation(const QString &value);
+    QString privateKeyFile() const;
+    void setPrivateKeyFile(const QString &value);
 
-    QString trustListLocation() const;
-    void setTrustListLocation(const QString &value);
+    QString trustListDirectory() const;
+    void setTrustListDirectory(const QString &value);
 
-    QString revocationListLocation() const;
-    void setRevocationListLocation(const QString &value);
+    QString revocationListDirectory() const;
+    void setRevocationListDirectory(const QString &value);
 
-    QString issuerListLocation() const;
-    void setIssuerListLocation(const QString &value);
+    QString issuerListDirectory() const;
+    void setIssuerListDirectory(const QString &value);
 
-    QString issuerRevocationListLocation() const;
-    void setIssuerRevocationListLocation(const QString &value);
+    QString issuerRevocationListDirectory() const;
+    void setIssuerRevocationListDirectory(const QString &value);
 
     QOpcUaApplicationIdentity applicationIdentity() const;
 

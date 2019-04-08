@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 class QOpcUaUserTokenPolicyData;
 class Q_OPCUA_EXPORT QOpcUaUserTokenPolicy
 {
+    Q_GADGET
 public:
     QOpcUaUserTokenPolicy();
     QOpcUaUserTokenPolicy(const QOpcUaUserTokenPolicy &);
@@ -60,6 +61,7 @@ public:
         Certificate = 2,
         IssuedToken = 3
     };
+    Q_ENUMS(TokenType)
 
     QString policyId() const;
     void setPolicyId(const QString &policyId);
@@ -73,8 +75,8 @@ public:
     QString issuerEndpointUrl() const;
     void setIssuerEndpointUrl(const QString &issuerEndpointUrl);
 
-    QString securityPolicyUri() const;
-    void setSecurityPolicyUri(const QString &securityPolicyUri);
+    QString securityPolicy() const;
+    void setSecurityPolicy(const QString &securityPolicy);
 
 private:
     QSharedDataPointer<QOpcUaUserTokenPolicyData> data;

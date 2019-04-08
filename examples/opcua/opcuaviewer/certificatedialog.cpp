@@ -54,11 +54,11 @@ CertificateDialog::~CertificateDialog()
 }
 
 /** Returns 0 if the connect should be aborted, 1 if it should be resumed. */
-int CertificateDialog::showCertificate(const QString &message, const QByteArray &der, const QString &trustListLocation)
+int CertificateDialog::showCertificate(const QString &message, const QByteArray &der, const QString &trustListDirectory)
 {
     QList<QSslCertificate> certs = QSslCertificate::fromData(der, QSsl::Der);
 
-    m_trustListLocation = trustListLocation;
+    m_trustListDirectory = trustListDirectory;
 
     // if it is a unstrusted self-signed certificate we can allow to trust it
     if (certs.count() == 1 && certs[0].isSelfSigned()) {
@@ -81,7 +81,7 @@ int CertificateDialog::showCertificate(const QString &message, const QByteArray 
 void CertificateDialog::saveCertificate()
 {
    const QByteArray digest = m_cert.digest();
-   const QString path = m_trustListLocation + "/" + digest.toHex() + ".der";
+   const QString path = m_trustListDirectory + "/" + digest.toHex() + ".der";
 
    QFile file(path);
    if (file.open(QIODevice::WriteOnly)) {

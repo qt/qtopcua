@@ -38,10 +38,10 @@
 #include <QtQuickTest/quicktest.h>
 #include <QObject>
 #include <QProcess>
+#include <QQmlContext>
+#include <QQmlEngine>
 #include <QTcpServer>
 #include <QTcpSocket>
-
-class QQmlEngine;
 
 static QString envOrDefault(const char *env, QString def)
 {
@@ -101,7 +101,7 @@ public slots:
             server.close();
 
             qDebug() << "Starting test server";
-            m_serverProcess.setProcessChannelMode(QProcess::ForwardedChannels);
+            //m_serverProcess.setProcessChannelMode(QProcess::ForwardedChannels);
             m_serverProcess.start(m_testServerPath);
             QVERIFY2(m_serverProcess.waitForStarted(), qPrintable(m_serverProcess.errorString()));
             // Let the server come up
@@ -111,8 +111,11 @@ public slots:
         QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
     }
     void qmlEngineAvailable(QQmlEngine *engine) {
-        Q_UNUSED(engine);
-        // nothing
+        bool value = false;
+#ifdef SERVER_SUPPORTS_SECURITY
+        value = true;
+#endif
+        engine->rootContext()->setContextProperty("SERVER_SUPPORTS_SECURITY", value);
     }
     void cleanupTestCase() {
         if (m_serverProcess.state() == QProcess::Running) {

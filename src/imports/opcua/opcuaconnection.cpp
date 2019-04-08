@@ -37,7 +37,7 @@
 #include "opcuaconnection.h"
 #include "opcuareadresult.h"
 #include "universalnode.h"
-#include <QJSEngine> // for qjsvalue_cast<>()
+#include <QJSEngine>
 #include <QLoggingCategory>
 #include <QOpcUaProvider>
 #include <QOpcUaReadItem>
@@ -131,6 +131,28 @@ QT_BEGIN_NAMESPACE
     the new credentials are used.
     Reading and writing this property before a \l backend is set, writes are ignored and reads return
     and invalid \l AuthenticationInformation.
+*/
+
+/*!
+    \qmlproperty stringlist Connection::supportedSecurityPolicies
+    \since 5.13
+
+    A list of strings containing the supported security policies
+
+    This property is currently available as a Technology Preview, and therefore the API
+    and functionality provided may be subject to change at any time without
+    prior notice.
+*/
+
+/*!
+    \qmlproperty array[tokenTypes] Connection::supportedUserTokenTypes
+    \since 5.13
+
+    An array of user token policy types of all supported user token types.
+
+    This property is currently available as a Technology Preview, and therefore the API
+    and functionality provided may be subject to change at any time without
+    prior notice.
 */
 
 /*!
@@ -242,19 +264,19 @@ bool OpcUaConnection::isDefaultConnection() const
 }
 
 /*!
-    \qmlmethod Connection::connectToEndpoint(url)
+    \qmlmethod Connection::connectToEndpoint(endpointDescription)
 
     Connects to the given endpoint.
+
+    \sa EndpointDescription endpoints
 */
 
-void OpcUaConnection::connectToEndpoint(const QUrl &url)
+void OpcUaConnection::connectToEndpoint(const QOpcUaEndpointDescription &endpointDescription)
 {
     if (!m_client)
         return;
 
-    connect(m_client, &QOpcUaClient::endpointsRequestFinished, this,
-            &OpcUaConnection::requestEndpointsFinishedHandler, Qt::UniqueConnection);
-    m_client->requestEndpoints(url.toString());
+    m_client->connectToEndpoint(endpointDescription);
 }
 
 /*!
@@ -289,31 +311,6 @@ void OpcUaConnection::clientStateHandler(QOpcUaClient::ClientState state)
         // array to be updated
         m_connected = (state == QOpcUaClient::ClientState::Connected);
         emit connectedChanged();
-    }
-}
-
-void OpcUaConnection::requestEndpointsFinishedHandler(const QVector<QOpcUaEndpointDescription> &endpoints)
-{
-    disconnect(m_client, &QOpcUaClient::endpointsRequestFinished, this, &OpcUaConnection::requestEndpointsFinishedHandler);
-
-    bool found = false;
-    QOpcUaEndpointDescription chosenEndpoint;
-
-    for (const auto &endpoint : qAsConst(endpoints)) {
-        if (QUrl(endpoint.endpointUrl()).scheme() != QLatin1String("opc.tcp"))
-            continue;
-        if (endpoint.securityPolicyUri() == QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#None")) {
-            found = true;
-            chosenEndpoint = endpoint;
-            break;
-        }
-    }
-
-    if (!found) {
-        m_connected = false;
-        emit connectedChanged();
-    } else {
-        m_client->connectToEndpoint(chosenEndpoint);
     }
 }
 
@@ -420,6 +417,30 @@ bool OpcUaConnection::readNodeAttributes(const QJSValue &value)
     }
 
     return m_client->readNodeAttributes(readItemList);
+}
+
+QStringList OpcUaConnection::supportedSecurityPolicies() const
+{
+    if (!m_client)
+        return QStringList();
+    return m_client->supportedSecurityPolicies();
+}
+
+QJSValue OpcUaConnection::supportedUserTokenTypes() const
+{
+    if (!m_client)
+        return QJSValue();
+
+    auto engine = qjsEngine(this);
+    if (!engine)
+        return QJSValue();
+
+    const auto tokenTypes = m_client->supportedUserTokenTypes();
+    auto returnValue = engine->newArray(tokenTypes.size());
+    for (int i = 0; i < tokenTypes.size(); ++i)
+        returnValue.setProperty(i, tokenTypes[i]);
+
+    return returnValue;
 }
 
 void OpcUaConnection::handleReadNodeAttributesFinished(const QVector<QOpcUaReadResult> &results)

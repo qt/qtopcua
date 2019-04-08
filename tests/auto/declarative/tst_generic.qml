@@ -49,6 +49,7 @@ Item {
             compare(QtOpcUa.Status.Good, 0);
             compare(QtOpcUa.Status.BadUnexpectedError, 0x8001);
             compare(QtOpcUa.Constants.Double, 3);
+            compare(QtOpcUa.Constants.Certificate, 2);
 
             // Test return value of undefined node
             compare(node1.nodeClass, QtOpcUa.Constants.NodeClass.Undefined);
