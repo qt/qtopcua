@@ -18,6 +18,10 @@ qtConfig(open62541):!qtConfig(system-open62541) {
 
 win32: DESTDIR = ./
 
+# Workaround for QTBUG-75020
+QMAKE_CFLAGS_RELEASE -= -O2
+QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO -= -O2
+
 SOURCES += \
            main.cpp \
            testserver.cpp \
