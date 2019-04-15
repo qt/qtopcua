@@ -132,6 +132,8 @@ QT_BEGIN_NAMESPACE
 OpcUaEndpointDiscovery::OpcUaEndpointDiscovery(QObject *parent)
     : QObject(parent)
 {
+    connect(this, &OpcUaEndpointDiscovery::serverUrlChanged, this, &OpcUaEndpointDiscovery::startRequestEndpoints);
+    connect(this, &OpcUaEndpointDiscovery::connectionChanged, this, &OpcUaEndpointDiscovery::startRequestEndpoints);
 }
 
 OpcUaEndpointDiscovery::~OpcUaEndpointDiscovery() = default;
@@ -147,7 +149,6 @@ void OpcUaEndpointDiscovery::setServerUrl(const QString &serverUrl)
         return;
 
     m_serverUrl = serverUrl;
-    startRequestEndpoints();
     emit serverUrlChanged(m_serverUrl);
 }
 
@@ -197,7 +198,6 @@ void OpcUaEndpointDiscovery::connectSignals()
     if (!conn || !conn->m_client)
         return;
     connect(conn->m_client, &QOpcUaClient::endpointsRequestFinished, this, &OpcUaEndpointDiscovery::handleEndpoints, Qt::UniqueConnection);
-    startRequestEndpoints();
 }
 
 void OpcUaEndpointDiscovery::handleEndpoints(const QVector<QOpcUaEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode, const QUrl &requestUrl)
@@ -220,10 +220,20 @@ void OpcUaEndpointDiscovery::handleEndpoints(const QVector<QOpcUaEndpointDescrip
 
 void OpcUaEndpointDiscovery::startRequestEndpoints()
 {
+    if (!m_componentCompleted)
+        return;
+
     if (m_serverUrl.isEmpty())
         return;
 
     m_endpoints.clear();
+
+    if (!m_connection) {
+        // If there is not connection set, try the default connection
+        // Any connection change will restart this function
+        connection();
+        return;
+    }
 
     auto conn = connection();
 
@@ -250,7 +260,7 @@ void OpcUaEndpointDiscovery::setConnection(OpcUaConnection *connection)
 
     m_connection = connection;
 
-    connect(m_connection, &OpcUaConnection::backendChanged, this, &OpcUaEndpointDiscovery::connectSignals);
+    connect(m_connection, &OpcUaConnection::backendChanged, this, &OpcUaEndpointDiscovery::connectSignals, Qt::UniqueConnection);
     connectSignals();
     emit connectionChanged(connection);
 }
@@ -261,6 +271,16 @@ OpcUaConnection *OpcUaEndpointDiscovery::connection()
         setConnection(OpcUaConnection::defaultConnection());
 
     return m_connection;
+}
+
+void OpcUaEndpointDiscovery::classBegin()
+{
+}
+
+void OpcUaEndpointDiscovery::componentComplete()
+{
+    m_componentCompleted = true;
+    startRequestEndpoints();
 }
 
 QT_END_NAMESPACE
