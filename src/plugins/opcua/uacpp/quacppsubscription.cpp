@@ -107,7 +107,7 @@ bool QUACppSubscription::removeOnServer()
 
 bool QUACppSubscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::NodeAttribute attr, const UaNodeId &id, QOpcUaMonitoringParameters parameters)
 {
-    qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Adding monitored Item for" << attr;
+    qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Adding monitored Item for" << id.toString().toUtf8() << attr;
     static quint32 monitorId = 100;
 
     UaStatus result;
