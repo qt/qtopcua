@@ -156,6 +156,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \qmlproperty QOpcUaEndpointDescription Connection::currentEndpoint
+    \since 5.13
+
+    An endpoint description of the server to which the connection is connected to.
+    When the connection is not established, an empty endpoint description is returned.
+*/
+
+/*!
     \qmlsignal Connection::readNodeAttributesFinished(readResults)
 
     Emitted when the read request, started using \l readNodeAttributes(), is finished.
@@ -320,6 +328,14 @@ QStringList OpcUaConnection::namespaces() const
         return QStringList();
 
     return m_client->namespaceArray();
+}
+
+QOpcUaEndpointDescription OpcUaConnection::currentEndpoint() const
+{
+    if (!m_client || !m_connected)
+        return QOpcUaEndpointDescription();
+
+    return m_client->endpoint();
 }
 
 void OpcUaConnection::setAuthenticationInformation(const QOpcUaAuthenticationInformation &authenticationInformation)
