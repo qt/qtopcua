@@ -47,9 +47,9 @@ public:
     bool removeOnServer();
 
 
-    bool addAttributeMonitoredItem(quint64 handle, QOpcUa::NodeAttribute attr, const UaNodeId &id, QOpcUaMonitoringParameters parameters);
-    void modifyMonitoring(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
-    bool removeAttributeMonitoredItem(quint64 handle, QOpcUa::NodeAttribute attr);
+    bool addAttributeMonitoredItem(quint64 nodeHandle, QOpcUa::NodeAttribute attr, const UaNodeId &id, QOpcUaMonitoringParameters parameters);
+    void modifyMonitoring(quint64 nodeHandle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
+    bool removeAttributeMonitoredItem(quint64 nodeHandle, QOpcUa::NodeAttribute attr);
 
     double interval() const;
     quint32 subscriptionId() const;
@@ -67,8 +67,8 @@ private:
     void createEventFilter(const QOpcUaMonitoringParameters::EventFilter &filter, OpcUa_ExtensionObject *out);
     QOpcUaEventFilterResult convertEventFilterResult(const OpcUa_ExtensionObject &obj);
 
-    bool modifySubscriptionParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
-    bool modifyMonitoredItemParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
+    bool modifySubscriptionParameters(quint64 nodeHandle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
+    bool modifyMonitoredItemParameters(quint64 nodeHandle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
 
     UACppAsyncBackend *m_backend;
     QOpcUaMonitoringParameters m_subscriptionParameters;

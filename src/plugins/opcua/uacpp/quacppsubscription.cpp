@@ -256,11 +256,11 @@ void QUACppSubscription::modifyMonitoring(quint64 handle, QOpcUa::NodeAttribute 
     emit m_backend->monitoringStatusChanged(handle, attr, item, p);
 }
 
-bool QUACppSubscription::removeAttributeMonitoredItem(quint64 handle, QOpcUa::NodeAttribute attr)
+bool QUACppSubscription::removeAttributeMonitoredItem(quint64 nodeHandle, QOpcUa::NodeAttribute attr)
 {
     qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Removing monitored Item for" << attr;
 
-    const QPair<quint64, QOpcUa::NodeAttribute> pair(handle, attr);
+    const QPair<quint64, QOpcUa::NodeAttribute> pair(nodeHandle, attr);
     if (!m_monitoredItems.contains(pair)) {
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Trying to remove unknown monitored item for" << attr;
         return false;
@@ -286,7 +286,7 @@ bool QUACppSubscription::removeAttributeMonitoredItem(quint64 handle, QOpcUa::No
     s.setMaxKeepAliveCount(m_nativeSubscription->maxKeepAliveCount());
     s.setLifetimeCount(m_nativeSubscription->lifetimeCount());
     s.setStatusCode(static_cast<QOpcUa::UaStatusCode>(result.statusCode()));
-    emit m_backend->monitoringEnableDisable(handle, attr, false, s);
+    emit m_backend->monitoringEnableDisable(nodeHandle, attr, false, s);
 
     return true;
 }
@@ -555,7 +555,7 @@ QOpcUaEventFilterResult QUACppSubscription::convertEventFilterResult(const OpcUa
     return result;
 }
 
-bool QUACppSubscription::modifySubscriptionParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value)
+bool QUACppSubscription::modifySubscriptionParameters(quint64 nodeHandle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value)
 {
     QOpcUaMonitoringParameters p;
     SubscriptionSettings settings;
@@ -574,7 +574,7 @@ bool QUACppSubscription::modifySubscriptionParameters(quint64 handle, QOpcUa::No
         if (!ok) {
             qCWarning(QT_OPCUA_PLUGINS_UACPP, "Could not modify PublishingInterval, value is not a double");
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
-            emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+            emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
             return true;
         }
         break;
@@ -586,7 +586,7 @@ bool QUACppSubscription::modifySubscriptionParameters(quint64 handle, QOpcUa::No
         if (!ok) {
             qCWarning(QT_OPCUA_PLUGINS_UACPP, "Could not modify LifetimeCount, value is not an integer");
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
-            emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+            emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
             return true;
         }
         break;
@@ -598,7 +598,7 @@ bool QUACppSubscription::modifySubscriptionParameters(quint64 handle, QOpcUa::No
         if (!ok) {
             qCWarning(QT_OPCUA_PLUGINS_UACPP, "Could not modify MaxKeepAliveCount, value is not an integer");
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
-            emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+            emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
             return true;
         }
         break;
@@ -617,7 +617,7 @@ bool QUACppSubscription::modifySubscriptionParameters(quint64 handle, QOpcUa::No
 
         if (result.isBad()) {
             p.setStatusCode(static_cast<QOpcUa::UaStatusCode>(result.statusCode()));
-            emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+            emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
         } else {
             p.setStatusCode(QOpcUa::UaStatusCode::Good);
             p.setPublishingInterval(settings.publishingInterval);
@@ -644,10 +644,10 @@ bool QUACppSubscription::modifySubscriptionParameters(quint64 handle, QOpcUa::No
     return false;
 }
 
-bool QUACppSubscription::modifyMonitoredItemParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value)
+bool QUACppSubscription::modifyMonitoredItemParameters(quint64 nodeHandle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value)
 {
     // Get hold of OpcUa_MonitoredItemCreateResult
-    const QPair<quint64, QOpcUa::NodeAttribute> key(handle, attr);
+    const QPair<quint64, QOpcUa::NodeAttribute> key(nodeHandle, attr);
     if (!m_monitoredItems.contains(key)) {
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Did not find monitored item";
         return false;
@@ -669,7 +669,7 @@ bool QUACppSubscription::modifyMonitoredItemParameters(quint64 handle, QOpcUa::N
         if (value.type() != QVariant::Bool) {
             qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not modify DiscardOldest, value is not a bool";
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
-            emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+            emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
             return true;
         }
         modifyRequest.RequestedParameters.DiscardOldest = value.toBool();
@@ -679,7 +679,7 @@ bool QUACppSubscription::modifyMonitoredItemParameters(quint64 handle, QOpcUa::N
         if (value.type() != QVariant::UInt) {
             qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not modify QueueSize, value is not an integer";
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
-            emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+            emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
             return true;
         }
         modifyRequest.RequestedParameters.QueueSize = value.toUInt();
@@ -689,7 +689,7 @@ bool QUACppSubscription::modifyMonitoredItemParameters(quint64 handle, QOpcUa::N
         if (value.type() != QVariant::Double) {
             qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not modify SamplingInterval, value is not a double";
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
-            emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+            emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
             return true;
         }
         modifyRequest.RequestedParameters.SamplingInterval = value.toDouble();
@@ -700,7 +700,7 @@ bool QUACppSubscription::modifyMonitoredItemParameters(quint64 handle, QOpcUa::N
         if (!modifyRequest.RequestedParameters.Filter.Body.EncodeableObject.Object) {
             qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Could not modify the filter, filter creation failed";
             p.setStatusCode(QOpcUa::UaStatusCode::BadInternalError);
-            emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+            emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
             return true;
         }
         break;
@@ -716,7 +716,7 @@ bool QUACppSubscription::modifyMonitoredItemParameters(quint64 handle, QOpcUa::N
             if (!modifyRequest.RequestedParameters.Filter.Body.EncodeableObject.Object) {
                 qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Unable to modify the monitored item, filter creation failed";
                 p.setStatusCode(QOpcUa::UaStatusCode::BadInternalError);
-                emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+                emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
                 return true;
             }
         }
@@ -732,7 +732,7 @@ bool QUACppSubscription::modifyMonitoredItemParameters(quint64 handle, QOpcUa::N
             p.setStatusCode(static_cast<QOpcUa::UaStatusCode>(result.isGood() ?
                                                                   results[0].StatusCode :
                                                                   result.statusCode()));
-            emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+            emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
         } else {
             p.setStatusCode(QOpcUa::UaStatusCode::Good);
             QOpcUaMonitoringParameters::Parameters changed = item;
@@ -759,7 +759,7 @@ bool QUACppSubscription::modifyMonitoredItemParameters(quint64 handle, QOpcUa::N
                     p.setFilterResult(convertEventFilterResult(results[0].FilterResult));
             }
 
-            emit m_backend->monitoringStatusChanged(handle, attr, changed, p);
+            emit m_backend->monitoringStatusChanged(nodeHandle, attr, changed, p);
 
             m_monitoredItems[key].second = p;
         }
