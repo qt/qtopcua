@@ -397,6 +397,12 @@ void UACppAsyncBackend::requestEndpoints(const QUrl &url)
             temp.setSecurityLevel(endpoints[i].SecurityLevel);
             ret.append(temp);
         }
+    } else {
+        if (res.isGood())
+            qWarning() << "Server returned an empty endpoint list";
+        else
+            qWarning() << "Failed to retrive endpoints from " << url.toString(QUrl::RemoveUserInfo).toUtf8().constData()
+                       << "with status" << res.toString().toUtf8();
     }
 
     emit endpointsRequestFinished(ret, static_cast<QOpcUa::UaStatusCode>(res.code()), url);

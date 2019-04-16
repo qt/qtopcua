@@ -22,6 +22,10 @@ qtConfig(open62541):!qtConfig(system-open62541) {
 
 win32: DESTDIR = ./
 
+# Workaround for QTBUG-75020
+QMAKE_CFLAGS_RELEASE -= -O2
+QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO -= -O2
+
 # This file  can only be compiled in case of TLS support
 qtConfig(mbedtls) {
     # Use custom compiler from src/3rdparty/open62541.pri to hide warning caused by

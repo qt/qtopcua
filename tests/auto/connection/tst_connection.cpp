@@ -56,6 +56,8 @@
         QTest::newRow(client->backend().toLatin1().constData()) << client;\
 }
 
+const int signalSpyTimeout = 10000;
+
 class Tst_Connection: public QObject
 {
     Q_OBJECT
@@ -161,7 +163,7 @@ void Tst_Connection::initTestCase()
         QSignalSpy endpointSpy(m_clients.first(), &QOpcUaClient::endpointsRequestFinished);
 
         client->requestEndpoints(m_discoveryEndpoint);
-        endpointSpy.wait();
+        endpointSpy.wait(signalSpyTimeout);
         QCOMPARE(endpointSpy.size(), 1);
 
         const QVector<QOpcUaEndpointDescription> desc = endpointSpy.at(0).at(0).value<QVector<QOpcUaEndpointDescription>>();
@@ -203,7 +205,7 @@ void Tst_Connection::connectMultipleTimes()
 
     // Connect again
     opcuaClient->connectToEndpoint(m_endpoint);
-    stateSpy.wait();
+    stateSpy.wait(signalSpyTimeout);
     QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
 
     QCOMPARE(connectedSpy.count(), 1);

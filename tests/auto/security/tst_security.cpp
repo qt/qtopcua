@@ -48,6 +48,8 @@
 #include <QTcpSocket>
 #include <QTcpServer>
 
+const int signalSpyTimeout = 10000;
+
 class OpcuaConnector
 {
 public:
@@ -231,7 +233,7 @@ void Tst_QOpcUaSecurity::initTestCase()
         QSignalSpy endpointSpy(client.data(), &QOpcUaClient::endpointsRequestFinished);
 
         client->requestEndpoints(m_discoveryEndpoint);
-        endpointSpy.wait();
+        endpointSpy.wait(signalSpyTimeout);
         QCOMPARE(endpointSpy.size(), 1);
         QCOMPARE(endpointSpy.at(0).at(2).value<QUrl>(), m_discoveryEndpoint);
 
@@ -291,13 +293,13 @@ void Tst_QOpcUaSecurity::connectAndDisconnectUsingCertificate()
     });
 
     client->connectToEndpoint(endpoint);
-    connectSpy.wait();
+    connectSpy.wait(signalSpyTimeout);
     if (client->state() == QOpcUaClient::Connecting)
-        connectSpy.wait();
+        connectSpy.wait(signalSpyTimeout);
 
     QCOMPARE(connectSpy.count(), 2);
     QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Connecting);
-    connectSpy.wait();
+    connectSpy.wait(signalSpyTimeout);
     QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Connected);
 
     QCOMPARE(passwordRequestSpy, 0);
@@ -308,7 +310,7 @@ void Tst_QOpcUaSecurity::connectAndDisconnectUsingCertificate()
 
     connectSpy.clear();
     client->disconnectFromEndpoint();
-    connectSpy.wait();
+    connectSpy.wait(signalSpyTimeout);
     QCOMPARE(connectSpy.count(), 2);
     QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Closing);
     QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Disconnected);
@@ -365,9 +367,9 @@ void Tst_QOpcUaSecurity::connectAndDisconnectUsingEncryptedPassword()
     });
 
     client->connectToEndpoint(endpoint);
-    connectSpy.wait();
+    connectSpy.wait(signalSpyTimeout);
     if (client->state() == QOpcUaClient::Connecting)
-        connectSpy.wait();
+        connectSpy.wait(signalSpyTimeout);
 
     QCOMPARE(connectSpy.count(), 2);
     QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Connecting);
@@ -381,7 +383,7 @@ void Tst_QOpcUaSecurity::connectAndDisconnectUsingEncryptedPassword()
 
     connectSpy.clear();
     client->disconnectFromEndpoint();
-    connectSpy.wait();
+    connectSpy.wait(signalSpyTimeout);
     QCOMPARE(connectSpy.count(), 2);
     QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Closing);
     QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Disconnected);

@@ -914,6 +914,12 @@ void Open62541AsyncBackend::requestEndpoints(const QUrl &url)
             epd.setSecurityLevel(endpoints[i].securityLevel);
             ret.append(epd);
         }
+    } else {
+        if (res == UA_STATUSCODE_GOOD)
+            qWarning() << "Server returned an empty endpoint list";
+        else
+            qWarning() << "Failed to retrive endpoints from " << url.toString(QUrl::RemoveUserInfo).toUtf8().constData()
+                       << "with status" << UA_StatusCode_name(res);
     }
 
     emit endpointsRequestFinished(ret, static_cast<QOpcUa::UaStatusCode>(res), url);
