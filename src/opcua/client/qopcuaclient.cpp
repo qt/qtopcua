@@ -736,6 +736,7 @@ QString QOpcUaClient::backend() const
 
     Enabling this will keep the local copy of the namespace table updated automatically.
     \l namespaceArrayUpdated will be emitted when the array changed.
+    \a isEnabled determines if autoupdate is being enabled or disabled.
 
     A subscription will be made on the node on the server to keep track of changes.
     In case a server does not support subscriptions this will not work and

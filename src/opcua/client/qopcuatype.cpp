@@ -631,9 +631,23 @@ void QOpcUa::QQualifiedName::setName(const QString &name)
 */
 
 /*!
+    \property QOpcUa::QLocalizedText::text
+
+    Textual content.
+*/
+
+/*!
     \qmlproperty string LocalizedText::text
 
     Textual content.
+*/
+
+/*!
+    \property QOpcUa::QLocalizedText::locale
+
+    Locale of the contained text.
+    This has to be in a modified ISO standard notation, for example \c en-US.
+    See OPC UA specification part 3, 8.4 for details.
 */
 
 /*!
