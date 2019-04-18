@@ -144,6 +144,7 @@ void OpcUaPlugin::registerTypes(const char *uri)
     qRegisterMetaType<OpcUaWriteResult>();
     qmlRegisterType<OpcUaEndpointDiscovery>(uri, major, minor, "EndpointDiscovery");
     qmlRegisterType<OpcUaServerDiscovery>(uri, major, minor, "ServerDiscovery");
+    qmlRegisterUncreatableType<QOpcUaUserTokenPolicy>(uri, major, minor, "UserTokenPolicy", "This type can not be created.");
 
     // insert new versions here
 
