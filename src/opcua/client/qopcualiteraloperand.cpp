@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
@@ -78,7 +79,7 @@ QOpcUaLiteralOperand::QOpcUaLiteralOperand(const QVariant &value, QOpcUa::Types 
 }
 
 /*!
-    Sets the values from \a rhs in this \l QLiteralOperand.
+    Sets the values from \a rhs in this \l QOpcUaLiteralOperand.
 */
 QOpcUaLiteralOperand &QOpcUaLiteralOperand::operator=(const QOpcUaLiteralOperand &rhs)
 {

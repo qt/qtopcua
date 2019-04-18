@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
@@ -47,13 +48,119 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \qmltype ApplicationDescription
+    \inqmlmodule QtOpcUa
+    \brief The OPC UA ApplicationDescription.
+    \since QtOpcUa 5.13
+
+    The application description contains information about an OPC UA application.
+*/
+
+/*!
     \enum QOpcUaApplicationDescription::ApplicationType
+
+    This enum type holds the application type.
 
     \value Server This application is a server.
     \value Client This application is a client.
     \value ClientAndServer This application is a client and a server.
     \value DiscoveryServer This application is a discovery server.
 */
+
+/*!
+    \qmlproperty enumeration ApplicationDescription::ApplicationType
+
+    The application type.
+
+    \value Server This application is a server.
+    \value Client This application is a client.
+    \value ClientAndServer This application is a client and a server.
+    \value DiscoveryServer This application is a discovery server.
+*/
+
+/*!
+    \property QOpcUaApplicationDescription::applicationName
+
+    Name describing the application.
+ */
+
+/*!
+    \qmlproperty LocalizedText ApplicationDescription::applicationName
+
+    Name describing the application.
+ */
+
+/*!
+    \property QOpcUaApplicationDescription::applicationType
+
+    The application's type: server, client, both, or discovery server.
+ */
+
+/*!
+    \qmlproperty ApplicationType ApplicationDescription::applicationType
+
+    The application's type: server, client, both, or discovery server.
+ */
+
+/*!
+    \property QOpcUaApplicationDescription::applicationUri
+
+    The globally unique identifier for this application instance.
+ */
+
+/*!
+    \qmlproperty string ApplicationDescription::applicationUri
+
+    The globally unique identifier for this application instance.
+ */
+
+/*!
+    \property QOpcUaApplicationDescription::discoveryProfileUri
+
+    The URI of the supported discovery profile.
+ */
+
+/*!
+    \qmlproperty string ApplicationDescription::discoveryProfileUri
+
+    The URI of the supported discovery profile.
+ */
+
+/*!
+    \property QOpcUaApplicationDescription::discoveryUrls
+
+    A list of URLs of discovery endpoints.
+ */
+
+/*!
+    \qmlproperty list ApplicationDescription::discoveryUrls
+
+    A list of URLs of discovery endpoints.
+ */
+
+/*!
+    \property QOpcUaApplicationDescription::gatewayServerUri
+
+    The URI of the gateway server.
+ */
+
+/*!
+    \qmlproperty string ApplicationDescription::gatewayServerUri
+
+    The URI of the gateway server.
+ */
+
+/*!
+    \property QOpcUaApplicationDescription::productUri
+
+    The globally unique identifier for this product.
+ */
+
+/*!
+    \qmlproperty string ApplicationDescription::productUri
+
+    The globally unique identifier for this product.
+ */
 
 class QOpcUaApplicationDescriptionData : public QSharedData
 {

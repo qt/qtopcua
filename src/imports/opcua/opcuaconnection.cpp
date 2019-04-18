@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the Qt OPC UA module.
@@ -168,6 +168,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlsignal Connection::readNodeAttributesFinished(readResults)
+    \since 5.13
 
     Emitted when the read request, started using \l readNodeAttributes(), is finished.
     The parameter of this signal is an array of \l ReadResult, which contains the
@@ -186,6 +187,30 @@ QT_BEGIN_NAMESPACE
     \endcode
 
     \sa readNodeAttributes(), ReadResult
+*/
+
+/*!
+    \qmlsignal Connection::writeNodeAttributesFinished(writeResults)
+    \since 5.13
+
+    Emitted when the write request started using \l writeNodeAttributes() is
+    finished. The parameter of this signal is an array of \l WriteResult, which
+    contains the values requested from the server.
+
+    \code
+    for (var i = 0; i < writeResults.length; i++) {
+        console.log(writeResults[i].nodeId);
+        console.log(writeResults[i].namespaceName);
+        console.log(writeResults[i].attribute);
+
+        if (writeResults[i].status.isBad) {
+            // value was not written
+        }
+    }
+    \endcode
+
+    \sa writeNodeAttributes(), WriteResult
+
 */
 
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML)
@@ -280,7 +305,7 @@ bool OpcUaConnection::isDefaultConnection() const
 
     Connects to the given endpoint.
 
-    \sa EndpointDescription endpoints
+    \sa EndpointDescription
 */
 
 void OpcUaConnection::connectToEndpoint(const QOpcUaEndpointDescription &endpointDescription)
@@ -475,9 +500,9 @@ bool OpcUaConnection::readNodeAttributes(const QJSValue &value)
     \endcode
 
     The result of the write request are provided by the signal
-    \l writeNodeAttributesFinished().
+    \l Connection::writeNodeAttributesFinished().
 
-    \sa writeNodeAttributesFinished(), WriteItem
+    \sa Connection::writeNodeAttributesFinished() WriteItem
 */
 bool OpcUaConnection::writeNodeAttributes(const QJSValue &value)
 {

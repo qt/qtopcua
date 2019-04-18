@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2018 Unified Automation GmbH
 ** Contact: http://www.qt.io/licensing/
 **
@@ -182,7 +183,7 @@ QOpcUaApplicationDescription::ApplicationType QOpcUaApplicationIdentity::applica
 
 /*!
     Sets the type of the application.
-    Client applications should set this to \l {QOpcUaApplicationDescription::Client}{Client}.
+    Client applications should set \a value to \l {QOpcUaApplicationDescription::Client}{Client}.
 
     The default value is \l{QOpcUaApplicationDescription::Client}{Client}.
 */

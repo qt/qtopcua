@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
@@ -162,7 +163,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
-    \fn QOpcUaClient::connectError(QOpcUaErrorState errorState)
+    \fn QOpcUaClient::connectError(QOpcUaErrorState *errorState)
     \since QtOpcUa 5.13
 
     This function is currently available as a Technology Preview, and therefore the API
@@ -190,7 +191,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 
     This signal is emitted when a password for an encrypted private key is required.
     The parameter \a keyFilePath contains the file path to key which is used.
-    The parameter \a wasInvalidOnPreviousTry is true if a previous try to decrypt the key failed (aka invalid pasword).
+    The parameter \a previousTryWasInvalid is true if a previous try to decrypt the key failed (aka invalid pasword).
     The parameter \a password points to a QString that has to be filled with the actual password for the key.
     In case the previous try failed it contains the previously used password.
 
@@ -319,7 +320,7 @@ QOpcUaClient::~QOpcUaClient()
 }
 
 /*!
-    Sets the application identity for this \l QOpcUaClient instance.
+    Sets the application identity for this \l QOpcUaClient instance to \a identity.
     \since QtOpcUa 5.13
 
     This function is currently available as a Technology Preview, and therefore the API
@@ -347,7 +348,7 @@ QOpcUaApplicationIdentity QOpcUaClient::applicationIdentity() const
 }
 
 /*!
-    Sets the application PKI configuration for this \l QOpcUaClient instance.
+    Sets the application PKI configuration for this \l QOpcUaClient instance to \a config.
     \since QtOpcUa 5.13
 
     This function is currently available as a Technology Preview, and therefore the API
@@ -396,7 +397,7 @@ QOpcUaPkiConfiguration QOpcUaClient::pkiConfiguration() const
     client->setAuthenticationInformation(authInfo);
     \endcode
 
-    \sa setAuthenticationInformation() QEndPointDescription
+    \sa setAuthenticationInformation(), QOpcUaEndpointDescription
 */
 void QOpcUaClient::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
 {

@@ -51,16 +51,18 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty string EndointDiscovery::serverUrl
+    \qmlproperty string EndpointDiscovery::serverUrl
 
     Discovery URL of the server to fetch the endpoints from.
     Every time the URL is changed, a request to the given server is started.
 
-    When starting the request, the list of available endpoints is cleared and the status
-    is set to \l Status.GoodCompletesAsynchronously. Once the request is finished, \l status changes.
+    When starting the request, the list of available endpoints is cleared
+    and the status is set to \l {Status::Status}{Status.GoodCompletesAsynchronously}. Once the request is finished,
+    \l status changes.
+
     Make sure to check \l status before acessing the list of endpoints.
 
-    \sa onEndpointsChanged
+    \sa endpointsChanged
 */
 
 /*!
@@ -78,7 +80,7 @@ QT_BEGIN_NAMESPACE
 
     The current status of this element.
     In case the last retrieval of endpoints was successful, the status
-    is \c Status.Good.
+    is \l {Status::Status}{Status.Good}.
 
     \code
     if (endpoints.status.isGood) {
@@ -96,10 +98,11 @@ QT_BEGIN_NAMESPACE
 
     Emitted when a retrieval request started, finished or failed.
     In a called function, you should first check the \l status of the object.
-    In case the status is \l Status.GoodCompletesAsynchronously, the request is still running.
-    In case the status is \l Status.Good, the request has finished and the endpoint descriptions
-    can be read. In case the status is not good, an error happended and \l status contains the
-    returned error code.
+    If the status is \l {Status::Status}{Status.GoodCompletesAsynchronously},
+    the request is still running.
+    If the status is \l {Status::Status}{Status.Good}, the request has finished
+    and the endpoint descriptions can be read. If the status is not good, an
+    error happended and \l status contains the returned error code.
 
     \code
     onEndpointsChanged: {

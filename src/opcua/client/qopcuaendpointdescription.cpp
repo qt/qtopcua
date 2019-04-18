@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
@@ -47,13 +48,97 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \qmltype EndpointDescription
+    \inqmlmodule QtOpcUa
+    \brief The OPC UA EndpointDescription.
+    \since QtOpcUa 5.13
+
+    An endpoint description contains information about an endpoint and how to connect to it.
+*/
+
+/*!
     \enum QOpcUaEndpointDescription::MessageSecurityMode
+
+    This enum type holds the security mode supported by the endpoint.
 
     \value Invalid The default value, will be rejected by the server.
     \value None No security.
     \value Sign Messages are signed but not encrypted.
     \value SignAndEncrypt Messages are signed and encrypted.
 */
+
+/*!
+    \qmlproperty enumeration EndpointDescription::MessageSecurityMode
+
+    The security mode supported by the endpoint.
+
+    \value Invalid The default value, will be rejected by the server.
+    \value None No security.
+    \value Sign Messages are signed but not encrypted.
+    \value SignAndEncrypt Messages are signed and encrypted.
+*/
+
+
+/*!
+    \property QOpcUaEndpointDescription::endpointUrl
+
+    The URL for the endpoint.
+ */
+
+/*!
+    \qmlproperty string EndpointDescription::endpointUrl
+
+    The URL for the endpoint.
+ */
+
+/*!
+    \property QOpcUaEndpointDescription::securityMode
+
+    Security mode supported by this endpoint.
+ */
+
+/*!
+    \qmlproperty MessageSecurityMode EndpointDescription::securityMode
+
+    Security mode supported by this endpoint.
+ */
+
+/*!
+    \property QOpcUaEndpointDescription::securityPolicy
+
+    The URI of the security policy.
+ */
+
+/*!
+    \qmlproperty string EndpointDescription::securityPolicy
+
+    The URI of the security policy.
+ */
+
+
+/*!
+    \property QOpcUaEndpointDescription::server
+
+    The application description of the server.
+ */
+
+/*!
+    \qmlproperty ApplicationDescription EndpointDescription::server
+
+    The application description of the server.
+ */
+
+/*!
+    \property QOpcUaEndpointDescription::userIdentityTokens
+
+    List of user identity tokens the endpoint will accept.
+ */
+
+/*!
+    \qmlproperty list<UserTokenPolicy> EndpointDescription::userIdentityTokens
+
+    List of user identity tokens the endpoint will accept.
+ */
 
 class QOpcUaEndpointDescriptionData : public QSharedData
 {

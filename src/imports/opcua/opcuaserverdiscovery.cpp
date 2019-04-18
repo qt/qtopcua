@@ -56,8 +56,9 @@ QT_BEGIN_NAMESPACE
     URL of the server to retrieve the list of servers from.
     Every time the URL is changed, a request to the given server is started.
 
-    When starting the request, the list of available server is cleared and the status
-    is set to \l Status.GoodCompletesAsynchronously. Once the request is finished, \l status changes.
+    When starting the request, the list of available servers is cleared
+    and the status is set to \l {Status::Status}{Status.GoodCompletesAsynchronously}.
+    Once the request is finished, \l status changes.
     Make sure to check the \l status before acessing the list of servers.
 
     \code
@@ -163,7 +164,7 @@ int OpcUaServerDiscovery::count() const
 }
 
 /*!
-    \qmlmethod ApplicationDescription Servers::at(index)
+    \qmlmethod ApplicationDescription ServerDiscovery::at(index)
 
     Returns the application description at given \a index.
     In case there are no servers available or the index is invalid, an invalid

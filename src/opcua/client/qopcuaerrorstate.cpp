@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the Qt OPC UA module.
@@ -67,6 +67,19 @@ public:
     If case of errors issued by the local backend, they can be ignored by calling the function
     \l setIgnoreError().
 */
+
+/*!
+    \enum QOpcUaErrorState::ConnectionStep
+
+    Specifies at which step during the connection establishment the error occurred.
+
+    \value Unknown The connection step is unknown.
+    \value CertificateValidation Error happened in the certificate validation step.
+    \value OpenSecureChannel Error happened when opening the secure channel.
+    \value CreateSession Error happened when creating the session.
+    \value ActivateSession Error happened during session acivation.
+*/
+
 QOpcUaErrorState::QOpcUaErrorState()
     : data(new QOpcUaErrorStateData())
 {
@@ -135,7 +148,7 @@ bool QOpcUaErrorState::isClientSideError() const
 }
 
 /*!
-    Sets if the occurred error is a client side error.
+    Sets if the occurred error is a client side error to \a clientSideError.
 */
 void QOpcUaErrorState::setClientSideError(bool clientSideError)
 {
@@ -143,7 +156,7 @@ void QOpcUaErrorState::setClientSideError(bool clientSideError)
 }
 
 /*!
-    Sets if this client side error should be ignored.
+    Sets if this client side error should be ignored to \a ignore.
 
     Setting this flag does only work if the error is actually a client side error.
 */

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the Qt OPC UA module.
@@ -90,7 +90,7 @@ QT_BEGIN_NAMESPACE
     \li Certificate
     \endlist
 
-    \sa setAnonymousAuthentication() setUsernameAuthentication() setCertificateAuthentication()
+    \sa setAnonymousAuthentication() setUsernameAuthentication()
 */
 
 class QOpcUaAuthenticationInformationData : public QSharedData

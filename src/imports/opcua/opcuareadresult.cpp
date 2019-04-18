@@ -106,8 +106,8 @@ QT_BEGIN_NAMESPACE
     \readonly
 
     Result status of this ReadResult.
-    Before using any value of this ReadResult the status
-    should be checked for \l Status.isGood. To make sure
+    Before using any value of this ReadResult, the status
+    should be checked for \l {Status::Status}{Status.isGood}. To make sure
     the server has provided valid data.
 */
 
