@@ -92,7 +92,7 @@ signals:
     void timeout(QOpen62541Subscription *sub, QVector<QPair<quint64, QOpcUa::NodeAttribute>> items);
 
 private:
-    MonitoredItem *getItemForAttribute(quint64 handle, QOpcUa::NodeAttribute attr);
+    MonitoredItem *getItemForAttribute(quint64 nodeHandle, QOpcUa::NodeAttribute attr);
     UA_ExtensionObject createFilter(const QVariant &filterData);
     void createDataChangeFilter(const QOpcUaMonitoringParameters::DataChangeFilter &filter, UA_ExtensionObject *out);
     void createEventFilter(const QOpcUaMonitoringParameters::EventFilter &filter, UA_ExtensionObject *out);
@@ -100,8 +100,8 @@ private:
                              UA_SimpleAttributeOperand **selectClauses, size_t *size);
     bool convertWhereClause(const QOpcUaMonitoringParameters::EventFilter &filter, UA_ContentFilter *result);
 
-    bool modifySubscriptionParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
-    bool modifyMonitoredItemParameters(quint64 handle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
+    bool modifySubscriptionParameters(quint64 nodeHandle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
+    bool modifyMonitoredItemParameters(quint64 nodeHandle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value);
     QOpcUaEventFilterResult convertEventFilterResult(UA_ExtensionObject *obj);
 
     Open62541AsyncBackend *m_backend;
@@ -113,7 +113,7 @@ private:
     quint8 m_priority;
     quint32 m_maxNotificationsPerPublish;
 
-    QHash<quint64, QHash<QOpcUa::NodeAttribute, MonitoredItem *>> m_handleToItemMapping; // Handle -> Attribute -> MonitoredItem
+    QHash<quint64, QHash<QOpcUa::NodeAttribute, MonitoredItem *>> m_nodeHandleToItemMapping; // Handle -> Attribute -> MonitoredItem
     QHash<UA_UInt32, MonitoredItem *> m_itemIdToItemMapping; // ItemId -> Item for fast lookup on data change
 
     quint32 m_clientHandle;

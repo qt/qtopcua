@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the Qt OPC UA module.
@@ -34,50 +34,49 @@
 **
 ****************************************************************************/
 
-#pragma once
+#ifndef OPCUAWRITERESULT_H
+#define OPCUAWRITERESULT_H
 
-#include "opcuanode.h"
+#include <QObject>
 #include <QDateTime>
+#include "qopcuatype.h"
+#include "opcuastatus.h"
 
 QT_BEGIN_NAMESPACE
 
-class OpcUaValueNode : public OpcUaNode
+class QOpcUaWriteResult;
+class QOpcUaClient;
+class OpcUaWriteResultData;
+class OpcUaWriteResult
 {
-    Q_OBJECT
-    Q_DISABLE_COPY(OpcUaValueNode)
-    Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
-    Q_PROPERTY(QDateTime serverTimestamp READ serverTimestamp)
-    Q_PROPERTY(QDateTime sourceTimestamp READ sourceTimestamp)
-    Q_PROPERTY(bool monitored READ monitored WRITE setMonitored NOTIFY monitoredChanged)
-    Q_PROPERTY(double publishingInterval READ publishingInterval WRITE setPublishingInterval NOTIFY publishingIntervalChanged)
+    Q_GADGET
+    Q_PROPERTY(QOpcUa::NodeAttribute attribute READ attribute)
+    Q_PROPERTY(QString indexRange READ indexRange)
+    Q_PROPERTY(QString nodeId READ nodeId)
+    Q_PROPERTY(QString namespaceName READ namespaceName)
+    Q_PROPERTY(OpcUaStatus status READ status)
 
 public:
-    OpcUaValueNode(QObject *parent = nullptr);
-    ~OpcUaValueNode();
-    QVariant value() const;
+    OpcUaWriteResult();
+    OpcUaWriteResult(const OpcUaWriteResult &other);
+    OpcUaWriteResult(const QOpcUaWriteResult &other, const QOpcUaClient *client);
+    OpcUaWriteResult &operator=(const OpcUaWriteResult &rhs);
+    ~OpcUaWriteResult();
 
-    QDateTime serverTimestamp() const;
-    QDateTime sourceTimestamp() const;
-    bool monitored() const;
-    double publishingInterval() const;
+    const QString &indexRange() const;
+    const QString &nodeId() const;
+    QOpcUa::NodeAttribute attribute() const;
+    const QString &namespaceName() const;
 
-public slots:
-    void setValue(const QVariant &);
-    void setMonitored(bool monitored);
-    void setPublishingInterval(double publishingInterval);
-
-signals:
-    void valueChanged(const QVariant &value);
-    void monitoredChanged(bool monitored);
-    void publishingIntervalChanged(double publishingInterval);
-
-private slots:
-    void setupNode(const QString &absolutePath) override;
+    OpcUaStatus status() const;
 
 private:
-    bool checkValidity() override;
-    bool m_monitored = false;
-    double m_publishingInterval = 100;
+    QSharedDataPointer<OpcUaWriteResultData> data;
 };
 
+
 QT_END_NAMESPACE
+
+Q_DECLARE_METATYPE(OpcUaWriteResult)
+
+#endif // OPCUAWRITERESULT_H

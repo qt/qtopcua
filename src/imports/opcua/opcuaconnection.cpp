@@ -36,12 +36,15 @@
 
 #include "opcuaconnection.h"
 #include "opcuareadresult.h"
+#include "opcuawriteitem.h"
+#include "opcuawriteresult.h"
 #include "universalnode.h"
 #include <QJSEngine>
 #include <QLoggingCategory>
 #include <QOpcUaProvider>
 #include <QOpcUaReadItem>
 #include <QOpcUaReadResult>
+#include <QOpcUaWriteItem>
 
 QT_BEGIN_NAMESPACE
 
@@ -156,6 +159,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \qmlproperty QOpcUaEndpointDescription Connection::currentEndpoint
+    \since 5.13
+
+    An endpoint description of the server to which the connection is connected to.
+    When the connection is not established, an empty endpoint description is returned.
+*/
+
+/*!
     \qmlsignal Connection::readNodeAttributesFinished(readResults)
 
     Emitted when the read request, started using \l readNodeAttributes(), is finished.
@@ -239,6 +250,7 @@ void OpcUaConnection::setBackend(const QString &name)
         });
         m_client->setNamespaceAutoupdate(true);
         connect(m_client, &QOpcUaClient::readNodeAttributesFinished, this, &OpcUaConnection::handleReadNodeAttributesFinished);
+        connect(m_client, &QOpcUaClient::writeNodeAttributesFinished, this, &OpcUaConnection::handleWriteNodeAttributesFinished);
     } else {
         qCWarning(QT_OPCUA_PLUGINS_QML) << tr("Backend '%1' could not be created.").arg(name);
     }
@@ -320,6 +332,14 @@ QStringList OpcUaConnection::namespaces() const
         return QStringList();
 
     return m_client->namespaceArray();
+}
+
+QOpcUaEndpointDescription OpcUaConnection::currentEndpoint() const
+{
+    if (!m_client || !m_connected)
+        return QOpcUaEndpointDescription();
+
+    return m_client->endpoint();
 }
 
 void OpcUaConnection::setAuthenticationInformation(const QOpcUaAuthenticationInformation &authenticationInformation)
@@ -419,6 +439,98 @@ bool OpcUaConnection::readNodeAttributes(const QJSValue &value)
     return m_client->readNodeAttributes(readItemList);
 }
 
+/*!
+    \qmlmethod Connection::writeNodeAttributes(valuesToBeWritten)
+
+    This function is used to write multiple values to a server in one go.
+    Returns \c true if the write request was dispatched successfully.
+
+    The values to be written have to be passed as JavaScript array of \l WriteItem.
+
+    \code
+    // List of items to write
+    var writeItemList = [];
+    // Item to be added to the list of items to be written
+    var writeItem;
+
+    // Prepare an item to be written
+
+    // Create a new write item and fill properties
+    writeItem = QtOpcUa.WriteItem.create();
+    writeItem.ns = "http://qt-project.org";
+    writeItem.nodeId = "s=Demo.Static.Scalar.Double";
+    writeItem.attribute = QtOpcUa.Constants.NodeAttribute.Value;
+    writeItem.value = 32.1;
+    writeItem.valueType = QtOpcUa.Constants.Double;
+
+    // Add the prepared item to the list of items to be written
+    writeItemList.push(writeItem);
+
+    // Add further items
+    [...]
+
+    if (!connection.writeNodeAttributes(writeItemList)) {
+        // handle error
+    }
+    \endcode
+
+    The result of the write request are provided by the signal
+    \l writeNodeAttributesFinished().
+
+    \sa writeNodeAttributesFinished(), WriteItem
+*/
+bool OpcUaConnection::writeNodeAttributes(const QJSValue &value)
+{
+    if (!m_client || !m_connected) {
+        qCWarning(QT_OPCUA_PLUGINS_QML) << tr("Not connected to server.");
+        return false;
+    }
+    if (!value.isArray()) {
+        qCWarning(QT_OPCUA_PLUGINS_QML) << tr("List of WriteItems it not an array.");
+        return false;
+    }
+
+    QVector<QOpcUaWriteItem> writeItemList;
+
+    for (int i = 0; i < value.property("length").toInt(); ++i){
+        const auto &writeItem = qjsvalue_cast<OpcUaWriteItem>(value.property(i));
+        if (writeItem.nodeId().isEmpty()) {
+            qCWarning(QT_OPCUA_PLUGINS_QML) << tr("Invalid WriteItem in list of items at index %1").arg(i);
+            return false;
+        }
+
+        QString finalNode;
+        bool ok;
+        int index = writeItem.namespaceIdentifier().toInt(&ok);
+        if (ok) {
+            QString identifier;
+            UniversalNode::splitNodeIdAndNamespace(writeItem.nodeId(), nullptr, &identifier);
+            finalNode = UniversalNode::createNodeString(index, identifier);
+        } else {
+            finalNode = UniversalNode::resolveNamespaceToNode(writeItem.nodeId(), writeItem.namespaceIdentifier().toString(), m_client);
+        }
+
+        if (finalNode.isEmpty()) {
+            qCWarning(QT_OPCUA_PLUGINS_QML) << tr("Failed to resolve node.");
+            return false;
+        }
+
+        auto tmp = QOpcUaWriteItem(finalNode,
+                                   writeItem.attribute(),
+                                   writeItem.value(),
+                                   writeItem.valueType(),
+                                   writeItem.indexRange());
+
+        tmp.setSourceTimestamp(writeItem.sourceTimestamp());
+        tmp.setServerTimestamp(writeItem.serverTimestamp());
+        if (writeItem.hasStatusCode())
+            tmp.setStatusCode(static_cast<QOpcUa::UaStatusCode>(writeItem.statusCode()));
+        writeItemList.push_back(tmp);
+    }
+
+    return m_client->writeNodeAttributes(writeItemList);
+}
+
 QStringList OpcUaConnection::supportedSecurityPolicies() const
 {
     if (!m_client)
@@ -451,6 +563,16 @@ void OpcUaConnection::handleReadNodeAttributesFinished(const QVector<QOpcUaReadR
         returnValue.append(QVariant::fromValue(OpcUaReadResult(result, m_client)));
 
     emit readNodeAttributesFinished(QVariant::fromValue(returnValue));
+}
+
+void OpcUaConnection::handleWriteNodeAttributesFinished(const QVector<QOpcUaWriteResult> &results)
+{
+    QVariantList returnValue;
+
+    for (const auto &result : results)
+        returnValue.append(QVariant::fromValue(OpcUaWriteResult(result, m_client)));
+
+    emit writeNodeAttributesFinished(QVariant::fromValue(returnValue));
 }
 
 QT_END_NAMESPACE

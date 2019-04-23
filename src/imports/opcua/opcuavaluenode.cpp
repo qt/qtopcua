@@ -117,10 +117,42 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
     if (!m_node)
         return;
 
-    if (!m_node->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(100))) {
-        qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed monitoring" << m_node->nodeId();
-        setStatus(Status::FailedToSetupMonitoring);
-    }
+    connect(m_node, &QOpcUaNode::enableMonitoringFinished, this, [this](QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode){
+        if (attr != QOpcUa::NodeAttribute::Value)
+            return;
+        if (statusCode == QOpcUa::Good) {
+            m_monitored = true;
+            emit monitoredChanged(m_monitored);
+        } else {
+            qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to enable monitoring";
+            setStatus(Status::FailedToSetupMonitoring);
+        }
+    });
+    connect(m_node, &QOpcUaNode::disableMonitoringFinished, this, [this](QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode){
+        if (attr != QOpcUa::NodeAttribute::Value)
+            return;
+        if (statusCode == QOpcUa::Good) {
+            m_monitored = false;
+            emit monitoredChanged(m_monitored);
+        } else {
+            qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to disable monitoring";
+        }
+    });
+    connect(m_node, &QOpcUaNode::monitoringStatusChanged, this, [this](QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
+                                                                   QOpcUa::UaStatusCode statusCode) {
+       if (attr != QOpcUa::NodeAttribute::Value)
+           return;
+       if (statusCode != QOpcUa::Good) {
+           qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to modify monitoring";
+       } else {
+           if (items & QOpcUaMonitoringParameters::Parameter::PublishingInterval) {
+               m_publishingInterval = m_node->monitoringStatus(QOpcUa::NodeAttribute::Value).publishingInterval();
+               emit publishingIntervalChanged(m_publishingInterval);
+           }
+       }
+    });
+
+    setMonitored(true);
 }
 
 bool OpcUaValueNode::checkValidity()
@@ -152,6 +184,49 @@ QDateTime OpcUaValueNode::serverTimestamp() const
 QDateTime OpcUaValueNode::sourceTimestamp() const
 {
     return getSourceTimestamp(QOpcUa::NodeAttribute::Value);
+}
+
+bool OpcUaValueNode::monitored() const
+{
+    if (!m_connection || !m_node)
+        return false;
+
+    return m_monitored;
+}
+
+void OpcUaValueNode::setMonitored(bool monitored)
+{
+    if (!m_connection || !m_node)
+        return;
+    if (m_monitored == monitored)
+        return;
+
+    if (monitored) {
+        m_node->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(m_publishingInterval));
+    } else {
+        m_node->disableMonitoring(QOpcUa::NodeAttribute::Value);
+    }
+}
+
+double OpcUaValueNode::publishingInterval() const
+{
+    if (!m_connection || !m_node)
+        return 0.0;
+
+    auto monitoringStatus = node()->monitoringStatus(QOpcUa::NodeAttribute::Value);
+    if (monitoringStatus.statusCode() == QOpcUa::BadNoEntryExists)
+        return 0.0;
+    return monitoringStatus.publishingInterval();
+}
+
+void OpcUaValueNode::setPublishingInterval(double publishingInterval)
+{
+    if (!m_connection || !m_node)
+        return;
+    if (qFuzzyCompare(m_publishingInterval, publishingInterval))
+        return;
+
+     m_node->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::PublishingInterval, publishingInterval);
 }
 
 QT_END_NAMESPACE

@@ -48,6 +48,8 @@
 #include "opcuareaditem.h"
 #include "opcuareadresult.h"
 #include "opcuaserverdiscovery.h"
+#include "opcuawriteitem.h"
+#include "opcuawriteresult.h"
 #include <QLoggingCategory>
 #include <QOpcUaUserTokenPolicy>
 
@@ -131,8 +133,15 @@ void OpcUaPlugin::registerTypes(const char *uri)
 
         return new OpcUaReadItemFactory();
     });
+    qmlRegisterSingletonType<OpcUaWriteItemFactory>(uri, major, minor, "WriteItem", [](QQmlEngine *engine, QJSEngine *scriptEngine) -> QObject* {
+        Q_UNUSED(engine)
+        Q_UNUSED(scriptEngine)
+        return new OpcUaWriteItemFactory();
+    });
     qRegisterMetaType<OpcUaReadItem>();
     qRegisterMetaType<OpcUaReadResult>();
+    qRegisterMetaType<OpcUaWriteItem>();
+    qRegisterMetaType<OpcUaWriteResult>();
     qmlRegisterType<OpcUaEndpointDiscovery>(uri, major, minor, "EndpointDiscovery");
     qmlRegisterType<OpcUaServerDiscovery>(uri, major, minor, "ServerDiscovery");
 

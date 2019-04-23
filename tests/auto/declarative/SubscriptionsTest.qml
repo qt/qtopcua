@@ -42,7 +42,7 @@ Item {
     property string backendName
     property int completedTestCases: 0
     property int availableTestCases: 0
-    property bool completed: completedTestCases == availableTestCases
+    property bool completed: completedTestCases == availableTestCases && availableTestCases > 0
     property bool shouldRun: false
 
     onShouldRunChanged: {
@@ -63,6 +63,11 @@ Item {
                 return;
             endpointDiscovery.serverUrl = at(0).discoveryUrls[0];
         }
+
+        Binding on discoveryUrl {
+            when: shouldRun && Component.completed
+            value: "opc.tcp://127.0.0.1:43344"
+        }
     }
 
     QtOpcUa.EndpointDiscovery {
@@ -79,67 +84,82 @@ Item {
             if (children[i].objectName == "TestCase")
                 availableTestCases += 1;
         }
-        serverDiscovery.discoveryUrl = "opc.tcp://127.0.0.1:43344";
     }
 
     CompletionLoggingTestCase {
-        name: "Reading multiple items"
-        when: connection.connected && shouldRun
-
-        SignalSpy {
-            id: readNodeAttributesFinishedSpy
-            target: connection
-            signalName: "readNodeAttributesFinished"
-        }
+        name: "Create String Node Id"
+        when: node1.readyToUse && shouldRun
 
         function test_nodeTest() {
-            var readItemList = [];
-            var readItem;
+            tryCompare(node1, "monitored", true);
+            compare(node1.publishingInterval, 100.0);
+            node1ValueSpy.clear();
+            verify(node1.value != "foo");
+            node1.value = "foo";
+            node1ValueSpy.wait(10000);
+            compare(node1ValueSpy.count, 1);
 
-            // Item #0
-            readItem = QtOpcUa.ReadItem.create();
-            readItem.ns = "http://qt-project.org";
-            readItem.nodeId = "s=Demo.Static.Scalar.Double";
-            readItem.attribute = QtOpcUa.Constants.NodeAttribute.DisplayName;
-            readItemList.push(readItem);
+            compare(node1.monitored, true);
+            node1MonitoredSpy.clear();
+            node1.monitored = false;
+            node1MonitoredSpy.wait();
+            compare(node1MonitoredSpy.count, 1);
+            compare(node1IntervalSpy.count, 0);
+            compare(node1.monitored, false);
 
-            // Item #1
-            readItem = QtOpcUa.ReadItem.create();
-            readItem.ns = "http://qt-project.org";
-            readItem.nodeId = "s=Demo.Static.Scalar.Double";
-            // Value is the default attribute to read
-            readItemList.push(readItem);
+            node1ValueSpy.clear();
+            node1.value = "bar";
+            sleep(2000);
+            compare(node1ValueSpy.count, 0);
 
-            // Item #2
-            readItem = QtOpcUa.ReadItem.create();
-            readItem.ns = "http://qt-project.org";
-            readItem.nodeId = "s=Demo.Static.Arrays.UInt32";
-            // Value is the default attribute to read
-            readItem.indexRange = "0:2";
-            readItemList.push(readItem);
+            node1MonitoredSpy.clear();
+            node1.monitored = true;
+            node1MonitoredSpy.wait();
+            compare(node1MonitoredSpy.count, 1);
+            compare(node1IntervalSpy.count, 0);
+            compare(node1.monitored, true);
 
-            verify(connection.readNodeAttributes(readItemList))
-            readNodeAttributesFinishedSpy.wait();
+            // This needs to be reset to "Value" for follow up tests to succeed.
+            node1.value = "Value";
+            node1ValueSpy.wait();
+            compare(node1ValueSpy.count, 1);
 
-            compare(readNodeAttributesFinishedSpy.count, 1);
-            compare(readNodeAttributesFinishedSpy.signalArguments[0].length, 1);
+            node1MonitoredSpy.clear();
+            node1IntervalSpy.clear();
+            node1.publishingInterval = 200.0;
+            node1IntervalSpy.wait();
+            compare(node1MonitoredSpy.count, 0);
+            compare(node1IntervalSpy.count, 1);
+            sleep(1000);
+            compare(node1IntervalSpy.count, 1);
+            compare(node1.publishingInterval, 200.0);
+        }
 
-            var results = readNodeAttributesFinishedSpy.signalArguments[0][0];
-            var now = new Date();
+        SignalSpy {
+            id: node1ValueSpy
+            target: node1
+            signalName: "valueChanged"
+        }
 
-            compare(results.length, readItemList.length);
-            for (var i = 0; i < results.length; i++) {
-                console.log("Comparing result item #" + i);
-                verify(results[i].status.isGood);
-                compare(results[i].nodeId, readItemList[i].nodeId);
-                compare(results[i].namespaceName, readItemList[i].ns);
-                compare(results[i].attribute, readItemList[i].attribute);
-                verify((now - results[i].serverTimestamp) < 10000);
+        SignalSpy {
+            id: node1IntervalSpy
+            target: node1
+            signalName: "publishingIntervalChanged"
+        }
+
+        SignalSpy {
+            id: node1MonitoredSpy
+            target: node1
+            signalName: "monitoredChanged"
+        }
+
+        QtOpcUa.ValueNode {
+            connection: connection
+            nodeId: QtOpcUa.NodeId {
+                ns: "Test Namespace"
+                identifier: "s=theStringId"
             }
-
-            compare(results[0].value.text, "DoubleScalarTest");
-            compare(results[1].value, 1.0);
-            compare(results[2].value, [1, 2]);
+            id: node1
         }
     }
 }

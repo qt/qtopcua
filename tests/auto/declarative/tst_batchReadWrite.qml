@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the Qt OPC UA module.
@@ -34,50 +34,8 @@
 **
 ****************************************************************************/
 
-#pragma once
+import QtQuick 2.3
 
-#include "opcuanode.h"
-#include <QDateTime>
-
-QT_BEGIN_NAMESPACE
-
-class OpcUaValueNode : public OpcUaNode
-{
-    Q_OBJECT
-    Q_DISABLE_COPY(OpcUaValueNode)
-    Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
-    Q_PROPERTY(QDateTime serverTimestamp READ serverTimestamp)
-    Q_PROPERTY(QDateTime sourceTimestamp READ sourceTimestamp)
-    Q_PROPERTY(bool monitored READ monitored WRITE setMonitored NOTIFY monitoredChanged)
-    Q_PROPERTY(double publishingInterval READ publishingInterval WRITE setPublishingInterval NOTIFY publishingIntervalChanged)
-
-public:
-    OpcUaValueNode(QObject *parent = nullptr);
-    ~OpcUaValueNode();
-    QVariant value() const;
-
-    QDateTime serverTimestamp() const;
-    QDateTime sourceTimestamp() const;
-    bool monitored() const;
-    double publishingInterval() const;
-
-public slots:
-    void setValue(const QVariant &);
-    void setMonitored(bool monitored);
-    void setPublishingInterval(double publishingInterval);
-
-signals:
-    void valueChanged(const QVariant &value);
-    void monitoredChanged(bool monitored);
-    void publishingIntervalChanged(double publishingInterval);
-
-private slots:
-    void setupNode(const QString &absolutePath) override;
-
-private:
-    bool checkValidity() override;
-    bool m_monitored = false;
-    double m_publishingInterval = 100;
-};
-
-QT_END_NAMESPACE
+BackendTestMultiplier {
+    testName: "BatchReadWriteTest"
+}

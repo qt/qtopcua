@@ -93,6 +93,12 @@ Item {
             compare(node1.displayName.text, "theStringId");
             compare(node1.description.text, "Description for ns=3;s=theStringId");
             compare(node1.status, QtOpcUa.Node.Status.Valid);
+            tryCompare(node1, "monitored", true);
+            compare(node1.publishingInterval, 100.0);
+
+            compare(connection.currentEndpoint.endpointUrl, "opc.tcp://localhost:43344/");
+            compare(connection.currentEndpoint.securityPolicy, "http://opcfoundation.org/UA/SecurityPolicy#None");
+            compare(connection.currentEndpoint.server.applicationUri, "urn:unconfigured:application");
         }
 
         QtOpcUa.ValueNode {
