@@ -39,6 +39,7 @@
 #include "opcuanodeid.h"
 #include "opcuaattributevalue.h"
 #include <QLoggingCategory>
+#include <QMetaEnum>
 
 QT_BEGIN_NAMESPACE
 
@@ -106,6 +107,15 @@ void OpcUaValueNode::setValue(const QVariant &value)
     m_node->writeAttribute(QOpcUa::NodeAttribute::Value, value, QOpcUa::Types::Undefined);
 }
 
+template<typename T> QString enumToString(T value) {
+    const auto metaEnum = QMetaEnum::fromType<T>();
+    const auto key = metaEnum.valueToKey(static_cast<int>(value));
+    if (key)
+        return QString::fromLatin1(key);
+    else
+        return QString();
+}
+
 void OpcUaValueNode::setupNode(const QString &absolutePath)
 {
     // Additionally read the value attribute
@@ -116,6 +126,17 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
     OpcUaNode::setupNode(absolutePath);
     if (!m_node)
         return;
+
+    connect(m_node, &QOpcUaNode::attributeWritten, this, [this](QOpcUa::NodeAttribute attribute, QOpcUa::UaStatusCode statusCode) {
+        if (statusCode != QOpcUa::Good) {
+            QString msg = "Failed to write attribute "
+                    + enumToString(attribute)
+                    + ": "
+                    + enumToString(statusCode);
+            setStatus(Status::FailedToWriteAttribute, msg);
+            qCWarning(QT_OPCUA_PLUGINS_QML) << msg;
+        }
+    });
 
     connect(m_node, &QOpcUaNode::enableMonitoringFinished, this, [this](QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode){
         if (attr != QOpcUa::NodeAttribute::Value)
