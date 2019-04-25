@@ -55,49 +55,6 @@ using namespace QOpcUa::NodeIds;
 
 namespace QUACppValueConverter {
 
-QOpcUa::Types qvariantTypeToQOpcUaType(QMetaType::Type type)
-{
-    switch (type) {
-    case QMetaType::Bool:
-        return QOpcUa::Boolean;
-    case QMetaType::UChar:
-        return QOpcUa::Byte;
-    case QMetaType::Char:
-        return QOpcUa::SByte;
-    case QMetaType::UShort:
-        return QOpcUa::UInt16;
-    case QMetaType::Short:
-        return QOpcUa::Int16;
-    case QMetaType::Int:
-        return QOpcUa::Int32;
-    case QMetaType::UInt:
-        return QOpcUa::UInt32;
-    case QMetaType::ULongLong:
-        return QOpcUa::UInt64;
-    case QMetaType::LongLong:
-        return QOpcUa::Int64;
-    case QMetaType::Double:
-        return QOpcUa::Double;
-    case QMetaType::Float:
-        return QOpcUa::Float;
-    case QMetaType::QString:
-        return QOpcUa::String;
-    //return QOpcUa::LocalizedText;  // TODO: unclear
-    case QMetaType::QDateTime:
-        return QOpcUa::DateTime;
-    case QMetaType::QByteArray:
-        return QOpcUa::ByteString;
-    case QMetaType::QUuid:
-        return QOpcUa::Guid;
-    //return QOpcUa::XmlElement;
-    //return QOpcUa::NodeId;
-    default:
-        break;
-    }
-
-    return QOpcUa::Undefined;
-}
-
 OpcUa_BuiltInType toDataType(QOpcUa::Types valueType)
 {
     switch (valueType) {
@@ -947,7 +904,7 @@ OpcUa_Variant toUACppVariant(const QVariant &value, QOpcUa::Types type)
 
     QVariant temp = (value.type() == QVariant::List) ? value.toList().at(0) : value;
     QOpcUa::Types valueType = type == QOpcUa::Undefined ?
-                qvariantTypeToQOpcUaType(static_cast<QMetaType::Type>(temp.type())) : type;
+                QOpcUa::metaTypeToQOpcUaType(static_cast<QMetaType::Type>(temp.type())) : type;
 
     const OpcUa_BuiltInType dt = toDataType(valueType);
 

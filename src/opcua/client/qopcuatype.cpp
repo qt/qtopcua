@@ -795,5 +795,49 @@ QString QOpcUa::statusToString(QOpcUa::UaStatusCode statusCode)
         return QLatin1String("Invalid enum value for UaStatusCode");
 }
 
+/*!
+    \since 5.13
+
+    Returns the Qt OPC UA type from \a type.
+    In case the type does not map, \c QOpcUa::Undefined is returned.
+*/
+QOpcUa::Types QOpcUa::metaTypeToQOpcUaType(QMetaType::Type type) {
+    switch (type) {
+    case QMetaType::Bool:
+        return QOpcUa::Boolean;
+    case QMetaType::UChar:
+        return QOpcUa::Byte;
+    case QMetaType::Char:
+        return QOpcUa::SByte;
+    case QMetaType::UShort:
+        return QOpcUa::UInt16;
+    case QMetaType::Short:
+        return QOpcUa::Int16;
+    case QMetaType::Int:
+        return QOpcUa::Int32;
+    case QMetaType::UInt:
+        return QOpcUa::UInt32;
+    case QMetaType::ULongLong:
+        return QOpcUa::UInt64;
+    case QMetaType::LongLong:
+        return QOpcUa::Int64;
+    case QMetaType::Double:
+        return QOpcUa::Double;
+    case QMetaType::Float:
+        return QOpcUa::Float;
+    case QMetaType::QString:
+        return QOpcUa::String;
+    case QMetaType::QDateTime:
+        return QOpcUa::DateTime;
+    case QMetaType::QByteArray:
+        return QOpcUa::ByteString;
+    case QMetaType::QUuid:
+        return QOpcUa::Guid;
+    default:
+        break;
+    }
+    return QOpcUa::Undefined;
+}
+
 QT_END_NAMESPACE
 
