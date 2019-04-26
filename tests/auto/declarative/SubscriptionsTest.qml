@@ -95,7 +95,7 @@ Item {
             compare(node1.publishingInterval, 100.0);
             node1ValueSpy.clear();
             verify(node1.value != "foo");
-            node1.value = "foo";
+            node2.value = "foo";
             node1ValueSpy.wait(10000);
             compare(node1ValueSpy.count, 1);
 
@@ -108,8 +108,9 @@ Item {
             compare(node1.monitored, false);
 
             node1ValueSpy.clear();
-            node1.value = "bar";
-            sleep(2000);
+            node2.value = "bar";
+            timer.running = true;
+            timerSpy.wait();
             compare(node1ValueSpy.count, 0);
 
             node1MonitoredSpy.clear();
@@ -120,7 +121,7 @@ Item {
             compare(node1.monitored, true);
 
             // This needs to be reset to "Value" for follow up tests to succeed.
-            node1.value = "Value";
+            node2.value = "Value";
             node1ValueSpy.wait();
             compare(node1ValueSpy.count, 1);
 
@@ -129,8 +130,6 @@ Item {
             node1.publishingInterval = 200.0;
             node1IntervalSpy.wait();
             compare(node1MonitoredSpy.count, 0);
-            compare(node1IntervalSpy.count, 1);
-            sleep(1000);
             compare(node1IntervalSpy.count, 1);
             compare(node1.publishingInterval, 200.0);
         }
@@ -160,6 +159,26 @@ Item {
                 identifier: "s=theStringId"
             }
             id: node1
+        }
+
+        QtOpcUa.ValueNode {
+            connection: connection
+            nodeId: QtOpcUa.NodeId {
+                ns: "Test Namespace"
+                identifier: "s=theStringId"
+            }
+            id: node2
+        }
+
+        Timer {
+            id: timer
+            interval: 2000
+        }
+
+        SignalSpy {
+            id: timerSpy
+            target: timer
+            signalName: "triggered"
         }
     }
 }

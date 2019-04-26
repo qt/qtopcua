@@ -187,8 +187,10 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
            qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to modify monitoring";
        } else {
            if (items & QOpcUaMonitoringParameters::Parameter::PublishingInterval) {
-               m_publishingInterval = m_node->monitoringStatus(QOpcUa::NodeAttribute::Value).publishingInterval();
-               emit publishingIntervalChanged(m_publishingInterval);
+               if (m_publishingInterval != m_node->monitoringStatus(QOpcUa::NodeAttribute::Value).publishingInterval()) {
+                   m_publishingInterval = m_node->monitoringStatus(QOpcUa::NodeAttribute::Value).publishingInterval();
+                   emit publishingIntervalChanged(m_publishingInterval);
+               }
            }
        }
     });
