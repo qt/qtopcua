@@ -144,8 +144,9 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
         if (statusCode == QOpcUa::Good) {
             m_monitored = true;
             emit monitoredChanged(m_monitored);
+            qCDebug(QT_OPCUA_PLUGINS_QML) << "Monitoring was enabled for node" << resolvedNode().fullNodeId();
         } else {
-            qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to enable monitoring";
+            qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to enable monitoring for node" << resolvedNode().fullNodeId();
             setStatus(Status::FailedToSetupMonitoring);
         }
     });
@@ -155,9 +156,10 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
         if (statusCode == QOpcUa::Good) {
             m_monitored = false;
             emit monitoredChanged(m_monitored);
+            qCDebug(QT_OPCUA_PLUGINS_QML) << "Monitoring was disabled for node "<< resolvedNode().fullNodeId();
         } else {
+            qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to disable monitoring for node "<< resolvedNode().fullNodeId();
             setStatus(Status::FailedToDisableMonitoring);
-            qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to disable monitoring";
         }
     });
     connect(m_node, &QOpcUaNode::monitoringStatusChanged, this, [this](QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
