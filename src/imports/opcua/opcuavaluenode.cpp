@@ -156,6 +156,7 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
             m_monitored = false;
             emit monitoredChanged(m_monitored);
         } else {
+            setStatus(Status::FailedToDisableMonitoring);
             qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to disable monitoring";
         }
     });
@@ -164,6 +165,7 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
        if (attr != QOpcUa::NodeAttribute::Value)
            return;
        if (statusCode != QOpcUa::Good) {
+           setStatus(Status::FailedToModifyMonitoring);
            qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to modify monitoring";
        } else {
            if (items & QOpcUaMonitoringParameters::Parameter::PublishingInterval) {

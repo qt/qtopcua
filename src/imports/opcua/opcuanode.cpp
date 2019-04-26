@@ -406,6 +406,12 @@ void OpcUaNode::setStatus(OpcUaNode::Status status, const QString &message)
         case Status::FailedToWriteAttribute:
             errorMessage = tr("Failed to write attribute");
             break;
+        case Status::FailedToModifyMonitoring:
+            errorMessage = tr("Failed to modify monitoring");
+            break;
+        case Status::FailedToDisableMonitoring:
+            errorMessage = tr("Failed to disable monitoring");
+            break;
         }
     }
 
