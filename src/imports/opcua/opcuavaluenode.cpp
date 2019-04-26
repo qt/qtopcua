@@ -75,6 +75,14 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \qmlproperty variant ValueNode::valueType
+
+    Type type of this node.
+    The initial value will be \l {QtOpcUa::Undefined}{QtOpcUa.Constants.Undefined} and be fetched from the server when the first connection is established.
+    Any value will be written to the server as the specified type.
+*/
+
+/*!
     \qmlproperty Date ValueNode::sourceTimestamp
     \readonly
 
@@ -104,7 +112,7 @@ void OpcUaValueNode::setValue(const QVariant &value)
 {
     if (!m_connection || !m_node)
         return;
-    m_node->writeAttribute(QOpcUa::NodeAttribute::Value, value, QOpcUa::Types::Undefined);
+    m_node->writeAttribute(QOpcUa::NodeAttribute::Value, value, m_valueType);
 }
 
 template<typename T> QString enumToString(T value) {
@@ -135,6 +143,14 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
                     + enumToString(statusCode);
             setStatus(Status::FailedToWriteAttribute, msg);
             qCWarning(QT_OPCUA_PLUGINS_QML) << msg;
+            }
+      });
+
+
+    connect(m_node, &QOpcUaNode::attributeUpdated, this, [this](QOpcUa::NodeAttribute attr, QVariant value) {
+        if (attr == QOpcUa::NodeAttribute::DataType && m_valueType == QOpcUa::Types::Undefined) {
+            const auto valueType = QOpcUa::opcUaDataTypeToQOpcUaType(value.toString());
+            m_valueType = valueType;
         }
     });
 
@@ -252,6 +268,16 @@ void OpcUaValueNode::setPublishingInterval(double publishingInterval)
         return;
 
      m_node->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::PublishingInterval, publishingInterval);
+}
+
+QOpcUa::Types OpcUaValueNode::valueType() const
+{
+    return m_valueType;
+}
+
+void OpcUaValueNode::setValueType(QOpcUa::Types valueType)
+{
+    m_valueType = valueType;
 }
 
 QT_END_NAMESPACE
