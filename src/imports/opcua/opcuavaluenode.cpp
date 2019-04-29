@@ -102,6 +102,7 @@ OpcUaValueNode::OpcUaValueNode(QObject *parent):
     OpcUaNode(parent)
 {
     connect(m_attributeCache.attribute(QOpcUa::NodeAttribute::Value), &OpcUaAttributeValue::changed, this, &OpcUaValueNode::valueChanged);
+    connect(this, &OpcUaValueNode::filterChanged, this, &OpcUaValueNode::updateFilters);
 }
 
 OpcUaValueNode::~OpcUaValueNode()
@@ -161,6 +162,10 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
             m_monitoredState = true;
             emit monitoredChanged(m_monitoredState);
             qCDebug(QT_OPCUA_PLUGINS_QML) << "Monitoring was enabled for node" << resolvedNode().fullNodeId();
+            if (m_connection->backend() != QLatin1String("open62541")) {
+                // This line triggers a bug in open62541. When it is fixed the call should be unconditional.
+                updateFilters();
+            }
         } else {
             qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to enable monitoring for node" << resolvedNode().fullNodeId();
             setStatus(Status::FailedToSetupMonitoring);
@@ -180,7 +185,7 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
     });
     connect(m_node, &QOpcUaNode::monitoringStatusChanged, this, [this](QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                                                                    QOpcUa::UaStatusCode statusCode) {
-       if (attr != QOpcUa::NodeAttribute::Value)
+       if (attr != QOpcUa::NodeAttribute::Value && attr != QOpcUa::NodeAttribute::EventNotifier)
            return;
        if (statusCode != QOpcUa::Good) {
            setStatus(Status::FailedToModifyMonitoring);
@@ -196,6 +201,14 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
     });
 
     updateSubscription();
+}
+
+void OpcUaValueNode::updateFilters() const
+{
+    if (!m_connection || !m_node || !m_filter || !m_monitoredState)
+        return;
+
+    m_node->modifyDataChangeFilter(QOpcUa::NodeAttribute::Value, m_filter->filter());
 }
 
 bool OpcUaValueNode::checkValidity()
@@ -242,9 +255,15 @@ void OpcUaValueNode::updateSubscription()
     if (!m_connection || !m_node)
         return;
 
+    QOpcUaMonitoringParameters parameters;
+    parameters.setPublishingInterval(m_publishingInterval);
+
+    if (m_filter)
+        parameters.setFilter(m_filter->filter());
+
     if (m_monitoredState != m_monitored) {
         if (m_monitored) {
-            m_node->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(m_publishingInterval));
+            m_node->enableMonitoring(QOpcUa::NodeAttribute::Value, parameters);
         } else {
             m_node->disableMonitoring(QOpcUa::NodeAttribute::Value);
         }
@@ -265,6 +284,29 @@ double OpcUaValueNode::publishingInterval() const
     if (monitoringStatus.statusCode() == QOpcUa::BadNoEntryExists)
         return 0.0;
     return monitoringStatus.publishingInterval();
+}
+
+OpcUaDataChangeFilter *OpcUaValueNode::filter() const
+{
+    return m_filter;
+}
+
+void OpcUaValueNode::setFilter(OpcUaDataChangeFilter *filter)
+{
+    bool changed = false;
+
+    if (m_filter) {
+        disconnect(m_filter, &OpcUaDataChangeFilter::filterChanged, this, &OpcUaValueNode::updateFilters);
+        changed = !(*m_filter == *filter);
+    } else {
+        changed = true;
+    }
+
+    m_filter = filter;
+    connect(m_filter, &OpcUaDataChangeFilter::filterChanged, this, &OpcUaValueNode::updateFilters);
+
+    if (changed)
+        emit filterChanged();
 }
 
 void OpcUaValueNode::setPublishingInterval(double publishingInterval)

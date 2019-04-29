@@ -38,6 +38,7 @@
 
 #include "opcuanode.h"
 #include <QDateTime>
+#include "opcuadatachangefilter.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -51,6 +52,7 @@ class OpcUaValueNode : public OpcUaNode
     Q_PROPERTY(QDateTime sourceTimestamp READ sourceTimestamp)
     Q_PROPERTY(bool monitored READ monitored WRITE setMonitored NOTIFY monitoredChanged)
     Q_PROPERTY(double publishingInterval READ publishingInterval WRITE setPublishingInterval NOTIFY publishingIntervalChanged)
+    Q_PROPERTY(OpcUaDataChangeFilter *filter READ filter WRITE setFilter NOTIFY filterChanged)
 
 public:
     OpcUaValueNode(QObject *parent = nullptr);
@@ -62,6 +64,8 @@ public:
     bool monitored() const;
     double publishingInterval() const;
     QOpcUa::Types valueType() const;
+    OpcUaDataChangeFilter *filter() const;
+    void setFilter(OpcUaDataChangeFilter *filter);
 
 public slots:
     void setValue(const QVariant &);
@@ -69,14 +73,18 @@ public slots:
     void setPublishingInterval(double publishingInterval);
     void setValueType(QOpcUa::Types valueType);
 
+
 signals:
     void valueChanged(const QVariant &value);
     void monitoredChanged(bool monitored);
     void publishingIntervalChanged(double publishingInterval);
+    void dataChangeOccurred(const QVariant &value);
+    void filterChanged();
 
 private slots:
     void setupNode(const QString &absolutePath) override;
     void updateSubscription();
+    void updateFilters() const;
 
 private:
     bool checkValidity() override;
@@ -84,6 +92,7 @@ private:
     bool m_monitoredState = false;
     double m_publishingInterval = 100;
     QOpcUa::Types m_valueType = QOpcUa::Types::Undefined;
+    OpcUaDataChangeFilter *m_filter = nullptr;
 };
 
 QT_END_NAMESPACE

@@ -22,6 +22,7 @@ SOURCES += \
     opcuastatus.cpp \
     opcuawriteitem.cpp \
     opcuawriteresult.cpp \
+    opcuadatachangefilter.cpp \
 
 HEADERS += \
     opcua_plugin.h \
@@ -45,6 +46,7 @@ HEADERS += \
     opcuastatus.h \
     opcuawriteitem.h \
     opcuawriteresult.h \
+    opcuadatachangefilter.h \
 
 load(qml_plugin)
 

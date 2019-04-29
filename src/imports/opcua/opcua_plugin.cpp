@@ -41,6 +41,7 @@
 #include "opcuanodeid.h"
 #include "opcuanodeidtype.h"
 #include "opcuaconnection.h"
+#include "opcuadatachangefilter.h"
 #include "opcuarelativenodepath.h"
 #include "opcuarelativenodeid.h"
 #include "qopcuatype.h"
@@ -145,6 +146,7 @@ void OpcUaPlugin::registerTypes(const char *uri)
     qmlRegisterType<OpcUaEndpointDiscovery>(uri, major, minor, "EndpointDiscovery");
     qmlRegisterType<OpcUaServerDiscovery>(uri, major, minor, "ServerDiscovery");
     qmlRegisterUncreatableType<QOpcUaUserTokenPolicy>(uri, major, minor, "UserTokenPolicy", "This type can not be created.");
+    qmlRegisterType<OpcUaDataChangeFilter>(uri, major, minor, "DataChangeFilter");
 
     // insert new versions here
 
