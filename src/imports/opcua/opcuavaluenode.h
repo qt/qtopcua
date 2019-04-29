@@ -76,10 +76,12 @@ signals:
 
 private slots:
     void setupNode(const QString &absolutePath) override;
+    void updateSubscription();
 
 private:
     bool checkValidity() override;
-    bool m_monitored = false;
+    bool m_monitored = true;
+    bool m_monitoredState = false;
     double m_publishingInterval = 100;
     QOpcUa::Types m_valueType = QOpcUa::Types::Undefined;
 };

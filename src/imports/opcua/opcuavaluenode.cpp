@@ -158,8 +158,8 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
         if (attr != QOpcUa::NodeAttribute::Value)
             return;
         if (statusCode == QOpcUa::Good) {
-            m_monitored = true;
-            emit monitoredChanged(m_monitored);
+            m_monitoredState = true;
+            emit monitoredChanged(m_monitoredState);
             qCDebug(QT_OPCUA_PLUGINS_QML) << "Monitoring was enabled for node" << resolvedNode().fullNodeId();
         } else {
             qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to enable monitoring for node" << resolvedNode().fullNodeId();
@@ -170,8 +170,8 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
         if (attr != QOpcUa::NodeAttribute::Value)
             return;
         if (statusCode == QOpcUa::Good) {
-            m_monitored = false;
-            emit monitoredChanged(m_monitored);
+            m_monitoredState = false;
+            emit monitoredChanged(m_monitoredState);
             qCDebug(QT_OPCUA_PLUGINS_QML) << "Monitoring was disabled for node "<< resolvedNode().fullNodeId();
         } else {
             qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to disable monitoring for node "<< resolvedNode().fullNodeId();
@@ -193,7 +193,7 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
        }
     });
 
-    setMonitored(true);
+    updateSubscription();
 }
 
 bool OpcUaValueNode::checkValidity()
@@ -230,23 +230,28 @@ QDateTime OpcUaValueNode::sourceTimestamp() const
 bool OpcUaValueNode::monitored() const
 {
     if (!m_connection || !m_node)
-        return false;
+        return m_monitored;
 
-    return m_monitored;
+    return m_monitoredState;
 }
 
-void OpcUaValueNode::setMonitored(bool monitored)
+void OpcUaValueNode::updateSubscription()
 {
     if (!m_connection || !m_node)
         return;
-    if (m_monitored == monitored)
-        return;
 
-    if (monitored) {
-        m_node->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(m_publishingInterval));
-    } else {
-        m_node->disableMonitoring(QOpcUa::NodeAttribute::Value);
+    if (m_monitoredState != m_monitored) {
+        if (m_monitored) {
+            m_node->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(m_publishingInterval));
+        } else {
+            m_node->disableMonitoring(QOpcUa::NodeAttribute::Value);
+        }
     }
+}
+void OpcUaValueNode::setMonitored(bool monitored)
+{
+    m_monitored = monitored;
+    updateSubscription();
 }
 
 double OpcUaValueNode::publishingInterval() const
