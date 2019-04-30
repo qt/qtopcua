@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -28,13 +28,12 @@
 /*!
     \example waterpump/waterpump-qml
     \ingroup qtopcua-examples
-    \title Example using the QML API for Qt OPC UA
-    \brief This example shows how to use Qt OPC UA QML API to interact with an OPC UA
-    server to build a QML based HMI for a simple machine.
+    \title Qt Quick Waterpump Example
+    \brief Interacting with an OPC UA server to build a QML-based HMI for a
+    simple machine.
 
-    \section1 Introduction
-    This example shows how to use Qt OPC UA QML API to interact with an OPC UA
-    server to build a QML based HMI for a simple machine.
+    \e{Qt Quick Waterpump} shows how to use Qt OPC UA QML API to interact with
+    an OPC UA server to build a QML based HMI for a simple machine.
 
     \section1 Building the Server
     Before you can use the waterpump examples, you need to build the simulation server.
@@ -113,7 +112,7 @@
 
     For example, the button to flush the second tank is enabled
     only if the backend is connected to the server, the machine is idle, and
-    the tank level is above the setpoint. On click, the flushTank2() method
+    the tank level is above the setpoint. On click, the \c flushTank2() method
     is called on the server.
 
     \quotefromfile waterpump/waterpump-qml/MachineDisplay.qml

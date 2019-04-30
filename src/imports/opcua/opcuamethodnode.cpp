@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the Qt OPC UA module.
@@ -103,7 +103,7 @@ QT_BEGIN_NAMESPACE
     Status of the last method call. This property has to be checked
     to determine if the method call was successful.
 
-    \sa QOpcUa::Status
+    \sa Status
 */
 
 /*!

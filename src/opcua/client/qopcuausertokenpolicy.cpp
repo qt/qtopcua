@@ -47,7 +47,25 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \qmltype UserTokenPolicy
+    \inqmlmodule QtOpcUa
+    \brief The OPC UA ApplicationDescription.
+    \since QtOpcUa 5.13
+
+    The user token policy contains information about an user token accepted by the server.
+*/
+
+/*!
     \enum QOpcUaUserTokenPolicy::TokenType
+
+    \value Anonymous No token required.
+    \value Username Username and password are required.
+    \value Certificate A client certificate is required.
+    \value IssuedToken Any Web Services Security (WS-Security) defined token.
+*/
+
+/*!
+    \qmlproperty enumeration UserTokenPolicy::TokenType
 
     \value Anonymous No token required.
     \value Username Username and password are required.

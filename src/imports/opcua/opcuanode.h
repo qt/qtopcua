@@ -78,7 +78,10 @@ public:
         FailedToResolveNode,
         InvalidObjectNode,
         FailedToReadAttributes,
-        FailedToSetupMonitoring
+        FailedToSetupMonitoring,
+        FailedToWriteAttribute,
+        FailedToModifyMonitoring,
+        FailedToDisableMonitoring
     };
    Q_ENUM(Status);
 

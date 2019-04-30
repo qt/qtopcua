@@ -42,7 +42,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmltype Status
     \inqmlmodule QtOpcUa
-    \brief Status code of an OPC UA function
+    \brief Status code of an OPC UA function.
     \since QtOpcUa 5.13
 
     This QML element contains information about the result status of an OPC UA action.

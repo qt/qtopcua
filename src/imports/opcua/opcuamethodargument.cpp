@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the Qt OPC UA module.
@@ -39,7 +39,7 @@
 /*!
     \qmltype MethodArgument
     \inqmlmodule QtOpcUa
-    \brief Arguments for OpcUa method calls
+    \brief Arguments for OpcUa method calls.
     \since QtOpcUa 5.13
 
     When calling methods which require arguments, this type is used.

@@ -87,7 +87,8 @@ QT_BEGIN_NAMESPACE
     \readonly
 
     Result status of this WriteResult.
-    If the write request was successful the status is \l Status.Good.
+    If the write request was successful the status is \l {Status::Status}
+    {Status.Good}.
 */
 
 class OpcUaWriteResultData : public QSharedData

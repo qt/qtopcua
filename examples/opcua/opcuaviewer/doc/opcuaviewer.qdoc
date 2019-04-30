@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the documentation of the QtOpcUa module.
@@ -28,12 +28,11 @@
 /*!
     \example opcuaviewer
     \ingroup qtopcua-examples
-    \title Qt OPC UA explorer
-    \brief This example uses the model/view approach to display all nodes of an
-    OPC UA server in a \l QTreeView.
+    \title Qt OPC UA Viewer Example
+    \brief Using the model/view approach to display all nodes of an
+    OPC UA server in a tree view.
 
-    \section1 Introduction
-    This example uses the model/view approach to display all nodes of an
+    \e {Qt OPC UA Viewer} uses the model/view approach to display all nodes of an
     OPC UA server in a \l QTreeView.
 
     \image opcuaviewer.png
