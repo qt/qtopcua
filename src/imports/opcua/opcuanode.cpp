@@ -171,6 +171,15 @@ QT_BEGIN_NAMESPACE
     \sa status, errorMessage
 */
 
+/*!
+    \qmlproperty EventFilter Node::eventFilter
+    \since 5.13
+
+    An event filter allows monitoring events on the server for certain conditions.
+
+    \sa EventFilter
+*/
+
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML)
 
 OpcUaNode::OpcUaNode(QObject *parent):
@@ -350,16 +359,96 @@ void OpcUaNode::setupNode(const QString &absoluteNodePath)
         setReadyToUse(true);
     });
 
+    connect(m_node, &QOpcUaNode::enableMonitoringFinished, this, [this](QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode){
+        if (attr != QOpcUa::NodeAttribute::EventNotifier)
+            return;
+        if (statusCode == QOpcUa::Good) {
+            m_eventFilterActive = true;
+            qCDebug(QT_OPCUA_PLUGINS_QML) << "Event filter was enabled for node" << resolvedNode().fullNodeId();
+            updateEventFilter();
+        } else {
+            qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to enable event filter for node" << resolvedNode().fullNodeId();
+            setStatus(Status::FailedToSetupMonitoring);
+        }
+    });
+
+    connect(m_node, &QOpcUaNode::disableMonitoringFinished, this, [this](QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode){
+        if (attr != QOpcUa::NodeAttribute::EventNotifier)
+            return;
+        if (statusCode == QOpcUa::Good) {
+            m_eventFilterActive = false;
+            qCDebug(QT_OPCUA_PLUGINS_QML) << "Event filter was disabled for node "<< resolvedNode().fullNodeId();
+        } else {
+            qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to disable event filter for node "<< resolvedNode().fullNodeId();
+            setStatus(Status::FailedToDisableMonitoring);
+        }
+    });
+
+    connect(m_node, &QOpcUaNode::monitoringStatusChanged, this, [this](QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
+                                                                   QOpcUa::UaStatusCode statusCode) {
+        Q_UNUSED(items);
+        if (attr != QOpcUa::NodeAttribute::EventNotifier)
+            return;
+        if (statusCode != QOpcUa::Good) {
+            setStatus(Status::FailedToModifyMonitoring);
+            qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to modify event filter for" << m_node->nodeId();
+        }
+    });
+
+    connect (m_node, &QOpcUaNode::eventOccurred, this, &OpcUaNode::eventOccurred);
+
+
     // Read mandatory attributes
     if (!m_node->readAttributes(m_attributesToRead)) {
         qCWarning(QT_OPCUA_PLUGINS_QML) << "Reading attributes" << m_node->nodeId() << "failed";
         setStatus(Status::FailedToReadAttributes);
     }
+
+    updateEventFilter();
 }
 
 void OpcUaNode::updateNode()
 {
     retrieveAbsoluteNodePath(m_nodeId, [this](const QString &absoluteNodePath) {setupNode(absoluteNodePath);});
+}
+
+OpcUaEventFilter *OpcUaNode::eventFilter() const
+{
+    return m_eventFilter;
+}
+
+void OpcUaNode::setEventFilter(OpcUaEventFilter *eventFilter)
+{
+    bool changed = false;
+
+    if (m_eventFilter) {
+        disconnect(m_eventFilter, &OpcUaEventFilter::dataChanged, this, &OpcUaNode::updateEventFilter);
+        changed = !(*m_eventFilter == *eventFilter);
+    } else {
+        changed = true;
+    }
+
+    m_eventFilter = eventFilter;
+    connect(m_eventFilter, &OpcUaEventFilter::dataChanged, this, &OpcUaNode::updateEventFilter);
+
+    if (changed)
+        emit eventFilterChanged();
+}
+
+
+void OpcUaNode::updateEventFilter()
+{
+    if (!m_connection || !m_node || !m_eventFilter)
+        return;
+
+    if (m_eventFilterActive) {
+        m_node->modifyEventFilter(m_eventFilter->filter(m_connection->m_client));
+    } else {
+        QOpcUaMonitoringParameters parameters;
+        parameters.setFilter(m_eventFilter->filter(m_connection->m_client));
+        m_node->enableMonitoring(QOpcUa::NodeAttribute::EventNotifier, parameters);
+        m_eventFilterActive = true;
+    }
 }
 
 void OpcUaNode::setStatus(OpcUaNode::Status status, const QString &message)

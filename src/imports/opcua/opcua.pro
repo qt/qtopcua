@@ -23,6 +23,13 @@ SOURCES += \
     opcuawriteitem.cpp \
     opcuawriteresult.cpp \
     opcuadatachangefilter.cpp \
+    opcuaelementoperand.cpp \
+    opcualiteraloperand.cpp \
+    opcuasimpleattributeoperand.cpp \
+    opcuaattributeoperand.cpp \
+    opcuafilterelement.cpp \
+    opcuaeventfilter.cpp \
+    opcuaoperandbase.cpp \
 
 HEADERS += \
     opcua_plugin.h \
@@ -47,6 +54,13 @@ HEADERS += \
     opcuawriteitem.h \
     opcuawriteresult.h \
     opcuadatachangefilter.h \
+    opcuaelementoperand.h \
+    opcualiteraloperand.h \
+    opcuasimpleattributeoperand.h \
+    opcuaattributeoperand.h \
+    opcuafilterelement.h \
+    opcuaeventfilter.h \
+    opcuaoperandbase.h \
 
 load(qml_plugin)
 
