@@ -2846,6 +2846,9 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
+    QScopedPointer<QOpcUaNode> doubleWriteNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
+    QVERIFY(doubleWriteNode != nullptr);
+
     QScopedPointer<QOpcUaNode> doubleNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Double"));
     QVERIFY(doubleNode != nullptr);
 
@@ -2854,9 +2857,10 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
     QSignalSpy monitoringEnabledSpy(doubleNode.data(), &QOpcUaNode::enableMonitoringFinished);
     QSignalSpy monitoringDisabledSpy(doubleNode.data(), &QOpcUaNode::disableMonitoringFinished);
     QSignalSpy dataChangeSpy(doubleNode.data(), &QOpcUaNode::dataChangeOccurred);
+    QSignalSpy attributeUpdatedSpy(doubleNode.data(), &QOpcUaNode::attributeUpdated);
     QSignalSpy monitoringModifiedSpy(doubleNode.data(), &QOpcUaNode::monitoringStatusChanged);
 
-    WRITE_VALUE_ATTRIBUTE(doubleNode, 1.0, QOpcUa::Types::Double);
+    WRITE_VALUE_ATTRIBUTE(doubleWriteNode, 1.0, QOpcUa::Types::Double);
 
     doubleNode->enableMonitoring(QOpcUa::NodeAttribute::Value, p);
     monitoringEnabledSpy.wait(signalSpyTimeout);
@@ -2865,15 +2869,21 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
     QCOMPARE(monitoringEnabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
 
     dataChangeSpy.wait(signalSpyTimeout); // Wait for the initial data change
+    attributeUpdatedSpy.wait(signalSpyTimeout);
     QCOMPARE(dataChangeSpy.size(), 1);
+    QCOMPARE(attributeUpdatedSpy.size(), 1);
     dataChangeSpy.clear();
+    attributeUpdatedSpy.clear();
 
-    WRITE_VALUE_ATTRIBUTE(doubleNode, 1.5, QOpcUa::Types::Double);
+    WRITE_VALUE_ATTRIBUTE(doubleWriteNode, 1.5, QOpcUa::Types::Double);
 
     dataChangeSpy.wait(signalSpyTimeout);
+    attributeUpdatedSpy.wait(signalSpyTimeout);
     QCOMPARE(dataChangeSpy.size(), 1); // Data change without filter
+    QCOMPARE(attributeUpdatedSpy.size(), 1);
     QCOMPARE(doubleNode->attribute(QOpcUa::NodeAttribute::Value), 1.5);
     dataChangeSpy.clear();
+    attributeUpdatedSpy.clear();
 
     QOpcUaMonitoringParameters::DataChangeFilter filter;
     filter.setDeadbandType(QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType::Absolute);
@@ -2886,15 +2896,20 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
     QVERIFY(monitoringModifiedSpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>() & QOpcUaMonitoringParameters::Parameter::Filter);
     QCOMPARE(monitoringModifiedSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
 
-    WRITE_VALUE_ATTRIBUTE(doubleNode, 2.0, QOpcUa::Types::Double);
+    WRITE_VALUE_ATTRIBUTE(doubleWriteNode, 2.0, QOpcUa::Types::Double);
 
     dataChangeSpy.wait(signalSpyTimeout);
+    attributeUpdatedSpy.wait(signalSpyTimeout);
     QCOMPARE(dataChangeSpy.size(), 0); // Filter is active and delta is < 1
+    QCOMPARE(attributeUpdatedSpy.size(), 0);
+    attributeUpdatedSpy.clear();
 
-    WRITE_VALUE_ATTRIBUTE(doubleNode, 3.0, QOpcUa::Types::Double);
+    WRITE_VALUE_ATTRIBUTE(doubleWriteNode, 3.0, QOpcUa::Types::Double);
 
     dataChangeSpy.wait(signalSpyTimeout);
+    attributeUpdatedSpy.wait(signalSpyTimeout);
     QCOMPARE(dataChangeSpy.size(), 1); // delta == 1, a data change is expected
+    QCOMPARE(attributeUpdatedSpy.size(), 1);
     QCOMPARE(doubleNode->attribute(QOpcUa::NodeAttribute::Value), 3.0);
 
     doubleNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
