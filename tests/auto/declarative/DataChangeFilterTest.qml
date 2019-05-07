@@ -66,7 +66,7 @@ Item {
 
         Binding on discoveryUrl {
             when: shouldRun && Component.completed
-            value: "opc.tcp://127.0.0.1:43344"
+            value: OPCUA_DISCOVERY_URL
         }
     }
 

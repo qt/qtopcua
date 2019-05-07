@@ -131,7 +131,7 @@ Item {
         function test_nodeTest() {
             compare(myServers1.count, 0);
 
-            myServers1.discoveryUrl = "opc.tcp://127.0.0.1:43344";
+            myServers1.discoveryUrl = OPCUA_DISCOVERY_URL;
 
             serversStatusSpy1.wait();
             compare(myServers1.status.status, QtOpcUa.Status.GoodCompletesAsynchronously);
@@ -242,7 +242,7 @@ Item {
         function test_nodeTest() {
             compare(myServers2.count, 0);
 
-            myServers2.discoveryUrl = "opc.tcp://127.0.0.1:43344";
+            myServers2.discoveryUrl = OPCUA_DISCOVERY_URL;
 
             serversStatusSpy2.wait();
             compare(myServers2.status.status, QtOpcUa.Status.GoodCompletesAsynchronously);

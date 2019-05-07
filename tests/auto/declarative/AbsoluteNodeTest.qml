@@ -79,7 +79,7 @@ Item {
             if (children[i].objectName == "TestCase")
                 availableTestCases += 1;
         }
-        serverDiscovery.discoveryUrl = "opc.tcp://127.0.0.1:43344";
+        serverDiscovery.discoveryUrl = OPCUA_DISCOVERY_URL;
     }
 
     CompletionLoggingTestCase {

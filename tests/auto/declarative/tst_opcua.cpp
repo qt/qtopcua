@@ -107,8 +107,9 @@ public slots:
             // Let the server come up
             QTest::qSleep(2000);
         }
-        QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
-        QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
+        const QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
+        const QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
+        m_opcuaDiscoveryUrl = QString::fromLatin1("opc.tcp://%1:%2").arg(host).arg(port);
     }
     void qmlEngineAvailable(QQmlEngine *engine) {
         bool value = false;
@@ -116,6 +117,7 @@ public slots:
         value = true;
 #endif
         engine->rootContext()->setContextProperty("SERVER_SUPPORTS_SECURITY", value);
+        engine->rootContext()->setContextProperty("OPCUA_DISCOVERY_URL", m_opcuaDiscoveryUrl);
     }
     void cleanupTestCase() {
         if (m_serverProcess.state() == QProcess::Running) {
@@ -126,6 +128,7 @@ public slots:
 private:
     QProcess m_serverProcess;
     QString m_testServerPath;
+    QString m_opcuaDiscoveryUrl;
 };
 
 QUICK_TEST_MAIN_WITH_SETUP(opcua, SetupClass)
