@@ -50,7 +50,7 @@ class OpcUaRelativeNodePath : public QObject
     Q_OBJECT
     Q_PROPERTY(QString ns READ nodeNamespace WRITE setNodeNamespace NOTIFY nodeNamespaceChanged)
     Q_PROPERTY(QString browseName READ browseName WRITE setBrowseName NOTIFY browseNameChanged)
-    Q_PROPERTY(QOpcUa::ReferenceTypeId referenceType READ referenceType WRITE setReferenceType NOTIFY referenceTypeChanged)
+    Q_PROPERTY(QVariant referenceType READ referenceType WRITE setReferenceType NOTIFY referenceTypeChanged)
     Q_PROPERTY(bool includeSubtypes READ includeSubtypes WRITE setIncludeSubtypes NOTIFY includeSubtypesChanged)
     Q_PROPERTY(bool isInverse READ isInverse WRITE setIsInverse NOTIFY isInverseChanged)
 
@@ -58,7 +58,7 @@ public:
     explicit OpcUaRelativeNodePath(QObject *parent = nullptr);
     const QString &nodeNamespace() const;
     const QString &browseName() const;
-    QOpcUa::ReferenceTypeId referenceType() const;
+    QVariant referenceType() const;
     bool includeSubtypes() const;
     bool isInverse() const;
     QOpcUaRelativePathElement toRelativePathElement(QOpcUaClient *client) const;
@@ -66,20 +66,20 @@ public:
 signals:
     void nodeNamespaceChanged(QString ns);
     void browseNameChanged(QString browseName);
-    void referenceTypeChanged(QOpcUa::ReferenceTypeId referenceType);
+    void referenceTypeChanged();
     void includeSubtypesChanged(bool includeSubtypes);
     void isInverseChanged(bool isInverse);
 
 public slots:
     void setNodeNamespace(QString ns);
     void setBrowseName(QString browseName);
-    void setReferenceType(QOpcUa::ReferenceTypeId referenceType);
+    void setReferenceType(const QVariant &referenceType);
     void setIncludeSubtypes(bool includeSubtypes);
     void setIsInverse(bool isInverse);
 
 private:
     mutable UniversalNode m_browseNode;
-    QOpcUa::ReferenceTypeId m_referenceType = QOpcUa::ReferenceTypeId::References;
+    QVariant m_referenceType = QVariant::fromValue(QOpcUa::ReferenceTypeId::References);
     bool m_includeSubtypes = true;
     bool m_isInverse = false;
 };

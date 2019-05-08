@@ -35,7 +35,10 @@
 ****************************************************************************/
 
 #include "opcuarelativenodepath.h"
+#include "opcuanodeid.h"
 #include "qopcuaclient.h"
+#include <QLoggingCategory>
+#include <QMetaEnum>
 
 QT_BEGIN_NAMESPACE
 
@@ -89,8 +92,11 @@ QT_BEGIN_NAMESPACE
     \qmlproperty QOpcUa::ReferenceTypeId RelativeNodePath::referenceType
 
     Type of reference when mathing this path element.
-    The default value of this property is \c QOpcUa::ReferenceTypeId::References.
+    This can be a \l QOpcUa::ReferenceTypeId or a \l NodeId.
+    The default value of this property is \c Constants.ReferenceTypeId.References.
 */
+
+Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML)
 
 OpcUaRelativeNodePath::OpcUaRelativeNodePath(QObject *parent) : QObject(parent)
 {
@@ -108,7 +114,7 @@ const QString &OpcUaRelativeNodePath::browseName() const
     return m_browseNode.nodeIdentifier();
 }
 
-QOpcUa::ReferenceTypeId OpcUaRelativeNodePath::referenceType() const
+QVariant OpcUaRelativeNodePath::referenceType() const
 {
     return m_referenceType;
 }
@@ -128,13 +134,25 @@ void OpcUaRelativeNodePath::setBrowseName(QString browseName)
     m_browseNode.setNodeIdentifier(browseName);
 }
 
-void OpcUaRelativeNodePath::setReferenceType(QOpcUa::ReferenceTypeId referenceType)
+void OpcUaRelativeNodePath::setReferenceType(const QVariant &referenceType)
 {
+    bool valid = false;
+
+    if (referenceType.userType() == qMetaTypeId<QObject*>() && qobject_cast<OpcUaNodeId*>(referenceType.value<QObject*>()))
+        valid = true;
+    else if (referenceType.userType() == QVariant::Int && QMetaEnum::fromType<QOpcUa::ReferenceTypeId>().valueToKey(referenceType.toInt()))
+        valid = true;
+
+    if (!valid) {
+            qCWarning(QT_OPCUA_PLUGINS_QML) << "Invalid reference type:" << referenceType;
+            return;
+    }
+
     if (m_referenceType == referenceType)
         return;
 
     m_referenceType = referenceType;
-    emit referenceTypeChanged(m_referenceType);
+    emit referenceTypeChanged();
 }
 
 void OpcUaRelativeNodePath::setIncludeSubtypes(bool includeSubtypes)
@@ -159,7 +177,12 @@ QOpcUaRelativePathElement OpcUaRelativeNodePath::toRelativePathElement(QOpcUaCli
     x.setIsInverse(isInverse());
     x.setIncludeSubtypes(includeSubtypes());
     x.setTargetName(m_browseNode.toQualifiedName());
-    x.setReferenceTypeId(referenceType());
+    if (m_referenceType.userType() == QVariant::Int
+        || m_referenceType.userType() == qMetaTypeId<QOpcUa::ReferenceTypeId>())
+        x.setReferenceTypeId(m_referenceType.value<QOpcUa::ReferenceTypeId>());
+    else
+        x.setReferenceTypeId(m_referenceType.toString());
+
     return x;
 }
 
