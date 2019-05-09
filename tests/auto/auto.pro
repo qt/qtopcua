@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS +=  qopcuaclient connection
+SUBDIRS +=  qopcuaclient connection clientSetupInCpp
 
 QT_FOR_CONFIG += opcua-private
 
