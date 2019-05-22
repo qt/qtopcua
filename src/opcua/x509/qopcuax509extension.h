@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the QtOpcUa module of the Qt Toolkit.
+** This file is part of the Qt OPC UA module.
 **
 ** $QT_BEGIN_LICENSE:LGPL3$
 ** Commercial License Usage
@@ -34,70 +34,32 @@
 **
 ****************************************************************************/
 
-#ifndef QOPEN62541UTILS_H
-#define QOPEN62541UTILS_H
+#ifndef QOPCUAX509EXTENSION_H
+#define QOPCUAX509EXTENSION_H
 
-#include "qopen62541.h"
-
-#include <QString>
-
-#include <functional>
+#include <QtOpcUa/qopcuaglobal.h>
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
 
-template <typename T>
-class UaDeleter
+class QOpcUaX509ExtensionData;
+class Q_OPCUA_EXPORT QOpcUaX509Extension
 {
 public:
-    UaDeleter(T *data, std::function<void(T *value)> f)
-        : m_data(data)
-        , m_function(f)
-    {
-    }
-    ~UaDeleter()
-    {
-        if (m_data)
-            m_function(m_data);
-    }
-    void release()
-    {
-        m_data = nullptr;
-        m_function = nullptr;
-    }
-private:
-    T *m_data {nullptr};
-    std::function<void(T *attribute)> m_function;
-};
+    QOpcUaX509Extension();
+    QOpcUaX509Extension(const QOpcUaX509Extension &);
+    QOpcUaX509Extension &operator=(const QOpcUaX509Extension &);
+    bool operator==(const QOpcUaX509Extension &rhs) const;
+    virtual ~QOpcUaX509Extension();
+    void setCritical(bool critical);
+    bool critical() const;
 
-template <uint TYPEINDEX>
-class UaArrayDeleter
-{
-public:
-    UaArrayDeleter(void *data, size_t arrayLength)
-        : m_data(data)
-        , m_arrayLength(arrayLength)
-    {
-        static_assert (TYPEINDEX < UA_TYPES_COUNT, "Invalid index outside the UA_TYPES array.");
-    }
-    ~UaArrayDeleter()
-    {
-        if (m_data && m_arrayLength > 0)
-            UA_Array_delete(m_data, m_arrayLength, &UA_TYPES[TYPEINDEX]);
-    }
-    void release() {
-        m_data = nullptr;
-        m_arrayLength = 0;
-    }
-private:
-    void *m_data {nullptr};
-    size_t m_arrayLength {0};
+protected:
+    QOpcUaX509Extension(QOpcUaX509ExtensionData*);
+    QOpcUaX509Extension(QSharedDataPointer<QOpcUaX509ExtensionData>);
+    QSharedDataPointer<QOpcUaX509ExtensionData> data;
 };
-
-namespace Open62541Utils {
-    UA_NodeId nodeIdFromQString(const QString &name);
-    QString nodeIdToQString(UA_NodeId id);
-}
 
 QT_END_NAMESPACE
 
-#endif // QOPEN62541UTILS_H
+#endif // QOPCUAX509EXTENSION_H
