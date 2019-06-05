@@ -162,10 +162,7 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
             m_monitoredState = true;
             emit monitoredChanged(m_monitoredState);
             qCDebug(QT_OPCUA_PLUGINS_QML) << "Monitoring was enabled for node" << resolvedNode().fullNodeId();
-            if (m_connection->backend() != QLatin1String("open62541")) {
-                // This line triggers a bug in open62541. When it is fixed the call should be unconditional.
-                updateFilters();
-            }
+            updateFilters();
         } else {
             qCWarning(QT_OPCUA_PLUGINS_QML) << "Failed to enable monitoring for node" << resolvedNode().fullNodeId();
             setStatus(Status::FailedToSetupMonitoring);
