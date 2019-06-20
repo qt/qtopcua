@@ -1,5 +1,6 @@
 TARGET = QtOpcUa
 QT += core-private
+QT -= gui
 
 include(core/core.pri)
 include(client/client.pri)

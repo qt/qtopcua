@@ -1,5 +1,6 @@
 TARGET = open62541_backend
 QT += core core-private opcua opcua-private network
+QT -= gui
 
 qtConfig(open62541):!qtConfig(system-open62541) {
     include($$PWD/../../../3rdparty/open62541.pri)
