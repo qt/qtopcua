@@ -49,6 +49,7 @@ examples.fileextensions = "*.cpp"
 navigation.landingpage = "Qt OPC UA"
 navigation.cppclassespage = "Qt OPC UA C++ Classes"
 navigation.qmltypespage = "Qt OPC UA QML Types"
+navigation.homepage = "Qt for Automation"
 
 examplesinstallpath = opcua
 
