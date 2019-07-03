@@ -465,7 +465,7 @@ QVariant QOpcUaMonitoringParameters::filter() const
     If another data change filter or an event filter is present, it will be replaced.
 
     If the server does not accept the filter, this will be indicated by the
-    status code after the \l enableMonitoring() request has finished.
+    status code after the \l QOpcUaNode::enableMonitoring() request has finished.
 
     \sa filter()
 */
@@ -478,7 +478,7 @@ void QOpcUaMonitoringParameters::setFilter(const QOpcUaMonitoringParameters::Dat
     Request \a eventFilter as filter for the monitored item.
     If another event filter or a data change filter is present, it will be replaced.
     If the server does not accept the filter, this will be indicated by the
-    status code and the event filter result after the \l enableMonitoring()
+    status code and the event filter result after the \l QOpcUaNode::enableMonitoring()
     request has finished.
 
     \sa filter()
