@@ -68,6 +68,9 @@ public:
     QByteArray &encodedBodyRef();
     void setEncodedBody(const QByteArray &encodedBody);
 
+    void setBinaryEncodedBody(const QByteArray &encodedBody, const QString &typeId);
+    void setXmlEncodedBody(const QByteArray &encodedBody, const QString &typeId);
+
     QOpcUaExtensionObject::Encoding encoding() const;
     void setEncoding(QOpcUaExtensionObject::Encoding encoding);
 
