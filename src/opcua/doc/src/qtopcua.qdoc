@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Copyright (C) 2015 basysKom GmbH, info@basyskom.com
 ** Contact: https://www.qt.io/licensing/
 **
@@ -68,12 +69,11 @@
     \brief Implements OPC UA connectivity through a Qt API.
     \preliminary
 
-    The Qt \l{Qt OPC UA#A short introduction to OPC UA}{OPC UA} module
-    implements a Qt API to interact with OPC UA on top of a 3rd party
-    OPC UA stack.
+    The \l{Qt OPC UA Overview}{Qt OPC UA} module implements a Qt API to
+    interact with OPC UA on top of a 3rd party OPC UA stack.
 
-    The stacks are connected via plugins and can be selected/switched at runtime.
-    Currently, the following implementations are supported
+    The stacks are integrated as plugins and can be selected at runtime.
+    Currently, the following implementations are supported:
 
     \list
     \li Open62541 v0.3, MPLv2
@@ -81,35 +81,68 @@
     \endlist
 
     The QML API as well as the security related C++ API are still in development but are available as a technology preview.
-    This means those parts are unstable, likely to change and provided as a convenience only.
+    This means those parts are unstable, likely to change, and provided as a convenience only.
     All functions and classes of the C++ API, which are related to security, state in their documentation if they are technology preview.
 
     \section1 Getting started
 
-    Add the following line to your .pro file
+    To include the definitions of the module's classes, use the following
+    directive:
+
     \code
-        QT += opcua
-    \endcode
-    and include the Qt OPC UA headers into your files using
-    \code
-       #include <QtOpcUa>
+    #include <QtOpcUa>
     \endcode
 
-    The \l{Qt OPC UA Examples}{examples} demonstrate how to use Qt OPC UA API to interact with an OPC UA server.
+    To link against the module, add this line to your \l qmake \c .pro file:
 
-    \section1 A short introduction to OPC UA
+    \code
+    QT += opcua
+    \endcode
+
+    \section1 Articles and Guides
+
+       \list
+           \li \l{Qt OPC UA Overview}{Overview}
+           \li \l{Building Qt OPC UA Open62541 Plugin}
+           \li \l{Building Qt OPC UA UACPP Plugin}
+           \li \l{https://opcfoundation.org/about/opc-technologies/opc-ua/}
+               {OPC UA at the OPC foundation}
+    \endlist
+
+    \section1 Examples
+
+    \list
+        \li \l{Qt OPC UA Examples}{Examples}
+    \endlist
+
+    \section1 Reference
+
+    \list
+        \li \l{Qt OPC UA C++ Classes}{C++ Classes}
+        \li \l{Qt OPC UA QML Types}{QML Types}
+    \endlist
+*/
+
+/*!
+    \page qtopcua-overview.html
+    \title Qt OPC UA Overview
+
     OPC UA is a protocol for data modelling and exchange of data in industrial applications.
 
-    An OPC UA server offers access to data which is organized in a mesh of nodes connected by references.
+    An OPC UA server offers access to data that is organized in a mesh of nodes
+    connected by references.
     The use of different reference types and nodes containing metadata enable a client to navigate and interpret
     the data without knowing their structure in advance.
 
     Each node has a unique identifier and attributes that can be read and written.
-    Among others, there are Variable nodes which store values and callable Method nodes with attached nodes describing
-    parameters and return values. Notifications in case of events and monitoring of Variable nodes for value changes are offered too.
+    Among others, there are \e Variable nodes that store values and callable
+    \e Method nodes with attached nodes describing parameters and return values.
+    \e Notifications in case of events and monitoring of Variable nodes for
+    value changes are offered too.
 
-    Complex objects can be created by combining nodes using references, inheritance is also possible.
-    OPC UA offers support for pre-made models which can be extended to fit special needs.
+    Complex objects can be created by combining nodes using references.
+    Inheritance is also possible. OPC UA offers support for pre-made models
+    that can be extended to fit special needs.
 
     OPC UA is the platform-independent successor of OPC Classic intended for usage on all levels,
     from embedded sensors up to manufacturing execution and enterprise resource planning systems.
@@ -117,9 +150,10 @@
     There are different ways for these messages to be encoded and transported over the network. The most common way
     is binary encoding over TCP.
 
-    \section1 Implemented features from the OPC UA protocol
+    \section1 Implemented Features from the OPC UA Protocol
 
-    The following features of OPC UA are supported by Qt OPC UA:
+    The following table summarizes the features of OPC UA that are supported by
+    Qt OPC UA.
 
     \table
     \header
@@ -184,7 +218,7 @@
     \li X
     \endtable
 
-    \section1 Data types
+    \section1 Data Types
     A subset of the OPC UA data types is currently supported in Qt OPC UA.
     Most of them are available with all backends.
 
@@ -321,13 +355,14 @@
     \li QOpcUaExtensionObject
     \endtable
 
-    \section1 Classes and ownership
+    \section1 Classes and Ownership
     Two important classes are exposed to the user: QOpcUaClient and QOpcUaNode.
 
     Objects of both classes are owned by the user and must be deleted when they are no longer needed.
 
-    \section1 Logging categories
-    The following logging categories are used by Qt OPC UA
+    \section1 Logging Categories
+    The following table summarizes the logging categories that are used by
+    Qt OPC UA.
     \table
     \header
     \li Logging Category
@@ -352,13 +387,12 @@
     the \l{GNU General Public License, version 2}.
     See \l{Qt Licensing} for further details.
 
-    Furthermore Qt OPC UA contains plugins under following licenses:
-
-    Qt OPC Ua in Qt \QtVersion may contain third party modules under following permissive licenses:
+    Qt OPC UA in Qt \QtVersion may contain third party modules under following
+    permissive licenses:
 
     \generatelist{groupsbymodule attributions-qtopcua}
 
-    Linking to external libraries involves licenses from the backend providers:
+    Linking to external libraries involves licenses from the backend providers.
 
     \section2 Open62541
 
@@ -371,18 +405,6 @@
     In addition, it is available under the \l{GNU General Public License, version 3}.
     The UA CPP library itself is available under commercial licenses from
     \l {https://www.unified-automation.com}{Unified Automation}.
-
-    \section1 Related Information
-
-    \list
-    \li \l{Building Qt OPC UA Open62541 Plugin}
-    \li \l{Building Qt OPC UA UACPP Plugin}
-    \li \l{Qt OPC UA C++ Classes}{C++ Classes}
-    \li \l{Qt OPC UA QML Types}{QML Types}
-    \li \l{Qt OPC UA Examples}{Examples}
-    \li \l{https://opcfoundation.org/about/opc-technologies/opc-ua/}{OPC UA at the OPC foundation}
-    \endlist
-
 */
 
 /*!

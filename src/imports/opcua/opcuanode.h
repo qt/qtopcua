@@ -40,6 +40,7 @@
 #include "universalnode.h"
 #include "opcuaattributecache.h"
 #include "qopcualocalizedtext.h"
+#include "opcuaeventfilter.h"
 #include <QDateTime>
 
 QT_BEGIN_NAMESPACE
@@ -59,6 +60,7 @@ class OpcUaNode : public QObject
     Q_PROPERTY(bool readyToUse READ readyToUse NOTIFY readyToUseChanged)
     Q_PROPERTY(OpcUaNode::Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(QString errorMessage READ errorMessage NOTIFY errorMessageChanged)
+    Q_PROPERTY(OpcUaEventFilter *eventFilter READ eventFilter WRITE setEventFilter NOTIFY eventFilterChanged)
 
     // basic node properties
     Q_PROPERTY(QString browseName READ browseName WRITE setBrowseName NOTIFY browseNameChanged)
@@ -105,6 +107,9 @@ public:
     OpcUaNode::Status status() const;
     const QString &errorMessage() const;
 
+    OpcUaEventFilter *eventFilter() const;
+    void setEventFilter(OpcUaEventFilter *eventFilter);
+
     Q_INVOKABLE QDateTime getSourceTimestamp(QOpcUa::NodeAttribute) const;
     Q_INVOKABLE QDateTime getServerTimestamp(QOpcUa::NodeAttribute) const;
 
@@ -129,10 +134,13 @@ signals:
     void descriptionChanged();
     void statusChanged();
     void errorMessageChanged();
+    void eventFilterChanged();
+    void eventOccurred(const QVariantList&values);
 
 protected slots:
     virtual void setupNode(const QString &absoluteNodePath);
     void updateNode();
+    void updateEventFilter();
 
 protected:
     void setStatus(Status status, const QString &message = QString());
@@ -152,6 +160,8 @@ protected:
     QOpcUa::NodeAttributes m_attributesToRead;
     Status m_status;
     QString m_errorMessage;
+    OpcUaEventFilter *m_eventFilter = nullptr;
+    bool m_eventFilterActive = false;
 };
 
 QT_END_NAMESPACE

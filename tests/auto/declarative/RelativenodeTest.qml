@@ -79,7 +79,7 @@ Item {
             if (children[i].objectName == "TestCase")
                 availableTestCases += 1;
         }
-        serverDiscovery.discoveryUrl = "opc.tcp://127.0.0.1:43344";
+        serverDiscovery.discoveryUrl = OPCUA_DISCOVERY_URL;
     }
 
     CompletionLoggingTestCase {
@@ -326,4 +326,60 @@ Item {
             signalName: "pathChanged"
         }
     }
+
+    CompletionLoggingTestCase {
+        name: "Relative Node Path with References"
+        when: node5.readyToUse && shouldRun
+
+        function test_nodeRead() {
+              tryVerify(function() { return node5.value > 0 });
+        }
+
+        QtOpcUa.ValueNode {
+            connection: connection
+            nodeId: QtOpcUa.RelativeNodeId {
+                  startNode: QtOpcUa.NodeId {
+                                ns: "Test Namespace"
+                                identifier: "s=TestFolder"
+                             }
+                  path: [ QtOpcUa.RelativeNodePath {
+                             ns: "Test Namespace"
+                             browseName: "TestNode.ReadWrite"
+                             referenceType: QtOpcUa.Constants.ReferenceTypeId.References
+                        }
+                        ]
+            }
+            id: node5
+        }
+    }
+
+    CompletionLoggingTestCase {
+        name: "Relative Node Path with NodeId reference"
+        when: node6.readyToUse && shouldRun
+
+        function test_nodeRead() {
+              tryVerify(function() { return node6.value > 0 });
+        }
+
+        QtOpcUa.ValueNode {
+            connection: connection
+            nodeId: QtOpcUa.RelativeNodeId {
+                  startNode: QtOpcUa.NodeId {
+                                ns: "Test Namespace"
+                                identifier: "s=TestFolder"
+                             }
+                  path: [ QtOpcUa.RelativeNodePath {
+                             ns: "Test Namespace"
+                             browseName: "TestNode.ReadWrite"
+                             referenceType: QtOpcUa.NodeId {
+                                  ns: "http://opcfoundation.org/UA/"
+                                  identifier: "i=31"
+                             }
+                        }
+                        ]
+            }
+            id: node6
+        }
+    }
+
 }

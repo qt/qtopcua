@@ -968,7 +968,7 @@ OpcUa_Variant toUACppVariant(const QVariant &value, QOpcUa::Types type)
     case QOpcUa::ExtensionObject:
         return arrayFromQVariant<OpcUa_ExtensionObject, QOpcUaExtensionObject>(value, dt);
     default:
-        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Variant conversion to UACpp for typeIndex" << type << " not implemented";
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Variant conversion of" << value << "to UACpp for typeIndex" << type << " not implemented";
     }
 
     return uacppvalue;

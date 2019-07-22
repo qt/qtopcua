@@ -86,52 +86,55 @@ Item {
         }
     }
 
+    Timer {
+        id: timer
+        interval: 2000
+    }
+
     CompletionLoggingTestCase {
-        name: "Create String Node Id"
+        name: "Data Change Filter"
         when: node1.readyToUse && shouldRun
 
         function test_nodeTest() {
             tryCompare(node1, "monitored", true);
+            compare(node2.monitored, false);
             compare(node1.publishingInterval, 100.0);
-            node1ValueSpy.clear();
-            verify(node1.value != "foo");
-            node2.value = "foo";
-            node1ValueSpy.wait(10000);
-            compare(node1ValueSpy.count, 1);
 
-            compare(node1.monitored, true);
-            node1MonitoredSpy.clear();
-            node1.monitored = false;
-            node1MonitoredSpy.wait();
-            compare(node1MonitoredSpy.count, 1);
-            compare(node1IntervalSpy.count, 0);
-            compare(node1.monitored, false);
+            compare(node1.filter.deadbandType, 1);
+            compare(node1.filter.trigger, 1);
+            compare(node1.filter.deadbandValue, 1);
+            if (node1ValueSpy.count == 0)
+                node1ValueSpy.wait();
+
+            verify(node1.value != 1.5);
 
             node1ValueSpy.clear();
-            node2.value = "bar";
+            node2ValueSpy.clear();
+            node2.value = 1.5;
+            node2ValueSpy.wait(); // wait for value written
             timer.running = true;
             timerSpy.wait();
             compare(node1ValueSpy.count, 0);
+            compare(node1.value, 1.0); // still 1.0 because of filtering
 
-            node1MonitoredSpy.clear();
-            node1.monitored = true;
-            node1MonitoredSpy.wait();
-            compare(node1MonitoredSpy.count, 1);
-            compare(node1IntervalSpy.count, 0);
-            compare(node1.monitored, true);
-
-            // This needs to be reset to "Value" for follow up tests to succeed.
-            node2.value = "Value";
+            node1ValueSpy.clear();
+            node2ValueSpy.clear();
+            verify(node1.value != 30);
+            node2.value = 30.0;
+            verify(node1.value != 30);
+            node2ValueSpy.wait(); // wait for value written
             node1ValueSpy.wait();
+            compare(node1.value, 30);
             compare(node1ValueSpy.count, 1);
 
-            node1MonitoredSpy.clear();
-            node1IntervalSpy.clear();
-            node1.publishingInterval = 200.0;
-            node1IntervalSpy.wait();
-            compare(node1MonitoredSpy.count, 0);
-            compare(node1IntervalSpy.count, 1);
-            compare(node1.publishingInterval, 200.0);
+            // Reset values
+            node1ValueSpy.clear();
+            node2ValueSpy.clear();
+            node2.value = 1.0;
+            node2ValueSpy.wait(); // wait for value written
+            node1ValueSpy.wait();
+            compare(node1ValueSpy.count, 1);
+            compare(node1.value, 1.0);
         }
 
         SignalSpy {
@@ -141,38 +144,35 @@ Item {
         }
 
         SignalSpy {
-            id: node1IntervalSpy
-            target: node1
-            signalName: "publishingIntervalChanged"
-        }
-
-        SignalSpy {
-            id: node1MonitoredSpy
-            target: node1
-            signalName: "monitoredChanged"
+            id: node2ValueSpy
+            target: node2
+            signalName: "valueChanged"
         }
 
         QtOpcUa.ValueNode {
             connection: connection
             nodeId: QtOpcUa.NodeId {
-                ns: "Test Namespace"
-                identifier: "s=theStringId"
+                ns: "http://qt-project.org"
+                identifier: "s=Demo.Static.Scalar.Double"
             }
             id: node1
+
+            filter: QtOpcUa.DataChangeFilter {
+                deadbandValue: 1.0
+                deadbandType: QtOpcUa.DataChangeFilter.DeadbandType.Absolute
+                trigger: QtOpcUa.DataChangeFilter.DataChangeTrigger.StatusOrValue
+            }
+
         }
 
         QtOpcUa.ValueNode {
             connection: connection
             nodeId: QtOpcUa.NodeId {
-                ns: "Test Namespace"
-                identifier: "s=theStringId"
+                ns: "http://qt-project.org"
+                identifier: "s=Demo.Static.Scalar.Double"
             }
             id: node2
-        }
-
-        Timer {
-            id: timer
-            interval: 2000
+            monitored: false
         }
 
         SignalSpy {
@@ -182,3 +182,5 @@ Item {
         }
     }
 }
+
+

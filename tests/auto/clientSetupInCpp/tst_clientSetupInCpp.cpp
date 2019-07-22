@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the Qt OPC UA module.
@@ -42,11 +42,67 @@
 #include <QQmlEngine>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QOpcUaClient>
+#include <QOpcUaProvider>
+#include <QSignalSpy>
+
+const int signalSpyTimeout = 10000;
+const quint16 defaultPort = 43344;
+const QHostAddress defaultHost(QHostAddress::LocalHost);
 
 static QString envOrDefault(const char *env, QString def)
 {
     return qEnvironmentVariableIsSet(env) ? qgetenv(env).constData() : def;
 }
+
+class MyClass : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QOpcUaClient* connection READ connection NOTIFY connectionChanged)
+
+public:
+    MyClass (QObject* parent = nullptr) : QObject(parent) {
+    }
+
+    QOpcUaClient *connection() const {
+        return m_client;
+    }
+
+signals:
+    void connectionChanged(QOpcUaClient *);
+
+public slots:
+    void startConnection() {
+        QOpcUaProvider p;
+        QOpcUaClient *client = p.createClient("open62541");
+
+        if (!client)
+            qFatal("Failed to instantiate backend");
+
+        m_client = client;
+
+        QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
+        QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
+        const auto discoveryEndpoint = QString("opc.tcp://%1:%2").arg(host).arg(port);
+
+        QSignalSpy endpointSpy(client, &QOpcUaClient::endpointsRequestFinished);
+        client->requestEndpoints(discoveryEndpoint);
+        endpointSpy.wait(signalSpyTimeout);
+        QCOMPARE(endpointSpy.size(), 1);
+
+        const QVector<QOpcUaEndpointDescription> desc = endpointSpy.at(0).at(0).value<QVector<QOpcUaEndpointDescription>>();
+        QVERIFY(desc.size() > 0);
+        QCOMPARE(endpointSpy.at(0).at(2).value<QUrl>(), discoveryEndpoint);
+
+        client->connectToEndpoint(desc.first());
+        QTRY_VERIFY_WITH_TIMEOUT(client->state() == QOpcUaClient::Connected, signalSpyTimeout);
+        qDebug() << "DONE";
+        emit connectionChanged(m_client);
+    }
+
+private:
+    QOpcUaClient *m_client = nullptr;
+};
 
 class SetupClass : public QObject
 {
@@ -60,8 +116,6 @@ public:
 public slots:
     void applicationAvailable() {
         updateEnvironment();
-        const quint16 defaultPort = 43344;
-        const QHostAddress defaultHost(QHostAddress::LocalHost);
 
         if (qEnvironmentVariableIsEmpty("OPCUA_HOST") && qEnvironmentVariableIsEmpty("OPCUA_PORT")) {
             m_testServerPath = qApp->applicationDirPath()
@@ -118,6 +172,7 @@ public slots:
 #endif
         engine->rootContext()->setContextProperty("SERVER_SUPPORTS_SECURITY", value);
         engine->rootContext()->setContextProperty("OPCUA_DISCOVERY_URL", m_opcuaDiscoveryUrl);
+        qmlRegisterType<MyClass>("App", 1, 0, "MyClass");
     }
     void cleanupTestCase() {
         if (m_serverProcess.state() == QProcess::Running) {
@@ -133,4 +188,4 @@ private:
 
 QUICK_TEST_MAIN_WITH_SETUP(opcua, SetupClass)
 
-#include "tst_opcua.moc"
+#include "tst_clientSetupInCpp.moc"

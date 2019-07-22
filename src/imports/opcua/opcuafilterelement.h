@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the Qt OPC UA module.
@@ -34,54 +34,70 @@
 **
 ****************************************************************************/
 
-#pragma once
+#ifndef OPCUAFILTERELEMENT
+#define OPCUAFILTERELEMENT
 
 #include <QObject>
-#include <qopcuatype.h>
-#include "universalnode.h"
+#include <QOpcUaContentFilterElement>
 
 QT_BEGIN_NAMESPACE
 
 class QOpcUaClient;
-class QOpcUaRelativePathElement;
+class OpcUaOperandBase;
 
-class OpcUaRelativeNodePath : public QObject
-{
+class OpcUaFilterElement : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QString ns READ nodeNamespace WRITE setNodeNamespace NOTIFY nodeNamespaceChanged)
-    Q_PROPERTY(QString browseName READ browseName WRITE setBrowseName NOTIFY browseNameChanged)
-    Q_PROPERTY(QVariant referenceType READ referenceType WRITE setReferenceType NOTIFY referenceTypeChanged)
-    Q_PROPERTY(bool includeSubtypes READ includeSubtypes WRITE setIncludeSubtypes NOTIFY includeSubtypesChanged)
-    Q_PROPERTY(bool isInverse READ isInverse WRITE setIsInverse NOTIFY isInverseChanged)
+    Q_PROPERTY(FilterOperator operator READ operatorType WRITE setOperatorType)
+    Q_PROPERTY(OpcUaOperandBase* firstOperand READ firstOperand WRITE setFirstOperand)
+    Q_PROPERTY(OpcUaOperandBase* secondOperand READ secondOperand WRITE setSecondOperand)
 
 public:
-    explicit OpcUaRelativeNodePath(QObject *parent = nullptr);
-    const QString &nodeNamespace() const;
-    const QString &browseName() const;
-    QVariant referenceType() const;
-    bool includeSubtypes() const;
-    bool isInverse() const;
-    QOpcUaRelativePathElement toRelativePathElement(QOpcUaClient *client) const;
+    // Same as in qopcuacontentfilterelement.h
+    // Specified in OPC-UA part 4, Tables 115 and 116
+    enum class FilterOperator : quint32 {
+        Equals = 0,
+        IsNull = 1,
+        GreaterThan = 2,
+        LessThan = 3,
+        GreaterThanOrEqual = 4,
+        LessThanOrEqual = 5,
+        Like = 6,
+        Not = 7,
+        Between = 8,
+        InList = 9,
+        And = 10,
+        Or = 11,
+        Cast = 12,
+        InView = 13,
+        OfType = 14,
+        RelatedTo = 15,
+        BitwiseAnd = 16,
+        BitwiseOr = 17
+    };
+    Q_ENUM(FilterOperator);
+
+    explicit OpcUaFilterElement(QObject *parent = nullptr);
+    ~OpcUaFilterElement();
+    QOpcUaContentFilterElement toFilterElement(QOpcUaClient *);
+
+    FilterOperator operatorType() const;
+    void setOperatorType(FilterOperator filterOperator);
+
+    OpcUaOperandBase *firstOperand() const;
+    void setFirstOperand(OpcUaOperandBase *operand);
+
+    OpcUaOperandBase *secondOperand() const;
+    void setSecondOperand(OpcUaOperandBase *operand);
 
 signals:
-    void nodeNamespaceChanged(QString ns);
-    void browseNameChanged(QString browseName);
-    void referenceTypeChanged();
-    void includeSubtypesChanged(bool includeSubtypes);
-    void isInverseChanged(bool isInverse);
-
-public slots:
-    void setNodeNamespace(QString ns);
-    void setBrowseName(QString browseName);
-    void setReferenceType(const QVariant &referenceType);
-    void setIncludeSubtypes(bool includeSubtypes);
-    void setIsInverse(bool isInverse);
+    void dataChanged();
 
 private:
-    mutable UniversalNode m_browseNode;
-    QVariant m_referenceType = QVariant::fromValue(QOpcUa::ReferenceTypeId::References);
-    bool m_includeSubtypes = true;
-    bool m_isInverse = false;
+    FilterOperator m_filterOperator = FilterOperator::Equals;
+    OpcUaOperandBase *m_firstOperand = nullptr;
+    OpcUaOperandBase *m_secondOperand = nullptr;
 };
 
 QT_END_NAMESPACE
+
+#endif // OPCUAFILTERELEMENT

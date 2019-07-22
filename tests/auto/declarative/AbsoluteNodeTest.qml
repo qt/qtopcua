@@ -79,7 +79,7 @@ Item {
             if (children[i].objectName == "TestCase")
                 availableTestCases += 1;
         }
-        serverDiscovery.discoveryUrl = "opc.tcp://127.0.0.1:43344";
+        serverDiscovery.discoveryUrl = OPCUA_DISCOVERY_URL;
     }
 
     CompletionLoggingTestCase {
@@ -117,6 +117,7 @@ Item {
 
         function test_nodeTest() {
             compare(node2.value, "Value", "");
+            compare(node2.valueType, QtOpcUa.Constants.String);
         }
 
         QtOpcUa.ValueNode {
@@ -135,6 +136,7 @@ Item {
 
         function test_nodeTest() {
             compare(node3.value, "Value", "");
+            compare(node3.valueType, QtOpcUa.Constants.String);
         }
 
         QtOpcUa.ValueNode {
@@ -153,6 +155,7 @@ Item {
 
         function test_nodeTest() {
             compare(node4.value, 255, "");
+            compare(node4.valueType, QtOpcUa.Constants.Byte);
         }
 
         QtOpcUa.ValueNode {
@@ -170,6 +173,9 @@ Item {
         when: node5.readyToUse && node6.readyToUse && node7.readyToUse && shouldRun
 
         function test_nodeTest() {
+            compare(node5.valueType, QtOpcUa.Constants.Double);
+            compare(node6.valueType, QtOpcUa.Constants.Double);
+            compare(node7.valueType, QtOpcUa.Constants.Double);
             var oldValue = node5.value;
             node6Spy.clear();
             node7Spy.clear();
@@ -227,6 +233,7 @@ Item {
         when: node8.readyToUse && shouldRun
 
         function test_changeIdentifier() {
+            compare(node8.valueType, QtOpcUa.Constants.Double);
             node8NamespaceSpy.clear();
             node8IdentifierSpy.clear();
             node8NodeIdSpy.clear();
@@ -304,6 +311,7 @@ Item {
         when: node9.readyToUse && shouldRun
 
         function test_nodeTest() {
+            compare(node9.valueType, QtOpcUa.Constants.String);
             compare(node9.value, "Value", "");
         }
 
@@ -349,6 +357,7 @@ Item {
             compare(node10.nodeClass, QtOpcUa.Constants.NodeClass.Variable);
             compare(node10.displayName.text, "FullyWritableTest");
             compare(node10.description.text, "Description for ns=3;s=Demo.Static.Scalar.FullyWritable");
+            compare(node10.valueType, QtOpcUa.Constants.Double);
 
             node10BrowseNameSpy.clear();
             node10NodeClassSpy.clear();
@@ -396,6 +405,7 @@ Item {
         }
 
         function test_nodeTest() {
+            compare(node11.valueType, QtOpcUa.Constants.String);
             node11ValueSpy.wait();
 
             var now = new Date();
@@ -409,6 +419,44 @@ Item {
                 identifier: "ns=3;s=theStringId"
             }
             id: node11
+        }
+    }
+
+    CompletionLoggingTestCase {
+        name: "Assign int value to double node"
+        when: node12.readyToUse && shouldRun
+
+        SignalSpy {
+            id: node12ValueSpy
+            target: node12
+            signalName: "valueChanged"
+        }
+
+        function test_nodeTest() {
+            compare(node12.valueType, QtOpcUa.Constants.Double);
+            compare(node12.value, 1)
+
+            node12ValueSpy.clear();
+            node12.value = 30;
+            node12ValueSpy.wait();
+
+            compare(node12ValueSpy.count, 1);
+            compare(node12.value, 30);
+            compare(node12.value, 30.0);
+
+            node12ValueSpy.clear();
+            node12.value = 1;
+            node12ValueSpy.wait();
+            compare(node12.value, 1)
+        }
+
+        QtOpcUa.ValueNode {
+            connection: connection
+            nodeId: QtOpcUa.NodeId {
+                ns: "http://qt-project.org"
+                identifier: "s=Demo.Static.Scalar.Double"
+            }
+            id: node12
         }
     }
 }

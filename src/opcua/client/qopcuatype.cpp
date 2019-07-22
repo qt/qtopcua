@@ -839,5 +839,41 @@ QOpcUa::Types QOpcUa::metaTypeToQOpcUaType(QMetaType::Type type) {
     return QOpcUa::Undefined;
 }
 
+QOpcUa::Types QOpcUa::opcUaDataTypeToQOpcUaType(const QString &type)
+{
+    if (type == QStringLiteral("ns=0;i=1"))
+        return QOpcUa::Boolean;
+    else if (type == QStringLiteral("ns=0;i=3"))
+        return QOpcUa::Byte;
+    else if (type == QStringLiteral("ns=0;i=2"))
+        return QOpcUa::SByte;
+    else if (type == QStringLiteral("ns=0;i=5"))
+        return QOpcUa::UInt16;
+    else if (type == QStringLiteral("ns=0;i=4"))
+        return QOpcUa::Int16;
+    else if (type == QStringLiteral("ns=0;i=6"))
+        return QOpcUa::Int32;
+    else if (type == QStringLiteral("ns=0;i=7"))
+        return QOpcUa::UInt32;
+    else if (type == QStringLiteral("ns=0;i=9"))
+        return QOpcUa::UInt64;
+    else if (type == QStringLiteral("ns=0;i=8"))
+        return QOpcUa::Int64;
+    else if (type == QStringLiteral("ns=0;i=11"))
+        return QOpcUa::Double;
+    else if (type == QStringLiteral("ns=0;i=10"))
+        return QOpcUa::Float;
+    else if (type == QStringLiteral("ns=0;i=12"))
+        return QOpcUa::String;
+    else if (type == QStringLiteral("ns=0;i=13"))
+        return QOpcUa::DateTime;
+    else if (type == QStringLiteral("ns=0;i=15"))
+        return QOpcUa::ByteString;
+    else if (type == QStringLiteral("ns=0;i=14"))
+        return QOpcUa::Guid;
+    else
+        return QOpcUa::Undefined;
+}
+
 QT_END_NAMESPACE
 
