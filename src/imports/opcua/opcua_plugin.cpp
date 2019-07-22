@@ -41,6 +41,7 @@
 #include "opcuanodeid.h"
 #include "opcuanodeidtype.h"
 #include "opcuaconnection.h"
+#include "opcuadatachangefilter.h"
 #include "opcuarelativenodepath.h"
 #include "opcuarelativenodeid.h"
 #include "qopcuatype.h"
@@ -50,6 +51,12 @@
 #include "opcuaserverdiscovery.h"
 #include "opcuawriteitem.h"
 #include "opcuawriteresult.h"
+#include "opcuaelementoperand.h"
+#include "opcualiteraloperand.h"
+#include "opcuasimpleattributeoperand.h"
+#include "opcuaattributeoperand.h"
+#include "opcuafilterelement.h"
+#include "opcuaeventfilter.h"
 #include <QLoggingCategory>
 #include <QOpcUaUserTokenPolicy>
 
@@ -145,6 +152,13 @@ void OpcUaPlugin::registerTypes(const char *uri)
     qmlRegisterType<OpcUaEndpointDiscovery>(uri, major, minor, "EndpointDiscovery");
     qmlRegisterType<OpcUaServerDiscovery>(uri, major, minor, "ServerDiscovery");
     qmlRegisterUncreatableType<QOpcUaUserTokenPolicy>(uri, major, minor, "UserTokenPolicy", "This type can not be created.");
+    qmlRegisterType<OpcUaDataChangeFilter>(uri, major, minor, "DataChangeFilter");
+    qmlRegisterType<OpcUaElementOperand>(uri, major, minor, "ElementOperand");
+    qmlRegisterType<OpcUaLiteralOperand>(uri, major, minor, "LiteralOperand");
+    qmlRegisterType<OpcUaSimpleAttributeOperand>(uri, major, minor, "SimpleAttributeOperand");
+    qmlRegisterType<OpcUaAttributeOperand>(uri, major, minor, "AttributeOperand");
+    qmlRegisterType<OpcUaFilterElement>(uri, major, minor, "FilterElement");
+    qmlRegisterType<OpcUaEventFilter>(uri, major, minor, "EventFilter");
 
     // insert new versions here
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the Qt OPC UA module.
@@ -34,31 +34,39 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.3
-import QtTest 1.0
-import QtOpcUa 5.13 as QtOpcUa
+#ifndef OPCUALITERALOPERAND
+#define OPCUALITERALOPERAND
 
-Item {
-    TestCase {
-        name: "Enum exports to QML"
+#include "opcuaoperandbase.h"
+#include <QOpcUaLiteralOperand>
+#include <qopcuatype.h>
 
-        function test_enumExports() {
-            compare(QtOpcUa.Constants.NodeClass.Method, 4);
-            compare(QtOpcUa.Constants.NodeAttribute.DisplayName, 8);
-            compare(QtOpcUa.Node.Status.Valid, 0);
-            compare(QtOpcUa.Status.Good, 0);
-            compare(QtOpcUa.Status.BadUnexpectedError, 0x8001);
-            compare(QtOpcUa.Constants.Double, 3);
-            compare(QtOpcUa.Constants.Certificate, 2);
-            compare(QtOpcUa.DataChangeFilter.DeadbandType.Absolute, 1);
-            compare(QtOpcUa.DataChangeFilter.DataChangeTrigger.StatusOrValueOrTimestamp, 2);
+QT_BEGIN_NAMESPACE
 
-            // Test return value of undefined node
-            compare(node1.nodeClass, QtOpcUa.Constants.NodeClass.Undefined);
-        }
+class OpcUaLiteralOperand : public OpcUaOperandBase {
+    Q_OBJECT
+    Q_PROPERTY(QVariant value READ value WRITE setValue)
+    Q_PROPERTY(QOpcUa::Types type READ type WRITE setType)
 
-        QtOpcUa.Node {
-            id: node1
-        }
-    }
-}
+public:
+    explicit OpcUaLiteralOperand(QObject *parent = nullptr);
+    ~OpcUaLiteralOperand();
+    QVariant toCppVariant(QOpcUaClient *client) const override;
+
+    QVariant value() const;
+    void setValue(const QVariant &value);
+
+    QOpcUa::Types type() const;
+    void setType(QOpcUa::Types type);
+
+signals:
+    void dataChanged();
+
+private:
+    QVariant m_value;
+    QOpcUa::Types m_type;
+};
+
+QT_END_NAMESPACE
+
+#endif // OPCUALITERALOPERAND

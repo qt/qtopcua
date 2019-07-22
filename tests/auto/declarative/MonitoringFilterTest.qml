@@ -86,99 +86,96 @@ Item {
         }
     }
 
+    Timer {
+        id: timer
+        interval: 2000
+    }
+
+/*  // In order to run this test you need to compile the example tutorial_server_event from open62541 master branch.
     CompletionLoggingTestCase {
-        name: "Create String Node Id"
-        when: node1.readyToUse && shouldRun
+        name: "Event filter"
+        when: node3.readyToUse && shouldRun
 
         function test_nodeTest() {
-            tryCompare(node1, "monitored", true);
-            compare(node1.publishingInterval, 100.0);
-            node1ValueSpy.clear();
-            verify(node1.value != "foo");
-            node2.value = "foo";
-            node1ValueSpy.wait(10000);
-            compare(node1ValueSpy.count, 1);
-
-            compare(node1.monitored, true);
-            node1MonitoredSpy.clear();
-            node1.monitored = false;
-            node1MonitoredSpy.wait();
-            compare(node1MonitoredSpy.count, 1);
-            compare(node1IntervalSpy.count, 0);
-            compare(node1.monitored, false);
-
-            node1ValueSpy.clear();
-            node2.value = "bar";
-            timer.running = true;
-            timerSpy.wait();
-            compare(node1ValueSpy.count, 0);
-
-            node1MonitoredSpy.clear();
-            node1.monitored = true;
-            node1MonitoredSpy.wait();
-            compare(node1MonitoredSpy.count, 1);
-            compare(node1IntervalSpy.count, 0);
-            compare(node1.monitored, true);
-
-            // This needs to be reset to "Value" for follow up tests to succeed.
-            node2.value = "Value";
-            node1ValueSpy.wait();
-            compare(node1ValueSpy.count, 1);
-
-            node1MonitoredSpy.clear();
-            node1IntervalSpy.clear();
-            node1.publishingInterval = 200.0;
-            node1IntervalSpy.wait();
-            compare(node1MonitoredSpy.count, 0);
-            compare(node1IntervalSpy.count, 1);
-            compare(node1.publishingInterval, 200.0);
+            eventSpy.clear();
+            node4.callMethod();
+            eventSpy.wait();
+            compare(eventSpy.count, 1);
+            compare(eventSpy.signalArguments[0].length, 1);
+            compare(eventSpy.signalArguments[0][0].length, 2);
+            compare(eventSpy.signalArguments[0][0][0], 100);
+            compare(eventSpy.signalArguments[0][0][1].text, "An event has been generated.");
         }
 
-        SignalSpy {
-            id: node1ValueSpy
-            target: node1
-            signalName: "valueChanged"
-        }
-
-        SignalSpy {
-            id: node1IntervalSpy
-            target: node1
-            signalName: "publishingIntervalChanged"
-        }
-
-        SignalSpy {
-            id: node1MonitoredSpy
-            target: node1
-            signalName: "monitoredChanged"
-        }
-
-        QtOpcUa.ValueNode {
+        QtOpcUa.Node {
             connection: connection
             nodeId: QtOpcUa.NodeId {
-                ns: "Test Namespace"
-                identifier: "s=theStringId"
+                ns: "http://opcfoundation.org/UA/"
+                identifier: "i=2253" // Server object
             }
-            id: node1
+            id: node3
+
+            eventFilter: QtOpcUa.EventFilter {
+                select: [
+                          QtOpcUa.SimpleAttributeOperand {
+                            browsePath: [
+                                          QtOpcUa.NodeId {
+                                              identifier: "Severity"
+                                              ns: "http://opcfoundation.org/UA/"
+                                          }
+                                        ]
+                          },
+                          QtOpcUa.SimpleAttributeOperand {
+                            browsePath: [
+                                          QtOpcUa.NodeId {
+                                              identifier: "Message"
+                                              ns: "http://opcfoundation.org/UA/"
+                                          }
+                                        ]
+                          }
+                ]
+
+// Where clause is not supported by server yet
+//                where: [
+//                    QtOpcUa.FilterElement {
+//                        operator: QtOpcUa.FilterElement.GreaterThanOrEqual
+//                        firstOperand: QtOpcUa.SimpleAttributeOperand {
+//                            browsePath: [
+//                                          QtOpcUa.NodeId {
+//                                              identifier: "Severity"
+//                                              ns: "http://opcfoundation.org/UA/"
+//                                          }
+//                                        ]
+//                        }
+//                        secondOperand: QtOpcUa.LiteralOperand {
+//                                        value: 700
+//                                        type: QtOpcUa.Constants.UInt16
+//                         }
+//                    }
+//                ]
+            }
         }
 
-        QtOpcUa.ValueNode {
+        QtOpcUa.MethodNode {
             connection: connection
             nodeId: QtOpcUa.NodeId {
-                ns: "Test Namespace"
-                identifier: "s=theStringId"
+                ns: "http://opcfoundation.org/UA/"
+                identifier: "i=62541"
             }
-            id: node2
-        }
-
-        Timer {
-            id: timer
-            interval: 2000
+            objectNodeId: QtOpcUa.NodeId {
+                ns: "http://opcfoundation.org/UA/"
+                identifier: "i=85"
+            }
+            id: node4
         }
 
         SignalSpy {
-            id: timerSpy
-            target: timer
-            signalName: "triggered"
+            id: eventSpy
+            target: node3
+            signalName: "eventOccurred"
         }
     }
+*/
 }
+
+

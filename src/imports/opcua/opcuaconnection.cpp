@@ -213,6 +213,45 @@ QT_BEGIN_NAMESPACE
 
 */
 
+/*!
+    \qmlproperty QOpcUaClient Connection::connection
+    \since 5.13
+
+    This property is used only to inject a connection from C++. In case of complex setup of
+    a connection you can use C++ to handle all the details. After the connection is established
+    it can be handed to QML using this property. Ownership of the client is transferred to QML.
+
+    \code
+    class MyClass : public QObject {
+        Q_OBJECT
+        Q_PROPERTY(QOpcUaClient* connection READ connection NOTIFY connectionChanged)
+
+    public:
+        MyClass (QObject* parent = nullptr);
+        QOpcUaClient *connection() const;
+
+    signals:
+        void connectionChanged(QOpcUaClient *);
+    \endcode
+
+    Emitting the signal \c connectionChanged when the client setup is completed, the QML code below will
+    use the connection.
+
+    \code
+    import QtOpcUa 5.13 as QtOpcUa
+
+    MyClass {
+        id: myclass
+    }
+
+    QtOpcUa.Connection {
+        connection: myclass.connection
+     }
+    \endcode
+
+*/
+
+
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML)
 
 OpcUaConnection* OpcUaConnection::m_defaultConnection = nullptr;
@@ -225,10 +264,7 @@ OpcUaConnection::OpcUaConnection(QObject *parent):
 OpcUaConnection::~OpcUaConnection()
 {
     setDefaultConnection(false);
-    if (m_client) {
-        m_client->deleteLater();
-        m_client = nullptr;
-    }
+    removeConnection();
 }
 
 QStringList OpcUaConnection::availableBackends() const
@@ -256,26 +292,14 @@ void OpcUaConnection::setBackend(const QString &name)
         if (m_client->backend() == name)
             return;
 
-        m_client->disconnectFromEndpoint();
-        m_client->disconnect(this);
-        m_client->deleteLater();
+        removeConnection();
     }
 
     QOpcUaProvider provider;
     m_client = provider.createClient(name);
     if (m_client) {
         qCDebug(QT_OPCUA_PLUGINS_QML) << "Created plugin" << m_client->backend();
-        connect(m_client, &QOpcUaClient::stateChanged, this, &OpcUaConnection::clientStateHandler);
-        connect(m_client, &QOpcUaClient::namespaceArrayUpdated, this, &OpcUaConnection::namespacesChanged);
-        connect(m_client, &QOpcUaClient::namespaceArrayUpdated, this, [&]() {
-            if (!m_connected) {
-                m_connected = true;
-                emit connectedChanged();
-            }
-        });
-        m_client->setNamespaceAutoupdate(true);
-        connect(m_client, &QOpcUaClient::readNodeAttributesFinished, this, &OpcUaConnection::handleReadNodeAttributesFinished);
-        connect(m_client, &QOpcUaClient::writeNodeAttributesFinished, this, &OpcUaConnection::handleWriteNodeAttributesFinished);
+        setupConnection();
     } else {
         qCWarning(QT_OPCUA_PLUGINS_QML) << tr("Backend '%1' could not be created.").arg(name);
     }
@@ -372,6 +396,15 @@ void OpcUaConnection::setAuthenticationInformation(const QOpcUaAuthenticationInf
     if (!m_client)
         return;
     m_client->setAuthenticationInformation(authenticationInformation);
+}
+
+void OpcUaConnection::setConnection(QOpcUaClient *client)
+{
+    if (!client)
+        return;
+    removeConnection();
+    m_client = client;
+    setupConnection();
 }
 
 QOpcUaAuthenticationInformation OpcUaConnection::authenticationInformation() const
@@ -580,6 +613,11 @@ QJSValue OpcUaConnection::supportedUserTokenTypes() const
     return returnValue;
 }
 
+QOpcUaClient *OpcUaConnection::connection() const
+{
+    return m_client;
+}
+
 void OpcUaConnection::handleReadNodeAttributesFinished(const QVector<QOpcUaReadResult> &results)
 {
     QVariantList returnValue;
@@ -598,6 +636,36 @@ void OpcUaConnection::handleWriteNodeAttributesFinished(const QVector<QOpcUaWrit
         returnValue.append(QVariant::fromValue(OpcUaWriteResult(result, m_client)));
 
     emit writeNodeAttributesFinished(QVariant::fromValue(returnValue));
+}
+
+void OpcUaConnection::removeConnection()
+{
+    if (m_client) {
+        m_client->disconnect(this);
+        m_client->disconnectFromEndpoint();
+        if (!m_client->parent()) {
+            m_client->deleteLater();
+        }
+        m_client = nullptr;
+    }
+}
+
+void OpcUaConnection::setupConnection()
+{
+    connect(m_client, &QOpcUaClient::stateChanged, this, &OpcUaConnection::clientStateHandler);
+    connect(m_client, &QOpcUaClient::namespaceArrayUpdated, this, &OpcUaConnection::namespacesChanged);
+    connect(m_client, &QOpcUaClient::namespaceArrayUpdated, this, [&]() {
+        if (!m_connected) {
+            m_connected = true;
+            emit connectedChanged();
+        }
+    });
+    m_client->setNamespaceAutoupdate(true);
+    connect(m_client, &QOpcUaClient::readNodeAttributesFinished, this, &OpcUaConnection::handleReadNodeAttributesFinished);
+    connect(m_client, &QOpcUaClient::writeNodeAttributesFinished, this, &OpcUaConnection::handleWriteNodeAttributesFinished);
+    m_connected = (!m_client->namespaceArray().isEmpty() && m_client->state() == QOpcUaClient::Connected);
+    if (m_connected)
+        emit connectedChanged();
 }
 
 QT_END_NAMESPACE

@@ -103,6 +103,8 @@ QOpcUaContentFilterElement::QOpcUaContentFilterElement(const QOpcUaContentFilter
 {
 }
 
+QOpcUaContentFilterElement::~QOpcUaContentFilterElement() = default;
+
 /*!
     Sets the values from \a rhs in this content filter element.
 */
@@ -171,10 +173,6 @@ QOpcUaContentFilterElement::FilterOperator QOpcUaContentFilterElement::filterOpe
 void QOpcUaContentFilterElement::setFilterOperator(QOpcUaContentFilterElement::FilterOperator filterOperator)
 {
     data->filterOperator = filterOperator;
-}
-
-QOpcUaContentFilterElement::~QOpcUaContentFilterElement()
-{
 }
 
 /*!

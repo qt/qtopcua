@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the Qt OPC UA module.
@@ -34,54 +34,60 @@
 **
 ****************************************************************************/
 
-#pragma once
+#ifndef OPCUADATACHANGEFILTER
+#define OPCUADATACHANGEFILTER
 
-#include <QObject>
-#include <qopcuatype.h>
-#include "universalnode.h"
+#include <QOpcUaMonitoringParameters>
 
 QT_BEGIN_NAMESPACE
 
-class QOpcUaClient;
-class QOpcUaRelativePathElement;
-
-class OpcUaRelativeNodePath : public QObject
-{
+class OpcUaDataChangeFilter : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QString ns READ nodeNamespace WRITE setNodeNamespace NOTIFY nodeNamespaceChanged)
-    Q_PROPERTY(QString browseName READ browseName WRITE setBrowseName NOTIFY browseNameChanged)
-    Q_PROPERTY(QVariant referenceType READ referenceType WRITE setReferenceType NOTIFY referenceTypeChanged)
-    Q_PROPERTY(bool includeSubtypes READ includeSubtypes WRITE setIncludeSubtypes NOTIFY includeSubtypesChanged)
-    Q_PROPERTY(bool isInverse READ isInverse WRITE setIsInverse NOTIFY isInverseChanged)
+    Q_PROPERTY(DataChangeTrigger trigger READ trigger WRITE setTrigger)
+    Q_PROPERTY(DeadbandType deadbandType READ deadbandType WRITE setDeadbandType)
+    Q_PROPERTY(double deadbandValue READ deadbandValue WRITE setDeadbandValue)
 
 public:
-    explicit OpcUaRelativeNodePath(QObject *parent = nullptr);
-    const QString &nodeNamespace() const;
-    const QString &browseName() const;
-    QVariant referenceType() const;
-    bool includeSubtypes() const;
-    bool isInverse() const;
-    QOpcUaRelativePathElement toRelativePathElement(QOpcUaClient *client) const;
+    // Same as in QOpcUaMonitoringParameters::DataChangeFilter::DataChangeTrigger
+    enum class DataChangeTrigger {
+        Status = 0,
+        StatusOrValue = 1,
+        StatusOrValueOrTimestamp = 2
+    };
+    Q_ENUM(DataChangeTrigger)
+
+    // Same as in QOpcUaMonitoringParameters::DataChangeFilter::DeadbandType
+    enum class DeadbandType {
+        None = 0,
+        Absolute = 1,
+        Percent = 2
+    };
+    Q_ENUM(DeadbandType)
+
+    explicit OpcUaDataChangeFilter(QObject *parent = nullptr);
+    OpcUaDataChangeFilter(const OpcUaDataChangeFilter &);
+    OpcUaDataChangeFilter &operator=(const OpcUaDataChangeFilter &);
+    bool operator==(const OpcUaDataChangeFilter &) const;
+    ~OpcUaDataChangeFilter();
+
+    DataChangeTrigger trigger() const;
+    DeadbandType deadbandType() const;
+    double deadbandValue() const;
+
+    const QOpcUaMonitoringParameters::DataChangeFilter &filter() const;
 
 signals:
-    void nodeNamespaceChanged(QString ns);
-    void browseNameChanged(QString browseName);
-    void referenceTypeChanged();
-    void includeSubtypesChanged(bool includeSubtypes);
-    void isInverseChanged(bool isInverse);
+    void filterChanged();
 
 public slots:
-    void setNodeNamespace(QString ns);
-    void setBrowseName(QString browseName);
-    void setReferenceType(const QVariant &referenceType);
-    void setIncludeSubtypes(bool includeSubtypes);
-    void setIsInverse(bool isInverse);
+    void setTrigger(DataChangeTrigger trigger);
+    void setDeadbandType(DeadbandType deadbandType);
+    void setDeadbandValue(double deadbandValue);
 
 private:
-    mutable UniversalNode m_browseNode;
-    QVariant m_referenceType = QVariant::fromValue(QOpcUa::ReferenceTypeId::References);
-    bool m_includeSubtypes = true;
-    bool m_isInverse = false;
+    QOpcUaMonitoringParameters::DataChangeFilter m_filter;
 };
 
 QT_END_NAMESPACE
+
+#endif // OPCUADATACHANGEFILTER

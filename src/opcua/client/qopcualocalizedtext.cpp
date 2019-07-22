@@ -60,9 +60,23 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \property QOpcUaLocalizedText::text
+
+    Textual content.
+*/
+
+/*!
     \qmlproperty string LocalizedText::text
 
     Textual content.
+*/
+
+/*!
+    \property QOpcUaLocalizedText::locale
+
+    Locale of the contained text.
+    This has to be in a modified ISO standard notation, for example \c en-US.
+    See OPC UA specification part 3, 8.4 for details.
 */
 
 /*!

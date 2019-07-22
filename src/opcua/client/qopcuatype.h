@@ -496,6 +496,7 @@ enum class AxisScale : quint32 {
 };
 
 Q_OPCUA_EXPORT QOpcUa::Types metaTypeToQOpcUaType(QMetaType::Type type);
+Q_OPCUA_EXPORT QOpcUa::Types opcUaDataTypeToQOpcUaType(const QString &type);
 }
 
 Q_DECLARE_TYPEINFO(QOpcUa::Types, Q_PRIMITIVE_TYPE);

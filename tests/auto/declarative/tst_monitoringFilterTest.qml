@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the Qt OPC UA module.
@@ -35,30 +35,7 @@
 ****************************************************************************/
 
 import QtQuick 2.3
-import QtTest 1.0
-import QtOpcUa 5.13 as QtOpcUa
 
-Item {
-    TestCase {
-        name: "Enum exports to QML"
-
-        function test_enumExports() {
-            compare(QtOpcUa.Constants.NodeClass.Method, 4);
-            compare(QtOpcUa.Constants.NodeAttribute.DisplayName, 8);
-            compare(QtOpcUa.Node.Status.Valid, 0);
-            compare(QtOpcUa.Status.Good, 0);
-            compare(QtOpcUa.Status.BadUnexpectedError, 0x8001);
-            compare(QtOpcUa.Constants.Double, 3);
-            compare(QtOpcUa.Constants.Certificate, 2);
-            compare(QtOpcUa.DataChangeFilter.DeadbandType.Absolute, 1);
-            compare(QtOpcUa.DataChangeFilter.DataChangeTrigger.StatusOrValueOrTimestamp, 2);
-
-            // Test return value of undefined node
-            compare(node1.nodeClass, QtOpcUa.Constants.NodeClass.Undefined);
-        }
-
-        QtOpcUa.Node {
-            id: node1
-        }
-    }
+BackendTestMultiplier {
+    testName: "MonitoringFilterTest"
 }

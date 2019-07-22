@@ -212,7 +212,7 @@ void EventsubscriptionTest::eventSubscription()
 
 //    Disabled because the open62541 server does not currently return an EventFilterResult
 //    QVERIFY(serverNode->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filterResult().isValid());
-//    QEventFilterResult res = serverNode->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filterResult().value<QEventFilterResult>();
+//    QOpcUaEventFilterResult res = serverNode->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filterResult().value<QOpcUaEventFilterResult>();
 //    QVERIFY(res.isGood() == true);
 
     qDebug() << "Monitoring enabled, waiting for event...";

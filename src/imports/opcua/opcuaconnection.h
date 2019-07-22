@@ -61,6 +61,7 @@ class OpcUaConnection : public QObject
     Q_PROPERTY(QStringList supportedSecurityPolicies READ supportedSecurityPolicies CONSTANT)
     Q_PROPERTY(QJSValue supportedUserTokenTypes READ supportedUserTokenTypes CONSTANT)
     Q_PROPERTY(QOpcUaEndpointDescription currentEndpoint READ currentEndpoint)
+    Q_PROPERTY(QOpcUaClient* connection READ connection WRITE setConnection NOTIFY connectionChanged)
 
 public:
     OpcUaConnection(QObject *parent = nullptr);
@@ -82,11 +83,14 @@ public:
     QStringList supportedSecurityPolicies() const;
     QJSValue supportedUserTokenTypes() const;
 
+    QOpcUaClient *connection() const;
+
 public slots:
     void connectToEndpoint(const QOpcUaEndpointDescription &endpointDescription);
     void disconnectFromEndpoint();
     void setDefaultConnection(bool defaultConnection = true);
     void setAuthenticationInformation(const QOpcUaAuthenticationInformation &authenticationInformation);
+    void setConnection(QOpcUaClient *client);
 
 signals:
     void availableBackendsChanged();
@@ -96,6 +100,7 @@ signals:
     void namespacesChanged();
     void readNodeAttributesFinished(const QVariant &value);
     void writeNodeAttributesFinished(const QVariant &value);
+    void connectionChanged();
 
 private slots:
     void clientStateHandler(QOpcUaClient::ClientState state);
@@ -103,6 +108,9 @@ private slots:
     void handleWriteNodeAttributesFinished(const QVector<QOpcUaWriteResult> &results);
 
 private:
+    void removeConnection();
+    void setupConnection();
+
     QOpcUaClient *m_client = nullptr;
     bool m_connected = false;
     static OpcUaConnection* m_defaultConnection;
