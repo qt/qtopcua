@@ -333,7 +333,7 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
 
     if (result.isNotGood()) {
         emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
-        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect: " << QString::fromUtf8(result.toString().toUtf8());
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect:" << QString::fromUtf8(result.toString().toUtf8());
         return;
     }
 }
