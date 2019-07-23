@@ -78,6 +78,7 @@ public:
     QOpcUaApplicationIdentity applicationIdentity() const;
 
     bool isPkiValid() const; // Bad name, open for better ideas
+    bool isKeyAndCertificateFileSet() const;
 
 private:
     QSharedDataPointer<QOpcUaPkiConfigurationData> data;

@@ -267,4 +267,13 @@ bool QOpcUaPkiConfiguration::isPkiValid() const
             !trustListDirectory().isEmpty();
 }
 
+/*!
+    Returns true if the private key file and client certificate file are set.
+*/
+bool QOpcUaPkiConfiguration::isKeyAndCertificateFileSet() const
+{
+    return !clientCertificateFile().isEmpty() &&
+           !privateKeyFile().isEmpty();
+}
+
 QT_END_NAMESPACE
