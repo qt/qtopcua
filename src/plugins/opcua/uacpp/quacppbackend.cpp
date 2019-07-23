@@ -278,7 +278,13 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
 
         QFile certFile(certificateFilePath.toUtf8());
         if (certFile.open(QIODevice::ReadOnly)) {
+            const auto data = certFile.read(1000);
             certFile.close();
+            if (data.contains("--BEGIN CERTIFICATE")) {
+                qCWarning(QT_OPCUA_PLUGINS_UACPP) << "The UACPP backend supports only DER encoded certificates.";
+                emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
+                return;
+            }
         } else {
             qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to load certificate: " << pkiConfig.clientCertificateFile();
             result = OpcUa_BadNotFound;
@@ -334,6 +340,10 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
     if (result.isNotGood()) {
         emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect:" << QString::fromUtf8(result.toString().toUtf8());
+
+        if (result.code() == OpcUa_BadEncodingLimitsExceeded && !endpoint.securityPolicy().endsWith("#None"))
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Reason may be not using a DER encoded client certificate";
+
         return;
     }
 }
