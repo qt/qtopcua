@@ -63,8 +63,8 @@ QT_BEGIN_NAMESPACE
             .arg(QCoreApplication::organizationName())
             .arg(QCoreApplication::applicationName());
 
-    identity.setProductUri(QUrl::toPercentEncoding(productUri));
-    identity.setApplicationUri(QUrl::toPercentEncoding(applicationUri));
+    identity.setProductUri(productUri);
+    identity.setApplicationUri(applicationUri);
     identity.setApplicationName(QCoreApplication::applicationName());
     identity.setApplicationType(QOpcUaApplicationDescription::Client);
 
