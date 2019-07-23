@@ -261,16 +261,9 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
         sessionSecurityInfo.messageSecurityMode = static_cast<OpcUa_MessageSecurityMode>(endpoint.securityMode());
     }
 
-    if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Anonymous) {
-        // nothing to do
-    } else if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Username) {
-        const auto credentials = authInfo.authenticationData().value<QPair<QString, QString>>();
-        UaString username(credentials.first.toUtf8().constData());
-        UaString password(credentials.second.toUtf8().constData());
-        sessionSecurityInfo.setUserPasswordUserIdentity(username, password);
-        if (m_disableEncryptedPasswordCheck)
-            sessionSecurityInfo.disableEncryptedPasswordCheck = OpcUa_True;
-    } else if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Certificate) {
+    if (QOpcUa::isSecurePolicy(endpoint.securityPolicy())) {
+        // We are going to connect to a secure endpoint
+
         // try to load the client certificate
         const UaString certificateFilePath(pkiConfig.clientCertificateFile().toUtf8());
         const UaString privateKeyFilePath(pkiConfig.privateKeyFile().toUtf8());
@@ -327,7 +320,20 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
             qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect using certificate authentication: " << QString::fromUtf8(result.toString().toUtf8());
             return;
         }
+    } // end secure endpoint
+
+    if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Anonymous) {
+        // nothing to do
+    } else if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Username) {
+        const auto credentials = authInfo.authenticationData().value<QPair<QString, QString>>();
+        UaString username(credentials.first.toUtf8().constData());
+        UaString password(credentials.second.toUtf8().constData());
+        sessionSecurityInfo.setUserPasswordUserIdentity(username, password);
+        if (m_disableEncryptedPasswordCheck)
+            sessionSecurityInfo.disableEncryptedPasswordCheck = OpcUa_True;
     } else {
+        // QOpcUaUserTokenPolicy::TokenType::Certificate is currently unsupported
+
         emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnsupportedAuthenticationInformation);
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect: Selected authentication type"
                                           << authInfo.authenticationType() << "is not supported.";
@@ -341,7 +347,7 @@ void UACppAsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpo
         emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Failed to connect:" << QString::fromUtf8(result.toString().toUtf8());
 
-        if (result.code() == OpcUa_BadEncodingLimitsExceeded && !endpoint.securityPolicy().endsWith("#None"))
+        if (result.code() == OpcUa_BadEncodingLimitsExceeded && QOpcUa::isSecurePolicy(endpoint.securityPolicy()))
             qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Reason may be not using a DER encoded client certificate";
 
         return;
