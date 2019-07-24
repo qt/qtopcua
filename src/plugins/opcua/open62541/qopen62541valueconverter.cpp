@@ -699,6 +699,10 @@ void createExtensionObject(QByteArray &data, const UA_NodeId &typeEncodingId, UA
 {
     UA_ExtensionObject obj;
     UA_ExtensionObject_init(&obj);
+
+    if (!data.isEmpty() && encoding == QOpcUa::QExtensionObject::Encoding::NoBody)
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Data for extension object provided but will not be encoded because encoding format is set to skip the body";
+
     if (encoding != QOpcUa::QExtensionObject::Encoding::NoBody) {
         obj.encoding = static_cast<UA_ExtensionObjectEncoding>(encoding);
         obj.content.encoded.body.data = reinterpret_cast<UA_Byte *>(data.data());
