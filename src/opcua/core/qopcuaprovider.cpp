@@ -229,6 +229,11 @@ static QOpcUaPlugin *loadPlugin(const QString &key)
         \li Unified Automation
         \li By default, the backend refuses to connect to endpoints without encryption to avoid
             sending passwords in clear text. This parameter allows to disable this feature.
+    \row
+        \li enableVerboseDebugOutput
+        \li Unified Automation
+        \li Tells the backend to print additional output to the terminal. The backend specific logging
+            level is set to \c OPCUA_TRACE_OUTPUT_LEVEL_ALL.
     \endtable
 */
 QOpcUaClient *QOpcUaProvider::createClient(const QString &backend, const QVariantMap &backendProperties)

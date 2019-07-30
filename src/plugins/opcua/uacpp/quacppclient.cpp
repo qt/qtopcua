@@ -40,6 +40,8 @@
 #include <QtCore/QUrl>
 #include <QtCore/QUuid>
 
+#include <opcua_trace.h>
+
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_UACPP)
@@ -51,6 +53,12 @@ QUACppClient::QUACppClient(const QVariantMap &backendProperties)
     if (backendProperties.value(QLatin1String("disableEncryptedPasswordCheck"), false).toBool()) {
         qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Disabling encrypted password check.";
         m_backend->m_disableEncryptedPasswordCheck = true;
+    }
+
+    if (backendProperties.value(QLatin1String("enableVerboseDebugOutput"), false).toBool()) {
+        OpcUa_Trace_Initialize();
+        OpcUa_Trace_ChangeTraceLevel(OPCUA_TRACE_OUTPUT_LEVEL_ALL);
+        OpcUa_Trace_Toggle(true);
     }
 
     m_thread = new QThread();

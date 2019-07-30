@@ -264,7 +264,7 @@ bool QOpcUaPkiConfiguration::isPkiValid() const
     return !issuerListDirectory().isEmpty() &&
            !issuerRevocationListDirectory().isEmpty() &&
            !revocationListDirectory().isEmpty() &&
-           !trustListDirectory().isEmpty();
+            !trustListDirectory().isEmpty();
 }
 
 QT_END_NAMESPACE
