@@ -120,7 +120,11 @@ Item {
             compare(node1IntervalSpy.count, 0);
             compare(node1.monitored, true);
 
-            // This needs to be reset to "Value" for follow up tests to succeed.
+            // Wait for values to settle
+            tryCompare(node1, "value", "bar");
+
+            // The value needs to be reset to "Value" for follow up tests to succeed.
+            node1ValueSpy.clear();
             node2.value = "Value";
             node1ValueSpy.wait();
             compare(node1ValueSpy.count, 1);

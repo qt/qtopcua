@@ -156,6 +156,38 @@ void QOpcUaExtensionObject::setEncodedBody(const QByteArray &encodedBody)
 }
 
 /*!
+    \since 5.13
+
+    Sets the body of this extension object to \a encodedBody,
+    sets the encoding of the body to \l Encoding::ByteString and
+    sets the type id of the encoded data to \a typeId.
+
+    \sa setEncodedBody() setEncoding() setEncodingTypeId()
+*/
+void QOpcUaExtensionObject::setBinaryEncodedBody(const QByteArray &encodedBody, const QString &typeId)
+{
+    setEncodedBody(encodedBody);
+    setEncoding(Encoding::ByteString);
+    setEncodingTypeId(typeId);
+}
+
+/*!
+    \since 5.13
+
+    Sets the body of this extension object to \a encodedBody,
+    sets the encoding of the body to \l Encoding::Xml and
+    sets the type id of the encoded data to \a typeId.
+
+    \sa setEncodedBody() setEncoding() setEncodingTypeId()
+*/
+void QOpcUaExtensionObject::setXmlEncodedBody(const QByteArray &encodedBody, const QString &typeId)
+{
+    setEncodedBody(encodedBody);
+    setEncoding(Encoding::Xml);
+    setEncodingTypeId(typeId);
+}
+
+/*!
     Returns the node id of the encoding for the type stored by this extension object, for example ns=0;i=886 for
     Range_Encoding_DefaultBinary. All encoding ids are listed in \l {https://opcfoundation.org/UA/schemas/1.03/NodeIds.csv}.
 */
