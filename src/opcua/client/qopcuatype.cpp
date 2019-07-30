@@ -875,5 +875,19 @@ QOpcUa::Types QOpcUa::opcUaDataTypeToQOpcUaType(const QString &type)
         return QOpcUa::Undefined;
 }
 
+/*!
+    \since QtOpcUa 5.14
+
+    Returns \c true if a security policy is a secure policy.
+*/
+bool QOpcUa::isSecurePolicy(const QString &securityPolicy)
+{
+    return securityPolicy == QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#Basic128Rsa15") ||
+           securityPolicy == QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#Basic256") ||
+           securityPolicy == QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#Basic256Sha256") ||
+           securityPolicy == QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#Aes128_Sha256_RsaOaep") ||
+           securityPolicy == QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#Aes256_Sha256_RsaPss");
+}
+
 QT_END_NAMESPACE
 

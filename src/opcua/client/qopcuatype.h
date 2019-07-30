@@ -473,6 +473,7 @@ Q_ENUM_NS(ErrorCategory)
 Q_OPCUA_EXPORT bool isSuccessStatus(QOpcUa::UaStatusCode statusCode);
 Q_OPCUA_EXPORT QOpcUa::ErrorCategory errorCategory(QOpcUa::UaStatusCode statusCode);
 Q_OPCUA_EXPORT QString statusToString(QOpcUa::UaStatusCode statusCode);
+Q_OPCUA_EXPORT bool isSecurePolicy(const QString &securityPolicy);
 
 // NodeId helpers
 Q_OPCUA_EXPORT QString nodeIdFromString(quint16 ns, const QString &identifier);

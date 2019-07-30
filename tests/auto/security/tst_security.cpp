@@ -244,7 +244,7 @@ void Tst_QOpcUaSecurity::initTestCase()
 
         // Select first non-None security policy
         for (const auto &endpoint : qAsConst(desc)) {
-            if (!endpoint.securityPolicy().endsWith("#None")) {
+            if (QOpcUa::isSecurePolicy(endpoint.securityPolicy())) {
                 m_endpoints.append(endpoint);
                 qDebug() << endpoint.securityPolicy();
             }
