@@ -34,6 +34,8 @@
 **
 ****************************************************************************/
 
+#include "backend_environment.h"
+
 #include <QtOpcUa/QOpcUaAuthenticationInformation>
 #include <QtOpcUa/QOpcUaClient>
 #include <QtOpcUa/QOpcUaEndpointDescription>
@@ -249,18 +251,22 @@ void Tst_QOpcUaSecurity::initTestCase()
                 qDebug() << endpoint.securityPolicy();
             }
         }
-
-        QVERIFY(m_endpoints.size() > 0);
     }
 }
 
 void Tst_QOpcUaSecurity::connectAndDisconnectSecureUnencryptedKey()
 {
+    if (m_endpoints.size() == 0)
+        QSKIP("No secure endpoints available");
+
     QFETCH(QString, backend);
     QFETCH(QOpcUaEndpointDescription, endpoint);
 
     QScopedPointer<QOpcUaClient> client(m_opcUa.createClient(backend));
     QVERIFY2(client, QString("Loading backend failed: %1").arg(backend).toLatin1().data());
+
+    if (!client->supportedSecurityPolicies().contains(endpoint.securityPolicy()))
+        QSKIP(QString("This test is skipped because backend %1 does not support security policy %2").arg(client->backend()).arg(endpoint.securityPolicy()).toLatin1().constData());
 
     const QString pkidir = m_pkiData->path();
     QOpcUaPkiConfiguration pkiConfig;
@@ -315,6 +321,9 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureUnencryptedKey()
 
 void Tst_QOpcUaSecurity::connectAndDisconnectSecureEncryptedKey()
 {
+    if (m_endpoints.size() == 0)
+        QSKIP("No secure endpoints available");
+
     QFETCH(QString, backend);
     QFETCH(QOpcUaEndpointDescription, endpoint);
 
@@ -323,6 +332,9 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureEncryptedKey()
 
     if (client->backend() == QLatin1String("open62541"))
         QSKIP(QString("This test is skipped because backend %1 does not support encrypted keys").arg(client->backend()).toLatin1().constData());
+
+    if (!client->supportedSecurityPolicies().contains(endpoint.securityPolicy()))
+        QSKIP(QString("This test is skipped because backend %1 does not support security policy %2").arg(client->backend()).arg(endpoint.securityPolicy()).toLatin1().constData());
 
     const QString pkidir = m_pkiData->path();
     QOpcUaPkiConfiguration pkiConfig;
@@ -396,6 +408,7 @@ void Tst_QOpcUaSecurity::cleanupTestCase()
 
 int main(int argc, char *argv[])
 {
+    updateEnvironment();
     QCoreApplication app(argc, argv);
 
     QTEST_SET_MAIN_SOURCE_PATH
