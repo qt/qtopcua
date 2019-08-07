@@ -83,7 +83,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Reading multiple items"
+        name: parent.parent.testName + ": " + backendName + ": Reading multiple items"
         when: connection.connected && shouldRun
 
         SignalSpy {
@@ -144,7 +144,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Writing multiple items"
+        name: parent.parent.testName + ": " + backendName + ": Writing multiple items"
         when: connection.connected && shouldRun
 
         SignalSpy {

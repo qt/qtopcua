@@ -92,7 +92,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Data Change Filter"
+        name: parent.parent.testName + ": " + backendName + ": Data Change Filter"
         when: node1.readyToUse && shouldRun
 
         function test_nodeTest() {

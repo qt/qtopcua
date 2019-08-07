@@ -83,7 +83,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Create String Node Id"
+        name: parent.parent.testName + ": " + backendName + ": Create String Node Id"
         when: node1.readyToUse && shouldRun
 
         function test_nodeTest() {
@@ -112,7 +112,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Create GUID Node Id"
+        name: parent.parent.testName + ": " + backendName + ": Create GUID Node Id"
         when: node2.readyToUse && shouldRun
 
         function test_nodeTest() {
@@ -131,7 +131,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Create Opaque Node Id"
+        name: parent.parent.testName + ": " + backendName + ": Create Opaque Node Id"
         when: node3.readyToUse && shouldRun
 
         function test_nodeTest() {
@@ -150,7 +150,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Create Integer Node Id"
+        name: parent.parent.testName + ": " + backendName + ": Create Integer Node Id"
         when: node4.readyToUse && shouldRun
 
         function test_nodeTest() {
@@ -169,7 +169,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Write Value Node with Multiple Listeners"
+        name: parent.parent.testName + ": " + backendName + ": Write Value Node with Multiple Listeners"
         when: node5.readyToUse && node6.readyToUse && node7.readyToUse && shouldRun
 
         function test_nodeTest() {
@@ -229,7 +229,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Emitting signals on node changes"
+        name: parent.parent.testName + ": " + backendName + ": Emitting signals on node changes"
         when: node8.readyToUse && shouldRun
 
         function test_changeIdentifier() {
@@ -307,7 +307,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Node with namespace in Id"
+        name: parent.parent.testName + ": " + backendName + ": Node with namespace in Id"
         when: node9.readyToUse && shouldRun
 
         function test_nodeTest() {
@@ -325,7 +325,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Standard attributes on variable node"
+        name: parent.parent.testName + ": " + backendName + ": Standard attributes on variable node"
         when: node10.readyToUse && shouldRun
 
         SignalSpy {
@@ -395,7 +395,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Node timestamps"
+        name: parent.parent.testName + ": " + backendName + ": Node timestamps"
         when: node11.readyToUse && shouldRun
 
         SignalSpy {
@@ -423,7 +423,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Assign int value to double node"
+        name: parent.parent.testName + ": " + backendName + ": Assign int value to double node"
         when: node12.readyToUse && shouldRun
 
         SignalSpy {

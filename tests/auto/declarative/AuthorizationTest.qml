@@ -51,7 +51,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Username authentication"
+        name: parent.parent.testName + ": " + backendName + ": Username authentication"
 
         QtOpcUa.Connection {
             id: connection

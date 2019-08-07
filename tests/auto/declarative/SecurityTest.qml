@@ -51,7 +51,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Check supported security features"
+        name: parent.parent.testName + ": " + backendName + ": Check supported security features"
         when: shouldRun
 
         QtOpcUa.Connection {
