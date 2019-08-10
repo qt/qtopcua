@@ -125,6 +125,23 @@ QOpcUaClientPrivate::~QOpcUaClientPrivate()
 
 void QOpcUaClientPrivate::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
 {
+    // Some pre-connection checks
+    if (QOpcUa::isSecurePolicy(endpoint.securityPolicy())) {
+        // We are going to connect to a secure endpoint
+
+        if (!m_pkiConfig.isPkiValid()) {
+            qCWarning(QT_OPCUA) << "Can not connect to a secure endpoint without a valid PKI setup.";
+            setStateAndError(m_state, QOpcUaClient::AccessDenied);
+            return;
+        }
+
+        if (!m_pkiConfig.isKeyAndCertificateFileSet()) {
+            qCWarning(QT_OPCUA) << "Can not connect to a secure endpoint without a client certificate.";
+            setStateAndError(m_state, QOpcUaClient::AccessDenied);
+            return;
+        }
+    }
+
     m_endpoint = endpoint;
     m_impl->connectToEndpoint(endpoint);
 }

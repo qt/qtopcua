@@ -145,11 +145,11 @@ private slots:
     void initTestCase();
     void cleanupTestCase();
 
-    defineDataMethod(connectAndDisconnectUsingCertificate_data)
-    void connectAndDisconnectUsingCertificate();
+    defineDataMethod(connectAndDisconnectSecureUnencryptedKey_data)
+    void connectAndDisconnectSecureUnencryptedKey();
 
-    defineDataMethod(connectAndDisconnectUsingEncryptedPassword_data)
-    void connectAndDisconnectUsingEncryptedPassword();
+    defineDataMethod(connectAndDisconnectSecureEncryptedKey_data)
+    void connectAndDisconnectSecureEncryptedKey();
 
 private:
     QString envOrDefault(const char *env, QString def)
@@ -244,7 +244,7 @@ void Tst_QOpcUaSecurity::initTestCase()
 
         // Select first non-None security policy
         for (const auto &endpoint : qAsConst(desc)) {
-            if (!endpoint.securityPolicy().endsWith("#None")) {
+            if (QOpcUa::isSecurePolicy(endpoint.securityPolicy())) {
                 m_endpoints.append(endpoint);
                 qDebug() << endpoint.securityPolicy();
             }
@@ -254,16 +254,13 @@ void Tst_QOpcUaSecurity::initTestCase()
     }
 }
 
-void Tst_QOpcUaSecurity::connectAndDisconnectUsingCertificate()
+void Tst_QOpcUaSecurity::connectAndDisconnectSecureUnencryptedKey()
 {
     QFETCH(QString, backend);
     QFETCH(QOpcUaEndpointDescription, endpoint);
 
     QScopedPointer<QOpcUaClient> client(m_opcUa.createClient(backend));
     QVERIFY2(client, QString("Loading backend failed: %1").arg(backend).toLatin1().data());
-
-    if (!client->supportedUserTokenTypes().contains(QOpcUaUserTokenPolicy::TokenType::Certificate))
-        QSKIP(QString("This test is skipped because backend %1 does not support certificate authentication").arg(client->backend()).toLatin1().constData());
 
     const QString pkidir = m_pkiData->path();
     QOpcUaPkiConfiguration pkiConfig;
@@ -276,7 +273,7 @@ void Tst_QOpcUaSecurity::connectAndDisconnectUsingCertificate()
 
     const auto identity = pkiConfig.applicationIdentity();
     QOpcUaAuthenticationInformation authInfo;
-    authInfo.setCertificateAuthentication();
+    authInfo.setUsernameAuthentication("user1", "password");
 
     client->setAuthenticationInformation(authInfo);
     client->setApplicationIdentity(identity);
@@ -316,7 +313,7 @@ void Tst_QOpcUaSecurity::connectAndDisconnectUsingCertificate()
     QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Disconnected);
 }
 
-void Tst_QOpcUaSecurity::connectAndDisconnectUsingEncryptedPassword()
+void Tst_QOpcUaSecurity::connectAndDisconnectSecureEncryptedKey()
 {
     QFETCH(QString, backend);
     QFETCH(QOpcUaEndpointDescription, endpoint);
@@ -324,8 +321,8 @@ void Tst_QOpcUaSecurity::connectAndDisconnectUsingEncryptedPassword()
     QScopedPointer<QOpcUaClient> client(m_opcUa.createClient(backend));
     QVERIFY2(client, QString("Loading backend failed: %1").arg(backend).toLatin1().data());
 
-    if (!client->supportedUserTokenTypes().contains(QOpcUaUserTokenPolicy::TokenType::Certificate))
-        QSKIP(QString("This test is skipped because backend %1 does not support certificate authentication").arg(client->backend()).toLatin1().constData());
+    if (client->backend() == QLatin1String("open62541"))
+        QSKIP(QString("This test is skipped because backend %1 does not support encrypted keys").arg(client->backend()).toLatin1().constData());
 
     const QString pkidir = m_pkiData->path();
     QOpcUaPkiConfiguration pkiConfig;
@@ -338,7 +335,7 @@ void Tst_QOpcUaSecurity::connectAndDisconnectUsingEncryptedPassword()
 
     const auto identity = pkiConfig.applicationIdentity();
     QOpcUaAuthenticationInformation authInfo;
-    authInfo.setCertificateAuthentication();
+    authInfo.setUsernameAuthentication("user1", "password");
 
     client->setAuthenticationInformation(authInfo);
     client->setApplicationIdentity(identity);
