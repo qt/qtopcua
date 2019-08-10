@@ -40,6 +40,7 @@
 #include "opcuaoperandbase.h"
 #include <QOpcUaSimpleAttributeOperand>
 #include <QQmlListProperty>
+#include <QVector>
 
 QT_BEGIN_NAMESPACE
 

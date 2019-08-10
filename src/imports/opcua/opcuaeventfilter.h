@@ -42,6 +42,7 @@
 #include "opcuasimpleattributeoperand.h"
 #include "opcuafilterelement.h"
 #include <QOpcUaMonitoringParameters>
+#include <QVector>
 
 QT_BEGIN_NAMESPACE
 
