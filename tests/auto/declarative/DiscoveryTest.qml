@@ -58,7 +58,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Fetch data from discovery server using default connection"
+        name: parent.parent.testName + ": " + backendName + ": Fetch data from discovery server using default connection"
         when: shouldRun
 
         QtOpcUa.Connection {
@@ -170,7 +170,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Fetch data from discovery server using specified connection"
+        name: parent.parent.testName + ": " + backendName + ": Fetch data from discovery server using specified connection"
         when: shouldRun
 
         QtOpcUa.Connection {

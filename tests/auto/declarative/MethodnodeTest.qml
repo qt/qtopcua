@@ -83,7 +83,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Standard attributes on method node"
+        name: parent.parent.testName + ": " + backendName + ": Standard attributes on method node"
         when: node1.readyToUse && shouldRun
 
         SignalSpy {
@@ -150,7 +150,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Use method arguments"
+        name: parent.parent.testName + ": " + backendName + ": Use method arguments"
         when: node2.readyToUse && shouldRun
 
         SignalSpy {
@@ -200,7 +200,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Multiple Output Arguments"
+        name: parent.parent.testName + ": " + backendName + ": Multiple Output Arguments"
         when: node3.readyToUse && shouldRun
 
         SignalSpy {

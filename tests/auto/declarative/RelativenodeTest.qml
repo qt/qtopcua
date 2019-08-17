@@ -83,7 +83,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "RelativeNodePath"
+        name: parent.parent.testName + ": " + backendName + ": RelativeNodePath"
         when: node1.readyToUse && shouldRun
 
         function test_nodeRead() {
@@ -108,7 +108,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "CascadedRelativeNodePath"
+        name: parent.parent.testName + ": " + backendName + ": CascadedRelativeNodePath"
         when: node2.readyToUse && shouldRun
 
         function test_nodeRead() {
@@ -143,7 +143,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Emitting signals on node changes"
+        name: parent.parent.testName + ": " + backendName + ": Emitting signals on node changes"
         when: node3.readyToUse && shouldRun
 
         function test_changeStartNode() {
@@ -226,7 +226,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Emitting signals on cascaded node changes"
+        name: parent.parent.testName + ": " + backendName + ": Emitting signals on cascaded node changes"
         when: node4.readyToUse && shouldRun
 
         function test_nodeRead() {
@@ -328,7 +328,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Relative Node Path with References"
+        name: parent.parent.testName + ": " + backendName + ": Relative Node Path with References"
         when: node5.readyToUse && shouldRun
 
         function test_nodeRead() {
@@ -354,7 +354,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Relative Node Path with NodeId reference"
+        name: parent.parent.testName + ": " + backendName + ": Relative Node Path with NodeId reference"
         when: node6.readyToUse && shouldRun
 
         function test_nodeRead() {
