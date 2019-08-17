@@ -327,7 +327,7 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureEncryptedKey()
     const QString pkidir = m_pkiData->path();
     QOpcUaPkiConfiguration pkiConfig;
     pkiConfig.setClientCertificateFile(pkidir + "/own/certs/tst_security.der");
-    pkiConfig.setPrivateKeyFile(pkidir + "/own/private/privateKeyWithPassword:secret.pem");
+    pkiConfig.setPrivateKeyFile(pkidir + "/own/private/privateKeyWithPassword_secret.pem");
     pkiConfig.setTrustListDirectory(pkidir + "/trusted/certs");
     pkiConfig.setRevocationListDirectory(pkidir + "/trusted/crl");
     pkiConfig.setIssuerListDirectory(pkidir + "/issuers/certs");

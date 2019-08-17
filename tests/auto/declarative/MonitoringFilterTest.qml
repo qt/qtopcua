@@ -93,7 +93,7 @@ Item {
 
 /*  // In order to run this test you need to compile the example tutorial_server_event from open62541 master branch.
     CompletionLoggingTestCase {
-        name: "Event filter"
+        name: parent.parent.testName + ": " + backendName + ": Event filter"
         when: node3.readyToUse && shouldRun
 
         function test_nodeTest() {

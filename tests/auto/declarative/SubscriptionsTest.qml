@@ -87,7 +87,7 @@ Item {
     }
 
     CompletionLoggingTestCase {
-        name: "Create String Node Id"
+        name: parent.parent.testName + ": " + backendName + ": Create String Node Id"
         when: node1.readyToUse && shouldRun
 
         function test_nodeTest() {

@@ -63,6 +63,10 @@ public slots:
         const quint16 defaultPort = 43344;
         const QHostAddress defaultHost(QHostAddress::LocalHost);
 
+        const QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
+        const QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
+        m_opcuaDiscoveryUrl = QString::fromLatin1("opc.tcp://%1:%2").arg(host).arg(port);
+
         if (qEnvironmentVariableIsEmpty("OPCUA_HOST") && qEnvironmentVariableIsEmpty("OPCUA_PORT")) {
             m_testServerPath = qApp->applicationDirPath()
 
@@ -107,9 +111,6 @@ public slots:
             // Let the server come up
             QTest::qSleep(2000);
         }
-        const QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
-        const QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-        m_opcuaDiscoveryUrl = QString::fromLatin1("opc.tcp://%1:%2").arg(host).arg(port);
     }
     void qmlEngineAvailable(QQmlEngine *engine) {
         bool value = false;
