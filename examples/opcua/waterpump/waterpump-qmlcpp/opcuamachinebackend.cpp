@@ -72,7 +72,7 @@ OpcUaMachineBackend::OpcUaMachineBackend(QObject *parent)
 
 OpcUaMachineBackend::~OpcUaMachineBackend()
 {
-    if (m_client)
+    if (m_client && m_client->state() == QOpcUaClient::Connected)
         m_client->disconnectFromEndpoint();
 }
 
