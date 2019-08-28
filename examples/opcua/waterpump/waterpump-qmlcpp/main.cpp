@@ -93,5 +93,14 @@ int main(int argc, char *argv[])
     if (engine.rootObjects().isEmpty())
         return EXIT_FAILURE;
 
-    return app.exec();
+    const int exitCode = QCoreApplication::exec();
+    if (serverProcess.state() == QProcess::Running) {
+#ifndef Q_OS_WIN
+        serverProcess.terminate();
+#else
+        serverProcess.kill();
+#endif
+        serverProcess.waitForFinished();
+    }
+    return exitCode;
 }

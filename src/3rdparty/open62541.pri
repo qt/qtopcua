@@ -8,7 +8,7 @@ win32-g++: LIBS += -lws2_32
 win32-msvc|winrt: {
     SOURCES += $$OPEN62541_SOURCES
 } else {
-    OPEN62541_CFLAGS += -Wno-unused-parameter -Wno-unused-function -Wno-format -Wno-strict-aliasing -Wno-unused-result
+    OPEN62541_CFLAGS += -Wno-unused-parameter -Wno-unused-function -Wno-format -Wno-strict-aliasing -Wno-unused-result -std=c99
 
     # The open62541 source code produces lots of warnings.
     # This custom compiler will disable these warnings just for open62541.c
