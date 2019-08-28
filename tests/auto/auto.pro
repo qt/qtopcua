@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
-SUBDIRS +=  qopcuaclient connection clientSetupInCpp
+SUBDIRS +=  qopcuaclient connection clientSetupInCpp security
 
 QT_FOR_CONFIG += opcua-private
 
@@ -8,5 +8,3 @@ qtHaveModule(qmltest):qtConfig(open62541)|qtConfig(uacpp) {
     SUBDIRS += declarative
 }
 
-# This tries to check if the server supports security
-qtConfig(mbedtls): SUBDIRS += security
