@@ -192,7 +192,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 //! [PKI Configuration]
 void MainWindow::setupPkiConfiguration()
 {
-    const QString pkidir = QCoreApplication::applicationDirPath() + "/pki";
+    QString pkidir = QCoreApplication::applicationDirPath();
+#ifdef Q_OS_WIN
+    pkidir += "../";
+#endif
+    pkidir += "/pki";
     m_pkiConfig.setClientCertificateFile(pkidir + "/own/certs/opcuaviewer.der");
     m_pkiConfig.setPrivateKeyFile(pkidir + "/own/private/opcuaviewer.pem");
     m_pkiConfig.setTrustListDirectory(pkidir + "/trusted/certs");
