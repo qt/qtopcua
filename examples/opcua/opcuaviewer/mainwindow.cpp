@@ -80,29 +80,34 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &context, co
     if (!mainWindowGlobal)
         return;
 
-   QString message = "%1: %2";
-   QString contextStr = " (%1:%2, %3)";
-   QString typeString;
-
-   if (type == QtDebugMsg)
-       typeString = QObject::tr("Debug");
-   else if (type == QtInfoMsg)
-        typeString = QObject::tr("Info");
-   else if (type == QtWarningMsg)
-        typeString = QObject::tr("Warning");
-   else if (type == QtCriticalMsg)
-        typeString = QObject::tr("Critical");
-   else if (type == QtFatalMsg)
-        typeString = QObject::tr("Fatal");
-
-   message = message.arg(typeString).arg(msg);
-   contextStr = contextStr.arg(context.file).arg(context.line).arg(context.function);
-
+   QString message;
    QColor color = Qt::black;
-   if (type == QtFatalMsg || type == QtCriticalMsg)
-       color = Qt::darkRed;
-   else if (type == QtWarningMsg)
+
+   switch (type) {
+   case QtWarningMsg:
+       message = QObject::tr("Warning");
        color = Qt::darkYellow;
+       break;
+   case QtCriticalMsg:
+       message = QObject::tr("Critical");
+       color = Qt::darkRed;
+       break;
+   case QtFatalMsg:
+       message = QObject::tr("Fatal");
+        color = Qt::darkRed;
+       break;
+   case QtInfoMsg:
+       message = QObject::tr("Info");
+       break;
+   case QtDebugMsg:
+       message = QObject::tr("Debug");
+       break;
+   }
+   message += QLatin1String(": ");
+   message += msg;
+
+   const QString contextStr =
+       QStringLiteral(" (%1:%2, %3)").arg(context.file).arg(context.line).arg(context.function);
 
    // Logging messages from backends are sent from different threads and need to be
    // synchronized with the GUI thread.
@@ -127,12 +132,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   , mTreeView(new QTreeView(this))
   , mOpcUaModel(new OpcUaModel(this))
   , mOpcUaProvider(new QOpcUaProvider(this))
-  , mOpcUaClient(nullptr)
-  , mClientConnected(false)
 {
-    int row = 0;
     mainWindowGlobal = this;
 
+    auto centralWidget = new QWidget;
+    auto vbox = new QVBoxLayout(centralWidget);
+    setCentralWidget(centralWidget);
+
+    int row = 0;
     auto grid = new QGridLayout;
     grid->addWidget(new QLabel(tr("Select OPC UA Backend:")), row, 0);
     grid->addWidget(mOpcUaPlugin, row, 1);
@@ -146,15 +153,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     grid->addWidget(mEndpoints, row, 1);
     grid->addWidget(mConnectButton, row, 2);
 
-    auto vbox = new QVBoxLayout;
     vbox->addLayout(grid);
     vbox->addWidget(mTreeView);
     vbox->addWidget(new QLabel(tr("Log:")));
     vbox->addWidget(mLog);
-
-    auto widget = new QWidget;
-    widget->setLayout(vbox);
-    setCentralWidget(widget);
 
     mHost->setText("opc.tcp://localhost:48010");
     mEndpoints->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
@@ -371,7 +373,7 @@ void MainWindow::updateUiState()
 {
     // allow changing the backend only if it was not already created
     mOpcUaPlugin->setEnabled(mOpcUaClient == nullptr);
-    mConnectButton->setText(mClientConnected?tr("Disconnect"):tr("Connect"));
+    mConnectButton->setText(mClientConnected ? tr("Disconnect") : tr("Connect"));
 
     if (mClientConnected) {
         mHost->setEnabled(false);
@@ -380,7 +382,6 @@ void MainWindow::updateUiState()
         mFindServersButton->setEnabled(false);
         mGetEndpointsButton->setEnabled(false);
         mConnectButton->setEnabled(true);
-        mConnectButton->setText(tr("Disconnect"));
     } else {
         mHost->setEnabled(true);
         mServers->setEnabled(mServers->count() > 0);
@@ -389,7 +390,6 @@ void MainWindow::updateUiState()
         mFindServersButton->setDisabled(mHost->text().isEmpty());
         mGetEndpointsButton->setEnabled(mServers->currentIndex() != -1);
         mConnectButton->setEnabled(mEndpoints->currentIndex() != -1);
-        mConnectButton->setText(tr("Connect"));
     }
 
     if (!mOpcUaClient) {
@@ -424,11 +424,10 @@ bool MainWindow::createPkiPath(const QString &path)
 
     QDir dir;
     const bool ret = dir.mkpath(path);
-    if (ret) {
+    if (ret)
         qDebug() << msg.arg(path).arg("SUCCESS.");
-    } else {
-        qCritical(msg.arg(path).arg("FAILED.").toLocal8Bit());
-    }
+    else
+        qCritical("%s", qPrintable(msg.arg(path).arg("FAILED.")));
 
     return ret;
 }
@@ -456,23 +455,22 @@ bool MainWindow::createPkiFolders()
 
 void MainWindow::showErrorDialog(QOpcUaErrorState *errorState)
 {
-    QString msg;
-    CertificateDialog dlg;
     int result = 0;
 
     const QString statuscode = QOpcUa::statusToString(errorState->errorCode());
 
-    if (errorState->isClientSideError())
-        msg = tr("The client reported: ");
-    else
-        msg = tr("The server reported: ");
+    QString msg = errorState->isClientSideError() ? tr("The client reported: ") : tr("The server reported: ");
 
     switch (errorState->connectionStep()) {
-    case QOpcUaErrorState::ConnectionStep::CertificateValidation:
+    case QOpcUaErrorState::ConnectionStep::Unknown:
+        break;
+    case QOpcUaErrorState::ConnectionStep::CertificateValidation: {
+        CertificateDialog dlg(this);
         msg += tr("Server certificate validation failed with error 0x%1 (%2).\nClick 'Abort' to abort the connect, or 'Ignore' to continue connecting.")
                   .arg(static_cast<ulong>(errorState->errorCode()), 8, 16, QLatin1Char('0')).arg(statuscode);
         result = dlg.showCertificate(msg, m_endpoint.serverCertificate(), m_pkiConfig.trustListDirectory());
         errorState->setIgnoreError(result == 1);
+    }
         break;
     case QOpcUaErrorState::ConnectionStep::OpenSecureChannel:
         msg += tr("OpenSecureChannel failed with error 0x%1 (%2).").arg(errorState->errorCode(), 8, 16, QLatin1Char('0')).arg(statuscode);

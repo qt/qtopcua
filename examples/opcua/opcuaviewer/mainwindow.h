@@ -104,9 +104,9 @@ private:
     QTreeView *mTreeView;
     OpcUaModel *mOpcUaModel;
     QOpcUaProvider *mOpcUaProvider;
-    QOpcUaClient *mOpcUaClient;
+    QOpcUaClient *mOpcUaClient = nullptr;
     QVector<QOpcUaEndpointDescription> mEndpointList;
-    bool mClientConnected;
+    bool mClientConnected = false;
     QOpcUaApplicationIdentity m_identity;
     QOpcUaPkiConfiguration m_pkiConfig;
     QOpcUaEndpointDescription m_endpoint; // current endpoint used to connect
