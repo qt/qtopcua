@@ -52,7 +52,8 @@
 #include "opcuamodel.h"
 #include "certificatedialog.h"
 
-#include <QCoreApplication>
+#include <QAction>
+#include <QApplication>
 #include <QDir>
 #include <QLineEdit>
 #include <QComboBox>
@@ -61,6 +62,8 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QLabel>
+#include <QMenu>
+#include <QMenuBar>
 #include <QTextCharFormat>
 #include <QPlainTextEdit>
 #include <QTextBlock>
@@ -134,6 +137,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   , mOpcUaProvider(new QOpcUaProvider(this))
 {
     mainWindowGlobal = this;
+
+    auto menubar = menuBar();
+    auto fileMenu = menubar->addMenu(tr("File"));
+    auto quitAction = fileMenu->addAction(tr("Quit"), this, &QWidget::close);
+    quitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
+    auto helpMenu = menubar->addMenu(tr("Help"));
+    auto aboutAction = helpMenu->addAction(tr("About Qt"), this, &QApplication::aboutQt);
+    aboutAction->setShortcut(QKeySequence(QKeySequence::HelpContents));
 
     auto centralWidget = new QWidget;
     auto vbox = new QVBoxLayout(centralWidget);
