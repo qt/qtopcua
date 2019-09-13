@@ -339,8 +339,27 @@ inline QUuid QOpcUaBinaryDataEncoding::decode<QUuid>(bool &success)
         return QUuid();
     }
 
-    const QUuid temp = QUuid::fromRfc4122(QByteArray::fromRawData(m_data->constData() + m_offset, uuidSize));
-    m_offset += uuidSize;
+    const auto data1 = decode<quint32>(success);
+    if (!success)
+        return QUuid();
+
+    const auto data2 = decode<quint16>(success);
+    if (!success)
+        return QUuid();
+
+    const auto data3 = decode<quint16>(success);
+    if (!success)
+        return QUuid();
+
+    const auto data4 = QByteArray::fromRawData(m_data->constData() + m_offset, 8);
+    if (!success)
+        return QUuid();
+
+    m_offset += 8;
+
+    const QUuid temp = QUuid(data1, data2, data3, data4[0], data4[1], data4[2],
+                             data4[3], data4[4], data4[5], data4[6], data4[7]);
+
     success = true;
     return temp;
 }
@@ -700,10 +719,16 @@ inline bool QOpcUaBinaryDataEncoding::encode<QOpcUaXValue>(const QOpcUaXValue &s
 template <>
 inline bool QOpcUaBinaryDataEncoding::encode<QUuid>(const QUuid &src)
 {
-    if (!m_data)
+    if (!encode<quint32>(src.data1))
+        return false;
+    if (!encode<quint16>(src.data2))
+        return false;
+    if (!encode<quint16>(src.data3))
         return false;
 
-    m_data->append(src.toRfc4122());
+    auto data = QByteArray::fromRawData(reinterpret_cast<const char *>(src.data4), sizeof(src.data4));
+    m_data->append(data);
+
     return true;
 }
 
