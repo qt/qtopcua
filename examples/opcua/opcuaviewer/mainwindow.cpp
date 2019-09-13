@@ -51,24 +51,13 @@
 #include "mainwindow.h"
 #include "opcuamodel.h"
 #include "certificatedialog.h"
+#include "ui_mainwindow.h"
 
-#include <QAction>
 #include <QApplication>
 #include <QDir>
-#include <QLineEdit>
-#include <QComboBox>
 #include <QMessageBox>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QLabel>
-#include <QMenu>
-#include <QMenuBar>
 #include <QTextCharFormat>
-#include <QPlainTextEdit>
 #include <QTextBlock>
-#include <QTreeView>
-#include <QHeaderView>
 #include <QOpcUaProvider>
 #include <QOpcUaAuthenticationInformation>
 #include <QOpcUaErrorState>
@@ -124,75 +113,34 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &context, co
 }
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
-  , mOpcUaPlugin(new QComboBox(this))
-  , mHost(new QLineEdit(this))
-  , mServers(new QComboBox(this))
-  , mEndpoints(new QComboBox(this))
-  , mFindServersButton(new QPushButton(tr("Find Servers"), this))
-  , mGetEndpointsButton(new QPushButton(tr("Get Endpoints"), this))
-  , mConnectButton(new QPushButton(tr("Connect"), this))
-  , mLog(new QPlainTextEdit(this))
-  , mTreeView(new QTreeView(this))
+  , ui(new Ui::MainWindow)
   , mOpcUaModel(new OpcUaModel(this))
   , mOpcUaProvider(new QOpcUaProvider(this))
 {
+    ui->setupUi(this);
     mainWindowGlobal = this;
 
-    auto menubar = menuBar();
-    auto fileMenu = menubar->addMenu(tr("File"));
-    auto quitAction = fileMenu->addAction(tr("Quit"), this, &QWidget::close);
-    quitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
-    auto helpMenu = menubar->addMenu(tr("Help"));
-    auto aboutAction = helpMenu->addAction(tr("About Qt"), this, &QApplication::aboutQt);
-    aboutAction->setShortcut(QKeySequence(QKeySequence::HelpContents));
+    connect(ui->quitAction, &QAction::triggered, this, &QWidget::close);
+    ui->quitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
 
-    auto centralWidget = new QWidget;
-    auto vbox = new QVBoxLayout(centralWidget);
-    setCentralWidget(centralWidget);
-
-    int row = 0;
-    auto grid = new QGridLayout;
-    grid->addWidget(new QLabel(tr("Select OPC UA Backend:")), row, 0);
-    grid->addWidget(mOpcUaPlugin, row, 1);
-    grid->addWidget(new QLabel(tr("Select host to discover:")), ++row, 0);
-    grid->addWidget(mHost, row, 1);
-    grid->addWidget(mFindServersButton, row, 2);
-    grid->addWidget(new QLabel(tr("Select OPC UA Server:")), ++row, 0);
-    grid->addWidget(mServers, row, 1);
-    grid->addWidget(mGetEndpointsButton, row, 2);
-    grid->addWidget(new QLabel(tr("Select OPC UA Endpoint:")), ++row, 0);
-    grid->addWidget(mEndpoints, row, 1);
-    grid->addWidget(mConnectButton, row, 2);
-
-    vbox->addLayout(grid);
-    vbox->addWidget(mTreeView);
-    vbox->addWidget(new QLabel(tr("Log:")));
-    vbox->addWidget(mLog);
-
-    mHost->setText("opc.tcp://localhost:48010");
-    mEndpoints->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    connect(ui->aboutAction, &QAction::triggered, this, &QApplication::aboutQt);
+    ui->aboutAction->setShortcut(QKeySequence(QKeySequence::HelpContents));
 
     updateUiState();
 
-    mOpcUaPlugin->addItems(mOpcUaProvider->availableBackends());
-    mLog->setReadOnly(true);
-    mLog->setLineWrapMode(QPlainTextEdit::NoWrap);
-    setMinimumWidth(800);
-    mTreeView->setModel(mOpcUaModel);
-    mTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    mTreeView->setTextElideMode(Qt::ElideRight);
-    mTreeView->setAlternatingRowColors(true);
-    mTreeView->setSelectionBehavior(QAbstractItemView::SelectItems);
+    ui->opcUaPlugin->addItems(mOpcUaProvider->availableBackends());
+    ui->treeView->setModel(mOpcUaModel);
+    ui->treeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
-    if (mOpcUaPlugin->count() == 0) {
-        mOpcUaPlugin->setDisabled(true);
-        mConnectButton->setDisabled(true);
+    if (ui->opcUaPlugin->count() == 0) {
+        ui->opcUaPlugin->setDisabled(true);
+        ui->connectButton->setDisabled(true);
         QMessageBox::critical(this, tr("No OPCUA plugins available"), tr("The list of available OPCUA plugins is empty. No connection possible."));
     }
 
-    connect(mFindServersButton, &QPushButton::clicked, this, &MainWindow::findServers);
-    connect(mGetEndpointsButton, &QPushButton::clicked, this, &MainWindow::getEndpoints);
-    connect(mConnectButton, &QPushButton::clicked, this, &MainWindow::connectToServer);
+    connect(ui->findServersButton, &QPushButton::clicked, this, &MainWindow::findServers);
+    connect(ui->getEndpointsButton, &QPushButton::clicked, this, &MainWindow::getEndpoints);
+    connect(ui->connectButton, &QPushButton::clicked, this, &MainWindow::connectToServer);
     oldMessageHandler = qInstallMessageHandler(&messageHandler);
 
     setupPkiConfiguration();
@@ -200,6 +148,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     //! [Application Identity]
     m_identity = m_pkiConfig.applicationIdentity();
     //! [Application Identity]
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
 }
 
 //! [PKI Configuration]
@@ -225,7 +178,7 @@ void MainWindow::setupPkiConfiguration()
 void MainWindow::createClient()
 {
     if (mOpcUaClient == nullptr) {
-        mOpcUaClient = mOpcUaProvider->createClient(mOpcUaPlugin->currentText());
+        mOpcUaClient = mOpcUaProvider->createClient(ui->opcUaPlugin->currentText());
         if (!mOpcUaClient) {
             const QString message(tr("Connecting to the given sever failed. See the log for details."));
             log(message, QString(), Qt::red);
@@ -256,7 +209,7 @@ void MainWindow::findServers()
 {
     QStringList localeIds;
     QStringList serverUris;
-    QUrl url(mHost->text());
+    QUrl url(ui->host->text());
 
     updateUiState();
 
@@ -275,11 +228,11 @@ void MainWindow::findServersComplete(const QVector<QOpcUaApplicationDescription>
     QOpcUaApplicationDescription server;
 
     if (isSuccessStatus(statusCode)) {
-        mServers->clear();
+        ui->servers->clear();
         for (const auto &server : servers) {
             QVector<QString> urls = server.discoveryUrls();
             for (const auto &url : qAsConst(urls))
-                mServers->addItem(url);
+                ui->servers->addItem(url);
         }
     }
 
@@ -288,11 +241,11 @@ void MainWindow::findServersComplete(const QVector<QOpcUaApplicationDescription>
 
 void MainWindow::getEndpoints()
 {
-    mEndpoints->clear();
+    ui->endpoints->clear();
     updateUiState();
 
-    if (mServers->currentIndex() >= 0) {
-        const QString serverUrl = mServers->currentText();
+    if (ui->servers->currentIndex() >= 0) {
+        const QString serverUrl = ui->servers->currentText();
         createClient();
         mOpcUaClient->requestEndpoints(serverUrl);
     }
@@ -319,7 +272,7 @@ void MainWindow::getEndpointsComplete(const QVector<QOpcUaEndpointDescription> &
             const QString EndpointName = QString("%1 (%2)")
                     .arg(endpoint.securityPolicy())
                     .arg(modes[endpoint.securityMode()]);
-            mEndpoints->addItem(EndpointName, index++);
+            ui->endpoints->addItem(EndpointName, index++);
         }
     }
 
@@ -333,8 +286,8 @@ void MainWindow::connectToServer()
         return;
     }
 
-    if (mEndpoints->currentIndex() >= 0) {
-        m_endpoint = mEndpointList[mEndpoints->currentIndex()];
+    if (ui->endpoints->currentIndex() >= 0) {
+        m_endpoint = mEndpointList[ui->endpoints->currentIndex()];
         createClient();
         mOpcUaClient->connectToEndpoint(m_endpoint);
     }
@@ -367,7 +320,7 @@ void MainWindow::namespacesArrayUpdated(const QStringList &namespaceArray)
 
     disconnect(mOpcUaClient, &QOpcUaClient::namespaceArrayUpdated, this, &MainWindow::namespacesArrayUpdated);
     mOpcUaModel->setOpcUaClient(mOpcUaClient);
-    mTreeView->header()->setSectionResizeMode(1 /* Value column*/, QHeaderView::Interactive);
+    ui->treeView->header()->setSectionResizeMode(1 /* Value column*/, QHeaderView::Interactive);
 }
 
 void MainWindow::clientError(QOpcUaClient::ClientError error)
@@ -383,44 +336,44 @@ void MainWindow::clientState(QOpcUaClient::ClientState state)
 void MainWindow::updateUiState()
 {
     // allow changing the backend only if it was not already created
-    mOpcUaPlugin->setEnabled(mOpcUaClient == nullptr);
-    mConnectButton->setText(mClientConnected ? tr("Disconnect") : tr("Connect"));
+    ui->opcUaPlugin->setEnabled(mOpcUaClient == nullptr);
+    ui->connectButton->setText(mClientConnected ? tr("Disconnect") : tr("Connect"));
 
     if (mClientConnected) {
-        mHost->setEnabled(false);
-        mServers->setEnabled(false);
-        mEndpoints->setEnabled(false);
-        mFindServersButton->setEnabled(false);
-        mGetEndpointsButton->setEnabled(false);
-        mConnectButton->setEnabled(true);
+        ui->host->setEnabled(false);
+        ui->servers->setEnabled(false);
+        ui->endpoints->setEnabled(false);
+        ui->findServersButton->setEnabled(false);
+        ui->getEndpointsButton->setEnabled(false);
+        ui->connectButton->setEnabled(true);
     } else {
-        mHost->setEnabled(true);
-        mServers->setEnabled(mServers->count() > 0);
-        mEndpoints->setEnabled(mEndpoints->count() > 0);
+        ui->host->setEnabled(true);
+        ui->servers->setEnabled(ui->servers->count() > 0);
+        ui->endpoints->setEnabled(ui->endpoints->count() > 0);
 
-        mFindServersButton->setDisabled(mHost->text().isEmpty());
-        mGetEndpointsButton->setEnabled(mServers->currentIndex() != -1);
-        mConnectButton->setEnabled(mEndpoints->currentIndex() != -1);
+        ui->findServersButton->setDisabled(ui->host->text().isEmpty());
+        ui->getEndpointsButton->setEnabled(ui->servers->currentIndex() != -1);
+        ui->connectButton->setEnabled(ui->endpoints->currentIndex() != -1);
     }
 
     if (!mOpcUaClient) {
-        mServers->setEnabled(false);
-        mEndpoints->setEnabled(false);
-        mGetEndpointsButton->setEnabled(false);
-        mConnectButton->setEnabled(false);
+        ui->servers->setEnabled(false);
+        ui->endpoints->setEnabled(false);
+        ui->getEndpointsButton->setEnabled(false);
+        ui->connectButton->setEnabled(false);
     }
 }
 
 void MainWindow::log(const QString &text, const QString &context, QColor color)
 {
-    auto cf = mLog->currentCharFormat();
+    auto cf = ui->log->currentCharFormat();
     cf.setForeground(color);
-    mLog->setCurrentCharFormat(cf);
-    mLog->appendPlainText(text);
+    ui->log->setCurrentCharFormat(cf);
+    ui->log->appendPlainText(text);
     if (!context.isEmpty()) {
         cf.setForeground(Qt::gray);
-        mLog->setCurrentCharFormat(cf);
-        mLog->insertPlainText(context);
+        ui->log->setCurrentCharFormat(cf);
+        ui->log->insertPlainText(context);
     }
 }
 
