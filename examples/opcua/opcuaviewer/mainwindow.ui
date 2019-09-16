@@ -71,6 +71,9 @@
           <property name="text">
            <string>opc.tcp://localhost:48010</string>
           </property>
+          <property name="clearButtonEnabled">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
         <item row="0" column="1">

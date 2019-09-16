@@ -139,6 +139,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     }
 
     connect(ui->findServersButton, &QPushButton::clicked, this, &MainWindow::findServers);
+    connect(ui->host, &QLineEdit::returnPressed, this->ui->findServersButton,
+            [this]() { this->ui->findServersButton->animateClick(); });
     connect(ui->getEndpointsButton, &QPushButton::clicked, this, &MainWindow::getEndpoints);
     connect(ui->connectButton, &QPushButton::clicked, this, &MainWindow::connectToServer);
     oldMessageHandler = qInstallMessageHandler(&messageHandler);
