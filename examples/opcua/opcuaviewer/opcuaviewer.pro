@@ -19,4 +19,5 @@ HEADERS += \
     certificatedialog.h
 
 FORMS += \
-    certificatedialog.ui
+    certificatedialog.ui \
+    mainwindow.ui \
