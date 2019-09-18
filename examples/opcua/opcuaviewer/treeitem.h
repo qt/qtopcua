@@ -113,11 +113,14 @@ private:
 template <typename T>
 QString TreeItem::numberArrayToString(const QVector<T> &vec) const
 {
-    QStringList list;
-    for (auto it : vec)
-        list.append(QString::number(it));
-
-    return QLatin1String("[") + list.join(";") + QLatin1String("]");
+    QString list(QLatin1Char('['));
+    for (int i = 0, size = vec.size(); i < size; ++i) {
+        if (i)
+            list.append(QLatin1Char(';'));
+        list.append(QString::number(vec.at(i)));
+    }
+    list.append(QLatin1Char(']'));
+    return list;
 }
 
 QT_END_NAMESPACE
