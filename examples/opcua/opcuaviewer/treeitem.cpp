@@ -142,8 +142,8 @@ QVariant TreeItem::data(int column)
     }
     if (column == 2) {
         QMetaEnum metaEnum = QMetaEnum::fromType<QOpcUa::NodeClass>();
-        QString name = metaEnum.valueToKey((uint)mNodeClass);
-        return name + " (" + QString::number((uint)mNodeClass) + ")";
+        QString name = metaEnum.valueToKey(int(mNodeClass));
+        return name + " (" + QString::number(int(mNodeClass)) + ')';
     }
     if (column == 3) {
         if (!mAttributesReady)
@@ -151,7 +151,6 @@ QVariant TreeItem::data(int column)
 
         const QString typeId = mOpcNode->attribute(QOpcUa::NodeAttribute::DataType).toString();
         auto enumEntry = QOpcUa::namespace0IdFromNodeId(typeId);
-        QString name;
         if (enumEntry == QOpcUa::NodeIds::Namespace0::Unknown)
             return typeId;
         return QOpcUa::namespace0IdName(enumEntry) + " (" + typeId + ")";
@@ -253,7 +252,7 @@ void TreeItem::handleAttributes(QOpcUa::NodeAttributes attr)
     emit mModel->dataChanged(mModel->createIndex(row(), 0, this), mModel->createIndex(row(), numberOfDisplayColumns - 1, this));
 }
 
-void TreeItem::browseFinished(QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode)
+void TreeItem::browseFinished(const QVector<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode)
 {
     if (statusCode != QOpcUa::Good) {
         qWarning() << "Browsing node" << mOpcNode->nodeId() << "finally failed:" << statusCode;
@@ -295,10 +294,7 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
 
     if (typeNodeId == QLatin1String("ns=0;i=19")) { // StatusCode
         const char *name = QMetaEnum::fromType<QOpcUa::UaStatusCode>().valueToKey(value.toInt());
-        if (!name)
-            return QLatin1String("Unknown StatusCode");
-        else
-            return QString(name);
+        return name ? QLatin1String(name) : QLatin1String("Unknown StatusCode");
     }
     if (typeNodeId == QLatin1String("ns=0;i=2")) // Char
         return QString::number(value.toInt());
@@ -356,12 +352,12 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
         const auto a = value.value<QOpcUaArgument>();
 
         return QStringLiteral("[Name: \"%1\", DataType: \"%2\", ValueRank: \"%3\", ArrayDimensions: %4, Description: %5]").arg(
-                    a.name()).arg(a.dataTypeId()).arg(a.valueRank()).arg(numberArrayToString(a.arrayDimensions())).arg(
+                    a.name(), a.dataTypeId()).arg(a.valueRank()).arg(numberArrayToString(a.arrayDimensions()),
                     localizedTextToString(a.description()));
     }
     if (value.canConvert<QOpcUaExtensionObject>()) {
         const auto obj = value.value<QOpcUaExtensionObject>();
-        return QStringLiteral("[TypeId: \"%1\", Encoding: %2, Body: 0x%3]").arg(obj.encodingTypeId()).arg(
+        return QStringLiteral("[TypeId: \"%1\", Encoding: %2, Body: 0x%3]").arg(obj.encodingTypeId(),
                     obj.encoding() == QOpcUaExtensionObject::Encoding::NoBody ?
                         "NoBody" : (obj.encoding() == QOpcUaExtensionObject::Encoding::ByteString ?
                             "ByteString" : "XML")).arg(obj.encodedBody().isEmpty() ? "0" : QString(obj.encodedBody().toHex()));

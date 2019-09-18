@@ -78,7 +78,7 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
 private:
-    QOpcUaClient *mOpcUaClient;
+    QOpcUaClient *mOpcUaClient = nullptr;
     std::unique_ptr<TreeItem> mRootItem;
 
     friend class TreeItem;

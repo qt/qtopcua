@@ -83,11 +83,7 @@ public:
 private slots:
     void startBrowsing();
     void handleAttributes(QOpcUa::NodeAttributes attr);
-    void browseFinished(QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
-
-protected:
-    std::unique_ptr<QOpcUaNode> mOpcNode;
-    OpcUaModel *mModel = nullptr;
+    void browseFinished(const  QVector<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode);
 
 private:
     QString variantToString(const QVariant &value, const QString &typeNodeId = QString()) const;
@@ -97,6 +93,8 @@ private:
     template <typename T>
     QString numberArrayToString(const QVector<T> &vec) const;
 
+    std::unique_ptr<QOpcUaNode> mOpcNode;
+    OpcUaModel *mModel = nullptr;
     bool mAttributesReady = false;
     bool mBrowseStarted = false;
     QList<TreeItem *> mChildItems;
