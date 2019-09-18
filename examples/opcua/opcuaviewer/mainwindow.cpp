@@ -112,12 +112,13 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &context, co
        oldMessageHandler(type, context, msg);
 }
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
+MainWindow::MainWindow(const QString &initialUrl, QWidget *parent) : QMainWindow(parent)
   , ui(new Ui::MainWindow)
   , mOpcUaModel(new OpcUaModel(this))
   , mOpcUaProvider(new QOpcUaProvider(this))
 {
     ui->setupUi(this);
+    ui->host->setText(initialUrl);
     mainWindowGlobal = this;
 
     connect(ui->quitAction, &QAction::triggered, this, &QWidget::close);

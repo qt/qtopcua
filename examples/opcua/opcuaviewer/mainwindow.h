@@ -67,7 +67,7 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+    explicit MainWindow(const QString &initialUrl, QWidget *parent = nullptr);
     ~MainWindow();
     Q_INVOKABLE void log(const QString &text, const QString &context, const QColor &color);
     void log(const QString &text, const QColor &color = Qt::black);
