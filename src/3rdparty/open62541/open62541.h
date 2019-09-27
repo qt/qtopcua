@@ -1,6 +1,6 @@
 /* THIS IS A SINGLE-FILE DISTRIBUTION CONCATENATED FROM THE OPEN62541 SOURCES
  * visit http://open62541.org/ for information about this software
- * Git-Revision: v1.0-rc4
+ * Git-Revision: v1.0
  */
 
 /*
@@ -31,8 +31,8 @@
 #define UA_OPEN62541_VER_MAJOR 1
 #define UA_OPEN62541_VER_MINOR 0
 #define UA_OPEN62541_VER_PATCH 0
-#define UA_OPEN62541_VER_LABEL "-rc2" /* Release candidate label, etc. */
-#define UA_OPEN62541_VER_COMMIT "v1.0-rc4"
+#define UA_OPEN62541_VER_LABEL "" /* Release candidate label, etc. */
+#define UA_OPEN62541_VER_COMMIT "v1.0"
 
 /**
  * Feature Options
@@ -86,7 +86,7 @@
 /* #undef UA_PACK_DEBIAN */
 
 /* Options for Debugging */
-#define UA_DEBUG
+/* #undef UA_DEBUG */
 /* #undef UA_DEBUG_DUMP_PKGS */
 
 /**
@@ -12920,8 +12920,8 @@ typedef int64_t UA_Int64;
  * ^^^^^^
  * An integer value between 0 and 18 446 744 073 709 551 615. */
 typedef uint64_t UA_UInt64;
-#define UA_UINT64_MIN (int64_t)0
-#define UA_UINT64_MAX (int64_t)18446744073709551615
+#define UA_UINT64_MIN (uint64_t)0
+#define UA_UINT64_MAX (uint64_t)18446744073709551615
 
 /**
  * Float
@@ -12995,8 +12995,12 @@ UA_STRING(char *chars) {
  * which represents the number of 100 nanosecond intervals since January 1, 1601
  * (UTC).
  *
- * The methods providing an interface to the system clock are provided by a
- * "plugin" that is statically linked with the library. */
+ * The methods providing an interface to the system clock are architecture-
+ * specific. Usually, they provide a UTC clock that includes leap seconds. The
+ * OPC UA standard allows the use of International Atomic Time (TAI) for the
+ * DateTime instead. But this is still unusual and not implemented for most
+ * SDKs. Currently (2019), UTC and TAI are 37 seconds apart due to leap
+ * seconds. */
 
 typedef int64_t UA_DateTime;
 
@@ -13023,8 +13027,8 @@ typedef struct UA_DateTimeStruct {
     UA_UInt16 sec;
     UA_UInt16 min;
     UA_UInt16 hour;
-    UA_UInt16 day;
-    UA_UInt16 month;
+    UA_UInt16 day;   /* From 1 to 31 */
+    UA_UInt16 month; /* From 1 to 12 */
     UA_UInt16 year;
 } UA_DateTimeStruct;
 
@@ -13829,7 +13833,7 @@ _UA_END_DECLS
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/types_generated.h" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd with script /home/jvoe/open62541/tools/generate_datatypes.py
- * on host rigel by user jvoe at 2019-07-30 11:30:09 */
+ * on host rigel by user jvoe at 2019-09-27 03:59:36 */
 
 
 #ifdef UA_ENABLE_AMALGAMATION
@@ -16230,7 +16234,7 @@ _UA_END_DECLS
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/types_generated_handling.h" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd with script /home/jvoe/open62541/tools/generate_datatypes.py
- * on host rigel by user jvoe at 2019-07-30 11:30:09 */
+ * on host rigel by user jvoe at 2019-09-27 03:59:36 */
 
 
 
@@ -22723,8 +22727,8 @@ UA_Server_unregister_discovery(UA_Server *server, struct UA_Client *client);
   * @param client the client which is used to call the RegisterServer.
   *         It must not yet be connected and will be connected for every register call
   *         to the given discoveryServerUrl.
-  * @param discoveryServerUrl if set to NULL, the default value
-  *        'opc.tcp://localhost:4840' will be used
+  * @param discoveryServerUrl where this server should register itself.
+  *        The string will be copied internally. Therefore you can free it after calling this method.
   * @param intervalMs
   * @param delayFirstRegisterMs
   * @param periodicCallbackId */
@@ -22740,8 +22744,9 @@ typedef void (*UA_Server_registerServerCallback)(const UA_RegisteredServer *regi
                                                  void* data);
 
 /* Set the callback which is called if another server registeres or unregisters
- * with this instance. If called multiple times, previous data will be
- * overwritten.
+ * with this instance. This callback is called every time the server gets a register
+ * call. This especially means that for every periodic server register the callback will
+ * be called.
  *
  * @param server
  * @param cb the callback
@@ -22845,7 +22850,50 @@ typedef struct {
     void (*destructor)(UA_Server *server,
                        const UA_NodeId *sessionId, void *sessionContext,
                        const UA_NodeId *nodeId, void *nodeContext);
-} UA_GlobalNodeLifecycle;
+
+    /* Can be NULL. Called during recursive node instantiation. While mandatory
+     * child nodes are automatically created if not already present, optional child
+     * nodes are not. This callback can be used to define whether an optional child
+     * node should be created.
+     *
+     * @param server The server executing the callback
+     * @param sessionId The identifier of the session
+     * @param sessionContext Additional data attached to the session in the
+     *        access control layer
+     * @param sourceNodeId Source node from the type definition. If the new node
+     *        shall be created, it will be a copy of this node.
+     * @param targetParentNodeId Parent of the potential new child node
+     * @param referenceTypeId Identifies the reference type which that the parent
+     *        node has to the new node. 
+     * @return Return UA_TRUE if the child node shall be instantiatet, 
+     *         UA_FALSE otherwise. */
+    UA_Boolean (*createOptionalChild)(UA_Server *server,
+                                      const UA_NodeId *sessionId,
+                                      void *sessionContext,
+                                      const UA_NodeId *sourceNodeId,
+                                      const UA_NodeId *targetParentNodeId,
+                                      const UA_NodeId *referenceTypeId);
+
+    /* Can be NULL. Called when a node is to be copied during recursive
+     * node instantiation. Allows definition of the NodeId for the new node.
+     * If the callback is set to NULL or the resulting NodeId is UA_NODEID_NULL,
+     * then a random NodeId will be generated.
+     *
+     * @param server The server executing the callback
+     * @param sessionId The identifier of the session
+     * @param sessionContext Additional data attached to the session in the
+     *        access control layer
+     * @param sourceNodeId Source node of the copy operation
+     * @param targetParentNodeId Parent node of the new node
+     * @param referenceTypeId Identifies the reference type which that the parent
+     *        node has to the new node. */
+    UA_StatusCode (*generateChildNodeId)(UA_Server *server,
+                                         const UA_NodeId *sessionId, void *sessionContext,
+                                         const UA_NodeId *sourceNodeId,
+                                         const UA_NodeId *targetParentNodeId,
+                                         const UA_NodeId *referenceTypeId,
+                                         UA_NodeId *targetNodeId);
+    } UA_GlobalNodeLifecycle;
 
 typedef struct {
     /* Can be NULL. May replace the nodeContext */
@@ -24964,6 +25012,245 @@ UA_ServerConfig_addPubSubTransportLayer(UA_ServerConfig *config,
 _UA_END_DECLS
 
 
+/*********************************** amalgamated original file "/home/jvoe/open62541/deps/ziptree.h" ***********************************/
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
+ *
+ *    Copyright 2018 (c) Julius Pfrommer
+ */
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Reusable zip tree implementation. The style is inspired by the BSD
+ * sys/queue.h linked list definition.
+ *
+ * Zip trees were developed in: Tarjan, R. E., Levy, C. C., and Timmel, S. "Zip
+ * Trees." arXiv preprint arXiv:1806.06726 (2018).
+ *
+ * The ZIP_ENTRY definitions are to be contained in the tree entries themselves.
+ * Use ZIP_PROTTYPE to define the signature of the zip tree and ZIP_IMPL (in a
+ * .c compilation unit) for the method implementations.
+ *
+ * Zip trees are a probabilistic data structure. Entries are assigned a
+ * (nonzero) rank k with probability 1/2^{k+1}. This header file does not assume
+ * a specific random number generator. So the rank must be given when an entry
+ * is inserted. A fast way (with a single call to a pseudo random generator) to
+ * compute the rank is with ZIP_FFS32(random()). The ZIP_FFS32 returns the least
+ * significant nonzero bit of a 32bit number. */
+
+#define ZIP_HEAD(name, type)                    \
+struct name {                                   \
+    struct type *zip_root;                      \
+}
+
+#define ZIP_INIT(head) do { (head)->zip_root = NULL; } while (0)
+#define ZIP_ROOT(head) (head)->zip_root
+#define ZIP_EMPTY(head) (ZIP_ROOT(head) == NULL)
+
+#define ZIP_ENTRY(type)                         \
+struct {                                        \
+    struct type *zip_left;                      \
+    struct type *zip_right;                     \
+    unsigned char rank;                         \
+}
+
+#define ZIP_LEFT(elm, field) (elm)->field.zip_left
+#define ZIP_RIGHT(elm, field) (elm)->field.zip_right
+#define ZIP_RANK(elm, field) (elm)->field.rank
+
+/* Shortcuts */
+#define ZIP_INSERT(name, head, elm, rank) name##_ZIP_INSERT(head, elm, rank)
+#define ZIP_REMOVE(name, head, elm) name##_ZIP_REMOVE(head, elm)
+#define ZIP_FIND(name, head, key) name##_ZIP_FIND(head, key)
+#define ZIP_MIN(name, head) name##_ZIP_MIN(head)
+#define ZIP_MAX(name, head) name##_ZIP_MAX(head)
+#define ZIP_ITER(name, head, cb, d) name##_ZIP_ITER(head, cb, d)
+
+/* Zip tree method prototypes */
+#define ZIP_PROTTYPE(name, type, keytype)                               \
+void name##_ZIP_INSERT(struct name *head, struct type *elm, unsigned char rank); \
+void name##_ZIP_REMOVE(struct name *head, struct type *elm);            \
+struct type *name##_ZIP_FIND(struct name *head, const keytype *key);    \
+struct type *name##_ZIP_MIN(struct name *head);                         \
+struct type *name##_ZIP_MAX(struct name *head);                         \
+typedef void (*name##_cb)(struct type *elm, void *data);                \
+void name##_ZIP_ITER(struct name *head, name##_cb cb, void *data);      \
+
+/* The comparison method "cmp" defined for every zip tree has the signature
+ *
+ *   enum ZIP_CMP cmpDateTime(const keytype *a, const keytype *b);
+ *
+ * The entries need an absolute ordering. So ZIP_CMP_EQ must only be returned if
+ * a and b point to the same memory. (E.g. assured by unique identifiers.) */
+enum ZIP_CMP {
+    ZIP_CMP_LESS = -1,
+    ZIP_CMP_EQ = 0,
+    ZIP_CMP_MORE = 1
+};
+
+/* Find the position of the first bit in an unsigned 32bit integer */
+#ifdef _MSC_VER
+static __inline
+#else
+static inline
+#endif
+unsigned char
+ZIP_FFS32(unsigned int v) {
+    unsigned int t = 1;
+    unsigned char r = 1;
+    if(v == 0) return 0;
+    while((v & t) == 0) {
+        t = t << 1; r++;
+    }
+    return r;
+}
+
+/* Zip tree method implementations */
+#define ZIP_IMPL(name, type, field, keytype, keyfield, cmp)             \
+static struct type *                                                    \
+__##name##_ZIP_INSERT(struct type *root, struct type *elm) {            \
+    if(!root) {                                                         \
+        ZIP_LEFT(elm, field) = NULL;                                    \
+        ZIP_RIGHT(elm, field) = NULL;                                   \
+        return elm;                                                     \
+    }                                                                   \
+    if((cmp)(&(elm)->keyfield, &(root)->keyfield) == ZIP_CMP_LESS) {    \
+        if(__##name##_ZIP_INSERT(ZIP_LEFT(root, field), elm) == elm) {  \
+            if(ZIP_RANK(elm, field) < ZIP_RANK(root, field)) {          \
+                ZIP_LEFT(root, field) = elm;                            \
+            } else {                                                    \
+                ZIP_LEFT(root, field) = ZIP_RIGHT(elm, field);          \
+                ZIP_RIGHT(elm, field) = root;                           \
+                return elm;                                             \
+            }                                                           \
+        }                                                               \
+    } else {                                                            \
+        if(__##name##_ZIP_INSERT(ZIP_RIGHT(root, field), elm) == elm) { \
+            if(ZIP_RANK(elm, field) <= ZIP_RANK(root, field)) {         \
+                ZIP_RIGHT(root, field) = elm;                           \
+            } else {                                                    \
+                ZIP_RIGHT(root, field) = ZIP_LEFT(elm, field);          \
+                ZIP_LEFT(elm, field) = root;                            \
+                return elm;                                             \
+            }                                                           \
+        }                                                               \
+    }                                                                   \
+    return root;                                                        \
+}                                                                       \
+                                                                        \
+void                                                                    \
+name##_ZIP_INSERT(struct name *head, struct type *elm,                  \
+                  unsigned char rank) {                                 \
+    ZIP_RANK(elm, field) = rank;                                        \
+    ZIP_ROOT(head) = __##name##_ZIP_INSERT(ZIP_ROOT(head), elm);        \
+}                                                                       \
+                                                                        \
+static struct type *                                                    \
+__##name##ZIP(struct type *x, struct type *y) {                         \
+    if(!x) return y;                                                    \
+    if(!y) return x;                                                    \
+    if(ZIP_RANK(x, field) < ZIP_RANK(y, field)) {                       \
+        ZIP_LEFT(y, field) = __##name##ZIP(x, ZIP_LEFT(y, field));      \
+        return y;                                                       \
+    }                                                                   \
+    ZIP_RIGHT(x, field) = __##name##ZIP(ZIP_RIGHT(x, field), y);        \
+    return x;                                                           \
+}                                                                       \
+                                                                        \
+static struct type *                                                    \
+__##name##_ZIP_REMOVE(struct type *root, struct type *elm) {            \
+    if(root == elm)                                                     \
+        return __##name##ZIP(ZIP_LEFT(root, field),                     \
+                             ZIP_RIGHT(root, field));                   \
+    enum ZIP_CMP eq = (cmp)(&(elm)->keyfield, &(root)->keyfield);       \
+    if(eq == ZIP_CMP_LESS) {                                            \
+        struct type *left = ZIP_LEFT(root, field);                      \
+        if(elm == left)                                                 \
+            ZIP_LEFT(root, field) =                                     \
+                __##name##ZIP(ZIP_LEFT(left, field),                    \
+                              ZIP_RIGHT(left, field));                  \
+        else                                                            \
+            __##name##_ZIP_REMOVE(left, elm);                           \
+    } else {                                                            \
+        struct type *right = ZIP_RIGHT(root, field);                    \
+        if(elm == right)                                                \
+            ZIP_RIGHT(root, field) =                                    \
+                __##name##ZIP(ZIP_LEFT(right, field),                   \
+                              ZIP_RIGHT(right, field));                 \
+        else                                                            \
+            __##name##_ZIP_REMOVE(right, elm);                          \
+    }                                                                   \
+    return root;                                                        \
+}                                                                       \
+                                                                        \
+void                                                                    \
+name##_ZIP_REMOVE(struct name *head, struct type *elm) {                \
+    ZIP_ROOT(head) = __##name##_ZIP_REMOVE(ZIP_ROOT(head), elm);        \
+}                                                                       \
+                                                                        \
+static struct type *                                                    \
+__##name##_ZIP_FIND(struct type *root, const keytype *key) {            \
+    if(!root)                                                           \
+        return NULL;                                                    \
+    enum ZIP_CMP eq = (cmp)(key, &(root)->keyfield);                    \
+    if(eq == ZIP_CMP_EQ) {                                              \
+        return root;                                                    \
+    }                                                                   \
+    if(eq == ZIP_CMP_LESS) {                                            \
+        return __##name##_ZIP_FIND(ZIP_LEFT(root, field), key);         \
+    }                                                                   \
+    return __##name##_ZIP_FIND(ZIP_RIGHT(root, field), key);            \
+}                                                                       \
+                                                                        \
+struct type *                                                           \
+name##_ZIP_FIND(struct name *head, const keytype *key) {                \
+    return __##name##_ZIP_FIND(ZIP_ROOT(head), key);                    \
+}                                                                       \
+                                                                        \
+struct type *                                                           \
+name##_ZIP_MIN(struct name *head) {                                     \
+    struct type *cur = ZIP_ROOT(head);                                  \
+    if(!cur) return NULL;                                               \
+    while(ZIP_LEFT(cur, field)) {                                       \
+        cur = ZIP_LEFT(cur, field);                                     \
+    }                                                                   \
+    return cur;                                                         \
+}                                                                       \
+                                                                        \
+struct type *                                                           \
+name##_ZIP_MAX(struct name *head) {                                     \
+    struct type *cur = ZIP_ROOT(head);                                  \
+    if(!cur) return NULL;                                               \
+    while(ZIP_RIGHT(cur, field)) {                                      \
+        cur = ZIP_RIGHT(cur, field);                                    \
+    }                                                                   \
+    return cur;                                                         \
+}                                                                       \
+                                                                        \
+static void                                                             \
+__##name##_ZIP_ITER(struct type *elm, name##_cb cb, void *data) {       \
+    if(!elm)                                                            \
+        return;                                                         \
+    __##name##_ZIP_ITER(ZIP_LEFT(elm, field), cb, data);                \
+    __##name##_ZIP_ITER(ZIP_RIGHT(elm, field), cb, data);               \
+    cb(elm, data);                                                      \
+}                                                                       \
+                                                                        \
+void                                                                    \
+name##_ZIP_ITER(struct name *head, name##_cb cb, void *data) {          \
+    __##name##_ZIP_ITER(ZIP_ROOT(head), cb, data);                      \
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
 /*********************************** amalgamated original file "/home/jvoe/open62541/include/open62541/plugin/nodestore.h" ***********************************/
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
@@ -25030,12 +25317,24 @@ struct UA_MonitoredItem;
  * not known or not important. The ``nodeClass`` attribute is used to ensure the
  * correctness of casting from ``UA_Node`` to a specific node type. */
 
+/* Ordered tree structure for fast member check */
+typedef struct UA_ReferenceTarget {
+    ZIP_ENTRY(UA_ReferenceTarget) zipfields;
+    UA_UInt32 targetHash; /* Hash of the target nodeid */
+    UA_ExpandedNodeId target;
+} UA_ReferenceTarget;
+
+ZIP_HEAD(UA_ReferenceTargetHead, UA_ReferenceTarget);
+typedef struct UA_ReferenceTargetHead UA_ReferenceTargetHead;
+ZIP_PROTTYPE(UA_ReferenceTargetHead, UA_ReferenceTarget, UA_ReferenceTarget)
+
 /* List of reference targets with the same reference type and direction */
 typedef struct {
     UA_NodeId referenceTypeId;
     UA_Boolean isInverse;
-    size_t targetIdsSize;
-    UA_ExpandedNodeId *targetIds;
+    size_t refTargetsSize;
+    UA_ReferenceTarget *refTargets;
+    UA_ReferenceTargetHead refTargetsTree;
 } UA_NodeReferenceKind;
 
 #define UA_NODE_BASEATTRIBUTES                  \
@@ -28047,7 +28346,7 @@ UA_CertificateVerification_Trustlist(UA_CertificateVerification *cv,
                                      const UA_ByteString *certificateRevocationList,
                                      size_t certificateRevocationListSize);
 
-#if __linux__ /* Linux only so far */
+#ifdef __linux__ /* Linux only so far */
 UA_EXPORT UA_StatusCode
 UA_CertificateVerification_CertFolders(UA_CertificateVerification *cv,
                                        const char *trustListFolder,

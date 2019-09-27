@@ -83,8 +83,7 @@ bool TestServer::createInsecureServerConfig(UA_ServerConfig *config)
     }
 
     // This is needed for COIN because the hostname returned by gethostname() is not resolvable.
-    UA_String_deleteMembers(m_config->applicationDescription.discoveryUrls);
-    *m_config->applicationDescription.discoveryUrls = UA_String_fromChars("opc.tcp://localhost:43344/");
+    config->customHostname = UA_String_fromChars("localhost");
 
     return true;
 }
@@ -168,7 +167,7 @@ bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
     UA_ServerConfig_setBasics(config);
 
     // This is needed for COIN because the hostname returned by gethostname() is not resolvable.
-    m_config->customHostname = UA_String_fromChars("localhost");
+    config->customHostname = UA_String_fromChars("localhost");
 
     UA_StatusCode result = UA_CertificateVerification_Trustlist(&config->certificateVerification,
                                                   trustList, trustListSize,

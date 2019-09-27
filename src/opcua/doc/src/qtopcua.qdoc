@@ -415,11 +415,11 @@
     The Open62541 plugin is built by default from the included 3rd party sources and has no external dependencies.
     The open62541 library uses mbedTLS for security. If the mbedTLS library is detected during configuration,
     security is enabled for the tests and the open62541 backend.
-    The Open62541 source and header files bundled with Qt OPC UA have been generated from the open62541 v1.0-rc4
+    The Open62541 source and header files bundled with Qt OPC UA have been generated from the open62541 v1.0
     tag using the following commands:
 
     \code
-        cmake -DCMAKE_BUILD_TYPE=Release -DUA_ENABLE_AMALGAMATION=ON
+        cmake -DCMAKE_BUILD_TYPE=Release -DUA_ENABLE_AMALGAMATION=ON -DUA_AMALGAMATION_ARCHITECTURES="win32;posix"
         make
     \endcode
 
@@ -429,7 +429,7 @@
         qmake </path/to/qtopcua> -- -no-open62541
     \encode
 
-    In case you want to build a custom version of the Open62541 plugin, Open62541 v1.0-rc4 built with
+    In case you want to build a custom version of the Open62541 plugin, Open62541 v1.0 built with
     UA_ENABLE_AMALGAMATION=ON is required.
 
     When building at the top level, you have to specify the path to the Open62541 SDK:
