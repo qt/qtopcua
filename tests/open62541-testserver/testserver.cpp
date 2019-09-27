@@ -41,7 +41,6 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QLoggingCategory>
-#include <QtCore/QUuid>
 #include <QDir>
 #include <QFile>
 

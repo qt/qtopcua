@@ -42,7 +42,6 @@
 #include <QtCore/QLoggingCategory>
 #include <QtCore/QStringList>
 #include <QtCore/QUrl>
-#include <QtCore/QUuid>
 
 #include <QtNetwork/QHostInfo>
 
