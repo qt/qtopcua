@@ -186,7 +186,9 @@ template<>
 QVariant scalarToQVariant<QUuid, OpcUa_Guid>(OpcUa_Guid *data, QMetaType::Type type)
 {
     Q_UNUSED(type)
-    return QUuid(data->Data1,    data->Data2,    data->Data3,
+    return QUuid(qFromBigEndian<uint>(data->Data1),
+                 qFromBigEndian(data->Data2),
+                 qFromBigEndian(data->Data3),
                  data->Data4[0], data->Data4[1], data->Data4[2], data->Data4[3],
                  data->Data4[4], data->Data4[5], data->Data4[6], data->Data4[7]);
 }
@@ -529,9 +531,9 @@ template<>
 void scalarFromQVariant<OpcUa_Guid, QUuid>(const QVariant &var, OpcUa_Guid *ptr)
 {
     const QUuid uuid = var.toUuid();
-    ptr->Data1 = uuid.data1;
-    ptr->Data2 = uuid.data2;
-    ptr->Data3 = uuid.data3;
+    ptr->Data1 = qToBigEndian(uuid.data1);
+    ptr->Data2 = qToBigEndian(uuid.data2);
+    ptr->Data3 = qToBigEndian(uuid.data3);
     memcpy(ptr->Data4, uuid.data4, sizeof(uuid.data4));
 }
 
