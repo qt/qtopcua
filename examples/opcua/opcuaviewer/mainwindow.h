@@ -56,19 +56,19 @@
 
 QT_BEGIN_NAMESPACE
 
-class QPlainTextEdit;
-class QLineEdit;
-class QComboBox;
-class QPushButton;
 class QOpcUaProvider;
-class QTreeView;
 class OpcUaModel;
+
+namespace Ui {
+class MainWindow;
+}
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
     Q_INVOKABLE void log(const QString &text, const QString &context, QColor color);
     void log(const QString &text, QColor color = Qt::black);
 
@@ -93,20 +93,12 @@ private:
     bool createPkiPath(const QString &path);
 
 private:
-    QComboBox *mOpcUaPlugin;
-    QLineEdit *mHost;
-    QComboBox *mServers;
-    QComboBox *mEndpoints;
-    QPushButton *mFindServersButton;
-    QPushButton *mGetEndpointsButton;
-    QPushButton *mConnectButton;
-    QPlainTextEdit *mLog;
-    QTreeView *mTreeView;
+    Ui::MainWindow *ui;
     OpcUaModel *mOpcUaModel;
     QOpcUaProvider *mOpcUaProvider;
-    QOpcUaClient *mOpcUaClient;
+    QOpcUaClient *mOpcUaClient = nullptr;
     QVector<QOpcUaEndpointDescription> mEndpointList;
-    bool mClientConnected;
+    bool mClientConnected = false;
     QOpcUaApplicationIdentity m_identity;
     QOpcUaPkiConfiguration m_pkiConfig;
     QOpcUaEndpointDescription m_endpoint; // current endpoint used to connect

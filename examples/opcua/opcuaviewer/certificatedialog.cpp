@@ -81,7 +81,8 @@ int CertificateDialog::showCertificate(const QString &message, const QByteArray 
 void CertificateDialog::saveCertificate()
 {
    const QByteArray digest = m_cert.digest();
-   const QString path = m_trustListDirectory + "/" + digest.toHex() + ".der";
+   const QString path = m_trustListDirectory + QLatin1Char('/')
+       + QLatin1String(digest.toHex()) + QLatin1String(".der");
 
    QFile file(path);
    if (file.open(QIODevice::WriteOnly)) {

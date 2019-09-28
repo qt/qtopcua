@@ -95,7 +95,7 @@ bool DemoServer::init()
     if (!m_server)
         return false;
 
-    UA_StatusCode result = UA_ServerConfig_setMinimal(UA_Server_getConfig(m_server), 34433, nullptr);
+    UA_StatusCode result = UA_ServerConfig_setMinimal(UA_Server_getConfig(m_server), 43344, nullptr);
 
     if (result != UA_STATUSCODE_GOOD)
         return false;
