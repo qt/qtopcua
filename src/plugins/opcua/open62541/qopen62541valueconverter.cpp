@@ -316,7 +316,10 @@ QDateTime scalarToQt<QDateTime, UA_DateTime>(const UA_DateTime *data)
 template<>
 QUuid scalarToQt<QUuid, UA_Guid>(const UA_Guid *data)
 {
-    return QUuid(data->data1, data->data2, data->data3, data->data4[0], data->data4[1], data->data4[2],
+    return QUuid(qFromBigEndian(data->data1),
+                 qFromBigEndian(data->data2),
+                 qFromBigEndian(data->data3),
+                 data->data4[0], data->data4[1], data->data4[2],
             data->data4[3], data->data4[4], data->data4[5], data->data4[6], data->data4[7]);
 }
 
@@ -525,9 +528,9 @@ void scalarFromQt<UA_QualifiedName, QOpcUaQualifiedName>(const QOpcUaQualifiedNa
 template<>
 void scalarFromQt<UA_Guid, QUuid>(const QUuid &value, UA_Guid *ptr)
 {
-    ptr->data1 = value.data1;
-    ptr->data2 = value.data2;
-    ptr->data3 = value.data3;
+    ptr->data1 = qToBigEndian(value.data1);
+    ptr->data2 = qToBigEndian(value.data2);
+    ptr->data3 = qToBigEndian(value.data3);
     std::memcpy(ptr->data4, value.data4, sizeof(value.data4));
 }
 
