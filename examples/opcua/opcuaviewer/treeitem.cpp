@@ -129,9 +129,9 @@ int TreeItem::columnCount() const
 
 QVariant TreeItem::data(int column)
 {
-    if (column == 0) {
+    if (column == 0)
         return mNodeBrowseName;
-    } else if (column == 1) {
+    if (column == 1) {
         if (!mAttributesReady)
             return tr("Loading ...");
 
@@ -139,11 +139,13 @@ QVariant TreeItem::data(int column)
         const auto value = mOpcNode->attribute(QOpcUa::NodeAttribute::Value);
 
         return variantToString(value, type);
-    } else if (column == 2) {
+    }
+    if (column == 2) {
         QMetaEnum metaEnum = QMetaEnum::fromType<QOpcUa::NodeClass>();
         QString name = metaEnum.valueToKey((uint)mNodeClass);
         return name + " (" + QString::number((uint)mNodeClass) + ")";
-    } else if (column == 3) {
+    }
+    if (column == 3) {
         if (!mAttributesReady)
             return tr("Loading ...");
 
@@ -153,15 +155,15 @@ QVariant TreeItem::data(int column)
         if (enumEntry == QOpcUa::NodeIds::Namespace0::Unknown)
             return typeId;
         return QOpcUa::namespace0IdName(enumEntry) + " (" + typeId + ")";
-    } else if (column == 4) {
+    }
+    if (column == 4)
         return mNodeId;
-    } else if (column == 5) {
+    if (column == 5)
         return mNodeDisplayName;
-    } else if (column == 6) {
-        if (!mAttributesReady)
-            return tr("Loading ...");
-
-        return mOpcNode->attribute(QOpcUa::NodeAttribute::Description).value<QOpcUaLocalizedText>().text();
+    if (column == 6) {
+        return mAttributesReady
+            ? mOpcNode->attribute(QOpcUa::NodeAttribute::Description).value<QOpcUaLocalizedText>().text()
+            : tr("Loading ...");
     }
     return QVariant();
 }
@@ -294,54 +296,64 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
     }
     if (typeNodeId == QLatin1String("ns=0;i=2")) // Char
         return QString::number(value.toInt());
-    else if (typeNodeId == QLatin1String("ns=0;i=3")) // SChar
+    if (typeNodeId == QLatin1String("ns=0;i=3")) // SChar
         return QString::number(value.toUInt());
-    else if (typeNodeId == QLatin1String("ns=0;i=4")) // Int16
+    if (typeNodeId == QLatin1String("ns=0;i=4")) // Int16
         return QString::number(value.toInt());
-    else if (typeNodeId == QLatin1String("ns=0;i=5")) // UInt16
+    if (typeNodeId == QLatin1String("ns=0;i=5")) // UInt16
         return QString::number(value.toUInt());
-    else if (value.type() == QVariant::ByteArray)
+    if (value.type() == QVariant::ByteArray)
         return QLatin1String("0x") + value.toByteArray().toHex();
-    else if (value.type() == QVariant::DateTime)
+    if (value.type() == QVariant::DateTime)
         return value.toDateTime().toString(Qt::ISODate);
-    else if (value.canConvert<QOpcUaQualifiedName>()) {
+    if (value.canConvert<QOpcUaQualifiedName>()) {
         const auto name = value.value<QOpcUaQualifiedName>();
         return QStringLiteral("[NamespaceIndex: %1, Name: \"%2\"]").arg(name.namespaceIndex()).arg(name.name());
-    } else if (value.canConvert<QOpcUaLocalizedText>()) {
+    }
+    if (value.canConvert<QOpcUaLocalizedText>()) {
         const auto text = value.value<QOpcUaLocalizedText>();
         return localizedTextToString(text);
-    } else if (value.canConvert<QOpcUaRange>()) {
+    }
+    if (value.canConvert<QOpcUaRange>()) {
         const auto range = value.value<QOpcUaRange>();
         return rangeToString(range);
-    } else if (value.canConvert<QOpcUaComplexNumber>()) {
+    }
+    if (value.canConvert<QOpcUaComplexNumber>()) {
         const auto complex = value.value<QOpcUaComplexNumber>();
         return QStringLiteral("[Real: %1, Imaginary: %2]").arg(complex.real()).arg(complex.imaginary());
-    } else if (value.canConvert<QOpcUaDoubleComplexNumber>()) {
+    }
+    if (value.canConvert<QOpcUaDoubleComplexNumber>()) {
         const auto complex = value.value<QOpcUaDoubleComplexNumber>();
         return QStringLiteral("[Real: %1, Imaginary: %2]").arg(complex.real()).arg(complex.imaginary());
-    } else if (value.canConvert<QOpcUaXValue>()) {
+    }
+    if (value.canConvert<QOpcUaXValue>()) {
         const auto xv = value.value<QOpcUaXValue>();
         return QStringLiteral("[X: %1, Value: %2]").arg(xv.x()).arg(xv.value());
-    } else if (value.canConvert<QOpcUaEUInformation>()) {
+    }
+    if (value.canConvert<QOpcUaEUInformation>()) {
         const auto info = value.value<QOpcUaEUInformation>();
         return euInformationToString(info);
-    } else if (value.canConvert<QOpcUaAxisInformation>()) {
+    }
+    if (value.canConvert<QOpcUaAxisInformation>()) {
         const auto info = value.value<QOpcUaAxisInformation>();
         return QStringLiteral("[EUInformation: %1, EURange: %2, Title: %3 , AxisScaleType: %4, AxisSteps: %5]").arg(
                     euInformationToString(info.engineeringUnits())).arg(rangeToString(info.eURange())).arg(localizedTextToString(info.title())).arg(
                         info.axisScaleType() == QOpcUa::AxisScale::Linear ? "Linear" : (info.axisScaleType() == QOpcUa::AxisScale::Ln) ? "Ln" : "Log").arg(
                         numberArrayToString(info.axisSteps()));
-    } else if (value.canConvert<QOpcUaExpandedNodeId>()) {
+    }
+    if (value.canConvert<QOpcUaExpandedNodeId>()) {
         const auto id = value.value<QOpcUaExpandedNodeId>();
         return QStringLiteral("[NodeId: \"%1\", ServerIndex: \"%2\", NamespaceUri: \"%3\"]").arg(
                     id.nodeId()).arg(id.serverIndex()).arg(id.namespaceUri());
-    } else if (value.canConvert<QOpcUaArgument>()) {
+    }
+    if (value.canConvert<QOpcUaArgument>()) {
         const auto a = value.value<QOpcUaArgument>();
 
         return QStringLiteral("[Name: \"%1\", DataType: \"%2\", ValueRank: \"%3\", ArrayDimensions: %4, Description: %5]").arg(
                     a.name()).arg(a.dataTypeId()).arg(a.valueRank()).arg(numberArrayToString(a.arrayDimensions())).arg(
                     localizedTextToString(a.description()));
-    } else if (value.canConvert<QOpcUaExtensionObject>()) {
+    }
+    if (value.canConvert<QOpcUaExtensionObject>()) {
         const auto obj = value.value<QOpcUaExtensionObject>();
         return QStringLiteral("[TypeId: \"%1\", Encoding: %2, Body: 0x%3]").arg(obj.encodingTypeId()).arg(
                     obj.encoding() == QOpcUaExtensionObject::Encoding::NoBody ?
