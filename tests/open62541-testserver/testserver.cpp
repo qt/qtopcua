@@ -479,13 +479,13 @@ UA_NodeId TestServer::addEmptyArrayVariable(const UA_NodeId &folder, const QStri
 
 UA_StatusCode TestServer::multiplyMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle, const UA_NodeId *methodId, void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize, const UA_Variant *input, size_t outputSize, UA_Variant *output)
 {
-    Q_UNUSED(server);
-    Q_UNUSED(sessionId);
-    Q_UNUSED(sessionHandle);
-    Q_UNUSED(methodId);
-    Q_UNUSED(methodContext);
-    Q_UNUSED(objectId);
-    Q_UNUSED(objectContext);
+    Q_UNUSED(server)
+    Q_UNUSED(sessionId)
+    Q_UNUSED(sessionHandle)
+    Q_UNUSED(methodId)
+    Q_UNUSED(methodContext)
+    Q_UNUSED(objectId)
+    Q_UNUSED(objectContext)
 
     if (inputSize < 2)
         return QOpcUa::UaStatusCode::BadArgumentsMissing;
@@ -562,13 +562,13 @@ UA_NodeId TestServer::addMultiplyMethod(const UA_NodeId &folder, const QString &
 
 UA_StatusCode TestServer::multipleOutputArgumentsMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle, const UA_NodeId *methodId, void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize, const UA_Variant *input, size_t outputSize, UA_Variant *output)
 {
-    Q_UNUSED(server);
-    Q_UNUSED(sessionId);
-    Q_UNUSED(sessionHandle);
-    Q_UNUSED(methodId);
-    Q_UNUSED(methodContext);
-    Q_UNUSED(objectId);
-    Q_UNUSED(objectContext);
+    Q_UNUSED(server)
+    Q_UNUSED(sessionId)
+    Q_UNUSED(sessionHandle)
+    Q_UNUSED(methodId)
+    Q_UNUSED(methodContext)
+    Q_UNUSED(objectId)
+    Q_UNUSED(objectContext)
 
     if (inputSize < 2)
         return QOpcUa::UaStatusCode::BadArgumentsMissing;
@@ -704,12 +704,12 @@ UA_NodeId TestServer::addAddNamespaceMethod(const UA_NodeId &folder, const QStri
 
 UA_StatusCode TestServer::addNamespaceMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle, const UA_NodeId *methodId, void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize, const UA_Variant *input, size_t outputSize, UA_Variant *output)
 {
-    Q_UNUSED(sessionId);
-    Q_UNUSED(sessionHandle);
-    Q_UNUSED(methodId);
-    Q_UNUSED(methodContext);
-    Q_UNUSED(objectId);
-    Q_UNUSED(objectContext);
+    Q_UNUSED(sessionId)
+    Q_UNUSED(sessionHandle)
+    Q_UNUSED(methodId)
+    Q_UNUSED(methodContext)
+    Q_UNUSED(objectId)
+    Q_UNUSED(objectContext)
 
     if (inputSize < 1)
         return QOpcUa::UaStatusCode::BadArgumentsMissing;
