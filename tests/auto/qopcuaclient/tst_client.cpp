@@ -476,6 +476,9 @@ private slots:
     defineDataMethod(resolveBrowsePath_data)
     void resolveBrowsePath();
 
+    defineDataMethod(extensionObjectWithGuid_data)
+    void extensionObjectWithGuid();
+
     void statusStrings();
 
     // This test case restarts the server. It must be run last to avoid
@@ -3602,6 +3605,32 @@ void Tst_QOpcUaClient::resolveBrowsePath()
     QCOMPARE(results.at(0).targetId().serverIndex(), 0U);
     QCOMPARE(spy.at(0).at(1).value<QVector<QOpcUaRelativePathElement>>(), path);
     QCOMPARE(spy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+}
+
+void Tst_QOpcUaClient::extensionObjectWithGuid()
+{
+    const QByteArray uuidWireData = QByteArray::fromHex("f827ce6cbeb61f48a5a888fd2bbc4fb7");
+    const QByteArray opcuaWireData = QByteArray::fromHex("040400") + uuidWireData;
+    const QString uuidId = QString::fromLatin1("6cce27f8-b6be-481f-a5a8-88fd2bbc4fb7");
+    const QString sampleNodeId = QString::fromLatin1("ns=4;g=") + uuidId;
+
+    const auto uuid = QUuid::fromString(uuidId);
+    QCOMPARE(uuid.toString(QUuid::WithoutBraces), uuidId);
+
+    QOpcUaExtensionObject obj;
+    obj.setEncoding(QOpcUaExtensionObject::Encoding::ByteString);
+    obj.setEncodingTypeId(QStringLiteral("ns=2;s=MyEncoding1"));
+    QOpcUaBinaryDataEncoding encoder(obj);
+    encoder.encode<QString, QOpcUa::Types::NodeId>(sampleNodeId);
+    QCOMPARE(obj.encodedBody().toHex(), opcuaWireData.toHex());
+
+    QByteArray buffer = obj.encodedBody();
+    QOpcUaBinaryDataEncoding decoder(&buffer);
+
+    bool success = false;
+    const auto decodedNodeId = decoder.decode<QString, QOpcUa::Types::NodeId>(success);
+    QVERIFY(success);
+    QCOMPARE(decodedNodeId, sampleNodeId);
 }
 
 void Tst_QOpcUaClient::statusStrings()
