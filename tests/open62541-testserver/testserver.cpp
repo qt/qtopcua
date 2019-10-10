@@ -48,10 +48,12 @@
 
 QT_BEGIN_NAMESPACE
 
+#if defined UA_ENABLE_ENCRYPTION
 static const size_t usernamePasswordsSize = 2;
 static UA_UsernamePasswordLogin usernamePasswords[2] = {
     {UA_STRING_STATIC("user1"), UA_STRING_STATIC("password")},
     {UA_STRING_STATIC("user2"), UA_STRING_STATIC("password1")}};
+#endif
 
 const UA_UInt16 portNumber = 43344;
 
