@@ -38,7 +38,6 @@
 #include <QtCore/QStringList>
 #include <QtCore/QThread>
 #include <QtCore/QUrl>
-#include <QtCore/QUuid>
 
 #include <opcua_trace.h>
 

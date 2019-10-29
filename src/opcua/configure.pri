@@ -5,6 +5,10 @@ defineTest(qtConfLibrary_uacpp) {
     inc = $$eval(config.input.$${input}.incdir)
     isEmpty(inc):!isEmpty(prefix): \
         inc = $${prefix}/include
+    libdir = $$eval(config.input.$${input}.libdir)
+    isEmpty(libdir):!isEmpty(prefix): \
+        libdir = $${prefix}/lib
+    config.input.$${input}.libdir = $$libdir
     !isEmpty(inc) {
         config.input.$${input}.incdir += \
             $$inc/uabasecpp $$inc/uaclientcpp $$inc/uastack $$inc/uapkicpp

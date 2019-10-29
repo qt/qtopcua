@@ -83,10 +83,15 @@ QVariant OpcUaModel::data(const QModelIndex &index, int role) const
 
     auto item = static_cast<TreeItem *>(index.internalPointer());
 
-    if (role == Qt::DisplayRole) {
+    switch (role) {
+    case Qt::DisplayRole:
         return item->data(index.column());
-    } else if (role ==  Qt::DecorationRole && index.column() == 0) {
-        return item->icon(index.column());
+    case Qt::DecorationRole:
+        if (index.column() == 0)
+            return item->icon(index.column());
+        break;
+    default:
+        break;
     }
 
     return QVariant();
@@ -97,26 +102,28 @@ QVariant OpcUaModel::headerData(int section, Qt::Orientation orientation, int ro
     if (role != Qt::DisplayRole)
         return QVariant();
 
-    if (orientation == Qt::Horizontal) {
-        if (section == 0)
-            return QString("BrowseName");
-        else if (section == 1)
-            return QString("Value");
-        else if (section == 2)
-            return QString("NodeClass");
-        else if (section == 3)
-            return QString("DataType");
-        else if (section == 4)
-            return QString("NodeId");
-        else if (section == 5)
-            return QString("DisplayName");
-        else if (section == 6)
-            return QString("Description");
-        else
-            return QString("Column %1").arg(section);
+    if (orientation == Qt::Vertical)
+        return QStringLiteral("Row %1").arg(section);
+
+    switch (section) {
+    case 0:
+        return QStringLiteral("BrowseName");
+    case 1:
+        return QStringLiteral("Value");
+    case 2:
+        return QStringLiteral("NodeClass");
+    case 3:
+        return QStringLiteral("DataType");
+    case 4:
+        return QStringLiteral("NodeId");
+    case 5:
+        return QStringLiteral("DisplayName");
+    case 6:
+        return QStringLiteral("Description");
+    default:
+        break;
     }
-    else
-        return QString("Row %1").arg(section);
+    return QStringLiteral("Column %1").arg(section);
 }
 
 QModelIndex OpcUaModel::index(int row, int column, const QModelIndex &parent) const
@@ -124,18 +131,11 @@ QModelIndex OpcUaModel::index(int row, int column, const QModelIndex &parent) co
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    TreeItem *item = nullptr;
+    TreeItem *item = parent.isValid()
+        ? static_cast<TreeItem*>(parent.internalPointer())->child(row)
+        : mRootItem.get();
 
-    if (!parent.isValid()) {
-        item = mRootItem.get();
-    } else {
-        item = static_cast<TreeItem*>(parent.internalPointer())->child(row);
-    }
-
-    if (item)
-        return createIndex(row, column, item);
-    else
-        return QModelIndex();
+    return item ? createIndex(row, column, item) : QModelIndex();
 }
 
 QModelIndex OpcUaModel::parent(const QModelIndex &index) const
@@ -154,7 +154,7 @@ QModelIndex OpcUaModel::parent(const QModelIndex &index) const
 
 int OpcUaModel::rowCount(const QModelIndex &parent) const
 {
-    TreeItem *parentItem;
+
     if (!mOpcUaClient)
         return 0;
 
@@ -163,23 +163,16 @@ int OpcUaModel::rowCount(const QModelIndex &parent) const
 
     if (!parent.isValid())
         return 1; // only one root item
-    else
-        parentItem = static_cast<TreeItem*>(parent.internalPointer());
 
-    if (!parentItem)
-        return 0;
-
-    return parentItem->childCount();
+    auto parentItem = static_cast<TreeItem*>(parent.internalPointer());
+    return parentItem ? parentItem->childCount() : 0;
 }
 
 int OpcUaModel::columnCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return static_cast<TreeItem*>(parent.internalPointer())->columnCount();
-    else if (mRootItem)
-        return mRootItem->columnCount();
-    else
-        return 0;
+    return mRootItem ? mRootItem->columnCount() : 0;
 }
 
 QT_END_NAMESPACE
