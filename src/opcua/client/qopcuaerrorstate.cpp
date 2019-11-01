@@ -55,10 +55,6 @@ public:
     \since QtOpcUa 5.13
     \brief QOpcUaErrorState allows investigation and interaction with error state from backends.
 
-    This class is currently available as a Technology Preview, and therefore the API
-    and functionality provided by the class may be subject to change at any time without
-    prior notice.
-
     There is not need to instatiate this class in your code.
     A client will emit an error state via \l QOpcUaClient::connectError in case an error has happend
     while establishing a connection.

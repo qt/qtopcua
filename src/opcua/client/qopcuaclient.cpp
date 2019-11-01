@@ -166,10 +166,6 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
     \fn QOpcUaClient::connectError(QOpcUaErrorState *errorState)
     \since QtOpcUa 5.13
 
-    This function is currently available as a Technology Preview, and therefore the API
-    and functionality provided by the class may be subject to change at any time without
-    prior notice.
-
     This signal is emitted when an error happended during connection establishment.
     The parameter \a errorState contains information about the error.
 
@@ -184,10 +180,6 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 /*!
     \fn QOpcUaClient::passwordForPrivateKeyRequired(QString keyFilePath, QString *password, bool previousTryWasInvalid)
     \since QtOpcUa 5.13
-
-    This function is currently available as a Technology Preview, and therefore the API
-    and functionality provided may be subject to change at any time without
-    prior notice.
 
     This signal is emitted when a password for an encrypted private key is required.
     The parameter \a keyFilePath contains the file path to key which is used.
@@ -322,10 +314,6 @@ QOpcUaClient::~QOpcUaClient()
 /*!
     Sets the application identity for this \l QOpcUaClient instance to \a identity.
     \since QtOpcUa 5.13
-
-    This function is currently available as a Technology Preview, and therefore the API
-    and functionality provided by the class may be subject to change at any time without
-    prior notice.
 */
 void QOpcUaClient::setApplicationIdentity(const QOpcUaApplicationIdentity &identity)
 {
@@ -336,10 +324,6 @@ void QOpcUaClient::setApplicationIdentity(const QOpcUaApplicationIdentity &ident
 /*!
     Returns the application identity of this \l QOpcUaClient instance.
     \since QtOpcUa 5.13
-
-    This function is currently available as a Technology Preview, and therefore the API
-    and functionality provided by the class may be subject to change at any time without
-    prior notice.
 */
 QOpcUaApplicationIdentity QOpcUaClient::applicationIdentity() const
 {
@@ -350,10 +334,6 @@ QOpcUaApplicationIdentity QOpcUaClient::applicationIdentity() const
 /*!
     Sets the application PKI configuration for this \l QOpcUaClient instance to \a config.
     \since QtOpcUa 5.13
-
-    This function is currently available as a Technology Preview, and therefore the API
-    and functionality provided by the class may be subject to change at any time without
-    prior notice.
 */
 void QOpcUaClient::setPkiConfiguration(const QOpcUaPkiConfiguration &config)
 {
@@ -364,10 +344,6 @@ void QOpcUaClient::setPkiConfiguration(const QOpcUaPkiConfiguration &config)
 /*!
     Returns the application's PKI configuration of this \l QOpcUaClient instance.
     \since QtOpcUa 5.13
-
-    This function is currently available as a Technology Preview, and therefore the API
-    and functionality provided by the class may be subject to change at any time without
-    prior notice.
 */
 QOpcUaPkiConfiguration QOpcUaClient::pkiConfiguration() const
 {
