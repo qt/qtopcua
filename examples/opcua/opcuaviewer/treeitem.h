@@ -83,11 +83,7 @@ public:
 private slots:
     void startBrowsing();
     void handleAttributes(QOpcUa::NodeAttributes attr);
-    void browseFinished(QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
-
-protected:
-    std::unique_ptr<QOpcUaNode> mOpcNode;
-    OpcUaModel *mModel = nullptr;
+    void browseFinished(const  QVector<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode);
 
 private:
     QString variantToString(const QVariant &value, const QString &typeNodeId = QString()) const;
@@ -97,6 +93,8 @@ private:
     template <typename T>
     QString numberArrayToString(const QVector<T> &vec) const;
 
+    std::unique_ptr<QOpcUaNode> mOpcNode;
+    OpcUaModel *mModel = nullptr;
     bool mAttributesReady = false;
     bool mBrowseStarted = false;
     QList<TreeItem *> mChildItems;
@@ -113,11 +111,14 @@ private:
 template <typename T>
 QString TreeItem::numberArrayToString(const QVector<T> &vec) const
 {
-    QStringList list;
-    for (auto it : vec)
-        list.append(QString::number(it));
-
-    return QLatin1String("[") + list.join(";") + QLatin1String("]");
+    QString list(QLatin1Char('['));
+    for (int i = 0, size = vec.size(); i < size; ++i) {
+        if (i)
+            list.append(QLatin1Char(';'));
+        list.append(QString::number(vec.at(i)));
+    }
+    list.append(QLatin1Char(']'));
+    return list;
 }
 
 QT_END_NAMESPACE

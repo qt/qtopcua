@@ -41,7 +41,6 @@
 
 #include <QtCore/QDebug>
 #include <QtCore/QLoggingCategory>
-#include <QtCore/QUuid>
 #include <QDir>
 #include <QFile>
 
@@ -49,10 +48,12 @@
 
 QT_BEGIN_NAMESPACE
 
+#if defined UA_ENABLE_ENCRYPTION
 static const size_t usernamePasswordsSize = 2;
 static UA_UsernamePasswordLogin usernamePasswords[2] = {
     {UA_STRING_STATIC("user1"), UA_STRING_STATIC("password")},
     {UA_STRING_STATIC("user2"), UA_STRING_STATIC("password1")}};
+#endif
 
 const UA_UInt16 portNumber = 43344;
 
@@ -84,8 +85,7 @@ bool TestServer::createInsecureServerConfig(UA_ServerConfig *config)
     }
 
     // This is needed for COIN because the hostname returned by gethostname() is not resolvable.
-    UA_String_deleteMembers(m_config->applicationDescription.discoveryUrls);
-    *m_config->applicationDescription.discoveryUrls = UA_String_fromChars("opc.tcp://localhost:43344/");
+    config->customHostname = UA_String_fromChars("localhost");
 
     return true;
 }
@@ -169,7 +169,7 @@ bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
     UA_ServerConfig_setBasics(config);
 
     // This is needed for COIN because the hostname returned by gethostname() is not resolvable.
-    m_config->customHostname = UA_String_fromChars("localhost");
+    config->customHostname = UA_String_fromChars("localhost");
 
     UA_StatusCode result = UA_CertificateVerification_Trustlist(&config->certificateVerification,
                                                   trustList, trustListSize,

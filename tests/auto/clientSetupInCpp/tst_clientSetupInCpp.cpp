@@ -124,7 +124,7 @@ public slots:
                                          + QLatin1String("/../../open62541-testserver/open62541-testserver.app/Contents/MacOS/open62541-testserver")
 #else
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && QT_CONFIG(debug_and_release)
                                          + QLatin1String("/..")
 #endif
                                          + QLatin1String("/../../open62541-testserver/open62541-testserver")

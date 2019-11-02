@@ -112,12 +112,13 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &context, co
        oldMessageHandler(type, context, msg);
 }
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
+MainWindow::MainWindow(const QString &initialUrl, QWidget *parent) : QMainWindow(parent)
   , ui(new Ui::MainWindow)
   , mOpcUaModel(new OpcUaModel(this))
   , mOpcUaProvider(new QOpcUaProvider(this))
 {
     ui->setupUi(this);
+    ui->host->setText(initialUrl);
     mainWindowGlobal = this;
 
     connect(ui->quitAction, &QAction::triggered, this, &QWidget::close);
@@ -128,7 +129,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     updateUiState();
 
-    ui->opcUaPlugin->addItems(mOpcUaProvider->availableBackends());
+    ui->opcUaPlugin->addItems(QOpcUaProvider::availableBackends());
     ui->treeView->setModel(mOpcUaModel);
     ui->treeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
@@ -272,8 +273,7 @@ void MainWindow::getEndpointsComplete(const QVector<QOpcUaEndpointDescription> &
             }
 
             const QString EndpointName = QString("%1 (%2)")
-                    .arg(endpoint.securityPolicy())
-                    .arg(modes[endpoint.securityMode()]);
+                    .arg(endpoint.securityPolicy(), modes[endpoint.securityMode()]);
             ui->endpoints->addItem(EndpointName, index++);
         }
     }
@@ -366,7 +366,7 @@ void MainWindow::updateUiState()
     }
 }
 
-void MainWindow::log(const QString &text, const QString &context, QColor color)
+void MainWindow::log(const QString &text, const QString &context, const QColor &color)
 {
     auto cf = ui->log->currentCharFormat();
     cf.setForeground(color);
@@ -379,7 +379,7 @@ void MainWindow::log(const QString &text, const QString &context, QColor color)
     }
 }
 
-void MainWindow::log(const QString &text, QColor color)
+void MainWindow::log(const QString &text, const QColor &color)
 {
     log(text, QString(), color);
 }
@@ -391,9 +391,9 @@ bool MainWindow::createPkiPath(const QString &path)
     QDir dir;
     const bool ret = dir.mkpath(path);
     if (ret)
-        qDebug() << msg.arg(path).arg("SUCCESS.");
+        qDebug() << msg.arg(path, "SUCCESS.");
     else
-        qCritical("%s", qPrintable(msg.arg(path).arg("FAILED.")));
+        qCritical("%s", qPrintable(msg.arg(path, "FAILED.")));
 
     return ret;
 }

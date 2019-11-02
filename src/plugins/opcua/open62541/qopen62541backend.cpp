@@ -48,7 +48,6 @@
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qurl.h>
-#include <QtCore/quuid.h>
 
 QT_BEGIN_NAMESPACE
 

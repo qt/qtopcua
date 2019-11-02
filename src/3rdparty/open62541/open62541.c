@@ -1,6 +1,6 @@
 /* THIS IS A SINGLE-FILE DISTRIBUTION CONCATENATED FROM THE OPEN62541 SOURCES
  * visit http://open62541.org/ for information about this software
- * Git-Revision: v1.0-rc4
+ * Git-Revision: v1.0
  */
 
 /*
@@ -675,245 +675,6 @@ struct {								\
 } while (0)
 
 
-/*********************************** amalgamated original file "/home/jvoe/open62541/deps/ziptree.h" ***********************************/
-
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
- *
- *    Copyright 2018 (c) Julius Pfrommer
- */
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* Reusable zip tree implementation. The style is inspired by the BSD
- * sys/queue.h linked list definition.
- *
- * Zip trees were developed in: Tarjan, R. E., Levy, C. C., and Timmel, S. "Zip
- * Trees." arXiv preprint arXiv:1806.06726 (2018).
- *
- * The ZIP_ENTRY definitions are to be contained in the tree entries themselves.
- * Use ZIP_PROTTYPE to define the signature of the zip tree and ZIP_IMPL (in a
- * .c compilation unit) for the method implementations.
- *
- * Zip trees are a probabilistic data structure. Entries are assigned a
- * (nonzero) rank k with probability 1/2^{k+1}. This header file does not assume
- * a specific random number generator. So the rank must be given when an entry
- * is inserted. A fast way (with a single call to a pseudo random generator) to
- * compute the rank is with ZIP_FFS32(random()). The ZIP_FFS32 returns the least
- * significant nonzero bit of a 32bit number. */
-
-#define ZIP_HEAD(name, type)                    \
-struct name {                                   \
-    struct type *zip_root;                      \
-}
-
-#define ZIP_INIT(head) do { (head)->zip_root = NULL; } while (0)
-#define ZIP_ROOT(head) (head)->zip_root
-#define ZIP_EMPTY(head) (ZIP_ROOT(head) == NULL)
-
-#define ZIP_ENTRY(type)                         \
-struct {                                        \
-    struct type *zip_left;                      \
-    struct type *zip_right;                     \
-    unsigned char rank;                         \
-}
-
-#define ZIP_LEFT(elm, field) (elm)->field.zip_left
-#define ZIP_RIGHT(elm, field) (elm)->field.zip_right
-#define ZIP_RANK(elm, field) (elm)->field.rank
-
-/* Shortcuts */
-#define ZIP_INSERT(name, head, elm, rank) name##_ZIP_INSERT(head, elm, rank)
-#define ZIP_REMOVE(name, head, elm) name##_ZIP_REMOVE(head, elm)
-#define ZIP_FIND(name, head, key) name##_ZIP_FIND(head, key)
-#define ZIP_MIN(name, head) name##_ZIP_MIN(head)
-#define ZIP_MAX(name, head) name##_ZIP_MAX(head)
-#define ZIP_ITER(name, head, cb, d) name##_ZIP_ITER(head, cb, d)
-
-/* Zip tree method prototypes */
-#define ZIP_PROTTYPE(name, type, keytype)                               \
-void name##_ZIP_INSERT(struct name *head, struct type *elm, unsigned char rank); \
-void name##_ZIP_REMOVE(struct name *head, struct type *elm);            \
-struct type *name##_ZIP_FIND(struct name *head, const keytype *key);    \
-struct type *name##_ZIP_MIN(struct name *head);                         \
-struct type *name##_ZIP_MAX(struct name *head);                         \
-typedef void (*name##_cb)(struct type *elm, void *data);                \
-void name##_ZIP_ITER(struct name *head, name##_cb cb, void *data);      \
-
-/* The comparison method "cmp" defined for every zip tree has the signature
- *
- *   enum ZIP_CMP cmpDateTime(const keytype *a, const keytype *b);
- *
- * The entries need an absolute ordering. So ZIP_CMP_EQ must only be returned if
- * a and b point to the same memory. (E.g. assured by unique identifiers.) */
-enum ZIP_CMP {
-    ZIP_CMP_LESS = -1,
-    ZIP_CMP_EQ = 0,
-    ZIP_CMP_MORE = 1
-};
-
-/* Find the position of the first bit in an unsigned 32bit integer */
-#ifdef _MSC_VER
-static __inline
-#else
-static inline
-#endif
-unsigned char
-ZIP_FFS32(unsigned int v) {
-    unsigned int t = 1;
-    unsigned char r = 1;
-    if(v == 0) return 0;
-    while((v & t) == 0) {
-        t = t << 1; r++;
-    }
-    return r;
-}
-
-/* Zip tree method implementations */
-#define ZIP_IMPL(name, type, field, keytype, keyfield, cmp)             \
-static struct type *                                                    \
-__##name##_ZIP_INSERT(struct type *root, struct type *elm) {            \
-    if(!root) {                                                         \
-        ZIP_LEFT(elm, field) = NULL;                                    \
-        ZIP_RIGHT(elm, field) = NULL;                                   \
-        return elm;                                                     \
-    }                                                                   \
-    if((cmp)(&(elm)->keyfield, &(root)->keyfield) == ZIP_CMP_LESS) {    \
-        if(__##name##_ZIP_INSERT(ZIP_LEFT(root, field), elm) == elm) {  \
-            if(ZIP_RANK(elm, field) < ZIP_RANK(root, field)) {          \
-                ZIP_LEFT(root, field) = elm;                            \
-            } else {                                                    \
-                ZIP_LEFT(root, field) = ZIP_RIGHT(elm, field);          \
-                ZIP_RIGHT(elm, field) = root;                           \
-                return elm;                                             \
-            }                                                           \
-        }                                                               \
-    } else {                                                            \
-        if(__##name##_ZIP_INSERT(ZIP_RIGHT(root, field), elm) == elm) { \
-            if(ZIP_RANK(elm, field) <= ZIP_RANK(root, field)) {         \
-                ZIP_RIGHT(root, field) = elm;                           \
-            } else {                                                    \
-                ZIP_RIGHT(root, field) = ZIP_LEFT(elm, field);          \
-                ZIP_LEFT(elm, field) = root;                            \
-                return elm;                                             \
-            }                                                           \
-        }                                                               \
-    }                                                                   \
-    return root;                                                        \
-}                                                                       \
-                                                                        \
-void                                                                    \
-name##_ZIP_INSERT(struct name *head, struct type *elm,                  \
-                  unsigned char rank) {                                 \
-    ZIP_RANK(elm, field) = rank;                                        \
-    ZIP_ROOT(head) = __##name##_ZIP_INSERT(ZIP_ROOT(head), elm);        \
-}                                                                       \
-                                                                        \
-static struct type *                                                    \
-__##name##ZIP(struct type *x, struct type *y) {                         \
-    if(!x) return y;                                                    \
-    if(!y) return x;                                                    \
-    if(ZIP_RANK(x, field) < ZIP_RANK(y, field)) {                       \
-        ZIP_LEFT(y, field) = __##name##ZIP(x, ZIP_LEFT(y, field));      \
-        return y;                                                       \
-    }                                                                   \
-    ZIP_RIGHT(x, field) = __##name##ZIP(ZIP_RIGHT(x, field), y);        \
-    return x;                                                           \
-}                                                                       \
-                                                                        \
-static struct type *                                                    \
-__##name##_ZIP_REMOVE(struct type *root, struct type *elm) {            \
-    if(root == elm)                                                     \
-        return __##name##ZIP(ZIP_LEFT(root, field),                     \
-                             ZIP_RIGHT(root, field));                   \
-    enum ZIP_CMP eq = (cmp)(&(elm)->keyfield, &(root)->keyfield);       \
-    if(eq == ZIP_CMP_LESS) {                                            \
-        struct type *left = ZIP_LEFT(root, field);                      \
-        if(elm == left)                                                 \
-            ZIP_LEFT(root, field) =                                     \
-                __##name##ZIP(ZIP_LEFT(left, field),                    \
-                              ZIP_RIGHT(left, field));                  \
-        else                                                            \
-            __##name##_ZIP_REMOVE(left, elm);                           \
-    } else {                                                            \
-        struct type *right = ZIP_RIGHT(root, field);                    \
-        if(elm == right)                                                \
-            ZIP_RIGHT(root, field) =                                    \
-                __##name##ZIP(ZIP_LEFT(right, field),                   \
-                              ZIP_RIGHT(right, field));                 \
-        else                                                            \
-            __##name##_ZIP_REMOVE(right, elm);                          \
-    }                                                                   \
-    return root;                                                        \
-}                                                                       \
-                                                                        \
-void                                                                    \
-name##_ZIP_REMOVE(struct name *head, struct type *elm) {                \
-    ZIP_ROOT(head) = __##name##_ZIP_REMOVE(ZIP_ROOT(head), elm);        \
-}                                                                       \
-                                                                        \
-static struct type *                                                    \
-__##name##_ZIP_FIND(struct type *root, const keytype *key) {            \
-    if(!root)                                                           \
-        return NULL;                                                    \
-    enum ZIP_CMP eq = (cmp)(key, &(root)->keyfield);                    \
-    if(eq == ZIP_CMP_EQ) {                                              \
-        return root;                                                    \
-    }                                                                   \
-    if(eq == ZIP_CMP_LESS) {                                            \
-        return __##name##_ZIP_FIND(ZIP_LEFT(root, field), key);         \
-    }                                                                   \
-    return __##name##_ZIP_FIND(ZIP_RIGHT(root, field), key);            \
-}                                                                       \
-                                                                        \
-struct type *                                                           \
-name##_ZIP_FIND(struct name *head, const keytype *key) {                \
-    return __##name##_ZIP_FIND(ZIP_ROOT(head), key);                    \
-}                                                                       \
-                                                                        \
-struct type *                                                           \
-name##_ZIP_MIN(struct name *head) {                                     \
-    struct type *cur = ZIP_ROOT(head);                                  \
-    if(!cur) return NULL;                                               \
-    while(ZIP_LEFT(cur, field)) {                                       \
-        cur = ZIP_LEFT(cur, field);                                     \
-    }                                                                   \
-    return cur;                                                         \
-}                                                                       \
-                                                                        \
-struct type *                                                           \
-name##_ZIP_MAX(struct name *head) {                                     \
-    struct type *cur = ZIP_ROOT(head);                                  \
-    if(!cur) return NULL;                                               \
-    while(ZIP_RIGHT(cur, field)) {                                      \
-        cur = ZIP_RIGHT(cur, field);                                    \
-    }                                                                   \
-    return cur;                                                         \
-}                                                                       \
-                                                                        \
-static void                                                             \
-__##name##_ZIP_ITER(struct type *elm, name##_cb cb, void *data) {       \
-    if(!elm)                                                            \
-        return;                                                         \
-    __##name##_ZIP_ITER(ZIP_LEFT(elm, field), cb, data);                \
-    __##name##_ZIP_ITER(ZIP_RIGHT(elm, field), cb, data);               \
-    cb(elm, data);                                                      \
-}                                                                       \
-                                                                        \
-void                                                                    \
-name##_ZIP_ITER(struct name *head, name##_cb cb, void *data) {          \
-    __##name##_ZIP_ITER(ZIP_ROOT(head), cb, data);                      \
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
 /*********************************** amalgamated original file "/home/jvoe/open62541/deps/pcg_basic.h" ***********************************/
 
 /*
@@ -971,65 +732,43 @@ struct mytm {
     int tm_mday;
     int tm_mon;
     int tm_year;
-    int tm_wday;
-    int tm_yday;
-    int tm_isdst;
-    /* long __tm_gmtoff; */
-    /* const char *__tm_zone; */
 };
 
 int __secs_to_tm(long long t, struct mytm *tm);
-int __month_to_secs(int month, int is_leap);
-long long __year_to_secs(long long year, int *is_leap);
 long long __tm_to_secs(const struct mytm *tm);
 
 
 /*********************************** amalgamated original file "/home/jvoe/open62541/deps/base64.h" ***********************************/
 
-/*
-
-  https://github.com/superwills/NibbleAndAHalf
-  base64.h -- Fast base64 encoding and decoding.
-  version 1.0.0, April 17, 2013 143a
-
-  Copyright (C) 2013 William Sherif
-
-  This software is provided 'as-is', without any express or implied
-  warranty.  In no event will the authors be held liable for any damages
-  arising from the use of this software.
-
-  Permission is granted to anyone to use this software for any purpose,
-  including commercial applications, and to alter it and redistribute it
-  freely, subject to the following restrictions:
-
-  1. The origin of this software must not be misrepresented; you must not
-     claim that you wrote the original software. If you use this software
-     in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required.
-  2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
-  3. This notice may not be removed or altered from any source distribution.
-
-  William Sherif
-  will.sherif@gmail.com
-
-  YWxsIHlvdXIgYmFzZSBhcmUgYmVsb25nIHRvIHVz
-
-*/
 #ifndef UA_BASE64_H_
 #define UA_BASE64_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-char* UA_base64( const void* binaryData, int len, int *flen );
+_UA_BEGIN_DECLS
 
-unsigned char* UA_unbase64( const char* ascii, int len, int *flen );
+#include <stddef.h>
 
-#ifdef __cplusplus
-}
-#endif
+/**
+ * base64_encode - Base64 encode
+ * @src: Data to be encoded
+ * @len: Length of the data to be encoded
+ * @out_len: Pointer to output length variable
+ * Returns: Allocated buffer of out_len bytes of encoded data,
+ * or %NULL on failure. The output is NOT Null-terminated. */
+unsigned char *
+UA_base64(const unsigned char *src, size_t len, size_t *out_len);
+
+/**
+ * base64_decode - Base64 decode
+ * @src: Data to be decoded
+ * @len: Length of the data to be decoded
+ * @out_len: Pointer to output length variable
+ * Returns: Allocated buffer of out_len bytes of decoded data,
+ * or %NULL on failure. */
+unsigned char *
+UA_unbase64(const unsigned char *src, size_t len, size_t *out_len);
+
+_UA_END_DECLS
 
 #endif /* UA_BASE64_H_ */
 
@@ -1162,7 +901,7 @@ _UA_END_DECLS
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/types_generated_encoding_binary.h" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd with script /home/jvoe/open62541/tools/generate_datatypes.py
- * on host rigel by user jvoe at 2019-07-30 11:30:09 */
+ * on host rigel by user jvoe at 2019-09-27 03:59:36 */
 
 #ifdef UA_ENABLE_AMALGAMATION
 #else
@@ -3777,7 +3516,7 @@ UA_EventFilter_decodeBinary(const UA_ByteString *src, size_t *offset, UA_EventFi
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/transport_generated.h" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd, Custom.Opc.Ua.Transport.bsd with script /home/jvoe/open62541/tools/generate_datatypes.py
- * on host rigel by user jvoe at 2019-07-30 11:30:09 */
+ * on host rigel by user jvoe at 2019-09-27 03:59:36 */
 
 
 #ifdef UA_ENABLE_AMALGAMATION
@@ -3951,7 +3690,7 @@ _UA_END_DECLS
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/transport_generated_handling.h" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd, Custom.Opc.Ua.Transport.bsd with script /home/jvoe/open62541/tools/generate_datatypes.py
- * on host rigel by user jvoe at 2019-07-30 11:30:09 */
+ * on host rigel by user jvoe at 2019-09-27 03:59:36 */
 
 
 
@@ -4353,7 +4092,7 @@ _UA_END_DECLS
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/transport_generated_encoding_binary.h" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd, Custom.Opc.Ua.Transport.bsd with script /home/jvoe/open62541/tools/generate_datatypes.py
- * on host rigel by user jvoe at 2019-07-30 11:30:09 */
+ * on host rigel by user jvoe at 2019-09-27 03:59:36 */
 
 #ifdef UA_ENABLE_AMALGAMATION
 #else
@@ -4903,6 +4642,133 @@ UA_SecureChannel_processCompleteMessages(UA_SecureChannel *channel, void *applic
 _UA_END_DECLS
 
 
+/*********************************** amalgamated original file "/home/jvoe/open62541/src/ua_workqueue.h" ***********************************/
+
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ *    Copyright 2014-2018 (c) Fraunhofer IOSB (Author: Julius Pfrommer)
+ *    Copyright 2014-2016 (c) Sten Grüner
+ *    Copyright 2015 (c) Chris Iatrou
+ *    Copyright 2015 (c) Nick Goossens
+ *    Copyright 2015 (c) Jörg Schüler-Maroldt
+ *    Copyright 2015-2016 (c) Oleksiy Vasylyev
+ *    Copyright 2016-2017 (c) Florian Palm
+ *    Copyright 2017 (c) Stefan Profanter, fortiss GmbH
+ *    Copyright 2016 (c) Lorenz Haas
+ *    Copyright 2017 (c) Jonas Green
+ */
+
+
+
+#ifdef UA_ENABLE_MULTITHREADING
+#include <pthread.h>
+#endif
+
+_UA_BEGIN_DECLS
+
+/* Callback where the application is either a client or a server */
+typedef void (*UA_ApplicationCallback)(void *application, void *data);
+
+/* Delayed callbacks are executed when all previously enqueue work is finished.
+ * This is used to free memory that might used by a parallel worker or where the
+ * current threat has remaining pointers to until the current operation
+ * finishes. */
+typedef struct UA_DelayedCallback {
+    SIMPLEQ_ENTRY(UA_DelayedCallback) next;
+    UA_ApplicationCallback callback;
+    void *application;
+    void *data;
+} UA_DelayedCallback;
+
+struct UA_WorkQueue;
+typedef struct UA_WorkQueue UA_WorkQueue;
+
+#ifdef UA_ENABLE_MULTITHREADING
+
+/* Workers take out callbacks from the work queue and execute them.
+ *
+ * Future Plans: Use work-stealing to load-balance between cores.
+ * Le, Nhat Minh, et al. "Correct and efficient work-stealing for weak memory
+ * models." ACM SIGPLAN Notices. Vol. 48. No. 8. ACM, 2013. */
+typedef struct {
+    pthread_t thread;
+    volatile UA_Boolean running;
+    UA_WorkQueue *queue;
+    UA_UInt32 counter;
+    UA_UInt32 checkpointCounter; /* Counter when the last checkpoint was made
+                                  * for the delayed callbacks */
+
+    /* separate cache lines */
+    char padding[64 - sizeof(void*) - sizeof(pthread_t) -
+                 sizeof(UA_UInt32) - sizeof(UA_Boolean)];
+} UA_Worker;
+
+#endif
+
+struct UA_WorkQueue {
+    /* Worker threads and work queue. Without multithreading, work is executed
+       immediately. */
+#ifdef UA_ENABLE_MULTITHREADING
+    UA_Worker *workers;
+    size_t workersSize;
+
+    /* Work queue */
+    SIMPLEQ_HEAD(, UA_DelayedCallback) dispatchQueue; /* Dispatch queue for the worker threads */
+    pthread_mutex_t dispatchQueue_accessMutex; /* mutex for access to queue */
+    pthread_cond_t dispatchQueue_condition; /* so the workers don't spin if the queue is empty */
+    pthread_mutex_t dispatchQueue_conditionMutex; /* mutex for access to condition variable */
+#endif
+
+    /* Delayed callbacks
+     * To be executed after all curretly dispatched works has finished */
+    SIMPLEQ_HEAD(, UA_DelayedCallback) delayedCallbacks;
+#ifdef UA_ENABLE_MULTITHREADING
+    pthread_mutex_t delayedCallbacks_accessMutex;
+    UA_DelayedCallback *delayedCallbacks_checkpoint;
+    size_t delayedCallbacks_sinceDispatch; /* How many have been added since we
+                                            * tried to dispatch callbacks? */
+#endif
+};
+
+void UA_WorkQueue_init(UA_WorkQueue *wq);
+
+/* Enqueue a delayed callback. It is executed when all previous work in the
+ * queue has been finished. The ``cb`` pointer is freed afterwards. ``cb`` can
+ * have a NULL callback that is not executed.
+ *
+ * This method checks internally if existing delayed work can be moved from the
+ * delayed queue to the worker dispatch queue. */
+void UA_WorkQueue_enqueueDelayed(UA_WorkQueue *wq, UA_DelayedCallback *cb);
+
+/* Stop the workers, process all enqueued work in the calling thread, clean up
+ * mutexes etc. */
+void UA_WorkQueue_cleanup(UA_WorkQueue *wq);
+
+#ifndef UA_ENABLE_MULTITHREADING
+
+/* Process all enqueued delayed work. This is not needed when workers are
+ * running for the multithreading case. (UA_WorkQueue_cleanup still calls this
+ * method during cleanup when the workers are shut down.) */
+void UA_WorkQueue_manuallyProcessDelayed(UA_WorkQueue *wq);
+
+#else
+
+/* Spin up a number of worker threads that listen on the work queue */
+UA_StatusCode UA_WorkQueue_start(UA_WorkQueue *wq, size_t workersCount);
+
+void UA_WorkQueue_stop(UA_WorkQueue *wq);
+
+/* Enqueue work for the worker threads */
+void UA_WorkQueue_enqueue(UA_WorkQueue *wq, UA_ApplicationCallback cb,
+                          void *application, void *data);
+
+#endif
+
+_UA_END_DECLS
+
+
 /*********************************** amalgamated original file "/home/jvoe/open62541/src/server/ua_discovery_manager.h" ***********************************/
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
@@ -4933,6 +4799,15 @@ typedef struct registeredServer_list_entry {
     UA_RegisteredServer registeredServer;
     UA_DateTime lastSeen;
 } registeredServer_list_entry;
+
+struct PeriodicServerRegisterCallback {
+    UA_UInt64 id;
+    UA_Double this_interval;
+    UA_Double default_interval;
+    UA_Boolean registered;
+    struct UA_Client* client;
+    char* discovery_server_url;
+};
 
 typedef struct periodicServerRegisterCallback_entry {
 #ifdef UA_ENABLE_MULTITHREADING
@@ -5067,133 +4942,6 @@ UA_Discovery_removeRecord(UA_Server *server, const UA_String *servername,
 #endif /* UA_ENABLE_DISCOVERY_MULTICAST */
 
 #endif /* UA_ENABLE_DISCOVERY */
-
-_UA_END_DECLS
-
-
-/*********************************** amalgamated original file "/home/jvoe/open62541/src/ua_workqueue.h" ***********************************/
-
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/.
- *
- *    Copyright 2014-2018 (c) Fraunhofer IOSB (Author: Julius Pfrommer)
- *    Copyright 2014-2016 (c) Sten Grüner
- *    Copyright 2015 (c) Chris Iatrou
- *    Copyright 2015 (c) Nick Goossens
- *    Copyright 2015 (c) Jörg Schüler-Maroldt
- *    Copyright 2015-2016 (c) Oleksiy Vasylyev
- *    Copyright 2016-2017 (c) Florian Palm
- *    Copyright 2017 (c) Stefan Profanter, fortiss GmbH
- *    Copyright 2016 (c) Lorenz Haas
- *    Copyright 2017 (c) Jonas Green
- */
-
-
-
-#ifdef UA_ENABLE_MULTITHREADING
-#include <pthread.h>
-#endif
-
-_UA_BEGIN_DECLS
-
-/* Callback where the application is either a client or a server */
-typedef void (*UA_ApplicationCallback)(void *application, void *data);
-
-/* Delayed callbacks are executed when all previously enqueue work is finished.
- * This is used to free memory that might used by a parallel worker or where the
- * current threat has remaining pointers to until the current operation
- * finishes. */
-typedef struct UA_DelayedCallback {
-    SIMPLEQ_ENTRY(UA_DelayedCallback) next;
-    UA_ApplicationCallback callback;
-    void *application;
-    void *data;
-} UA_DelayedCallback;
-
-struct UA_WorkQueue;
-typedef struct UA_WorkQueue UA_WorkQueue;
-
-#ifdef UA_ENABLE_MULTITHREADING
-
-/* Workers take out callbacks from the work queue and execute them.
- *
- * Future Plans: Use work-stealing to load-balance between cores.
- * Le, Nhat Minh, et al. "Correct and efficient work-stealing for weak memory
- * models." ACM SIGPLAN Notices. Vol. 48. No. 8. ACM, 2013. */
-typedef struct {
-    pthread_t thread;
-    volatile UA_Boolean running;
-    UA_WorkQueue *queue;
-    UA_UInt32 counter;
-    UA_UInt32 checkpointCounter; /* Counter when the last checkpoint was made
-                                  * for the delayed callbacks */
-
-    /* separate cache lines */
-    char padding[64 - sizeof(void*) - sizeof(pthread_t) -
-                 sizeof(UA_UInt32) - sizeof(UA_Boolean)];
-} UA_Worker;
-
-#endif
-
-struct UA_WorkQueue {
-    /* Worker threads and work queue. Without multithreading, work is executed
-       immediately. */
-#ifdef UA_ENABLE_MULTITHREADING
-    UA_Worker *workers;
-    size_t workersSize;
-
-    /* Work queue */
-    SIMPLEQ_HEAD(, UA_DelayedCallback) dispatchQueue; /* Dispatch queue for the worker threads */
-    pthread_mutex_t dispatchQueue_accessMutex; /* mutex for access to queue */
-    pthread_cond_t dispatchQueue_condition; /* so the workers don't spin if the queue is empty */
-    pthread_mutex_t dispatchQueue_conditionMutex; /* mutex for access to condition variable */
-#endif
-
-    /* Delayed callbacks
-     * To be executed after all curretly dispatched works has finished */
-    SIMPLEQ_HEAD(, UA_DelayedCallback) delayedCallbacks;
-#ifdef UA_ENABLE_MULTITHREADING
-    pthread_mutex_t delayedCallbacks_accessMutex;
-    UA_DelayedCallback *delayedCallbacks_checkpoint;
-    size_t delayedCallbacks_sinceDispatch; /* How many have been added since we
-                                            * tried to dispatch callbacks? */
-#endif
-};
-
-void UA_WorkQueue_init(UA_WorkQueue *wq);
-
-/* Enqueue a delayed callback. It is executed when all previous work in the
- * queue has been finished. The ``cb`` pointer is freed afterwards. ``cb`` can
- * have a NULL callback that is not executed.
- *
- * This method checks internally if existing delayed work can be moved from the
- * delayed queue to the worker dispatch queue. */
-void UA_WorkQueue_enqueueDelayed(UA_WorkQueue *wq, UA_DelayedCallback *cb);
-
-/* Stop the workers, process all enqueued work in the calling thread, clean up
- * mutexes etc. */
-void UA_WorkQueue_cleanup(UA_WorkQueue *wq);
-
-#ifndef UA_ENABLE_MULTITHREADING
-
-/* Process all enqueued delayed work. This is not needed when workers are
- * running for the multithreading case. (UA_WorkQueue_cleanup still calls this
- * method during cleanup when the workers are shut down.) */
-void UA_WorkQueue_manuallyProcessDelayed(UA_WorkQueue *wq);
-
-#else
-
-/* Spin up a number of worker threads that listen on the work queue */
-UA_StatusCode UA_WorkQueue_start(UA_WorkQueue *wq, size_t workersCount);
-
-void UA_WorkQueue_stop(UA_WorkQueue *wq);
-
-/* Enqueue work for the worker threads */
-void UA_WorkQueue_enqueue(UA_WorkQueue *wq, UA_ApplicationCallback cb,
-                          void *application, void *data);
-
-#endif
 
 _UA_END_DECLS
 
@@ -7604,13 +7352,19 @@ UA_DateTimeStruct
 UA_DateTime_toStruct(UA_DateTime t) {
     /* Calculating the the milli-, micro- and nanoseconds */
     UA_DateTimeStruct dateTimeStruct;
-    dateTimeStruct.nanoSec  = (u16)((t % 10) * 100);
-    dateTimeStruct.microSec = (u16)((t % 10000) / 10);
-    dateTimeStruct.milliSec = (u16)((t % 10000000) / 10000);
+    if(t >= 0) {
+        dateTimeStruct.nanoSec  = (u16)((t % 10) * 100);
+        dateTimeStruct.microSec = (u16)((t % 10000) / 10);
+        dateTimeStruct.milliSec = (u16)((t % 10000000) / 10000);
+    } else {
+        dateTimeStruct.nanoSec  = (u16)(((t % 10 + t) % 10) * 100);
+        dateTimeStruct.microSec = (u16)(((t % 10000 + t) % 10000) / 10);
+        dateTimeStruct.milliSec = (u16)(((t % 10000000 + t) % 10000000) / 10000);
+    }
 
     /* Calculating the unix time with #include <time.h> */
-    long long secSinceUnixEpoch = (long long)
-        ((t - UA_DATETIME_UNIX_EPOCH) / UA_DATETIME_SEC);
+    long long secSinceUnixEpoch = (long long)(t / UA_DATETIME_SEC)
+        - (long long)(UA_DATETIME_UNIX_EPOCH / UA_DATETIME_SEC);
     struct mytm ts;
     memset(&ts, 0, sizeof(struct mytm));
     __secs_to_tm(secSinceUnixEpoch, &ts);
@@ -10463,7 +10217,7 @@ UA_calcSizeBinary(const void *p, const UA_DataType *type) {
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/types_generated.c" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd with script /home/jvoe/open62541/tools/generate_datatypes.py
- * on host rigel by user jvoe at 2019-07-30 11:30:09 */
+ * on host rigel by user jvoe at 2019-09-27 03:59:36 */
 
 
 /* Boolean */
@@ -17167,7 +16921,7 @@ const UA_DataType UA_TYPES[UA_TYPES_COUNT] = {
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/transport_generated.c" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd, Custom.Opc.Ua.Transport.bsd with script /home/jvoe/open62541/tools/generate_datatypes.py
- * on host rigel by user jvoe at 2019-07-30 11:30:09 */
+ * on host rigel by user jvoe at 2019-09-27 03:59:36 */
 
 
 /* SecureConversationMessageAbortBody */
@@ -18036,10 +17790,9 @@ UA_StatusCode UA_ByteString_toBase64String(const UA_ByteString *byteString, UA_S
     if (byteString == str)
         return UA_STATUSCODE_BADINVALIDARGUMENT;
 
-    int resSize = 0;
-    str->data = (UA_Byte*)UA_base64(byteString->data, (int)byteString->length, &resSize);
-    str->length = (size_t) resSize;
-    if (str->data == NULL)
+    str->data = (UA_Byte*)UA_base64(byteString->data,
+                                    byteString->length, &str->length);
+    if(str->data == NULL)
         return UA_STATUSCODE_BADOUTOFMEMORY;
 
     return UA_STATUSCODE_GOOD;
@@ -20577,6 +20330,20 @@ UA_Session_queuePublishReq(UA_Session *session, UA_PublishResponseEntry* entry, 
 /* There is no UA_Node_new() method here. Creating nodes is part of the
  * NodeStore layer */
 
+static enum ZIP_CMP
+cmpRefTarget(const void *a, const void *b) {
+    const UA_ReferenceTarget *aa = (const UA_ReferenceTarget*)a;
+    const UA_ReferenceTarget *bb = (const UA_ReferenceTarget*)b;
+    if(aa->targetHash < bb->targetHash)
+        return ZIP_CMP_LESS;
+    if(aa->targetHash > bb->targetHash)
+        return ZIP_CMP_MORE;
+    return (enum ZIP_CMP)UA_ExpandedNodeId_order(&aa->target, &bb->target);
+}
+
+ZIP_IMPL(UA_ReferenceTargetHead, UA_ReferenceTarget, zipfields,
+         UA_ReferenceTarget, zipfields, cmpRefTarget)
+
 void UA_Node_deleteMembers(UA_Node *node) {
     /* Delete standard content */
     UA_NodeId_deleteMembers(&node->nodeId);
@@ -20736,16 +20503,39 @@ UA_Node_copy(const UA_Node *src, UA_Node *dst) {
             UA_NodeReferenceKind *srefs = &src->references[i];
             UA_NodeReferenceKind *drefs = &dst->references[i];
             drefs->isInverse = srefs->isInverse;
+            ZIP_INIT(&drefs->refTargetsTree);
             retval = UA_NodeId_copy(&srefs->referenceTypeId, &drefs->referenceTypeId);
             if(retval != UA_STATUSCODE_GOOD)
                 break;
-            retval = UA_Array_copy(srefs->targetIds, srefs->targetIdsSize,
-                                    (void**)&drefs->targetIds,
-                                    &UA_TYPES[UA_TYPES_EXPANDEDNODEID]);
+            drefs->refTargets = (UA_ReferenceTarget*)
+                UA_malloc(srefs->refTargetsSize* sizeof(UA_ReferenceTarget));
+            if(!drefs->refTargets) {
+                UA_NodeId_deleteMembers(&drefs->referenceTypeId);
+                break;
+            }
+            uintptr_t arraydiff = (uintptr_t)drefs->refTargets - (uintptr_t)srefs->refTargets;
+            for(size_t j = 0; j < srefs->refTargetsSize; j++) {
+                retval |= UA_ExpandedNodeId_copy(&srefs->refTargets[j].target,
+                                                 &drefs->refTargets[j].target);
+                drefs->refTargets[j].targetHash = srefs->refTargets[j].targetHash;
+                drefs->refTargets[j].zipfields.zip_right = NULL;
+                if(srefs->refTargets[j].zipfields.zip_right)
+                    *(uintptr_t*)&drefs->refTargets[j].zipfields.zip_left =
+                        (uintptr_t)srefs->refTargets[j].zipfields.zip_right + arraydiff;
+                drefs->refTargets[j].zipfields.zip_left = NULL;
+                if(srefs->refTargets[j].zipfields.zip_left)
+                    *(uintptr_t*)&drefs->refTargets[j].zipfields.zip_left =
+                        (uintptr_t)srefs->refTargets[j].zipfields.zip_left + arraydiff;
+            }
+            srefs->refTargetsTree.zip_root = NULL;
+            if(drefs->refTargetsTree.zip_root)
+                *(uintptr_t*)&drefs->refTargetsTree.zip_root =
+                    (uintptr_t)srefs->refTargetsTree.zip_root + arraydiff;
+            drefs->refTargetsSize= srefs->refTargetsSize;
             if(retval != UA_STATUSCODE_GOOD)
                 break;
-            drefs->targetIdsSize = srefs->targetIdsSize;
         }
+
         if(retval != UA_STATUSCODE_GOOD) {
             UA_Node_deleteMembers(dst);
             return retval;
@@ -21013,75 +20803,100 @@ UA_Node_setAttributes(UA_Node *node, const void *attributes,
 /*********************/
 
 static UA_StatusCode
-addReferenceTarget(UA_NodeReferenceKind *refs, const UA_ExpandedNodeId *target) {
-    UA_ExpandedNodeId *targets =
-        (UA_ExpandedNodeId*) UA_realloc(refs->targetIds,
-                                        sizeof(UA_ExpandedNodeId) * (refs->targetIdsSize+1));
+addReferenceTarget(UA_NodeReferenceKind *refs, const UA_ExpandedNodeId *target,
+                   UA_UInt32 targetHash) {
+    UA_ReferenceTarget *targets = (UA_ReferenceTarget*)
+        UA_realloc(refs->refTargets, (refs->refTargetsSize + 1) * sizeof(UA_ReferenceTarget));
     if(!targets)
         return UA_STATUSCODE_BADOUTOFMEMORY;
 
-    refs->targetIds = targets;
-    UA_StatusCode retval =
-        UA_ExpandedNodeId_copy(target, &refs->targetIds[refs->targetIdsSize]);
-
-    if(retval == UA_STATUSCODE_GOOD) {
-        refs->targetIdsSize++;
-    } else if(refs->targetIdsSize == 0) {
-        /* We had zero references before (realloc was a malloc) */
-        UA_free(refs->targetIds);
-        refs->targetIds = NULL;
+    /* Repair the pointers in the tree for the realloced array */
+    uintptr_t arraydiff = (uintptr_t)targets - (uintptr_t)refs->refTargets;
+    if(arraydiff != 0) {
+        for(size_t i = 0; i < refs->refTargetsSize; i++) {
+            if(targets[i].zipfields.zip_left)
+                *(uintptr_t*)&targets[i].zipfields.zip_left += arraydiff;
+            if(targets[i].zipfields.zip_right)
+                *(uintptr_t*)&targets[i].zipfields.zip_right += arraydiff;
+        }
     }
-    return retval;
+
+    if(refs->refTargetsTree.zip_root)
+        *(uintptr_t*)&refs->refTargetsTree.zip_root += arraydiff;
+    refs->refTargets = targets;
+
+    UA_ReferenceTarget *entry = &refs->refTargets[refs->refTargetsSize];
+    UA_StatusCode retval = UA_ExpandedNodeId_copy(target, &entry->target);
+    if(retval != UA_STATUSCODE_GOOD) {
+        if(refs->refTargetsSize== 0) {
+            /* We had zero references before (realloc was a malloc) */
+            UA_free(refs->refTargets);
+            refs->refTargets = NULL;
+        }
+        return retval;
+    }
+
+    entry->targetHash = targetHash;
+    ZIP_INSERT(UA_ReferenceTargetHead, &refs->refTargetsTree,
+               entry, ZIP_FFS32(UA_UInt32_random()));
+    refs->refTargetsSize++;
+    return UA_STATUSCODE_GOOD;
 }
 
 static UA_StatusCode
 addReferenceKind(UA_Node *node, const UA_AddReferencesItem *item) {
-    UA_NodeReferenceKind *refs =
-        (UA_NodeReferenceKind*)UA_realloc(node->references,
-                                          sizeof(UA_NodeReferenceKind) * (node->referencesSize+1));
+    UA_NodeReferenceKind *refs = (UA_NodeReferenceKind*)
+        UA_realloc(node->references, sizeof(UA_NodeReferenceKind) * (node->referencesSize+1));
     if(!refs)
         return UA_STATUSCODE_BADOUTOFMEMORY;
     node->references = refs;
     UA_NodeReferenceKind *newRef = &refs[node->referencesSize];
     memset(newRef, 0, sizeof(UA_NodeReferenceKind));
 
+    ZIP_INIT(&newRef->refTargetsTree);
     newRef->isInverse = !item->isForward;
     UA_StatusCode retval = UA_NodeId_copy(&item->referenceTypeId, &newRef->referenceTypeId);
-    retval |= addReferenceTarget(newRef, &item->targetNodeId);
+    UA_UInt32 targetHash = UA_ExpandedNodeId_hash(&item->targetNodeId);
+    retval |= addReferenceTarget(newRef, &item->targetNodeId, targetHash);
 
-    if(retval == UA_STATUSCODE_GOOD) {
-        node->referencesSize++;
-    } else {
+    if(retval != UA_STATUSCODE_GOOD) {
         UA_NodeId_deleteMembers(&newRef->referenceTypeId);
         if(node->referencesSize == 0) {
             UA_free(node->references);
             node->references = NULL;
         }
+        return retval;
     }
-    return retval;
+
+    node->referencesSize++;
+    return UA_STATUSCODE_GOOD;
 }
 
 UA_StatusCode
 UA_Node_addReference(UA_Node *node, const UA_AddReferencesItem *item) {
+    /* Find the matching refkind */
     UA_NodeReferenceKind *existingRefs = NULL;
     for(size_t i = 0; i < node->referencesSize; ++i) {
         UA_NodeReferenceKind *refs = &node->references[i];
-        if(refs->isInverse != item->isForward
-                && UA_NodeId_equal(&refs->referenceTypeId, &item->referenceTypeId)) {
+        if(refs->isInverse != item->isForward &&
+           UA_NodeId_equal(&refs->referenceTypeId, &item->referenceTypeId)) {
             existingRefs = refs;
             break;
         }
     }
-    if(existingRefs != NULL) {
-        for(size_t i = 0; i < existingRefs->targetIdsSize; i++) {
-            if(UA_ExpandedNodeId_equal(&existingRefs->targetIds[i],
-                                       &item->targetNodeId)) {
-                return UA_STATUSCODE_BADDUPLICATEREFERENCENOTALLOWED;
-            }
-        }
-        return addReferenceTarget(existingRefs, &item->targetNodeId);
-    }
-    return addReferenceKind(node, item);
+
+    if(!existingRefs)
+        return addReferenceKind(node, item);
+
+    UA_ReferenceTarget tmpTarget;
+    tmpTarget.target = item->targetNodeId;
+    tmpTarget.targetHash = UA_ExpandedNodeId_hash(&item->targetNodeId);
+
+    UA_ReferenceTarget *found =
+        ZIP_FIND(UA_ReferenceTargetHead, &existingRefs->refTargetsTree, &tmpTarget);
+    if(found)
+        return UA_STATUSCODE_BADDUPLICATEREFERENCENOTALLOWED;
+    return addReferenceTarget(existingRefs, &item->targetNodeId, tmpTarget.targetHash);
 }
 
 UA_StatusCode
@@ -21093,33 +20908,40 @@ UA_Node_deleteReference(UA_Node *node, const UA_DeleteReferencesItem *item) {
         if(!UA_NodeId_equal(&item->referenceTypeId, &refs->referenceTypeId))
             continue;
 
-        for(size_t j = refs->targetIdsSize; j > 0; --j) {
-            UA_ExpandedNodeId *target = &refs->targetIds[j-1];
-            if(!UA_NodeId_equal(&item->targetNodeId.nodeId, &target->nodeId))
+        for(size_t j = refs->refTargetsSize; j > 0; --j) {
+            UA_ReferenceTarget *target = &refs->refTargets[j-1];
+            if(!UA_NodeId_equal(&item->targetNodeId.nodeId, &target->target.nodeId))
                 continue;
 
             /* Ok, delete the reference */
-            UA_ExpandedNodeId_deleteMembers(target);
-            refs->targetIdsSize--;
+            ZIP_REMOVE(UA_ReferenceTargetHead, &refs->refTargetsTree, target);
+            UA_ExpandedNodeId_deleteMembers(&target->target);
+            refs->refTargetsSize--;
 
             /* One matching target remaining */
-            if(refs->targetIdsSize > 0) {
-                if(j-1 != refs->targetIdsSize) // avoid valgrind error: Source
-                                               // and destination overlap in
-                                               // memcpy
-                    *target = refs->targetIds[refs->targetIdsSize];
+            if(refs->refTargetsSize > 0) {
+                if(j-1 != refs->refTargetsSize) {
+                    /* avoid valgrind error: Source and destination overlap in
+                     * memcpy */
+                    ZIP_REMOVE(UA_ReferenceTargetHead, &refs->refTargetsTree,
+                               &refs->refTargets[refs->refTargetsSize]);
+                    *target = refs->refTargets[refs->refTargetsSize];
+                    ZIP_INSERT(UA_ReferenceTargetHead, &refs->refTargetsTree,
+                               target, ZIP_RANK(target, zipfields));
+                }
                 return UA_STATUSCODE_GOOD;
             }
 
             /* No target for the ReferenceType remaining. Remove entry. */
-            UA_free(refs->targetIds);
+            UA_free(refs->refTargets);
             UA_NodeId_deleteMembers(&refs->referenceTypeId);
             node->referencesSize--;
             if(node->referencesSize > 0) {
-                if(i-1 != node->referencesSize) // avoid valgrind error: Source
-                                                // and destination overlap in
-                                                // memcpy
+                if(i-1 != node->referencesSize) {
+                    /* avoid valgrind error: Source and destination overlap in
+                     * memcpy */
                     node->references[i-1] = node->references[node->referencesSize];
+                }
                 return UA_STATUSCODE_GOOD;
             }
 
@@ -21154,7 +20976,9 @@ UA_Node_deleteReferencesSubset(UA_Node *node, size_t referencesSkipSize,
             continue;
 
         /* Remove references */
-        UA_Array_delete(refs->targetIds, refs->targetIdsSize, &UA_TYPES[UA_TYPES_EXPANDEDNODEID]);
+        for(size_t j = 0; j < refs->refTargetsSize; j++)
+            UA_ExpandedNodeId_deleteMembers(&refs->refTargets[j].target);
+        UA_free(refs->refTargets);
         UA_NodeId_deleteMembers(&refs->referenceTypeId);
         node->referencesSize--;
 
@@ -21164,17 +20988,18 @@ UA_Node_deleteReferencesSubset(UA_Node *node, size_t referencesSkipSize,
         node->references[i-1] = node->references[node->referencesSize];
     }
 
-    if(node->referencesSize == 0) {
-        /* The array is empty. Remove. */
-        UA_free(node->references);
-        node->references = NULL;
-    } else {
+    if(node->referencesSize > 0) {
         /* Realloc to save memory */
         UA_NodeReferenceKind *refs = (UA_NodeReferenceKind*)
             UA_realloc(node->references, sizeof(UA_NodeReferenceKind) * node->referencesSize);
         if(refs) /* Do nothing if realloc fails */
             node->references = refs;
+        return;
     }
+
+    /* The array is empty. Remove. */
+    UA_free(node->references);
+    node->references = NULL;
 }
 
 void UA_Node_deleteReferences(UA_Node *node) {
@@ -21314,8 +21139,8 @@ UA_Server_forEachChildNodeCall(UA_Server *server, UA_NodeId parentNodeId,
     UA_StatusCode retval = UA_STATUSCODE_GOOD;
     for(size_t i = parentCopy->referencesSize; i > 0; --i) {
         UA_NodeReferenceKind *ref = &parentCopy->references[i - 1];
-        for(size_t j = 0; j<ref->targetIdsSize; j++) {
-            retval = callback(ref->targetIds[j].nodeId, ref->isInverse,
+        for(size_t j = 0; j<ref->refTargetsSize; j++) {
+            retval = callback(ref->refTargets[j].target.nodeId, ref->isInverse,
                               ref->referenceTypeId, handle);
             if(retval != UA_STATUSCODE_GOOD)
                 goto cleanup;
@@ -21670,6 +21495,22 @@ UA_Server_run_startup(UA_Server *server) {
     for(size_t i = 0; i < server->config.networkLayersSize; ++i) {
         UA_ServerNetworkLayer *nl = &server->config.networkLayers[i];
         result |= nl->start(nl, &server->config.customHostname);
+    }
+
+    /* Update the application description to match the previously added discovery urls.
+     * We can only do this after the network layer is started since it inits the discovery url */
+    if (server->config.applicationDescription.discoveryUrlsSize != 0) {
+        UA_Array_delete(server->config.applicationDescription.discoveryUrls, server->config.applicationDescription.discoveryUrlsSize, &UA_TYPES[UA_TYPES_STRING]);
+        server->config.applicationDescription.discoveryUrlsSize = 0;
+    }
+    server->config.applicationDescription.discoveryUrls = (UA_String *) UA_Array_new(server->config.networkLayersSize, &UA_TYPES[UA_TYPES_STRING]);
+    if (!server->config.applicationDescription.discoveryUrls) {
+        return UA_STATUSCODE_BADOUTOFMEMORY;
+    }
+    server->config.applicationDescription.discoveryUrlsSize = server->config.networkLayersSize;
+    for (size_t i=0; i< server->config.applicationDescription.discoveryUrlsSize; i++) {
+        UA_ServerNetworkLayer *nl = &server->config.networkLayers[i];
+        UA_String_copy(&nl->discoveryUrl, &server->config.applicationDescription.discoveryUrls[i]);
     }
 
     /* Spin up the worker threads */
@@ -23926,7 +23767,7 @@ isNodeInTreeNoCircular(void *nsCtx, const UA_NodeId *leafNode, const UA_NodeId *
             continue;
 
         /* Match the targets or recurse */
-        for(size_t j = 0; j < refs->targetIdsSize; ++j) {
+        for(size_t j = 0; j < refs->refTargetsSize; ++j) {
             /* Check if we already have seen the referenced node and skip to
              * avoid endless recursion. Do this only at every 5th depth to save
              * effort. Circular dependencies are rare and forbidden for most
@@ -23935,7 +23776,7 @@ isNodeInTreeNoCircular(void *nsCtx, const UA_NodeId *leafNode, const UA_NodeId *
                 struct ref_history *last = visitedRefs;
                 UA_Boolean skip = false;
                 while(!skip && last) {
-                    if(UA_NodeId_equal(last->id, &refs->targetIds[j].nodeId))
+                    if(UA_NodeId_equal(last->id, &refs->refTargets[j].target.nodeId))
                         skip = true;
                     last = last->parent;
                 }
@@ -23944,13 +23785,13 @@ isNodeInTreeNoCircular(void *nsCtx, const UA_NodeId *leafNode, const UA_NodeId *
             }
 
             /* Stack-allocate the visitedRefs structure for the next depth */
-            struct ref_history nextVisitedRefs = {visitedRefs, &refs->targetIds[j].nodeId,
+            struct ref_history nextVisitedRefs = {visitedRefs, &refs->refTargets[j].target.nodeId,
                                                   (UA_UInt16)(visitedRefs->depth+1)};
 
             /* Recurse */
             UA_Boolean foundRecursive =
-                isNodeInTreeNoCircular(nsCtx, &refs->targetIds[j].nodeId, nodeToFind, &nextVisitedRefs,
-                                       referenceTypeIds, referenceTypeIdsSize);
+                isNodeInTreeNoCircular(nsCtx, &refs->refTargets[j].target.nodeId, nodeToFind,
+                                       &nextVisitedRefs, referenceTypeIds, referenceTypeIdsSize);
             if(foundRecursive) {
                 UA_Nodestore_releaseNode(nsCtx, node);
                 return true;
@@ -24005,8 +23846,8 @@ getNodeType(UA_Server *server, const UA_Node *node) {
             continue;
         if(!UA_NodeId_equal(&node->references[i].referenceTypeId, &parentRef))
             continue;
-        UA_assert(node->references[i].targetIdsSize > 0);
-        const UA_NodeId *targetId = &node->references[i].targetIds[0].nodeId;
+        UA_assert(node->references[i].refTargetsSize> 0);
+        const UA_NodeId *targetId = &node->references[i].refTargets[0].target.nodeId;
         const UA_Node *type = UA_Nodestore_getNode(server->nsCtx, targetId);
         if(!type)
             continue;
@@ -24671,9 +24512,9 @@ UA_SecureChannelManager_close(UA_SecureChannelManager *cm, UA_UInt32 channelId) 
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- *    Copyright 2014-2017 (c) Fraunhofer IOSB (Author: Julius Pfrommer)
+ *    Copyright 2014-2019 (c) Fraunhofer IOSB (Author: Julius Pfrommer)
  *    Copyright 2014, 2017 (c) Florian Palm
  *    Copyright 2015 (c) Sten Grüner
  *    Copyright 2015 (c) Oleksiy Vasylyev
@@ -24697,22 +24538,30 @@ removeSessionCallback(UA_Server *server, session_list_entry *entry) {
 
 static void
 removeSession(UA_SessionManager *sm, session_list_entry *sentry) {
+    UA_Server *server = sm->server;
+    UA_Session *session = &sentry->session;
+
     /* Remove the Subscriptions */
 #ifdef UA_ENABLE_SUBSCRIPTIONS
     UA_Subscription *sub, *tempsub;
-    LIST_FOREACH_SAFE(sub, &sentry->session.serverSubscriptions, listEntry, tempsub) {
-        UA_Session_deleteSubscription(sm->server, &sentry->session, sub->subscriptionId);
+    LIST_FOREACH_SAFE(sub, &session->serverSubscriptions, listEntry, tempsub) {
+        UA_Session_deleteSubscription(server, session, sub->subscriptionId);
     }
 
     UA_PublishResponseEntry *entry;
-    while((entry = UA_Session_dequeuePublishReq(&sentry->session))) {
+    while((entry = UA_Session_dequeuePublishReq(session))) {
         UA_PublishResponse_deleteMembers(&entry->response);
         UA_free(entry);
     }
 #endif
 
+    /* Callback into userland access control */
+    if(server->config.accessControl.closeSession)
+        server->config.accessControl.closeSession(server, &server->config.accessControl,
+                                                  &session->sessionId, session->sessionHandle);
+
     /* Detach the Session from the SecureChannel */
-    UA_Session_detachFromSecureChannel(&sentry->session);
+    UA_Session_detachFromSecureChannel(session);
 
     /* Deactivate the session */
     sentry->session.activated = false;
@@ -24727,7 +24576,7 @@ removeSession(UA_SessionManager *sm, session_list_entry *sentry) {
     sentry->cleanupCallback.callback = (UA_ApplicationCallback)removeSessionCallback;
     sentry->cleanupCallback.application = sm->server;
     sentry->cleanupCallback.data = sentry;
-    UA_WorkQueue_enqueueDelayed(&sm->server->workQueue, &sentry->cleanupCallback);
+    UA_WorkQueue_enqueueDelayed(&server->workQueue, &sentry->cleanupCallback);
 }
 
 void UA_SessionManager_deleteMembers(UA_SessionManager *sm) {
@@ -24747,10 +24596,6 @@ UA_SessionManager_cleanupTimedOut(UA_SessionManager *sm,
             continue;
         UA_LOG_INFO_SESSION(&sm->server->config.logger, &sentry->session,
                             "Session has timed out");
-        sm->server->config.accessControl.closeSession(sm->server,
-                                                      &sm->server->config.accessControl,
-                                                      &sentry->session.sessionId,
-                                                      sentry->session.sessionHandle);
         removeSession(sm, sentry);
     }
 }
@@ -24775,12 +24620,14 @@ UA_SessionManager_getSessionByToken(UA_SessionManager *sm, const UA_NodeId *toke
     }
 
     /* Session not found */
+#if UA_LOGLEVEL <= 300
     UA_String nodeIdStr = UA_STRING_NULL;
     UA_NodeId_toString(token, &nodeIdStr);
     UA_LOG_INFO(&sm->server->config.logger, UA_LOGCATEGORY_SESSION,
                 "Try to use Session with token %.*s but is not found",
                 (int)nodeIdStr.length, nodeIdStr.data);
     UA_String_deleteMembers(&nodeIdStr);
+#endif
     return NULL;
 }
 
@@ -26862,7 +26709,7 @@ UA_StatusCode UA_Server_DataSetReader_addTargetVariables(UA_Server *server, UA_N
             vAttr.displayName.text = pDataSetReader->config.dataSetMetaData.fields[iteratorField].name;
             if(pDataSetReader->config.dataSetMetaData.fields[iteratorField].name.length < slen) {
                 slen = (UA_UInt16)pDataSetReader->config.dataSetMetaData.fields[iteratorField].name.length;
-                UA_snprintf(szTmpName, sizeof(szTmpName), "%s", (const char*)pDataSetReader->config.dataSetMetaData.fields[iteratorField].name.data);
+                UA_snprintf(szTmpName, sizeof(szTmpName), "%.*s", (int)slen, (const char*)pDataSetReader->config.dataSetMetaData.fields[iteratorField].name.data);
             }
 
             szTmpName[slen] = '\0';
@@ -26883,7 +26730,7 @@ UA_StatusCode UA_Server_DataSetReader_addTargetVariables(UA_Server *server, UA_N
             UA_LOG_INFO(&server->config.logger, UA_LOGCATEGORY_USERLAND, "addVariableNode %s succeeded", szTmpName);
         }
         else {
-            UA_LOG_WARNING(&server->config.logger, UA_LOGCATEGORY_USERLAND, "addVariableNode: error 0x%x", retval);
+            UA_LOG_ERROR(&server->config.logger, UA_LOGCATEGORY_USERLAND, "addVariableNode: error 0x%x", retval);
         }
 
         UA_FieldTargetDataType_init(&targetVars.targetVariables[iteratorField]);
@@ -29959,8 +29806,8 @@ addRelevantReferences(UA_Server *server, RefTree *rt, const UA_NodeId *nodeId,
         if(!relevantReference(&rk->referenceTypeId, refTypesSize, refTypes))
             continue;
 
-        for(size_t k = 0; k < rk->targetIdsSize; k++) {
-            retval = RefTree_add(rt ,&rk->targetIds[k]);
+        for(size_t k = 0; k < rk->refTargetsSize; k++) {
+            retval = RefTree_add(rt, &rk->refTargets[k].target);
             if(retval != UA_STATUSCODE_GOOD)
                 goto cleanup;
         }
@@ -30251,13 +30098,14 @@ browseReferences(UA_Server *server, const UA_Node *node,
             continue;
 
         /* Loop over the targets */
-        for(; targetIndex < rk->targetIdsSize; ++targetIndex) {
+        for(; targetIndex < rk->refTargetsSize; ++targetIndex) {
             target = NULL;
 
             /* Get the node if it is not a remote reference */
-            if(rk->targetIds[targetIndex].serverIndex == 0 &&
-               rk->targetIds[targetIndex].namespaceUri.data == NULL) {
-                target = UA_Nodestore_getNode(server->nsCtx, &rk->targetIds[targetIndex].nodeId);
+            if(rk->refTargets[targetIndex].target.serverIndex == 0 &&
+               rk->refTargets[targetIndex].target.namespaceUri.data == NULL) {
+                target = UA_Nodestore_getNode(server->nsCtx,
+                                              &rk->refTargets[targetIndex].target.nodeId);
 
                 /* Test if the node class matches */
                 if(target && !matchClassMask(target, bd->nodeClassMask)) {
@@ -30278,7 +30126,7 @@ browseReferences(UA_Server *server, const UA_Node *node,
 
             /* Copy the node description. Target is on top of the stack */
             retval = addReferenceDescription(server, rr, rk, bd->resultMask,
-                                             &rk->targetIds[targetIndex], target);
+                                             &rk->refTargets[targetIndex].target, target);
             UA_Nodestore_releaseNode(server->nsCtx, target);
             if(retval != UA_STATUSCODE_GOOD)
                 return retval;
@@ -30586,8 +30434,8 @@ walkBrowsePathElementReferenceTargets(UA_BrowsePathResult *result, size_t *targe
                                       UA_NodeId **next, size_t *nextSize, size_t *nextCount,
                                       UA_UInt32 elemDepth, const UA_NodeReferenceKind *rk) {
     /* Loop over the targets */
-    for(size_t i = 0; i < rk->targetIdsSize; i++) {
-        UA_ExpandedNodeId *targetId = &rk->targetIds[i];
+    for(size_t i = 0; i < rk->refTargetsSize; i++) {
+        UA_ExpandedNodeId *targetId = &rk->refTargets[i].target;
 
         /* Does the reference point to an external server? Then add to the
          * targets with the right path depth. */
@@ -31021,9 +30869,9 @@ getArgumentsVariableNode(UA_Server *server, const UA_MethodNode *ofMethod,
         if(!UA_NodeId_equal(&hasProperty, &rk->referenceTypeId))
             continue;
 
-        for(size_t j = 0; j < rk->targetIdsSize; ++j) {
+        for(size_t j = 0; j < rk->refTargetsSize; ++j) {
             const UA_Node *refTarget =
-                UA_Nodestore_getNode(server->nsCtx, &rk->targetIds[j].nodeId);
+                UA_Nodestore_getNode(server->nsCtx, &rk->refTargets[j].target.nodeId);
             if(!refTarget)
                 continue;
             if(refTarget->nodeClass == UA_NODECLASS_VARIABLE &&
@@ -31138,8 +30986,8 @@ callWithMethodAndObject(UA_Server *server, UA_Session *session,
         if(!isNodeInTree(server->nsCtx, &rk->referenceTypeId,
                          &hasComponentNodeId, &hasSubTypeNodeId, 1))
             continue;
-        for(size_t j = 0; j < rk->targetIdsSize; ++j) {
-            if(UA_NodeId_equal(&rk->targetIds[j].nodeId, &request->methodId)) {
+        for(size_t j = 0; j < rk->refTargetsSize; ++j) {
+            if(UA_NodeId_equal(&rk->refTargets[j].target.nodeId, &request->methodId)) {
                 found = true;
                 break;
             }
@@ -31795,9 +31643,6 @@ Service_CloseSession(UA_Server *server, UA_Session *session,
                      UA_CloseSessionResponse *response) {
     UA_LOG_INFO_SESSION(&server->config.logger, session, "CloseSession");
 
-    /* Callback into userland access control */
-    server->config.accessControl.closeSession(server, &server->config.accessControl,
-                                              &session->sessionId, session->sessionHandle);
     response->responseHeader.serviceResult =
         UA_SessionManager_removeSession(&server->sessionManager,
                                         &session->header.authenticationToken);
@@ -32203,8 +32048,7 @@ Service_Read(UA_Server *server, UA_Session *session,
     UA_LOG_DEBUG_SESSION(&server->config.logger, session, "Processing ReadRequest");
 
     /* Check if the timestampstoreturn is valid */
-    if(request->timestampsToReturn < 0 ||
-       request->timestampsToReturn > UA_TIMESTAMPSTORETURN_NEITHER) {
+    if(request->timestampsToReturn > UA_TIMESTAMPSTORETURN_NEITHER) {
         response->responseHeader.serviceResult = UA_STATUSCODE_BADTIMESTAMPSTORETURNINVALID;
         return;
     }
@@ -33459,20 +33303,23 @@ setApplicationDescriptionFromServer(UA_ApplicationDescription *target, const UA_
     if(result != UA_STATUSCODE_GOOD)
         return result;
 
-    /* add the discoveryUrls from the networklayers */
-    size_t discSize = sizeof(UA_String) * (target->discoveryUrlsSize + server->config.networkLayersSize);
-    UA_String* disc = (UA_String *)UA_realloc(target->discoveryUrls, discSize);
-    if(!disc)
-        return UA_STATUSCODE_BADOUTOFMEMORY;
-    size_t existing = target->discoveryUrlsSize;
-    target->discoveryUrls = disc;
-    target->discoveryUrlsSize += server->config.networkLayersSize;
+    /* Add the discoveryUrls from the networklayers only if discoveryUrl
+     * not already present and to avoid redundancy */
+    if(!target->discoveryUrlsSize) {
+        size_t discSize = sizeof(UA_String) * (target->discoveryUrlsSize + server->config.networkLayersSize);
+        UA_String* disc = (UA_String *)UA_realloc(target->discoveryUrls, discSize);
+        if(!disc)
+            return UA_STATUSCODE_BADOUTOFMEMORY;
+        size_t existing = target->discoveryUrlsSize;
+        target->discoveryUrls = disc;
+        target->discoveryUrlsSize += server->config.networkLayersSize;
 
-    // TODO: Add nl only if discoveryUrl not already present
-    for(size_t i = 0; i < server->config.networkLayersSize; i++) {
-        UA_ServerNetworkLayer* nl = &server->config.networkLayers[i];
-        UA_String_copy(&nl->discoveryUrl, &target->discoveryUrls[existing + i]);
+        for(size_t i = 0; i < server->config.networkLayersSize; i++) {
+            UA_ServerNetworkLayer* nl = &server->config.networkLayers[i];
+            UA_String_copy(&nl->discoveryUrl, &target->discoveryUrls[existing + i]);
+        }
     }
+
     return UA_STATUSCODE_GOOD;
 }
 
@@ -33808,14 +33655,18 @@ process_RegisterServer(UA_Server *server, UA_Session *session,
 #else
         UA_atomic_addSize(&server->discoveryManager.registeredServersSize, 1);
 #endif
-
-        if(server->discoveryManager.registerServerCallback)
-            server->discoveryManager.
-                registerServerCallback(requestServer,
-                                       server->discoveryManager.registerServerCallbackData);
     } else {
         UA_RegisteredServer_deleteMembers(&registeredServer_entry->registeredServer);
     }
+
+    // Always call the callback, if it is set.
+    // Previously we only called it if it was a new register call. It may be the case that this endpoint
+    // registered before, then crashed, restarts and registeres again. In that case the entry is not deleted
+    // and the callback would not be called.
+    if(server->discoveryManager.registerServerCallback)
+        server->discoveryManager.
+            registerServerCallback(requestServer,
+                                   server->discoveryManager.registerServerCallbackData);
 
     // copy the data from the request into the list
     UA_RegisteredServer_copy(requestServer, &registeredServer_entry->registeredServer);
@@ -33908,15 +33759,6 @@ void UA_Discovery_cleanupTimedOut(UA_Server *server, UA_DateTime nowMonotonic) {
     }
 }
 
-struct PeriodicServerRegisterCallback {
-    UA_UInt64 id;
-    UA_Double this_interval;
-    UA_Double default_interval;
-    UA_Boolean registered;
-    UA_Client* client;
-    const char* discovery_server_url;
-};
-
 /* Called by the UA_Server callback. The OPC UA specification says:
  *
  * > If an error occurs during registration (e.g. the Discovery Server is not running) then the Server
@@ -33932,14 +33774,7 @@ periodicServerRegister(UA_Server *server, void *data) {
 
     struct PeriodicServerRegisterCallback *cb = (struct PeriodicServerRegisterCallback *)data;
 
-    /* Which URL to register on */
-    // fixme: remove magic url
-    const char * server_url;
-    if(cb->discovery_server_url != NULL)
-        server_url = cb->discovery_server_url;
-    else
-        server_url = "opc.tcp://localhost:4840";
-    UA_StatusCode retval = UA_Client_connect_noSession(cb->client, server_url);
+    UA_StatusCode retval = UA_Client_connect_noSession(cb->client, cb->discovery_server_url);
     if (retval == UA_STATUSCODE_GOOD) {
         /* Register
            You can also use a semaphore file. That file must exist. When the file is
@@ -34023,6 +33858,7 @@ UA_Server_addPeriodicServerRegisterCallback(UA_Server *server,
                             "There is already a register callback for '%s' in place. Removing the older one.", discoveryServerUrl);
                 UA_Server_removeRepeatedCallback(server, rs->callback->id);
                 LIST_REMOVE(rs, pointers);
+                UA_free(rs->callback->discovery_server_url);
                 UA_free(rs->callback);
                 UA_free(rs);
                 break;
@@ -34044,9 +33880,13 @@ UA_Server_addPeriodicServerRegisterCallback(UA_Server *server,
     cb->default_interval = intervalMs;
     cb->registered = false;
     cb->client = client;
-    cb->discovery_server_url = discoveryServerUrl;
-
-
+    size_t len = strlen(discoveryServerUrl);
+    cb->discovery_server_url = (char*)UA_malloc(len+1);
+    if (!cb->discovery_server_url) {
+        UA_free(cb);
+        return UA_STATUSCODE_BADOUTOFMEMORY;
+    }
+    memcpy(cb->discovery_server_url, discoveryServerUrl, len+1);
 
     /* Add the callback */
     UA_StatusCode retval =
@@ -35479,8 +35319,8 @@ isMandatoryChild(UA_Server *server, UA_Session *session,
             continue;
         if(refs->isInverse)
             continue;
-        for(size_t j = 0; j < refs->targetIdsSize; ++j) {
-            if(UA_NodeId_equal(&mandatoryId, &refs->targetIds[j].nodeId)) {
+        for(size_t j = 0; j < refs->refTargetsSize; ++j) {
+            if(UA_NodeId_equal(&mandatoryId, &refs->refTargets[j].target.nodeId)) {
                 UA_Nodestore_releaseNode(server->nsCtx, child);
                 return true;
             }
@@ -35522,9 +35362,21 @@ copyChild(UA_Server *server, UA_Session *session, const UA_NodeId *destinationNo
         return retval;
     }
 
-    /* Is the child mandatory? If not, skip */
-    if(!isMandatoryChild(server, session, &rd->nodeId.nodeId))
-        return UA_STATUSCODE_GOOD;
+    /* Is the child mandatory? If not, ask callback whether child should be instantiated.
+     * If not, skip. */
+    if(!isMandatoryChild(server, session, &rd->nodeId.nodeId)) {
+        if(!server->config.nodeLifecycle.createOptionalChild)
+            return UA_STATUSCODE_GOOD;
+
+        if(server->config.nodeLifecycle.createOptionalChild(server,
+                                                            &session->sessionId,
+                                                            session->sessionHandle,
+                                                            &rd->nodeId.nodeId,
+                                                            destinationNodeId,
+                                                            &rd->referenceTypeId) == UA_FALSE) {
+            return UA_STATUSCODE_GOOD;
+        }
+    }
 
     /* Child is a method -> create a reference */
     if(rd->nodeClass == UA_NODECLASS_METHOD) {
@@ -35555,6 +35407,20 @@ copyChild(UA_Server *server, UA_Session *session, const UA_NodeId *destinationNo
         /* Reset the NodeId (random numeric id will be assigned in the nodestore) */
         UA_NodeId_deleteMembers(&node->nodeId);
         node->nodeId.namespaceIndex = destinationNodeId->namespaceIndex;
+
+        if (server->config.nodeLifecycle.generateChildNodeId) {
+            retval = server->config.nodeLifecycle.generateChildNodeId(server,
+                                                                      &session->sessionId, session->sessionHandle,
+                                                                      &rd->nodeId.nodeId,
+                                                                      destinationNodeId,
+                                                                      &rd->referenceTypeId,
+                                                                      &node->nodeId);
+            if(retval != UA_STATUSCODE_GOOD) {
+                UA_Nodestore_deleteNode(server->nsCtx, node);
+                return retval;
+            }
+        }
+
 
         /* Remove references, they are re-created from scratch in addnode_finish */
         /* TODO: Be more clever in removing references that are re-added during
@@ -35691,8 +35557,20 @@ AddNode_addRefs(UA_Server *server, UA_Session *session, const UA_NodeId *nodeId,
         }
     }
 
+    UA_StatusCode retval;
+    /* Make sure newly created node does not have itself as parent */
+    if (UA_NodeId_equal(nodeId, parentNodeId)) {
+        UA_LOG_NODEID_WRAP(nodeId, UA_LOG_INFO_SESSION(&server->config.logger, session,
+                                                       "AddNodes: The node %.*s can not have "
+                                                       "itself as parent",
+                                                       (int)nodeIdStr.length, nodeIdStr.data));
+        retval = UA_STATUSCODE_BADINVALIDARGUMENT;
+        goto cleanup;
+    }
+
+
     /* Check parent reference. Objects may have no parent. */
-    UA_StatusCode retval = checkParentReference(server, session, node->nodeClass,
+    retval = checkParentReference(server, session, node->nodeClass,
                                                 parentNodeId, referenceTypeId);
     if(retval != UA_STATUSCODE_GOOD) {
         UA_LOG_NODEID_WRAP(nodeId, UA_LOG_INFO_SESSION(&server->config.logger, session,
@@ -36407,8 +36285,8 @@ removeIncomingReferences(UA_Server *server, UA_Session *session,
         UA_NodeReferenceKind *refs = &node->references[i];
         item.isForward = refs->isInverse;
         item.referenceTypeId = refs->referenceTypeId;
-        for(size_t j = 0; j < refs->targetIdsSize; ++j) {
-            item.sourceNodeId = refs->targetIds[j].nodeId;
+        for(size_t j = 0; j < refs->refTargetsSize; ++j) {
+            item.sourceNodeId = refs->refTargets[j].target.nodeId;
             Operation_deleteReference(server, session, NULL, &item, &dummy);
         }
     }
@@ -36439,7 +36317,7 @@ multipleHierarchies(size_t hierarchicalRefsSize, UA_ExpandedNodeId *hierarchical
         if(!hierarchical)
             continue;
 
-        incomingRefs += k->targetIdsSize;
+        incomingRefs += k->refTargetsSize;
         if(incomingRefs > 1)
             return true;
     }
@@ -38228,8 +38106,8 @@ UA_Client_sendAsyncRequest(UA_Client *client, const void *request,
                            UA_UInt32 *requestId) {
     if (UA_Client_getState(client) < UA_CLIENTSTATE_SECURECHANNEL) {
         UA_LOG_INFO(&client->config.logger, UA_LOGCATEGORY_CLIENT,
-                    "Cient must be connected to send high-level requests");
-        return UA_STATUSCODE_GOOD;
+				"Client must be connected to send high-level requests");
+		return UA_STATUSCODE_BADSERVERNOTCONNECTED;
     }
     return __UA_Client_AsyncService(client, request, requestType, callback,
                                     responseType, userdata, requestId);
@@ -38460,6 +38338,14 @@ openSecureChannel(UA_Client *client, UA_Boolean renew) {
     if(conn->state != UA_CONNECTION_ESTABLISHED)
         return UA_STATUSCODE_BADSERVERNOTCONNECTED;
 
+    /* Generate clientNonce. */
+    UA_StatusCode retval = UA_SecureChannel_generateLocalNonce(&client->channel);
+    if(retval != UA_STATUSCODE_GOOD) {
+      UA_LOG_ERROR(&client->config.logger, UA_LOGCATEGORY_CLIENT,
+        "Generating a local nonce failed");
+      return retval;
+    }
+
     /* Prepare the OpenSecureChannelRequest */
     UA_OpenSecureChannelRequest opnSecRq;
     UA_OpenSecureChannelRequest_init(&opnSecRq);
@@ -38483,9 +38369,8 @@ openSecureChannel(UA_Client *client, UA_Boolean renew) {
 
     /* Send the OPN message */
     UA_UInt32 requestId = ++client->requestId;
-    UA_StatusCode retval =
-        UA_SecureChannel_sendAsymmetricOPNMessage(&client->channel, requestId, &opnSecRq,
-                                                  &UA_TYPES[UA_TYPES_OPENSECURECHANNELREQUEST]);
+    retval = UA_SecureChannel_sendAsymmetricOPNMessage(&client->channel, requestId, &opnSecRq,
+                                                       &UA_TYPES[UA_TYPES_OPENSECURECHANNELREQUEST]);
     if(retval != UA_STATUSCODE_GOOD) {
         UA_LOG_ERROR(&client->config.logger, UA_LOGCATEGORY_SECURECHANNEL,
                      "Sending OPN message failed with error %s", UA_StatusCode_name(retval));
@@ -39107,12 +38992,6 @@ UA_Client_connectTCPSecureChannel(UA_Client *client, const UA_String endpointUrl
     setClientState(client, UA_CLIENTSTATE_CONNECTED);
 
     /* Open a SecureChannel. */
-    retval = UA_SecureChannel_generateLocalNonce(&client->channel);
-    if(retval != UA_STATUSCODE_GOOD) {
-        UA_LOG_ERROR(&client->config.logger, UA_LOGCATEGORY_CLIENT,
-                     "Generating a local nonce failed");
-        goto cleanup;
-    }
     client->channel.connection = &client->connection;
     retval = openSecureChannel(client, false);
     if(retval != UA_STATUSCODE_GOOD) {
@@ -42218,7 +42097,6 @@ int __secs_to_tm(long long t, struct mytm *tm) {
     int remdays, remsecs, remyears;
     int qc_cycles, c_cycles, q_cycles;
     int months;
-    int wday, yday, leap;
     static const char days_in_month[] = {31,30,31,30,31,31,30,31,30,31,31,29};
 
     /* Reject time_t values whose year would overflow int */
@@ -42232,9 +42110,6 @@ int __secs_to_tm(long long t, struct mytm *tm) {
         remsecs += 86400;
         --days;
     }
-
-    wday = (int)((3+days)%7);
-    if (wday < 0) wday += 7;
 
     qc_cycles = (int)(days / DAYS_PER_400Y);
     remdays = (int)(days % DAYS_PER_400Y);
@@ -42255,10 +42130,6 @@ int __secs_to_tm(long long t, struct mytm *tm) {
     if (remyears == 4) --remyears;
     remdays -= remyears * 365;
 
-    leap = !remyears && (q_cycles || !c_cycles);
-    yday = remdays + 31 + 28 + leap;
-    if (yday >= 365+leap) yday -= 365+leap;
-
     years = remyears + 4*q_cycles + 100*c_cycles + 400LL*qc_cycles;
 
     for (months=0; days_in_month[months] <= remdays; ++months)
@@ -42274,9 +42145,6 @@ int __secs_to_tm(long long t, struct mytm *tm) {
         ++tm->tm_year;
     }
     tm->tm_mday = remdays + 1;
-    tm->tm_wday = wday;
-    tm->tm_yday = yday;
-
     tm->tm_hour = remsecs / 3600;
     tm->tm_min = remsecs / 60 % 60;
     tm->tm_sec = remsecs % 60;
@@ -42284,91 +42152,79 @@ int __secs_to_tm(long long t, struct mytm *tm) {
     return 0;
 }
 
-int __month_to_secs(int month, int is_leap)
-{
-	static const int secs_through_month[] = {
-		0, 31*86400, 59*86400, 90*86400,
-		120*86400, 151*86400, 181*86400, 212*86400,
-		243*86400, 273*86400, 304*86400, 334*86400 };
-	int t = secs_through_month[month];
-	if (is_leap && month >= 2) t+=86400;
-	return t;
+static const int secs_through_month[] =
+    {0, 31*86400, 59*86400, 90*86400,
+     120*86400, 151*86400, 181*86400, 212*86400,
+     243*86400, 273*86400, 304*86400, 334*86400 };
+
+static int
+__month_to_secs(int month, int is_leap) {
+    int t = secs_through_month[month];
+    if (is_leap && month >= 2)
+        t+=86400;
+    return t;
 }
 
-long long __year_to_secs(long long year, int *is_leap)
-{
-	if (year-(int)2ULL <= 136) {
-		int y = (int)year;
-		int leaps = (y-68)>>2;
-		if (!((y-68)&3)) {
-			leaps--;
-			if (is_leap) *is_leap = 1;
-		} else if (is_leap) *is_leap = 0;
-		return 31536000*(y-70) + 86400*leaps;
-	}
-
-	int cycles, centuries, leaps, rem;
-
-        //if (!is_leap) is_leap = &(int){0};
-        int is_leap_val = 0;
-	if (!is_leap){
-            is_leap = &is_leap_val;
+static long long
+__year_to_secs(const long long year, int *is_leap) {
+    int cycles, centuries, leaps, rem;
+    int is_leap_val = 0;
+    if (!is_leap) {
+        is_leap = &is_leap_val;
+    }
+    cycles = (int)((year-100) / 400);
+    rem = (int)((year-100) % 400);
+    if (rem < 0) {
+        cycles--;
+        rem += 400;
+    }
+    if (!rem) {
+        *is_leap = 1;
+        centuries = 0;
+        leaps = 0;
+    } else {
+        if (rem >= 200) {
+            if (rem >= 300) centuries = 3, rem -= 300;
+            else centuries = 2, rem -= 200;
+        } else {
+            if (rem >= 100) centuries = 1, rem -= 100;
+            else centuries = 0;
         }
-	cycles = (int)((year-100) / 400);
-	rem = (int)((year-100) % 400);
-	/* Comparison is always false because rem >= 0.
-	if (rem < 0) {
-		cycles--;
-		rem += 400;
-	} */
-	if (!rem) {
-		*is_leap = 1;
-		centuries = 0;
-		leaps = 0;
-	} else {
-		if (rem >= 200) {
-			if (rem >= 300) centuries = 3, rem -= 300;
-			else centuries = 2, rem -= 200;
-		} else {
-			if (rem >= 100) centuries = 1, rem -= 100;
-			else centuries = 0;
-		}
-		if (!rem) {
-			*is_leap = 0;
-			leaps = 0;
-		} else {
-			leaps = (rem / (int)4U);
-			rem %= (int)4U;
-			*is_leap = !rem;
-		}
-	}
+        if (!rem) {
+            *is_leap = 0;
+            leaps = 0;
+        } else {
+            leaps = (rem / (int)4U);
+            rem %= (int)4U;
+            *is_leap = !rem;
+        }
+    }
 
-	leaps += 97*cycles + 24*centuries - *is_leap;
+    leaps += 97*cycles + 24*centuries - *is_leap;
 
-	return (year-100) * 31536000LL + leaps * 86400LL + 946684800 + 86400;
+    return (year-100) * 31536000LL + leaps * 86400LL + 946684800 + 86400;
 }
 
-long long __tm_to_secs(const struct mytm *tm)
-{
-	int is_leap;
-	long long year = tm->tm_year;
-	int month = tm->tm_mon;
-	if (month >= 12 || month < 0) {
-		int adj = month / 12;
-		month %= 12;
-		if (month < 0) {
-			adj--;
-			month += 12;
-		}
-		year += adj;
-	}
-	long long t = __year_to_secs(year, &is_leap);
-	t += __month_to_secs(month, is_leap);
-	t += 86400LL * (tm->tm_mday-1);
-	t += 3600LL * tm->tm_hour;
-	t += 60LL * tm->tm_min;
-	t += tm->tm_sec;
-	return t;
+long long __tm_to_secs(const struct mytm *tm) {
+    int is_leap;
+    long long year = tm->tm_year;
+    int month = tm->tm_mon;
+    if (month >= 12 || month < 0) {
+        int adj = month / 12;
+        month %= 12;
+        if (month < 0) {
+            adj--;
+            month += 12;
+        }
+        year += adj;
+    }
+    long long t = __year_to_secs(year, &is_leap);
+    t += __month_to_secs(month, is_leap);
+    t += 86400LL * (tm->tm_mday-1);
+    t += 3600LL * tm->tm_hour;
+    t += 60LL * tm->tm_min;
+    t += tm->tm_sec;
+    return t;
 }
 
 /*********************************** amalgamated original file "/home/jvoe/open62541/deps/pcg_basic.c" ***********************************/
@@ -42416,183 +42272,107 @@ uint32_t pcg32_random_r(pcg32_random_t* rng) {
 /*********************************** amalgamated original file "/home/jvoe/open62541/deps/base64.c" ***********************************/
 
 /*
-
-  https://github.com/superwills/NibbleAndAHalf
-  base64.h -- Fast base64 encoding and decoding.
-  version 1.0.0, April 17, 2013 143a
-
-  Copyright (C) 2013 William Sherif
-
-  This software is provided 'as-is', without any express or implied
-  warranty.  In no event will the authors be held liable for any damages
-  arising from the use of this software.
-
-  Permission is granted to anyone to use this software for any purpose,
-  including commercial applications, and to alter it and redistribute it
-  freely, subject to the following restrictions:
-
-  1. The origin of this software must not be misrepresented; you must not
-     claim that you wrote the original software. If you use this software
-     in a product, an acknowledgment in the product documentation would be
-     appreciated but is not required.
-  2. Altered source versions must be plainly marked as such, and must not be
-     misrepresented as being the original software.
-  3. This notice may not be removed or altered from any source distribution.
-
-  William Sherif
-  will.sherif@gmail.com
-
-  YWxsIHlvdXIgYmFzZSBhcmUgYmVsb25nIHRvIHVz
-
-*/
+ * Base64 encoding: Copyright (c) 2005-2011, Jouni Malinen <j@w1.fi>
+ * This software may be distributed under the terms of the BSD license.
+ *
+ * Base64 decoding: Copyright (c) 2016, polfosol
+ * Posted at https://stackoverflow.com/a/37109258 under the CC-BY-SA Creative
+ * Commons license.
+ */
 
 
-#include <stdio.h>
-#include <stdlib.h>
+static const unsigned char base64_table[65] =
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-static const char* b64="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/" ;
-
-// maps A=>0,B=>1..
-static const unsigned char unb64[]={
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //10
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //20
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //30
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //40
-    0,   0,   0,  62,   0,   0,   0,  63,  52,  53, //50
-    54,  55,  56,  57,  58,  59,  60,  61,   0,   0, //60
-    0,   0,   0,   0,   0,   0,   1,   2,   3,   4, //70
-    5,   6,   7,   8,   9,  10,  11,  12,  13,  14, //80
-    15,  16,  17,  18,  19,  20,  21,  22,  23,  24, //90
-    25,   0,   0,   0,   0,   0,   0,  26,  27,  28, //100
-    29,  30,  31,  32,  33,  34,  35,  36,  37,  38, //110
-    39,  40,  41,  42,  43,  44,  45,  46,  47,  48, //120
-    49,  50,  51,   0,   0,   0,   0,   0,   0,   0, //130
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //140
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //150
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //160
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //170
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //180
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //190
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //200
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //210
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //220
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //230
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //240
-    0,   0,   0,   0,   0,   0,   0,   0,   0,   0, //250
-    0,   0,   0,   0,   0,   0,
-}; // This array has 256 elements
-
-// Converts binary data of length=len to base64 characters.
-// Length of the resultant string is stored in flen
-// (you must pass pointer flen).
-char* UA_base64( const void* binaryData, int len, int *flen )
-{
-    const unsigned char* bin = (const unsigned char*) binaryData ;
-    char* res ;
-
-    int rc = 0 ; // result counter
-    int byteNo ; // I need this after the loop
-
-    int modulusLen = len % 3 ;
-    int pad = ((modulusLen&1)<<1) + ((modulusLen&2)>>1) ; // 2 gives 1 and 1 gives 2, but 0 gives 0.
-
-    *flen = 4*(len + pad)/3 ;
-    res = (char*) malloc( (size_t)(*flen + 1) ) ; // and one for the null
-    if( !res )
-    {
-        puts( "ERROR: base64 could not allocate enough memory." ) ;
-        puts( "I must stop because I could not get enough" ) ;
-        return 0;
+unsigned char *
+UA_base64(const unsigned char *src, size_t len, size_t *out_len) {
+    if(len == 0) {
+        *out_len = 0;
+        return (unsigned char*)UA_EMPTY_ARRAY_SENTINEL;
     }
 
-    for( byteNo = 0 ; byteNo <= len-3 ; byteNo+=3 )
-    {
-        unsigned char BYTE0=bin[byteNo];
-        unsigned char BYTE1=bin[byteNo+1];
-        unsigned char BYTE2=bin[byteNo+2];
-        res[rc++]  = b64[ BYTE0 >> 2 ] ;
-        res[rc++]  = b64[ ((0x3&BYTE0)<<4) + (BYTE1 >> 4) ] ;
-        res[rc++]  = b64[ ((0x0f&BYTE1)<<2) + (BYTE2>>6) ] ;
-        res[rc++]  = b64[ 0x3f&BYTE2 ] ;
-    }
+	size_t olen = 4*((len + 2) / 3); /* 3-byte blocks to 4-byte */
+	if(olen < len)
+		return NULL; /* integer overflow */
 
-    if( pad==2 )
-    {
-        res[rc++] = b64[ bin[byteNo] >> 2 ] ;
-        res[rc++] = b64[ (0x3&bin[byteNo])<<4 ] ;
-        res[rc++] = '=';
-        res[rc++] = '=';
-    }
-    else if( pad==1 )
-    {
-        res[rc++]  = b64[ bin[byteNo] >> 2 ] ;
-        res[rc++]  = b64[ ((0x3&bin[byteNo])<<4)   +   (bin[byteNo+1] >> 4) ] ;
-        res[rc++]  = b64[ (0x0f&bin[byteNo+1])<<2 ] ;
-        res[rc++] = '=';
-    }
+	unsigned char *out = (unsigned char*)UA_malloc(olen);
+	if(!out)
+		return NULL;
 
-    res[rc]=0; // NULL TERMINATOR! ;)
-    return res ;
+	const unsigned char *end = src + len;
+	const unsigned char *in = src;
+	unsigned char *pos = out;
+	while(end - in >= 3) {
+		*pos++ = base64_table[in[0] >> 2];
+		*pos++ = base64_table[((in[0] & 0x03) << 4) | (in[1] >> 4)];
+		*pos++ = base64_table[((in[1] & 0x0f) << 2) | (in[2] >> 6)];
+		*pos++ = base64_table[in[2] & 0x3f];
+		in += 3;
+	}
+
+	if(end - in) {
+		*pos++ = base64_table[in[0] >> 2];
+		if(end - in == 1) {
+			*pos++ = base64_table[(in[0] & 0x03) << 4];
+			*pos++ = '=';
+		} else {
+			*pos++ = base64_table[((in[0] & 0x03) << 4) | (in[1] >> 4)];
+			*pos++ = base64_table[(in[1] & 0x0f) << 2];
+		}
+		*pos++ = '=';
+	}
+
+    *out_len = (size_t)(pos - out);
+	return out;
 }
 
-unsigned char* UA_unbase64( const char* ascii, int len, int *flen )
-{
-    const unsigned char *safeAsciiPtr = (const unsigned char*)ascii ;
-    unsigned char *bin ;
-    int cb=0;
-    int charNo;
-    int pad = 0 ;
+static const uint32_t from_b64[256] = {
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  62, 63, 62, 62, 63,
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 0,  0,  0,  0,  0,  0,
+    0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
+    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 0,  0,  0,  0,  63,
+    0,  26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51};
 
-    if( len < 2 ) { // 2 accesses below would be OOB.
-        // catch empty string, return NULL as result.
-        puts( "ERROR: You passed an invalid base64 string (too short). You get NULL back." ) ;
-        *flen=0;
-        return 0 ;
-    }
-    if( safeAsciiPtr[ len-1 ]=='=' )  ++pad ;
-    if( safeAsciiPtr[ len-2 ]=='=' )  ++pad ;
-
-    *flen = 3*len/4 - pad ;
-    bin = (unsigned char*)malloc( (size_t) (*flen) ) ;
-    if( !bin )
-    {
-        puts( "ERROR: unbase64 could not allocate enough memory." ) ;
-        puts( "I must stop because I could not get enough" ) ;
-        return 0;
+unsigned char *
+UA_unbase64(const unsigned char *src, size_t len, size_t *out_len) {
+    if(len == 0) {
+        *out_len = 0;
+        return (unsigned char*)UA_EMPTY_ARRAY_SENTINEL;
     }
 
-    for( charNo=0; charNo <= len - 4 - pad ; charNo+=4 )
-    {
-        int A=unb64[safeAsciiPtr[charNo]];
-        int B=unb64[safeAsciiPtr[charNo+1]];
-        int C=unb64[safeAsciiPtr[charNo+2]];
-        int D=unb64[safeAsciiPtr[charNo+3]];
+    const unsigned char *p = src;
+    size_t pad1 = len % 4 || p[len - 1] == '=';
+    size_t pad2 = pad1 && (len % 4 > 2 || p[len - 2] != '=');
+    const size_t last = (len - pad1) / 4 << 2;
 
-        bin[cb++] = (unsigned char)((A<<2) | (B>>4)) ;
-        bin[cb++] = (unsigned char)((B<<4) | (C>>2)) ;
-        bin[cb++] = (unsigned char)((C<<6) | (D)) ;
+    unsigned char *str = (unsigned char*)UA_malloc(last / 4 * 3 + pad1 + pad2);
+    if(!str)
+        return NULL;
+
+    unsigned char *pos = str;
+    for(size_t i = 0; i < last; i += 4) {
+        uint32_t n = from_b64[p[i]] << 18 | from_b64[p[i + 1]] << 12 |
+                     from_b64[p[i + 2]] << 6 | from_b64[p[i + 3]];
+        *pos++ = (unsigned char)(n >> 16);
+        *pos++ = (unsigned char)(n >> 8 & 0xFF);
+        *pos++ = (unsigned char)(n & 0xFF);
     }
 
-    if( pad==1 )
-    {
-        int A=unb64[safeAsciiPtr[charNo]];
-        int B=unb64[safeAsciiPtr[charNo+1]];
-        int C=unb64[safeAsciiPtr[charNo+2]];
-
-        bin[cb++] = (unsigned char)((A<<2) | (B>>4)) ;
-        bin[cb++] = (unsigned char)((B<<4) | (C>>2)) ;
-    }
-    else if( pad==2 )
-    {
-        int A=unb64[safeAsciiPtr[charNo]];
-        int B=unb64[safeAsciiPtr[charNo+1]];
-
-        bin[cb++] = (unsigned char)((A<<2) | (B>>4)) ;
+    if(pad1) {
+        uint32_t n = from_b64[p[last]] << 18 | from_b64[p[last + 1]] << 12;
+        *pos++ = (unsigned char)(n >> 16);
+        if(pad2) {
+            n |= from_b64[p[last + 2]] << 6;
+            *pos++ = (unsigned char)(n >> 8 & 0xFF);
+        }
     }
 
-    return bin ;
+    *out_len = (uintptr_t)(pos - str);
+    return str;
 }
-
 
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/namespace0_generated.c" ***********************************/
 
@@ -47453,6 +47233,8 @@ UA_DiscoveryManager_deleteMembers(UA_DiscoveryManager *dm, UA_Server *server) {
     periodicServerRegisterCallback_entry *ps, *ps_tmp;
     LIST_FOREACH_SAFE(ps, &dm->periodicServerRegisterCallbacks, pointers, ps_tmp) {
         LIST_REMOVE(ps, pointers);
+        if (ps->callback->discovery_server_url)
+            UA_free(ps->callback->discovery_server_url);
         UA_free(ps->callback);
         UA_free(ps);
     }
@@ -49352,7 +49134,7 @@ typedef struct {
     mbedtls_x509_crl certificateRevocationList;
 } CertInfo;
 
-#if __linux__ /* Linux only so far */
+#ifdef __linux__ /* Linux only so far */
 
 #include <dirent.h>
 #include <limits.h>
@@ -49485,7 +49267,7 @@ certificateVerification_verify(void *verificationContext,
     if(!ci)
         return UA_STATUSCODE_BADINTERNALERROR;
 
-#if __linux__ /* Reload certificates if folder paths are specified */
+#ifdef __linux__ /* Reload certificates if folder paths are specified */
     reloadCertificates(ci);
 #endif
 
@@ -49842,7 +49624,7 @@ error:
     return UA_STATUSCODE_BADINTERNALERROR;
 }
 
-#if __linux__ /* Linux only so far */
+#ifdef __linux__ /* Linux only so far */
 
 UA_StatusCode
 UA_CertificateVerification_CertFolders(UA_CertificateVerification *cv,
@@ -50389,6 +50171,8 @@ setDefaultConfig(UA_ServerConfig *conf) {
     /* Global Node Lifecycle */
     conf->nodeLifecycle.constructor = NULL;
     conf->nodeLifecycle.destructor = NULL;
+    conf->nodeLifecycle.createOptionalChild = NULL;
+    conf->nodeLifecycle.generateChildNodeId = NULL;
 
     /* Relax constraints for the InformationModel */
     conf->relaxEmptyValueConstraint = true; /* Allow empty values */
@@ -50458,28 +50242,6 @@ addDefaultNetworkLayers(UA_ServerConfig *conf, UA_UInt16 portNumber,
     return UA_ServerConfig_addNetworkLayerTCP(conf, portNumber, sendBufferSize, recvBufferSize);
 }
 
-static UA_StatusCode
-addDiscoveryUrl(UA_ServerConfig *config, UA_UInt16 portNumber) {
-       config->applicationDescription.discoveryUrlsSize = 1;
-    UA_String *discurl = (UA_String *) UA_Array_new(1, &UA_TYPES[UA_TYPES_STRING]);
-    char discoveryUrlBuffer[220];
-    if (config->customHostname.length) {
-        UA_snprintf(discoveryUrlBuffer, 220, "opc.tcp://%.*s:%d/",
-                                                 (int)config->customHostname.length,
-                                                 config->customHostname.data,
-                                                 portNumber);
-    } else {
-    char hostnameBuffer[200];
-       if(UA_gethostname(hostnameBuffer, 200) == 0) {
-               UA_snprintf(discoveryUrlBuffer, 220, "opc.tcp://%s:%d/", hostnameBuffer, portNumber);
-       } else {
-            UA_LOG_ERROR(&config->logger, UA_LOGCATEGORY_NETWORK, "Could not get the hostname");
-        }
-    }
-    discurl[0] = UA_String_fromChars(discoveryUrlBuffer);
-    config->applicationDescription.discoveryUrls = discurl;
-    return UA_STATUSCODE_GOOD;
-}
 
 UA_EXPORT UA_StatusCode
 UA_ServerConfig_addNetworkLayerTCP(UA_ServerConfig *conf, UA_UInt16 portNumber,
@@ -50620,12 +50382,6 @@ UA_ServerConfig_setMinimalCustomBuffer(UA_ServerConfig *config, UA_UInt16 portNu
 
     retval = addDefaultNetworkLayers(config, portNumber, sendBufferSize, recvBufferSize);
     if(retval != UA_STATUSCODE_GOOD) {
-        UA_ServerConfig_clean(config);
-        return retval;
-    }
-    
-    retval = addDiscoveryUrl(config, portNumber);
-    if (retval != UA_STATUSCODE_GOOD) {
         UA_ServerConfig_clean(config);
         return retval;
     }
@@ -50830,12 +50586,6 @@ UA_ServerConfig_setDefaultWithSecurityPolicies(UA_ServerConfig *conf,
 
     retval = addDefaultNetworkLayers(conf, portNumber, 0, 0);
     if(retval != UA_STATUSCODE_GOOD) {
-        UA_ServerConfig_clean(conf);
-        return retval;
-    }
-
-    retval = addDiscoveryUrl(conf, portNumber);
-    if (retval != UA_STATUSCODE_GOOD) {
         UA_ServerConfig_clean(conf);
         return retval;
     }
@@ -52074,6 +51824,12 @@ policyContext_newContext_sp_basic128rsa15(UA_SecurityPolicy *securityPolicy,
     if(securityPolicy == NULL)
         return UA_STATUSCODE_BADINTERNALERROR;
 
+    if (localPrivateKey.length == 0) {
+        UA_LOG_ERROR(securityPolicy->logger, UA_LOGCATEGORY_SECURITYPOLICY,
+                     "Can not initialize security policy. Private key is empty.");
+        return UA_STATUSCODE_BADINVALIDARGUMENT;
+    }
+
     Basic128Rsa15_PolicyContext *pc = (Basic128Rsa15_PolicyContext *)
         UA_malloc(sizeof(Basic128Rsa15_PolicyContext));
     securityPolicy->policyContext = (void *)pc;
@@ -52140,7 +51896,7 @@ policyContext_newContext_sp_basic128rsa15(UA_SecurityPolicy *securityPolicy,
 
 error:
     UA_LOG_ERROR(securityPolicy->logger, UA_LOGCATEGORY_SECURITYPOLICY,
-                 "Could not create securityContext");
+                 "Could not create securityContext: %s", UA_StatusCode_name(retval));
     if(securityPolicy->policyContext != NULL)
         deleteMembers_sp_basic128rsa15(securityPolicy);
     return retval;
@@ -52893,6 +52649,12 @@ policyContext_newContext_sp_basic256(UA_SecurityPolicy *securityPolicy,
     if(securityPolicy == NULL)
         return UA_STATUSCODE_BADINTERNALERROR;
 
+    if (localPrivateKey.length == 0) {
+        UA_LOG_ERROR(securityPolicy->logger, UA_LOGCATEGORY_SECURITYPOLICY,
+                     "Can not initialize security policy. Private key is empty.");
+        return UA_STATUSCODE_BADINVALIDARGUMENT;
+    }
+
     Basic256_PolicyContext *pc = (Basic256_PolicyContext *)
         UA_malloc(sizeof(Basic256_PolicyContext));
     securityPolicy->policyContext = (void *)pc;
@@ -52958,7 +52720,7 @@ policyContext_newContext_sp_basic256(UA_SecurityPolicy *securityPolicy,
 
 error:
     UA_LOG_ERROR(securityPolicy->logger, UA_LOGCATEGORY_SECURITYPOLICY,
-                 "Could not create securityContext");
+                 "Could not create securityContext: %s", UA_StatusCode_name(retval));
     if(securityPolicy->policyContext != NULL)
         deleteMembers_sp_basic256(securityPolicy);
     return retval;
@@ -53754,6 +53516,12 @@ policyContext_newContext_sp_basic256sha256(UA_SecurityPolicy *securityPolicy,
     if(securityPolicy == NULL)
         return UA_STATUSCODE_BADINTERNALERROR;
 
+    if (localPrivateKey.length == 0) {
+        UA_LOG_ERROR(securityPolicy->logger, UA_LOGCATEGORY_SECURITYPOLICY,
+                     "Can not initialize security policy. Private key is empty.");
+        return UA_STATUSCODE_BADINVALIDARGUMENT;
+    }
+
     Basic256Sha256_PolicyContext *pc = (Basic256Sha256_PolicyContext *)
         UA_malloc(sizeof(Basic256Sha256_PolicyContext));
     securityPolicy->policyContext = (void *)pc;
@@ -53819,7 +53587,7 @@ policyContext_newContext_sp_basic256sha256(UA_SecurityPolicy *securityPolicy,
 
 error:
     UA_LOG_ERROR(securityPolicy->logger, UA_LOGCATEGORY_SECURITYPOLICY,
-                 "Could not create securityContext");
+                 "Could not create securityContext: %s", UA_StatusCode_name(retval));
     if(securityPolicy->policyContext != NULL)
         deleteMembers_sp_basic256sha256(securityPolicy);
     return retval;
@@ -54537,7 +54305,6 @@ ServerNetworkLayerTCP_start(UA_ServerNetworkLayer *nl, const UA_String *customHo
     /* Get the discovery url from the hostname */
     UA_String du = UA_STRING_NULL;
     char discoveryUrlBuffer[256];
-    char hostnameBuffer[256];
     if (customHostname->length) {
         du.length = (size_t)UA_snprintf(discoveryUrlBuffer, 255, "opc.tcp://%.*s:%d/",
                                         (int)customHostname->length,
@@ -54545,12 +54312,14 @@ ServerNetworkLayerTCP_start(UA_ServerNetworkLayer *nl, const UA_String *customHo
                                         layer->port);
         du.data = (UA_Byte*)discoveryUrlBuffer;
     }else{
+        char hostnameBuffer[256];
         if(UA_gethostname(hostnameBuffer, 255) == 0) {
             du.length = (size_t)UA_snprintf(discoveryUrlBuffer, 255, "opc.tcp://%s:%d/",
                                             hostnameBuffer, layer->port);
             du.data = (UA_Byte*)discoveryUrlBuffer;
         } else {
             UA_LOG_ERROR(layer->logger, UA_LOGCATEGORY_NETWORK, "Could not get the hostname");
+            return UA_STATUSCODE_BADINTERNALERROR;
         }
     }
     UA_String_copy(&du, &nl->discoveryUrl);
