@@ -45,10 +45,6 @@ QT_BEGIN_NAMESPACE
     \since QtOpcUa 5.13
     \brief QOpcUaApplicationIdentity defines the identity of the application.
 
-    This class is currently available as a Technology Preview, and therefore the API
-    and functionality provided by the class may be subject to change at any time without
-    prior notice.
-
     This info must be configured using \l QOpcUaClient::setApplicationIdentity.
     The application identity can be set up manually or derived from a certificate.
 

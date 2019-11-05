@@ -170,10 +170,6 @@ void QOpcUaAuthenticationInformation::setUsernameAuthentication(const QString &u
 /*!
     Sets the authentication method to use certificates.
 
-    This function is currently available as a Technology Preview, and therefore the API
-    and functionality provided by the class may be subject to change at any time without
-    prior notice.
-
     When using this authentication type a proper configured \l QOpcUaPkiConfiguration has to be set to
     the \l QOpcUaClient.
 
