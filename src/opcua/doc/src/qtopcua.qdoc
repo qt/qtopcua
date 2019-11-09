@@ -80,9 +80,8 @@
     \li Unified Automation C++ SDK (UACpp), Commercial
     \endlist
 
-    The QML API as well as the security related C++ API are still in development but are available as a technology preview.
+    The QML API is still in development but are available as a technology preview.
     This means those parts are unstable, likely to change, and provided as a convenience only.
-    All functions and classes of the C++ API, which are related to security, state in their documentation if they are technology preview.
 
     \section1 Getting started
 

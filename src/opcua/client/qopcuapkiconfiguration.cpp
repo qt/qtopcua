@@ -51,10 +51,6 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_SECURITY);
     \brief QOpcUaPkiConfiguration defines the PKI configuration of the application.
     \since QtOpcUa 5.13
 
-    This class is currently available as a Technology Preview, and therefore the API
-    and functionality provided by the class may be subject to change at any time without
-    prior notice.
-
     This info must be configured using QOpcUaClient::setPkiConfiguration.
     The used paths and files must be created beforehand.
 
