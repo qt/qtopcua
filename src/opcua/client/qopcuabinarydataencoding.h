@@ -37,6 +37,7 @@
 #ifndef QOPCUABINARYDATAENCODING_H
 #define QOPCUABINARYDATAENCODING_H
 
+#include <QtOpcUa/qopcuaapplicationrecorddatatype.h>
 #include <QtOpcUa/qopcuaargument.h>
 #include <QtOpcUa/qopcuaaxisinformation.h>
 #include <QtOpcUa/qopcuacomplexnumber.h>
@@ -990,6 +991,62 @@ inline bool QOpcUaBinaryDataEncoding::encodeArray(const QVector<T> &src)
         if (!encode<T, OVERLAY>(element))
             return false;
     }
+    return true;
+}
+
+template <>
+inline QOpcUaApplicationRecordDataType QOpcUaBinaryDataEncoding::decode<QOpcUaApplicationRecordDataType>(bool &success)
+{
+    QOpcUaApplicationRecordDataType temp;
+
+    temp.setApplicationId(decode<QString, QOpcUa::Types::NodeId>(success));
+    if (!success)
+        return QOpcUaApplicationRecordDataType();
+
+    temp.setApplicationUri(decode<QString>(success));
+    if (!success)
+        return QOpcUaApplicationRecordDataType();
+
+    temp.setApplicationType(static_cast<QOpcUaApplicationDescription::ApplicationType>(decode<uint32_t>(success)));
+    if (!success)
+        return QOpcUaApplicationRecordDataType();
+
+    temp.setApplicationNames(decodeArray<QOpcUaLocalizedText>(success));
+    if (!success)
+        return QOpcUaApplicationRecordDataType();
+
+    temp.setProductUri(decode<QString>(success));
+    if (!success)
+        return QOpcUaApplicationRecordDataType();
+
+    temp.setDiscoveryUrls(decodeArray<QString>(success));
+    if (!success)
+        return QOpcUaApplicationRecordDataType();
+
+    temp.setServerCapabilityIdentifiers(decodeArray<QString>(success));
+    if (!success)
+        return QOpcUaApplicationRecordDataType();
+
+    return temp;
+}
+
+template <>
+inline bool QOpcUaBinaryDataEncoding::encode<QOpcUaApplicationRecordDataType>(const QOpcUaApplicationRecordDataType &src)
+{
+    if (!encode<QString, QOpcUa::NodeId>(src.applicationId()))
+        return false;
+    if (!encode<QString>(src.applicationUri()))
+        return false;
+    if (!encode<uint32_t>(src.applicationType()))
+        return false;
+    if (!encodeArray<QOpcUaLocalizedText>(src.applicationNames()))
+        return false;
+    if (!encode<QString>(src.productUri()))
+        return false;
+    if (!encodeArray<QString>(src.discoveryUrls()))
+        return false;
+    if (!encodeArray<QString>(src.serverCapabilityIdentifiers()))
+        return false;
     return true;
 }
 

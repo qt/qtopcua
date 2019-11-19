@@ -58,12 +58,12 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_SECURITY);
     QOpcUaPkiConfiguration pkiConfig;
     const QString pkiDir = QCoreApplication::applicationDirPath() + "/pki";
 
-    pkiConfig.setClientCertificateDirectory(pkidir + "/own/certs/application.der");
-    pkiConfig.setPrivateKeyDirectory(pkidir + "/own/private/application.pem");
-    pkiConfig.setTrustListDirectory(pkidir + "/trusted/certs");
-    pkiConfig.setRevocationListLocation(pkidir + "/trusted/crl");
-    pkiConfig.setIssuerListDirectory(pkidir + "/issuers/certs");
-    pkiConfig.setIssuerRevocationListDirectory(pkidir + "/issuers/crl");
+    pkiConfig.setClientCertificateFile(pkiDir + "/own/certs/application.der");
+    pkiConfig.setPrivateKeyFile(pkiDir + "/own/private/application.pem");
+    pkiConfig.setTrustListDirectory(pkiDir + "/trusted/certs");
+    pkiConfig.setRevocationListDirectory(pkiDir + "/trusted/crl");
+    pkiConfig.setIssuerListDirectory(pkiDir + "/issuers/certs");
+    pkiConfig.setIssuerRevocationListDirectory(pkiDir + "/issuers/crl");
 
     client->setPkiConfiguration(pkiConfig);
     \endcode

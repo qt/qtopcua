@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the QtOpcUa module of the Qt Toolkit.
+** This file is part of the Qt OPC UA module.
 **
 ** $QT_BEGIN_LICENSE:LGPL3$
 ** Commercial License Usage
@@ -34,70 +34,57 @@
 **
 ****************************************************************************/
 
-#ifndef QOPEN62541UTILS_H
-#define QOPEN62541UTILS_H
+#ifndef QOPCUAKEYPAIR_H
+#define QOPCUAKEYPAIR_H
 
-#include "qopen62541.h"
-
+#include <QObject>
 #include <QString>
-
-#include <functional>
+#include <QSharedPointer>
+#include <QtOpcUa/qopcuaglobal.h>
 
 QT_BEGIN_NAMESPACE
 
-template <typename T>
-class UaDeleter
-{
-public:
-    UaDeleter(T *data, std::function<void(T *value)> f)
-        : m_data(data)
-        , m_function(f)
-    {
-    }
-    ~UaDeleter()
-    {
-        if (m_data)
-            m_function(m_data);
-    }
-    void release()
-    {
-        m_data = nullptr;
-        m_function = nullptr;
-    }
-private:
-    T *m_data {nullptr};
-    std::function<void(T *attribute)> m_function;
-};
+class QOpcUaKeyPairPrivate;
 
-template <uint TYPEINDEX>
-class UaArrayDeleter
+class Q_OPCUA_EXPORT QOpcUaKeyPair : public QObject
 {
-public:
-    UaArrayDeleter(void *data, size_t arrayLength)
-        : m_data(data)
-        , m_arrayLength(arrayLength)
-    {
-        static_assert (TYPEINDEX < UA_TYPES_COUNT, "Invalid index outside the UA_TYPES array.");
-    }
-    ~UaArrayDeleter()
-    {
-        if (m_data && m_arrayLength > 0)
-            UA_Array_delete(m_data, m_arrayLength, &UA_TYPES[TYPEINDEX]);
-    }
-    void release() {
-        m_data = nullptr;
-        m_arrayLength = 0;
-    }
-private:
-    void *m_data {nullptr};
-    size_t m_arrayLength {0};
-};
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QOpcUaKeyPair)
 
-namespace Open62541Utils {
-    UA_NodeId nodeIdFromQString(const QString &name);
-    QString nodeIdToQString(UA_NodeId id);
-}
+public:
+    enum class RsaKeyStrength {
+        Bits1024 = 1024,
+        Bits2048 = 2048,
+        Bits4096 = 4096
+    };
+
+    enum class KeyType {
+        Rsa,
+        Empty,
+        Unknown
+    };
+
+    enum class Cipher {
+        Aes128Cbc,
+        Unencrypted
+    };
+
+    QOpcUaKeyPair(QObject *parent = nullptr);
+
+    virtual ~QOpcUaKeyPair();
+    bool loadFromPemData(const QByteArray &data);
+    QByteArray publicKeyToByteArray() const;
+    QByteArray privateKeyToByteArray(Cipher cipher, const QString &password) const;
+    KeyType type() const;
+    bool hasPrivateKey() const;
+    void generateRsaKey(QOpcUaKeyPair::RsaKeyStrength strength);
+
+Q_SIGNALS:
+    void passphraseNeeded(QString &passphrase, int maximumLength, bool writeOperation);
+
+    friend class QOpcUaX509CertificateSigningRequestPrivate;
+};
 
 QT_END_NAMESPACE
 
-#endif // QOPEN62541UTILS_H
+#endif // QOPCUAKEYPAIR_H

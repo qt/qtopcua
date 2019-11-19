@@ -132,6 +132,10 @@ QT_BEGIN_NAMESPACE
         \row
             \li QOpcUaArgument
             \li Argument
+
+        \row
+            \li QOpcUaApplicationRecordDataType
+            \li ApplicationRecordDataType
     \endtable
 */
 

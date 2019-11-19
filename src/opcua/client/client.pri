@@ -12,6 +12,7 @@ SOURCES += \
     client/qopcuaaddreferenceitem.cpp \
     client/qopcuaapplicationdescription.cpp \
     client/qopcuaapplicationidentity.cpp \
+    client/qopcuaapplicationrecorddatatype.cpp \
     client/qopcuaargument.cpp \
     client/qopcuaattributeoperand.cpp \
     client/qopcuaauthenticationinformation.cpp \
@@ -62,6 +63,7 @@ HEADERS += \
     client/qopcuaaddreferenceitem.h \
     client/qopcuaapplicationdescription.h \
     client/qopcuaapplicationidentity.h \
+    client/qopcuaapplicationrecorddatatype.h \
     client/qopcuaargument.h \
     client/qopcuaattributeoperand.h \
     client/qopcuaauthenticationinformation.h \
@@ -106,3 +108,11 @@ HEADERS += \
     client/qopcuawriteitem.h \
     client/qopcuawriteresult.h \
     client/qopcuaxvalue.h \
+
+# Only added for platforms that have OpenSSL available
+QT_FOR_CONFIG += core-private
+qtConfig(ssl):!darwin:!winrt {
+    PUBLIC_HEADERS += client/qopcuagdsclient.h
+    SOURCES += client/qopcuagdsclient.cpp
+    HEADERS += client/qopcuagdsclient_p.h
+}
