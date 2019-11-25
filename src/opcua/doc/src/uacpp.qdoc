@@ -192,7 +192,7 @@
 
     \code
     cd \path\to\qtopcua
-    qmake CONFIG+=debug -- UACPP_PREFIX=$SDKDIR
+    qmake CONFIG+=debug -- UACPP_PREFIX=%SDKDIR%
     nmake
     nmake install
     \endcode
