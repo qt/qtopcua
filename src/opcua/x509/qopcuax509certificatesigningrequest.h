@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the QtOpcUa module of the Qt Toolkit.
+** This file is part of the Qt OPC UA module.
 **
 ** $QT_BEGIN_LICENSE:LGPL3$
 ** Commercial License Usage
@@ -34,70 +34,53 @@
 **
 ****************************************************************************/
 
-#ifndef QOPEN62541UTILS_H
-#define QOPEN62541UTILS_H
+#ifndef QOPCUAX509CERTIFICATESIGNINGREQUEST_H
+#define QOPCUAX509CERTIFICATESIGNINGREQUEST_H
 
-#include "qopen62541.h"
-
-#include <QString>
-
-#include <functional>
+#include "QtOpcUa/qopcuakeypair.h"
+#include "QtOpcUa/qopcuax509extension.h"
+#include "QtOpcUa/qopcuax509distinguishedname.h"
+#include <QVector>
+#include <QtOpcUa/qopcuaglobal.h>
+#include <QtOpcUa/qopcuax509certificatesigningrequest.h>
 
 QT_BEGIN_NAMESPACE
 
-template <typename T>
-class UaDeleter
-{
-public:
-    UaDeleter(T *data, std::function<void(T *value)> f)
-        : m_data(data)
-        , m_function(f)
-    {
-    }
-    ~UaDeleter()
-    {
-        if (m_data)
-            m_function(m_data);
-    }
-    void release()
-    {
-        m_data = nullptr;
-        m_function = nullptr;
-    }
-private:
-    T *m_data {nullptr};
-    std::function<void(T *attribute)> m_function;
-};
+class QOpcUaX509CertificateSigningRequestPrivate;
 
-template <uint TYPEINDEX>
-class UaArrayDeleter
+class Q_OPCUA_EXPORT QOpcUaX509CertificateSigningRequest
 {
-public:
-    UaArrayDeleter(void *data, size_t arrayLength)
-        : m_data(data)
-        , m_arrayLength(arrayLength)
-    {
-        static_assert (TYPEINDEX < UA_TYPES_COUNT, "Invalid index outside the UA_TYPES array.");
-    }
-    ~UaArrayDeleter()
-    {
-        if (m_data && m_arrayLength > 0)
-            UA_Array_delete(m_data, m_arrayLength, &UA_TYPES[TYPEINDEX]);
-    }
-    void release() {
-        m_data = nullptr;
-        m_arrayLength = 0;
-    }
-private:
-    void *m_data {nullptr};
-    size_t m_arrayLength {0};
-};
+    Q_DECLARE_PRIVATE(QOpcUaX509CertificateSigningRequest)
 
-namespace Open62541Utils {
-    UA_NodeId nodeIdFromQString(const QString &name);
-    QString nodeIdToQString(UA_NodeId id);
-}
+public:
+    enum class MessageDigest {
+        SHA256
+    };
+    enum class Encoding {
+        PEM,
+        DER
+    };
+
+    QOpcUaX509CertificateSigningRequest();
+    ~QOpcUaX509CertificateSigningRequest();
+
+    void setMessageDigest(MessageDigest digest);
+    MessageDigest messageDigest() const;
+
+    void setEncoding(Encoding encoding);
+    Encoding encoding() const;
+
+    void setSubject(const QOpcUaX509DistinguishedName &subject);
+    const QOpcUaX509DistinguishedName &subject() const;
+
+    void addExtension(QOpcUaX509Extension *extension);
+    QByteArray createRequest(const QOpcUaKeyPair &privateKey);
+    QByteArray createSelfSignedCertificate(const QOpcUaKeyPair &privateKey, int validityInDays = 365);
+
+private:
+    QOpcUaX509CertificateSigningRequestPrivate *d_ptr = nullptr;
+};
 
 QT_END_NAMESPACE
 
-#endif // QOPEN62541UTILS_H
+#endif // QOPCUAX509CERTIFICATESIGNINGREQUEST_H

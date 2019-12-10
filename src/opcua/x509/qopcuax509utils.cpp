@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2017 The Qt Company Ltd.
+** Copyright (C) 2019 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the QtOpcUa module of the Qt Toolkit.
+** This file is part of the Qt OPC UA module.
 **
 ** $QT_BEGIN_LICENSE:LGPL3$
 ** Commercial License Usage
@@ -34,70 +34,29 @@
 **
 ****************************************************************************/
 
-#ifndef QOPEN62541UTILS_H
-#define QOPEN62541UTILS_H
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API. It exists purely as an
+// implementation detail. This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#include "qopen62541.h"
-
-#include <QString>
-
-#include <functional>
+#include "qopcuax509utils_p.h"
+#include "openssl_symbols_p.h"
 
 QT_BEGIN_NAMESPACE
 
-template <typename T>
-class UaDeleter
+QString getOpenSslError()
 {
-public:
-    UaDeleter(T *data, std::function<void(T *value)> f)
-        : m_data(data)
-        , m_function(f)
-    {
-    }
-    ~UaDeleter()
-    {
-        if (m_data)
-            m_function(m_data);
-    }
-    void release()
-    {
-        m_data = nullptr;
-        m_function = nullptr;
-    }
-private:
-    T *m_data {nullptr};
-    std::function<void(T *attribute)> m_function;
-};
-
-template <uint TYPEINDEX>
-class UaArrayDeleter
-{
-public:
-    UaArrayDeleter(void *data, size_t arrayLength)
-        : m_data(data)
-        , m_arrayLength(arrayLength)
-    {
-        static_assert (TYPEINDEX < UA_TYPES_COUNT, "Invalid index outside the UA_TYPES array.");
-    }
-    ~UaArrayDeleter()
-    {
-        if (m_data && m_arrayLength > 0)
-            UA_Array_delete(m_data, m_arrayLength, &UA_TYPES[TYPEINDEX]);
-    }
-    void release() {
-        m_data = nullptr;
-        m_arrayLength = 0;
-    }
-private:
-    void *m_data {nullptr};
-    size_t m_arrayLength {0};
-};
-
-namespace Open62541Utils {
-    UA_NodeId nodeIdFromQString(const QString &name);
-    QString nodeIdToQString(UA_NodeId id);
+    char errorBuf[1024];
+    errorBuf[0] = 0;
+    q_ERR_error_string_n(q_ERR_get_error(), errorBuf, sizeof(errorBuf));
+    return QString::fromLatin1(errorBuf);
 }
 
 QT_END_NAMESPACE
 
-#endif // QOPEN62541UTILS_H

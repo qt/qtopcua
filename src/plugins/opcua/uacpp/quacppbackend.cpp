@@ -630,7 +630,7 @@ void UACppAsyncBackend::callMethod(quint64 handle, const UaNodeId &objectId, con
 
     UaStatus status = m_nativeSession->call(settings, in, out);
     if (status.isBad())
-        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Calling method failed";
+        qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Calling method" << methodId.toFullString().toUtf8() << "failed";
 
     if (out.callResult.isBad())
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Method call returned a failure";
