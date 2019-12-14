@@ -1,0 +1,24 @@
+Qt 5.14 introduces many new features and improvements as well as bugfixes
+over the 5.13.x series. For more details, refer to the online documentation
+included in this distribution. The documentation is also available online:
+
+https://doc.qt.io/qt-5/index.html
+
+The Qt version 5.14 series is binary compatible with the 5.13.x series.
+Applications compiled for 5.13 will continue to run with 5.14.
+
+
+- Note about API stability:
+  * All classes related to secure connections are out of technology preview state.
+
+- Qt OPC UA API
+  * GDS client support (Tech-Preview, uacpp-only)
+  * Support for generating X509 Certificate Signing Requests (Tech-Preview)
+
+- open62541-backend
+  * Update of open62541 to 1.0. This enables the open62541-backend to handle
+    secure connections. This includes the security policies Basic128Rsa15,
+    Basic256 and Basic256Sha256.
+    Still unsupported by the open62541-backend are "Private keys with password",
+    "Manual override in case of certificate verification errors" &
+    "X509 identity tokens".
