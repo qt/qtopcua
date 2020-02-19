@@ -257,7 +257,7 @@ void MainWindow::getEndpoints()
 void MainWindow::getEndpointsComplete(const QVector<QOpcUaEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode)
 {
     int index = 0;
-    const char *modes[] = {
+    const std::array<const char *, 4> modes = {
         "Invalid",
         "None",
         "Sign",
@@ -267,7 +267,7 @@ void MainWindow::getEndpointsComplete(const QVector<QOpcUaEndpointDescription> &
     if (isSuccessStatus(statusCode)) {
         mEndpointList = endpoints;
         for (const auto &endpoint : endpoints) {
-            if (endpoint.securityMode() > sizeof(modes)) {
+            if (endpoint.securityMode() >= modes.size()) {
                 qWarning() << "Invalid security mode";
                 continue;
             }
