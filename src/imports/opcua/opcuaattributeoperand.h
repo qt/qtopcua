@@ -39,12 +39,12 @@
 
 #include "opcuaoperandbase.h"
 #include <QOpcUaAttributeOperand>
+#include "opcuanodeid.h"
 #include <QQmlListProperty>
 #include <QVector>
 
 QT_BEGIN_NAMESPACE
 
-class OpcUaNodeId;
 class OpcUaRelativeNodePath;
 class QOpcUaClient;
 

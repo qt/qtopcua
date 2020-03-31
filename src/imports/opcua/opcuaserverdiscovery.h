@@ -37,14 +37,14 @@
 #ifndef OPCUASERVERDISCOVERY_H
 #define OPCUASERVERDISCOVERY_H
 
-#include <QStandardItemModel>
+#include "opcuastatus.h"
+#include "opcuaconnection.h"
+
 #include <QtOpcUa/qopcuatype.h>
 #include <QOpcUaApplicationDescription>
-#include "opcuastatus.h"
+#include <QStandardItemModel>
 
 QT_BEGIN_NAMESPACE
-
-class OpcUaConnection;
 
 class OpcUaServerDiscovery : public QStandardItemModel
 {

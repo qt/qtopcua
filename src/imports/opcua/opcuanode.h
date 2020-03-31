@@ -36,18 +36,18 @@
 
 #pragma once
 
-#include <QObject>
+#include "opcuaconnection.h"
+#include "opcuanodeid.h"
 #include "universalnode.h"
 #include "opcuaattributecache.h"
 #include "qopcualocalizedtext.h"
 #include "opcuaeventfilter.h"
+#include "opcuanodeidtype.h"
+
 #include <QDateTime>
+#include <QObject>
 
 QT_BEGIN_NAMESPACE
-
-class QOpcUaNode;
-class OpcUaConnection;
-class OpcUaNodeIdType;
 
 class OpcUaNode : public QObject
 {

@@ -35,9 +35,6 @@
 ****************************************************************************/
 
 #include "opcuanode.h"
-#include "opcuanodeidtype.h"
-#include "opcuaconnection.h"
-#include "opcuanodeid.h"
 #include "opcuarelativenodepath.h"
 #include "opcuarelativenodeid.h"
 #include "opcuapathresolver.h"

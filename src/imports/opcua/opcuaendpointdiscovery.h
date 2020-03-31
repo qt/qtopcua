@@ -37,16 +37,17 @@
 #ifndef OPCUAENDPOINTDISCOVERY_H
 #define OPCUAENDPOINTDISCOVERY_H
 
-#include <QObject>
-#include <QVector>
-#include <QtOpcUa/qopcuatype.h>
-#include <QOpcUaEndpointDescription>
-#include <QQmlParserStatus>
+#include "opcuaconnection.h"
 #include "opcuastatus.h"
 
-QT_BEGIN_NAMESPACE
+#include <QtOpcUa/qopcuatype.h>
+#include <QOpcUaEndpointDescription>
 
-class OpcUaConnection;
+#include <QQmlParserStatus>
+#include <QObject>
+#include <QVector>
+
+QT_BEGIN_NAMESPACE
 
 class OpcUaEndpointDiscovery : public QObject, public QQmlParserStatus
 {

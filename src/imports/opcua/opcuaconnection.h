@@ -41,12 +41,12 @@
 #include <QObject>
 #include <QOpcUaClient>
 #include <QOpcUaAuthenticationInformation>
-#include "opcuaendpointdiscovery.h"
 #include "opcuaserverdiscovery.h"
 
 QT_BEGIN_NAMESPACE
 
 class QOpcUaReadResult;
+class OpcUaEndpointDiscovery;
 
 class OpcUaConnection : public QObject
 {

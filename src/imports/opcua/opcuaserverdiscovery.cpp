@@ -35,7 +35,6 @@
 ****************************************************************************/
 
 #include "opcuaserverdiscovery.h"
-#include "opcuaconnection.h"
 
 QT_BEGIN_NAMESPACE
 

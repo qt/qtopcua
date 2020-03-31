@@ -37,13 +37,15 @@
 #ifndef OPCUAFILTERELEMENT
 #define OPCUAFILTERELEMENT
 
-#include <QObject>
+#include "opcuaoperandbase.h"
+
 #include <QOpcUaContentFilterElement>
+
+#include <QObject>
 
 QT_BEGIN_NAMESPACE
 
 class QOpcUaClient;
-class OpcUaOperandBase;
 
 class OpcUaFilterElement : public QObject {
     Q_OBJECT

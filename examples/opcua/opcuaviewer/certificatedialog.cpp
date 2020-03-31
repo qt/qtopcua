@@ -36,6 +36,7 @@
 
 #include "certificatedialog.h"
 #include "ui_certificatedialog.h"
+#include <QFile>
 #include <QPushButton>
 
 QT_BEGIN_NAMESPACE
