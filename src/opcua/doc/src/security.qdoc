@@ -34,8 +34,6 @@
     which means we get cryptographically encrypted and signed protocol,
     user authentication and authorization support.
 
-    Creating secure connections with Qt OPC UA is currently only supported using the \l {Setting up UACPP SDK} {UACPP backend plugin}.
-
     To make this work, each application instances (installation of a program)
     needs to have its own \c {Application Instance Certificate} and the according private key.
 
