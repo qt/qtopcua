@@ -383,6 +383,8 @@ private slots:
     void childrenIdsGuidNodeId();
     defineDataMethod(childrenIdsOpaqueNodeId_data)
     void childrenIdsOpaqueNodeId();
+    defineDataMethod(testSpecialCharStringNodeIds_data)
+    void testSpecialCharStringNodeIds();
     defineDataMethod(inverseBrowse_data)
     void inverseBrowse();
 
@@ -1124,6 +1126,44 @@ void Tst_QOpcUaClient::childrenIdsOpaqueNodeId()
     QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
     QCOMPARE(ref.size(), 1);
     QCOMPARE(ref.at(0).targetNodeId().nodeId(), QStringLiteral("ns=3;b=UXQgZnR3IQ=="));
+}
+
+void Tst_QOpcUaClient::testSpecialCharStringNodeIds()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    // Get child node id
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=ümläutFölderNödeId"));
+    QVERIFY(node != nullptr);
+    QSignalSpy spy(node.data(), &QOpcUaNode::browseFinished);
+    node->browseChildren(QOpcUa::ReferenceTypeId::Organizes, QOpcUa::NodeClass::Variable);
+    spy.wait(signalSpyTimeout);
+    QCOMPARE(spy.size(), 1);
+    QVector<QOpcUaReferenceDescription> ref = spy.at(0).at(0).value<QVector<QOpcUaReferenceDescription>>();
+    QCOMPARE(ref.size(), 1);
+    QCOMPARE(ref.at(0).targetNodeId().nodeId(), QStringLiteral("ns=3;s=ümläutVäriableNödeId"));
+    QCOMPARE(ref.at(0).browseName().namespaceIndex(), 3);
+    QCOMPARE(ref.at(0).browseName().name(), QStringLiteral("ümläutVäriableNödeId"));
+
+    // Make sure the id can be used for subsequent requests
+
+    node.reset(opcuaClient->node(ref.at(0).targetNodeId().nodeId()));
+    QSignalSpy readSpy(node.data(), &QOpcUaNode::attributeUpdated);
+
+    node->readAttributes(QOpcUa::NodeAttribute::BrowseName);
+    readSpy.wait(signalSpyTimeout);
+    QCOMPARE(readSpy.size(), 1);
+
+    QOpcUaQualifiedName nameFromSignal = readSpy.at(0).at(1).value<QOpcUaQualifiedName>();
+    QOpcUaQualifiedName nameFromAttributes = node->attribute(QOpcUa::NodeAttribute::BrowseName).value<QOpcUaQualifiedName>();
+
+    QCOMPARE(nameFromSignal.namespaceIndex(), 3);
+    QCOMPARE(nameFromSignal.name(), QStringLiteral("ümläutVäriableNödeId"));
+
+    QCOMPARE(nameFromAttributes.namespaceIndex(), 3);
+    QCOMPARE(nameFromAttributes.name(), QStringLiteral("ümläutVäriableNödeId"));
 }
 
 void Tst_QOpcUaClient::inverseBrowse()

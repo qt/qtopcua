@@ -212,6 +212,9 @@ int main(int argc, char **argv)
     UA_NodeId testOpaqueIdsFolder = server.addFolder("ns=3;s=testOpaqueIdsFolder", "testOpaqueIdsFolder");
     server.addVariable(testOpaqueIdsFolder, "ns=3;b=UXQgZnR3IQ==", "theOpaqueId", QStringLiteral("Value"), QOpcUa::Types::String);
 
+    UA_NodeId testUmlautIdFolder = server.addFolder("ns=3;s=ümläutFölderNödeId", "ümläutFölderNödeId");
+    server.addVariable(testUmlautIdFolder, "ns=3;s=ümläutVäriableNödeId", "ümläutVäriableNödeId", QStringLiteral("Value"), QOpcUa::Types::String);
+
     // Add a method to the test folder
     server.addMultiplyMethod(testFolder, "ns=3;s=Test.Method.Multiply", "MultiplyDoubles");
     server.addMultipleOutputArgumentsMethod(testFolder, "ns=3;s=Test.Method.MultipleOutputArguments", "MultipleOutputArguments");

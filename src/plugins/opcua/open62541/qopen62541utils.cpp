@@ -116,7 +116,7 @@ QString Open62541Utils::nodeIdToQString(UA_NodeId id)
         break;
     case UA_NODEIDTYPE_STRING:
         result.append(QLatin1String("s="));
-        result.append(QString::fromLocal8Bit(reinterpret_cast<char *>(id.identifier.string.data),
+        result.append(QString::fromUtf8(reinterpret_cast<char *>(id.identifier.string.data),
                                              id.identifier.string.length));
         break;
     case UA_NODEIDTYPE_GUID: {
