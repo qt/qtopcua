@@ -1,0 +1,96 @@
+# Generated from open62541.pro.
+
+#####################################################################
+## QOpen62541Plugin Plugin:
+#####################################################################
+
+qt_internal_add_plugin(QOpen62541Plugin
+    OUTPUT_NAME open62541_backend
+    TYPE opcua
+    SOURCES
+        qopen62541.h
+        qopen62541backend.cpp qopen62541backend.h
+        qopen62541client.cpp qopen62541client.h
+        qopen62541node.cpp qopen62541node.h
+        qopen62541plugin.cpp qopen62541plugin.h
+        qopen62541subscription.cpp qopen62541subscription.h
+        qopen62541utils.cpp qopen62541utils.h
+        qopen62541valueconverter.cpp qopen62541valueconverter.h
+    PUBLIC_LIBRARIES
+        Qt::Core
+        Qt::CorePrivate
+        Qt::Network
+        Qt::OpcUa
+        Qt::OpcUaPrivate
+)
+
+#### Keys ignored in scope 1:.:.:open62541.pro:<TRUE>:
+# OTHER_FILES = "open62541-metadata.json"
+
+## Scopes:
+#####################################################################
+
+qt_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
+    SOURCES
+        ../../../3rdparty/open62541/open62541.h
+# special case begin
+    ../../../3rdparty/open62541/open62541.c
+# special case end
+    INCLUDE_DIRECTORIES
+        ../../../3rdparty/open62541
+)
+
+qt_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_mbedtls AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
+    DEFINES
+        UA_ENABLE_ENCRYPTION
+    LIBRARIES
+        mbedtls
+)
+
+qt_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_open62541 AND win32-msvc AND NOT QT_FEATURE_system_open62541
+    PUBLIC_LIBRARIES
+        ws2_32.lib
+)
+
+qt_extend_target(QOpen62541Plugin CONDITION (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541) AND (win32-g++)
+    PUBLIC_LIBRARIES
+        ws2_32
+)
+
+# special case begin
+#qt_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541 AND (WINRT OR win32-msvc)
+#    SOURCES
+#        ../../../3rdparty/open62541/open62541.c
+#)
+# special case end
+
+# special case begin
+if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541 AND NOT (WINRT OR win32-msvc))
+    set_source_files_properties(../../../3rdparty/open62541/open62541.c PROPERTIES
+        COMPILE_FLAGS
+            -Wno-unused-parameter -Wno-unused-function -Wno-format-Wno-strict-aliasing -Wno-unused-result -std=c99)
+endif()
+# special case end
+
+#### Keys ignored in scope 10:.:../../../3rdparty:../../../3rdparty/open62541.pri:else:
+# OPEN62541_CFLAGS = "-Wno-unused-parameter" "-Wno-unused-function" "-Wno-format" "-Wno-strict-aliasing" "-Wno-unused-result" "-std=c99"
+# QMAKE_EXTRA_COMPILERS = "open62541_compiler"
+# open62541_compiler.commands = "$$QMAKE_CC" "-c" "$(CFLAGS)" "$$OPEN62541_CFLAGS" "$(INCPATH)" "${QMAKE_FILE_IN}" "-o" "${QMAKE_FILE_OUT}"
+# open62541_compiler.dependency_type = "TYPE_C"
+# open62541_compiler.input = "OPEN62541_SOURCES"
+# open62541_compiler.name = "compiling" "${QMAKE_FILE_IN}"
+# open62541_compiler.output = "${QMAKE_VAR_OBJECTS_DIR}${QMAKE_FILE_BASE}$${firstQMAKE_EXT_OBJ}"
+
+#### Keys ignored in scope 11:.:../../../3rdparty:../../../3rdparty/open62541.pri:silent:
+# open62541_compiler.commands = "@echo" "compiling" "${QMAKE_FILE_IN}" "&&"
+
+qt_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_system_open62541 OR NOT QT_FEATURE_open62541
+    LIBRARIES
+        open62541
+)
+
+#qt_extend_target(QOpen62541Plugin CONDITION win32-msvc AND (QT_FEATURE_system_open62541 OR NOT QT_FEATURE_open62541)
+#    PUBLIC_LIBRARIES
+#        open62541.lib
+#)
+# special case end

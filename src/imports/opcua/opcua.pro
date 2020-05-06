@@ -1,5 +1,7 @@
 QT += quick opcua
 
+QML_IMPORT_VERSION = 1.0
+
 SOURCES += \
     opcua_plugin.cpp \
     opcuaconnection.cpp \
