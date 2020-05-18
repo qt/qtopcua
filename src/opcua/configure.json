@@ -95,13 +95,18 @@
             "purpose": "Build a generator for updating the QOpcUa::NodeIds::Namespace0 enum from the NodeIds.csv file.",
             "autoDetect": "false",
             "output": [ "privateFeature" ]
+        },
+        "gds": {
+            "label": "Support for global discovery server",
+            "purpose": "Enables QOpcUaClient to interact with a global discovery server",
+            "output": [ "privateFeature", "feature" ]
         }
     },
 
     "summary": [
         {
             "section": "Qt Opcua",
-            "entries": [ "open62541", "uacpp", "ns0idnames", "ns0idgenerator", "mbedtls" ]
+            "entries": [ "open62541", "uacpp", "ns0idnames", "ns0idgenerator", "mbedtls", "gds" ]
         }
     ]
 }
