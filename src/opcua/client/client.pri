@@ -109,10 +109,12 @@ HEADERS += \
     client/qopcuawriteresult.h \
     client/qopcuaxvalue.h \
 
-# Only added for platforms that have OpenSSL available
-QT_FOR_CONFIG += core-private
-qtConfig(ssl):!darwin:!winrt {
-    PUBLIC_HEADERS += client/qopcuagdsclient.h
-    SOURCES += client/qopcuagdsclient.cpp
-    HEADERS += client/qopcuagdsclient_p.h
+qtConfig(gds) {
+    # Only added for platforms that have OpenSSL available
+    QT_FOR_CONFIG += core-private
+    qtConfig(ssl):!darwin:!winrt {
+        PUBLIC_HEADERS += client/qopcuagdsclient.h
+        SOURCES += client/qopcuagdsclient.cpp
+        HEADERS += client/qopcuagdsclient_p.h
+    }
 }

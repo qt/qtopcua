@@ -5,7 +5,10 @@ QT_FOR_CONFIG += core-private
 
 include(core/core.pri)
 include(client/client.pri)
-qtConfig(ssl):!darwin:!winrt: include(x509/x509.pri)
+
+qtConfig(gds) {
+    qtConfig(ssl):!darwin:!winrt: include(x509/x509.pri)
+}
 
 MODULE_PLUGIN_TYPES = opcua
 QMAKE_DOCS = $$PWD/doc/qtopcua.qdocconf

@@ -8,4 +8,6 @@ qtHaveModule(qmltest):qtConfig(open62541)|qtConfig(uacpp) {
     SUBDIRS += declarative
 }
 
-qtConfig(ssl):!darwin:!winrt: SUBDIRS += x509
+qtConfig(gds) {
+    qtConfig(ssl):!darwin:!winrt: SUBDIRS += x509
+}
