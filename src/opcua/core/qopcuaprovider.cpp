@@ -107,7 +107,7 @@ static QHash<QString, QJsonObject> loadPluginMetadata()
     for (int i = 0; i < meta.size(); ++i) {
         QJsonObject obj = meta.at(i).value(QStringLiteral("MetaData")).toObject();
         obj.insert(QStringLiteral("index"), i);
-        plugins.insertMulti(obj.value(QStringLiteral("Provider")).toString(), obj);
+        plugins.insert(obj.value(QStringLiteral("Provider")).toString(), obj);
     }
     return plugins;
 }
