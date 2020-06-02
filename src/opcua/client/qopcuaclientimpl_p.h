@@ -136,7 +136,11 @@ private:
     quint64 m_handleCounter;
 };
 
+#if QT_VERSION >= 0x060000
+inline size_t qHash(const QPointer<QOpcUaNodeImpl>& n)
+#else
 inline uint qHash(const QPointer<QOpcUaNodeImpl>& n)
+#endif
 {
     return ::qHash(n.data());
 }

@@ -149,7 +149,11 @@ enum class EventNotifierBit : quint8 {
 Q_ENUM_NS(EventNotifierBit)
 Q_DECLARE_FLAGS(EventNotifier, EventNotifierBit)
 
+#if QT_VERSION >= 0x060000
+inline size_t qHash(const QOpcUa::NodeAttribute& attr)
+#else
 inline uint qHash(const QOpcUa::NodeAttribute& attr)
+#endif
 {
     return ::qHash(static_cast<uint>(attr));
 }

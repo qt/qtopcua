@@ -67,7 +67,11 @@ public:
     bool keyUsage(KeyUsage) const;
 };
 
+#if QT_VERSION >= 0x060000
+inline size_t qHash(const QOpcUaX509ExtensionKeyUsage::KeyUsage &key)
+#else
 inline uint qHash(const QOpcUaX509ExtensionKeyUsage::KeyUsage &key)
+#endif
 {
     return ::qHash(static_cast<uint>(key));
 }
