@@ -102,6 +102,7 @@
 
        \list
            \li \l{Qt OPC UA Overview}{Overview}
+           \li \l{Using the OpenSSL Dependency for GDS Support}
            \li \l{Building Qt OPC UA Open62541 Plugin}
            \li \l{Building Qt OPC UA UACPP Plugin}
            \li \l{https://opcfoundation.org/about/opc-technologies/opc-ua/}
@@ -496,4 +497,31 @@
     \code
         Unified Automation C++ SDK ............. yes
     \endcode
+*/
+
+/*!
+    \page qtopcua-build-openssl-gds.html
+    \title Using the OpenSSL Dependency for GDS Support
+    \brief Using the OpenSSL dependency for GDS support.
+
+    The GDS feature of Qt OPC UA requires the OpenSSL 1.1 headers and libraries.
+
+    If OpenSSL is not installed to a path that is searched by default, the
+    location of the headers and libraries must be passed to the build process.
+
+    For example, if OpenSSL 1.1 has been installed to \c{/opt/openssl}, the
+    locations must be passed as follows:
+
+    \badcode
+        qmake </path/to/qtopcua> -- QMAKE_CXXFLAGS="-I /opt/openssl/include -L /opt/openssl/lib"
+    \endcode
+
+    If GDS support is not required, it can be disabled by using the following
+    parameters:
+
+    \badcode
+        qmake </path/to/qtopcua> -- -no-feature-gds
+    \endcode
+
+    In this case, OpenSSL is not required.
 */
