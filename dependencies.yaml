@@ -1,0 +1,10 @@
+dependencies:
+  ../qtbase:
+    ref: 794150e5bda0c203a5373c3fa2f9785f9941f6dd
+    required: true
+  ../qtdeclarative:
+    ref: 24abd0d14ebd420c275fa4e49ddb1a43b441c74f
+    required: false
+  ../qtquickcontrols2:
+    ref: 4e1e01c4e484337586a7419e28c3625055f88038
+    required: false
