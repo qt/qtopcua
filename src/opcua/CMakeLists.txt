@@ -95,6 +95,13 @@ qt_extend_target(OpcUa CONDITION QT_FEATURE_gds AND QT_FEATURE_ssl AND NOT APPLE
         x509/qopcuax509utils.cpp
 )
 
+# special case begin
+if (QT_FEATURE_gds AND QT_FEATURE_ssl)
+    qt_extend_target(OpcUa
+        LIBRARIES WrapOpenSSL::WrapOpenSSL)
+endif()
+# special case end
+
 qt_extend_target(OpcUa CONDITION NOT QT_FEATURE_ns0idnames
     DEFINES
         QT_OPCUA_NO_NS0IDNAMES

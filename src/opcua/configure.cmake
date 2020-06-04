@@ -14,6 +14,8 @@ endif()
 qt_find_package(Mbedtls PROVIDED_TARGETS mbedtls)
 qt_find_package(Uacpp PROVIDED_TARGETS uacpp)
 
+find_package(WrapOpenSSL 1.1)
+
 #### Tests
 
 qt_config_compile_test(mbedtls
@@ -131,6 +133,7 @@ qt_feature("ns0idgenerator" PRIVATE
 qt_feature("gds" PUBLIC PRIVATE
     LABEL "Support for global discovery server"
     PURPOSE "Enables QOpcUaClient to interact with a global discovery server"
+    CONDITION WrapOpenSSL_FOUND
 )
 qt_feature_definition("gds" "QT_NO_GDS" NEGATE VALUE "1")
 qt_configure_add_summary_section(NAME "Qt Opcua")
