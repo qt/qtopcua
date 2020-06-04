@@ -131,7 +131,7 @@ if (Uacpp_FOUND)
     set_property(TARGET uacpp PROPERTY
         INTERFACE_LINK_LIBRARIES uaclientcpp uabasecpp uastack uapkicpp xmlparsercpp)
 
-    if (win32)
+    if (WIN32)
         if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
             SET(UACPP_ARCHDIR "win64")
         else()
@@ -149,7 +149,7 @@ if (Uacpp_FOUND)
         endif()
     endif()
 
-    if (win32)
+    if (WIN32)
         set_property(TARGET uacpp APPEND PROPERTY
             INTERFACE_LINK_LIBRARIES Crypt32 Ole32 OleAut32 ws2_32 libeay32 libxml2)
     else()

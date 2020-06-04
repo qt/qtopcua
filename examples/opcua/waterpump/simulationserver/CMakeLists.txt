@@ -9,7 +9,11 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-set(INSTALL_EXAMPLEDIR "examples/opcua/waterpump/simulationserver")
+if(NOT DEFINED INSTALL_EXAMPLESDIR)
+  set(INSTALL_EXAMPLESDIR "examples")
+endif()
+
+set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/opcua/waterpump/simulationserver")
 
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS OpcUa)
@@ -50,7 +54,7 @@ if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541)
 endif()
 
 # special case begin
-if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541 AND NOT (WINRT OR win32-msvc))
+if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541 AND NOT (WINRT OR WIN32 AND MSVC)) # special case
     set_source_files_properties(${MODULE_SOURCE}/src/3rdparty/open62541/open62541.c
         PROPERTIES COMPILE_FLAGS -Wno-unused-parameter -Wno-unused-function -Wno-format-Wno-strict-aliasing -Wno-unused-result -std=c99)
 endif()

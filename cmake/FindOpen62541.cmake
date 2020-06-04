@@ -36,7 +36,7 @@ if (Open62541_FOUND)
         IMPORTED_LOCATION "${Open62541_LIBRARIES}"
         INTERFACE_INCLUDE_DIRECTORIES "${Open62541_INCLUDE_DIRS}")
 
-    if (win32)
+    if (WIN32)
         set_property(TARGET open62541 APPEND PROPERTY
             INTERFACE_LINK_LIBRARIES ws2_32)
     endif()
