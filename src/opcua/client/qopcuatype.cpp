@@ -632,7 +632,7 @@ QString QOpcUa::nodeIdFromByteString(quint16 ns, const QByteArray &identifier)
 */
 QString QOpcUa::nodeIdFromGuid(quint16 ns, const QUuid &identifier)
 {
-    return QStringLiteral("ns=%1;g=").arg(ns).append(identifier.toString().midRef(1, 36)); // Remove enclosing {...};
+    return QStringLiteral("ns=%1;g=").arg(ns).append(QStringView(identifier.toString()).mid(1, 36)); // Remove enclosing {...};
 }
 
 /*!
@@ -674,7 +674,7 @@ bool QOpcUa::nodeIdStringSplit(const QString &nodeIdString, quint16 *nsIndex, QS
 
     if (components.size() == 2 && components.at(0).contains(QRegularExpression(QLatin1String("^ns=[0-9]+")))) {
         bool success = false;
-        uint ns = components.at(0).midRef(3).toString().toUInt(&success);
+        uint ns = QStringView(components.at(0)).mid(3).toUInt(&success);
         if (!success || ns > (std::numeric_limits<quint16>::max)())
             return false;
         namespaceIndex = ns;
@@ -689,7 +689,7 @@ bool QOpcUa::nodeIdStringSplit(const QString &nodeIdString, quint16 *nsIndex, QS
     if (nsIndex)
         *nsIndex = namespaceIndex;
     if (identifier)
-        *identifier = components.last().midRef(2).toString();
+        *identifier = QStringView(components.last()).mid(2).toString();
     if (identifierType)
         *identifierType = components.last().at(0).toLatin1();
 
@@ -702,10 +702,12 @@ bool QOpcUa::nodeIdStringSplit(const QString &nodeIdString, quint16 *nsIndex, QS
 */
 bool QOpcUa::nodeIdEquals(const QString &first, const QString &second)
 {
+    const QStringView fView(first);
+    const QStringView sView(second);
     if (first.startsWith(QLatin1String("ns=0;")) && !second.startsWith(QLatin1String("ns=")))
-        return first.midRef(5) == second;
+        return fView.mid(5) == sView;
     else if (second.startsWith(QLatin1String("ns=0;")) && !first.startsWith(QLatin1String("ns=")))
-        return second.midRef(5) == first;
+        return sView.mid(5) == fView;
     else
         return first == second;
 }
@@ -736,10 +738,10 @@ QOpcUa::NodeIds::Namespace0 QOpcUa::namespace0IdFromNodeId(const QString &nodeId
     if (!nodeId.startsWith(QLatin1String("ns=0;i=")))
         return QOpcUa::NodeIds::Namespace0::Unknown;
 
-    QStringRef sr = nodeId.midRef(7);
+    const QStringView sv = QStringView{nodeId}.mid(7);
 
     bool ok = false;
-    quint32 identifier = sr.toUInt(&ok);
+    quint32 identifier = sv.toUInt(&ok);
 
     if (!ok)
         return QOpcUa::NodeIds::Namespace0::Unknown;

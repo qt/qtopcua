@@ -446,7 +446,7 @@ inline QString QOpcUaBinaryDataEncoding::decode<QString, QOpcUa::Types::NodeId>(
         QUuid identifier = decode<QUuid>(success);
         if (!success)
             return QString();
-        return QStringLiteral("ns=%1;g=%2").arg(namespaceIndex).arg(identifier.toString().midRef(1, 36)); // Remove enclosing {...}
+        return QStringLiteral("ns=%1;g=%2").arg(namespaceIndex).arg(QStringView(identifier.toString()).mid(1, 36)); // Remove enclosing {...}
     }
     case 0x05: {
         QByteArray identifier = decode<QByteArray>(success);

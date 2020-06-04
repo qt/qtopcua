@@ -125,7 +125,7 @@ QString nodeIdToQString(const UaNodeId &id)
         const QUuid uuid(uaguid->Data1, uaguid->Data2, uaguid->Data3,
                          uaguid->Data4[0], uaguid->Data4[1], uaguid->Data4[2], uaguid->Data4[3],
                          uaguid->Data4[4], uaguid->Data4[5], uaguid->Data4[6], uaguid->Data4[7]);
-        result.append(QStringLiteral("g=")).append(uuid.toString().midRef(1, 36));
+        result.append(QStringLiteral("g=")).append(QStringView(uuid.toString()).mid(1, 36));
         break;
     }
     case OpcUa_IdentifierType_Opaque: {
