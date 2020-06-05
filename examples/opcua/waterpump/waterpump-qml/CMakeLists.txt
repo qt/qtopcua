@@ -55,3 +55,9 @@ install(TARGETS waterpump-qml
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
     LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )
+
+# special case begin
+if (WIN32)
+    target_compile_definitions(waterpump-qml PRIVATE EXAMPLES_CMAKE_SPECIFIC_PATH)
+endif()
+# special case end

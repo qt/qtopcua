@@ -56,3 +56,9 @@ install(TARGETS waterpump-qmlcpp
     BUNDLE DESTINATION "${INSTALL_EXAMPLEDIR}"
     LIBRARY DESTINATION "${INSTALL_EXAMPLEDIR}"
 )
+
+# special case begin
+if (WIN32)
+    target_compile_definitions(waterpump-qmlcpp PRIVATE EXAMPLES_CMAKE_SPECIFIC_PATH)
+endif()
+# special case end
