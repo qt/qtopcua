@@ -31,3 +31,9 @@ extend_target(tst_clientSetupInCpp CONDITION QT_FEATURE_mbedtls
     DEFINES
         SERVER_SUPPORTS_SECURITY
 )
+
+# special case begin
+if (WIN32)
+    target_compile_definitions(tst_clientSetupInCpp PRIVATE TESTS_CMAKE_SPECIFIC_PATH)
+endif()
+# special case end

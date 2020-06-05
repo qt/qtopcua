@@ -13,3 +13,9 @@ qt_add_test(tst_connection
     PUBLIC_LIBRARIES
         Qt::OpcUa
 )
+
+# special case begin
+if (WIN32)
+    target_compile_definitions(tst_connection PRIVATE TESTS_CMAKE_SPECIFIC_PATH)
+endif()
+# special case end

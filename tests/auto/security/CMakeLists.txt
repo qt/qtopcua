@@ -32,3 +32,8 @@ qt_add_resource(tst_security "certs"
         ${certs_resource_files}
 )
 
+# special case begin
+if (WIN32)
+    target_compile_definitions(tst_security PRIVATE TESTS_CMAKE_SPECIFIC_PATH)
+endif()
+# special case end

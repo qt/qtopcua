@@ -188,7 +188,7 @@ void Tst_QOpcUaSecurity::initTestCase()
                                      + QLatin1String("/../../open62541-testserver/open62541-testserver.app/Contents/MacOS/open62541-testserver")
 #else
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) && !defined(TESTS_CMAKE_SPECIFIC_PATH)
                                      + QLatin1String("/..")
 #endif
                                      + QLatin1String("/../../open62541-testserver/open62541-testserver")
