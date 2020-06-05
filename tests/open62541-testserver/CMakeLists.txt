@@ -13,11 +13,15 @@ qt_add_executable(open62541-testserver
     INCLUDE_DIRECTORIES
         ../../src/plugins/opcua/open62541
     OUTPUT_DIRECTORY # special case
-        tests/open62541-testserver # special case
+        "${CMAKE_CURRENT_BINARY_DIR}" # special case
     PUBLIC_LIBRARIES
         Qt::Gui
         Qt::OpcUaPrivate
 )
+
+# special case begin
+set_target_properties(open62541-testserver PROPERTIES MACOSX_BUNDLE TRUE)
+# special case end
 
 # Resources:
 set(certs_resource_files
