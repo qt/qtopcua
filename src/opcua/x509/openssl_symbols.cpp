@@ -602,7 +602,7 @@ static QStringList libraryPathList()
     }
 #  else
     paths = QString::fromLatin1(qgetenv("LD_LIBRARY_PATH"))
-            .split(QLatin1Char(':'), QString::SkipEmptyParts);
+            .split(QLatin1Char(':'), Qt::SkipEmptyParts);
 #  endif
     paths << QLatin1String("/lib") << QLatin1String("/usr/lib") << QLatin1String("/usr/local/lib");
     paths << QLatin1String("/lib64") << QLatin1String("/usr/lib64") << QLatin1String("/usr/local/lib64");

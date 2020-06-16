@@ -235,7 +235,7 @@ QOpcUaApplicationIdentity QOpcUaPkiConfiguration::applicationIdentity() const
             // const QString dns = value[QLatin1String("DNS")].toString();
             const QString uri = value[QLatin1String("URI")].toString();
 
-            const auto token = uri.split(':', QString::SkipEmptyParts);
+            const auto token = uri.split(':', Qt::SkipEmptyParts);
 
             if (token.size() != 4) {
                 qCWarning(QT_OPCUA_SECURITY) << "URI string from certificate has unexpected format:"
