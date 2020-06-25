@@ -104,8 +104,8 @@ signals:
 
 private slots:
     void clientStateHandler(QOpcUaClient::ClientState state);
-    void handleReadNodeAttributesFinished(const QVector<QOpcUaReadResult> &results);
-    void handleWriteNodeAttributesFinished(const QVector<QOpcUaWriteResult> &results);
+    void handleReadNodeAttributesFinished(const QList<QOpcUaReadResult> &results);
+    void handleWriteNodeAttributesFinished(const QList<QOpcUaWriteResult> &results);
 
 private:
     void removeConnection();

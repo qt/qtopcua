@@ -40,7 +40,6 @@
 #include "QtOpcUa/qopcuakeypair.h"
 #include "QtOpcUa/qopcuax509extension.h"
 #include "QtOpcUa/qopcuax509distinguishedname.h"
-#include <QVector>
 #include <QtOpcUa/qopcuaglobal.h>
 #include <QtOpcUa/qopcuax509certificatesigningrequest.h>
 

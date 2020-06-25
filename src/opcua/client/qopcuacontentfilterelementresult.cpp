@@ -51,7 +51,7 @@ class QOpcUaContentFilterElementResultData : public QSharedData
 {
 public:
     QOpcUa::UaStatusCode statusCode {QOpcUa::UaStatusCode::Good};
-    QVector<QOpcUa::UaStatusCode> operandStatusCodes;
+    QList<QOpcUa::UaStatusCode> operandStatusCodes;
 };
 
 QOpcUaContentFilterElementResult::QOpcUaContentFilterElementResult()
@@ -100,7 +100,7 @@ void QOpcUaContentFilterElementResult::setStatusCode(QOpcUa::UaStatusCode status
 /*!
     Returns the status codes for all filter operands in the order that was used in the filter.
 */
-QVector<QOpcUa::UaStatusCode> QOpcUaContentFilterElementResult::operandStatusCodes() const
+QList<QOpcUa::UaStatusCode> QOpcUaContentFilterElementResult::operandStatusCodes() const
 {
     return data->operandStatusCodes;
 }
@@ -108,7 +108,7 @@ QVector<QOpcUa::UaStatusCode> QOpcUaContentFilterElementResult::operandStatusCod
 /*!
     Sets the status codes for all filter operands to \a operandStatusCodes.
 */
-void QOpcUaContentFilterElementResult::setOperandStatusCodes(const QVector<QOpcUa::UaStatusCode> &operandStatusCodes)
+void QOpcUaContentFilterElementResult::setOperandStatusCodes(const QList<QOpcUa::UaStatusCode> &operandStatusCodes)
 {
     data->operandStatusCodes = operandStatusCodes;
 }
@@ -118,7 +118,7 @@ void QOpcUaContentFilterElementResult::setOperandStatusCodes(const QVector<QOpcU
 
     \sa operandStatusCodes()
 */
-QVector<QOpcUa::UaStatusCode> &QOpcUaContentFilterElementResult::operandStatusCodesRef()
+QList<QOpcUa::UaStatusCode> &QOpcUaContentFilterElementResult::operandStatusCodesRef()
 {
     return data->operandStatusCodes;
 }

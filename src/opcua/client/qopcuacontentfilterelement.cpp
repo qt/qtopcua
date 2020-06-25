@@ -87,7 +87,7 @@ class QOpcUaContentFilterElementData : public QSharedData
 {
 public:
     QOpcUaContentFilterElement::FilterOperator filterOperator;
-    QVector<QVariant> filterOperands;
+    QList<QVariant> filterOperands;
 };
 
 QOpcUaContentFilterElement::QOpcUaContentFilterElement()
@@ -134,7 +134,7 @@ QOpcUaContentFilterElement::operator QVariant() const
 /*!
     Returns the operands of the filter element.
 */
-QVector<QVariant> QOpcUaContentFilterElement::filterOperands() const
+QList<QVariant> QOpcUaContentFilterElement::filterOperands() const
 {
     return data->filterOperands;
 }
@@ -144,7 +144,7 @@ QVector<QVariant> QOpcUaContentFilterElement::filterOperands() const
 
     \sa filterOperands()
 */
-QVector<QVariant> &QOpcUaContentFilterElement::filterOperandsRef()
+QList<QVariant> &QOpcUaContentFilterElement::filterOperandsRef()
 {
    return data->filterOperands;
 }
@@ -154,7 +154,7 @@ QVector<QVariant> &QOpcUaContentFilterElement::filterOperandsRef()
     Supported classes are \l QOpcUaElementOperand, \l QOpcUaLiteralOperand,
     \l QOpcUaSimpleAttributeOperand and \l QOpcUaAttributeOperand.
 */
-void QOpcUaContentFilterElement::setFilterOperands(const QVector<QVariant> &filterOperands)
+void QOpcUaContentFilterElement::setFilterOperands(const QList<QVariant> &filterOperands)
 {
     data->filterOperands = filterOperands;
 }

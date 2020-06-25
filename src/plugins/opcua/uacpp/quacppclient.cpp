@@ -117,16 +117,16 @@ bool QUACppClient::findServers(const QUrl &url, const QStringList &localeIds, co
                                      Q_ARG(QStringList, serverUris));
 }
 
-bool QUACppClient::readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead)
+bool QUACppClient::readNodeAttributes(const QList<QOpcUaReadItem> &nodesToRead)
 {
     return QMetaObject::invokeMethod(m_backend, "readNodeAttributes", Qt::QueuedConnection,
-                                     Q_ARG(QVector<QOpcUaReadItem>, nodesToRead));
+                                     Q_ARG(QList<QOpcUaReadItem>, nodesToRead));
 }
 
-bool QUACppClient::writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWrite)
+bool QUACppClient::writeNodeAttributes(const QList<QOpcUaWriteItem> &nodesToWrite)
 {
     return QMetaObject::invokeMethod(m_backend, "writeNodeAttributes", Qt::QueuedConnection,
-                                     Q_ARG(QVector<QOpcUaWriteItem>, nodesToWrite));
+                                     Q_ARG(QList<QOpcUaWriteItem>, nodesToWrite));
 }
 
 bool QUACppClient::addNode(const QOpcUaAddNodeItem &nodeToAdd)
@@ -178,9 +178,9 @@ QStringList QUACppClient::supportedSecurityPolicies() const
     };
 }
 
-QVector<QOpcUaUserTokenPolicy::TokenType> QUACppClient::supportedUserTokenTypes() const
+QList<QOpcUaUserTokenPolicy::TokenType> QUACppClient::supportedUserTokenTypes() const
 {
-    return QVector<QOpcUaUserTokenPolicy::TokenType> {
+    return QList<QOpcUaUserTokenPolicy::TokenType> {
         QOpcUaUserTokenPolicy::TokenType::Certificate,
         QOpcUaUserTokenPolicy::TokenType::Username,
         QOpcUaUserTokenPolicy::TokenType::Anonymous

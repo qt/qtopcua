@@ -45,7 +45,7 @@
 
 #include <QQmlParserStatus>
 #include <QObject>
-#include <QVector>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 
@@ -79,7 +79,7 @@ signals:
 
 private slots:
     void connectSignals();
-    void handleEndpoints(const QVector<QOpcUaEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode, const QUrl &requestUrl);
+    void handleEndpoints(const QList<QOpcUaEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode, const QUrl &requestUrl);
     void startRequestEndpoints();
 
 private:
@@ -89,7 +89,7 @@ private:
 
     QString m_serverUrl;
     OpcUaConnection *m_connection = nullptr;
-    QVector<QOpcUaEndpointDescription> m_endpoints;
+    QList<QOpcUaEndpointDescription> m_endpoints;
     OpcUaStatus m_status;
     bool m_componentCompleted = false;
 };

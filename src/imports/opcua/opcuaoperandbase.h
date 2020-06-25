@@ -38,6 +38,7 @@
 #define OPCUAOPERANDBASE
 
 #include <QObject>
+#include <QVariant>
 
 QT_BEGIN_NAMESPACE
 

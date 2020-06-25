@@ -747,8 +747,8 @@ QOpcUaMonitoringParameters::DataChangeFilter::operator QVariant() const
 class QOpcUaMonitoringParameters::EventFilterData : public QSharedData
 {
 public:
-    QVector<QOpcUaSimpleAttributeOperand> selectClauses;
-    QVector<QOpcUaContentFilterElement> whereClause;
+    QList<QOpcUaSimpleAttributeOperand> selectClauses;
+    QList<QOpcUaContentFilterElement> whereClause;
 };
 
 QOpcUaMonitoringParameters::EventFilter::EventFilter()
@@ -815,7 +815,7 @@ QOpcUaMonitoringParameters::EventFilter::~EventFilter()
 /*!
     Returns the content filter used to restrict the reported events to events matching certain criteria.
 */
-QVector<QOpcUaContentFilterElement> QOpcUaMonitoringParameters::EventFilter::whereClause() const
+QList<QOpcUaContentFilterElement> QOpcUaMonitoringParameters::EventFilter::whereClause() const
 {
     return data->whereClause;
 }
@@ -825,7 +825,7 @@ QVector<QOpcUaContentFilterElement> QOpcUaMonitoringParameters::EventFilter::whe
 
     \sa whereClause()
 */
-QVector<QOpcUaContentFilterElement> &QOpcUaMonitoringParameters::EventFilter::whereClauseRef()
+QList<QOpcUaContentFilterElement> &QOpcUaMonitoringParameters::EventFilter::whereClauseRef()
 {
     return data->whereClause;
 }
@@ -833,7 +833,7 @@ QVector<QOpcUaContentFilterElement> &QOpcUaMonitoringParameters::EventFilter::wh
 /*!
     Sets the where clause to \a whereClause.
 */
-void QOpcUaMonitoringParameters::EventFilter::setWhereClause(const QVector<QOpcUaContentFilterElement> &whereClause)
+void QOpcUaMonitoringParameters::EventFilter::setWhereClause(const QList<QOpcUaContentFilterElement> &whereClause)
 {
     data->whereClause = whereClause;
 }
@@ -841,7 +841,7 @@ void QOpcUaMonitoringParameters::EventFilter::setWhereClause(const QVector<QOpcU
 /*!
     Returns the selected event fields that shall be included when a new event is reported.
 */
-QVector<QOpcUaSimpleAttributeOperand> QOpcUaMonitoringParameters::EventFilter::selectClauses() const
+QList<QOpcUaSimpleAttributeOperand> QOpcUaMonitoringParameters::EventFilter::selectClauses() const
 {
     return data->selectClauses;
 }
@@ -849,7 +849,7 @@ QVector<QOpcUaSimpleAttributeOperand> QOpcUaMonitoringParameters::EventFilter::s
 /*!
     Returns a reference to the select clauses.
 */
-QVector<QOpcUaSimpleAttributeOperand> &QOpcUaMonitoringParameters::EventFilter::selectClausesRef()
+QList<QOpcUaSimpleAttributeOperand> &QOpcUaMonitoringParameters::EventFilter::selectClausesRef()
 {
     return data->selectClauses;
 }
@@ -857,7 +857,7 @@ QVector<QOpcUaSimpleAttributeOperand> &QOpcUaMonitoringParameters::EventFilter::
 /*!
     Sets the select clauses to \a selectClauses.
 */
-void QOpcUaMonitoringParameters::EventFilter::setSelectClauses(const QVector<QOpcUaSimpleAttributeOperand> &selectClauses)
+void QOpcUaMonitoringParameters::EventFilter::setSelectClauses(const QList<QOpcUaSimpleAttributeOperand> &selectClauses)
 {
     data->selectClauses = selectClauses;
 }

@@ -41,7 +41,7 @@
 #include <QOpcUaAttributeOperand>
 #include "opcuanodeid.h"
 #include <QQmlListProperty>
-#include <QVector>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 
@@ -88,7 +88,7 @@ private:
     static OpcUaRelativeNodePath* browsePathElement(QQmlListProperty<OpcUaRelativeNodePath> *list, int index);
     static void clearBrowsePath(QQmlListProperty<OpcUaRelativeNodePath> *list);
 
-    QVector<OpcUaRelativeNodePath*> m_browsePath;
+    QList<OpcUaRelativeNodePath*> m_browsePath;
     OpcUaNodeId *m_nodeId = nullptr;
 };
 

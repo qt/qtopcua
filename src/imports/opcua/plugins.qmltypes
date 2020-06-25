@@ -576,7 +576,7 @@ Module {
         }
         Property { name: "gatewayServerUri"; type: "string"; isReadonly: true }
         Property { name: "discoveryProfileUri"; type: "string"; isReadonly: true }
-        Property { name: "discoveryUrls"; type: "QVector<QString>"; isReadonly: true }
+        Property { name: "discoveryUrls"; type: "QList<QString>"; isReadonly: true }
     }
     Component {
         name: "QStandardItemModel"

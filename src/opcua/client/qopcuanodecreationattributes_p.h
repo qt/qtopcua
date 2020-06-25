@@ -98,7 +98,7 @@ public:
 
     quint32 mask {0};
     QOpcUa::AccessLevel accessLevel {QOpcUa::AccessLevelBit::None};
-    QVector<quint32> arrayDimensions;
+    QList<quint32> arrayDimensions;
     bool containsNoLoops {false};
     QString dataTypeId;
     QOpcUaLocalizedText description;

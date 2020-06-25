@@ -65,8 +65,8 @@ public:
 
     bool findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris) override;
 
-    bool readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead) override;
-    bool writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWrite) override;
+    bool readNodeAttributes(const QList<QOpcUaReadItem> &nodesToRead) override;
+    bool writeNodeAttributes(const QList<QOpcUaWriteItem> &nodesToWrite) override;
 
     bool addNode(const QOpcUaAddNodeItem &nodeToAdd) override;
     bool deleteNode(const QString &nodeId, bool deleteTargetReferences) override;
@@ -75,7 +75,7 @@ public:
     bool deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete) override;
 
     QStringList supportedSecurityPolicies() const override;
-    QVector<QOpcUaUserTokenPolicy::TokenType> supportedUserTokenTypes() const override;
+    QList<QOpcUaUserTokenPolicy::TokenType> supportedUserTokenTypes() const override;
 
 private slots:
 

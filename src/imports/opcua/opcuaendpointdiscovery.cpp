@@ -203,7 +203,7 @@ void OpcUaEndpointDiscovery::connectSignals()
     connect(conn->m_client, &QOpcUaClient::endpointsRequestFinished, this, &OpcUaEndpointDiscovery::handleEndpoints, Qt::UniqueConnection);
 }
 
-void OpcUaEndpointDiscovery::handleEndpoints(const QVector<QOpcUaEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode, const QUrl &requestUrl)
+void OpcUaEndpointDiscovery::handleEndpoints(const QList<QOpcUaEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode, const QUrl &requestUrl)
 {
     if (requestUrl != m_serverUrl)
         return; // response is not for last request

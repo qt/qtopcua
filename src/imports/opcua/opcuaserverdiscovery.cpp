@@ -214,7 +214,7 @@ void OpcUaServerDiscovery::connectSignals()
     startFindServers();
 }
 
-void OpcUaServerDiscovery::handleServers(const QVector<QOpcUaApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode, const QUrl &requestUrl)
+void OpcUaServerDiscovery::handleServers(const QList<QOpcUaApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode, const QUrl &requestUrl)
 {
     if (requestUrl != m_discoveryUrl)
         return; // response is not for last request

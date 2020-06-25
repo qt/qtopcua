@@ -75,9 +75,9 @@ public:
 private slots:
     void connectToServer();
     void findServers();
-    void findServersComplete(const QVector<QOpcUaApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode);
+    void findServersComplete(const QList<QOpcUaApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode);
     void getEndpoints();
-    void getEndpointsComplete(const QVector<QOpcUaEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode);
+    void getEndpointsComplete(const QList<QOpcUaEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode);
     void clientConnected();
     void clientDisconnected();
     void namespacesArrayUpdated(const QStringList &namespaceArray);
@@ -97,7 +97,7 @@ private:
     OpcUaModel *mOpcUaModel;
     QOpcUaProvider *mOpcUaProvider;
     QOpcUaClient *mOpcUaClient = nullptr;
-    QVector<QOpcUaEndpointDescription> mEndpointList;
+    QList<QOpcUaEndpointDescription> mEndpointList;
     bool mClientConnected = false;
     QOpcUaApplicationIdentity m_identity;
     QOpcUaPkiConfiguration m_pkiConfig;

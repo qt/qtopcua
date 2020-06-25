@@ -383,7 +383,7 @@ UA_NodeId TestServer::addVariableWithWriteMask(const UA_NodeId &folder, const QS
 }
 
 UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
-                                  QOpcUa::Types type, QVector<quint32> arrayDimensions, int valueRank)
+                                  QOpcUa::Types type, QList<quint32> arrayDimensions, int valueRank)
 {
     UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
@@ -417,7 +417,7 @@ UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variab
                                                      nullptr,
                                                      &resultId);
 
-    // Prevent deletion of the QVector's value by UA_VariableAttribute_deleteMembers
+    // Prevent deletion of the QList's value by UA_VariableAttribute_deleteMembers
     attr.arrayDimensions = nullptr;
     attr.arrayDimensionsSize = 0;
 

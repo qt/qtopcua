@@ -92,9 +92,9 @@ public:
     QOpcUaContentFilterElement::FilterOperator filterOperator() const;
     void setFilterOperator(QOpcUaContentFilterElement::FilterOperator filterOperator);
 
-    QVector<QVariant> filterOperands() const;
-    QVector<QVariant> &filterOperandsRef();
-    void setFilterOperands(const QVector<QVariant> &filterOperands);
+    QList<QVariant> filterOperands() const;
+    QList<QVariant> &filterOperandsRef();
+    void setFilterOperands(const QList<QVariant> &filterOperands);
 
 private:
     QSharedDataPointer<QOpcUaContentFilterElementData> data;

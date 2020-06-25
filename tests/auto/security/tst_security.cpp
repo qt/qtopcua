@@ -162,7 +162,7 @@ private:
     QString m_testServerPath;
     QStringList m_backends;
     QProcess m_serverProcess;
-    QVector<QOpcUaEndpointDescription> m_endpoints;
+    QList<QOpcUaEndpointDescription> m_endpoints;
     QString m_discoveryEndpoint;
     QOpcUaProvider m_opcUa;
     QSharedPointer<QTemporaryDir> m_pkiData;
@@ -239,7 +239,7 @@ void Tst_QOpcUaSecurity::initTestCase()
         QCOMPARE(endpointSpy.size(), 1);
         QCOMPARE(endpointSpy.at(0).at(2).value<QUrl>(), m_discoveryEndpoint);
 
-        const QVector<QOpcUaEndpointDescription> desc = endpointSpy.at(0).at(0).value<QVector<QOpcUaEndpointDescription>>();
+        const auto desc = endpointSpy.at(0).at(0).value<QList<QOpcUaEndpointDescription>>();
         QVERIFY(desc.size() > 0);
 
         m_endpoints.clear();

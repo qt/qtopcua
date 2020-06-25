@@ -206,7 +206,7 @@ void OpcUaMethodNode::callMethod()
         return;
     }
 
-    QVector<QOpcUa::TypedVariant> arguments;
+    QList<QOpcUa::TypedVariant> arguments;
     for (const auto item : qAsConst(m_inputArguments))
         arguments.push_back(QOpcUa::TypedVariant(item->value(), item->type()));
     m_objectNode->node()->callMethod(m_node->nodeId(), arguments);
@@ -268,19 +268,19 @@ OpcUaStatus OpcUaMethodNode::resultStatus() const
 }
 
 void OpcUaMethodNode::appendArgument(QQmlListProperty<OpcUaMethodArgument>* list, OpcUaMethodArgument* p) {
-    reinterpret_cast< QVector<OpcUaMethodArgument*>* >(list->data)->append(p);
+    reinterpret_cast< QList<OpcUaMethodArgument*>* >(list->data)->append(p);
 }
 
 void OpcUaMethodNode::clearArguments(QQmlListProperty<OpcUaMethodArgument>* list) {
-    reinterpret_cast< QVector<OpcUaMethodArgument*>* >(list->data)->clear();
+    reinterpret_cast< QList<OpcUaMethodArgument*>* >(list->data)->clear();
 }
 
 OpcUaMethodArgument* OpcUaMethodNode::argument(QQmlListProperty<OpcUaMethodArgument>* list, int i) {
-    return reinterpret_cast< QVector<OpcUaMethodArgument*>* >(list->data)->at(i);
+    return reinterpret_cast< QList<OpcUaMethodArgument*>* >(list->data)->at(i);
 }
 
 int OpcUaMethodNode::argumentCount(QQmlListProperty<OpcUaMethodArgument>* list) {
-    return reinterpret_cast< QVector<OpcUaMethodArgument*>* >(list->data)->count();
+    return reinterpret_cast< QList<OpcUaMethodArgument*>* >(list->data)->count();
 }
 
 

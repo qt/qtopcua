@@ -89,7 +89,7 @@ public:
     QOpcUaMonitoringParameters::SubscriptionType shared() const;
 
 signals:
-    void timeout(QOpen62541Subscription *sub, QVector<QPair<quint64, QOpcUa::NodeAttribute>> items);
+    void timeout(QOpen62541Subscription *sub, QList<QPair<quint64, QOpcUa::NodeAttribute>> items);
 
 private:
     MonitoredItem *getItemForAttribute(quint64 nodeHandle, QOpcUa::NodeAttribute attr);

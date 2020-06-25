@@ -150,7 +150,7 @@ bool QUACppNode::writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa
 
 }
 
-bool QUACppNode::callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args)
+bool QUACppNode::callMethod(const QString &methodNodeId, const QList<QOpcUa::TypedVariant> &args)
 {
     if (!m_client)
         return false;
@@ -162,10 +162,10 @@ bool QUACppNode::callMethod(const QString &methodNodeId, const QVector<QOpcUa::T
                                      Q_ARG(quint64, handle()),
                                      Q_ARG(UaNodeId, m_nodeId),
                                      Q_ARG(UaNodeId, methodId),
-                                     Q_ARG(QVector<QOpcUa::TypedVariant>, args));
+                                     Q_ARG(QList<QOpcUa::TypedVariant>, args));
 }
 
-bool QUACppNode::resolveBrowsePath(const QVector<QOpcUaRelativePathElement> &path)
+bool QUACppNode::resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path)
 {
     if (!m_client)
         return false;
@@ -174,7 +174,7 @@ bool QUACppNode::resolveBrowsePath(const QVector<QOpcUaRelativePathElement> &pat
                                      Qt::QueuedConnection,
                                      Q_ARG(quint64, handle()),
                                      Q_ARG(UaNodeId, m_nodeId),
-                                     Q_ARG(QVector<QOpcUaRelativePathElement>, path));
+                                     Q_ARG(QList<QOpcUaRelativePathElement>, path));
 }
 
 QT_END_NAMESPACE

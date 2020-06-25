@@ -132,13 +132,13 @@ public:
         EventFilter &operator<<(const QOpcUaSimpleAttributeOperand &selectClauseElement);
         ~EventFilter();
 
-        QVector<QOpcUaSimpleAttributeOperand> selectClauses() const;
-        QVector<QOpcUaSimpleAttributeOperand> &selectClausesRef();
-        void setSelectClauses(const QVector<QOpcUaSimpleAttributeOperand> &selectClauses);
+        QList<QOpcUaSimpleAttributeOperand> selectClauses() const;
+        QList<QOpcUaSimpleAttributeOperand> &selectClausesRef();
+        void setSelectClauses(const QList<QOpcUaSimpleAttributeOperand> &selectClauses);
 
-        QVector<QOpcUaContentFilterElement> whereClause() const;
-        QVector<QOpcUaContentFilterElement> &whereClauseRef();
-        void setWhereClause(const QVector<QOpcUaContentFilterElement> &whereClause);
+        QList<QOpcUaContentFilterElement> whereClause() const;
+        QList<QOpcUaContentFilterElement> &whereClauseRef();
+        void setWhereClause(const QList<QOpcUaContentFilterElement> &whereClause);
 
     private:
         QSharedDataPointer<QOpcUaMonitoringParameters::EventFilterData> data;

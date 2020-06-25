@@ -44,7 +44,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QTimer>
 #include <QtCore/QVariant>
-#include <QtCore/QVector>
+#include <QtCore/QList>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,7 +65,7 @@ public:
     UA_NodeId addObject(const UA_NodeId &folderId, int namespaceIndex, const QString &objectName = QString());
 
     UA_NodeId addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
-                          QOpcUa::Types type, QVector<quint32> arrayDimensions = QVector<quint32>(), int valueRank = UA_VALUERANK_ANY);
+                          QOpcUa::Types type, QList<quint32> arrayDimensions = QList<quint32>(), int valueRank = UA_VALUERANK_ANY);
     UA_NodeId addVariableWithWriteMask(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
                           QOpcUa::Types type, quint32 writeMask);
     UA_NodeId addEmptyArrayVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name);

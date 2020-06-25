@@ -57,7 +57,7 @@ class QOpcUaSimpleAttributeOperandData : public QSharedData
 {
 public:
     QString typeId{QStringLiteral("ns=0;i=2041")}; // BaseEventType
-    QVector<QOpcUaQualifiedName> browsePath;
+    QList<QOpcUaQualifiedName> browsePath;
     QOpcUa::NodeAttribute attributeId {QOpcUa::NodeAttribute::Value};
     QString indexRange;
 };
@@ -165,7 +165,7 @@ void QOpcUaSimpleAttributeOperand::setAttributeId(QOpcUa::NodeAttribute attribut
 /*!
     Returns the relative path to a node starting from \l typeId.
 */
-QVector<QOpcUaQualifiedName> QOpcUaSimpleAttributeOperand::browsePath() const
+QList<QOpcUaQualifiedName> QOpcUaSimpleAttributeOperand::browsePath() const
 {
     return data->browsePath;
 }
@@ -175,7 +175,7 @@ QVector<QOpcUaQualifiedName> QOpcUaSimpleAttributeOperand::browsePath() const
 
     \sa browsePath()
 */
-QVector<QOpcUaQualifiedName> &QOpcUaSimpleAttributeOperand::browsePathRef()
+QList<QOpcUaQualifiedName> &QOpcUaSimpleAttributeOperand::browsePathRef()
 {
     return data->browsePath;
 }
@@ -183,7 +183,7 @@ QVector<QOpcUaQualifiedName> &QOpcUaSimpleAttributeOperand::browsePathRef()
 /*!
     Sets the browse path to the node holding the attribute to \a browsePath.
 */
-void QOpcUaSimpleAttributeOperand::setBrowsePath(const QVector<QOpcUaQualifiedName> &browsePath)
+void QOpcUaSimpleAttributeOperand::setBrowsePath(const QList<QOpcUaQualifiedName> &browsePath)
 {
     data->browsePath = browsePath;
 }

@@ -226,14 +226,14 @@ void MainWindow::findServers()
     }
 }
 
-void MainWindow::findServersComplete(const QVector<QOpcUaApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode)
+void MainWindow::findServersComplete(const QList<QOpcUaApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode)
 {
     QOpcUaApplicationDescription server;
 
     if (isSuccessStatus(statusCode)) {
         ui->servers->clear();
         for (const auto &server : servers) {
-            QVector<QString> urls = server.discoveryUrls();
+            const auto urls = server.discoveryUrls();
             for (const auto &url : qAsConst(urls))
                 ui->servers->addItem(url);
         }
@@ -254,7 +254,7 @@ void MainWindow::getEndpoints()
     }
 }
 
-void MainWindow::getEndpointsComplete(const QVector<QOpcUaEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode)
+void MainWindow::getEndpointsComplete(const QList<QOpcUaEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode)
 {
     int index = 0;
     const std::array<const char *, 4> modes = {

@@ -66,22 +66,22 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
     });
 
     QObject::connect(m_impl.data(), &QOpcUaClientImpl::endpointsRequestFinished, m_impl.data(),
-                     [this](const QVector<QOpcUaEndpointDescription> &e, QOpcUa::UaStatusCode s, const QUrl &requestUrl) {
+                     [this](const QList<QOpcUaEndpointDescription> &e, QOpcUa::UaStatusCode s, const QUrl &requestUrl) {
         Q_Q(QOpcUaClient);
         emit q->endpointsRequestFinished(e, s, requestUrl);
     });
 
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::findServersFinished, [this](const QVector<QOpcUaApplicationDescription> &a, QOpcUa::UaStatusCode s, const QUrl &requestUrl) {
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::findServersFinished, [this](const QList<QOpcUaApplicationDescription> &a, QOpcUa::UaStatusCode s, const QUrl &requestUrl) {
         Q_Q(QOpcUaClient);
         emit q->findServersFinished(a, s, requestUrl);
     });
 
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::readNodeAttributesFinished, [this](const QVector<QOpcUaReadResult> &results, QOpcUa::UaStatusCode serviceResult) {
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::readNodeAttributesFinished, [this](const QList<QOpcUaReadResult> &results, QOpcUa::UaStatusCode serviceResult) {
         Q_Q(QOpcUaClient);
         emit q->readNodeAttributesFinished(results, serviceResult);
     });
 
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::writeNodeAttributesFinished, [this](const QVector<QOpcUaWriteResult> &results, QOpcUa::UaStatusCode serviceResult) {
+    QObject::connect(m_impl.data(), &QOpcUaClientImpl::writeNodeAttributesFinished, [this](const QList<QOpcUaWriteResult> &results, QOpcUa::UaStatusCode serviceResult) {
         Q_Q(QOpcUaClient);
         emit q->writeNodeAttributesFinished(results, serviceResult);
     });

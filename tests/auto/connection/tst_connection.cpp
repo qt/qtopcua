@@ -82,7 +82,7 @@ private:
     QString m_discoveryEndpoint;
     QOpcUaProvider m_opcUa;
     QStringList m_backends;
-    QVector<QOpcUaClient *> m_clients;
+    QList<QOpcUaClient *> m_clients;
     QProcess m_serverProcess;
     QString m_testServerPath;
     QOpcUaEndpointDescription m_endpoint;
@@ -166,7 +166,7 @@ void Tst_Connection::initTestCase()
         endpointSpy.wait(signalSpyTimeout);
         QCOMPARE(endpointSpy.size(), 1);
 
-        const QVector<QOpcUaEndpointDescription> desc = endpointSpy.at(0).at(0).value<QVector<QOpcUaEndpointDescription>>();
+        const auto desc = endpointSpy.at(0).at(0).value<QList<QOpcUaEndpointDescription>>();
         QVERIFY(desc.size() > 0);
         QCOMPARE(endpointSpy.at(0).at(2).value<QUrl>(), m_discoveryEndpoint);
 

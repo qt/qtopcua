@@ -51,22 +51,22 @@ public:
     QOpcUaMultiDimensionalArray();
     QOpcUaMultiDimensionalArray(const QOpcUaMultiDimensionalArray &other);
     QOpcUaMultiDimensionalArray &operator=(const QOpcUaMultiDimensionalArray &rhs);
-    QOpcUaMultiDimensionalArray(const QVariantList &valueArray, const QVector<quint32> &arrayDimensions);
-    QOpcUaMultiDimensionalArray(const QVector<quint32> &arrayDimensions);
+    QOpcUaMultiDimensionalArray(const QVariantList &valueArray, const QList<quint32> &arrayDimensions);
+    QOpcUaMultiDimensionalArray(const QList<quint32> &arrayDimensions);
     ~QOpcUaMultiDimensionalArray();
 
     QVariantList valueArray() const;
     QVariantList &valueArrayRef();
     void setValueArray(const QVariantList &valueArray);
 
-    int arrayIndex(const QVector<quint32> &indices) const;
-    QVariant value(const QVector<quint32> &indices) const;
-    bool setValue(const QVector<quint32> &indices, const QVariant &value);
+    int arrayIndex(const QList<quint32> &indices) const;
+    QVariant value(const QList<quint32> &indices) const;
+    bool setValue(const QList<quint32> &indices, const QVariant &value);
 
     bool isValid() const;
 
-    QVector<quint32> arrayDimensions() const;
-    void setArrayDimensions(const QVector<quint32> &arrayDimensions);
+    QList<quint32> arrayDimensions() const;
+    void setArrayDimensions(const QList<quint32> &arrayDimensions);
 
     bool operator==(const QOpcUaMultiDimensionalArray &other) const;
 

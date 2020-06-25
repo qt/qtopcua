@@ -863,8 +863,8 @@ void QOpcUaGdsClientPrivate::resolveDirectoryNode()
         return;
     }
 
-    QObject::connect(m_directoryNode, &QOpcUaNode::resolveBrowsePathFinished, [this, q](QVector<QOpcUaBrowsePathTarget> targets,
-                                                                 QVector<QOpcUaRelativePathElement> path,
+    QObject::connect(m_directoryNode, &QOpcUaNode::resolveBrowsePathFinished, [this, q](QList<QOpcUaBrowsePathTarget> targets,
+                                                                 QList<QOpcUaRelativePathElement> path,
                                                                  QOpcUa::UaStatusCode statusCode) {
         m_directoryNode->deleteLater();
         m_directoryNode = nullptr;
@@ -906,8 +906,8 @@ void QOpcUaGdsClientPrivate::resolveDirectoryNode()
             return;
         }
 
-        QObject::connect(m_directoryNode, SIGNAL(resolveBrowsePathFinished(QVector<QOpcUaBrowsePathTarget>, QVector<QOpcUaRelativePathElement>, QOpcUa::UaStatusCode)),
-                         q, SLOT(_q_handleResolveBrowsePathFinished(QVector<QOpcUaBrowsePathTarget>, QVector<QOpcUaRelativePathElement>, QOpcUa::UaStatusCode)));
+        QObject::connect(m_directoryNode, SIGNAL(resolveBrowsePathFinished(QList<QOpcUaBrowsePathTarget>, QList<QOpcUaRelativePathElement>, QOpcUa::UaStatusCode)),
+                         q, SLOT(_q_handleResolveBrowsePathFinished(QList<QOpcUaBrowsePathTarget>, QList<QOpcUaRelativePathElement>, QOpcUa::UaStatusCode)));
         QObject::connect(m_directoryNode, SIGNAL(methodCallFinished(QString, QVariant, QOpcUa::UaStatusCode)),
                          q, SLOT(_q_handleDirectoryNodeMethodCallFinished(QString, QVariant, QOpcUa::UaStatusCode)));
 
@@ -917,7 +917,7 @@ void QOpcUaGdsClientPrivate::resolveDirectoryNode()
 
     QOpcUaRelativePathElement pathElement(QOpcUaQualifiedName(m_gdsNamespaceIndex, QLatin1String("Directory")),
                                            QOpcUa::ReferenceTypeId::Organizes);
-    QVector<QOpcUaRelativePathElement> browsePath { pathElement };
+    QList<QOpcUaRelativePathElement> browsePath { pathElement };
 
     if (!m_directoryNode->resolveBrowsePath(browsePath)) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Failed to resolve directory node";
@@ -934,7 +934,7 @@ void QOpcUaGdsClientPrivate::resolveMethodNodes()
 
     QOpcUaRelativePathElement pathElement(QOpcUaQualifiedName(m_gdsNamespaceIndex, QLatin1String()),
                                            QOpcUa::ReferenceTypeId::HasComponent);
-    QVector<QOpcUaRelativePathElement> browsePath { pathElement };
+    QList<QOpcUaRelativePathElement> browsePath { pathElement };
 
 
     // Resolve all needed nodes from the directory
@@ -954,7 +954,7 @@ void QOpcUaGdsClientPrivate::resolveMethodNodes()
     }
 }
 
-void QOpcUaGdsClientPrivate::_q_handleResolveBrowsePathFinished(QVector<QOpcUaBrowsePathTarget> targets, QVector<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode statusCode) {
+void QOpcUaGdsClientPrivate::_q_handleResolveBrowsePathFinished(QList<QOpcUaBrowsePathTarget> targets, QList<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode statusCode) {
     if (path.size() != 1) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Invalid path size";
         setError(QOpcUaGdsClient::Error::DirectoryNodeNotFound);
@@ -1013,7 +1013,7 @@ void QOpcUaGdsClientPrivate::getApplication()
     }
 
     if (!m_directoryNode->callMethod(m_directoryNodes[QLatin1String("GetApplication")],
-                                     QVector<QPair<QVariant, QOpcUa::Types>> { qMakePair(QVariant(m_appRecord.applicationId()), QOpcUa::Types::NodeId) })) {
+                                     QList<QPair<QVariant, QOpcUa::Types>> { qMakePair(QVariant(m_appRecord.applicationId()), QOpcUa::Types::NodeId) })) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Failed to call method GetApplication";
         setError(QOpcUaGdsClient::Error::FailedToRegisterApplication);
         return;
@@ -1087,7 +1087,7 @@ void QOpcUaGdsClientPrivate::findRegisteredApplication()
     }
 
     if (!m_directoryNode->callMethod(m_directoryNodes[QLatin1String("FindApplications")],
-                                     QVector<QPair<QVariant, QOpcUa::Types>> { qMakePair(QVariant(m_appRecord.applicationUri()), QOpcUa::Types::String) })) {
+                                     QList<QPair<QVariant, QOpcUa::Types>> { qMakePair(QVariant(m_appRecord.applicationUri()), QOpcUa::Types::String) })) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Failed to call method";
         setError(QOpcUaGdsClient::Error::FailedToRegisterApplication);
         return;
@@ -1160,7 +1160,7 @@ void QOpcUaGdsClientPrivate::registerApplication()
     parameter.setBinaryEncodedBody(buffer, QOpcUa::nodeIdFromInteger(m_gdsNamespaceIndex, ApplicationRecordDataType_Encoding_DefaultBinary));
 
     if (!m_directoryNode->callMethod(m_directoryNodes[QLatin1String("RegisterApplication")],
-                                     QVector<QOpcUa::TypedVariant> { QOpcUa::TypedVariant(parameter, QOpcUa::ExtensionObject) })) {
+                                     QList<QOpcUa::TypedVariant> { QOpcUa::TypedVariant(parameter, QOpcUa::ExtensionObject) })) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Failed to call method RegisterApplication";
         setError(QOpcUaGdsClient::Error::FailedToRegisterApplication);
     }
@@ -1204,7 +1204,7 @@ void QOpcUaGdsClientPrivate::getCertificateGroups()
         return;
     }
 
-    QVector<QOpcUa::TypedVariant> arguments;
+    QList<QOpcUa::TypedVariant> arguments;
     arguments.push_back(QOpcUa::TypedVariant(m_appRecord.applicationId(), QOpcUa::NodeId));
 
     if (!m_directoryNode->callMethod(m_directoryNodes[QLatin1String("GetCertificateGroups")], arguments)) {
@@ -1253,8 +1253,8 @@ void QOpcUaGdsClientPrivate::resolveCertificateTypes()
         return;
     }
 
-    QObject::connect(m_certificateGroupNode, &QOpcUaNode::resolveBrowsePathFinished, [this](QVector<QOpcUaBrowsePathTarget> targets,
-                                                                 QVector<QOpcUaRelativePathElement> path,
+    QObject::connect(m_certificateGroupNode, &QOpcUaNode::resolveBrowsePathFinished, [this](QList<QOpcUaBrowsePathTarget> targets,
+                                                                 QList<QOpcUaRelativePathElement> path,
                                                                  QOpcUa::UaStatusCode statusCode) {
         if (path.size() != 1) {
             qCWarning(QT_OPCUA_GDSCLIENT) << "Invalid path size";
@@ -1292,7 +1292,7 @@ void QOpcUaGdsClientPrivate::resolveCertificateTypes()
 
     QOpcUaRelativePathElement pathElement(QOpcUaQualifiedName(0, QLatin1String("CertificateTypes")),
                                            QOpcUa::ReferenceTypeId::Unspecified);
-    QVector<QOpcUaRelativePathElement> browsePath { pathElement };
+    QList<QOpcUaRelativePathElement> browsePath { pathElement };
 
 
     if (!m_certificateGroupNode->resolveBrowsePath(browsePath)) {
@@ -1375,7 +1375,7 @@ void QOpcUaGdsClientPrivate::getCertificateStatus()
 
     QString certificateType = QLatin1String("ns=0;i=0"); // null node
 
-    QVector<QOpcUa::TypedVariant> arguments;
+    QList<QOpcUa::TypedVariant> arguments;
     arguments.push_back(QOpcUa::TypedVariant(m_appRecord.applicationId(), QOpcUa::NodeId));
     // Let the server choose the certificate group id
     arguments.push_back(QOpcUa::TypedVariant(m_certificateGroups[0], QOpcUa::NodeId));
@@ -1451,7 +1451,7 @@ void QOpcUaGdsClientPrivate::startCertificateRequest()
     const auto csrData = csr.createRequest(keyPair);
 
 
-    QVector<QOpcUa::TypedVariant> arguments;
+    QList<QOpcUa::TypedVariant> arguments;
     arguments.push_back(QOpcUa::TypedVariant(m_appRecord.applicationId(), QOpcUa::NodeId));
     // Let the server choose the certificate group id
     arguments.push_back(QOpcUa::TypedVariant(QLatin1String("ns=0;i=0"), QOpcUa::NodeId));
@@ -1503,7 +1503,7 @@ void QOpcUaGdsClientPrivate::finishCertificateRequest()
         return;
     }
 
-    QVector<QOpcUa::TypedVariant> arguments;
+    QList<QOpcUa::TypedVariant> arguments;
     arguments.push_back(QOpcUa::TypedVariant(m_appRecord.applicationId(), QOpcUa::NodeId));
     arguments.push_back(QOpcUa::TypedVariant(m_certificateRequestId, QOpcUa::NodeId));
 
@@ -1609,7 +1609,7 @@ void QOpcUaGdsClientPrivate::unregisterApplication()
     }
 
     if (!m_directoryNode->callMethod(m_directoryNodes[QLatin1String("UnregisterApplication")],
-                                     QVector<QOpcUa::TypedVariant> { QOpcUa::TypedVariant(m_appRecord.applicationId(), QOpcUa::NodeId) })) {
+                                     QList<QOpcUa::TypedVariant> { QOpcUa::TypedVariant(m_appRecord.applicationId(), QOpcUa::NodeId) })) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Failed to call method UnregisterApplication";
         setError(QOpcUaGdsClient::Error::FailedToUnregisterApplication);
     }
@@ -1813,7 +1813,7 @@ void QOpcUaGdsClientPrivate::_q_updateTrustList()
         return;
     }
 
-    QVector<QOpcUa::TypedVariant> arguments;
+    QList<QOpcUa::TypedVariant> arguments;
     arguments.push_back(QOpcUa::TypedVariant(m_appRecord.applicationId(), QOpcUa::NodeId));
     arguments.push_back(QOpcUa::TypedVariant(m_certificateGroupNode->nodeId(), QOpcUa::NodeId));
 

@@ -289,7 +289,7 @@ QVariant scalarToQVariant<QVariant, OpcUa_ExtensionObject>(OpcUa_ExtensionObject
         const QOpcUaRange qRange(uaRange.getLow(), uaRange.getHigh());
         const QOpcUaLocalizedText qTitle = scalarToQVariant<QOpcUaLocalizedText, OpcUa_LocalizedText>(const_cast<OpcUa_LocalizedText *>(&*uaTitle)).value<QOpcUaLocalizedText>();;
         const QOpcUa::AxisScale qScale = static_cast<QOpcUa::AxisScale>(info.getAxisScaleType());
-        QVector<double> qAxisSteps;
+        QList<double> qAxisSteps;
         for (OpcUa_UInt32 i = 0; i < uaDoubleArray.length(); ++i)
             qAxisSteps.append(uaDoubleArray[i]);
 
@@ -325,9 +325,9 @@ QVariant arrayToQVariant(const OpcUa_Variant &var, QMetaType::Type type)
     if (var.ArrayType == OpcUa_VariantArrayType_Matrix) {
         UaVariant variant(var);
 
-        // Ensure that the array dimensions fit in a QVector
+        // Ensure that the array dimensions fit in a QList
         if (variant.dimensionSize() > static_cast<OpcUa_Int32>((std::numeric_limits<int>::max)())) {
-            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "The array dimensions do not fit in a QVector.";
+            qCWarning(QT_OPCUA_PLUGINS_UACPP) << "The array dimensions do not fit in a QList.";
             return QOpcUaMultiDimensionalArray();
         }
 
@@ -337,7 +337,7 @@ QVariant arrayToQVariant(const OpcUa_Variant &var, QMetaType::Type type)
             list.append(scalarToQVariant<TARGETTYPE, UATYPE>(&temp[i], type));
         }
 
-        QVector<quint32> arrayDimensions;
+        QList<quint32> arrayDimensions;
         for (qint32 i = 0; i < variant.dimensionSize(); ++i)
             arrayDimensions.append(var.Value.Matrix.Dimensions[i]);
         return QOpcUaMultiDimensionalArray(list, arrayDimensions);
@@ -885,7 +885,7 @@ OpcUa_Variant toUACppVariant(const QVariant &value, QOpcUa::Types type)
         if (!data.arrayDimensions().isEmpty()) {
             // Ensure that the array dimensions size is < UINT32_MAX
             if (static_cast<quint64>(data.arrayDimensions().size()) > (std::numeric_limits<qint32>::max)()){
-                qCWarning(QT_OPCUA_PLUGINS_UACPP) << "The array dimensions do not fit in a QVector.";
+                qCWarning(QT_OPCUA_PLUGINS_UACPP) << "The array dimensions do not fit in a QList.";
                 return uacppvalue;
             }
             result.ArrayType = OpcUa_VariantArrayType_Matrix;
@@ -1073,7 +1073,7 @@ void scalarFromQVariant<OpcUa_ExtensionObject, QOpcUaArgument>(const QVariant &v
 
 QOpcUaArgument toQArgument(const UaArgument *data)
 {
-    QVector<quint32> arrayDimensions;
+    QList<quint32> arrayDimensions;
     UaUInt32Array dataArrayDimensions;
     data->getArrayDimensions(dataArrayDimensions);
     for (quint32 i = 0; i < dataArrayDimensions.length(); ++i)

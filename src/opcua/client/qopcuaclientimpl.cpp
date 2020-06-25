@@ -97,7 +97,7 @@ void QOpcUaClientImpl::connectBackendWithClient(QOpcUaBackend *backend)
     connect(backend, &QOpcUaBackend::passwordForPrivateKeyRequired, this, &QOpcUaClientImpl::passwordForPrivateKeyRequired, Qt::BlockingQueuedConnection);
 }
 
-void QOpcUaClientImpl::handleAttributesRead(quint64 handle, QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
+void QOpcUaClientImpl::handleAttributesRead(quint64 handle, QList<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
@@ -139,15 +139,15 @@ void QOpcUaClientImpl::handleMethodCallFinished(quint64 handle, QString methodNo
         emit (*it)->methodCallFinished(methodNodeId, result, statusCode);
 }
 
-void QOpcUaClientImpl::handleBrowseFinished(quint64 handle, const QVector<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode)
+void QOpcUaClientImpl::handleBrowseFinished(quint64 handle, const QList<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
         emit (*it)->browseFinished(children, statusCode);
 }
 
-void QOpcUaClientImpl::handleResolveBrowsePathFinished(quint64 handle, QVector<QOpcUaBrowsePathTarget> targets,
-                                                         QVector<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode status)
+void QOpcUaClientImpl::handleResolveBrowsePathFinished(quint64 handle, QList<QOpcUaBrowsePathTarget> targets,
+                                                       QList<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode status)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())

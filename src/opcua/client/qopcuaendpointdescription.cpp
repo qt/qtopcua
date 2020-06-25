@@ -148,7 +148,7 @@ public:
     QByteArray serverCertificate;
     QOpcUaEndpointDescription::MessageSecurityMode securityMode{QOpcUaEndpointDescription::MessageSecurityMode::None};
     QString securityPolicy;
-    QVector<QOpcUaUserTokenPolicy> userIdentityTokens;
+    QList<QOpcUaUserTokenPolicy> userIdentityTokens;
     QString transportProfileUri;
     quint8 securityLevel{0};
 };
@@ -237,7 +237,7 @@ void QOpcUaEndpointDescription::setTransportProfileUri(const QString &transportP
 /*!
     Returns a list of user identity tokens the endpoint will accept.
 */
-QVector<QOpcUaUserTokenPolicy> QOpcUaEndpointDescription::userIdentityTokens() const
+QList<QOpcUaUserTokenPolicy> QOpcUaEndpointDescription::userIdentityTokens() const
 {
     return data->userIdentityTokens;
 }
@@ -245,7 +245,7 @@ QVector<QOpcUaUserTokenPolicy> QOpcUaEndpointDescription::userIdentityTokens() c
 /*!
     Returns a reference to a list of user identity tokens the endpoint will accept.
 */
-QVector<QOpcUaUserTokenPolicy> &QOpcUaEndpointDescription::userIdentityTokensRef()
+QList<QOpcUaUserTokenPolicy> &QOpcUaEndpointDescription::userIdentityTokensRef()
 {
     return data->userIdentityTokens;
 }
@@ -253,7 +253,7 @@ QVector<QOpcUaUserTokenPolicy> &QOpcUaEndpointDescription::userIdentityTokensRef
 /*!
     Sets the user identity tokens to \a userIdentityTokens.
 */
-void QOpcUaEndpointDescription::setUserIdentityTokens(const QVector<QOpcUaUserTokenPolicy> &userIdentityTokens)
+void QOpcUaEndpointDescription::setUserIdentityTokens(const QList<QOpcUaUserTokenPolicy> &userIdentityTokens)
 {
     data->userIdentityTokens = userIdentityTokens;
 }

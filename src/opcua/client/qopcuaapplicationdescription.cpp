@@ -171,7 +171,7 @@ public:
     QOpcUaApplicationDescription::ApplicationType applicationType{QOpcUaApplicationDescription::ApplicationType::Server};
     QString gatewayServerUri;
     QString discoveryProfileUri;
-    QVector<QString> discoveryUrls;
+    QList<QString> discoveryUrls;
 };
 
 QOpcUaApplicationDescription::QOpcUaApplicationDescription()
@@ -217,7 +217,7 @@ QOpcUaApplicationDescription::~QOpcUaApplicationDescription()
 /*!
     Returns a list of URLs of discovery endpoints.
 */
-QVector<QString> QOpcUaApplicationDescription::discoveryUrls() const
+QList<QString> QOpcUaApplicationDescription::discoveryUrls() const
 {
     return data->discoveryUrls;
 }
@@ -225,7 +225,7 @@ QVector<QString> QOpcUaApplicationDescription::discoveryUrls() const
 /*!
     Returns a reference to a list of URLs of discovery endpoints.
 */
-QVector<QString> &QOpcUaApplicationDescription::discoveryUrlsRef()
+QList<QString> &QOpcUaApplicationDescription::discoveryUrlsRef()
 {
     return data->discoveryUrls;
 }
@@ -233,7 +233,7 @@ QVector<QString> &QOpcUaApplicationDescription::discoveryUrlsRef()
 /*!
     Sets the discovery URLs to \a discoveryUrls.
 */
-void QOpcUaApplicationDescription::setDiscoveryUrls(const QVector<QString> &discoveryUrls)
+void QOpcUaApplicationDescription::setDiscoveryUrls(const QList<QString> &discoveryUrls)
 {
     data->discoveryUrls = discoveryUrls;
 }

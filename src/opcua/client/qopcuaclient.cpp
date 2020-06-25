@@ -96,7 +96,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
     });
 
     QObject::connect(client, &QOpcUaClient::endpointsRequestFinished,
-                     [client](QVector<QOpcUaEndpointDescription> endpoints) {
+                     [client](QList<QOpcUaEndpointDescription> endpoints) {
         qDebug() << "Endpoints returned:" << endpoints.count();
         if (endpoints.size())
             client->connectToEndpoint(endpoints.first()); // Connect to the first endpoint in the list
@@ -215,7 +215,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
-    \fn void QOpcUaClient::endpointsRequestFinished(QVector<QOpcUaEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode, QUrl requestUrl)
+    \fn void QOpcUaClient::endpointsRequestFinished(QList<QOpcUaEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode, QUrl requestUrl)
 
     This signal is emitted after a \l requestEndpoints() operation has finished.
     \a statusCode contains the result of the operation. If the result is \l {QOpcUa::UaStatusCode} {Good},
@@ -224,7 +224,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
-    \fn void QOpcUaClient::findServersFinished(QVector<QOpcUaApplicationDescription> servers, QOpcUa::UaStatusCode statusCode, QUrl requestUrl);
+    \fn void QOpcUaClient::findServersFinished(QList<QOpcUaApplicationDescription> servers, QOpcUa::UaStatusCode statusCode, QUrl requestUrl);
 
     This signal is emitted after a \l findServers() operation has finished.
     \a statusCode contains the result of the operation. If the result is \l {QOpcUa::UaStatusCode} {Good},
@@ -233,7 +233,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
-    \fn void QOpcUaClient::readNodeAttributesFinished(QVector<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult)
+    \fn void QOpcUaClient::readNodeAttributesFinished(QList<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult)
 
     This signal is emitted after a \l readNodeAttributes() operation has finished.
 
@@ -245,7 +245,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
-    \fn void QOpcUaClient::writeNodeAttributesFinished(QVector<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult)
+    \fn void QOpcUaClient::writeNodeAttributesFinished(QList<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult)
 
     This signal is emitted after a \l writeNodeAttributes() operation has finished.
 
@@ -755,7 +755,7 @@ bool QOpcUaClient::findServers(const QUrl &url, const QStringList &localeIds, co
     In the following example, the display name attribute and the two index ranges "0:2" and "5:7" of the value
     attribute of the same node and the entire value attribute of a second node are read using a single service call:
     \code
-    QVector<QOpcUaReadItem> request;
+    QList<QOpcUaReadItem> request;
     request.push_back(QOpcUaReadItem("ns=1;s=MyArrayNode",
                                      QOpcUa::NodeAttribute::DisplayName));
     request.push_back(QOpcUaReadItem("ns=1;s=MyArrayNode",
@@ -768,7 +768,7 @@ bool QOpcUaClient::findServers(const QUrl &url, const QStringList &localeIds, co
 
     \sa QOpcUaReadItem readNodeAttributesFinished()
 */
-bool QOpcUaClient::readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead)
+bool QOpcUaClient::readNodeAttributes(const QList<QOpcUaReadItem> &nodesToRead)
 {
     if (state() != QOpcUaClient::Connected)
        return false;
@@ -796,7 +796,7 @@ bool QOpcUaClient::readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead
     The second node has an array value of which only the first two elements are overwritten:
 
     \code
-    QVector<QOpcUaWriteItem> request;
+    QList<QOpcUaWriteItem> request;
 
     request.append(QOpcUaWriteItem("ns=2;s=Demo.Static.Scalar.Double", QOpcUa::NodeAttribute::Value,
                                       23.0, QOpcUa::Types::Double));
@@ -808,7 +808,7 @@ bool QOpcUaClient::readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead
 
     \sa QOpcUaWriteItem writeNodeAttributesFinished()
 */
-bool QOpcUaClient::writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWrite)
+bool QOpcUaClient::writeNodeAttributes(const QList<QOpcUaWriteItem> &nodesToWrite)
 {
     if (state() != QOpcUaClient::Connected)
        return false;
@@ -929,7 +929,7 @@ QStringList QOpcUaClient::supportedSecurityPolicies() const
 
     \sa QOpcUaUserTokenPolicy::TokenType
 */
-QVector<QOpcUaUserTokenPolicy::TokenType> QOpcUaClient::supportedUserTokenTypes() const
+QList<QOpcUaUserTokenPolicy::TokenType> QOpcUaClient::supportedUserTokenTypes() const
 {
     Q_D(const QOpcUaClient);
     return d->m_impl->supportedUserTokenTypes();

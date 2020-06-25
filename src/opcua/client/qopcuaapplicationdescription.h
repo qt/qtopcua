@@ -54,7 +54,7 @@ class Q_OPCUA_EXPORT QOpcUaApplicationDescription
     Q_PROPERTY(QOpcUaApplicationDescription::ApplicationType applicationType READ applicationType)
     Q_PROPERTY(QString gatewayServerUri READ gatewayServerUri)
     Q_PROPERTY(QString discoveryProfileUri READ discoveryProfileUri)
-    Q_PROPERTY(QVector<QString> discoveryUrls READ discoveryUrls)
+    Q_PROPERTY(QList<QString> discoveryUrls READ discoveryUrls)
 
 public:
     QOpcUaApplicationDescription();
@@ -89,9 +89,9 @@ public:
     QString discoveryProfileUri() const;
     void setDiscoveryProfileUri(const QString &discoveryProfileUri);
 
-    QVector<QString> discoveryUrls() const;
-    QVector<QString> &discoveryUrlsRef();
-    void setDiscoveryUrls(const QVector<QString> &discoveryUrls);
+    QList<QString> discoveryUrls() const;
+    QList<QString> &discoveryUrlsRef();
+    void setDiscoveryUrls(const QList<QString> &discoveryUrls);
 
 private:
     QSharedDataPointer<QOpcUaApplicationDescriptionData> data;

@@ -90,7 +90,7 @@ public slots:
         endpointSpy.wait(signalSpyTimeout);
         QCOMPARE(endpointSpy.size(), 1);
 
-        const QVector<QOpcUaEndpointDescription> desc = endpointSpy.at(0).at(0).value<QVector<QOpcUaEndpointDescription>>();
+        const auto desc = endpointSpy.at(0).at(0).value<QList<QOpcUaEndpointDescription>>();
         QVERIFY(desc.size() > 0);
         QCOMPARE(endpointSpy.at(0).at(2).value<QUrl>(), discoveryEndpoint);
 

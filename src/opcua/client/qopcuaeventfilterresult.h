@@ -56,13 +56,13 @@ public:
 
     bool isGood() const;
 
-    QVector<QOpcUa::UaStatusCode> selectClauseResults() const;
-    QVector<QOpcUa::UaStatusCode> &selectClauseResultsRef();
-    void setSelectClauseResults(const QVector<QOpcUa::UaStatusCode> &selectClausesResult);
+    QList<QOpcUa::UaStatusCode> selectClauseResults() const;
+    QList<QOpcUa::UaStatusCode> &selectClauseResultsRef();
+    void setSelectClauseResults(const QList<QOpcUa::UaStatusCode> &selectClausesResult);
 
-    QVector<QOpcUaContentFilterElementResult> whereClauseResults() const;
-    QVector<QOpcUaContentFilterElementResult> &whereClauseResultsRef();
-    void setWhereClauseResults(const QVector<QOpcUaContentFilterElementResult> &whereClauseResult);
+    QList<QOpcUaContentFilterElementResult> whereClauseResults() const;
+    QList<QOpcUaContentFilterElementResult> &whereClauseResultsRef();
+    void setWhereClauseResults(const QList<QOpcUaContentFilterElementResult> &whereClauseResult);
 
 private:
     QSharedDataPointer<QOpcUaEventFilterResultData> data;

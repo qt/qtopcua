@@ -68,7 +68,7 @@ class QOpcUaMultiDimensionalArrayData : public QSharedData
 {
 public:
     QVariantList value;
-    QVector<quint32> arrayDimensions;
+    QList<quint32> arrayDimensions;
     quint32 expectedArrayLength{0};
 };
 
@@ -98,7 +98,7 @@ QOpcUaMultiDimensionalArray &QOpcUaMultiDimensionalArray::operator=(const QOpcUa
 /*!
     Constructs a multidimensional array with value \a value and array dimensions \a arrayDimensions.
 */
-QOpcUaMultiDimensionalArray::QOpcUaMultiDimensionalArray(const QVariantList &value, const QVector<quint32> &arrayDimensions)
+QOpcUaMultiDimensionalArray::QOpcUaMultiDimensionalArray(const QVariantList &value, const QList<quint32> &arrayDimensions)
     : data(new QOpcUaMultiDimensionalArrayData)
 {
     setValueArray(value);
@@ -108,7 +108,7 @@ QOpcUaMultiDimensionalArray::QOpcUaMultiDimensionalArray(const QVariantList &val
 /*!
     Creates a multidimensional array with preallocated data fitting \a arrayDimensions.
 */
-QOpcUaMultiDimensionalArray::QOpcUaMultiDimensionalArray(const QVector<quint32> &arrayDimensions)
+QOpcUaMultiDimensionalArray::QOpcUaMultiDimensionalArray(const QList<quint32> &arrayDimensions)
     : data(new QOpcUaMultiDimensionalArrayData)
 {
     setArrayDimensions(arrayDimensions);
@@ -127,7 +127,7 @@ QOpcUaMultiDimensionalArray::~QOpcUaMultiDimensionalArray()
     Returns the dimensions of the multidimensional array.
     The element at position n contains the length of the n-th dimension.
 */
-QVector<quint32> QOpcUaMultiDimensionalArray::arrayDimensions() const
+QList<quint32> QOpcUaMultiDimensionalArray::arrayDimensions() const
 {
     return data->arrayDimensions;
 }
@@ -135,7 +135,7 @@ QVector<quint32> QOpcUaMultiDimensionalArray::arrayDimensions() const
 /*!
     Sets the dimensions of the multidimensional array to \a arrayDimensions.
 */
-void QOpcUaMultiDimensionalArray::setArrayDimensions(const QVector<quint32> &arrayDimensions)
+void QOpcUaMultiDimensionalArray::setArrayDimensions(const QList<quint32> &arrayDimensions)
 {
     data->arrayDimensions = arrayDimensions;
     data->expectedArrayLength = std::accumulate(data->arrayDimensions.begin(), data->arrayDimensions.end(),
@@ -188,7 +188,7 @@ void QOpcUaMultiDimensionalArray::setValueArray(const QVariantList &value)
     If \a indices is invalid for the array or if the array's dimensions don't match
     the size of \l valueArray(), the invalid index \c -1 is returned.
 */
-int QOpcUaMultiDimensionalArray::arrayIndex(const QVector<quint32> &indices) const
+int QOpcUaMultiDimensionalArray::arrayIndex(const QList<quint32> &indices) const
 {
     // A QList can store INT_MAX values. Depending on the platform, this allows a size > UINT32_MAX
     if (data->expectedArrayLength > static_cast<quint64>((std::numeric_limits<int>::max)()) ||
@@ -222,7 +222,7 @@ int QOpcUaMultiDimensionalArray::arrayIndex(const QVector<quint32> &indices) con
     Returns the value of the element identified by \a indices.
     If the indices are invalid for the array, an empty \l QVariant is returned.
 */
-QVariant QOpcUaMultiDimensionalArray::value(const QVector<quint32> &indices) const
+QVariant QOpcUaMultiDimensionalArray::value(const QList<quint32> &indices) const
 {
     int index = arrayIndex(indices);
 
@@ -236,7 +236,7 @@ QVariant QOpcUaMultiDimensionalArray::value(const QVector<quint32> &indices) con
     Sets the value at position \a indices to \a value.
     Returns \c true if the value has been successfully set.
 */
-bool QOpcUaMultiDimensionalArray::setValue(const QVector<quint32> &indices, const QVariant &value)
+bool QOpcUaMultiDimensionalArray::setValue(const QList<quint32> &indices, const QVariant &value)
 {
     int index = arrayIndex(indices);
 

@@ -220,10 +220,10 @@ int main(int argc, char **argv)
     server.addMultipleOutputArgumentsMethod(testFolder, "ns=3;s=Test.Method.MultipleOutputArguments", "MultipleOutputArguments");
     server.addEmptyArrayVariable(testFolder, "ns=2;s=EmptyBoolArray", "EmptyBoolArrayTest");
 
-    const QVector<quint32> arrayDimensions({2, 2, 3});
+    const QList<quint32> arrayDimensions({2, 2, 3});
     const QVariantList value({0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0});
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.MultiDimensionalDouble", "MultiDimensionalDoubleTest",
-                       QOpcUaMultiDimensionalArray(value, arrayDimensions), QOpcUa::Types::Double, QVector<quint32>({2, 2, 3}), 3);
+                       QOpcUaMultiDimensionalArray(value, arrayDimensions), QOpcUa::Types::Double, QList<quint32>({2, 2, 3}), 3);
 
     // Add folders for relative nodes
     const UA_NodeId testFolder2 = server.addFolder("ns=3;s=TestFolder2", "TestFolder2");

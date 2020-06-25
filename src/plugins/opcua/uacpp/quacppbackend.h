@@ -70,16 +70,16 @@ public Q_SLOTS:
     void enableMonitoring(quint64 handle, const UaNodeId &id, QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
     void modifyMonitoring(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
     void disableMonitoring(quint64 handle, QOpcUa::NodeAttributes attr);
-    void callMethod(quint64 handle, const UaNodeId &objectId, const UaNodeId &methodId, QVector<QOpcUa::TypedVariant> args);
-    void resolveBrowsePath(quint64 handle, const UaNodeId &startNode, const QVector<QOpcUaRelativePathElement> &path);
+    void callMethod(quint64 handle, const UaNodeId &objectId, const UaNodeId &methodId, QList<QOpcUa::TypedVariant> args);
+    void resolveBrowsePath(quint64 handle, const UaNodeId &startNode, const QList<QOpcUaRelativePathElement> &path);
     void requestEndpoints(const QUrl &url);
 
     bool removeSubscription(quint32 subscriptionId);
 
     void findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris);
 
-    void readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead);
-    void writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWrite);
+    void readNodeAttributes(const QList<QOpcUaReadItem> &nodesToRead);
+    void writeNodeAttributes(const QList<QOpcUaWriteItem> &nodesToWrite);
 
     // Node management
     void addNode(const QOpcUaAddNodeItem &nodeToAdd);

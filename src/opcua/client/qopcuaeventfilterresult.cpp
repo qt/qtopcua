@@ -51,8 +51,8 @@ QT_BEGIN_NAMESPACE
 class QOpcUaEventFilterResultData : public QSharedData
 {
 public:
-    QVector<QOpcUa::UaStatusCode> selectClauseResults;
-    QVector<QOpcUaContentFilterElementResult> whereClauseResults;
+    QList<QOpcUa::UaStatusCode> selectClauseResults;
+    QList<QOpcUaContentFilterElementResult> whereClauseResults;
 };
 
 QOpcUaEventFilterResult::QOpcUaEventFilterResult()
@@ -106,7 +106,7 @@ bool QOpcUaEventFilterResult::isGood() const
 /*!
     Returns the status codes for all elements of the \c where clause in the order that was used in the filter.
 */
-QVector<QOpcUaContentFilterElementResult> QOpcUaEventFilterResult::whereClauseResults() const
+QList<QOpcUaContentFilterElementResult> QOpcUaEventFilterResult::whereClauseResults() const
 {
     return data->whereClauseResults;
 }
@@ -116,7 +116,7 @@ QVector<QOpcUaContentFilterElementResult> QOpcUaEventFilterResult::whereClauseRe
 
     \sa whereClauseResults()
 */
-QVector<QOpcUaContentFilterElementResult> &QOpcUaEventFilterResult::whereClauseResultsRef()
+QList<QOpcUaContentFilterElementResult> &QOpcUaEventFilterResult::whereClauseResultsRef()
 {
     return data->whereClauseResults;
 }
@@ -124,7 +124,7 @@ QVector<QOpcUaContentFilterElementResult> &QOpcUaEventFilterResult::whereClauseR
 /*!
     Sets the \c where clause results to \a whereClausesResult.
 */
-void QOpcUaEventFilterResult::setWhereClauseResults(const QVector<QOpcUaContentFilterElementResult> &whereClausesResult)
+void QOpcUaEventFilterResult::setWhereClauseResults(const QList<QOpcUaContentFilterElementResult> &whereClausesResult)
 {
     data->whereClauseResults = whereClausesResult;
 }
@@ -132,7 +132,7 @@ void QOpcUaEventFilterResult::setWhereClauseResults(const QVector<QOpcUaContentF
 /*!
     Returns the status codes for all elements of the \c select clauses in the order that was used in the filter.
 */
-QVector<QOpcUa::UaStatusCode> QOpcUaEventFilterResult::selectClauseResults() const
+QList<QOpcUa::UaStatusCode> QOpcUaEventFilterResult::selectClauseResults() const
 {
     return data->selectClauseResults;
 }
@@ -142,7 +142,7 @@ QVector<QOpcUa::UaStatusCode> QOpcUaEventFilterResult::selectClauseResults() con
 
     \sa selectClauseResults()
 */
-QVector<QOpcUa::UaStatusCode> &QOpcUaEventFilterResult::selectClauseResultsRef()
+QList<QOpcUa::UaStatusCode> &QOpcUaEventFilterResult::selectClauseResultsRef()
 {
     return data->selectClauseResults;
 }
@@ -150,7 +150,7 @@ QVector<QOpcUa::UaStatusCode> &QOpcUaEventFilterResult::selectClauseResultsRef()
 /*!
     Sets the \c select clause results to \a selectClausesResult.
 */
-void QOpcUaEventFilterResult::setSelectClauseResults(const QVector<QOpcUa::UaStatusCode> &selectClausesResult)
+void QOpcUaEventFilterResult::setSelectClauseResults(const QList<QOpcUa::UaStatusCode> &selectClausesResult)
 {
     data->selectClauseResults = selectClausesResult;
 }

@@ -120,16 +120,16 @@ bool QOpen62541Client::findServers(const QUrl &url, const QStringList &localeIds
                                     Q_ARG(QStringList, serverUris));
 }
 
-bool QOpen62541Client::readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead)
+bool QOpen62541Client::readNodeAttributes(const QList<QOpcUaReadItem> &nodesToRead)
 {
     return QMetaObject::invokeMethod(m_backend, "readNodeAttributes", Qt::QueuedConnection,
-                                     Q_ARG(QVector<QOpcUaReadItem>, nodesToRead));
+                                     Q_ARG(QList<QOpcUaReadItem>, nodesToRead));
 }
 
-bool QOpen62541Client::writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWrite)
+bool QOpen62541Client::writeNodeAttributes(const QList<QOpcUaWriteItem> &nodesToWrite)
 {
     return QMetaObject::invokeMethod(m_backend, "writeNodeAttributes", Qt::QueuedConnection,
-                                     Q_ARG(QVector<QOpcUaWriteItem>, nodesToWrite));
+                                     Q_ARG(QList<QOpcUaWriteItem>, nodesToWrite));
 }
 
 bool QOpen62541Client::addNode(const QOpcUaAddNodeItem &nodeToAdd)
@@ -169,9 +169,9 @@ QStringList QOpen62541Client::supportedSecurityPolicies() const
     };
 }
 
-QVector<QOpcUaUserTokenPolicy::TokenType> QOpen62541Client::supportedUserTokenTypes() const
+QList<QOpcUaUserTokenPolicy::TokenType> QOpen62541Client::supportedUserTokenTypes() const
 {
-    return QVector<QOpcUaUserTokenPolicy::TokenType> {
+    return QList<QOpcUaUserTokenPolicy::TokenType> {
         QOpcUaUserTokenPolicy::TokenType::Anonymous,
         QOpcUaUserTokenPolicy::TokenType::Username
     };

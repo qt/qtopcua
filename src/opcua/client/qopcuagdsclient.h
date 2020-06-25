@@ -130,7 +130,7 @@ Q_SIGNALS:
 
 private:
     Q_PRIVATE_SLOT(d_func(), void _q_handleDirectoryNodeMethodCallFinished(QString, QVariant, QOpcUa::UaStatusCode))
-    Q_PRIVATE_SLOT(d_func(), void _q_handleResolveBrowsePathFinished(QVector<QOpcUaBrowsePathTarget>, QVector<QOpcUaRelativePathElement>, QOpcUa::UaStatusCode))
+    Q_PRIVATE_SLOT(d_func(), void _q_handleResolveBrowsePathFinished(QList<QOpcUaBrowsePathTarget>, QList<QOpcUaRelativePathElement>, QOpcUa::UaStatusCode))
     Q_PRIVATE_SLOT(d_func(), void _q_certificateCheckTimeout())
     Q_PRIVATE_SLOT(d_func(), void _q_updateTrustList())
 };

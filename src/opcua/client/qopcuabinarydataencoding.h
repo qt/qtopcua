@@ -55,7 +55,7 @@
 #include <QtCore/qmetatype.h>
 #include <QtCore/quuid.h>
 #include <QtCore/qendian.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 
 #include <limits>
 
@@ -72,12 +72,12 @@ public:
     template <typename T, QOpcUa::Types OVERLAY = QOpcUa::Types::Undefined>
     T decode(bool &success);
     template <typename T, QOpcUa::Types OVERLAY = QOpcUa::Types::Undefined>
-    QVector<T> decodeArray(bool &success);
+    QList<T> decodeArray(bool &success);
 
     template <typename T, QOpcUa::Types OVERLAY = QOpcUa::Types::Undefined>
     bool encode(const T &src);
     template <typename T, QOpcUa::Types OVERLAY = QOpcUa::Types::Undefined>
-    bool encodeArray(const QVector<T> &src);
+    bool encodeArray(const QList<T> &src);
 
 
     int offset() const;
@@ -962,9 +962,9 @@ inline bool QOpcUaBinaryDataEncoding::encode<QOpcUaArgument>(const QOpcUaArgumen
 }
 
 template<typename T, QOpcUa::Types OVERLAY>
-inline QVector<T> QOpcUaBinaryDataEncoding::decodeArray(bool &success)
+inline QList<T> QOpcUaBinaryDataEncoding::decodeArray(bool &success)
 {
-    QVector<T> temp;
+    QList<T> temp;
 
     qint32 size = decode<qint32>(success);
     if (!success)
@@ -973,14 +973,14 @@ inline QVector<T> QOpcUaBinaryDataEncoding::decodeArray(bool &success)
     for (int i = 0; i < size; ++i) {
         temp.push_back(decode<T, OVERLAY>(success));
         if (!success)
-            return QVector<T>();
+            return QList<T>();
     }
 
     return temp;
 }
 
 template<typename T, QOpcUa::Types OVERLAY>
-inline bool QOpcUaBinaryDataEncoding::encodeArray(const QVector<T> &src)
+inline bool QOpcUaBinaryDataEncoding::encodeArray(const QList<T> &src)
 {
     if (src.size() > upperBound<qint32>())
         return false;

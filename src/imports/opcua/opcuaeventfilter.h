@@ -42,7 +42,7 @@
 #include "opcuasimpleattributeoperand.h"
 #include "opcuafilterelement.h"
 #include <QOpcUaMonitoringParameters>
-#include <QVector>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 
@@ -86,8 +86,8 @@ private:
     static OpcUaFilterElement* filterElement(QQmlListProperty<OpcUaFilterElement> *list, int index);
     static void clearFilterElements(QQmlListProperty<OpcUaFilterElement> *list);
 
-    QVector<OpcUaFilterElement*> m_filterElements;
-    QVector<OpcUaSimpleAttributeOperand*> m_selectors;
+    QList<OpcUaFilterElement*> m_filterElements;
+    QList<OpcUaSimpleAttributeOperand*> m_selectors;
 };
 
 QT_END_NAMESPACE

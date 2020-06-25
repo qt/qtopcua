@@ -81,7 +81,7 @@ public:
 Q_SIGNALS:
     void stateAndOrErrorChanged(QOpcUaClient::ClientState state,
                                 QOpcUaClient::ClientError error);
-    void attributesRead(quint64 handle, QVector<QOpcUaReadResult> attributes, QOpcUa::UaStatusCode serviceResult);
+    void attributesRead(quint64 handle, QList<QOpcUaReadResult> attributes, QOpcUa::UaStatusCode serviceResult);
     void attributeWritten(quint64 hande, QOpcUa::NodeAttribute attribute, QVariant value, QOpcUa::UaStatusCode statusCode);
     void methodCallFinished(quint64 handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
 
@@ -90,14 +90,14 @@ Q_SIGNALS:
     void monitoringEnableDisable(quint64 handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status);
     void monitoringStatusChanged(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                            QOpcUaMonitoringParameters param);
-    void browseFinished(quint64 handle, QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
+    void browseFinished(quint64 handle, QList<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
 
-    void resolveBrowsePathFinished(quint64 handle, const QVector<QOpcUaBrowsePathTarget> &targets,
-                                     const QVector<QOpcUaRelativePathElement> &path, QOpcUa::UaStatusCode statusCode);
-    void endpointsRequestFinished(QVector<QOpcUaEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode, QUrl requestUrl);
-    void findServersFinished(QVector<QOpcUaApplicationDescription> servers, QOpcUa::UaStatusCode statusCode, QUrl requestUrl);
-    void readNodeAttributesFinished(QVector<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult);
-    void writeNodeAttributesFinished(QVector<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult);
+    void resolveBrowsePathFinished(quint64 handle, const QList<QOpcUaBrowsePathTarget> &targets,
+                                   const QList<QOpcUaRelativePathElement> &path, QOpcUa::UaStatusCode statusCode);
+    void endpointsRequestFinished(QList<QOpcUaEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode, QUrl requestUrl);
+    void findServersFinished(QList<QOpcUaApplicationDescription> servers, QOpcUa::UaStatusCode statusCode, QUrl requestUrl);
+    void readNodeAttributesFinished(QList<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult);
+    void writeNodeAttributesFinished(QList<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult);
 
     void addNodeFinished(QOpcUaExpandedNodeId requestedNodeId, QString assignedNodeId, QOpcUa::UaStatusCode statusCode);
     void deleteNodeFinished(QString nodeId, QOpcUa::UaStatusCode statusCode);

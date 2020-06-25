@@ -59,9 +59,9 @@ public:
     QString applicationUri;
     QOpcUaApplicationDescription::ApplicationType applicationType;
     QString productUri;
-    QVector<QOpcUaLocalizedText> applicationNames;
-    QVector<QString> discoveryUrls;
-    QVector<QString> serverCapabilityIdentifiers;
+    QList<QOpcUaLocalizedText> applicationNames;
+    QList<QString> discoveryUrls;
+    QList<QString> serverCapabilityIdentifiers;
 };
 
 /*!
@@ -171,7 +171,7 @@ QOpcUaApplicationDescription::ApplicationType QOpcUaApplicationRecordDataType::a
 /*!
     Sets the localized application names to \a applicationNames.
 */
-void QOpcUaApplicationRecordDataType::setApplicationNames(const QVector<QOpcUaLocalizedText> &applicationNames)
+void QOpcUaApplicationRecordDataType::setApplicationNames(const QList<QOpcUaLocalizedText> &applicationNames)
 {
     data->applicationNames = applicationNames;
 }
@@ -179,7 +179,7 @@ void QOpcUaApplicationRecordDataType::setApplicationNames(const QVector<QOpcUaLo
 /*!
     Returns the localized application names.
 */
-const QVector<QOpcUaLocalizedText> &QOpcUaApplicationRecordDataType::applicationNames() const
+const QList<QOpcUaLocalizedText> &QOpcUaApplicationRecordDataType::applicationNames() const
 {
     return data->applicationNames;
 }
@@ -203,7 +203,7 @@ const QString &QOpcUaApplicationRecordDataType::productUri() const
 /*!
     Sets the discovery URLs to \a discoverUrls.
 */
-void QOpcUaApplicationRecordDataType::setDiscoveryUrls(const QVector<QString> &discoveryUrls)
+void QOpcUaApplicationRecordDataType::setDiscoveryUrls(const QList<QString> &discoveryUrls)
 {
     data->discoveryUrls = discoveryUrls;
 }
@@ -211,7 +211,7 @@ void QOpcUaApplicationRecordDataType::setDiscoveryUrls(const QVector<QString> &d
 /*!
     Returns the discovery URLs.
 */
-const QVector<QString> &QOpcUaApplicationRecordDataType::discoveryUrls() const
+const QList<QString> &QOpcUaApplicationRecordDataType::discoveryUrls() const
 {
     return data->discoveryUrls;
 }
@@ -219,7 +219,7 @@ const QVector<QString> &QOpcUaApplicationRecordDataType::discoveryUrls() const
 /*!
     Sets the server capability identifiers to \a serverCapabilityIdentifiers.
 */
-void QOpcUaApplicationRecordDataType::setServerCapabilityIdentifiers(const QVector<QString> &serverCapabilityIdentifiers)
+void QOpcUaApplicationRecordDataType::setServerCapabilityIdentifiers(const QList<QString> &serverCapabilityIdentifiers)
 {
     data->serverCapabilityIdentifiers = serverCapabilityIdentifiers;
 }
@@ -227,7 +227,7 @@ void QOpcUaApplicationRecordDataType::setServerCapabilityIdentifiers(const QVect
 /*!
     Returns the server capability identifiers.
 */
-const QVector<QString> &QOpcUaApplicationRecordDataType::serverCapabilityIdentifiers() const
+const QList<QString> &QOpcUaApplicationRecordDataType::serverCapabilityIdentifiers() const
 {
     return data->serverCapabilityIdentifiers;
 }

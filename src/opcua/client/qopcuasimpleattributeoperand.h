@@ -65,9 +65,9 @@ public:
     QString typeId() const;
     void setTypeId(const QString &typeId);
 
-    QVector<QOpcUaQualifiedName> browsePath() const;
-    QVector<QOpcUaQualifiedName> &browsePathRef();
-    void setBrowsePath(const QVector<QOpcUaQualifiedName> &browsePath);
+    QList<QOpcUaQualifiedName> browsePath() const;
+    QList<QOpcUaQualifiedName> &browsePathRef();
+    void setBrowsePath(const QList<QOpcUaQualifiedName> &browsePath);
 
     QOpcUa::NodeAttribute attributeId() const;
     void setAttributeId(QOpcUa::NodeAttribute attributeId);

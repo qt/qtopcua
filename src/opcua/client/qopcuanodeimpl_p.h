@@ -79,9 +79,9 @@ public:
     virtual bool modifyMonitoring(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item,
                                           const QVariant &value) = 0;
 
-    virtual bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args) = 0;
+    virtual bool callMethod(const QString &methodNodeId, const QList<QOpcUa::TypedVariant> &args) = 0;
 
-    virtual bool resolveBrowsePath(const QVector<QOpcUaRelativePathElement> &path) = 0;
+    virtual bool resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path) = 0;
 
     quint64 handle() const;
     void setHandle(quint64 handle);
@@ -90,9 +90,9 @@ public:
     void setRegistered(bool registered);
 
 Q_SIGNALS:
-    void attributesRead(QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
+    void attributesRead(QList<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult);
     void attributeWritten(QOpcUa::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode);
-    void browseFinished(QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
+    void browseFinished(QList<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
 
     void dataChangeOccurred(QOpcUa::NodeAttribute attr, QOpcUaReadResult value);
     void eventOccurred(QVariantList eventFields);
@@ -100,8 +100,8 @@ Q_SIGNALS:
     void monitoringStatusChanged(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
                            QOpcUaMonitoringParameters param);
     void methodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
-    void resolveBrowsePathFinished(QVector<QOpcUaBrowsePathTarget> targets,
-                                     QVector<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode status);
+    void resolveBrowsePathFinished(QList<QOpcUaBrowsePathTarget> targets,
+                                     QList<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode status);
 
 private:
     quint64 m_handle;

@@ -119,11 +119,11 @@ static void commonGdsClientSetup(QOpcUaGdsClient &gc, const QString &backend, co
     gc.setPkiConfiguration(getPkiConfig());
 
     QOpcUaApplicationRecordDataType ar = gc.applicationRecord();
-    ar.setApplicationNames(QVector<QOpcUaLocalizedText>{QOpcUaLocalizedText("en",  gc.applicationIdentity().applicationName())});
+    ar.setApplicationNames(QList<QOpcUaLocalizedText>{QOpcUaLocalizedText("en",  gc.applicationIdentity().applicationName())});
     ar.setApplicationType(gc.applicationIdentity().applicationType());
     ar.setApplicationUri(gc.applicationIdentity().applicationUri());
     ar.setProductUri(gc.applicationIdentity().productUri());
-    ar.setDiscoveryUrls(QVector<QString>{QLatin1String("opc.tcp://localhost")});
+    ar.setDiscoveryUrls(QList<QString>{QLatin1String("opc.tcp://localhost")});
     gc.setApplicationRecord(ar);
 
     QOpcUaX509DistinguishedName dn;
@@ -177,7 +177,7 @@ void Tst_QOpcUaGds::initTestCase()
     endpointSpy.wait(2000);
     QCOMPARE(endpointSpy.size(), 1);
 
-    const QVector<QOpcUaEndpointDescription> desc = endpointSpy.at(0).at(0).value<QVector<QOpcUaEndpointDescription>>();
+    const auto desc = endpointSpy.at(0).at(0).value<QList<QOpcUaEndpointDescription>>();
     QVERIFY(desc.size() > 0);
 
     for (const auto &i : qAsConst(desc)) {

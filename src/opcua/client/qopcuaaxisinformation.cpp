@@ -59,7 +59,7 @@ public:
     QOpcUaRange eURange;
     QOpcUaLocalizedText title;
     QOpcUa::AxisScale axisScaleType{QOpcUa::AxisScale::Linear};
-    QVector<double> axisSteps;
+    QList<double> axisSteps;
 };
 
 QOpcUaAxisInformation::QOpcUaAxisInformation()
@@ -145,7 +145,7 @@ void QOpcUaAxisInformation::setAxisScaleType(QOpcUa::AxisScale axisScaleType)
     If the steps are different for each point but constant over a longer time, there is an entry for
     each data point.
 */
-QVector<double> QOpcUaAxisInformation::axisSteps() const
+QList<double> QOpcUaAxisInformation::axisSteps() const
 {
     return data->axisSteps;
 }
@@ -153,7 +153,7 @@ QVector<double> QOpcUaAxisInformation::axisSteps() const
 /*!
     Sets the axis steps to \a axisSteps.
 */
-void QOpcUaAxisInformation::setAxisSteps(const QVector<double> &axisSteps)
+void QOpcUaAxisInformation::setAxisSteps(const QList<double> &axisSteps)
 {
     data->axisSteps = axisSteps;
 }
@@ -161,7 +161,7 @@ void QOpcUaAxisInformation::setAxisSteps(const QVector<double> &axisSteps)
 /*!
     Returns a reference to the axis steps.
 */
-QVector<double> &QOpcUaAxisInformation::axisStepsRef()
+QList<double> &QOpcUaAxisInformation::axisStepsRef()
 {
     return data->axisSteps;
 }
@@ -207,7 +207,7 @@ QOpcUaAxisInformation::operator QVariant() const
     range \a eURange, title \a title, scaling \a axisScaleType and axis steps \a axisSteps.
 */
 QOpcUaAxisInformation::QOpcUaAxisInformation(const QOpcUaEUInformation &engineeringUnits, const QOpcUaRange &eURange, const QOpcUaLocalizedText &title,
-                                           const QOpcUa::AxisScale &axisScaleType, const QVector<double> &axisSteps)
+                                             const QOpcUa::AxisScale &axisScaleType, const QList<double> &axisSteps)
     : data (new QOpcUaAxisInformationData)
 {
     data->engineeringUnits = engineeringUnits;

@@ -109,7 +109,7 @@ private:
     void setError(QOpcUaGdsClient::Error);
     void setState(QOpcUaGdsClient::State);
     void _q_handleDirectoryNodeMethodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
-    void _q_handleResolveBrowsePathFinished(QVector<QOpcUaBrowsePathTarget> targets, QVector<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode statusCode);
+    void _q_handleResolveBrowsePathFinished(QList<QOpcUaBrowsePathTarget> targets, QList<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode statusCode);
     void _q_certificateCheckTimeout();
     void _q_updateTrustList();
 

@@ -70,7 +70,7 @@ public:
         , m_client(client)
     {
         m_attributesReadConnection = QObject::connect(impl, &QOpcUaNodeImpl::attributesRead,
-                [this](QVector<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
+                [this](QList<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
         {
             QOpcUa::NodeAttributes updatedAttributes;
             Q_Q(QOpcUaNode);
@@ -183,14 +183,14 @@ public:
         });
 
         m_browseFinishedConnection = QObject::connect(impl, &QOpcUaNodeImpl::browseFinished,
-                [this](QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode)
+                [this](QList<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode)
         {
             Q_Q(QOpcUaNode);
             emit q->browseFinished(children, statusCode);
         });
 
         m_resolveBrowsePathFinishedConnection = QObject::connect(impl, &QOpcUaNodeImpl::resolveBrowsePathFinished,
-                [this](QVector<QOpcUaBrowsePathTarget> targets, QVector<QOpcUaRelativePathElement> path,
+                [this](QList<QOpcUaBrowsePathTarget> targets, QList<QOpcUaRelativePathElement> path,
                                                                    QOpcUa::UaStatusCode statusCode)
         {
             Q_Q(QOpcUaNode);

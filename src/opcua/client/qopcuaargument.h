@@ -53,7 +53,7 @@ public:
     QOpcUaArgument();
     QOpcUaArgument(const QOpcUaArgument &rhs);
     QOpcUaArgument(const QString &name, const QString &dataTypeId, qint32 valueRank,
-              const QVector<quint32> &arrayDimensions, const QOpcUaLocalizedText &description);
+                   const QList<quint32> &arrayDimensions, const QOpcUaLocalizedText &description);
     QOpcUaArgument &operator=(const QOpcUaArgument &);
     bool operator==(const QOpcUaArgument &other) const;
     operator QVariant() const;
@@ -68,9 +68,9 @@ public:
     qint32 valueRank() const;
     void setValueRank(qint32 valueRank);
 
-    QVector<quint32> arrayDimensions() const;
-    QVector<quint32> &arrayDimensionsRef();
-    void setArrayDimensions(const QVector<quint32> &arrayDimensions);
+    QList<quint32> arrayDimensions() const;
+    QList<quint32> &arrayDimensionsRef();
+    void setArrayDimensions(const QList<quint32> &arrayDimensions);
 
     QOpcUaLocalizedText description() const;
     void setDescription(const QOpcUaLocalizedText &description);

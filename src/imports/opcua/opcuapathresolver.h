@@ -64,7 +64,7 @@ signals:
 
 private slots:
     void startNodeResolved(UniversalNode startNode, const QString &errorMessage);
-    void browsePathFinished(QVector<QOpcUaBrowsePathTarget> results, QVector<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode status);
+    void browsePathFinished(QList<QOpcUaBrowsePathTarget> results, QList<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode status);
 
 private:
     OpcUaPathResolver(int level, OpcUaRelativeNodeId *relativeNode, QOpcUaClient *client, QObject *target);

@@ -66,9 +66,9 @@ public:
     QString alias() const;
     void setAlias(const QString &alias);
 
-    QVector<QOpcUaRelativePathElement> browsePath() const;
-    QVector<QOpcUaRelativePathElement> &browsePathRef();
-    void setBrowsePath(const QVector<QOpcUaRelativePathElement> &browsePath);
+    QList<QOpcUaRelativePathElement> browsePath() const;
+    QList<QOpcUaRelativePathElement> &browsePathRef();
+    void setBrowsePath(const QList<QOpcUaRelativePathElement> &browsePath);
 
     QOpcUa::NodeAttribute attributeId() const;
     void setAttributeId(QOpcUa::NodeAttribute attributeId);

@@ -308,7 +308,7 @@ bool QOpcUaNodeCreationAttributes::hasAccessLevel() const
 /*!
     Returns the value for the ArrayDimensions attribute.
 */
-QVector<quint32> QOpcUaNodeCreationAttributes::arrayDimensions() const
+QList<quint32> QOpcUaNodeCreationAttributes::arrayDimensions() const
 {
     return data->arrayDimensions;
 }
@@ -316,7 +316,7 @@ QVector<quint32> QOpcUaNodeCreationAttributes::arrayDimensions() const
 /*!
     Sets the value for the ArrayDimensions attribute to \a arrayDimensions.
 */
-void QOpcUaNodeCreationAttributes::setArrayDimensions(const QVector<quint32> &arrayDimensions)
+void QOpcUaNodeCreationAttributes::setArrayDimensions(const QList<quint32> &arrayDimensions)
 {
     data->arrayDimensions = arrayDimensions;
     data->setAttributeInMask(QOpcUaNodeCreationAttributesPrivate::BitMask::ArrayDimensions);

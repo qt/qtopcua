@@ -388,7 +388,7 @@ QOpcUaDoubleComplexNumber scalarToQt<QOpcUaDoubleComplexNumber, UA_DoubleComplex
 template<>
 QOpcUaAxisInformation scalarToQt<QOpcUaAxisInformation, UA_AxisInformation>(const UA_AxisInformation *data)
 {
-    QVector<double> axisSteps;
+    QList<double> axisSteps;
 
     if (data->axisStepsSize) {
         axisSteps.reserve(data->axisStepsSize);
@@ -530,10 +530,10 @@ QVariant arrayToQVariant(const UA_Variant &var, QMetaType::Type type)
         }
 
         if (var.arrayDimensionsSize > 0) {
-            // Ensure that the array dimensions fit in a QVector
+            // Ensure that the array dimensions fit in a QList
             if (var.arrayDimensionsSize > static_cast<quint64>((std::numeric_limits<int>::max)()))
                 return QOpcUaMultiDimensionalArray();
-            QVector<quint32> arrayDimensions;
+            QList<quint32> arrayDimensions;
             std::copy(var.arrayDimensions, var.arrayDimensions+var.arrayDimensionsSize, std::back_inserter(arrayDimensions));
             return QOpcUaMultiDimensionalArray(list, arrayDimensions);
         }

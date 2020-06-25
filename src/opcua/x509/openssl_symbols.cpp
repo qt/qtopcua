@@ -557,8 +557,8 @@ struct LibGreaterThan
     typedef bool result_type;
     result_type operator()(const QString &lhs, const QString &rhs) const
     {
-        const QVector<QStringView> lhsparts = QStringView{lhs}.split(QLatin1Char('.'));
-        const QVector<QStringView> rhsparts = QStringView{rhs}.split(QLatin1Char('.'));
+        const QList<QStringView> lhsparts = QStringView{lhs}.split(QLatin1Char('.'));
+        const QList<QStringView> rhsparts = QStringView{rhs}.split(QLatin1Char('.'));
         Q_ASSERT(lhsparts.count() > 1 && rhsparts.count() > 1);
 
         // note: checking rhs < lhs, the same as lhs > rhs

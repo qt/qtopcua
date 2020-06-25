@@ -37,7 +37,7 @@
 #include "qopcuax509extensionsubjectalternativename.h"
 #include "qopcuax509extension_p.h"
 
-#include <QVector>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 
@@ -71,7 +71,7 @@ QT_BEGIN_NAMESPACE
 class QOpcUaX509ExtensionSubjectAlternativeNameData : public QOpcUaX509ExtensionData
 {
 public:
-    QVector <QPair<QOpcUaX509ExtensionSubjectAlternativeName::Type, QString>> entries;
+    QList <QPair<QOpcUaX509ExtensionSubjectAlternativeName::Type, QString>> entries;
 };
 
 /*!
@@ -127,7 +127,7 @@ void QOpcUaX509ExtensionSubjectAlternativeName::addEntry(QOpcUaX509ExtensionSubj
 /*!
     Returns the vector of entries.
 */
-const QVector<QPair<QOpcUaX509ExtensionSubjectAlternativeName::Type, QString>> &QOpcUaX509ExtensionSubjectAlternativeName::entries() const
+const QList<QPair<QOpcUaX509ExtensionSubjectAlternativeName::Type, QString>> &QOpcUaX509ExtensionSubjectAlternativeName::entries() const
 {
     const QOpcUaX509ExtensionSubjectAlternativeNameData *d = static_cast<const QOpcUaX509ExtensionSubjectAlternativeNameData*>(data.data());
     return d->entries;

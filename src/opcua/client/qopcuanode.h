@@ -98,9 +98,9 @@ public:
     QString nodeId() const;
     QOpcUaClient *client() const;
 
-    bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args = QVector<QOpcUa::TypedVariant>());
+    bool callMethod(const QString &methodNodeId, const QList<QOpcUa::TypedVariant> &args = QList<QOpcUa::TypedVariant>());
 
-    bool resolveBrowsePath(const QVector<QOpcUaRelativePathElement> &path);
+    bool resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path);
 
     bool browse(const QOpcUaBrowseRequest &request);
 
@@ -116,9 +116,9 @@ Q_SIGNALS:
     void enableMonitoringFinished(QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode);
     void disableMonitoringFinished(QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode);
     void methodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
-    void browseFinished(QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
-    void resolveBrowsePathFinished(QVector<QOpcUaBrowsePathTarget> targets,
-                                     QVector<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode statusCode);
+    void browseFinished(QList<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode);
+    void resolveBrowsePathFinished(QList<QOpcUaBrowsePathTarget> targets,
+                                   QList<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode statusCode);
 
 private:
     Q_DISABLE_COPY(QOpcUaNode)

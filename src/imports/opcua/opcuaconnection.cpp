@@ -464,7 +464,7 @@ bool OpcUaConnection::readNodeAttributes(const QJSValue &value)
         return false;
     }
 
-    QVector<QOpcUaReadItem> readItemList;
+    QList<QOpcUaReadItem> readItemList;
 
     for (int i = 0; i < value.property("length").toInt(); ++i){
         const auto &readItem = qjsvalue_cast<OpcUaReadItem>(value.property(i));
@@ -548,7 +548,7 @@ bool OpcUaConnection::writeNodeAttributes(const QJSValue &value)
         return false;
     }
 
-    QVector<QOpcUaWriteItem> writeItemList;
+    QList<QOpcUaWriteItem> writeItemList;
 
     for (int i = 0; i < value.property("length").toInt(); ++i){
         const auto &writeItem = qjsvalue_cast<OpcUaWriteItem>(value.property(i));
@@ -618,7 +618,7 @@ QOpcUaClient *OpcUaConnection::connection() const
     return m_client;
 }
 
-void OpcUaConnection::handleReadNodeAttributesFinished(const QVector<QOpcUaReadResult> &results)
+void OpcUaConnection::handleReadNodeAttributesFinished(const QList<QOpcUaReadResult> &results)
 {
     QVariantList returnValue;
 
@@ -628,7 +628,7 @@ void OpcUaConnection::handleReadNodeAttributesFinished(const QVector<QOpcUaReadR
     emit readNodeAttributesFinished(QVariant::fromValue(returnValue));
 }
 
-void OpcUaConnection::handleWriteNodeAttributesFinished(const QVector<QOpcUaWriteResult> &results)
+void OpcUaConnection::handleWriteNodeAttributesFinished(const QList<QOpcUaWriteResult> &results)
 {
     QVariantList returnValue;
 

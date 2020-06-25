@@ -40,7 +40,7 @@
 #include "opcuaoperandbase.h"
 #include <QOpcUaSimpleAttributeOperand>
 #include <QQmlListProperty>
-#include <QVector>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 
@@ -84,7 +84,7 @@ private:
     static OpcUaNodeId* browsePathElement(QQmlListProperty<OpcUaNodeId> *list, int index);
     static void clearBrowsePath(QQmlListProperty<OpcUaNodeId> *list);
 
-    QVector<OpcUaNodeId*> m_browsePath;
+    QList<OpcUaNodeId*> m_browsePath;
 };
 
 QT_END_NAMESPACE

@@ -51,7 +51,7 @@
 #include "QtOpcUa/qopcuax509extension.h"
 #include "QtOpcUa/qopcuax509distinguishedname.h"
 #include "QtOpcUa/qopcuakeypair.h"
-#include <QVector>
+#include <QList>
 #include <QtOpcUa/qopcuaglobal.h>
 #include "qopcuax509certificatesigningrequest.h"
 
@@ -77,7 +77,7 @@ public:
     QByteArray createSelfSignedCertificate(const QOpcUaKeyPair &privateKey, int validityInDays);
 
 private:
-    QVector<QOpcUaX509Extension *> m_extensions;
+    QList<QOpcUaX509Extension *> m_extensions;
     QOpcUaX509CertificateSigningRequest::MessageDigest m_messageDigest = QOpcUaX509CertificateSigningRequest::MessageDigest::SHA256;
     QOpcUaX509DistinguishedName m_subject;
     QOpcUaX509CertificateSigningRequest::Encoding m_encoding = QOpcUaX509CertificateSigningRequest::Encoding::PEM;

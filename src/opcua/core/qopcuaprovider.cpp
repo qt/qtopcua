@@ -138,7 +138,7 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
 {
     qRegisterMetaType<QOpcUa::Types>();
     qRegisterMetaType<QOpcUa::TypedVariant>();
-    qRegisterMetaType<QVector<QOpcUa::TypedVariant>>();
+    qRegisterMetaType<QList<QOpcUa::TypedVariant>>();
     qRegisterMetaType<QOpcUa::UaStatusCode>();
     qRegisterMetaType<QOpcUa::NodeClass>();
     qRegisterMetaType<QOpcUa::NodeClasses>();
@@ -146,7 +146,7 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUa::NodeAttribute>();
     qRegisterMetaType<QOpcUa::NodeAttributes>();
     qRegisterMetaType<QOpcUaNode::AttributeMap>();
-    qRegisterMetaType<QVector<QOpcUaReadResult>>();
+    qRegisterMetaType<QList<QOpcUaReadResult>>();
     qRegisterMetaType<QOpcUaClient::ClientState>();
     qRegisterMetaType<QOpcUaClient::ClientError>();
     qRegisterMetaType<QOpcUa::ReferenceTypeId>();
@@ -155,7 +155,7 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUaMonitoringParameters::Parameters>();
     qRegisterMetaType<QOpcUaMonitoringParameters>();
     qRegisterMetaType<QOpcUaReferenceDescription>();
-    qRegisterMetaType<QVector<QOpcUaReferenceDescription>>();
+    qRegisterMetaType<QList<QOpcUaReferenceDescription>>();
     qRegisterMetaType<QOpcUa::ReferenceTypeId>();
     qRegisterMetaType<QOpcUaRange>();
     qRegisterMetaType<QOpcUaEUInformation>();
@@ -165,27 +165,27 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QOpcUaXValue>();
     qRegisterMetaType<QOpcUaExpandedNodeId>();
     qRegisterMetaType<QOpcUaRelativePathElement>();
-    qRegisterMetaType<QVector<QOpcUaRelativePathElement>>();
+    qRegisterMetaType<QList<QOpcUaRelativePathElement>>();
     qRegisterMetaType<QOpcUaBrowsePathTarget>();
-    qRegisterMetaType<QVector<QOpcUaBrowsePathTarget>>();
+    qRegisterMetaType<QList<QOpcUaBrowsePathTarget>>();
     qRegisterMetaType<QOpcUaEndpointDescription>();
-    qRegisterMetaType<QVector<QOpcUaEndpointDescription>>();
+    qRegisterMetaType<QList<QOpcUaEndpointDescription>>();
     qRegisterMetaType<QOpcUaArgument>();
     qRegisterMetaType<QOpcUaExtensionObject>();
     qRegisterMetaType<QOpcUaBrowseRequest>();
     qRegisterMetaType<QOpcUaReadItem>();
     qRegisterMetaType<QOpcUaReadResult>();
-    qRegisterMetaType<QVector<QOpcUaReadItem>>();
-    qRegisterMetaType<QVector<QOpcUaReadResult>>();
+    qRegisterMetaType<QList<QOpcUaReadItem>>();
+    qRegisterMetaType<QList<QOpcUaReadResult>>();
     qRegisterMetaType<QOpcUaWriteItem>();
     qRegisterMetaType<QOpcUaWriteResult>();
-    qRegisterMetaType<QVector<QOpcUaWriteItem>>();
-    qRegisterMetaType<QVector<QOpcUaWriteResult>>();
+    qRegisterMetaType<QList<QOpcUaWriteItem>>();
+    qRegisterMetaType<QList<QOpcUaWriteResult>>();
     qRegisterMetaType<QOpcUaNodeCreationAttributes>();
     qRegisterMetaType<QOpcUaAddNodeItem>();
     qRegisterMetaType<QOpcUaAddReferenceItem>();
     qRegisterMetaType<QOpcUaDeleteReferenceItem>();
-    qRegisterMetaType<QVector<QOpcUaApplicationDescription>>();
+    qRegisterMetaType<QList<QOpcUaApplicationDescription>>();
     qRegisterMetaType<QOpcUaApplicationIdentity>();
     qRegisterMetaType<QOpcUaPkiConfiguration>();
 }

@@ -230,7 +230,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QOpcUaNode::browseFinished(QVector<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode)
+    \fn void QOpcUaNode::browseFinished(QList<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode)
 
     This signal is emitted after a \l browseChildren() or \l browse() operation has finished.
 
@@ -241,7 +241,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QOpcUaNode::resolveBrowsePathFinished(QVector<QOpcUaBrowsePathTarget> targets, QVector<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode statusCode)
+    \fn void QOpcUaNode::resolveBrowsePathFinished(QList<QOpcUaBrowsePathTarget> targets, QList<QOpcUaRelativePathElement> path, QOpcUa::UaStatusCode statusCode)
 
     This signal is emitted after a \l resolveBrowsePath() call has finished.
 
@@ -695,7 +695,7 @@ QOpcUaClient *QOpcUaNode::client() const
 
     Returns \c true if the asynchronous call has been successfully dispatched.
 */
-bool QOpcUaNode::callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args)
+bool QOpcUaNode::callMethod(const QString &methodNodeId, const QList<QOpcUa::TypedVariant> &args)
 {
     Q_D(QOpcUaNode);
     if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
@@ -723,7 +723,7 @@ bool QOpcUaNode::callMethod(const QString &methodNodeId, const QVector<QOpcUa::T
     \code
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=1;s=machine1"));
 
-    QVector<QOpcUaRelativePathElement> path;
+    QList<QOpcUaRelativePathElement> path;
     path.append(QOpcUaRelativePathElement(QOpcUaQualifiedName(1, "Fan"), QOpcUa::ReferenceTypeId::HasComponent));
     path.append(QOpcUaRelativePathElement(QOpcUaQualifiedName(1, "RPM"), QOpcUa::ReferenceTypeId::HasComponent));
     node->resolveBrowsePath(path);
@@ -751,7 +751,7 @@ bool QOpcUaNode::callMethod(const QString &methodNodeId, const QVector<QOpcUa::T
     }
     \endcode
 */
-bool QOpcUaNode::resolveBrowsePath(const QVector<QOpcUaRelativePathElement> &path)
+bool QOpcUaNode::resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path)
 {
     Q_D(QOpcUaNode);
     if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)

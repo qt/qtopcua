@@ -195,7 +195,7 @@ static X509_EXTENSION *createExtension(QOpcUaX509Extension *extension)
 }
 
 static bool setSubjectName(X509_NAME *subject, const QOpcUaX509DistinguishedName &dn) {
-    QVector<QOpcUaX509DistinguishedName::Type>  entries = {
+    QList<QOpcUaX509DistinguishedName::Type> entries = {
         QOpcUaX509DistinguishedName::Type::CommonName,
         QOpcUaX509DistinguishedName::Type::CountryName,
         QOpcUaX509DistinguishedName::Type::LocalityName,

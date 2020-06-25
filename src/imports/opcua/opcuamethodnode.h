@@ -40,7 +40,7 @@
 #include "opcuamethodargument.h"
 #include "opcuastatus.h"
 #include <QQmlListProperty>
-#include <QVector>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 
@@ -89,7 +89,7 @@ private:
 private:
     OpcUaNodeIdType *m_objectNodeId = nullptr;
     OpcUaNode *m_objectNode = nullptr;
-    QVector<OpcUaMethodArgument*> m_inputArguments;
+    QList<OpcUaMethodArgument*> m_inputArguments;
     QVariantList m_outputArguments;
     OpcUaStatus m_resultStatus;
 };

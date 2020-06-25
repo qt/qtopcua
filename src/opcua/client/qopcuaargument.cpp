@@ -55,7 +55,7 @@ public:
     QString name;
     QString dataTypeId;
     qint32 valueRank{-2};
-    QVector<quint32> arrayDimensions;
+    QList<quint32> arrayDimensions;
     QOpcUaLocalizedText description;
 };
 
@@ -74,7 +74,7 @@ QOpcUaArgument::QOpcUaArgument(const QOpcUaArgument &rhs)
     array dimensions \a arrayDimensions and description \a description.
 */
 QOpcUaArgument::QOpcUaArgument(const QString &name, const QString &dataTypeId, qint32 valueRank,
-                             const QVector<quint32> &arrayDimensions, const QOpcUaLocalizedText &description)
+                               const QList<quint32> &arrayDimensions, const QOpcUaLocalizedText &description)
     : data(new QOpcUaArgumentData)
 {
     setName(name);
@@ -195,7 +195,7 @@ void QOpcUaArgument::setValueRank(qint32 valueRank)
 
     The array dimensions describe the length of each array dimension.
 */
-QVector<quint32> QOpcUaArgument::arrayDimensions() const
+QList<quint32> QOpcUaArgument::arrayDimensions() const
 {
     return data->arrayDimensions;
 }
@@ -203,7 +203,7 @@ QVector<quint32> QOpcUaArgument::arrayDimensions() const
 /*!
     Returns a reference to the array dimensions of the argument.
 */
-QVector<quint32> &QOpcUaArgument::arrayDimensionsRef()
+QList<quint32> &QOpcUaArgument::arrayDimensionsRef()
 {
     return data->arrayDimensions;
 }
@@ -211,7 +211,7 @@ QVector<quint32> &QOpcUaArgument::arrayDimensionsRef()
 /*!
     Sets the array dimensions of the argument to \a arrayDimensions.
 */
-void QOpcUaArgument::setArrayDimensions(const QVector<quint32> &arrayDimensions)
+void QOpcUaArgument::setArrayDimensions(const QList<quint32> &arrayDimensions)
 {
     data->arrayDimensions = arrayDimensions;
 }

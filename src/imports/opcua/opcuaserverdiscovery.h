@@ -75,7 +75,7 @@ signals:
 
 private slots:
     void connectSignals();
-    void handleServers(const QVector<QOpcUaApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode, const QUrl &requestUrl);
+    void handleServers(const QList<QOpcUaApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode, const QUrl &requestUrl);
     void startFindServers();
 
 private:

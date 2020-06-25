@@ -58,8 +58,8 @@ public:
     void setAccessLevel(QOpcUa::AccessLevel accessLevel);
     bool hasAccessLevel() const;
 
-    QVector<quint32> arrayDimensions() const;
-    void setArrayDimensions(const QVector<quint32> &arrayDimensions);
+    QList<quint32> arrayDimensions() const;
+    void setArrayDimensions(const QList<quint32> &arrayDimensions);
     bool hasArrayDimensions() const;
 
     bool containsNoLoops() const;

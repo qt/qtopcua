@@ -55,9 +55,9 @@ public:
     QOpcUa::UaStatusCode statusCode() const;
     void setStatusCode(QOpcUa::UaStatusCode statusCode);
 
-    QVector<QOpcUa::UaStatusCode> operandStatusCodes() const;
-    QVector<QOpcUa::UaStatusCode> &operandStatusCodesRef();
-    void setOperandStatusCodes(const QVector<QOpcUa::UaStatusCode> &operandStatusCodes);
+    QList<QOpcUa::UaStatusCode> operandStatusCodes() const;
+    QList<QOpcUa::UaStatusCode> &operandStatusCodesRef();
+    void setOperandStatusCodes(const QList<QOpcUa::UaStatusCode> &operandStatusCodes);
 
 private:
     QSharedDataPointer<QOpcUaContentFilterElementResultData> data;

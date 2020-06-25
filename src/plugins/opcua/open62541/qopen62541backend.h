@@ -65,12 +65,12 @@ public Q_SLOTS:
     void enableMonitoring(quint64 handle, UA_NodeId id, QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings);
     void disableMonitoring(quint64 handle, QOpcUa::NodeAttributes attr);
     void modifyMonitoring(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value);
-    void callMethod(quint64 handle, UA_NodeId objectId, UA_NodeId methodId, QVector<QOpcUa::TypedVariant> args);
-    void resolveBrowsePath(quint64 handle, UA_NodeId startNode, const QVector<QOpcUaRelativePathElement> &path);
+    void callMethod(quint64 handle, UA_NodeId objectId, UA_NodeId methodId, QList<QOpcUa::TypedVariant> args);
+    void resolveBrowsePath(quint64 handle, UA_NodeId startNode, const QList<QOpcUaRelativePathElement> &path);
     void findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris);
 
-    void readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead);
-    void writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWrite);
+    void readNodeAttributes(const QList<QOpcUaReadItem> &nodesToRead);
+    void writeNodeAttributes(const QList<QOpcUaWriteItem> &nodesToWrite);
 
     // Node management
     void addNode(const QOpcUaAddNodeItem &nodeToAdd);
@@ -83,7 +83,7 @@ public Q_SLOTS:
     bool removeSubscription(UA_UInt32 subscriptionId);
     void iterateClient();
     void reevaluateClientIterateTimer();
-    void handleSubscriptionTimeout(QOpen62541Subscription *sub, QVector<QPair<quint64, QOpcUa::NodeAttribute>> items);
+    void handleSubscriptionTimeout(QOpen62541Subscription *sub, QList<QPair<quint64, QOpcUa::NodeAttribute>> items);
     void cleanupSubscriptions();
 
 public:
@@ -105,7 +105,7 @@ private:
     QOpcUaApplicationDescription convertApplicationDescription(UA_ApplicationDescription &desc);
 
     UA_ExtensionObject assembleNodeAttributes(const QOpcUaNodeCreationAttributes &nodeAttributes, QOpcUa::NodeClass nodeClass);
-    UA_UInt32 *copyArrayDimensions(const QVector<quint32> &arrayDimensions, size_t *outputSize);
+    UA_UInt32 *copyArrayDimensions(const QList<quint32> &arrayDimensions, size_t *outputSize);
 
     // Helper
     bool loadFileToByteString(const QString &location, UA_ByteString *target) const;

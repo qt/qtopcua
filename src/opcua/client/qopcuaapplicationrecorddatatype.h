@@ -66,17 +66,17 @@ public:
     void setApplicationUri(const QString &applicationUri);
     const QString &applicationUri() const;
 
-    void setApplicationNames(const QVector<QOpcUaLocalizedText> &applicationNames);
-    const QVector<QOpcUaLocalizedText> &applicationNames() const;
+    void setApplicationNames(const QList<QOpcUaLocalizedText> &applicationNames);
+    const QList<QOpcUaLocalizedText> &applicationNames() const;
 
     void setProductUri(const QString &productUri);
     const QString &productUri() const;
 
-    void setDiscoveryUrls(const QVector<QString> &discoveryUrls);
-    const QVector<QString> &discoveryUrls() const;
+    void setDiscoveryUrls(const QList<QString> &discoveryUrls);
+    const QList<QString> &discoveryUrls() const;
 
-    void setServerCapabilityIdentifiers(const QVector<QString> &serverCapabilityIdentifiers);
-    const QVector<QString> &serverCapabilityIdentifiers() const;
+    void setServerCapabilityIdentifiers(const QList<QString> &serverCapabilityIdentifiers);
+    const QList<QString> &serverCapabilityIdentifiers() const;
 
 private:
     QSharedDataPointer<QOpcUaApplicationRecordDataTypeData> data;

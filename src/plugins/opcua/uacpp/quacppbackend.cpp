@@ -167,7 +167,7 @@ void UACppAsyncBackend::browse(quint64 handle, const UaNodeId &id, const QOpcUaB
     browseContext.browseDirection = static_cast<OpcUa_BrowseDirection>(request.browseDirection());
 
     QStringList result;
-    QVector<QOpcUaReferenceDescription> ret;
+    QList<QOpcUaReferenceDescription> ret;
     status = m_nativeSession->browse(serviceSettings, id, browseContext, continuationPoint, referenceDescriptions);
     bool initialBrowse = true;
     do {
@@ -377,7 +377,7 @@ void UACppAsyncBackend::requestEndpoints(const QUrl &url)
     ServiceSettings ServiceSettings;
     ClientSecurityInfo clientSecurityInfo;
     UaEndpointDescriptions endpoints;
-    QVector<QOpcUaEndpointDescription> ret;
+    QList<QOpcUaEndpointDescription> ret;
 
     UaStatus res = discovery.getEndpoints(ServiceSettings, UaString(url.toString(QUrl::RemoveUserInfo).toUtf8().data()), clientSecurityInfo, endpoints);
 
@@ -432,7 +432,7 @@ void UACppAsyncBackend::readAttributes(quint64 handle, const UaNodeId &id, QOpcU
     UaDataValues values;
     UaDiagnosticInfos diagnosticInfos;
 
-    QVector<QOpcUaReadResult> vec;
+    QList<QOpcUaReadResult> vec;
 
     int attributeSize = 0;
 
@@ -612,7 +612,7 @@ void UACppAsyncBackend::disableMonitoring(quint64 handle, QOpcUa::NodeAttributes
     });
 }
 
-void UACppAsyncBackend::callMethod(quint64 handle, const UaNodeId &objectId, const UaNodeId &methodId, QVector<QOpcUa::TypedVariant> args)
+void UACppAsyncBackend::callMethod(quint64 handle, const UaNodeId &objectId, const UaNodeId &methodId, QList<QOpcUa::TypedVariant> args)
 {
     ServiceSettings settings;
     CallIn in;
@@ -649,7 +649,7 @@ void UACppAsyncBackend::callMethod(quint64 handle, const UaNodeId &objectId, con
     emit methodCallFinished(handle, UACppUtils::nodeIdToQString(methodId), result, static_cast<QOpcUa::UaStatusCode>(status.statusCode()));
 }
 
-void UACppAsyncBackend::resolveBrowsePath(quint64 handle, const UaNodeId &startNode, const QVector<QOpcUaRelativePathElement> &path)
+void UACppAsyncBackend::resolveBrowsePath(quint64 handle, const UaNodeId &startNode, const QList<QOpcUaRelativePathElement> &path)
 {
     ServiceSettings settings;
     UaDiagnosticInfos diagnosticInfos;
@@ -674,7 +674,7 @@ void UACppAsyncBackend::resolveBrowsePath(quint64 handle, const UaNodeId &startN
     UaStatusCode serviceResult = m_nativeSession->translateBrowsePathsToNodeIds(settings, paths, result, diagnosticInfos);
     QOpcUa::UaStatusCode status = static_cast<QOpcUa::UaStatusCode>(serviceResult.code());
 
-    QVector<QOpcUaBrowsePathTarget> ret;
+    QList<QOpcUaBrowsePathTarget> ret;
 
     if (status == QOpcUa::UaStatusCode::Good && result.length()) {
         status = static_cast<QOpcUa::UaStatusCode>(result[0].StatusCode);
@@ -762,7 +762,7 @@ void UACppAsyncBackend::findServers(const QUrl &url, const QStringList &localeId
                                             uaServerUris,
                                             applicationDescriptions);
 
-    QVector<QOpcUaApplicationDescription> ret;
+    QList<QOpcUaApplicationDescription> ret;
 
     for (OpcUa_UInt32 i = 0; i < applicationDescriptions.length(); ++i) {
         QOpcUaApplicationDescription temp;
@@ -792,10 +792,10 @@ void UACppAsyncBackend::findServers(const QUrl &url, const QStringList &localeId
     emit findServersFinished(ret, static_cast<QOpcUa::UaStatusCode>(result.statusCode()), url);
 }
 
-void UACppAsyncBackend::readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead)
+void UACppAsyncBackend::readNodeAttributes(const QList<QOpcUaReadItem> &nodesToRead)
 {
     if (nodesToRead.size() == 0) {
-        emit readNodeAttributesFinished(QVector<QOpcUaReadResult>(), QOpcUa::UaStatusCode::BadNothingToDo);
+        emit readNodeAttributesFinished(QList<QOpcUaReadResult>(), QOpcUa::UaStatusCode::BadNothingToDo);
         return;
     }
 
@@ -823,9 +823,9 @@ void UACppAsyncBackend::readNodeAttributes(const QVector<QOpcUaReadItem> &nodesT
 
     if (result.isBad()) {
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Batch read failed:" << result.toString();
-        emit readNodeAttributesFinished(QVector<QOpcUaReadResult>(), status);
+        emit readNodeAttributesFinished(QList<QOpcUaReadResult>(), status);
     } else {
-        QVector<QOpcUaReadResult> ret;
+        QList<QOpcUaReadResult> ret;
 
         for (int i = 0; i < nodesToRead.size(); ++i) {
             QOpcUaReadResult item;
@@ -854,10 +854,10 @@ void UACppAsyncBackend::readNodeAttributes(const QVector<QOpcUaReadItem> &nodesT
     }
 }
 
-void UACppAsyncBackend::writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWrite)
+void UACppAsyncBackend::writeNodeAttributes(const QList<QOpcUaWriteItem> &nodesToWrite)
 {
     if (nodesToWrite.isEmpty()) {
-        emit writeNodeAttributesFinished(QVector<QOpcUaWriteResult>(), QOpcUa::UaStatusCode::BadNothingToDo);
+        emit writeNodeAttributesFinished(QList<QOpcUaWriteResult>(), QOpcUa::UaStatusCode::BadNothingToDo);
         return;
     }
 
@@ -895,9 +895,9 @@ void UACppAsyncBackend::writeNodeAttributes(const QVector<QOpcUaWriteItem> &node
 
     if (result.isBad()) {
         qCWarning(QT_OPCUA_PLUGINS_UACPP) << "Batch write failed:" << result.toString();
-        emit writeNodeAttributesFinished(QVector<QOpcUaWriteResult>(), status);
+        emit writeNodeAttributesFinished(QList<QOpcUaWriteResult>(), status);
     } else {
-        QVector<QOpcUaWriteResult> ret;
+        QList<QOpcUaWriteResult> ret;
 
         for (int i = 0; i < nodesToWrite.size(); ++i) {
             QOpcUaWriteResult item;
@@ -1061,7 +1061,7 @@ QOpcUaErrorState::ConnectionStep UACppAsyncBackend::connectionStepFromUaServiceT
     }
 }
 
-static void copyArrayDimensions(OpcUa_Int32 *noOfDimensions, OpcUa_UInt32 **arrayDimensions, const QVector<quint32> &dimensions)
+static void copyArrayDimensions(OpcUa_Int32 *noOfDimensions, OpcUa_UInt32 **arrayDimensions, const QList<quint32> &dimensions)
 {
     *noOfDimensions = static_cast<OpcUa_Int32>(dimensions.size());
     *arrayDimensions = static_cast<OpcUa_UInt32 *>(OpcUa_Alloc(*noOfDimensions * sizeof(OpcUa_UInt32)));

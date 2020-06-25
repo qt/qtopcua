@@ -53,7 +53,7 @@ class QOpcUaAttributeOperandData : public QSharedData
 public:
     QString nodeId;
     QString alias;
-    QVector<QOpcUaRelativePathElement> browsePath;
+    QList<QOpcUaRelativePathElement> browsePath;
     QOpcUa::NodeAttribute attributeId {QOpcUa::NodeAttribute::Value};
     QString indexRange;
 };
@@ -128,7 +128,7 @@ void QOpcUaAttributeOperand::setAttributeId(QOpcUa::NodeAttribute attributeId)
 /*!
     Returns the browse path.
 */
-QVector<QOpcUaRelativePathElement> QOpcUaAttributeOperand::browsePath() const
+QList<QOpcUaRelativePathElement> QOpcUaAttributeOperand::browsePath() const
 {
     return data->browsePath;
 }
@@ -138,7 +138,7 @@ QVector<QOpcUaRelativePathElement> QOpcUaAttributeOperand::browsePath() const
 
     \sa browsePath()
 */
-QVector<QOpcUaRelativePathElement> &QOpcUaAttributeOperand::browsePathRef()
+QList<QOpcUaRelativePathElement> &QOpcUaAttributeOperand::browsePathRef()
 {
     return data->browsePath;
 }
@@ -146,7 +146,7 @@ QVector<QOpcUaRelativePathElement> &QOpcUaAttributeOperand::browsePathRef()
 /*!
     Sets the relative path to a node starting from \l nodeId() to \a browsePath.
 */
-void QOpcUaAttributeOperand::setBrowsePath(const QVector<QOpcUaRelativePathElement> &browsePath)
+void QOpcUaAttributeOperand::setBrowsePath(const QList<QOpcUaRelativePathElement> &browsePath)
 {
     data->browsePath = browsePath;
 }

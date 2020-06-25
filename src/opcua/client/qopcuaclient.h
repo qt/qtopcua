@@ -114,8 +114,8 @@ public:
     bool findServers(const QUrl &url, const QStringList &localeIds = QStringList(),
                      const QStringList &serverUris = QStringList());
 
-    bool readNodeAttributes(const QVector<QOpcUaReadItem> &nodesToRead);
-    bool writeNodeAttributes(const QVector<QOpcUaWriteItem> &nodesToWrite);
+    bool readNodeAttributes(const QList<QOpcUaReadItem> &nodesToRead);
+    bool writeNodeAttributes(const QList<QOpcUaWriteItem> &nodesToWrite);
 
     bool addNode(const QOpcUaAddNodeItem &nodeToAdd);
     bool deleteNode(const QString &nodeId, bool deleteTargetReferences = true);
@@ -139,7 +139,7 @@ public:
     const QOpcUaAuthenticationInformation &authenticationInformation() const;
 
     QStringList supportedSecurityPolicies() const;
-    QVector<QOpcUaUserTokenPolicy::TokenType> supportedUserTokenTypes() const;
+    QList<QOpcUaUserTokenPolicy::TokenType> supportedUserTokenTypes() const;
 
 Q_SIGNALS:
     void connected();
@@ -149,10 +149,10 @@ Q_SIGNALS:
     void connectError(QOpcUaErrorState *errorState);
     void namespaceArrayUpdated(QStringList namespaces);
     void namespaceArrayChanged(QStringList namespaces);
-    void endpointsRequestFinished(QVector<QOpcUaEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode, QUrl requestUrl);
-    void findServersFinished(QVector<QOpcUaApplicationDescription> servers, QOpcUa::UaStatusCode statusCode, QUrl requestUrl);
-    void readNodeAttributesFinished(QVector<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult);
-    void writeNodeAttributesFinished(QVector<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult);
+    void endpointsRequestFinished(QList<QOpcUaEndpointDescription> endpoints, QOpcUa::UaStatusCode statusCode, QUrl requestUrl);
+    void findServersFinished(QList<QOpcUaApplicationDescription> servers, QOpcUa::UaStatusCode statusCode, QUrl requestUrl);
+    void readNodeAttributesFinished(QList<QOpcUaReadResult> results, QOpcUa::UaStatusCode serviceResult);
+    void writeNodeAttributesFinished(QList<QOpcUaWriteResult> results, QOpcUa::UaStatusCode serviceResult);
     void addNodeFinished(QOpcUaExpandedNodeId requestedNodeId, QString assignedNodeId, QOpcUa::UaStatusCode statusCode);
     void deleteNodeFinished(QString nodeId, QOpcUa::UaStatusCode statusCode);
     void addReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUaExpandedNodeId targetNodeId, bool isForwardReference,

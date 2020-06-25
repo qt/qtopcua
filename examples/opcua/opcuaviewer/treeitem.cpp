@@ -252,7 +252,7 @@ void TreeItem::handleAttributes(QOpcUa::NodeAttributes attr)
     emit mModel->dataChanged(mModel->createIndex(row(), 0, this), mModel->createIndex(row(), numberOfDisplayColumns - 1, this));
 }
 
-void TreeItem::browseFinished(const QVector<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode)
+void TreeItem::browseFinished(const QList<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode)
 {
     if (statusCode != QOpcUa::Good) {
         qWarning() << "Browsing node" << mOpcNode->nodeId() << "finally failed:" << statusCode;

@@ -83,7 +83,7 @@ public:
 private slots:
     void startBrowsing();
     void handleAttributes(QOpcUa::NodeAttributes attr);
-    void browseFinished(const  QVector<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode);
+    void browseFinished(const QList<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode);
 
 private:
     QString variantToString(const QVariant &value, const QString &typeNodeId = QString()) const;
@@ -91,7 +91,7 @@ private:
     QString rangeToString(const QOpcUaRange &range) const;
     QString euInformationToString(const QOpcUaEUInformation &info) const;
     template <typename T>
-    QString numberArrayToString(const QVector<T> &vec) const;
+    QString numberArrayToString(const QList<T> &vec) const;
 
     std::unique_ptr<QOpcUaNode> mOpcNode;
     OpcUaModel *mModel = nullptr;
@@ -109,7 +109,7 @@ private:
 };
 
 template <typename T>
-QString TreeItem::numberArrayToString(const QVector<T> &vec) const
+QString TreeItem::numberArrayToString(const QList<T> &vec) const
 {
     QString list(QLatin1Char('['));
     for (int i = 0, size = vec.size(); i < size; ++i) {

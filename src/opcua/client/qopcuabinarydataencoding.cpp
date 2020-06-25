@@ -160,7 +160,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template<typename T, QOpcUa::Types OVERLAY> QVector<T> QOpcUaBinaryDataEncoding::decodeArray(bool &success)
+    \fn template<typename T, QOpcUa::Types OVERLAY> QList<T> QOpcUaBinaryDataEncoding::decodeArray(bool &success)
 
     Decodes an array of type T from the data buffer.
     \a success is set to \c true if the decoding was successful, \c false if not.
@@ -171,7 +171,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn template<typename T, QOpcUa::Types OVERLAY> bool QOpcUaBinaryDataEncoding::encodeArray(const QVector<T> &src)
+    \fn template<typename T, QOpcUa::Types OVERLAY> bool QOpcUaBinaryDataEncoding::encodeArray(const QList<T> &src)
 
     Encodes all elements of type T in \a src and appends the encoded values to the data buffer.
 

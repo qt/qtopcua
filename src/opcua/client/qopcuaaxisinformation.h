@@ -54,7 +54,7 @@ public:
     QOpcUaAxisInformation();
     QOpcUaAxisInformation(const QOpcUaAxisInformation &);
     QOpcUaAxisInformation(const QOpcUaEUInformation &engineeringUnits, const QOpcUaRange &eURange, const QOpcUaLocalizedText &title,
-                     const QOpcUa::AxisScale &axisScaleType, const QVector<double> &axisSteps);
+                          const QOpcUa::AxisScale &axisScaleType, const QList<double> &axisSteps);
     QOpcUaAxisInformation &operator=(const QOpcUaAxisInformation &);
     bool operator==(const QOpcUaAxisInformation &rhs) const;
     operator QVariant() const;
@@ -72,9 +72,9 @@ public:
     QOpcUa::AxisScale axisScaleType() const;
     void setAxisScaleType(QOpcUa::AxisScale axisScaleType);
 
-    QVector<double> axisSteps() const;
-    void setAxisSteps(const QVector<double> &axisSteps);
-    QVector<double> &axisStepsRef();
+    QList<double> axisSteps() const;
+    void setAxisSteps(const QList<double> &axisSteps);
+    QList<double> &axisStepsRef();
 
 private:
     QSharedDataPointer<QOpcUaAxisInformationData> data;

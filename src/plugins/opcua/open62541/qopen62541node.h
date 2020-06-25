@@ -59,9 +59,9 @@ public:
 
     bool writeAttribute(QOpcUa::NodeAttribute attribute, const QVariant &value, QOpcUa::Types type, const QString &indexRange) override;
     bool writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QOpcUa::Types valueAttributeType) override;
-    bool callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args) override;
+    bool callMethod(const QString &methodNodeId, const QList<QOpcUa::TypedVariant> &args) override;
 
-    bool resolveBrowsePath(const QVector<QOpcUaRelativePathElement> &path) override;
+    bool resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path) override;
 
 private:
     QPointer<QOpen62541Client> m_client;

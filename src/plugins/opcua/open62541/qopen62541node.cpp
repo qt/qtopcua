@@ -42,7 +42,7 @@
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qstring.h>
-#include <QtCore/qvector.h>
+#include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -168,7 +168,7 @@ bool QOpen62541Node::writeAttributes(const QOpcUaNode::AttributeMap &toWrite, QO
                                      Q_ARG(QOpcUa::Types, valueAttributeType));
 }
 
-bool QOpen62541Node::callMethod(const QString &methodNodeId, const QVector<QOpcUa::TypedVariant> &args)
+bool QOpen62541Node::callMethod(const QString &methodNodeId, const QList<QOpcUa::TypedVariant> &args)
 {
     if (!m_client)
         return false;
@@ -180,10 +180,10 @@ bool QOpen62541Node::callMethod(const QString &methodNodeId, const QVector<QOpcU
                                      Q_ARG(quint64, handle()),
                                      Q_ARG(UA_NodeId, obj),
                                      Q_ARG(UA_NodeId, Open62541Utils::nodeIdFromQString(methodNodeId)),
-                                     Q_ARG(QVector<QOpcUa::TypedVariant>, args));
+                                     Q_ARG(QList<QOpcUa::TypedVariant>, args));
 }
 
-bool QOpen62541Node::resolveBrowsePath(const QVector<QOpcUaRelativePathElement> &path)
+bool QOpen62541Node::resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path)
 {
     if (!m_client)
         return false;
@@ -194,7 +194,7 @@ bool QOpen62541Node::resolveBrowsePath(const QVector<QOpcUaRelativePathElement> 
     return QMetaObject::invokeMethod(m_client->m_backend, "resolveBrowsePath", Qt::QueuedConnection,
                                              Q_ARG(quint64, handle()),
                                              Q_ARG(UA_NodeId, start),
-                                             Q_ARG(QVector<QOpcUaRelativePathElement>, path));
+                                             Q_ARG(QList<QOpcUaRelativePathElement>, path));
 }
 
 QT_END_NAMESPACE
