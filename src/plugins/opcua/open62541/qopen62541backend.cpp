@@ -867,6 +867,10 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
         UA_ClientConfig_setDefault(conf);
     }
 
+    UA_LocalizedText_clear(&conf->clientDescription.applicationName);
+    UA_String_clear(&conf->clientDescription.applicationUri);
+    UA_String_clear(&conf->clientDescription.productUri);
+
     conf->clientContext = this;
     conf->stateCallback = &clientStateCallback;
     conf->clientDescription.applicationName = UA_LOCALIZEDTEXT_ALLOC("", identity.applicationName().toUtf8().constData());
