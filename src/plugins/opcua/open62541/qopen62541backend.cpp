@@ -290,7 +290,7 @@ QOpen62541Subscription *Open62541AsyncBackend::getSubscription(const QOpcUaMonit
         return nullptr;
     }
     m_subscriptions[id] = sub;
-    if (sub->interval() > settings.samplingInterval()) // The publishing interval has been revised by the server.
+    if (sub->interval() > settings.publishingInterval()) // The publishing interval has been revised by the server.
         m_minPublishingInterval = sub->interval();
     // This must be a queued connection to prevent the slot from being called while the client is inside UA_Client_run_iterate().
     QObject::connect(sub, &QOpen62541Subscription::timeout, this, &Open62541AsyncBackend::handleSubscriptionTimeout, Qt::QueuedConnection);
