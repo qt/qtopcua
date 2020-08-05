@@ -708,7 +708,7 @@ QUACppSubscription *UACppAsyncBackend::getSubscription(const QOpcUaMonitoringPar
         delete sub;
         return nullptr;
     }
-    if (sub->interval() > settings.samplingInterval()) // The publishing interval has been revised by the server.
+    if (sub->interval() > settings.publishingInterval()) // The publishing interval has been revised by the server.
         m_minPublishingInterval = sub->interval();
     m_subscriptions[id] = sub;
     return sub;
