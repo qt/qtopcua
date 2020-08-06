@@ -45,6 +45,14 @@ qt_add_resource(open62541-testserver "certs"
 # QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO = "--O2"
 # TEMPLATE = "app"
 
+# special case begin
+# We need to disable optimizations on MSVC, to circumvent buggy code in the open62541.c file.
+# Otherwise the test server fails to launch on Windows MSVC with UA_STATUSCODE_BADOUTOFMEMORY.
+# We also disable them on Unixy platforms, to mimic the qmake fix done in QTBUG-75020.
+# See QTBUG-85939 for details.
+qt_opcua_disable_optimizations_in_current_dir()
+# special case end
+
 ## Scopes:
 #####################################################################
 
@@ -83,8 +91,8 @@ qt_extend_target(open62541-testserver CONDITION (QT_FEATURE_open62541 AND NOT QT
 # special case begin
 if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541 AND NOT (WINRT OR WIN32 AND MSVC)) # special case
     set_source_files_properties(../../src/3rdparty/open62541/open62541.c PROPERTIES
-        COMPILE_FLAGS
-            -Wno-unused-parameter -Wno-unused-function -Wno-format-Wno-strict-aliasing -Wno-unused-result -std=c99)
+        COMPILE_OPTIONS
+            "-Wno-unused-parameter;-Wno-unused-function;-Wno-format;-Wno-strict-aliasing;-Wno-unused-result;-std=c99")
 endif()
 # special case end
 

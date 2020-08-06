@@ -15,6 +15,11 @@ find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Co
 find_package(Qt6 ${PROJECT_VERSION} CONFIG OPTIONAL_COMPONENTS Gui Quick QuickTest Widgets)
 # special case end
 
+# special case begin
+# Needed for qt_opcua_disable_optimizations_in_current_dir.
+include(src/opcua/Qt6OpcUaMacros.cmake)
+# special case end
+
 if(QNX)
     message(NOTICE "Skipping the build as the condition \"NOT QNX\" is not met.")
     return()

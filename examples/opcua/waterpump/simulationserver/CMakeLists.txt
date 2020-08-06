@@ -1,7 +1,7 @@
 # Generated from simulationserver.pro.
 
 cmake_minimum_required(VERSION 3.14)
-project(simulationserver LANGUAGES CXX)
+project(simulationserver LANGUAGES CXX C) # special case
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -43,20 +43,27 @@ target_link_libraries(simulationserver PUBLIC
     Qt::OpcUaPrivate
 )
 
+# special case begin
 if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541)
-    qt_extend_target(simulationserver
-        SOURCES
-            ${MODULE_SOURCE}/src/3rdparty/open62541/open62541.h # special case
-            ${MODULE_SOURCE}/src/3rdparty/open62541/open62541.c # special case
-        INCLUDE_DIRECTORIES
-            ${MODULE_SOURCE}/src/3rdparty/open62541 # special case
+    target_sources(simulationserver PRIVATE
+        ${MODULE_SOURCE}/src/3rdparty/open62541/open62541.h
+        ${MODULE_SOURCE}/src/3rdparty/open62541/open62541.c
+    )
+    target_include_directories(simulationserver PRIVATE
+        ${MODULE_SOURCE}/src/3rdparty/open62541
     )
 endif()
 
-# special case begin
+# We need to disable optimizations on MSVC, to circumvent buggy code in the open62541.c file.
+# Otherwise the test server fails to launch on Windows MSVC with UA_STATUSCODE_BADOUTOFMEMORY.
+# We also disable them on Unixy platforms, to mimic the qmake fix done in QTBUG-75020.
+# See QTBUG-85939 for details.
+qt_opcua_disable_optimizations_in_current_dir()
+
 if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541 AND NOT (WINRT OR WIN32 AND MSVC)) # special case
     set_source_files_properties(${MODULE_SOURCE}/src/3rdparty/open62541/open62541.c
-        PROPERTIES COMPILE_FLAGS -Wno-unused-parameter -Wno-unused-function -Wno-format-Wno-strict-aliasing -Wno-unused-result -std=c99)
+        PROPERTIES COMPILE_OPTIONS
+            "-Wno-unused-parameter;-Wno-unused-function;-Wno-format;-Wno-strict-aliasing;-Wno-unused-result;-std=c99")
 endif()
 # special case end
 

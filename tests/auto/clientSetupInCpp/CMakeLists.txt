@@ -4,7 +4,7 @@
 ## tst_clientSetupInCpp Test:
 #####################################################################
 
-add_qt_test(tst_clientSetupInCpp
+qt_add_test(tst_clientSetupInCpp
     GUI
     QMLTEST
     QML_IMPORTPATH
@@ -27,7 +27,7 @@ add_qt_test(tst_clientSetupInCpp
 ## Scopes:
 #####################################################################
 
-extend_target(tst_clientSetupInCpp CONDITION QT_FEATURE_mbedtls
+qt_extend_target(tst_clientSetupInCpp CONDITION QT_FEATURE_mbedtls
     DEFINES
         SERVER_SUPPORTS_SECURITY
 )

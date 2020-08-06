@@ -4,7 +4,8 @@
 ## qtopcua-defaultnodeidsgenerator Tool:
 #####################################################################
 
-qt_add_tool(qtopcua-defaultnodeidsgenerator
+qt_get_tool_target_name(target_name qtopcua-defaultnodeidsgenerator)
+qt_add_tool(${target_name}
     SOURCES
         main.cpp
 )

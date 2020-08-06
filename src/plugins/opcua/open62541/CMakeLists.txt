@@ -67,8 +67,8 @@ qt_extend_target(QOpen62541Plugin CONDITION (QT_FEATURE_open62541 AND NOT QT_FEA
 # special case begin
 if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541 AND NOT (WINRT OR WIN32 AND MSVC)) # special case
     set_source_files_properties(../../../3rdparty/open62541/open62541.c PROPERTIES
-        COMPILE_FLAGS
-            -Wno-unused-parameter -Wno-unused-function -Wno-format-Wno-strict-aliasing -Wno-unused-result -std=c99)
+        COMPILE_OPTIONS
+            "-Wno-unused-parameter;-Wno-unused-function;-Wno-format;-Wno-strict-aliasing;-Wno-unused-result;-std=c99")
 endif()
 # special case end
 
