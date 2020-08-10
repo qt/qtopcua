@@ -234,6 +234,11 @@ static QOpcUaPlugin *loadPlugin(const QString &key)
         \li Unified Automation
         \li Tells the backend to print additional output to the terminal. The backend specific logging
             level is set to \c OPCUA_TRACE_OUTPUT_LEVEL_ALL.
+    \row
+        \li minimumClientIterateIntervalMs
+        \li open62541
+        \li Defines the client iterate interval for the backend. This value can be used to make a tradeoff
+            between reaction time for subscriptions and CPU load. The default value is 50ms.
     \endtable
 */
 QOpcUaClient *QOpcUaProvider::createClient(const QString &backend, const QVariantMap &backendProperties)
