@@ -51,10 +51,17 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541)
 
-QOpen62541Client::QOpen62541Client()
+QOpen62541Client::QOpen62541Client(const QVariantMap &backendProperties)
     : QOpcUaClientImpl()
     , m_backend(new Open62541AsyncBackend(this))
 {
+    bool ok = false;
+    const double minIterateInterval = backendProperties.value(QStringLiteral("minimumClientIterateIntervalMs"), 50.0)
+            .toDouble(&ok);
+
+    if (ok)
+        m_backend->m_minimumIterateInterval = minIterateInterval;
+
     m_thread = new QThread();
     connectBackendWithClient(m_backend);
     m_backend->moveToThread(m_thread);

@@ -81,8 +81,8 @@ public Q_SLOTS:
     // Subscription
     QOpen62541Subscription *getSubscription(const QOpcUaMonitoringParameters &settings);
     bool removeSubscription(UA_UInt32 subscriptionId);
-    void sendPublishRequest();
-    void modifyPublishRequests();
+    void iterateClient();
+    void reevaluateClientIterateTimer();
     void handleSubscriptionTimeout(QOpen62541Subscription *sub, QVector<QPair<quint64, QOpcUa::NodeAttribute>> items);
     void cleanupSubscriptions();
 
@@ -90,8 +90,12 @@ public:
     UA_Client *m_uaclient;
     QOpen62541Client *m_clientImpl;
     bool m_useStateCallback;
+    double m_minimumIterateInterval;
+    const double m_maximumIterateInterval;
 
 private:
+    static void clientStateCallback(UA_Client *client, UA_ClientState state);
+
     QOpen62541Subscription *getSubscriptionForItem(quint64 handle, QOpcUa::NodeAttribute attr);
     QOpcUaApplicationDescription convertApplicationDescription(UA_ApplicationDescription &desc);
 
@@ -102,13 +106,11 @@ private:
     bool loadFileToByteString(const QString &location, UA_ByteString *target) const;
     bool loadAllFilesInDirectory(const QString &location, UA_ByteString **target, int *size) const;
 
-    QTimer m_subscriptionTimer;
+    QTimer m_clientIterateTimer;
 
     QHash<quint32, QOpen62541Subscription *> m_subscriptions;
 
     QHash<quint64, QHash<QOpcUa::NodeAttribute, QOpen62541Subscription *>> m_attributeMapping; // Handle -> Attribute -> Subscription
-
-    bool m_sendPublishRequests;
 
     double m_minPublishingInterval;
 };

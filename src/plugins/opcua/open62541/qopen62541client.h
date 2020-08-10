@@ -51,7 +51,7 @@ class QOpen62541Client : public QOpcUaClientImpl
     Q_OBJECT
 
 public:
-    explicit QOpen62541Client();
+    explicit QOpen62541Client(const QVariantMap &backendProperties);
     ~QOpen62541Client();
 
     void connectToEndpoint(const QOpcUaEndpointDescription &endpoint) override;

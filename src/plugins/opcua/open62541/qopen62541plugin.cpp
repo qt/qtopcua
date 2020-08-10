@@ -66,7 +66,7 @@ QOpen62541Plugin::~QOpen62541Plugin()
 QOpcUaClient *QOpen62541Plugin::createClient(const QVariantMap &backendProperties)
 {
     Q_UNUSED(backendProperties)
-    return new QOpcUaClient(new QOpen62541Client);
+    return new QOpcUaClient(new QOpen62541Client(backendProperties));
 }
 
 Q_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541, "qt.opcua.plugins.open62541")
