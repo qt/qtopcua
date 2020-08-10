@@ -171,7 +171,9 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
     connect(m_node, &QOpcUaNode::disableMonitoringFinished, this, [this](QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode){
         if (attr != QOpcUa::NodeAttribute::Value)
             return;
-        if (statusCode == QOpcUa::Good) {
+        // The monitoring is gone in this case, regardless of the status code
+        if (statusCode == QOpcUa::Good ||
+                node()->monitoringStatus(QOpcUa::NodeAttribute::Value).statusCode()== QOpcUa::UaStatusCode::BadNoEntryExists) {
             m_monitoredState = false;
             emit monitoredChanged(m_monitoredState);
             qCDebug(QT_OPCUA_PLUGINS_QML) << "Monitoring was disabled for node "<< resolvedNode().fullNodeId();
