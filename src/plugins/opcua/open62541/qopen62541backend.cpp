@@ -754,20 +754,36 @@ void Open62541AsyncBackend::browse(quint64 handle, UA_NodeId id, const QOpcUaBro
     emit browseFinished(handle, ret, statusCode);
 }
 
-void Open62541AsyncBackend::clientStateCallback(UA_Client *client, UA_ClientState state)
+void Open62541AsyncBackend::clientStateCallback(UA_Client *client,
+                                                UA_SecureChannelState channelState,
+                                                UA_SessionState sessionState,
+                                                UA_StatusCode connectStatus)
 {
+    Q_UNUSED(channelState)
+    Q_UNUSED(sessionState)
+    Q_UNUSED(connectStatus)
+
     Open62541AsyncBackend *backend = static_cast<Open62541AsyncBackend *>(UA_Client_getContext(client));
     if (!backend || !backend->m_useStateCallback)
         return;
 
-    if (state == UA_CLIENTSTATE_DISCONNECTED) {
-        emit backend->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ConnectionError);
-        backend->m_useStateCallback = false;
-        // Use a queued connection to make sure the subscription is not deleted if the callback was triggered
-        // inside of one of its methods.
-        QMetaObject::invokeMethod(backend, "cleanupSubscriptions", Qt::QueuedConnection);
-        backend->m_clientIterateTimer.stop();
-    }
+    backend->m_useStateCallback = false;
+    backend->m_clientIterateTimer.stop();
+
+    emit backend->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ConnectionError);
+
+    UA_Client_disconnect(client);
+
+    // Use a queued connection to make sure the subscription is not deleted if the callback was triggered
+    // inside of one of its methods.
+    QMetaObject::invokeMethod(backend, "cleanupSubscriptions", Qt::QueuedConnection);
+}
+
+void Open62541AsyncBackend::inactivityCallback(UA_Client *client)
+{
+    // The client state callback is not called if the background check encounters a timeout.
+    // This call triggers the disconnect and the appropriate state change
+    clientStateCallback(client, UA_SECURECHANNELSTATE_CLOSED, UA_SESSIONSTATE_CLOSED, UA_STATUSCODE_BADTIMEOUT);
 }
 
 void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
@@ -875,10 +891,11 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
     UA_String_clear(&conf->clientDescription.productUri);
 
     conf->clientContext = this;
-    conf->stateCallback = &clientStateCallback;
+    conf->stateCallback = clientStateCallback;
 
     // Send periodic read requests as keepalive
     conf->connectivityCheckInterval = 60000;
+    conf->inactivityCallback = inactivityCallback;
 
     conf->clientDescription.applicationName = UA_LOCALIZEDTEXT_ALLOC("", identity.applicationName().toUtf8().constData());
     conf->clientDescription.applicationUri  = UA_STRING_ALLOC(identity.applicationUri().toUtf8().constData());
@@ -910,7 +927,7 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
         }
 
         const auto credentials = authInfo.authenticationData().value<QPair<QString, QString>>();
-        ret = UA_Client_connect_username(m_uaclient, endpoint.endpointUrl().toUtf8().constData(),
+        ret = UA_Client_connectUsername(m_uaclient, endpoint.endpointUrl().toUtf8().constData(),
                                          credentials.first.toUtf8().constData(), credentials.second.toUtf8().constData());
     } else {
         emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnsupportedAuthenticationInformation);
@@ -1033,7 +1050,6 @@ void Open62541AsyncBackend::iterateClient()
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unable to send publish request";
         cleanupSubscriptions();
     }
-
 }
 
 void Open62541AsyncBackend::reevaluateClientIterateTimer()

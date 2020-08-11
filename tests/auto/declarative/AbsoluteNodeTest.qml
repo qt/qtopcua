@@ -329,12 +329,6 @@ Item {
         when: node10.readyToUse && shouldRun
 
         SignalSpy {
-            id: node10BrowseNameSpy
-            target: node10
-            signalName: "browseNameChanged"
-        }
-
-        SignalSpy {
             id: node10NodeClassSpy
             target: node10
             signalName: "nodeClassChanged"
@@ -353,21 +347,16 @@ Item {
         }
 
         function test_nodeTest() {
-            compare(node10.browseName, "FullyWritableTest");
             compare(node10.nodeClass, QtOpcUa.Constants.NodeClass.Variable);
             compare(node10.displayName.text, "FullyWritableTest");
             compare(node10.description.text, "Description for ns=3;s=Demo.Static.Scalar.FullyWritable");
             compare(node10.valueType, QtOpcUa.Constants.Double);
 
-            node10BrowseNameSpy.clear();
             node10NodeClassSpy.clear();
             node10DisplayNameSpy.clear();
             node10DescriptionSpy.clear();
 
-            node10.browseName = "modifiedBrowseName";
-            node10BrowseNameSpy.wait();
-            compare(node10BrowseNameSpy.count, 1);
-            node10.browseName = "FullyWritableTest"; // Setting back to default
+            // The BrowseName attribute is readonly in open62541 v1.1
 
             // node class is not supposed to be changed: skipping tests
 

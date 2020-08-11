@@ -13,7 +13,7 @@ QT += opcua-private
 qtConfig(open62541):!qtConfig(system-open62541) {
     qtConfig(mbedtls):{
         QMAKE_USE_PRIVATE += mbedtls
-        DEFINES += UA_ENABLE_ENCRYPTION
+        DEFINES += UA_ENABLE_ENCRYPTION UA_ENABLE_ENCRYPTION_MBEDTLS
     }
     include($$PWD/../../src/3rdparty/open62541.pri)
 } else {

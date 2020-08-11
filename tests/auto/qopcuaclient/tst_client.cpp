@@ -1750,14 +1750,14 @@ void Tst_QOpcUaClient::readMethodArguments()
     QCOMPARE(argument.name(), QStringLiteral("ServerHandles"));
     QCOMPARE(argument.dataTypeId(), QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::UInt32));
     QCOMPARE(argument.valueRank(), 1);
-    QVERIFY(argument.arrayDimensions().isEmpty());
+    QCOMPARE(argument.arrayDimensions().size(), 1);
     QCOMPARE(argument.description(), QOpcUaLocalizedText());
 
     argument = list.at(1).value<QOpcUaArgument>();
     QCOMPARE(argument.name(), QStringLiteral("ClientHandles"));
     QCOMPARE(argument.dataTypeId(), QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::UInt32));
     QCOMPARE(argument.valueRank(), 1);
-    QVERIFY(argument.arrayDimensions().isEmpty());
+    QCOMPARE(argument.arrayDimensions().size(), 1);
     QCOMPARE(argument.description(), QOpcUaLocalizedText());
 }
 
@@ -2373,6 +2373,7 @@ void Tst_QOpcUaClient::readArray()
     QVariant axisInfoArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(axisInfoArray.type(), QVariant::List);
     QCOMPARE(axisInfoArray.toList().length(), 3);
+
     QCOMPARE(axisInfoArray.toList()[0].value<QOpcUaAxisInformation>(), testAxisInfo[0]);
     QCOMPARE(axisInfoArray.toList()[1].value<QOpcUaAxisInformation>(), testAxisInfo[1]);
     QCOMPARE(axisInfoArray.toList()[2].value<QOpcUaAxisInformation>(), testAxisInfo[2]);
@@ -3782,7 +3783,7 @@ void Tst_QOpcUaClient::connectionLost()
     stringNode->readAttributes(QOpcUa::NodeAttribute::BrowseName);
 
     readSpy.wait(signalSpyTimeout);
-    stateSpy.wait(10000); // uacpp and open62541 use a timeout of 5 seconds for service calls, better be safe.
+    stateSpy.wait(15000); // uacpp and open62541 use a timeout of 5 seconds for service calls, better be safe.
     QCOMPARE(readSpy.size(), 1);
     QVERIFY(readSpy.at(0).at(0).value<QOpcUa::NodeAttributes>() & QOpcUa::NodeAttribute::BrowseName);
 

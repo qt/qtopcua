@@ -185,7 +185,7 @@ int main(int argc, char **argv)
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.Range", "RangeScalarTest", QVariant::fromValue(QOpcUaRange(0, 100)), QOpcUa::Types::Range);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.EUInformation", "EUInformationScalarTest",
                                                     QVariant::fromValue(QOpcUaEUInformation()), QOpcUa::Types::EUInformation);
-    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.ComplexNumber", "ComplexNumberArrayTest",
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.ComplexNumber", "ComplexNumberScalarTest",
                                                     QVariant::fromValue(QOpcUaComplexNumber(1, 2)), QOpcUa::Types::ComplexNumber);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.DoubleComplexNumber", "DoubleComplexNumberScalarTest",
                                                     QVariant::fromValue(QOpcUaDoubleComplexNumber(1, 2)), QOpcUa::Types::DoubleComplexNumber);

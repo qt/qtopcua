@@ -127,15 +127,15 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
     case QOpcUa::Range:
         return arrayFromQVariant<UA_Range, QOpcUaRange>(value, dt);
     case QOpcUa::EUInformation:
-        return arrayFromQVariant<UA_ExtensionObject, QOpcUaEUInformation>(value, dt);
+        return arrayFromQVariant<UA_EUInformation, QOpcUaEUInformation>(value, dt);
     case QOpcUa::ComplexNumber:
-        return arrayFromQVariant<UA_ExtensionObject, QOpcUaComplexNumber>(value, dt);
+        return arrayFromQVariant<UA_ComplexNumberType, QOpcUaComplexNumber>(value, dt);
     case QOpcUa::DoubleComplexNumber:
-        return arrayFromQVariant<UA_ExtensionObject, QOpcUaDoubleComplexNumber>(value, dt);
+        return arrayFromQVariant<UA_DoubleComplexNumberType, QOpcUaDoubleComplexNumber>(value, dt);
     case QOpcUa::AxisInformation:
-        return arrayFromQVariant<UA_ExtensionObject, QOpcUaAxisInformation>(value, dt);
+        return arrayFromQVariant<UA_AxisInformation, QOpcUaAxisInformation>(value, dt);
     case QOpcUa::XV:
-        return arrayFromQVariant<UA_ExtensionObject, QOpcUaXValue>(value, dt);
+        return arrayFromQVariant<UA_XVType, QOpcUaXValue>(value, dt);
     case QOpcUa::ExpandedNodeId:
         return arrayFromQVariant<UA_ExpandedNodeId, QOpcUaExpandedNodeId>(value, dt);
     case QOpcUa::Argument:
@@ -204,8 +204,18 @@ QVariant toQVariant(const UA_Variant &value)
         return arrayToQVariant<QOpcUaArgument, UA_Argument>(value);
     case UA_TYPES_RANGE:
         return arrayToQVariant<QOpcUaRange, UA_Range>(value);
+    case UA_TYPES_EUINFORMATION:
+        return arrayToQVariant<QOpcUaEUInformation, UA_EUInformation>(value);
+    case UA_TYPES_AXISINFORMATION:
+        return arrayToQVariant<QOpcUaAxisInformation, UA_AxisInformation>(value);
+    case UA_TYPES_COMPLEXNUMBERTYPE:
+        return arrayToQVariant<QOpcUaComplexNumber, UA_ComplexNumberType>(value);
+    case UA_TYPES_DOUBLECOMPLEXNUMBERTYPE:
+        return arrayToQVariant<QOpcUaDoubleComplexNumber, UA_DoubleComplexNumberType>(value);
+    case UA_TYPES_XVTYPE:
+        return arrayToQVariant<QOpcUaXValue, UA_XVType>(value);
     default:
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion from Open62541 for typeIndex" << value.type->typeIndex << " not implemented";
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion from Open62541 for typeName" << value.type->typeName << " not implemented";
         return QVariant();
     }
 }
@@ -256,10 +266,15 @@ const UA_DataType *toDataType(QOpcUa::Types valueType)
     case QOpcUa::Range:
         return &UA_TYPES[UA_TYPES_RANGE];
     case QOpcUa::EUInformation:
+        return &UA_TYPES[UA_TYPES_EUINFORMATION];
     case QOpcUa::ComplexNumber:
+        return &UA_TYPES[UA_TYPES_COMPLEXNUMBERTYPE];
     case QOpcUa::DoubleComplexNumber:
+        return &UA_TYPES[UA_TYPES_DOUBLECOMPLEXNUMBERTYPE];
     case QOpcUa::AxisInformation:
+        return &UA_TYPES[UA_TYPES_AXISINFORMATION];
     case QOpcUa::XV:
+        return &UA_TYPES[UA_TYPES_XVTYPE];
     case QOpcUa::ExtensionObject:
         return &UA_TYPES[UA_TYPES_EXTENSIONOBJECT];
     case QOpcUa::ExpandedNodeId:
@@ -348,6 +363,51 @@ QOpcUaRange scalarToQt<QOpcUaRange, UA_Range>(const UA_Range *data)
     return QOpcUaRange(data->low, data->high);
 }
 
+template<>
+QOpcUaEUInformation scalarToQt<QOpcUaEUInformation, UA_EUInformation>(const UA_EUInformation *data)
+{
+    return QOpcUaEUInformation(scalarToQt<QString, UA_String>(&data->namespaceUri),
+                             data->unitId,
+                             scalarToQt<QOpcUaLocalizedText, UA_LocalizedText>(&data->displayName),
+                             scalarToQt<QOpcUaLocalizedText, UA_LocalizedText>(&data->description));
+}
+
+template<>
+QOpcUaComplexNumber scalarToQt<QOpcUaComplexNumber, UA_ComplexNumberType>(const UA_ComplexNumberType *data)
+{
+    return QOpcUaComplexNumber(data->real, data->imaginary);
+}
+
+template<>
+QOpcUaDoubleComplexNumber scalarToQt<QOpcUaDoubleComplexNumber, UA_DoubleComplexNumberType>(
+        const UA_DoubleComplexNumberType *data)
+{
+    return QOpcUaDoubleComplexNumber(data->real, data->imaginary);
+}
+
+template<>
+QOpcUaAxisInformation scalarToQt<QOpcUaAxisInformation, UA_AxisInformation>(const UA_AxisInformation *data)
+{
+    QVector<double> axisSteps;
+
+    if (data->axisStepsSize) {
+        axisSteps.reserve(data->axisStepsSize);
+        std::copy(data->axisSteps, data->axisSteps + data->axisStepsSize, std::back_inserter(axisSteps));
+    }
+
+    return QOpcUaAxisInformation(scalarToQt<QOpcUaEUInformation, UA_EUInformation>(&data->engineeringUnits),
+                                 scalarToQt<QOpcUaRange, UA_Range>(&data->eURange),
+                                 scalarToQt<QOpcUaLocalizedText, UA_LocalizedText>(&data->title),
+                                 static_cast<QOpcUa::AxisScale>(data->axisScaleType),
+                                 axisSteps);
+}
+
+template<>
+QOpcUaXValue scalarToQt<QOpcUaXValue, UA_XVType>(const UA_XVType *data)
+{
+    return QOpcUaXValue(data->x, data->value);
+}
+
 template <>
 QVariant scalarToQt<QVariant, UA_ExtensionObject>(const UA_ExtensionObject *data)
 {
@@ -372,7 +432,32 @@ QVariant scalarToQt<QVariant, UA_ExtensionObject>(const UA_ExtensionObject *data
             return scalarToQt<QOpcUaRange, UA_Range>(reinterpret_cast<UA_Range *>(data->content.decoded.data));
         }
 
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unsupported decoded extension object type, unable to convert";
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_EUINFORMATION] && data->content.decoded.data) {
+            return scalarToQt<QOpcUaEUInformation, UA_EUInformation>
+                    (reinterpret_cast<UA_EUInformation *>(data->content.decoded.data));
+        }
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_COMPLEXNUMBERTYPE] && data->content.decoded.data) {
+            return scalarToQt<QOpcUaComplexNumber, UA_ComplexNumberType>
+                    (reinterpret_cast<UA_ComplexNumberType *>(data->content.decoded.data));
+        }
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_DOUBLECOMPLEXNUMBERTYPE] && data->content.decoded.data) {
+            return scalarToQt<QOpcUaDoubleComplexNumber, UA_DoubleComplexNumberType>
+                    (reinterpret_cast<UA_DoubleComplexNumberType *>(data->content.decoded.data));
+        }
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_AXISINFORMATION] && data->content.decoded.data) {
+            return scalarToQt<QOpcUaAxisInformation, UA_AxisInformation>
+                    (reinterpret_cast<UA_AxisInformation *>(data->content.decoded.data));
+        }
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_XVTYPE] && data->content.decoded.data) {
+            return scalarToQt<QOpcUaXValue, UA_XVType>
+                    (reinterpret_cast<UA_XVType *>(data->content.decoded.data));
+        }
+
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unsupported decoded extension object type, unable to convert" << data->content.decoded.type->typeName;
         return QVariant();
     }
 
@@ -539,53 +624,52 @@ void scalarFromQt<UA_Range, QOpcUaRange>(const QOpcUaRange &value, UA_Range *ptr
 }
 
 template<>
-void scalarFromQt<UA_ExtensionObject, QOpcUaEUInformation>(const QOpcUaEUInformation &value, UA_ExtensionObject *ptr)
+void scalarFromQt<UA_EUInformation, QOpcUaEUInformation>(const QOpcUaEUInformation &value, UA_EUInformation *ptr)
 {
-    QByteArray temp;
-    QOpcUaBinaryDataEncoding encoder(&temp);
-    encoder.encode<QOpcUaEUInformation>(value);
-    return createExtensionObject(temp,
-                                 UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(Namespace0::EUInformation_Encoding_DefaultBinary)), ptr);
+    scalarFromQt<UA_String, QString>(value.namespaceUri(), &ptr->namespaceUri);
+    scalarFromQt<UA_LocalizedText, QOpcUaLocalizedText>(value.description(), &ptr->description);
+    scalarFromQt<UA_LocalizedText, QOpcUaLocalizedText>(value.displayName(), &ptr->displayName);
+    ptr->unitId = value.unitId();
 }
 
 template<>
-void scalarFromQt<UA_ExtensionObject, QOpcUaComplexNumber>(const QOpcUaComplexNumber &value, UA_ExtensionObject *ptr)
+void scalarFromQt<UA_ComplexNumberType, QOpcUaComplexNumber>(const QOpcUaComplexNumber &value, UA_ComplexNumberType *ptr)
 {
-    QByteArray temp;
-    QOpcUaBinaryDataEncoding encoder(&temp);
-    encoder.encode<QOpcUaComplexNumber>(value);
-    return createExtensionObject(temp,
-                                 UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(Namespace0::ComplexNumberType_Encoding_DefaultBinary)), ptr);
+    ptr->real = value.real();
+    ptr->imaginary = value.imaginary();
 }
 
 template<>
-void scalarFromQt<UA_ExtensionObject, QOpcUaDoubleComplexNumber>(const QOpcUaDoubleComplexNumber &value, UA_ExtensionObject *ptr)
+void scalarFromQt<UA_DoubleComplexNumberType, QOpcUaDoubleComplexNumber>(const QOpcUaDoubleComplexNumber &value, UA_DoubleComplexNumberType *ptr)
 {
-    QByteArray temp;
-    QOpcUaBinaryDataEncoding encoder(&temp);
-    encoder.encode<QOpcUaDoubleComplexNumber>(value);
-    return createExtensionObject(temp,
-                                 UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(Namespace0::DoubleComplexNumberType_Encoding_DefaultBinary)), ptr);
+    ptr->real = value.real();
+    ptr->imaginary = value.imaginary();
 }
 
 template<>
-void scalarFromQt<UA_ExtensionObject, QOpcUaAxisInformation>(const QOpcUaAxisInformation &value, UA_ExtensionObject *ptr)
+void scalarFromQt<UA_AxisInformation, QOpcUaAxisInformation>(const QOpcUaAxisInformation &value, UA_AxisInformation *ptr)
 {
-    QByteArray temp;
-    QOpcUaBinaryDataEncoding encoder(&temp);
-    encoder.encode<QOpcUaAxisInformation>(value);
-    return createExtensionObject(temp,
-                                 UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(Namespace0::AxisInformation_Encoding_DefaultBinary)), ptr);
+    scalarFromQt<UA_LocalizedText, QOpcUaLocalizedText>(value.title(), &ptr->title);
+    scalarFromQt<UA_EUInformation, QOpcUaEUInformation>(value.engineeringUnits(), &ptr->engineeringUnits);
+    scalarFromQt<UA_Range, QOpcUaRange>(value.eURange(), &ptr->eURange);
+    ptr->axisScaleType = static_cast<UA_AxisScaleEnumeration>(value.axisScaleType());
+    ptr->axisStepsSize = value.axisSteps().size();
+    if (ptr->axisStepsSize) {
+        auto res = UA_Array_copy(value.axisSteps().constData(), ptr->axisStepsSize, reinterpret_cast<void **>(&ptr->axisSteps),
+                      &UA_TYPES[UA_TYPES_DOUBLE]);
+
+        if (res != UA_STATUSCODE_GOOD)
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to copy axis steps";
+    } else {
+        ptr->axisSteps = nullptr;
+    }
 }
 
 template<>
-void scalarFromQt<UA_ExtensionObject, QOpcUaXValue>(const QOpcUaXValue &value, UA_ExtensionObject *ptr)
+void scalarFromQt<UA_XVType, QOpcUaXValue>(const QOpcUaXValue &value, UA_XVType *ptr)
 {
-    QByteArray temp;
-    QOpcUaBinaryDataEncoding encoder(&temp);
-    encoder.encode<QOpcUaXValue>(value);
-    return createExtensionObject(temp,
-                                 UA_NODEID_NUMERIC(0, static_cast<UA_UInt32>(Namespace0::XVType_Encoding_DefaultBinary)), ptr);
+    ptr->x = value.x();
+    ptr->value = value.value();
 }
 
 template<>

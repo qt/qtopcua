@@ -94,7 +94,12 @@ public:
     const double m_maximumIterateInterval;
 
 private:
-    static void clientStateCallback(UA_Client *client, UA_ClientState state);
+    static void clientStateCallback(UA_Client *client,
+                                    UA_SecureChannelState channelState,
+                                    UA_SessionState sessionState,
+                                    UA_StatusCode connectStatus);
+
+    static void inactivityCallback(UA_Client *client);
 
     QOpen62541Subscription *getSubscriptionForItem(quint64 handle, QOpcUa::NodeAttribute attr);
     QOpcUaApplicationDescription convertApplicationDescription(UA_ApplicationDescription &desc);

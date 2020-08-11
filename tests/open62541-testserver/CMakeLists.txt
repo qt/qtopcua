@@ -67,6 +67,7 @@ qt_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541 AND NOT QT_
 qt_extend_target(open62541-testserver CONDITION QT_FEATURE_mbedtls AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
     DEFINES
         UA_ENABLE_ENCRYPTION
+        UA_ENABLE_ENCRYPTION_MBEDTLS
     LIBRARIES
         mbedtls
 )
