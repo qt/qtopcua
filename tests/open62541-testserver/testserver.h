@@ -75,6 +75,8 @@ public:
     UA_NodeId addAddNamespaceMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
     UA_NodeId addNodeWithFixedTimestamp(const UA_NodeId &folder, const QString &nodeId, const QString &displayName);
 
+    UA_StatusCode addEventTrigger(const UA_NodeId &parent);
+
     static UA_StatusCode multiplyMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle,
                                             const UA_NodeId *methodId, void *methodContext,
                                             const UA_NodeId *objectId, void *objectContext,
@@ -92,6 +94,12 @@ public:
                                             void *objectContext, size_t inputSize, const UA_Variant *input, size_t outputSize,
                                             UA_Variant *output);
 
+    static UA_StatusCode generateEventCallback(UA_Server *server,
+                             const UA_NodeId *sessionId, void *sessionHandle,
+                             const UA_NodeId *methodId, void *methodContext,
+                             const UA_NodeId *objectId, void *objectContext,
+                             size_t inputSize, const UA_Variant *input,
+                             size_t outputSize, UA_Variant *output);
 
     UA_ServerConfig *m_config{nullptr};
     UA_Server *m_server{nullptr};

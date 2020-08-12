@@ -760,4 +760,122 @@ UA_NodeId TestServer::addNodeWithFixedTimestamp(const UA_NodeId &folder, const Q
     return resultId;
 }
 
+// The event test methods are based on the open62541 tutorial_server_events.c example
+UA_StatusCode TestServer::generateEventCallback(UA_Server *server,
+                                                const UA_NodeId *sessionId, void *sessionHandle,
+                                                const UA_NodeId *methodId, void *methodContext,
+                                                const UA_NodeId *objectId, void *objectContext,
+                                                size_t inputSize, const UA_Variant *input,
+                                                size_t outputSize, UA_Variant *output) {
+    Q_UNUSED(sessionId)
+    Q_UNUSED(sessionHandle)
+    Q_UNUSED(methodId)
+    Q_UNUSED(methodContext)
+    Q_UNUSED(objectId)
+    Q_UNUSED(objectContext)
+    Q_UNUSED(outputSize)
+    Q_UNUSED(output)
+
+    // Setup event
+    UA_NodeId eventNodeId;
+
+    UA_StatusCode ret = UA_Server_createEvent(server, UA_NODEID_NUMERIC(2, 12345), &eventNodeId);
+    if (ret != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not create event:" << UA_StatusCode_name(ret);
+        return ret;
+    }
+
+    quint16 eventSeverity = 100;
+
+    if (inputSize && input[0].type == &UA_TYPES[UA_TYPES_UINT16] && input[0].data) {
+        eventSeverity = *reinterpret_cast<quint16 *>(input[0].data);
+    }
+
+    qDebug() << "Creating event with severity" << eventSeverity;
+
+    auto timePropertyName = UA_QUALIFIEDNAME_ALLOC(0, "Time");
+    auto severityPropertyName = UA_QUALIFIEDNAME_ALLOC(0, "Severity");
+    auto messagePropertyName = UA_QUALIFIEDNAME_ALLOC(0, "Message");
+    auto sourceNamePropertyName = UA_QUALIFIEDNAME_ALLOC(0, "SourceName");
+    auto eventMessage = UA_LOCALIZEDTEXT_ALLOC("en", "An event has been generated");
+    auto eventSourceName = UA_STRING_ALLOC("Server");
+
+    // Setting the Time is required or else the event will not show up in UAExpert! */
+    UA_DateTime eventTime = UA_DateTime_now();
+    UA_Server_writeObjectProperty_scalar(server, eventNodeId, timePropertyName,
+                                         &eventTime, &UA_TYPES[UA_TYPES_DATETIME]);
+
+    UA_Server_writeObjectProperty_scalar(server, eventNodeId, severityPropertyName,
+                                         &eventSeverity, &UA_TYPES[UA_TYPES_UINT16]);
+
+    UA_Server_writeObjectProperty_scalar(server, eventNodeId, messagePropertyName,
+                                         &eventMessage, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
+
+    UA_Server_writeObjectProperty_scalar(server, eventNodeId, sourceNamePropertyName,
+                                         &eventSourceName, &UA_TYPES[UA_TYPES_STRING]);
+
+    UA_QualifiedName_clear(&timePropertyName);
+    UA_QualifiedName_clear(&severityPropertyName);
+    UA_QualifiedName_clear(&messagePropertyName);
+    UA_QualifiedName_clear(&sourceNamePropertyName);
+    UA_LocalizedText_clear(&eventMessage);
+    UA_String_clear(&eventSourceName);
+
+    // End setup event
+
+    ret = UA_Server_triggerEvent(server, eventNodeId,
+                                 UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER),
+                                 nullptr, true);
+
+    if (ret != UA_STATUSCODE_GOOD)
+        qWarning() << "Failed to trigger event:" << UA_StatusCode_name(ret);
+
+    return ret;
+}
+
+UA_StatusCode TestServer::addEventTrigger(const UA_NodeId &parent)
+{
+    UA_ObjectTypeAttributes objectAttr = UA_ObjectTypeAttributes_default;
+    auto browseName = UA_QUALIFIEDNAME_ALLOC(2, "QtOpcUaEventType");
+    auto result = UA_Server_addObjectTypeNode(m_server, UA_NODEID_NUMERIC(2, 12345),
+                                       UA_NODEID_NUMERIC(0, UA_NS0ID_BASEEVENTTYPE),
+                                       UA_NODEID_NUMERIC(0, UA_NS0ID_HASSUBTYPE),
+                                       browseName,
+                                       objectAttr, nullptr, nullptr);
+
+    UA_QualifiedName_clear(&browseName);
+
+    if (result != UA_STATUSCODE_GOOD)
+        return result;
+
+    UA_MethodAttributes methodAttr = UA_MethodAttributes_default;
+    methodAttr.description = UA_LOCALIZEDTEXT_ALLOC("en","Generates an event");
+    methodAttr.displayName = UA_LOCALIZEDTEXT_ALLOC("en","Generates an event");
+    methodAttr.executable = true;
+    methodAttr.userExecutable = true;
+
+    UA_Argument severityArgument;
+    UA_Argument_init(&severityArgument);
+    severityArgument.name = UA_STRING_ALLOC("Severity");
+    severityArgument.dataType = UA_TYPES[UA_TYPES_UINT16].typeId;
+    severityArgument.valueRank = -1;
+    severityArgument.description = UA_LOCALIZEDTEXT_ALLOC("en", "The severity for the event to emit");
+
+    UA_NodeId eventTriggerMethodId = UA_NODEID_STRING_ALLOC(2, "TriggerEvent");
+
+    browseName = UA_QUALIFIEDNAME_ALLOC(2, "TriggerEvent");
+    result = UA_Server_addMethodNode(m_server, eventTriggerMethodId,
+                                     parent,
+                                     UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT),
+                                     browseName,
+                                     methodAttr, &generateEventCallback,
+                                     1, &severityArgument, 0, nullptr, nullptr, nullptr);
+
+    UA_QualifiedName_clear(&browseName);
+    UA_MethodAttributes_clear(&methodAttr);
+    UA_Argument_clear(&severityArgument);
+
+    return result;
+}
+
 QT_END_NAMESPACE

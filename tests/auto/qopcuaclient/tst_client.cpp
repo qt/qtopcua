@@ -483,6 +483,10 @@ private slots:
 
     void statusStrings();
 
+    // Events
+    defineDataMethod(eventSubscription_data)
+    void eventSubscription();
+
     // This test case restarts the server. It must be run last to avoid
     // destroying state required by other test cases.
     defineDataMethod(connectionLost_data)
@@ -3755,6 +3759,91 @@ void Tst_QOpcUaClient::fixedTimestamp()
     QVERIFY(value.isValid());
     QCOMPARE(value.type(), QVariant::DateTime);
     QCOMPARE(value.toDateTime(), QDateTime(QDate(2012, 12, 19), QTime(13, 37)));
+}
+
+void Tst_QOpcUaClient::eventSubscription()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> serverNode(opcuaClient->node(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::Server)));
+    QVERIFY(serverNode != nullptr);
+
+    QScopedPointer<QOpcUaNode> testFolderNode(opcuaClient->node("ns=3;s=TestFolder"));
+    QVERIFY(testFolderNode != nullptr);
+
+    QSignalSpy enabledSpy(serverNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QSignalSpy eventSpy(serverNode.data(), &QOpcUaNode::eventOccurred);
+
+    QOpcUaMonitoringParameters::EventFilter filter;
+    filter << QOpcUaSimpleAttributeOperand("Severity");
+    filter << QOpcUaSimpleAttributeOperand("Message");
+
+//    // Only the OfType operator of the where clause is supported in the open62541 server
+//    // Only events with severity >= 700
+//    QOpcUaContentFilterElement whereElement;
+//    whereElement << QOpcUaContentFilterElement::FilterOperator::GreaterThanOrEqual << QOpcUaSimpleAttributeOperand("Severity") <<
+//                    QOpcUaLiteralOperand(quint16(700), QOpcUa::Types::UInt16);
+//    filter << whereElement;
+
+    QOpcUaMonitoringParameters p(0);
+    p.setFilter(filter);
+
+    serverNode->enableMonitoring(QOpcUa::NodeAttribute::EventNotifier, p);
+    enabledSpy.wait();
+    QCOMPARE(enabledSpy.size(), 1);
+    QCOMPARE(enabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::EventNotifier);
+    QCOMPARE(enabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    QCOMPARE(serverNode->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filter().value<QOpcUaMonitoringParameters::EventFilter>(),
+             filter);
+
+//    Disabled because the open62541 server does not currently return an EventFilterResult
+//    QVERIFY(serverNode->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filterResult().isValid());
+//    QOpcUaEventFilterResult res = serverNode->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filterResult().value<QOpcUaEventFilterResult>();
+//    QVERIFY(res.isGood() == true);
+
+    testFolderNode->callMethod(QStringLiteral("ns=2;s=TriggerEvent"), { QOpcUa::TypedVariant(750, QOpcUa::Types::UInt16) }); // Trigger event
+    eventSpy.wait();
+    QCOMPARE(eventSpy.size(), 1);
+    QCOMPARE(eventSpy.at(0).at(0).toList().size(), 2);
+    quint16 severity = eventSpy.at(0).at(0).toList().at(0).value<quint16>();
+    QOpcUaLocalizedText message = eventSpy.at(0).at(0).toList().at(1).value<QOpcUaLocalizedText>();
+
+    QCOMPARE(severity, 750);
+    QCOMPARE(message, QOpcUaLocalizedText("en", "An event has been generated"));
+
+    eventSpy.clear();
+
+    QSignalSpy modifySpy(serverNode.data(), &QOpcUaNode::monitoringStatusChanged);
+    filter << QOpcUaSimpleAttributeOperand("SourceNode");
+    serverNode->modifyEventFilter(filter);
+    modifySpy.wait();
+    QCOMPARE(modifySpy.size(), 1);
+    QCOMPARE(modifySpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::EventNotifier);
+    QVERIFY(modifySpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>().testFlag(QOpcUaMonitoringParameters::Parameter::Filter) == true);
+    QCOMPARE(modifySpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(serverNode->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filter().value<QOpcUaMonitoringParameters::EventFilter>(),
+             filter);
+
+    testFolderNode->callMethod(QStringLiteral("ns=2;s=TriggerEvent"), { QOpcUa::TypedVariant(800, QOpcUa::Types::UInt16) }); // Trigger event
+    eventSpy.wait();
+    QCOMPARE(eventSpy.size(), 1);
+    QCOMPARE(eventSpy.at(0).at(0).toList().size(), 3);
+    severity = eventSpy.at(0).at(0).toList().at(0).value<quint16>();
+    message = eventSpy.at(0).at(0).toList().at(1).value<QOpcUaLocalizedText>();
+    QString sourceNode = eventSpy.at(0).at(0).toList().at(2).toString();
+
+    QCOMPARE(severity, 800);
+    QCOMPARE(message, QOpcUaLocalizedText("en", "An event has been generated"));
+    QCOMPARE(sourceNode, QStringLiteral("ns=0;i=2253"));
+
+    QSignalSpy disabledSpy(serverNode.data(), &QOpcUaNode::disableMonitoringFinished);
+    serverNode->disableMonitoring(QOpcUa::NodeAttribute::EventNotifier);
+    disabledSpy.wait();
+    QCOMPARE(disabledSpy.size(), 1);
+    QCOMPARE(disabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::EventNotifier);
+    QCOMPARE(disabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
 }
 
 void Tst_QOpcUaClient::connectionLost()

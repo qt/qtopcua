@@ -241,5 +241,7 @@ int main(int argc, char **argv)
 
     server.addVariableWithWriteMask(testFolder, "ns=3;s=Demo.Static.Scalar.FullyWritable", "FullyWritableTest", 1.0, QOpcUa::Types::Double, fullWritableMask);
 
+    server.addEventTrigger(testFolder);
+
     return app.exec();
 }
