@@ -53,6 +53,4 @@ private:
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(UaNodeId)
-
 #endif // QUACPPPLUGIN_H
