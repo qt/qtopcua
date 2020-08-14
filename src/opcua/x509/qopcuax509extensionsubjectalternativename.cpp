@@ -37,6 +37,8 @@
 #include "qopcuax509extensionsubjectalternativename.h"
 #include "qopcuax509extension_p.h"
 
+#include <QVector>
+
 QT_BEGIN_NAMESPACE
 
 /*!
