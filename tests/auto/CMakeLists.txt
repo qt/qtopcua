@@ -3,7 +3,7 @@
 add_subdirectory(qopcuaclient)
 add_subdirectory(connection)
 add_subdirectory(security)
-if((QT_FEATURE_uacpp OR QT_FEATURE_open62541) AND TARGET Qt::QuickTest)
+if(TARGET Qt::QuickTest AND (QT_FEATURE_open62541 OR QT_FEATURE_uacpp))
     add_subdirectory(declarative)
     add_subdirectory(clientSetupInCpp)
 endif()
