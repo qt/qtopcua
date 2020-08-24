@@ -31,7 +31,7 @@ qt_add_resource(tst_qopcuaclient "data"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qopcuaclient CONDITION QT_FEATURE_mbedtls
+qt_extend_target(tst_qopcuaclient CONDITION QT_FEATURE_open62541_security AND QT_FEATURE_open62541 # special case
     DEFINES
         SERVER_SUPPORTS_SECURITY
 )

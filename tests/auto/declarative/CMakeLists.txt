@@ -27,7 +27,7 @@ qt_add_test(tst_opcua
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_opcua CONDITION QT_FEATURE_mbedtls
+qt_extend_target(tst_opcua CONDITION QT_FEATURE_open62541_security # special case
     DEFINES
         SERVER_SUPPORTS_SECURITY
 )

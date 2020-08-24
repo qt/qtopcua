@@ -40,13 +40,29 @@ qt_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_open62541 AND NOT QT_FEAT
         ../../../3rdparty/open62541
 )
 
-qt_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_mbedtls AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
+# special case begin
+#qt_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_mbedtls AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
+#    DEFINES
+#        UA_ENABLE_ENCRYPTION
+#        UA_ENABLE_ENCRYPTION_MBEDTLS
+#    LIBRARIES
+#        mbedtls
+#)
+#special case end
+
+# special case begin
+if (QT_FEATURE_open62541_security AND NOT QT_FEATURE_system_open62541)
+    find_package(WrapOpenSSL 1.1)
+endif()
+
+qt_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_open62541_security AND WrapOpenSSL_FOUND AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
     DEFINES
         UA_ENABLE_ENCRYPTION
-        UA_ENABLE_ENCRYPTION_MBEDTLS
+        UA_ENABLE_ENCRYPTION_OPENSSL
     LIBRARIES
-        mbedtls
+        WrapOpenSSL::WrapOpenSSL
 )
+# special case end
 
 qt_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_open62541 AND WIN32 AND MSVC AND NOT QT_FEATURE_system_open62541 # special case
     PUBLIC_LIBRARIES

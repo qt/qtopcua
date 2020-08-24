@@ -399,6 +399,10 @@
     The Open62541 plugin is available under the same licenses as Qt OPC UA. The Open62541 library itself
     is licensed under \l {https://open62541}{Mozilla Public License v2.0}.
 
+    The security support is provided by the OpenSSL plugins of the open62541 library.
+    If the open62541 plugin is built with security support and OpenSSL is not available
+    on the target system, the open62541 plugin will fail to load.
+
     \section2 UA CPP
 
     The UA CPP plugin is available under commercial licenses from \l{The Qt Company}.

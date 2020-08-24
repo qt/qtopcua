@@ -13,34 +13,12 @@ set_property(CACHE INPUT_open62541 PROPERTY STRINGS undefined no qt system)
 if (INPUT_open62541 STREQUAL "system")
     qt_find_package(Open62541 PROVIDED_TARGETS open62541)
 endif()
-qt_find_package(Mbedtls PROVIDED_TARGETS mbedtls)
 qt_find_package(Uacpp PROVIDED_TARGETS uacpp)
 
 find_package(WrapOpenSSL 1.1)
 # special case end
 
 #### Tests
-# special case begin
-qt_config_compile_test(mbedtls
-    LABEL "mbedTLS support"
-    LIBRARIES
-        mbedtls
-    CODE
-"#include <mbedtls/x509.h>
-#include <mbedtls/x509_crt.h>
-
-int main(int argc, char *argv[])
-{
-    mbedtls_pk_context pk;
-    mbedtls_pk_init( &pk );
-
-    mbedtls_x509_crt remoteCertificate;
-    mbedtls_x509_crt_init(&remoteCertificate);
-
-    return 0;
-}
-")
-# special case end
 
 # special case begin
 if (INPUT_open62541 STREQUAL "system")
@@ -106,6 +84,11 @@ int main(int /*argc*/, char ** /*argv*/)
 }")
 # special case end
 
+# Find out if the system open62541 is built with encryption support
+include(CheckSymbolExists)
+if (Open62541_FOUND)
+    check_symbol_exists(UA_ENABLE_ENCRYPTION ${Open62541_INCLUDE_DIRS}/open62541.h OPEN62541_SYSTEM_ENCRYPTION)
+endif()
 
 #### Features
 
@@ -127,10 +110,12 @@ qt_feature("uacpp" PRIVATE
     LABEL "Unified Automation C++ SDK"
     CONDITION TEST_uacpp # special case
 )
-qt_feature("mbedtls" PRIVATE
-    LABEL "mbedtls"
-    CONDITION Mbedtls_FOUND AND TEST_mbedtls # special case
-)
+# special case begin
+#qt_feature("mbedtls" PRIVATE
+#    LABEL "mbedtls"
+#    CONDITION Mbedtls_FOUND AND TEST_mbedtls # special case
+#)
+# special case end
 qt_feature("ns0idnames" PRIVATE
     LABEL "Support for namespace 0 NodeId names"
     PURPOSE "Provides names for the QOpcUa::NodeIds::Namespace0 enum."
@@ -145,12 +130,19 @@ qt_feature("gds" PUBLIC PRIVATE
     PURPOSE "Enables QOpcUaClient to interact with a global discovery server"
     CONDITION WrapOpenSSL_FOUND # special case
 )
+# special case begin
+qt_feature("open62541-security" PUBLIC PRIVATE
+    LABEL "Open62541 security support"
+    PURPOSE "Enables the open62541 plugin to connect to servers with signing and encryption"
+    CONDITION (WrapOpenSSL_FOUND AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541) OR OPEN62541_SYSTEM_ENCRYPTION
+)
+# special case end
 qt_feature_definition("gds" "QT_NO_GDS" NEGATE VALUE "1")
 qt_configure_add_summary_section(NAME "Qt Opcua")
 qt_configure_add_summary_entry(ARGS "open62541")
 qt_configure_add_summary_entry(ARGS "uacpp")
 qt_configure_add_summary_entry(ARGS "ns0idnames")
 qt_configure_add_summary_entry(ARGS "ns0idgenerator")
-qt_configure_add_summary_entry(ARGS "mbedtls")
+qt_configure_add_summary_entry(ARGS "open62541-security") # special case
 qt_configure_add_summary_entry(ARGS "gds")
 qt_configure_end_summary_section() # end of "Qt Opcua" section
