@@ -683,8 +683,8 @@ void Tst_QOpcUaClient::connectInvalidPassword()
 
     opcuaClient->connectToEndpoint(m_endpoint);
     QTRY_VERIFY_WITH_TIMEOUT(connectSpy.count() == 2, 3000);
-    QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Connecting);
-    QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Disconnected);
+    QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connecting);
+    QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Disconnected);
 
     QCOMPARE(opcuaClient->endpoint(), m_endpoint);
     QCOMPARE(opcuaClient->error(), QOpcUaClient::AccessDenied);
@@ -704,8 +704,8 @@ void Tst_QOpcUaClient::connectAndDisconnectPassword()
     connectSpy.wait(signalSpyTimeout);
 
     QTRY_COMPARE(connectSpy.count(), 2);
-    QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Connecting);
-    QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Connected);
+    QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connecting);
+    QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connected);
 
     QCOMPARE(opcuaClient->endpoint(), m_endpoint);
     QCOMPARE(opcuaClient->error(), QOpcUaClient::NoError);
@@ -714,8 +714,8 @@ void Tst_QOpcUaClient::connectAndDisconnectPassword()
     opcuaClient->disconnectFromEndpoint();
     connectSpy.wait(signalSpyTimeout);
     QCOMPARE(connectSpy.count(), 2);
-    QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Closing);
-    QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Disconnected);
+    QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Closing);
+    QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Disconnected);
 }
 
 void Tst_QOpcUaClient::findServers()
@@ -1541,7 +1541,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
         QOpcUa::NodeAttribute temp = it.at(0).value<QOpcUa::NodeAttribute>();
         QVERIFY(attrs.contains(temp));
         QVERIFY(it.at(1).value<QOpcUaMonitoringParameters::Parameters>() &  QOpcUaMonitoringParameters::Parameter::PublishingInterval);
-        QCOMPARE(it.at(2), QOpcUa::UaStatusCode::Good);
+        QCOMPARE(it.at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
         QCOMPARE(node->monitoringStatus(temp).publishingInterval(), 200.0);
         attrs.remove(attrs.indexOf(temp));
     }
@@ -2272,12 +2272,12 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(byteStringArray.type(), QVariant::List);
     QCOMPARE(byteStringArray.toList().length(), 3);
     QCOMPARE(byteStringArray.toList()[0].userType(), QMetaType::QByteArray);
-    QCOMPARE(byteStringArray.toList()[0], "abc");
-    QCOMPARE(byteStringArray.toList()[1], "def");
+    QCOMPARE(byteStringArray.toList()[0].value<QByteArray>(), "abc");
+    QCOMPARE(byteStringArray.toList()[1].value<QByteArray>(), "def");
     QByteArray withNull("gh");
     withNull.append('\0');
     withNull.append("i");
-    QCOMPARE(byteStringArray.toList()[2], withNull);
+    QCOMPARE(byteStringArray.toList()[2].value<QByteArray>(), withNull);
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.Guid"));
     QVERIFY(node != nullptr);
