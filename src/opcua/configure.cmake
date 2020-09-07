@@ -6,8 +6,10 @@
 set(INPUT_open62541 "undefined" CACHE STRING "")
 set_property(CACHE INPUT_open62541 PROPERTY STRINGS undefined no qt system)
 
-#### Libraries
 
+
+#### Libraries
+# special case begin
 if (INPUT_open62541 STREQUAL "system")
     qt_find_package(Open62541 PROVIDED_TARGETS open62541)
 endif()
@@ -15,9 +17,10 @@ qt_find_package(Mbedtls PROVIDED_TARGETS mbedtls)
 qt_find_package(Uacpp PROVIDED_TARGETS uacpp)
 
 find_package(WrapOpenSSL 1.1)
+# special case end
 
 #### Tests
-
+# special case begin
 qt_config_compile_test(mbedtls
     LABEL "mbedTLS support"
     LIBRARIES
@@ -37,7 +40,9 @@ int main(int argc, char *argv[])
     return 0;
 }
 ")
+# special case end
 
+# special case begin
 if (INPUT_open62541 STREQUAL "system")
     qt_config_compile_test(open62541
         LABEL "open62541 support"
@@ -74,7 +79,9 @@ if (INPUT_open62541 STREQUAL "system")
         return status;
     }")
 endif()
+# special case end
 
+# special case begin
 qt_config_compile_test(uacpp
     LABEL "uacpp support"
     LIBRARIES
@@ -97,29 +104,32 @@ int main(int /*argc*/, char ** /*argv*/)
     UaPlatformLayer::cleanup();
     return 0;
 }")
+# special case end
 
 
 #### Features
 
 qt_feature("open62541" PUBLIC PRIVATE
     LABEL "Open62541"
+# special case begin
     ENABLE INPUT_open62541 STREQUAL 'qt' OR QT_FEATURE_system_open62541
     DISABLE INPUT_open62541 STREQUAL 'no' OR (NOT QT_FEATURE_system_open62541 AND INPUT_open62541 STREQUAL 'system')
+# special case end
 )
 qt_feature_definition("open62541" "QT_NO_OPEN62541" NEGATE VALUE "1")
 qt_feature("system-open62541" PRIVATE
     LABEL "Using provided Open62541"
-    CONDITION Open62541_FOUND AND TEST_open62541
+    CONDITION Open62541_FOUND AND TEST_open62541 # special case
     ENABLE INPUT_open62541 STREQUAL 'system'
-    DISABLE INPUT_open62541 STREQUAL 'qt' OR INPUT_open62541 STREQUAL 'no'
+    DISABLE INPUT_open62541 STREQUAL 'qt' OR INPUT_open62541 STREQUAL 'no' # special case
 )
 qt_feature("uacpp" PRIVATE
     LABEL "Unified Automation C++ SDK"
-    CONDITION TEST_uacpp
+    CONDITION TEST_uacpp # special case
 )
 qt_feature("mbedtls" PRIVATE
     LABEL "mbedtls"
-    CONDITION Mbedtls_FOUND AND TEST_mbedtls
+    CONDITION Mbedtls_FOUND AND TEST_mbedtls # special case
 )
 qt_feature("ns0idnames" PRIVATE
     LABEL "Support for namespace 0 NodeId names"
@@ -133,7 +143,7 @@ qt_feature("ns0idgenerator" PRIVATE
 qt_feature("gds" PUBLIC PRIVATE
     LABEL "Support for global discovery server"
     PURPOSE "Enables QOpcUaClient to interact with a global discovery server"
-    CONDITION WrapOpenSSL_FOUND
+    CONDITION WrapOpenSSL_FOUND # special case
 )
 qt_feature_definition("gds" "QT_NO_GDS" NEGATE VALUE "1")
 qt_configure_add_summary_section(NAME "Qt Opcua")
