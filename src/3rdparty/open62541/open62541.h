@@ -1,6 +1,6 @@
 /* THIS IS A SINGLE-FILE DISTRIBUTION CONCATENATED FROM THE OPEN62541 SOURCES
  * visit http://open62541.org/ for information about this software
- * Git-Revision: v1.1.2-6-g64ff48f-dirty
+ * Git-Revision: v1.1.2-8-ge941fc2
  */
 
 /*
@@ -31,8 +31,8 @@
 #define UA_OPEN62541_VER_MAJOR 1
 #define UA_OPEN62541_VER_MINOR 1
 #define UA_OPEN62541_VER_PATCH 2
-#define UA_OPEN62541_VER_LABEL "-6-g64ff48f-dirty" /* Release candidate label, etc. */
-#define UA_OPEN62541_VER_COMMIT "v1.1.2-6-g64ff48f-dirty"
+#define UA_OPEN62541_VER_LABEL "-8-ge941fc2" /* Release candidate label, etc. */
+#define UA_OPEN62541_VER_COMMIT "v1.1.2-8-ge941fc2"
 
 /**
  * Feature Options
@@ -14100,7 +14100,7 @@ _UA_END_DECLS
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/types_generated.h" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd with script /home/jvoe/open62541/tools/generate_datatypes.py
- * on host rigel by user jvoe at 2020-08-20 02:35:57 */
+ * on host rigel by user jvoe at 2020-09-09 11:33:49 */
 
 
 #ifdef UA_ENABLE_AMALGAMATION
@@ -16528,7 +16528,7 @@ _UA_END_DECLS
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/types_generated_handling.h" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd with script /home/jvoe/open62541/tools/generate_datatypes.py
- * on host rigel by user jvoe at 2020-08-20 02:35:57 */
+ * on host rigel by user jvoe at 2020-09-09 11:33:49 */
 
 
 

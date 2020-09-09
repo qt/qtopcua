@@ -1,6 +1,6 @@
 /* THIS IS A SINGLE-FILE DISTRIBUTION CONCATENATED FROM THE OPEN62541 SOURCES
  * visit http://open62541.org/ for information about this software
- * Git-Revision: v1.1.2-6-g64ff48f-dirty
+ * Git-Revision: v1.1.2-8-ge941fc2
  */
 
 /*
@@ -1008,7 +1008,7 @@ _UA_END_DECLS
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/types_generated_encoding_binary.h" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd with script /home/jvoe/open62541/tools/generate_datatypes.py
- * on host rigel by user jvoe at 2020-08-20 02:35:57 */
+ * on host rigel by user jvoe at 2020-09-09 11:33:49 */
 
 
 #ifdef UA_ENABLE_AMALGAMATION
@@ -3653,7 +3653,7 @@ UA_EventFilter_decodeBinary(const UA_ByteString *src, size_t *offset, UA_EventFi
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/transport_generated.h" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd, Custom.Opc.Ua.Transport.bsd with script /home/jvoe/open62541/tools/generate_datatypes.py
- * on host rigel by user jvoe at 2020-08-20 02:22:58 */
+ * on host rigel by user jvoe at 2020-09-09 11:33:50 */
 
 
 #ifdef UA_ENABLE_AMALGAMATION
@@ -3783,7 +3783,7 @@ _UA_END_DECLS
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/transport_generated_handling.h" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd, Custom.Opc.Ua.Transport.bsd with script /home/jvoe/open62541/tools/generate_datatypes.py
- * on host rigel by user jvoe at 2020-08-20 02:22:58 */
+ * on host rigel by user jvoe at 2020-09-09 11:33:50 */
 
 
 
@@ -4054,7 +4054,7 @@ _UA_END_DECLS
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/transport_generated_encoding_binary.h" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd, Custom.Opc.Ua.Transport.bsd with script /home/jvoe/open62541/tools/generate_datatypes.py
- * on host rigel by user jvoe at 2020-08-20 02:22:58 */
+ * on host rigel by user jvoe at 2020-09-09 11:33:50 */
 
 
 #ifdef UA_ENABLE_AMALGAMATION
@@ -10662,7 +10662,7 @@ UA_calcSizeBinary(const void *p, const UA_DataType *type) {
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/types_generated.c" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd with script /home/jvoe/open62541/tools/generate_datatypes.py
- * on host rigel by user jvoe at 2020-08-20 02:35:57 */
+ * on host rigel by user jvoe at 2020-09-09 11:33:49 */
 
 
 /* Boolean */
@@ -17895,7 +17895,7 @@ const UA_DataType UA_TYPES[UA_TYPES_COUNT] = {
 /*********************************** amalgamated original file "/home/jvoe/open62541/build/src_generated/open62541/transport_generated.c" ***********************************/
 
 /* Generated from Opc.Ua.Types.bsd, Custom.Opc.Ua.Transport.bsd with script /home/jvoe/open62541/tools/generate_datatypes.py
- * on host rigel by user jvoe at 2020-08-20 02:22:58 */
+ * on host rigel by user jvoe at 2020-09-09 11:33:50 */
 
 
 /* TcpHelloMessage */
@@ -54475,6 +54475,27 @@ UA_Bstrstr(const unsigned char *s1, size_t l1, const unsigned char *s2, size_t l
 
 #ifdef UA_ENABLE_ENCRYPTION_MBEDTLS
 
+// mbedTLS expects PEM data to be null terminated
+// The data length parameter must include the null terminator
+static UA_ByteString copyDataFormatAware(const UA_ByteString *data)
+{
+    UA_ByteString result;
+    UA_ByteString_init(&result);
+
+    if (!data->length)
+        return result;
+
+    if (data->length && data->data[0] == '-') {
+        UA_ByteString_allocBuffer(&result, data->length + 1);
+        memcpy(result.data, data->data, data->length);
+        result.data[data->length] = '\0';
+    } else {
+        UA_ByteString_copy(data, &result);
+    }
+
+    return result;
+}
+
 typedef struct {
     /* If the folders are defined, we use them to reload the certificates during
      * runtime */
@@ -54916,24 +54937,33 @@ UA_CertificateVerification_Trustlist(UA_CertificateVerification *cv,
     cv->verifyApplicationURI = certificateVerification_verifyApplicationURI;
 
     int err = 0;
+    UA_ByteString data;
+    UA_ByteString_init(&data);
+
     for(size_t i = 0; i < certificateTrustListSize; i++) {
+        data = copyDataFormatAware(&certificateTrustList[i]);
         err = mbedtls_x509_crt_parse(&ci->certificateTrustList,
-                                     certificateTrustList[i].data,
-                                     certificateTrustList[i].length);
+                                     data.data,
+                                     data.length);
+        UA_ByteString_clear(&data);
         if(err)
             goto error;
     }
     for(size_t i = 0; i < certificateIssuerListSize; i++) {
+        data = copyDataFormatAware(&certificateIssuerList[i]);
         err = mbedtls_x509_crt_parse(&ci->certificateIssuerList,
-                                     certificateIssuerList[i].data,
-                                     certificateIssuerList[i].length);
+                                     data.data,
+                                     data.length);
+        UA_ByteString_clear(&data);
         if(err)
             goto error;
     }
     for(size_t i = 0; i < certificateRevocationListSize; i++) {
+        data = copyDataFormatAware(&certificateRevocationList[i]);
         err = mbedtls_x509_crl_parse(&ci->certificateRevocationList,
-                                     certificateRevocationList[i].data,
-                                     certificateRevocationList[i].length);
+                                     data.data,
+                                     data.length);
+        UA_ByteString_clear(&data);
         if(err)
             goto error;
     }
@@ -56916,6 +56946,8 @@ int UA_mbedTLS_LoadPrivateKey(const UA_ByteString *key, mbedtls_pk_context *targ
 
 UA_StatusCode UA_mbedTLS_LoadLocalCertificate(const UA_ByteString *certData, UA_ByteString *target);
 
+UA_ByteString UA_mbedTLS_CopyDataFormatAware(const UA_ByteString *data);
+
 _UA_END_DECLS
 
 #endif
@@ -57164,15 +57196,21 @@ mbedtls_decrypt_rsaOaep(mbedtls_pk_context *localPrivateKey,
 
 int UA_mbedTLS_LoadPrivateKey(const UA_ByteString *key, mbedtls_pk_context *target)
 {
-    return mbedtls_pk_parse_key(target, key->data, key->length, NULL, 0);
+    UA_ByteString data = UA_mbedTLS_CopyDataFormatAware(key);
+    int mbedErr = mbedtls_pk_parse_key(target, data.data, data.length, NULL, 0);
+    UA_ByteString_clear(&data);
+
+    return mbedErr;
 }
 
 UA_StatusCode UA_mbedTLS_LoadLocalCertificate(const UA_ByteString *certData, UA_ByteString *target)
 {
+    UA_ByteString data = UA_mbedTLS_CopyDataFormatAware(certData);
+
     mbedtls_x509_crt cert;
     mbedtls_x509_crt_init(&cert);
 
-    int mbedErr = mbedtls_x509_crt_parse(&cert, certData->data, certData->length);
+    int mbedErr = mbedtls_x509_crt_parse(&cert, data.data, data.length);
 
     UA_StatusCode result = UA_STATUSCODE_BADINVALIDARGUMENT;
 
@@ -57184,7 +57222,29 @@ UA_StatusCode UA_mbedTLS_LoadLocalCertificate(const UA_ByteString *certData, UA_
         result = UA_ByteString_copy(&tmp, target);
     }
 
+    UA_ByteString_clear(&data);
     mbedtls_x509_crt_free(&cert);
+    return result;
+}
+
+// mbedTLS expects PEM data to be null terminated
+// The data length parameter must include the null terminator
+UA_ByteString UA_mbedTLS_CopyDataFormatAware(const UA_ByteString *data)
+{
+    UA_ByteString result;
+    UA_ByteString_init(&result);
+
+    if (!data->length)
+        return result;
+
+    if (data->length && data->data[0] == '-') {
+        UA_ByteString_allocBuffer(&result, data->length + 1);
+        memcpy(result.data, data->data, data->length);
+        result.data[data->length] = '\0';
+    } else {
+        UA_ByteString_copy(data, &result);
+    }
+
     return result;
 }
 
@@ -57824,9 +57884,7 @@ updateCertificateAndPrivateKey_sp_basic128rsa15(UA_SecurityPolicy *securityPolic
     /* Set the new private key */
     mbedtls_pk_free(&pc->localPrivateKey);
     mbedtls_pk_init(&pc->localPrivateKey);
-    int mbedErr = mbedtls_pk_parse_key(&pc->localPrivateKey,
-                                       newPrivateKey.data, newPrivateKey.length,
-                                       NULL, 0);
+    int mbedErr = UA_mbedTLS_LoadPrivateKey(&newPrivateKey, &pc->localPrivateKey);
     if(mbedErr) {
         retval = UA_STATUSCODE_BADSECURITYCHECKSFAILED;
         goto error;
@@ -57904,9 +57962,8 @@ policyContext_newContext_sp_basic128rsa15(UA_SecurityPolicy *securityPolicy,
     }
 
     /* Set the private key */
-    mbedErr = mbedtls_pk_parse_key(&pc->localPrivateKey,
-                                   localPrivateKey.data, localPrivateKey.length,
-                                   NULL, 0);
+    mbedErr = UA_mbedTLS_LoadPrivateKey(&localPrivateKey, &pc->localPrivateKey);
+
     if(mbedErr) {
         retval = UA_STATUSCODE_BADSECURITYCHECKSFAILED;
         goto error;
@@ -58649,9 +58706,9 @@ updateCertificateAndPrivateKey_sp_basic256(UA_SecurityPolicy *securityPolicy,
     /* Set the new private key */
     mbedtls_pk_free(&pc->localPrivateKey);
     mbedtls_pk_init(&pc->localPrivateKey);
-    int mbedErr = mbedtls_pk_parse_key(&pc->localPrivateKey,
-                                       newPrivateKey.data, newPrivateKey.length,
-                                       NULL, 0);
+
+    int mbedErr = UA_mbedTLS_LoadPrivateKey(&newPrivateKey, &pc->localPrivateKey);
+
     if(mbedErr) {
         retval = UA_STATUSCODE_BADSECURITYCHECKSFAILED;
         goto error;
@@ -58729,8 +58786,7 @@ policyContext_newContext_sp_basic256(UA_SecurityPolicy *securityPolicy,
     }
 
     /* Set the private key */
-    mbedErr = mbedtls_pk_parse_key(&pc->localPrivateKey, localPrivateKey.data,
-                                   localPrivateKey.length, NULL, 0);
+    mbedErr = UA_mbedTLS_LoadPrivateKey(&localPrivateKey, &pc->localPrivateKey);
     if(mbedErr) {
         retval = UA_STATUSCODE_BADSECURITYCHECKSFAILED;
         goto error;
@@ -59519,8 +59575,7 @@ updateCertificateAndPrivateKey_sp_basic256sha256(UA_SecurityPolicy *securityPoli
     /* Set the new private key */
     mbedtls_pk_free(&pc->localPrivateKey);
     mbedtls_pk_init(&pc->localPrivateKey);
-    int mbedErr = mbedtls_pk_parse_key(&pc->localPrivateKey, newPrivateKey.data,
-                                       newPrivateKey.length, NULL, 0);
+    int mbedErr = UA_mbedTLS_LoadPrivateKey(&newPrivateKey, &pc->localPrivateKey);
     if(mbedErr) {
         retval = UA_STATUSCODE_BADSECURITYCHECKSFAILED;
         goto error;
@@ -59598,8 +59653,7 @@ policyContext_newContext_sp_basic256sha256(UA_SecurityPolicy *securityPolicy,
     }
 
     /* Set the private key */
-    mbedErr = mbedtls_pk_parse_key(&pc->localPrivateKey, localPrivateKey.data,
-                                   localPrivateKey.length, NULL, 0);
+    mbedErr = UA_mbedTLS_LoadPrivateKey(&localPrivateKey, &pc->localPrivateKey);
     if(mbedErr) {
         retval = UA_STATUSCODE_BADSECURITYCHECKSFAILED;
         goto error;
