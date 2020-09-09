@@ -1133,8 +1133,9 @@ bool Open62541AsyncBackend::loadFileToByteString(const QString &location, UA_Byt
         temp.data = nullptr;
     else {
         if (data.startsWith('-')) { // PEM file
-            // Remove trailing newline, mbedTLS doesn't tolerate this when loading a certificate
-            data = QString::fromLatin1(data).trimmed().toLatin1();
+            // mbedTLS expects PEM encoded data to be null terminated
+            data = data.append('\0');
+            temp.length = data.length();
         }
         temp.data = reinterpret_cast<unsigned char *>(data.data());
     }
