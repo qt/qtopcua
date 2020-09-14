@@ -64,7 +64,7 @@ bool OpcUaAttributeValue::operator ==(const OpcUaAttributeValue &rhs)
 
 void OpcUaAttributeValue::setValue(const QVariant &value)
 {
-    if (value != m_value) {
+    if (value.metaType() != m_value.metaType() || value != m_value) {
         m_value = value;
         emit changed(m_value);
     }

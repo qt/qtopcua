@@ -3309,9 +3309,16 @@ void Tst_QOpcUaClient::stringCharset()
 void Tst_QOpcUaClient::namespaceArray()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
-    OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QSignalSpy spy(opcuaClient, &QOpcUaClient::namespaceArrayUpdated);
+
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    // Catch the initial update after connect
+    spy.wait(signalSpyTimeout);
+    QCOMPARE(spy.size(), 1);
+    spy.clear();
+
     QCOMPARE(opcuaClient->updateNamespaceArray(), true);
 
     spy.wait(signalSpyTimeout);
@@ -3879,7 +3886,9 @@ void Tst_QOpcUaClient::connectionLost()
     // open62541 returns a different status code depending on when after the disconnect the request is made
     if (opcuaClient->backend() == QStringLiteral("open62541"))
         QVERIFY(stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName) == QOpcUa::UaStatusCode::BadInternalError ||
-                stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName) == QOpcUa::UaStatusCode::BadConnectionClosed);
+                stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName) == QOpcUa::UaStatusCode::BadSessionClosed ||
+                stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName) == QOpcUa::UaStatusCode::BadConnectionClosed ||
+                stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName) == QOpcUa::UaStatusCode::BadServerNotConnected);
     else
         QCOMPARE(stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName), QOpcUa::UaStatusCode::BadConnectionClosed);
 

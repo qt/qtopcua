@@ -1,4 +1,4 @@
-/****************************************************************************
+﻿/****************************************************************************
 **
 ** Copyright (C) 2017 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
@@ -82,16 +82,28 @@ public Q_SLOTS:
     QOpen62541Subscription *getSubscription(const QOpcUaMonitoringParameters &settings);
     bool removeSubscription(UA_UInt32 subscriptionId);
     void iterateClient();
-    void reevaluateClientIterateTimer();
     void handleSubscriptionTimeout(QOpen62541Subscription *sub, QList<QPair<quint64, QOpcUa::NodeAttribute>> items);
     void cleanupSubscriptions();
+
+    // Callbacks
+    static void asyncMethodCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response);
+    static void asyncTranslateBrowsePathCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response);
+    static void asyncAddNodeCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response);
+    static void asyncDeleteNodeCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response);
+    static void asyncAddReferenceCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response);
+    static void asyncDeleteReferenceCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response);
+    static void asyncReadCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response);
+    static void asyncWriteAttributesCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response);
+    static void asyncBrowseCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response);
+    static void asyncBatchReadCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response);
+    static void asyncBatchWriteCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response);
 
 public:
     UA_Client *m_uaclient;
     QOpen62541Client *m_clientImpl;
     bool m_useStateCallback;
-    double m_minimumIterateInterval;
-    const double m_maximumIterateInterval;
+    quint32 m_clientIterateInterval;
+    quint32 m_asyncRequestTimeout;
 
 private:
     static void clientStateCallback(UA_Client *client,
@@ -123,6 +135,75 @@ private:
     double m_minPublishingInterval;
 
     const UA_Logger m_open62541Logger {open62541LogHandler, nullptr, nullptr};
+
+    // Async contexts
+
+    struct AsyncCallContext {
+        quint64 handle;
+        QString methodNodeId;
+    };
+    QMap<quint32, AsyncCallContext> m_asyncCallContext;
+
+    struct AsyncTranslateContext {
+        quint64 handle;
+        QList<QOpcUaRelativePathElement> path;
+    };
+    QMap<quint32, AsyncTranslateContext> m_asyncTranslateContext;
+
+    struct AsyncAddNodeContext {
+        QOpcUaExpandedNodeId requestedNodeId;
+    };
+    QMap<quint32, AsyncAddNodeContext> m_asyncAddNodeContext;
+
+    struct AsyncDeleteNodeContext {
+        QString nodeId;
+    };
+    QMap<quint32, AsyncDeleteNodeContext> m_asyncDeleteNodeContext;
+
+    struct AsyncAddReferenceContext {
+        QString sourceNodeId;
+        QString referenceTypeId;
+        QOpcUaExpandedNodeId targetNodeId;
+        bool isForwardReference;
+    };
+    QMap<quint32, AsyncAddReferenceContext> m_asyncAddReferenceContext;
+
+    struct AsyncDeleteReferenceContext {
+        QString sourceNodeId;
+        QString referenceTypeId;
+        QOpcUaExpandedNodeId targetNodeId;
+        bool isForwardReference;
+    };
+    QMap<quint32, AsyncDeleteReferenceContext> m_asyncDeleteReferenceContext;
+
+    struct AsyncReadContext {
+        quint64 handle;
+        QList<QOpcUaReadResult> results;
+    };
+    QMap<quint32, AsyncReadContext> m_asyncReadContext;
+
+    struct AsyncWriteAttributesContext {
+        quint64 handle;
+        QOpcUaNode::AttributeMap toWrite;
+    };
+    QMap<quint32, AsyncWriteAttributesContext> m_asyncWriteAttributesContext;
+
+    struct AsyncBrowseContext {
+        quint64 handle;
+        bool isBrowseNext;
+        QList<QOpcUaReferenceDescription> results;
+    };
+    QMap<quint32, AsyncBrowseContext> m_asyncBrowseContext;
+
+    struct AsyncBatchReadContext {
+        QList<QOpcUaReadItem> nodesToRead;
+    };
+    QMap<quint32, AsyncBatchReadContext> m_asyncBatchReadContext;
+
+    struct AsyncBatchWriteContext {
+        QList<QOpcUaWriteItem> nodesToWrite;
+    };
+    QMap<quint32, AsyncBatchWriteContext> m_asyncBatchWriteContext;
 };
 
 QT_END_NAMESPACE

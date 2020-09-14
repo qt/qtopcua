@@ -56,11 +56,17 @@ QOpen62541Client::QOpen62541Client(const QVariantMap &backendProperties)
     , m_backend(new Open62541AsyncBackend(this))
 {
     bool ok = false;
-    const double minIterateInterval = backendProperties.value(QStringLiteral("minimumClientIterateIntervalMs"), 50.0)
-            .toDouble(&ok);
+    const quint32 clientIterateInterval = backendProperties.value(QStringLiteral("clientIterateIntervalMs"), 50)
+            .toUInt(&ok);
 
     if (ok)
-        m_backend->m_minimumIterateInterval = minIterateInterval;
+        m_backend->m_clientIterateInterval = clientIterateInterval;
+
+    const quint32 asyncRequestTimeout = backendProperties.value(QStringLiteral("asyncRequestTimeoutMs"), 15000)
+            .toUInt(&ok);
+
+    if (ok)
+        m_backend->m_asyncRequestTimeout = asyncRequestTimeout;
 
     m_thread = new QThread();
     m_thread->setObjectName("QOpen62541Client");

@@ -237,8 +237,20 @@ static QOpcUaPlugin *loadPlugin(const QString &key)
     \row
         \li minimumClientIterateIntervalMs
         \li open62541
-        \li Defines the client iterate interval for the backend. This value can be used to make a tradeoff
-            between reaction time for subscriptions and CPU load. The default value is 50ms.
+        \li This parameter is no longer evaluated by the backend and has been replaced by \c clientIterateIntervalMs.
+    \row
+        \li clientIterateIntervalMs
+        \li open62541
+        \li Defines the client iterate interval for the backend. If the client is causing too much CPU load,
+            setting this value higher than the default will reduce the CPU load at the price of an increased
+            response time to service requests and value updates from subscriptions.
+            The default value is 50ms.
+    \row
+        \li asyncRequestTimeoutMs
+        \li open62541
+        \li Defines the timeout for asynchronous requests to an OPC UA server. If the server doesn't reply to
+            a service request before the timeout occurs, the service call fails and the finished signal will
+            contain a \c bad status code. The default value is 15000ms.
     \endtable
 */
 QOpcUaClient *QOpcUaProvider::createClient(const QString &backend, const QVariantMap &backendProperties)
