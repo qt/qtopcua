@@ -84,8 +84,8 @@ private slots:
 
 private:
     // Callbacks from QQmlParserStatus
-    void classBegin();
-    void componentComplete();
+    void classBegin() override;
+    void componentComplete() override;
 
     QString m_serverUrl;
     OpcUaConnection *m_connection = nullptr;

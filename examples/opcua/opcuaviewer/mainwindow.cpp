@@ -122,7 +122,7 @@ MainWindow::MainWindow(const QString &initialUrl, QWidget *parent) : QMainWindow
     mainWindowGlobal = this;
 
     connect(ui->quitAction, &QAction::triggered, this, &QWidget::close);
-    ui->quitAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q));
+    ui->quitAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Q));
 
     connect(ui->aboutAction, &QAction::triggered, this, &QApplication::aboutQt);
     ui->aboutAction->setShortcut(QKeySequence(QKeySequence::HelpContents));

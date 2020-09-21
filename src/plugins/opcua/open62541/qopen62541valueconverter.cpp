@@ -525,7 +525,7 @@ QVariant arrayToQVariant(const UA_Variant &var, QMetaType::Type type)
         for (size_t i = 0; i < var.arrayLength; ++i) {
             QVariant tempVar = QVariant::fromValue(scalarToQt<TARGETTYPE, UATYPE>(&temp[i]));
             if (type != QMetaType::UnknownType && type != static_cast<QMetaType::Type>(tempVar.type()))
-                tempVar.convert(type);
+                tempVar.convert(QMetaType(type));
             list.append(tempVar);
         }
 
@@ -545,7 +545,7 @@ QVariant arrayToQVariant(const UA_Variant &var, QMetaType::Type type)
     } else if (UA_Variant_isScalar(&var)) {
         QVariant tempVar = QVariant::fromValue(scalarToQt<TARGETTYPE, UATYPE>(temp));
         if (type != QMetaType::UnknownType && type != static_cast<QMetaType::Type>(tempVar.type()))
-            tempVar.convert(type);
+            tempVar.convert(QMetaType(type));
         return tempVar;
     } else if (var.arrayLength == 0 && var.data == UA_EMPTY_ARRAY_SENTINEL) {
         return QVariantList(); // Return empty QVariantList for empty array

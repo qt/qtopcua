@@ -205,7 +205,7 @@ void QOpen62541Subscription::modifyMonitoring(quint64 handle, QOpcUa::NodeAttrib
 
     // SetMonitoringMode service
     if (item == QOpcUaMonitoringParameters::Parameter::MonitoringMode) {
-        if (value.type() != QVariant::UserType || value.userType() != QMetaType::type("QOpcUaMonitoringParameters::MonitoringMode")) {
+        if (value.type() != QVariant::UserType || value.userType() != QMetaType::fromType<QOpcUaMonitoringParameters::MonitoringMode>().id()) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "New value for MonitoringMode is not a monitoring mode";
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(handle, attr, item, p);

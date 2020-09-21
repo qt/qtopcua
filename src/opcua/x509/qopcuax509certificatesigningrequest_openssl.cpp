@@ -115,7 +115,7 @@ static X509_EXTENSION *createExtension(QOpcUaX509Extension *extension)
                 return nullptr;
             }
 
-            if (pair.second.isEmpty() || pair.second.contains(',')) {
+            if (pair.second.isEmpty() || pair.second.contains(QChar::fromLatin1(','))) {
                 qCWarning(lcSsl()) << "Invalid SubjectAlternativeName value";
                 return nullptr;
             }
