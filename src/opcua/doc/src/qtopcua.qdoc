@@ -34,10 +34,10 @@
     \since 5.11
     \brief List of C++ classes that provide the Qt OPC UA functionality.
 
-    To link against the module, add this line to your \l qmake \c .pro file:
+    To link against the module, add this line to your \l cmake \c project file:
 
     \code
-    QT += opcua
+    target_link_libraries(mytarget Qt::OpcUa)
     \endcode
 */
 
@@ -54,11 +54,10 @@
     import QtOpcUa 5.12 as QtOpcUa
     \endcode
 
-    To link against the module, add the following QT variable to your qmake .pro
-    file:
+    To link against the module, add the following QT variable to your \l cmake project file:
 
     \badcode
-    QT += opcua
+    target_link_libraries(mytarget Qt::OpcUa)
     \endcode
 */
 
@@ -92,10 +91,10 @@
     #include <QtOpcUa>
     \endcode
 
-    To link against the module, add this line to your \l qmake \c .pro file:
+    To link against the module, add this line to your \l cmake project file:
 
     \code
-    QT += opcua
+    target_link_libraries(mytarget Qt::OpcUa)
     \endcode
 
     \section1 Articles and Guides
@@ -417,7 +416,7 @@
     \brief Build instructions for the Qt OPC UA Open62541 plugin.
 
     The Open62541 plugin is built by default from the included 3rd party sources and has no external dependencies.
-    The open62541 library uses mbedTLS for security. If the mbedTLS library is detected during configuration,
+    The open62541 library uses OpenSSL for security. If the OpenSSL library is detected during configuration,
     security is enabled for the tests and the open62541 backend.
     The Open62541 source and header files bundled with Qt OPC UA have been generated from the open62541 1.1
     commit e941fc23b0 using the following commands:
@@ -427,27 +426,19 @@
         make
     \endcode
 
-    In order to disable the Open62541 plugin completely use:
+    In order to disable the Open62541 plugin completely, use:
 
     \code
-        qmake </path/to/qtopcua> -- -no-open62541
+        cmake </path/to/qtopcua> -DINPUT_open62541=no
     \encode
 
     In case you want to build a custom version of the Open62541 plugin, Open62541 1.1 (e941fc23b0) built with the same options as above is required.
 
-    When building at the top level, you have to specify the path to the Open62541 SDK:
+    The following options must be passed to cmake when building with open62541 installed to a custom location:
 
     \code
-        configure -system-open62541 OPEN62541_PREFIX=/path/to/sdk
+        -DINPUT_open62541=system -DOPEN62541_INCDIR=/path/to/sdk/include -DOPEN62541_LIBDIR=/path/to/sdk/lib
     \endcode
-
-    If you are not building at the top level, this setting has to be given to qmake:
-
-    \code
-        qmake </path/to/qtopcua> -- -system-open62541 OPEN62541_PREFIX=/path/to/sdk
-    \endcode
-
-    If the open62541 header and library files are located in a custom path, different settings must be used:
 
     \table
     \header
@@ -461,10 +452,10 @@
     \li The directory which contains the library file
     \endtable
 
-    For example, the following settings can be used for building the open62541 plugin using a static build
+    For example, the following options can be used for building the open62541 plugin using a static build
     directly from its build directory without installing it:
     \code
-        OPEN62541_INCDIR=/path/to/open62541/build OPEN62541_LIBDIR=/path/to/open62541/build/bin
+        -DOPEN62541_INCDIR=/path/to/open62541/build -DOPEN62541_LIBDIR=/path/to/open62541/build/bin
     \endcode
 
     The output of the configuration step indicates whether the detection was successful:
@@ -483,16 +474,10 @@
     See \l {Creating OPC UA Clients with security support} for detailed instructions for setting up the Unified Automation SDK including
     security extensions.
 
-    When building at the top level, you have to specify the path to the UACPP SDK:
+    The following options must be passed to cmake in order to find the UACPP headers and libraries:
 
     \code
-        configure UACPP_PREFIX=/path/to/sdk
-    \endcode
-
-    If you are not building at the top level, this setting has to be given to qmake:
-
-    \code
-        qmake </path/to/qtopcua> -- UACPP_PREFIX=/path/to/sdk
+        -DUACPP_PREFIX=/path/to/sdk
     \endcode
 
     The output of the configuration step indicates whether the detection was successful:
@@ -516,14 +501,14 @@
     locations must be passed as follows:
 
     \badcode
-        qmake </path/to/qtopcua> -- QMAKE_CXXFLAGS="-I /opt/openssl/include -L /opt/openssl/lib"
+        -DOPENSSL_ROOT_DIR=/opt/openssl/
     \endcode
 
     If GDS support is not required, it can be disabled by using the following
     parameters:
 
     \badcode
-        qmake </path/to/qtopcua> -- -no-feature-gds
+        -DFEATURE_gds=OFF
     \endcode
 
     In this case, OpenSSL is not required.

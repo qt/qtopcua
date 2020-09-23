@@ -128,12 +128,12 @@
 
     \code
     cd /path/to/qtopcua
-    qmake CONFIG+=debug -- UACPP_PREFIX=$SDKDIR
+    cmake -DCMAKE_BUILD_TYPE=Debug -DUACPP_PREFIX=$SDKDIR
     make -j $(nproc)
     make install
     \endcode
 
-    The output of the \c qmake configuration step indicates whether the detection was successful:
+    The output of the \c cmake configuration step indicates whether the detection was successful:
 
     \code
     Unified Automation C++ SDK ............. yes
@@ -192,12 +192,12 @@
 
     \code
     cd \path\to\qtopcua
-    qmake CONFIG+=debug -- UACPP_PREFIX=%SDKDIR%
+    cmake -DCMAKE_BUILD_TYPE=Debug -DUACPP_PREFIX=%SDKDIR%
     nmake
     nmake install
     \endcode
 
-    The output of the \c qmake configuration step indicates whether the detection was successful:
+    The output of the \c cmake configuration step indicates whether the detection was successful:
 
     \code
     Unified Automation C++ SDK ............. yes
