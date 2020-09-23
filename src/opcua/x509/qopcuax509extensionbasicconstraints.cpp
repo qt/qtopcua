@@ -54,6 +54,7 @@ QT_BEGIN_NAMESPACE
 class QOpcUaX509ExtensionBasicConstraintsData : public QOpcUaX509ExtensionData
 {
 public:
+    ~QOpcUaX509ExtensionBasicConstraintsData() override = default;
     bool ca = false;
     int pathLength = -1;
 };

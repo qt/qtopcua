@@ -55,6 +55,7 @@ QT_BEGIN_NAMESPACE
 class QOpcUaX509ExtensionData : public QSharedData
 {
 public:
+    virtual ~QOpcUaX509ExtensionData() = default;
     bool critical = false;
 };
 

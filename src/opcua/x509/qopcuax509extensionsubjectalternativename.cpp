@@ -71,6 +71,7 @@ QT_BEGIN_NAMESPACE
 class QOpcUaX509ExtensionSubjectAlternativeNameData : public QOpcUaX509ExtensionData
 {
 public:
+    ~QOpcUaX509ExtensionSubjectAlternativeNameData() override = default;
     QList <QPair<QOpcUaX509ExtensionSubjectAlternativeName::Type, QString>> entries;
 };
 

@@ -80,6 +80,7 @@ QT_BEGIN_NAMESPACE
 class QOpcUaX509ExtensionKeyUsageData : public QOpcUaX509ExtensionData
 {
 public:
+    ~QOpcUaX509ExtensionKeyUsageData() override = default;
     QSet<QOpcUaX509ExtensionKeyUsage::KeyUsage> keyUsage;
 };
 

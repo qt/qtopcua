@@ -138,6 +138,7 @@ QOpcUaX509CertificateSigningRequest::QOpcUaX509CertificateSigningRequest()
 */
 QOpcUaX509CertificateSigningRequest::~QOpcUaX509CertificateSigningRequest()
 {
+    delete d_ptr;
 }
 
 /*!
