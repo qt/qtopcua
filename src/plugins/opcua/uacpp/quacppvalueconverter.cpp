@@ -118,7 +118,7 @@ OpcUa_BuiltInType toDataType(QOpcUa::Types valueType)
 template<typename TARGETTYPE, typename UATYPE>
 QVariant scalarToQVariant(UATYPE *data, QMetaType::Type type)
 {
-    return QVariant(type, reinterpret_cast<const TARGETTYPE *>(data));
+    return QVariant(QMetaType(type), reinterpret_cast<const TARGETTYPE *>(data));
 }
 
 template<>
