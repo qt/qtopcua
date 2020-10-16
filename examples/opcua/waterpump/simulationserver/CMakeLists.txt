@@ -26,7 +26,7 @@ else()
 endif()
 # special case end
 
-add_executable(simulationserver
+qt_add_executable(simulationserver
     ${MODULE_SOURCE}/src/plugins/opcua/open62541/qopen62541utils.cpp # special case
     ${MODULE_SOURCE}/src/plugins/opcua/open62541/qopen62541valueconverter.cpp # special case
     main.cpp

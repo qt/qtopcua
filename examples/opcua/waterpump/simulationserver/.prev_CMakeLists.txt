@@ -18,7 +18,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/opcua/waterpump/simulationserver"
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS OpcUa)
 
-add_executable(simulationserver
+qt_add_executable(simulationserver
     ../../../../../../..//Automation/sources/qtopcua//src/plugins/opcua/open62541/qopen62541utils.cpp
     ../../../../../../..//Automation/sources/qtopcua//src/plugins/opcua/open62541/qopen62541valueconverter.cpp
     main.cpp

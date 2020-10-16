@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Quick)
 find_package(Qt6 COMPONENTS OpcUa)
 
-add_qt_gui_executable(waterpump-qmlcpp
+qt_add_executable(waterpump-qmlcpp
     main.cpp
     opcuamachinebackend.cpp opcuamachinebackend.h
 )

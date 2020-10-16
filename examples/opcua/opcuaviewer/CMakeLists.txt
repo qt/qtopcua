@@ -20,7 +20,7 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS OpcUa)
 find_package(Qt6 COMPONENTS Widgets)
 
-add_qt_gui_executable(opcuaviewer
+qt_add_executable(opcuaviewer
     certificatedialog.cpp certificatedialog.h certificatedialog.ui
     main.cpp
     mainwindow.cpp mainwindow.h mainwindow.ui

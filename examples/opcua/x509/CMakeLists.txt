@@ -18,7 +18,7 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/opcua/x509")
 find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS OpcUa)
 
-add_qt_gui_executable(x509
+qt_add_executable(x509
     main.cpp
 )
 target_link_libraries(x509 PUBLIC

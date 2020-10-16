@@ -19,7 +19,7 @@ find_package(Qt6 COMPONENTS Core)
 find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS Quick)
 
-add_qt_gui_executable(waterpump-qml
+qt_add_executable(waterpump-qml
     main.cpp
 )
 target_link_libraries(waterpump-qml PUBLIC
