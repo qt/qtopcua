@@ -32,6 +32,10 @@ qt_add_executable(simulationserver
     main.cpp
     simulationserver.cpp simulationserver.h
 )
+set_target_properties(simulationserver PROPERTIES
+    WIN32_EXECUTABLE FALSE
+    MACOSX_BUNDLE TRUE
+)
 
 target_include_directories(simulationserver PUBLIC
     ${MODULE_SOURCE}/src/plugins/opcua/open62541 # special case

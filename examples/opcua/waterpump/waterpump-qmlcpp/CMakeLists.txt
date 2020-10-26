@@ -24,6 +24,10 @@ qt_add_executable(waterpump-qmlcpp
     main.cpp
     opcuamachinebackend.cpp opcuamachinebackend.h
 )
+set_target_properties(waterpump-qmlcpp PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(waterpump-qmlcpp PUBLIC
     Qt::Core
     Qt::Gui

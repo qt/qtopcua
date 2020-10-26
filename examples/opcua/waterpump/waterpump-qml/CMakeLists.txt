@@ -22,6 +22,10 @@ find_package(Qt6 COMPONENTS Quick)
 qt_add_executable(waterpump-qml
     main.cpp
 )
+set_target_properties(waterpump-qml PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(waterpump-qml PUBLIC
     Qt::Core
     Qt::Gui

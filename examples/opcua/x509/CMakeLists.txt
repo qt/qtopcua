@@ -21,6 +21,10 @@ find_package(Qt6 COMPONENTS OpcUa)
 qt_add_executable(x509
     main.cpp
 )
+set_target_properties(x509 PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(x509 PUBLIC
     Qt::Core
     Qt::OpcUa

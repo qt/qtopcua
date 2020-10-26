@@ -27,6 +27,10 @@ qt_add_executable(opcuaviewer
     opcuamodel.cpp opcuamodel.h
     treeitem.cpp treeitem.h
 )
+set_target_properties(opcuaviewer PROPERTIES
+    WIN32_EXECUTABLE TRUE
+    MACOSX_BUNDLE TRUE
+)
 target_link_libraries(opcuaviewer PUBLIC
     Qt::Core
     Qt::Gui
