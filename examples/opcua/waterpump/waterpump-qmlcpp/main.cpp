@@ -50,9 +50,11 @@
 
 #include "opcuamachinebackend.h"
 
+#include <QFile>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QProcess>
 #include <QtOpcUa>
 
 int main(int argc, char *argv[])

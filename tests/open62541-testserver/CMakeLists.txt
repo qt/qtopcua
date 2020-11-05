@@ -106,10 +106,18 @@ qt_extend_target(open62541-testserver CONDITION (QT_FEATURE_open62541 AND NOT QT
 # special case end
 
 # special case begin
-if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541 AND NOT (WINRT OR WIN32 AND MSVC)) # special case
-    set_source_files_properties(../../src/3rdparty/open62541/open62541.c PROPERTIES
+if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541)
+    if (NOT (WINRT OR WIN32 AND MSVC)) # special case
+        set_source_files_properties(../../src/3rdparty/open62541/open62541.c PROPERTIES
         COMPILE_OPTIONS
             "-Wno-unused-parameter;-Wno-unused-function;-Wno-format;-Wno-strict-aliasing;-Wno-unused-result;-std=c99")
+    elseif(WIN32 AND MSVC)
+        # CMake uses C11+ by default and the _Static_assert expansion fails during compilation
+        set_source_files_properties(../../src/3rdparty/open62541/open62541.c PROPERTIES LANGUAGE CXX)
+        set_source_files_properties(../../src/3rdparty/open62541/open62541.c PROPERTIES
+        COMPILE_OPTIONS
+            "/Zc:strictStrings-")
+    endif()
 endif()
 # special case end
 
