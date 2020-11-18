@@ -162,11 +162,11 @@ void OpcUaRelativeNodeId::clearPaths(QQmlListProperty<OpcUaRelativeNodePath>* li
     reinterpret_cast< OpcUaRelativeNodeId* >(list->data)->clearPaths();
 }
 
-OpcUaRelativeNodePath* OpcUaRelativeNodeId::path(QQmlListProperty<OpcUaRelativeNodePath>* list, int i) {
+OpcUaRelativeNodePath* OpcUaRelativeNodeId::path(QQmlListProperty<OpcUaRelativeNodePath>* list, qsizetype i) {
     return reinterpret_cast< OpcUaRelativeNodeId* >(list->data)->path(i);
 }
 
-int OpcUaRelativeNodeId::pathCount(QQmlListProperty<OpcUaRelativeNodePath>* list) {
+qsizetype OpcUaRelativeNodeId::pathCount(QQmlListProperty<OpcUaRelativeNodePath>* list) {
     return reinterpret_cast< OpcUaRelativeNodeId* >(list->data)->pathCount();
 }
 

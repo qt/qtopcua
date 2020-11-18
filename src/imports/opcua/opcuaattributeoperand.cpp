@@ -222,12 +222,12 @@ void OpcUaAttributeOperand::appendBrowsePathElement(QQmlListProperty<OpcUaRelati
     reinterpret_cast<OpcUaAttributeOperand*>(list->data)->appendBrowsePathElement(nodeId);
 }
 
-int OpcUaAttributeOperand::browsePathSize(QQmlListProperty<OpcUaRelativeNodePath> *list)
+qsizetype OpcUaAttributeOperand::browsePathSize(QQmlListProperty<OpcUaRelativeNodePath> *list)
 {
     return reinterpret_cast<OpcUaAttributeOperand*>(list->data)->browsePathSize();
 }
 
-OpcUaRelativeNodePath *OpcUaAttributeOperand::browsePathElement(QQmlListProperty<OpcUaRelativeNodePath> *list, int index)
+OpcUaRelativeNodePath *OpcUaAttributeOperand::browsePathElement(QQmlListProperty<OpcUaRelativeNodePath> *list, qsizetype index)
 {
     return reinterpret_cast<OpcUaAttributeOperand*>(list->data)->browsePathElement(index);
 }

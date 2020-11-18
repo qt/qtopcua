@@ -71,8 +71,8 @@ public slots:
 
 private:
     static void appendPath(QQmlListProperty<OpcUaRelativeNodePath>*, OpcUaRelativeNodePath *);
-    static int pathCount(QQmlListProperty<OpcUaRelativeNodePath>*);
-    static OpcUaRelativeNodePath* path(QQmlListProperty<OpcUaRelativeNodePath>*, int);
+    static qsizetype pathCount(QQmlListProperty<OpcUaRelativeNodePath>*);
+    static OpcUaRelativeNodePath* path(QQmlListProperty<OpcUaRelativeNodePath>*, qsizetype);
     static void clearPaths(QQmlListProperty<OpcUaRelativeNodePath>*);
 
     OpcUaNodeIdType *m_startNode = nullptr;
