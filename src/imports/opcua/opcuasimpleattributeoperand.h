@@ -80,8 +80,8 @@ signals:
 
 private:
     static void appendBrowsePathElement(QQmlListProperty<OpcUaNodeId> *list, OpcUaNodeId *nodeId);
-    static int browsePathSize(QQmlListProperty<OpcUaNodeId> *list);
-    static OpcUaNodeId* browsePathElement(QQmlListProperty<OpcUaNodeId> *list, int index);
+    static qsizetype browsePathSize(QQmlListProperty<OpcUaNodeId> *list);
+    static OpcUaNodeId* browsePathElement(QQmlListProperty<OpcUaNodeId> *list, qsizetype index);
     static void clearBrowsePath(QQmlListProperty<OpcUaNodeId> *list);
 
     QList<OpcUaNodeId*> m_browsePath;

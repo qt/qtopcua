@@ -77,13 +77,13 @@ signals:
 
 private:
     static void appendSelector(QQmlListProperty<OpcUaSimpleAttributeOperand> *list, OpcUaSimpleAttributeOperand *);
-    static int selectorCount(QQmlListProperty<OpcUaSimpleAttributeOperand> *list);
-    static OpcUaSimpleAttributeOperand* selector(QQmlListProperty<OpcUaSimpleAttributeOperand> *list, int index);
+    static qsizetype selectorCount(QQmlListProperty<OpcUaSimpleAttributeOperand> *list);
+    static OpcUaSimpleAttributeOperand* selector(QQmlListProperty<OpcUaSimpleAttributeOperand> *list, qsizetype index);
     static void clearSelectors(QQmlListProperty<OpcUaSimpleAttributeOperand> *list);
 
     static void appendFilterElement(QQmlListProperty<OpcUaFilterElement> *list, OpcUaFilterElement *nodeId);
-    static int filterElementCount(QQmlListProperty<OpcUaFilterElement> *list);
-    static OpcUaFilterElement* filterElement(QQmlListProperty<OpcUaFilterElement> *list, int index);
+    static qsizetype filterElementCount(QQmlListProperty<OpcUaFilterElement> *list);
+    static OpcUaFilterElement* filterElement(QQmlListProperty<OpcUaFilterElement> *list, qsizetype index);
     static void clearFilterElements(QQmlListProperty<OpcUaFilterElement> *list);
 
     QList<OpcUaFilterElement*> m_filterElements;

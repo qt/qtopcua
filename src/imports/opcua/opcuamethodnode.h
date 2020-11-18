@@ -82,8 +82,8 @@ private:
     bool checkValidity() override;
 
     static void appendArgument(QQmlListProperty<OpcUaMethodArgument>*, OpcUaMethodArgument *);
-    static int argumentCount(QQmlListProperty<OpcUaMethodArgument>*);
-    static OpcUaMethodArgument* argument(QQmlListProperty<OpcUaMethodArgument>*, int);
+    static qsizetype argumentCount(QQmlListProperty<OpcUaMethodArgument>*);
+    static OpcUaMethodArgument* argument(QQmlListProperty<OpcUaMethodArgument>*, qsizetype);
     static void clearArguments(QQmlListProperty<OpcUaMethodArgument>*);
 
 private:

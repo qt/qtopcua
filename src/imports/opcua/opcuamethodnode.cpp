@@ -275,11 +275,11 @@ void OpcUaMethodNode::clearArguments(QQmlListProperty<OpcUaMethodArgument>* list
     reinterpret_cast< QList<OpcUaMethodArgument*>* >(list->data)->clear();
 }
 
-OpcUaMethodArgument* OpcUaMethodNode::argument(QQmlListProperty<OpcUaMethodArgument>* list, int i) {
+OpcUaMethodArgument* OpcUaMethodNode::argument(QQmlListProperty<OpcUaMethodArgument>* list, qsizetype i) {
     return reinterpret_cast< QList<OpcUaMethodArgument*>* >(list->data)->at(i);
 }
 
-int OpcUaMethodNode::argumentCount(QQmlListProperty<OpcUaMethodArgument>* list) {
+qsizetype OpcUaMethodNode::argumentCount(QQmlListProperty<OpcUaMethodArgument>* list) {
     return reinterpret_cast< QList<OpcUaMethodArgument*>* >(list->data)->count();
 }
 
