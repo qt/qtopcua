@@ -185,12 +185,12 @@ void OpcUaEventFilter::appendFilterElement(QQmlListProperty<OpcUaFilterElement> 
     reinterpret_cast<OpcUaEventFilter*>(list->data)->appendFilterElement(nodeId);
 }
 
-int OpcUaEventFilter::filterElementCount(QQmlListProperty<OpcUaFilterElement> *list)
+qsizetype OpcUaEventFilter::filterElementCount(QQmlListProperty<OpcUaFilterElement> *list)
 {
     return reinterpret_cast<OpcUaEventFilter*>(list->data)->filterElementCount();
 }
 
-OpcUaFilterElement *OpcUaEventFilter::filterElement(QQmlListProperty<OpcUaFilterElement> *list, int index)
+OpcUaFilterElement *OpcUaEventFilter::filterElement(QQmlListProperty<OpcUaFilterElement> *list, qsizetype index)
 {
     return reinterpret_cast<OpcUaEventFilter*>(list->data)->filterElement(index);
 }
@@ -236,12 +236,12 @@ void OpcUaEventFilter::appendSelector(QQmlListProperty<OpcUaSimpleAttributeOpera
     reinterpret_cast<OpcUaEventFilter*>(list->data)->appendSelector(nodeId);
 }
 
-int OpcUaEventFilter::selectorCount(QQmlListProperty<OpcUaSimpleAttributeOperand> *list)
+qsizetype OpcUaEventFilter::selectorCount(QQmlListProperty<OpcUaSimpleAttributeOperand> *list)
 {
     return reinterpret_cast<OpcUaEventFilter*>(list->data)->selectorCount();
 }
 
-OpcUaSimpleAttributeOperand *OpcUaEventFilter::selector(QQmlListProperty<OpcUaSimpleAttributeOperand> *list, int index)
+OpcUaSimpleAttributeOperand *OpcUaEventFilter::selector(QQmlListProperty<OpcUaSimpleAttributeOperand> *list, qsizetype index)
 {
     return reinterpret_cast<OpcUaEventFilter*>(list->data)->selector(index);
 }
