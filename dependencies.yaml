@@ -8,3 +8,6 @@ dependencies:
   ../qtquickcontrols2:
     ref: 0ac3a5ffe1eaf16be342b5db1ef1f6a5accce514
     required: false
+  ../qttools:
+    ref: 834047647fe0003c58b0f6f36936fd143c2e4cb4
+    required: false
