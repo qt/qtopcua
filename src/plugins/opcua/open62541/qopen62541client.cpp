@@ -63,6 +63,7 @@ QOpen62541Client::QOpen62541Client(const QVariantMap &backendProperties)
         m_backend->m_minimumIterateInterval = minIterateInterval;
 
     m_thread = new QThread();
+    m_thread->setObjectName("QOpen62541Client");
     connectBackendWithClient(m_backend);
     m_backend->moveToThread(m_thread);
     connect(m_thread, &QThread::finished, m_thread, &QObject::deleteLater);

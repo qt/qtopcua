@@ -61,6 +61,7 @@ QUACppClient::QUACppClient(const QVariantMap &backendProperties)
     }
 
     m_thread = new QThread();
+    m_thread->setObjectName("QUaCppClient");
     connectBackendWithClient(m_backend);
     m_backend->moveToThread(m_thread);
     connect(m_thread, &QThread::finished, m_thread, &QObject::deleteLater);
