@@ -68,6 +68,7 @@ int main(int argc, char **argv)
     const auto positionalArguments = parser.positionalArguments();
     const auto initialUrl = positionalArguments.value(0, QLatin1String("opc.tcp://localhost:48010"));
     MainWindow mainWindow(initialUrl.trimmed());
+    mainWindow.setWindowTitle(QLatin1String("Qt OPC UA viewer"));
     mainWindow.show();
     return QCoreApplication::exec();
 }
