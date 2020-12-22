@@ -112,7 +112,8 @@ inline T QOpcUaBinaryDataEncoding::decode(bool &success)
     }
 
     if (enoughData(sizeof(T))) {
-        T temp = *reinterpret_cast<const T *>(m_data->constData() + m_offset);
+        T temp;
+        memcpy(&temp, m_data->constData() + m_offset, sizeof(T));
         m_offset += sizeof(T);
         success = true;
         return qFromLittleEndian<T>(temp);
