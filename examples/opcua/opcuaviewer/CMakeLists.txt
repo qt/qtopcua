@@ -20,6 +20,9 @@ find_package(Qt6 COMPONENTS Gui)
 find_package(Qt6 COMPONENTS OpcUa)
 find_package(Qt6 COMPONENTS Widgets)
 
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/pki"
+    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+
 qt_add_executable(opcuaviewer
     certificatedialog.cpp certificatedialog.h certificatedialog.ui
     main.cpp
