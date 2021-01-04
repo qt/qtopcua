@@ -47,7 +47,6 @@
 QT_BEGIN_NAMESPACE
 
 namespace QOpen62541ValueConverter {
-    QOpcUa::Types qvariantTypeToQOpcUaType(QVariant::Type type);
 
     inline UA_AttributeId toUaAttributeId(QOpcUa::NodeAttribute attr)
     {
