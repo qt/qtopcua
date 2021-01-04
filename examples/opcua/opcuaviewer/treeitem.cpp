@@ -281,7 +281,7 @@ void TreeItem::browseFinished(const QList<QOpcUaReferenceDescription> &children,
 
 QString TreeItem::variantToString(const QVariant &value, const QString &typeNodeId) const
 {
-    if (value.type() == QVariant::List) {
+    if (value.metaType().id() == QMetaType::QVariantList) {
         const auto list = value.toList();
         QString concat;
         for (int i = 0, size = list.size(); i < size; ++i) {
@@ -304,9 +304,9 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
         return QString::number(value.toInt());
     if (typeNodeId == QLatin1String("ns=0;i=5")) // UInt16
         return QString::number(value.toUInt());
-    if (value.type() == QVariant::ByteArray)
+    if (value.metaType().id() == QMetaType::QByteArray)
         return QLatin1String("0x") + value.toByteArray().toHex();
-    if (value.type() == QVariant::DateTime)
+    if (value.metaType().id() == QMetaType::QDateTime)
         return value.toDateTime().toString(Qt::ISODate);
     if (value.canConvert<QOpcUaQualifiedName>()) {
         const auto name = value.value<QOpcUaQualifiedName>();
