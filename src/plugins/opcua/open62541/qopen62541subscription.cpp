@@ -170,7 +170,7 @@ void QOpen62541Subscription::modifyMonitoring(quint64 handle, QOpcUa::NodeAttrib
 
     // SetPublishingMode service
     if (item == QOpcUaMonitoringParameters::Parameter::PublishingEnabled) {
-        if (value.type() != QVariant::Bool) {
+        if (value.metaType().id() != QMetaType::Bool) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "New value for PublishingEnabled is not a boolean";
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(handle, attr, item, p);
@@ -205,7 +205,7 @@ void QOpen62541Subscription::modifyMonitoring(quint64 handle, QOpcUa::NodeAttrib
 
     // SetMonitoringMode service
     if (item == QOpcUaMonitoringParameters::Parameter::MonitoringMode) {
-        if (value.type() != QVariant::UserType || value.userType() != QMetaType::fromType<QOpcUaMonitoringParameters::MonitoringMode>().id()) {
+        if (value.userType() != QMetaType::fromType<QOpcUaMonitoringParameters::MonitoringMode>().id()) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "New value for MonitoringMode is not a monitoring mode";
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(handle, attr, item, p);
@@ -752,7 +752,7 @@ bool QOpen62541Subscription::modifyMonitoredItemParameters(quint64 nodeHandle, Q
 
     switch (item) {
     case QOpcUaMonitoringParameters::Parameter::DiscardOldest: {
-        if (value.type() != QVariant::Bool) {
+        if (value.metaType().id() != QMetaType::Bool) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify DiscardOldest, value is not a bool";
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
@@ -762,7 +762,7 @@ bool QOpen62541Subscription::modifyMonitoredItemParameters(quint64 nodeHandle, Q
         break;
     }
     case QOpcUaMonitoringParameters::Parameter::QueueSize: {
-        if (value.type() != QVariant::UInt) {
+        if (value.metaType().id() != QMetaType::UInt) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify QueueSize, value is not an integer";
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
@@ -772,7 +772,7 @@ bool QOpen62541Subscription::modifyMonitoredItemParameters(quint64 nodeHandle, Q
         break;
     }
     case QOpcUaMonitoringParameters::Parameter::SamplingInterval: {
-        if (value.type() != QVariant::Double) {
+        if (value.metaType().id() != QMetaType::Double) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify SamplingInterval, value is not a double";
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);

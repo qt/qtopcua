@@ -219,7 +219,7 @@ void QOpcUaClientPrivate::namespaceArrayUpdated(QOpcUa::NodeAttributes attr)
 
     const QVariant value = m_namespaceArrayNode->attribute(QOpcUa::NodeAttribute::Value);
 
-    if (!(attr & QOpcUa::NodeAttribute::Value) || value.type() != QVariant::Type::List) {
+    if (!(attr & QOpcUa::NodeAttribute::Value) || value.metaType().id() != QMetaType::QVariantList) {
         m_namespaceArray.clear();
         emit q->namespaceArrayUpdated(QStringList());
         return;

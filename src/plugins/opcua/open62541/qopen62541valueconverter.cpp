@@ -74,12 +74,12 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
         return result;
     }
 
-    if (value.type() == QVariant::List && value.toList().size() == 0)
+    if (value.metaType().id() == QMetaType::QVariantList && value.toList().size() == 0)
         return open62541value;
 
-    QVariant temp = (value.type() == QVariant::List) ? value.toList().at(0) : value;
+    QVariant temp = (value.metaType().id() == QMetaType::QVariantList) ? value.toList().at(0) : value;
     QOpcUa::Types valueType = type == QOpcUa::Undefined ?
-                QOpcUa::metaTypeToQOpcUaType(static_cast<QMetaType::Type>(temp.type())) : type;
+                QOpcUa::metaTypeToQOpcUaType(static_cast<QMetaType::Type>(temp.metaType().id())) : type;
 
     const UA_DataType *dt = toDataType(valueType);
 
@@ -524,7 +524,7 @@ QVariant arrayToQVariant(const UA_Variant &var, QMetaType::Type type)
         QVariantList list;
         for (size_t i = 0; i < var.arrayLength; ++i) {
             QVariant tempVar = QVariant::fromValue(scalarToQt<TARGETTYPE, UATYPE>(&temp[i]));
-            if (type != QMetaType::UnknownType && type != static_cast<QMetaType::Type>(tempVar.type()))
+            if (type != QMetaType::UnknownType && type != static_cast<QMetaType::Type>(tempVar.metaType().id()))
                 tempVar.convert(QMetaType(type));
             list.append(tempVar);
         }
@@ -544,7 +544,7 @@ QVariant arrayToQVariant(const UA_Variant &var, QMetaType::Type type)
             return list;
     } else if (UA_Variant_isScalar(&var)) {
         QVariant tempVar = QVariant::fromValue(scalarToQt<TARGETTYPE, UATYPE>(temp));
-        if (type != QMetaType::UnknownType && type != static_cast<QMetaType::Type>(tempVar.type()))
+        if (type != QMetaType::UnknownType && type != static_cast<QMetaType::Type>(tempVar.metaType().id()))
             tempVar.convert(QMetaType(type));
         return tempVar;
     } else if (var.arrayLength == 0 && var.data == UA_EMPTY_ARRAY_SENTINEL) {
@@ -714,7 +714,7 @@ UA_Variant arrayFromQVariant(const QVariant &var, const UA_DataType *type)
         return open62541value;
     }
 
-    if (var.type() == QVariant::List) {
+    if (var.metaType().id() == QMetaType::QVariantList) {
         const QVariantList list = var.toList();
         if (list.isEmpty())
             return open62541value;
