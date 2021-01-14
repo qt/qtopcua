@@ -396,10 +396,63 @@ void Open62541AsyncBackend::resolveBrowsePath(quint64 handle, UA_NodeId startNod
     emit resolveBrowsePathFinished(handle, ret, path, static_cast<QOpcUa::UaStatusCode>(res.results[0].statusCode));
 }
 
+void Open62541AsyncBackend::open62541LogHandler (void *logContext, UA_LogLevel level, UA_LogCategory category,
+                                                 const char *msg, va_list args) {
+
+    Q_UNUSED(logContext)
+
+    Q_STATIC_ASSERT(UA_LOGCATEGORY_NETWORK == 0);
+    Q_STATIC_ASSERT(UA_LOGCATEGORY_SECURECHANNEL == 1);
+    Q_STATIC_ASSERT(UA_LOGCATEGORY_SESSION == 2);
+    Q_STATIC_ASSERT(UA_LOGCATEGORY_SERVER == 3);
+    Q_STATIC_ASSERT(UA_LOGCATEGORY_CLIENT == 4);
+    Q_STATIC_ASSERT(UA_LOGCATEGORY_USERLAND == 5);
+    Q_STATIC_ASSERT(UA_LOGCATEGORY_SECURITYPOLICY == 6);
+
+    Q_ASSERT(category <= UA_LOGCATEGORY_SECURITYPOLICY);
+
+    const auto logMessage = QString::vasprintf(msg, args);
+
+    static const QLoggingCategory loggingCategories[] {
+        QLoggingCategory("qt.opcua.plugins.open62541.sdk.network"),
+        QLoggingCategory("qt.opcua.plugins.open62541.sdk.securechannel"),
+        QLoggingCategory("qt.opcua.plugins.open62541.sdk.session"),
+        QLoggingCategory("qt.opcua.plugins.open62541.sdk.server"),
+        QLoggingCategory("qt.opcua.plugins.open62541.sdk.client"),
+        QLoggingCategory("qt.opcua.plugins.open62541.sdk.userland"),
+        QLoggingCategory("qt.opcua.plugins.open62541.sdk.securitypolicy")
+    };
+
+    switch (level) {
+    case UA_LOGLEVEL_TRACE:
+    case UA_LOGLEVEL_DEBUG:
+        qCDebug(loggingCategories[category]) << logMessage;
+        break;
+    case UA_LOGLEVEL_INFO:
+        qCInfo(loggingCategories[category]) << logMessage;
+        break;
+    case UA_LOGLEVEL_WARNING:
+        qCWarning(loggingCategories[category]) << logMessage;
+        break;
+    case UA_LOGLEVEL_ERROR:
+    case UA_LOGLEVEL_FATAL:
+        qCCritical(loggingCategories[category]) << logMessage;
+        break;
+    default:
+        qCCritical(loggingCategories[category]) << "Unknown UA_LOGLEVEL" << logMessage;
+        break;
+    }
+}
+
 void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris)
 {
     UA_Client *tmpClient = UA_Client_new();
+    auto conf = UA_Client_getConfig(tmpClient);
+
+    conf->logger = m_open62541Logger;
+
     UA_ClientConfig_setDefault(UA_Client_getConfig(tmpClient));
+
     UaDeleter<UA_Client> clientDeleter(tmpClient, UA_Client_delete);
 
     UA_String *uaServerUris = nullptr;
@@ -817,6 +870,8 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
     m_uaclient = UA_Client_new();
     auto conf = UA_Client_getConfig(m_uaclient);
 
+    conf->logger = m_open62541Logger;
+
     const auto identity = m_clientImpl->m_client->applicationIdentity();
     const auto authInfo = m_clientImpl->m_client->authenticationInformation();
 #ifdef UA_ENABLE_ENCRYPTION
@@ -986,7 +1041,12 @@ void Open62541AsyncBackend::disconnectFromEndpoint()
 void Open62541AsyncBackend::requestEndpoints(const QUrl &url)
 {
     UA_Client *tmpClient = UA_Client_new();
-    UA_ClientConfig_setDefault(UA_Client_getConfig(tmpClient));
+    auto conf = UA_Client_getConfig(tmpClient);
+
+    conf->logger = m_open62541Logger;
+
+    UA_ClientConfig_setDefault(conf);
+
     size_t numEndpoints = 0;
     UA_EndpointDescription *endpoints = nullptr;
     UA_StatusCode res = UA_Client_getEndpoints(tmpClient, url.toString(QUrl::RemoveUserInfo).toUtf8().constData(), &numEndpoints, &endpoints);

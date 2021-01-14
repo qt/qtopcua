@@ -101,6 +101,9 @@ private:
 
     static void inactivityCallback(UA_Client *client);
 
+    static void open62541LogHandler(void *logContext, UA_LogLevel level, UA_LogCategory category,
+                                    const char *msg, va_list args);
+
     QOpen62541Subscription *getSubscriptionForItem(quint64 handle, QOpcUa::NodeAttribute attr);
     QOpcUaApplicationDescription convertApplicationDescription(UA_ApplicationDescription &desc);
 
@@ -118,6 +121,8 @@ private:
     QHash<quint64, QHash<QOpcUa::NodeAttribute, QOpen62541Subscription *>> m_attributeMapping; // Handle -> Attribute -> Subscription
 
     double m_minPublishingInterval;
+
+    const UA_Logger m_open62541Logger {open62541LogHandler, nullptr, nullptr};
 };
 
 QT_END_NAMESPACE
