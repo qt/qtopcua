@@ -5,7 +5,7 @@
     "QtUsage": "Used in the Qt OPC UA module to build the test server.",
     "Description": "Open62541 is an open source implementation of the OPC UA protocol.",
     "Homepage": "https://open62541.org/",
-    "Version": "0.3",
+    "Version": "1.1",
     "License": "Creative Commons CCZero 1.0 Universal License",
     "LicenseId": "CC0-1.0",
     "LicenseFile": "../../LICENSE-CC0",

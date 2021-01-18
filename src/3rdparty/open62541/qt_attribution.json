@@ -5,7 +5,7 @@
     "QtUsage": "Used in the Qt OPC UA module to build the backend. Pass -no-open62541 or -system-open62541 to avoid.",
     "Description": "Open62541 is an open source implementation of the OPC UA protocol.",
     "Homepage": "https://open62541.org/",
-    "Version": "1.0",
+    "Version": "1.1",
     "License": "Mozilla Public License 2.0",
     "LicenseId": "MPL-2.0",
     "LicenseFile": "mpl-2.0.815ca599c9df.txt",
