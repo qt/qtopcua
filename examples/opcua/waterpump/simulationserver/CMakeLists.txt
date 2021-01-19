@@ -69,7 +69,7 @@ if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541)
             PROPERTIES LANGUAGE CXX)
         set_source_files_properties(${MODULE_SOURCE}/src/3rdparty/open62541/open62541.c
             PROPERTIES COMPILE_OPTIONS
-                "/Zc:strictStrings-;/permissive;/wd2362")
+                "/Zc:strictStrings-;/permissive;/wd4200")
     endif()
 endif()
 

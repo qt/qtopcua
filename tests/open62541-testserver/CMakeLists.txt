@@ -84,7 +84,6 @@ endif()
 
 qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541_security AND WrapOpenSSL_FOUND AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
     DEFINES
-        UA_ENABLE_ENCRYPTION
         UA_ENABLE_ENCRYPTION_OPENSSL
     LIBRARIES
         WrapOpenSSL::WrapOpenSSL
@@ -119,7 +118,7 @@ if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541)
         set_source_files_properties(../../src/3rdparty/open62541/open62541.c PROPERTIES LANGUAGE CXX)
         set_source_files_properties(../../src/3rdparty/open62541/open62541.c PROPERTIES
         COMPILE_OPTIONS
-            "/Zc:strictStrings-;/permissive;/wd2362")
+            "/Zc:strictStrings-;/permissive;/wd4200")
     endif()
 endif()
 # special case end

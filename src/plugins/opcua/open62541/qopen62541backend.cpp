@@ -176,7 +176,7 @@ void Open62541AsyncBackend::writeAttributes(quint64 handle, UA_NodeId id, QOpcUa
 
 void Open62541AsyncBackend::enableMonitoring(quint64 handle, UA_NodeId id, QOpcUa::NodeAttributes attr, const QOpcUaMonitoringParameters &settings)
 {
-    UaDeleter<UA_NodeId> nodeIdDeleter(&id, UA_NodeId_deleteMembers);
+    UaDeleter<UA_NodeId> nodeIdDeleter(&id, UA_NodeId_clear);
 
     QOpen62541Subscription *usedSubscription = nullptr;
 
@@ -328,7 +328,7 @@ void Open62541AsyncBackend::resolveBrowsePath(quint64 handle, UA_NodeId startNod
     UA_TranslateBrowsePathsToNodeIdsRequest req;
     UA_TranslateBrowsePathsToNodeIdsRequest_init(&req);
     UaDeleter<UA_TranslateBrowsePathsToNodeIdsRequest> requestDeleter(
-                &req,UA_TranslateBrowsePathsToNodeIdsRequest_deleteMembers);
+                &req,UA_TranslateBrowsePathsToNodeIdsRequest_clear);
 
     req.browsePathsSize = 1;
     req.browsePaths = UA_BrowsePath_new();
@@ -466,7 +466,7 @@ void Open62541AsyncBackend::readNodeAttributes(const QList<QOpcUaReadItem> &node
 
     UA_ReadRequest req;
     UA_ReadRequest_init(&req);
-    UaDeleter<UA_ReadRequest> requestDeleter(&req, UA_ReadRequest_deleteMembers);
+    UaDeleter<UA_ReadRequest> requestDeleter(&req, UA_ReadRequest_clear);
 
     req.nodesToReadSize = nodesToRead.size();
     req.nodesToRead = static_cast<UA_ReadValueId *>(UA_Array_new(nodesToRead.size(), &UA_TYPES[UA_TYPES_READVALUEID]));
@@ -503,7 +503,7 @@ void Open62541AsyncBackend::writeNodeAttributes(const QList<QOpcUaWriteItem> &no
 
     UA_WriteRequest req;
     UA_WriteRequest_init(&req);
-    UaDeleter<UA_WriteRequest> requestDeleter(&req, UA_WriteRequest_deleteMembers);
+    UaDeleter<UA_WriteRequest> requestDeleter(&req, UA_WriteRequest_clear);
 
     req.nodesToWriteSize = nodesToWrite.size();
     req.nodesToWrite = static_cast<UA_WriteValue *>(UA_Array_new(nodesToWrite.size(), &UA_TYPES[UA_TYPES_WRITEVALUE]));
@@ -600,7 +600,7 @@ void Open62541AsyncBackend::addNode(const QOpcUaAddNodeItem &nodeToAdd)
 {
     UA_AddNodesRequest req;
     UA_AddNodesRequest_init(&req);
-    UaDeleter<UA_AddNodesRequest> requestDeleter(&req, UA_AddNodesRequest_deleteMembers);
+    UaDeleter<UA_AddNodesRequest> requestDeleter(&req, UA_AddNodesRequest_clear);
     req.nodesToAddSize = 1;
     req.nodesToAdd = UA_AddNodesItem_new();
     UA_AddNodesItem_init(req.nodesToAdd);
@@ -644,7 +644,7 @@ void Open62541AsyncBackend::deleteNode(const QString &nodeId, bool deleteTargetR
 {
     UA_DeleteNodesRequest request;
     UA_DeleteNodesRequest_init(&request);
-    UaDeleter<UA_DeleteNodesRequest> requestDeleter(&request, UA_DeleteNodesRequest_deleteMembers);
+    UaDeleter<UA_DeleteNodesRequest> requestDeleter(&request, UA_DeleteNodesRequest_clear);
 
     request.nodesToDeleteSize = 1;
     request.nodesToDelete = UA_DeleteNodesItem_new();
@@ -673,7 +673,7 @@ void Open62541AsyncBackend::addReference(const QOpcUaAddReferenceItem &reference
 {
     UA_AddReferencesRequest request;
     UA_AddReferencesRequest_init(&request);
-    UaDeleter<UA_AddReferencesRequest> requestDeleter(&request, UA_AddReferencesRequest_deleteMembers);
+    UaDeleter<UA_AddReferencesRequest> requestDeleter(&request, UA_AddReferencesRequest_clear);
 
     request.referencesToAddSize = 1;
     request.referencesToAdd = UA_AddReferencesItem_new();
@@ -712,7 +712,7 @@ void Open62541AsyncBackend::deleteReference(const QOpcUaDeleteReferenceItem &ref
 {
     UA_DeleteReferencesRequest request;
     UA_DeleteReferencesRequest_init(&request);
-    UaDeleter<UA_DeleteReferencesRequest> requestDeleter(&request, UA_DeleteReferencesRequest_deleteMembers);
+    UaDeleter<UA_DeleteReferencesRequest> requestDeleter(&request, UA_DeleteReferencesRequest_clear);
 
     request.referencesToDeleteSize = 1;
     request.referencesToDelete = UA_DeleteReferencesItem_new();
@@ -810,10 +810,6 @@ void Open62541AsyncBackend::clientStateCallback(UA_Client *client,
 
     // UA_Client_disconnect() must be called from outside this callback or open62541 will crash
     backend->m_disconnectAfterStateChangeTimer.start();
-
-    // Use a queued connection to make sure the subscription is not deleted if the callback was triggered
-    // inside of one of its methods.
-    QMetaObject::invokeMethod(backend, "cleanupSubscriptions", Qt::QueuedConnection);
 }
 
 void Open62541AsyncBackend::inactivityCallback(UA_Client *client)
@@ -875,7 +871,7 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
             return;
         }
 
-        UaDeleter<UA_ByteString> clientCertDeleter(&localCertificate, &UA_ByteString_deleteMembers);
+        UaDeleter<UA_ByteString> clientCertDeleter(&localCertificate, &UA_ByteString_clear);
 
         success = loadFileToByteString(pkiConfig.privateKeyFile(), &privateKey);
 
@@ -887,7 +883,7 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
             return;
         }
 
-        UaDeleter<UA_ByteString> privateKeyDeleter(&privateKey, &UA_ByteString_deleteMembers);
+        UaDeleter<UA_ByteString> privateKeyDeleter(&privateKey, &UA_ByteString_clear);
 
         success = loadAllFilesInDirectory(pkiConfig.trustListDirectory(), &trustList, &trustListSize);
 

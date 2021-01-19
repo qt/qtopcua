@@ -124,69 +124,67 @@ QVariant toQVariant(const UA_Variant &value)
         return QVariant();
     }
 
-    switch (value.type->typeIndex) {
-    case UA_TYPES_BOOLEAN:
+    if (value.type == &UA_TYPES[UA_TYPES_BOOLEAN])
         return arrayToQVariant<bool, UA_Boolean>(value, QMetaType::Bool);
-    case UA_TYPES_SBYTE:
+    else if (value.type == &UA_TYPES[UA_TYPES_SBYTE])
         return arrayToQVariant<signed char, UA_SByte>(value, QMetaType::SChar);
-    case UA_TYPES_BYTE:
+    else if (value.type == &UA_TYPES[UA_TYPES_BYTE])
         return arrayToQVariant<uchar, UA_Byte>(value, QMetaType::UChar);
-    case UA_TYPES_INT16:
+    else if (value.type == &UA_TYPES[UA_TYPES_INT16])
         return arrayToQVariant<qint16, UA_Int16>(value, QMetaType::Short);
-    case UA_TYPES_UINT16:
+    else if (value.type == &UA_TYPES[UA_TYPES_UINT16])
         return arrayToQVariant<quint16, UA_UInt16>(value, QMetaType::UShort);
-    case UA_TYPES_INT32:
+    else if (value.type == &UA_TYPES[UA_TYPES_INT32])
         return arrayToQVariant<qint32, UA_Int32>(value, QMetaType::Int);
-    case UA_TYPES_UINT32:
+    else if (value.type == &UA_TYPES[UA_TYPES_UINT32])
         return arrayToQVariant<quint32, UA_UInt32>(value, QMetaType::UInt);
-    case UA_TYPES_INT64:
+    else if (value.type == &UA_TYPES[UA_TYPES_INT64])
         return arrayToQVariant<int64_t, UA_Int64>(value, QMetaType::LongLong);
-    case UA_TYPES_UINT64:
+    else if (value.type == &UA_TYPES[UA_TYPES_UINT64])
         return arrayToQVariant<uint64_t, UA_UInt64>(value, QMetaType::ULongLong);
-    case UA_TYPES_FLOAT:
+    else if (value.type == &UA_TYPES[UA_TYPES_FLOAT])
         return arrayToQVariant<float, UA_Float>(value, QMetaType::Float);
-    case UA_TYPES_DOUBLE:
+    else if (value.type == &UA_TYPES[UA_TYPES_DOUBLE])
         return arrayToQVariant<double, UA_Double>(value, QMetaType::Double);
-    case UA_TYPES_STRING:
+    else if (value.type == &UA_TYPES[UA_TYPES_STRING])
         return arrayToQVariant<QString, UA_String>(value, QMetaType::QString);
-    case UA_TYPES_BYTESTRING:
+    else if (value.type == &UA_TYPES[UA_TYPES_BYTESTRING])
         return arrayToQVariant<QByteArray, UA_ByteString>(value, QMetaType::QByteArray);
-    case UA_TYPES_LOCALIZEDTEXT:
+    else if (value.type == &UA_TYPES[UA_TYPES_LOCALIZEDTEXT])
         return arrayToQVariant<QOpcUaLocalizedText, UA_LocalizedText>(value);
-    case UA_TYPES_NODEID:
+    else if (value.type == &UA_TYPES[UA_TYPES_NODEID])
         return arrayToQVariant<QString, UA_NodeId>(value, QMetaType::QString);
-    case UA_TYPES_DATETIME:
+    else if (value.type == &UA_TYPES[UA_TYPES_DATETIME])
         return arrayToQVariant<QDateTime, UA_DateTime>(value, QMetaType::QDateTime);
-    case UA_TYPES_GUID:
+    else if (value.type == &UA_TYPES[UA_TYPES_GUID])
         return arrayToQVariant<QUuid, UA_Guid>(value, QMetaType::QUuid);
-    case UA_TYPES_XMLELEMENT:
+    else if (value.type == &UA_TYPES[UA_TYPES_XMLELEMENT])
         return arrayToQVariant<QString, UA_XmlElement>(value, QMetaType::QString);
-    case UA_TYPES_QUALIFIEDNAME:
+    else if (value.type == &UA_TYPES[UA_TYPES_QUALIFIEDNAME])
         return arrayToQVariant<QOpcUaQualifiedName, UA_QualifiedName>(value);
-    case UA_TYPES_STATUSCODE:
+    else if (value.type == &UA_TYPES[UA_TYPES_STATUSCODE])
         return arrayToQVariant<QOpcUa::UaStatusCode, UA_StatusCode>(value, QMetaType::UInt);
-    case UA_TYPES_EXTENSIONOBJECT:
+    else if (value.type == &UA_TYPES[UA_TYPES_EXTENSIONOBJECT])
         return arrayToQVariant<QVariant, UA_ExtensionObject>(value);
-    case UA_TYPES_EXPANDEDNODEID:
+    else if (value.type == &UA_TYPES[UA_TYPES_EXPANDEDNODEID])
         return arrayToQVariant<QOpcUaExpandedNodeId, UA_ExpandedNodeId>(value);
-    case UA_TYPES_ARGUMENT:
+    else if (value.type == &UA_TYPES[UA_TYPES_ARGUMENT])
         return arrayToQVariant<QOpcUaArgument, UA_Argument>(value);
-    case UA_TYPES_RANGE:
+    else if (value.type == &UA_TYPES[UA_TYPES_RANGE])
         return arrayToQVariant<QOpcUaRange, UA_Range>(value);
-    case UA_TYPES_EUINFORMATION:
+    else if (value.type == &UA_TYPES[UA_TYPES_EUINFORMATION])
         return arrayToQVariant<QOpcUaEUInformation, UA_EUInformation>(value);
-    case UA_TYPES_AXISINFORMATION:
+    else if (value.type == &UA_TYPES[UA_TYPES_AXISINFORMATION])
         return arrayToQVariant<QOpcUaAxisInformation, UA_AxisInformation>(value);
-    case UA_TYPES_COMPLEXNUMBERTYPE:
+    else if (value.type == &UA_TYPES[UA_TYPES_COMPLEXNUMBERTYPE])
         return arrayToQVariant<QOpcUaComplexNumber, UA_ComplexNumberType>(value);
-    case UA_TYPES_DOUBLECOMPLEXNUMBERTYPE:
+    else if (value.type == &UA_TYPES[UA_TYPES_DOUBLECOMPLEXNUMBERTYPE])
         return arrayToQVariant<QOpcUaDoubleComplexNumber, UA_DoubleComplexNumberType>(value);
-    case UA_TYPES_XVTYPE:
+    else if (value.type == &UA_TYPES[UA_TYPES_XVTYPE])
         return arrayToQVariant<QOpcUaXValue, UA_XVType>(value);
-    default:
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion from Open62541 for typeName" << value.type->typeName << " not implemented";
-        return QVariant();
-    }
+
+    qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion from Open62541 for typeName" << value.type->typeName << " not implemented";
+    return QVariant();
 }
 
 const UA_DataType *toDataType(QOpcUa::Types valueType)
@@ -672,7 +670,7 @@ void scalarFromQt<UA_ExtensionObject, QOpcUaExtensionObject>(const QOpcUaExtensi
 {
     QByteArray temp = obj.encodedBody();
     UA_NodeId encodingId = Open62541Utils::nodeIdFromQString(obj.encodingTypeId());
-    UaDeleter<UA_NodeId> nodeIdDeleter(&encodingId, UA_NodeId_deleteMembers);
+    UaDeleter<UA_NodeId> nodeIdDeleter(&encodingId, UA_NodeId_clear);
     createExtensionObject(temp, encodingId, ptr, obj.encoding());
 }
 

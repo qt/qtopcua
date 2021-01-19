@@ -53,7 +53,7 @@ if (INPUT_open62541 STREQUAL "system")
         }
 
         /* Clean up */
-        UA_Variant_deleteMembers(&value);
+        UA_Variant_clear(&value);
         UA_Client_delete(client); /* Disconnects the client internally */
         return status;
     }")

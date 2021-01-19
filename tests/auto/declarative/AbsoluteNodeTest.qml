@@ -401,7 +401,7 @@ Item {
             node12.value = 30;
             node12ValueSpy.wait();
 
-            compare(node12ValueSpy.count, 1);
+            verify(node12ValueSpy.count > 0);
             compare(node12.value, 30);
             compare(node12.value, 30.0);
 

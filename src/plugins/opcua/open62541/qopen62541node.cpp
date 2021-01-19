@@ -29,7 +29,7 @@ QOpen62541Node::~QOpen62541Node()
     if (m_client)
         m_client->unregisterNode(this);
 
-    UA_NodeId_deleteMembers(&m_nodeId);
+    UA_NodeId_clear(&m_nodeId);
 }
 
 bool QOpen62541Node::readAttributes(QOpcUa::NodeAttributes attr, const QString &indexRange)

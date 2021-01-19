@@ -1,8 +1,25 @@
 version: 2
 accept_configuration:
-  condition: property
-  property: features
-  not_contains_value: Disable
+  condition: and
+  conditions:
+    - condition: property
+      property: features
+      not_contains_value: Disable
+    - condition: and
+      conditions:
+        - condition: or
+          conditions:
+            - condition: property
+              property: target.os
+              not_equals_value: MacOS
+            - condition: and
+              conditions:
+                - condition: property
+                  property: target.os
+                  equals_value: MacOS
+                - condition: property
+                  property: target.arch
+                  not_equals_value: ARM64
 
 instructions:
   Build:

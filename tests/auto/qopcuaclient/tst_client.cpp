@@ -2918,17 +2918,6 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
     QVERIFY(monitoringModifiedSpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>() & QOpcUaMonitoringParameters::Parameter::Filter);
     QCOMPARE(monitoringModifiedSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
 
-    // Since v1.0, the server sends a new initial data change after modifying a monitored item
-    if (dataChangeSpy.isEmpty())
-        dataChangeSpy.wait(signalSpyTimeout);
-    QVERIFY(!dataChangeSpy.isEmpty());
-    dataChangeSpy.clear();
-
-    if (attributeUpdatedSpy.isEmpty())
-        attributeUpdatedSpy.wait(signalSpyTimeout);
-    QVERIFY(!attributeUpdatedSpy.isEmpty());
-    attributeUpdatedSpy.clear();
-
     WRITE_VALUE_ATTRIBUTE(doubleWriteNode, 2.0, QOpcUa::Types::Double);
 
     dataChangeSpy.wait(signalSpyTimeout);
@@ -3190,7 +3179,7 @@ void Tst_QOpcUaClient::checkMonitoredItemCleanup()
     serverNode->callMethod(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::Server_GetMonitoredItems), parameter);
     methodSpy.wait(signalSpyTimeout);
     QCOMPARE(methodSpy.size(), 1);
-    QCOMPARE(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadNoMatch);
+    QCOMPARE(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
 }
 
 void Tst_QOpcUaClient::checkAttributeUpdated()
@@ -4258,6 +4247,7 @@ void Tst_QOpcUaClient::connectionLost()
     // open62541 returns a different status code depending on when after the disconnect the request is made
     if (opcuaClient->backend() == QStringLiteral("open62541"))
         QVERIFY(stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName) == QOpcUa::UaStatusCode::BadInternalError ||
+                stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName) == QOpcUa::UaStatusCode::BadSecureChannelClosed ||
                 stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName) == QOpcUa::UaStatusCode::BadSessionClosed ||
                 stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName) == QOpcUa::UaStatusCode::BadConnectionClosed ||
                 stringNode->attributeError(QOpcUa::NodeAttribute::BrowseName) == QOpcUa::UaStatusCode::BadServerNotConnected);

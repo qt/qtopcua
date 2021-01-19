@@ -1,0 +1,282 @@
+From 7dbde94a813acac866e7964ecc868d2f70076510 Mon Sep 17 00:00:00 2001
+From: Bin Lan <Bin.Lan@windriver.com>
+Date: Tue, 27 Sep 2022 21:45:38 +0800
+Subject: [PATCH] feat(plugin): Add OpenSSL 3.0 support (#5349)
+
+* Add OpenSSL3.0 support
+
+This change set adds a new function UA_OpenSSL_RSA_Key_Size() to get
+the RSA key size, re-writes the function
+UA_Openssl_RSA_Private_Decrypt() by using the high level APIs of
+OpenSSL3.0, add a new function UA_RSA_Generate_Key() to generate
+a RSA key.
+
+No build warning with OpenSSL3.0 and OpenSSL1.1.1f.
+
+* Build & Test with OpenSSL3.0 in Ubuntu22.04
+---
+ .github/workflows/build_ubuntu2204.yml        | 29 ++++++++
+ .../openssl/securitypolicy_openssl_common.c   | 68 ++++++++++++++-----
+ .../openssl/ua_openssl_create_certificate.c   | 28 +++++++-
+ 3 files changed, 104 insertions(+), 21 deletions(-)
+ create mode 100644 .github/workflows/build_ubuntu2204.yml
+
+diff --git a/.github/workflows/build_ubuntu2204.yml b/.github/workflows/build_ubuntu2204.yml
+new file mode 100644
+index 00000000..216c0665
+--- /dev/null
++++ b/.github/workflows/build_ubuntu2204.yml
+@@ -0,0 +1,29 @@
++name: Linux Build & Test with OpenSSL3.0
++
++on: [push, pull_request]
++
++jobs:
++  build:
++    strategy:
++      fail-fast: false
++      matrix:
++        include: 
++          - build_name: "Encryption (OpenSSL3.0) Build & Unit Tests (gcc)"
++            cmd_deps: sudo apt-get install -y -qq openssl
++            cmd_action: unit_tests_encryption OPENSSL
++    name: ${{matrix.build_name}}
++    runs-on: ubuntu-22.04
++    steps:
++    - uses: actions/checkout@v2
++      with:
++        submodules: true
++    - name: Install Dependencies
++      run: |
++        sudo apt-get update
++        sudo apt-get install -y -qq python3-sphinx graphviz check
++        ${{ matrix.cmd_deps }}
++    - name: ${{matrix.build_name}}
++      run: source tools/ci.sh && ${{matrix.cmd_action}}
++      env:
++        ETHERNET_INTERFACE: eth0
++
+diff --git a/plugins/crypto/openssl/securitypolicy_openssl_common.c b/plugins/crypto/openssl/securitypolicy_openssl_common.c
+index 3b8d5711..78118ed2 100644
+--- a/plugins/crypto/openssl/securitypolicy_openssl_common.c
++++ b/plugins/crypto/openssl/securitypolicy_openssl_common.c
+@@ -4,6 +4,7 @@
+  *
+  *    Copyright 2020 (c) Wind River Systems, Inc.
+  *    Copyright 2020 (c) basysKom GmbH
++ *    Copyright 2022 (c) Wind River Systems, Inc.
+  */
+ 
+ /*
+@@ -30,6 +31,8 @@ modification history
+ #include "ua_openssl_version_abstraction.h"
+ 
+ #define SHA1_DIGEST_LENGTH 20          /* 160 bits */
++#define RSA_DECRYPT_BUFFER_LENGTH 2048  /* bytes */    
++
+ 
+ /** P_SHA256 Context */
+ typedef struct UA_Openssl_P_SHA256_Ctx_ {
+@@ -73,6 +76,14 @@ UA_Openssl_Init (void) {
+ #endif
+ }
+ 
++static int UA_OpenSSL_RSA_Key_Size (EVP_PKEY * key){
++#if (OPENSSL_VERSION_NUMBER >= 0x30000000L)
++    return EVP_PKEY_get_size (key);
++#else
++    return RSA_size (get_pkey_rsa(key));
++#endif
++}
++
+ /* UA_copyCertificate - allocalte the buffer, copy the certificate and
+  * add a NULL to the end
+  */
+@@ -192,8 +203,8 @@ UA_Openssl_X509_GetCertificateThumbprint (const UA_ByteString * certficate,
+ }
+ 
+ static UA_StatusCode
+-UA_Openssl_RSA_Private_Decrypt (UA_ByteString *       data,
+-                               EVP_PKEY * privateKey,
++UA_Openssl_RSA_Private_Decrypt (UA_ByteString *      data,
++                               EVP_PKEY *            privateKey,
+                                UA_Int16              padding) {
+     if (data == NULL || privateKey == NULL) {
+         return UA_STATUSCODE_BADINVALIDARGUMENT;
+@@ -203,27 +214,49 @@ UA_Openssl_RSA_Private_Decrypt (UA_ByteString *       data,
+         return UA_STATUSCODE_BADINVALIDARGUMENT;
+     }
+ 
+-    UA_Int32 keySize = RSA_size(get_pkey_rsa(privateKey));
++    size_t keySize = (size_t) UA_OpenSSL_RSA_Key_Size (privateKey);
+     size_t cipherOffset = 0;
+     size_t outOffset = 0;
+-    unsigned char buf[2048];
+-    UA_Int32 decryptedBytes;
++    unsigned char buf[RSA_DECRYPT_BUFFER_LENGTH];
++    size_t decryptedBytes;
++    EVP_PKEY_CTX * ctx;
++    int opensslRet;
++
++    ctx = EVP_PKEY_CTX_new (privateKey, NULL);
++    if (ctx == NULL) {
++        return UA_STATUSCODE_BADOUTOFMEMORY;
++    }
++    opensslRet = EVP_PKEY_decrypt_init (ctx);
++    if (opensslRet != 1)
++        {
++        EVP_PKEY_CTX_free (ctx);
++        return UA_STATUSCODE_BADINTERNALERROR;
++        }
++    opensslRet = EVP_PKEY_CTX_set_rsa_padding (ctx, padding);
++    if (opensslRet != 1) {
++        EVP_PKEY_CTX_free (ctx);
++        return UA_STATUSCODE_BADINTERNALERROR;
++    }
+ 
+     while (cipherOffset < data->length) {
+-        decryptedBytes = RSA_private_decrypt (keySize,
+-                           data->data + cipherOffset, /* what to decrypt  */
++        decryptedBytes = RSA_DECRYPT_BUFFER_LENGTH;
++        opensslRet = EVP_PKEY_decrypt (ctx,
+                            buf,                       /* where to decrypt */
+-                           get_pkey_rsa(privateKey),      /* private key      */
+-                           padding
++                           &decryptedBytes,
++                           data->data + cipherOffset, /* what to decrypt  */
++                           keySize
+                            );
+-        if (decryptedBytes < 0) {
++        if (opensslRet != 1) {
++            EVP_PKEY_CTX_free (ctx);
+             return UA_STATUSCODE_BADSECURITYCHECKSFAILED;
+         }
+-        memcpy(data->data + outOffset, buf, (size_t) decryptedBytes);
++        (void) memcpy(data->data + outOffset, buf, decryptedBytes);
+         cipherOffset += (size_t) keySize;
+-        outOffset += (size_t) decryptedBytes;
++        outOffset += decryptedBytes;
+     }
+     data->length = outOffset;
++    EVP_PKEY_CTX_free (ctx);
++
+     return UA_STATUSCODE_GOOD;
+ }
+ 
+@@ -249,7 +282,6 @@ UA_Openssl_RSA_Public_Encrypt  (const UA_ByteString * message,
+     size_t encryptedPos = 0;
+     size_t bytesToEncrypt = 0;
+     size_t encryptedBlockSize = 0;
+-    RSA *  rsa = NULL;
+     size_t keySize = 0;
+ 
+     evpPublicKey = X509_get_pubkey (publicX509);
+@@ -274,8 +306,8 @@ UA_Openssl_RSA_Public_Encrypt  (const UA_ByteString * message,
+     }
+ 
+     /* get the encrypted block size */
+-    rsa = get_pkey_rsa (evpPublicKey);
+-    keySize = (size_t) RSA_size (rsa);
++
++    keySize = (size_t) UA_OpenSSL_RSA_Key_Size (evpPublicKey);
+     if (keySize == 0) {
+         ret = UA_STATUSCODE_BADINTERNALERROR;
+         goto errout;
+@@ -435,8 +467,8 @@ UA_Openssl_RSA_Public_GetKeyLength (X509 *     publicKeyX509,
+     if (evpKey == NULL) {
+         return  UA_STATUSCODE_BADINTERNALERROR;
+     }
+-    RSA * rsa = get_pkey_rsa (evpKey);
+-    *keyLen = RSA_size(rsa);
++    *keyLen = UA_OpenSSL_RSA_Key_Size (evpKey);
++    
+     EVP_PKEY_free (evpKey);
+ 
+     return UA_STATUSCODE_GOOD;
+@@ -448,7 +480,7 @@ UA_Openssl_RSA_Private_GetKeyLength (EVP_PKEY * privateKey,
+     if (privateKey == NULL) {
+         return UA_STATUSCODE_BADINVALIDARGUMENT;
+     }
+-    *keyLen = RSA_size(get_pkey_rsa(privateKey));
++    *keyLen = UA_OpenSSL_RSA_Key_Size (privateKey);
+ 
+     return UA_STATUSCODE_GOOD;
+ }
+diff --git a/plugins/crypto/openssl/ua_openssl_create_certificate.c b/plugins/crypto/openssl/ua_openssl_create_certificate.c
+index 4b07e886..0ea63f95 100644
+--- a/plugins/crypto/openssl/ua_openssl_create_certificate.c
++++ b/plugins/crypto/openssl/ua_openssl_create_certificate.c
+@@ -3,6 +3,7 @@
+  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+  *
+  *    Copyright 2021 (c) Christian von Arnim, ISW University of Stuttgart (for VDW and umati)
++ *    Copyright 2022 (c) Wind River Systems, Inc.
+  *
+  */
+ 
+@@ -81,6 +82,16 @@ add_x509V3ext(X509 *x509, int nid, const char *value) {
+     return UA_STATUSCODE_GOOD;
+ }
+ 
++#if (OPENSSL_VERSION_NUMBER >= 0x30000000L)
++
++/* generate the RSA key */
++
++static EVP_PKEY * UA_RSA_Generate_Key (size_t keySizeBits){
++    return EVP_RSA_gen(keySizeBits);
++}
++
++#endif
++
+ UA_StatusCode
+ UA_CreateCertificate(const UA_Logger *logger,
+                      const UA_String *subject, size_t subjectSize,
+@@ -109,11 +120,18 @@ UA_CreateCertificate(const UA_Logger *logger,
+ 
+     UA_StatusCode errRet = UA_STATUSCODE_GOOD;
+ 
++    X509 *x509 = X509_new();
++
++#if (OPENSSL_VERSION_NUMBER >= 0x30000000L)
++    EVP_PKEY *pkey = UA_RSA_Generate_Key(keySizeBits);
++    if((pkey == NULL) || (x509 == NULL)) {
++        errRet = UA_STATUSCODE_BADOUTOFMEMORY;
++        goto cleanup;
++    }    
++#else
+     BIGNUM *exponent = BN_new();
+     EVP_PKEY *pkey = EVP_PKEY_new();
+-    X509 *x509 = X509_new();
+     RSA *rsa = RSA_new();
+-
+     if(!pkey || !x509 || !exponent || !rsa) {
+         errRet = UA_STATUSCODE_BADOUTOFMEMORY;
+         goto cleanup;
+@@ -145,6 +163,8 @@ UA_CreateCertificate(const UA_Logger *logger,
+     /* rsa will be freed by pkey */
+     rsa = NULL;
+ 
++#endif  /* end of OPENSSL_VERSION_NUMBER >= 0x30000000L */
++
+     /* x509v3 has version 2
+      * (https://www.openssl.org/docs/man1.1.0/man3/X509_set_version.html) */
+     if(X509_set_version(x509, 2) != 1) {
+@@ -351,12 +371,14 @@ UA_CreateCertificate(const UA_Logger *logger,
+ 
+ cleanup:
+     UA_String_clear(&fullAltSubj);
++#if (OPENSSL_VERSION_NUMBER < 0x30000000L)
+     RSA_free(rsa);
++    BN_free(exponent);    
++#endif
+     X509_free(x509);
+     EVP_PKEY_free(pkey);
+     BIO_free(memCert);
+     BIO_free(memPKey);
+-    BN_free(exponent);
+     return errRet;
+ }
+ 
+-- 
+2.34.1
+

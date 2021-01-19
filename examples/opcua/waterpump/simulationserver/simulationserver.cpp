@@ -34,11 +34,11 @@ DemoServer::~DemoServer()
 {
     shutdown();
     UA_Server_delete(m_server);
-    UA_NodeId_deleteMembers(&m_percentFilledTank1Node);
-    UA_NodeId_deleteMembers(&m_percentFilledTank2Node);
-    UA_NodeId_deleteMembers(&m_tank2TargetPercentNode);
-    UA_NodeId_deleteMembers(&m_tank2ValveStateNode);
-    UA_NodeId_deleteMembers(&m_machineStateNode);
+    UA_NodeId_clear(&m_percentFilledTank1Node);
+    UA_NodeId_clear(&m_percentFilledTank2Node);
+    UA_NodeId_clear(&m_tank2TargetPercentNode);
+    UA_NodeId_clear(&m_tank2ValveStateNode);
+    UA_NodeId_clear(&m_machineStateNode);
 }
 
 bool DemoServer::init()
@@ -96,10 +96,10 @@ UA_NodeId DemoServer::addObject(const QString &parent, const QString &nodeString
                                      nullptr,
                                      &resultNode);
 
-    UA_QualifiedName_deleteMembers(&nodeBrowseName);
-    UA_NodeId_deleteMembers(&requestedNodeId);
-    UA_NodeId_deleteMembers(&parentNodeId);
-    UA_ObjectAttributes_deleteMembers(&oAttr);
+    UA_QualifiedName_clear(&nodeBrowseName);
+    UA_NodeId_clear(&requestedNodeId);
+    UA_NodeId_clear(&parentNodeId);
+    UA_ObjectAttributes_clear(&oAttr);
 
     if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Could not add folder:" << nodeString << " :" << result;
@@ -133,9 +133,9 @@ UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variab
                                                      nullptr,
                                                      &resultId);
 
-    UA_NodeId_deleteMembers(&variableNodeId);
-    UA_VariableAttributes_deleteMembers(&attr);
-    UA_QualifiedName_deleteMembers(&variableName);
+    UA_NodeId_clear(&variableNodeId);
+    UA_VariableAttributes_clear(&attr);
+    UA_QualifiedName_clear(&variableName);
 
     if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Could not add variable:" << result;
@@ -314,9 +314,9 @@ UA_NodeId DemoServer::addMethod(const UA_NodeId &folder, const QString &variable
                                                      0, nullptr,
                                                      this, &resultId);
 
-    UA_NodeId_deleteMembers(&methodNodeId);
-    UA_MethodAttributes_deleteMembers(&attr);
-    UA_QualifiedName_deleteMembers(&methodBrowseName);
+    UA_NodeId_clear(&methodNodeId);
+    UA_MethodAttributes_clear(&attr);
+    UA_QualifiedName_clear(&methodBrowseName);
 
     if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Could not add Method:" << result;
@@ -350,20 +350,20 @@ void DemoServer::launch()
      m_machineStateNode = addVariable(machineObject, "ns=2;s=Machine.State", "State", "Machine State", static_cast<quint32>(MachineState::Idle), QOpcUa::Types::UInt32);
      UA_NodeId tempId;
      tempId = addVariable(machineObject, "ns=2;s=Machine.Designation", "Designation", "Machine Designation", "TankExample", QOpcUa::Types::String);
-     UA_NodeId_deleteMembers(&tempId);
+     UA_NodeId_clear(&tempId);
 
      tempId = addMethod(machineObject, "ns=2;s=Machine.Start", "Starts the pump", "Start", "Start Pump", &startPumpMethod);
-     UA_NodeId_deleteMembers(&tempId);
+     UA_NodeId_clear(&tempId);
      tempId = addMethod(machineObject, "ns=2;s=Machine.Stop", "Stops the pump", "Stop", "Stop Pump", &stopPumpMethod);
-     UA_NodeId_deleteMembers(&tempId);
+     UA_NodeId_clear(&tempId);
      tempId = addMethod(machineObject, "ns=2;s=Machine.FlushTank2", "Flushes tank 2", "FlushTank2", "Flush Tank 2", &flushTank2Method);
-     UA_NodeId_deleteMembers(&tempId);
+     UA_NodeId_clear(&tempId);
      tempId = addMethod(machineObject, "ns=2;s=Machine.Reset", "Resets the simulation", "Reset", "Reset Simulation", &resetMethod);
-     UA_NodeId_deleteMembers(&tempId);
+     UA_NodeId_clear(&tempId);
 
-     UA_NodeId_deleteMembers(&machineObject);
-     UA_NodeId_deleteMembers(&tank1Object);
-     UA_NodeId_deleteMembers(&tank2Object);
+     UA_NodeId_clear(&machineObject);
+     UA_NodeId_clear(&tank1Object);
+     UA_NodeId_clear(&tank2Object);
 
      QObject::connect(&m_machineTimer, &QTimer::timeout, [this]() {
 
