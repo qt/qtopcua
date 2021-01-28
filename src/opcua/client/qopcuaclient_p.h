@@ -44,6 +44,7 @@ public:
     QOpcUaEndpointDescription m_endpoint;
     bool m_enableNamespaceArrayAutoupdate;
     QOpcUaAuthenticationInformation m_authenticationInformation;
+    QOpcUaConnectionSettings m_connectionSettings;
 
     bool checkAndSetUrl(const QUrl &url);
     void setStateAndError(QOpcUaClient::ClientState state,

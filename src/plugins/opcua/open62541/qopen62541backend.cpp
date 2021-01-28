@@ -848,6 +848,7 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
 
     const auto identity = m_clientImpl->m_client->applicationIdentity();
     const auto authInfo = m_clientImpl->m_client->authenticationInformation();
+    const auto connectionSettings = m_clientImpl->m_client->connectionSettings();
 #ifdef UA_ENABLE_ENCRYPTION
     const auto pkiConfig = m_clientImpl->m_client->pkiConfiguration();
 #endif
@@ -926,6 +927,18 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
         UA_ClientConfig_setDefault(conf);
     }
 
+    conf->timeout = connectionSettings.connectTimeoutMs();
+    conf->secureChannelLifeTime = connectionSettings.secureChannelLifeTimeMs();
+    conf->requestedSessionTimeout = connectionSettings.sessionTimeoutMs();
+
+    if (!connectionSettings.sessionLocaleIds().isEmpty()) {
+        conf->sessionLocaleIds = static_cast<UA_String *>(UA_Array_new(connectionSettings.sessionLocaleIds().size(), &UA_TYPES[UA_TYPES_STRING]));
+        for (int i = 0; i < connectionSettings.sessionLocaleIds().size(); ++i) {
+          conf->sessionLocaleIds[i] = UA_STRING_ALLOC(connectionSettings.sessionLocaleIds().at(i).toUtf8().constData());
+        }
+        conf->sessionLocaleIdsSize = connectionSettings.sessionLocaleIds().size();
+    }
+
     UA_LocalizedText_clear(&conf->clientDescription.applicationName);
     UA_String_clear(&conf->clientDescription.applicationUri);
     UA_String_clear(&conf->clientDescription.productUri);
@@ -999,6 +1012,8 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to connect";
         return;
     }
+
+    conf->timeout = connectionSettings.requestTimeoutMs();
 
     m_useStateCallback = true;
     m_clientIterateTimer.start(m_clientIterateInterval);

@@ -870,6 +870,18 @@ const QOpcUaAuthenticationInformation &QOpcUaClient::authenticationInformation()
     return d->m_authenticationInformation;
 }
 
+void QOpcUaClient::setConnectionSettings(const QOpcUaConnectionSettings &connectionSettings)
+{
+    Q_D(QOpcUaClient);
+    d->m_connectionSettings = connectionSettings;
+}
+
+const QOpcUaConnectionSettings &QOpcUaClient::connectionSettings() const
+{
+    Q_D(const QOpcUaClient);
+    return d->m_connectionSettings;
+}
+
 /*!
     \since QtOpcUa 5.14
 

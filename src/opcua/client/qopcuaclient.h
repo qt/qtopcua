@@ -16,6 +16,7 @@
 #include <QtOpcUa/qopcuaaddreferenceitem.h>
 #include <QtOpcUa/qopcuadeletereferenceitem.h>
 #include <QtOpcUa/qopcuaendpointdescription.h>
+#include <QtOpcUa/qopcuaconnectionsettings.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -105,6 +106,9 @@ public:
 
     void setAuthenticationInformation(const QOpcUaAuthenticationInformation &authenticationInformation);
     const QOpcUaAuthenticationInformation &authenticationInformation() const;
+
+    void setConnectionSettings(const QOpcUaConnectionSettings &connectionSettings);
+    const QOpcUaConnectionSettings &connectionSettings() const;
 
     QStringList supportedSecurityPolicies() const;
     QList<QOpcUaUserTokenPolicy::TokenType> supportedUserTokenTypes() const;

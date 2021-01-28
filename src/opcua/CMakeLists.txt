@@ -27,6 +27,7 @@ qt_internal_add_module(OpcUa
         client/qopcuaclientimpl.cpp client/qopcuaclientimpl_p.h
         client/qopcuaclientprivate.cpp
         client/qopcuacomplexnumber.cpp client/qopcuacomplexnumber.h
+        client/qopcuaconnectionsettings.cpp client/qopcuaconnectionsettings.h
         client/qopcuacontentfilterelement.cpp client/qopcuacontentfilterelement.h
         client/qopcuacontentfilterelementresult.cpp client/qopcuacontentfilterelementresult.h
         client/qopcuadatavalue.cpp client/qopcuadatavalue.h
