@@ -425,6 +425,11 @@ Item {
             compare(node12.valueType, QtOpcUa.Constants.Double);
             compare(node12.value, 1)
 
+            // The Value attribute is read and subscribed
+            // The initial value from the subscription doesn't generate a changed signal
+            // unless the value is modified by setting the value attribute before the update is published.
+            wait(500)
+
             node12ValueSpy.clear();
             node12.value = 30;
             node12ValueSpy.wait();

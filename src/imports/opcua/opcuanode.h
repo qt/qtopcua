@@ -162,6 +162,13 @@ protected:
     QString m_errorMessage;
     OpcUaEventFilter *m_eventFilter = nullptr;
     bool m_eventFilterActive = false;
+
+    QMetaObject::Connection m_attributeUpdatedConnection;
+    QMetaObject::Connection m_attributeReadConnection;
+    QMetaObject::Connection m_enableMonitoringFinishedConnection;
+    QMetaObject::Connection m_disableMonitoringFinishedConnection;
+    QMetaObject::Connection m_monitoringStatusChangedConnection;
+    QMetaObject::Connection m_eventOccurredConnection;
 };
 
 QT_END_NAMESPACE

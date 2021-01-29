@@ -332,6 +332,15 @@ void OpcUaNode::setupNode(const QString &absoluteNodePath)
 
     if (m_node) {
         m_node->deleteLater();
+
+        // Prevents a race condition where an update from the old node appears after the cache has been invalidate
+        QObject::disconnect(m_attributeUpdatedConnection);
+        QObject::disconnect(m_attributeReadConnection);
+        QObject::disconnect(m_enableMonitoringFinishedConnection);
+        QObject::disconnect(m_disableMonitoringFinishedConnection);
+        QObject::disconnect(m_monitoringStatusChangedConnection);
+        QObject::disconnect(m_eventOccurredConnection);
+
         m_node = nullptr;
     }
 
@@ -351,12 +360,15 @@ void OpcUaNode::setupNode(const QString &absoluteNodePath)
         return;
     }
 
-    connect(m_node, &QOpcUaNode::attributeUpdated, &m_attributeCache, &OpcUaAttributeCache::setAttributeValue);
-    connect(m_node, &QOpcUaNode::attributeRead, this, [this](){
+    m_attributeUpdatedConnection = connect(m_node, &QOpcUaNode::attributeUpdated,
+                                           &m_attributeCache, &OpcUaAttributeCache::setAttributeValue);
+
+    m_attributeReadConnection = connect(m_node, &QOpcUaNode::attributeRead, this, [this](){
         setReadyToUse(true);
     });
 
-    connect(m_node, &QOpcUaNode::enableMonitoringFinished, this, [this](QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode){
+    m_enableMonitoringFinishedConnection = connect(m_node, &QOpcUaNode::enableMonitoringFinished, this,
+                                                   [this](QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode){
         if (attr != QOpcUa::NodeAttribute::EventNotifier)
             return;
         if (statusCode == QOpcUa::Good) {
@@ -369,7 +381,8 @@ void OpcUaNode::setupNode(const QString &absoluteNodePath)
         }
     });
 
-    connect(m_node, &QOpcUaNode::disableMonitoringFinished, this, [this](QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode){
+    m_disableMonitoringFinishedConnection = connect(m_node, &QOpcUaNode::disableMonitoringFinished, this,
+                                                    [this](QOpcUa::NodeAttribute attr, QOpcUa::UaStatusCode statusCode){
         if (attr != QOpcUa::NodeAttribute::EventNotifier)
             return;
         if (statusCode == QOpcUa::Good) {
@@ -381,8 +394,9 @@ void OpcUaNode::setupNode(const QString &absoluteNodePath)
         }
     });
 
-    connect(m_node, &QOpcUaNode::monitoringStatusChanged, this, [this](QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
-                                                                   QOpcUa::UaStatusCode statusCode) {
+    m_monitoringStatusChangedConnection = connect(m_node, &QOpcUaNode::monitoringStatusChanged, this,
+                                                  [this](QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
+                                                  QOpcUa::UaStatusCode statusCode) {
         Q_UNUSED(items);
         if (attr != QOpcUa::NodeAttribute::EventNotifier)
             return;
@@ -392,7 +406,7 @@ void OpcUaNode::setupNode(const QString &absoluteNodePath)
         }
     });
 
-    connect (m_node, &QOpcUaNode::eventOccurred, this, &OpcUaNode::eventOccurred);
+    m_eventOccurredConnection = connect (m_node, &QOpcUaNode::eventOccurred, this, &OpcUaNode::eventOccurred);
 
 
     // Read mandatory attributes
