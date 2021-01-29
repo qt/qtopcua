@@ -376,7 +376,7 @@ void QOpen62541Subscription::monitoredValueUpdated(UA_UInt32 monId, UA_DataValue
 void QOpen62541Subscription::sendTimeoutNotification()
 {
     QList<QPair<quint64, QOpcUa::NodeAttribute>> items;
-    for (auto it : qAsConst(m_nodeHandleToItemMapping)) {
+    for (const auto &it : qAsConst(m_nodeHandleToItemMapping)) {
         for (auto item : it) {
             items.push_back({item->handle, item->attr});
         }

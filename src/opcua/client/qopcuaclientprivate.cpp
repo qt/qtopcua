@@ -226,7 +226,7 @@ void QOpcUaClientPrivate::namespaceArrayUpdated(QOpcUa::NodeAttributes attr)
     }
 
     QStringList updatedNamespaceArray;
-    for (auto it : value.toList())
+    for (const auto &it : value.toList())
         updatedNamespaceArray.append(it.toString());
 
     if (updatedNamespaceArray != m_namespaceArray) {

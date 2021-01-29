@@ -63,13 +63,15 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
         QOpcUaMultiDimensionalArray data = value.value<QOpcUaMultiDimensionalArray>();
         UA_Variant result = toOpen62541Variant(data.valueArray(), type);
 
-        if (!data.arrayDimensions().isEmpty()) {
+        const auto &arrayDimensions = data.arrayDimensions();
+
+        if (!arrayDimensions.isEmpty()) {
             // Ensure that the array dimensions size is < UINT32_MAX
-            if (static_cast<quint64>(data.arrayDimensions().size()) > (std::numeric_limits<quint32>::max)())
+            if (static_cast<quint64>(arrayDimensions.size()) > (std::numeric_limits<quint32>::max)())
                 return open62541value;
-            result.arrayDimensionsSize = data.arrayDimensions().size();
+            result.arrayDimensionsSize = arrayDimensions.size();
             result.arrayDimensions = static_cast<UA_UInt32 *>(UA_Array_new(result.arrayDimensionsSize, &UA_TYPES[UA_TYPES_UINT32]));
-            std::copy(data.arrayDimensions().constBegin(), data.arrayDimensions().constEnd(), result.arrayDimensions);
+            std::copy(arrayDimensions.constBegin(), arrayDimensions.constEnd(), result.arrayDimensions);
         }
         return result;
     }
@@ -719,7 +721,7 @@ UA_Variant arrayFromQVariant(const QVariant &var, const UA_DataType *type)
         if (list.isEmpty())
             return open62541value;
 
-        for (auto it : qAsConst(list)) {
+        for (const auto &it : qAsConst(list)) {
             if (!it.canConvert<QTTYPE>()) {
                 qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Value type" << var.typeName() <<
                                                          "in the QVariant does not match type parameter" << type->typeName;

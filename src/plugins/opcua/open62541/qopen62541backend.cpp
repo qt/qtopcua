@@ -968,7 +968,7 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
     } else if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Username) {
 
         bool suitableTokenFound = false;
-        for (const auto token : endpoint.userIdentityTokens()) {
+        for (const auto &token : endpoint.userIdentityTokens()) {
             if (token.tokenType() == QOpcUaUserTokenPolicy::Username &&
                     m_clientImpl->supportedSecurityPolicies().contains(token.securityPolicy())) {
                 suitableTokenFound = true;
@@ -1119,7 +1119,7 @@ void Open62541AsyncBackend::reevaluateClientIterateTimer()
         m_clientIterateTimer.start(m_maximumIterateInterval);
     else {// Derive an interval from the the lowest subscription and a lower limit.
         double minimum = (std::numeric_limits<double>::max)();
-        for (const auto &subscription : m_subscriptions)
+        for (const auto &subscription : qAsConst(m_subscriptions))
             minimum = subscription->interval() < minimum ? subscription->interval() : minimum;
         // Set an interval between configured minimum and maximum, depending on the fastest subscription
         m_clientIterateTimer.start((std::min)(m_maximumIterateInterval, (std::max)(m_minimumIterateInterval, minimum)));
