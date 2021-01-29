@@ -15,7 +15,7 @@ qt_add_executable(open62541-testserver
     OUTPUT_DIRECTORY # special case
         "${CMAKE_CURRENT_BINARY_DIR}" # special case
     PUBLIC_LIBRARIES
-        Qt::Gui
+        Qt::Core
         Qt::OpcUaPrivate
 )
 

@@ -64,14 +64,10 @@ Q_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541, "qt.opcua.testserver")
 
 TestServer::TestServer(QObject *parent) : QObject(parent)
 {
-    m_timer.setInterval(30);
-    m_timer.setSingleShot(false);
-    connect(&m_timer, &QTimer::timeout, this, &TestServer::processServerEvents);
 }
 
 TestServer::~TestServer()
 {
-    shutdown();
     UA_Server_delete(m_server);
 }
 
@@ -245,29 +241,6 @@ bool TestServer::init()
         return false;
 
     return true;
-}
-
-void TestServer::launch()
-{
-    UA_StatusCode s = UA_Server_run_startup(m_server);
-    if (s != UA_STATUSCODE_GOOD)
-         qFatal("Could not launch server");
-     m_running = true;
-     m_timer.start();
-}
-
-void TestServer::processServerEvents()
-{
-    if (m_running)
-        UA_Server_run_iterate(m_server, true);
-}
-
-void TestServer::shutdown()
-{
-    if (m_running) {
-        UA_Server_run_shutdown(m_server);
-        m_running = false;
-    }
 }
 
 int TestServer::registerNamespace(const QString &ns)
@@ -831,6 +804,11 @@ UA_StatusCode TestServer::generateEventCallback(UA_Server *server,
         qWarning() << "Failed to trigger event:" << UA_StatusCode_name(ret);
 
     return ret;
+}
+
+UA_StatusCode TestServer::run(volatile bool *running)
+{
+    return UA_Server_run(m_server, running);
 }
 
 UA_StatusCode TestServer::addEventTrigger(const UA_NodeId &parent)

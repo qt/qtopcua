@@ -103,13 +103,9 @@ public:
 
     UA_ServerConfig *m_config{nullptr};
     UA_Server *m_server{nullptr};
-    QAtomicInt m_running{false};
-    QTimer m_timer;
 
 public slots:
-    void launch();
-    void processServerEvents();
-    void shutdown();
+    UA_StatusCode run(volatile bool *running);
 };
 
 QT_END_NAMESPACE

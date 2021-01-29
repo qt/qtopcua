@@ -56,17 +56,25 @@
 #include <QtOpcUa/QOpcUaRange>
 #include <QtOpcUa/QOpcUaXValue>
 
-int main(int argc, char **argv)
+#include <csignal>
+
+static volatile bool running = true;
+
+static void signalHandler(int sig) {
+    qDebug() << "Signal " << sig << " received, shutting down";
+    running = false;
+}
+
+int main()
 {
-    QCoreApplication app(argc, argv);
+    signal(SIGINT, signalHandler);
+    signal(SIGTERM, signalHandler);
 
     TestServer server;
     if (!server.init()) {
         qCritical() << "Could not initialize server.";
         return -1;
     }
-
-    server.launch();
 
     int idx = server.registerNamespace(QLatin1String("http://qt-project.org"));
     if (idx != 2) {
@@ -243,5 +251,10 @@ int main(int argc, char **argv)
 
     server.addEventTrigger(testFolder);
 
-    return app.exec();
+    const auto result = server.run(&running);
+
+    if (result != UA_STATUSCODE_GOOD)
+        qFatal("Failed to launch open62541 test server");
+
+    return 0;
 }
