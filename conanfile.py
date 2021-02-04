@@ -43,9 +43,9 @@ class QtOPCUA(ConanFile):
     description = "The Qt OPC UA module implements a Qt API to interact with OPC UA on top of a 3rd party OPC UA stack."
     topics = ("qt", "qt6", "OPC UA", "OPCUA")
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False],
+    options = {"shared": [True, False, "default"],
                "qt6": "ANY"}  # this is needed to model unique package_id for the Add-on build per used Qt6 version
-    default_options = {"shared": False,
+    default_options = {"shared": "default",  # default: Use the value of the Qt build
                        "qt6": None}
     exports_sources = "*", "!conan*.*"
 
@@ -86,6 +86,10 @@ class QtOPCUA(ConanFile):
         # Note, the actual 'make install' is called in "package()".
         install_dir = os.path.join(os.getcwd(), "_install_tmp")
         cmake.definitions["CMAKE_INSTALL_PREFIX"] = install_dir
+
+        # Use the value of the Qt build
+        if self.options.shared.value == "default":
+            del cmake.definitions["BUILD_SHARED_LIBS"]
 
         cmake_toolchain_file = os.environ.get("CMAKE_TOOLCHAIN_FILE")
         if cmake_toolchain_file:
