@@ -138,6 +138,10 @@ qt_feature("open62541-security" PUBLIC PRIVATE
     CONDITION (WrapOpenSSL_FOUND AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541) OR OPEN62541_SYSTEM_ENCRYPTION
 )
 # special case end
+qt_feature("datatypecodegenerator" PRIVATE
+    LABEL "Data type code generator"
+    PURPOSE "Build a generator for generating de- and encodable data types from a .bsd file."
+)
 qt_feature_definition("gds" "QT_NO_GDS" NEGATE VALUE "1")
 qt_configure_add_summary_section(NAME "Qt Opcua")
 qt_configure_add_summary_entry(ARGS "open62541")
@@ -146,4 +150,5 @@ qt_configure_add_summary_entry(ARGS "ns0idnames")
 qt_configure_add_summary_entry(ARGS "ns0idgenerator")
 qt_configure_add_summary_entry(ARGS "open62541-security") # special case
 qt_configure_add_summary_entry(ARGS "gds")
+qt_configure_add_summary_entry(ARGS "datatypecodegenerator")
 qt_configure_end_summary_section() # end of "Qt Opcua" section

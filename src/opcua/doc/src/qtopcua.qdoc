@@ -86,6 +86,7 @@
            \li \l{Using the OpenSSL Dependency for Security Support and GDS}
            \li \l{Building Qt OPC UA Open62541 Plugin}
            \li \l{Building Qt OPC UA UACPP Plugin}
+           \li \l{The Qt OPC UA data type generator}
            \li \l{https://opcfoundation.org/about/opc-technologies/opc-ua/}
                {OPC UA at the OPC foundation}
     \endlist
@@ -587,4 +588,47 @@
 
     The security capabilities of the Open62541 plugin and the GDS feature will be
     automatically disabled if OpenSSL is not detected during configuration.
+*/
+
+/*!
+    \page qopcuaxmldatatypes2cpp.html
+    \title The Qt OPC UA data type generator
+    \brief The Qt OPC UA data type generator
+
+    Starting with Qt 6.7, Qt OPC UA comes with a data type generator named \a qopcuaxmldatatypes2cpp
+    which generates Qt OPC UA compatible C++ enumerations and data classes from enums and structured types
+    in .bsd files.
+
+    The generator is a command line tool which can be controlled by the following argument:
+
+    \table
+    \header
+    \li Long
+    \li Short
+    \li Purpose
+    \row
+    \li --input
+    \li -i
+    \li A .bsd file for which all contained enum and struct types will be generated. Can be used more than once to generate code for multiple models.
+    \row
+    \li --dependencyinput
+    \li -d
+    \li A dependency input .bsd file where only types required by a struct from an input file passed via ---input will be generated. Can be used more than once to accommodate models with dependencies to multiple other models.
+    \row
+    \li --output
+    \li -o
+    \li The output directory where the generated files will be placed.
+    \row
+    \li --prefix
+    \li -p
+    \li The prefix for the generated file, enum and class names. The default value is \a GeneratedOpcUa.
+    \endtable
+
+    The following files are generated for each run:
+
+    \list
+    \li One \a .h file containing a namespace with all enumerated types
+    \li One \a .h and one \a .cpp file for each structured type
+    \li One \a .h and one \a .cpp file containing encoding and decoding methods
+    \endlist
 */
