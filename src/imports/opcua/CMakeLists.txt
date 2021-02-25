@@ -4,7 +4,7 @@
 ## opcua Plugin:
 #####################################################################
 
-qt_add_qml_module(declarative_opcua # special case
+qt_internal_add_qml_module(declarative_opcua # special case
     VERSION "1.0"
     CLASSNAME OpcUaPlugin
     SKIP_TYPE_REGISTRATION
