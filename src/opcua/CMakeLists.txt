@@ -4,7 +4,7 @@
 ## OpcUa Module:
 #####################################################################
 
-qt_add_module(OpcUa
+qt_internal_add_module(OpcUa
     PLUGIN_TYPES opcua
     SOURCES
         client/qopcuaaddnodeitem.cpp client/qopcuaaddnodeitem.h
@@ -78,7 +78,7 @@ qt_add_module(OpcUa
 ## Scopes:
 #####################################################################
 
-qt_extend_target(OpcUa CONDITION QT_FEATURE_gds AND QT_FEATURE_ssl AND NOT APPLE AND NOT WINRT
+qt_internal_extend_target(OpcUa CONDITION QT_FEATURE_gds AND QT_FEATURE_ssl AND NOT APPLE AND NOT WINRT
     SOURCES
         client/qopcuagdsclient.cpp client/qopcuagdsclient_p.h
         x509/openssl_symbols.cpp
@@ -97,16 +97,15 @@ qt_extend_target(OpcUa CONDITION QT_FEATURE_gds AND QT_FEATURE_ssl AND NOT APPLE
 
 # special case begin
 if (QT_FEATURE_gds AND QT_FEATURE_ssl)
-    qt_extend_target(OpcUa
+    qt_internal_extend_target(OpcUa
         LIBRARIES WrapOpenSSL::WrapOpenSSL)
 endif()
 # special case end
 
-qt_extend_target(OpcUa CONDITION NOT QT_FEATURE_ns0idnames
+qt_internal_extend_target(OpcUa CONDITION NOT QT_FEATURE_ns0idnames
     DEFINES
         QT_OPCUA_NO_NS0IDNAMES
 )
-qt_add_docs(OpcUa
+qt_internal_add_docs(OpcUa
     doc/qtopcua.qdocconf
 )
-
