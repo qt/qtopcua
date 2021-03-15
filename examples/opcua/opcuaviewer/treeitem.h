@@ -79,6 +79,9 @@ public:
     void appendChild(TreeItem *child);
     QPixmap icon(int column) const;
     bool hasChildNodeItem(const QString &nodeId) const;
+    void setMonitoringEnabled(bool active);
+    bool monitoringEnabled() const;
+    bool supportsMonitoring() const;
 
 private slots:
     void startBrowsing();

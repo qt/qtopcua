@@ -139,6 +139,11 @@ MainWindow::MainWindow(const QString &initialUrl, QWidget *parent) : QMainWindow
         QMessageBox::critical(this, tr("No OPCUA plugins available"), tr("The list of available OPCUA plugins is empty. No connection possible."));
     }
 
+    mContextMenu = new QMenu(ui->treeView);
+    mContextMenuAction = mContextMenu->addAction(tr("Enable Monitoring"), this, &MainWindow::toggleMonitoring);
+    ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->treeView, &QTreeView::customContextMenuRequested, this, &MainWindow::openCustomContextMenu);
+
     connect(ui->findServersButton, &QPushButton::clicked, this, &MainWindow::findServers);
     connect(ui->host, &QLineEdit::returnPressed, this->ui->findServersButton,
             [this]() { this->ui->findServersButton->animateClick(); });
@@ -450,6 +455,32 @@ void MainWindow::showErrorDialog(QOpcUaErrorState *errorState)
         msg += tr("ActivateSession failed with error 0x%1 (%2).").arg(errorState->errorCode(), 8, 16, QLatin1Char('0')).arg(statuscode);
         QMessageBox::warning(this, tr("Connection Error"), msg);
         break;
+    }
+}
+
+void MainWindow::openCustomContextMenu(const QPoint &point)
+{
+    QModelIndex index = ui->treeView->indexAt(point);
+    // show the context menu only for the value column
+    if (index.isValid() && index.column() == 1) {
+        TreeItem* item = static_cast<TreeItem *>(index.internalPointer());
+        if (item) {
+            mContextMenuAction->setData(index);
+            mContextMenuAction->setEnabled(item->supportsMonitoring());
+            mContextMenuAction->setText(item->monitoringEnabled() ? tr("Disable Monitoring") : tr("Enable Monitoring"));
+            mContextMenu->exec(ui->treeView->viewport()->mapToGlobal(point));
+        }
+    }
+}
+
+void MainWindow::toggleMonitoring()
+{
+    QModelIndex index = mContextMenuAction->data().toModelIndex();
+    if (index.isValid()) {
+        TreeItem* item = static_cast<TreeItem *>(index.internalPointer());
+        if (item) {
+            item->setMonitoringEnabled(!item->monitoringEnabled());
+        }
     }
 }
 

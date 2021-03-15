@@ -84,6 +84,8 @@ private slots:
     void clientError(QOpcUaClient::ClientError);
     void clientState(QOpcUaClient::ClientState);
     void showErrorDialog(QOpcUaErrorState *errorState);
+    void openCustomContextMenu(const QPoint &point);
+    void toggleMonitoring();
 
 private:
     void createClient();
@@ -102,6 +104,8 @@ private:
     QOpcUaApplicationIdentity m_identity;
     QOpcUaPkiConfiguration m_pkiConfig;
     QOpcUaEndpointDescription m_endpoint; // current endpoint used to connect
+    QMenu *mContextMenu;
+    QAction *mContextMenuAction;
 };
 
 QT_END_NAMESPACE

@@ -79,6 +79,7 @@ TreeItem::TreeItem(QOpcUaNode *node, OpcUaModel *model, TreeItem *parent) : QObj
   , mParentItem(parent)
 {
     connect(mOpcNode.get(), &QOpcUaNode::attributeRead, this, &TreeItem::handleAttributes);
+    connect(mOpcNode.get(), &QOpcUaNode::attributeUpdated, this, &TreeItem::handleAttributes);
     connect(mOpcNode.get(), &QOpcUaNode::browseFinished, this, &TreeItem::browseFinished);
 
     if (!mOpcNode->readAttributes( QOpcUa::NodeAttribute::Value
@@ -226,6 +227,30 @@ QPixmap TreeItem::icon(int column) const
 bool TreeItem::hasChildNodeItem(const QString &nodeId) const
 {
     return mChildNodeIds.contains(nodeId);
+}
+
+void TreeItem::setMonitoringEnabled(bool active)
+{
+    if (!supportsMonitoring())
+        return;
+
+    if (active) {
+        mOpcNode->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(500));
+    } else {
+        mOpcNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
+    }
+}
+
+bool TreeItem::monitoringEnabled() const
+{
+    QOpcUaMonitoringParameters monitoring = mOpcNode.get()->monitoringStatus(QOpcUa::NodeAttribute::Value);
+    return  monitoring.statusCode() == QOpcUa::UaStatusCode::Good &&
+            monitoring.monitoringMode() == QOpcUaMonitoringParameters::MonitoringMode::Reporting;
+}
+
+bool TreeItem::supportsMonitoring() const
+{
+    return mNodeClass == QOpcUa::NodeClass::Variable;
 }
 
 void TreeItem::startBrowsing()
