@@ -9,5 +9,5 @@ dependencies:
     ref: 48e5a755b5a3c27e57be89613119656931512015
     required: true
   ../qttools:
-    ref: 1be9aa986f0652ac8f6d5808a13970d043e271da
+    ref: 1b0cb732e218c59be10b8c505674c542e1d498df
     required: true
