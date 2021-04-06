@@ -124,7 +124,7 @@ public slots:
     void setConnection(OpcUaConnection *);
 
 signals:
-    void nodeIdChanged(const OpcUaNodeIdType *nodeId);
+    void nodeIdChanged(OpcUaNodeIdType *nodeId);
     void connectionChanged(OpcUaConnection *);
     void nodeChanged();
     void readyToUseChanged();
