@@ -119,7 +119,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty list<SimpleAttributeOperand::select
+    \qmlproperty list<SimpleAttributeOperand> EventFilter::select
 
     Selected event fields that shall be included when a new event is reported.
 */

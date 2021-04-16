@@ -201,7 +201,7 @@ const QString &QOpcUaApplicationRecordDataType::productUri() const
 }
 
 /*!
-    Sets the discovery URLs to \a discoverUrls.
+    Sets the discovery URLs to \a discoveryUrls.
 */
 void QOpcUaApplicationRecordDataType::setDiscoveryUrls(const QList<QString> &discoveryUrls)
 {

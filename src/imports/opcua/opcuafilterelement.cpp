@@ -70,9 +70,11 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty FilterElement::FilterOperator
+    \qmlproperty enumeration FilterElement::operatorType
 
-    FilterOperator enumerates all possible operators for a FilterElement that are specified in
+    The filter operator.
+
+    Possible operators for a FilterElement that are specified in
     OPC-UA part 4, Tables 115 and 116.
 
     \value FilterElement.Equals
@@ -96,25 +98,19 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty FilterElement::FilterOperator FilterElement::operatorType
-
-    The filter operator.
-*/
-
-/*!
     \qmlproperty variant FilterElement::firstOperand
 
     First operand to be used with the operator.
-    This can be one of \l SimplateAttributeOperand, \l AttributeOperand,
-    \l LiteralOperal or \l ElementOperand.
+    This can be one of \l SimpleAttributeOperand, \l AttributeOperand,
+    \l LiteralOperand or \l ElementOperand.
 */
 
 /*!
     \qmlproperty variant FilterElement::secondOperand
 
     Second operand to be used with the operator.
-    This can be one of \l SimplateAttributeOperand, \l AttributeOperand,
-    \l LiteralOperal or \l ElementOperand.
+    This can be one of \l SimpleAttributeOperand, \l AttributeOperand,
+    \l LiteralOperand or \l ElementOperand.
 */
 
 

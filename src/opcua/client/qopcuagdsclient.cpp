@@ -71,7 +71,7 @@ static const QStringList elementsToResolve {
     \inmodule QtOpcUa
     \since 5.14
 
-    \brief Handles communication with the GDS Server
+    \brief Handles communication with the GDS Server.
 
     This class is currently available as a Technology Preview, and therefore the API
     and functionality provided by the class may be subject to change at any time without
@@ -177,8 +177,7 @@ static const QStringList elementsToResolve {
 /*!
     \fn QOpcUaGdsClient::errorChanged(Error error)
 
-    This signal is emitted when an error occurred.
-    The \a state indicates the new state.
+    This signal is emitted when an \a error occurred.
 */
 
 /*!
@@ -190,7 +189,7 @@ static const QStringList elementsToResolve {
 /*!
     \fn QOpcUaGdsClient::certificateGroupsReceived(QStringList certificateGroups)
 
-    This signal is emitted when the GDS client receives a new list of certificateGroups
+    This signal is emitted when the GDS client receives a new list of \a certificateGroups
     for this application.
 */
 
@@ -218,13 +217,6 @@ static const QStringList elementsToResolve {
     \fn QOpcUaGdsClient::unregistered()
 
     This signal is emitted when the GDS client has unregistered the application.
-*/
-
-/*!
-    \fn QOpcUaGdsClient::trustListUpdated()
-
-    This signal is emitted when the GDS client has received a new trust list from the
-    server and stored to disk.
 */
 
 /*!
@@ -339,7 +331,7 @@ static const QStringList elementsToResolve {
 */
 
 /*!
-    Constructs a GDS client
+    Constructs a GDS client with \a parent as the parent object.
 */
 QOpcUaGdsClient::QOpcUaGdsClient(QObject *parent)
     : QObject(*(new QOpcUaGdsClientPrivate()), parent)
@@ -349,7 +341,7 @@ QOpcUaGdsClient::QOpcUaGdsClient(QObject *parent)
 }
 
 /*!
-    Destructs a GDS client
+    Destructs a GDS client.
 */
 QOpcUaGdsClient::~QOpcUaGdsClient()
 {
@@ -410,7 +402,7 @@ const QOpcUaEndpointDescription &QOpcUaGdsClient::endpoint() const
 }
 
 /*!
-    Sets the PKI configuration to be used by the client.
+    Sets the PKI configuration \a pkiConfig to be used by the client.
 
     All certificates, keys and trust lists will be used from or stored to
     the locations given. In order to use the certificate received from
@@ -435,7 +427,7 @@ const QOpcUaPkiConfiguration &QOpcUaGdsClient::pkiConfiguration() const
 }
 
 /*!
-    Sets the application identity to be used by the client.
+    Sets the application identity \a appIdentity to be used by the client.
 
     This identity is used to register with the GDS server.
     This function has to be called before starting the GDS client.
@@ -457,7 +449,7 @@ const QOpcUaApplicationIdentity &QOpcUaGdsClient::applicationIdentity() const
 }
 
 /*!
-    Sets the application record data to be used by the client.
+    Sets the application record data \a appRecord to be used by the client.
 
     This data is used to register with the GDS server.
     This function has to be called before starting the GDS client.
@@ -496,7 +488,8 @@ QString QOpcUaGdsClient::applicationId() const
 }
 
 /*!
-    Sets the presets for certificate siging requests.
+    Sets the presets for certificate siging requests; the distinguished name \a dn and
+    the DNS string \a dns.
 
     When creating a certificate signing request some additional information is needed,
     that is not provided by the application identity.

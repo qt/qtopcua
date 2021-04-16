@@ -53,11 +53,15 @@ navigation.homepage = "Qt for Automation"
 
 examplesinstallpath = opcua
 
+# Add a generic thumbnail to an example that has none
+manifestmeta.thumbnail.names += "QtOpcUa/Qt OPC UA X509 Support Example"
+
 depends += \
    qtcore \
    qtqml \
    qtquick \
    qtdoc \
+   qtcmake \
    qmake \
    qtwidgets
 

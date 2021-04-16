@@ -118,8 +118,8 @@ public:
     void unregisterApplication();
 
 Q_SIGNALS:
-    void stateChanged(State);
-    void errorChanged(Error);
+    void stateChanged(State state);
+    void errorChanged(Error error);
     void applicationRegistered();
     void certificateGroupsReceived(QStringList certificateGroups);
     void certificateUpdateRequired();

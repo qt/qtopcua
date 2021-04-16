@@ -44,7 +44,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtOpcUa
     \since 5.14
 
-    \brief QOpcUaKeyPair handles private and public key pairs
+    \brief QOpcUaKeyPair handles private and public key pairs.
 
     This class is currently available as a Technology Preview, and therefore the API
     and functionality provided by the class may be subject to change at any time without
@@ -92,15 +92,15 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QOpcUaKeyPair::passphaseNeeded()
+    \fn QOpcUaKeyPair::passphraseNeeded(QString &passphrase, int maximumLength, bool writeOperation)
 
-    This signal is emitted when a private key needs a passphrase for en- or decryption.
+    This signal is emitted when a private key needs a \a passphrase for encryption or
+    decryption.
 
-    Place the passphrase in \a passphrase.
     \a writeOperation is \c true when the passphrase is needed for exporting a key, and
     is \c false when the passphrase is needed for importing a key.
 
-    \a maximumPassphraseSize specifies the maximum length in bytes for the passphrase.
+    \a maximumLength specifies the maximum length in bytes for the passphrase.
     All characters in \a passphrase exceeding this limit will be ignored.
 
     In case you have use this signal crossing thread boundaries you have to connect it
@@ -108,7 +108,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    Creates a new empty key pair.
+    Creates a new empty key pair with \a parent as the parent object.
 */
 QOpcUaKeyPair::QOpcUaKeyPair(QObject *parent)
     : QObject(*(new QOpcUaKeyPairPrivate()), parent)
@@ -137,13 +137,7 @@ bool QOpcUaKeyPair::loadFromPemData(const QByteArray &data)
 }
 
 /*!
-    Loads a key from PEM encoded data in \a data.
-    Returns \c true on success and \c false otherwise.
-
-    It detects from the PEM header if the data contains a private or
-    public key. Loading encrypted keys is possible by connecting a
-    function to the signal \c passphraseNeeded for provision of the
-    passphrase.
+    Returns the public key as a byte array.
 */
 QByteArray QOpcUaKeyPair::publicKeyToByteArray() const
 {
@@ -187,7 +181,7 @@ QByteArray QOpcUaKeyPair::privateKeyToByteArray(Cipher cipher, const QString &pa
 /*!
     Generates a new asymmetric RSA key pair.
 
-    The length of the key can be specified by the \c strength parameter.
+    The length of the key is specified by \a strength.
 */
 void QOpcUaKeyPair::generateRsaKey(QOpcUaKeyPair::RsaKeyStrength strength)
 {

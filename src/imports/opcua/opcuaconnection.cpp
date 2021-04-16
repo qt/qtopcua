@@ -171,7 +171,7 @@ QT_BEGIN_NAMESPACE
     \since 5.13
 
     Emitted when the read request, started using \l readNodeAttributes(), is finished.
-    The parameter of this signal is an array of \l ReadResult, which contains the
+    The \a readResults parameter is an array of \l ReadResult entries, containing the
     values requested from the server.
 
     \code
@@ -194,8 +194,8 @@ QT_BEGIN_NAMESPACE
     \since 5.13
 
     Emitted when the write request started using \l writeNodeAttributes() is
-    finished. The parameter of this signal is an array of \l WriteResult, which
-    contains the values requested from the server.
+    finished. The \a writeResults parameter is an array of \l WriteResult entries,
+    containing the values requested from the server.
 
     \code
     for (var i = 0; i < writeResults.length; i++) {
@@ -327,7 +327,7 @@ bool OpcUaConnection::isDefaultConnection() const
 /*!
     \qmlmethod Connection::connectToEndpoint(endpointDescription)
 
-    Connects to the given endpoint.
+    Connects to the endpoint specified with \a endpointDescription.
 
     \sa EndpointDescription
 */
@@ -341,7 +341,7 @@ void OpcUaConnection::connectToEndpoint(const QOpcUaEndpointDescription &endpoin
 }
 
 /*!
-    \qmlmethod Connection::disconnectFromEndpoint(url)
+    \qmlmethod Connection::disconnectFromEndpoint()
 
     Disconnects an established connection.
 */
@@ -421,7 +421,8 @@ QOpcUaAuthenticationInformation OpcUaConnection::authenticationInformation() con
     This function is used to read multiple values from a server in one go.
     Returns \c true if the read request was dispatched successfully.
 
-    The values to be read have to be passed as JavaScript array of \l ReadItem.
+    The \a valuesToBeRead parameter must be a JavaScript array of \l ReadItem
+    entries.
 
     \code
     // List of items to read
@@ -503,7 +504,8 @@ bool OpcUaConnection::readNodeAttributes(const QJSValue &value)
     This function is used to write multiple values to a server in one go.
     Returns \c true if the write request was dispatched successfully.
 
-    The values to be written have to be passed as JavaScript array of \l WriteItem.
+    The \a valuesToBeWritten parameter must be a JavaScript array of
+    \l WriteItem entries.
 
     \code
     // List of items to write
