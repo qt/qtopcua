@@ -880,7 +880,8 @@ QOpcUa::Types QOpcUa::opcUaDataTypeToQOpcUaType(const QString &type)
 /*!
     \since QtOpcUa 5.14
 
-    Returns \c true if a security policy is a secure policy.
+    Returns \c true if \a securityPolicy is a secure policy, \c false
+    otherwise.
 */
 bool QOpcUa::isSecurePolicy(const QString &securityPolicy)
 {

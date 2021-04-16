@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtOpcUa
     \since 5.14
 
-    \brief QOpcUaX509CertificateSigningRequest create a certificate signing request
+    \brief QOpcUaX509CertificateSigningRequest create a certificate signing request.
 
     This class is currently available as a Technology Preview, and therefore the API
     and functionality provided by the class may be subject to change at any time without
@@ -182,9 +182,12 @@ void QOpcUaX509CertificateSigningRequest::setEncoding(QOpcUaX509CertificateSigni
 /*!
     Adds a certificate extension to the request.
 
-    The ownership of the extension object will be transferred to this class.
+    The ownership of the \a extension object will be transferred to this class.
 
-    \sa QOpcUaX509ExtensionSubjectAlternativeName, QOpcUaX509ExtensionBasicConstraints, QOpcUaX509ExtensionKeyUsage, QOpcUaX509ExtensionKeyUsage
+    \sa QOpcUaX509ExtensionSubjectAlternativeName,
+        QOpcUaX509ExtensionBasicConstraints,
+        QOpcUaX509ExtensionKeyUsage,
+        QOpcUaX509ExtensionKeyUsage
 */
 void QOpcUaX509CertificateSigningRequest::addExtension(QOpcUaX509Extension *extension)
 {
@@ -193,7 +196,7 @@ void QOpcUaX509CertificateSigningRequest::addExtension(QOpcUaX509Extension *exte
 }
 
 /*!
-    Sets the subject for this request.
+    Sets the \a subject for this request.
     Without a subject it is not possible to generate the request.
 */
 void QOpcUaX509CertificateSigningRequest::setSubject(const QOpcUaX509DistinguishedName &subject)

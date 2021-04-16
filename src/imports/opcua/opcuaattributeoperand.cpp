@@ -70,6 +70,7 @@ QT_BEGIN_NAMESPACE
              ...
         ]
     }
+    \endcode
 */
 
 /*!

@@ -34,7 +34,8 @@
     \since 5.11
     \brief List of C++ classes that provide the Qt OPC UA functionality.
 
-    To link against the module, add this line to your \l cmake \c project file:
+    To link against the module, add this line to your \l {Build with CMake}
+    {cmake} project file:
 
     \code
     target_link_libraries(mytarget Qt::OpcUa)
@@ -54,7 +55,8 @@
     import QtOpcUa 5.12 as QtOpcUa
     \endcode
 
-    To link against the module, add the following QT variable to your \l cmake project file:
+    To link against the module, add the following QT variable to your
+    \l {Build with CMake}{cmake} project file:
 
     \badcode
     target_link_libraries(mytarget Qt::OpcUa)
@@ -91,7 +93,8 @@
     #include <QtOpcUa>
     \endcode
 
-    To link against the module, add this line to your \l cmake project file:
+    To link against the module, add this line to your \l {Build with CMake}
+    {cmake} project file:
 
     \code
     target_link_libraries(mytarget Qt::OpcUa)

@@ -44,7 +44,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtOpcUa
     \since 5.14
 
-    \brief Information about a distinguished name item
+    \brief Information about a distinguished name item.
 
     This class is currently available as a Technology Preview, and therefore the API
     and functionality provided by the class may be subject to change at any time without

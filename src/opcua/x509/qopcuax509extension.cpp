@@ -44,13 +44,14 @@ QT_BEGIN_NAMESPACE
     \inmodule QtOpcUa
     \since 5.14
 
-    \brief Base class for all X509 extensions
+    \brief Base class for all X509 extensions.
 
     This class is currently available as a Technology Preview, and therefore the API
     and functionality provided by the class may be subject to change at any time without
     prior notice.
 
-    \sa QOpcUaX509ExtensionSubjectAlternativeName, QOpcUaX509ExtensionBasicConstraints, QOpcUaX509ExtensionKeyUsage, QOpcUaX509ExtensionKeyUsage
+    \sa QOpcUaX509ExtensionSubjectAlternativeName, QOpcUaX509ExtensionBasicConstraints,
+        QOpcUaX509ExtensionKeyUsage, QOpcUaX509ExtensionKeyUsage
 */
 
 /*!

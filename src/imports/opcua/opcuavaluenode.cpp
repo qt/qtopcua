@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
     \qmlproperty variant ValueNode::valueType
 
     Type type of this node.
-    The initial value will be \l {QtOpcUa::Undefined}{QtOpcUa.Constants.Undefined} and be fetched from the server when the first connection is established.
+    The initial value will be \l {QOpcUa::Undefined}{QtOpcUa.Constants.Undefined} and be fetched from the server when the first connection is established.
     Any value will be written to the server as the specified type.
 */
 

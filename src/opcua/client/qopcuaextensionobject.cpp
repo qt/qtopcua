@@ -159,10 +159,10 @@ void QOpcUaExtensionObject::setEncodedBody(const QByteArray &encodedBody)
     \since 5.13
 
     Sets the body of this extension object to \a encodedBody,
-    sets the encoding of the body to \l Encoding::ByteString and
+    sets the encoding of the body to \l ByteString and
     sets the type id of the encoded data to \a typeId.
 
-    \sa setEncodedBody() setEncoding() setEncodingTypeId()
+    \sa setEncodedBody(), setEncoding(), setEncodingTypeId()
 */
 void QOpcUaExtensionObject::setBinaryEncodedBody(const QByteArray &encodedBody, const QString &typeId)
 {
@@ -175,10 +175,10 @@ void QOpcUaExtensionObject::setBinaryEncodedBody(const QByteArray &encodedBody, 
     \since 5.13
 
     Sets the body of this extension object to \a encodedBody,
-    sets the encoding of the body to \l Encoding::Xml and
-    sets the type id of the encoded data to \a typeId.
+    sets the encoding of the body to \l Xml and sets the type
+    id of the encoded data to \a typeId.
 
-    \sa setEncodedBody() setEncoding() setEncodingTypeId()
+    \sa setEncodedBody(), setEncoding(), setEncodingTypeId()
 */
 void QOpcUaExtensionObject::setXmlEncodedBody(const QByteArray &encodedBody, const QString &typeId)
 {

@@ -44,7 +44,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtOpcUa
     \since 5.14
 
-    \brief Class for X509 basic constraints
+    \brief Class for X509 basic constraints.
 
     This class is currently available as a Technology Preview, and therefore the API
     and functionality provided by the class may be subject to change at any time without
