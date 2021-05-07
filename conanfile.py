@@ -37,7 +37,7 @@ class QtConanError(Exception):
 
 class QtOPCUA(ConanFile):
     name = "qtopcua"
-    version = "6.1.0"
+    version = "6.1.1"
     license = "GPL-3.0+, LGPL-3.0+, Commercial Qt License Agreement"
     author = "The Qt Company <https://www.qt.io/contact-us>"
     url = "https://code.qt.io/cgit/qt/qtopcua.git"
