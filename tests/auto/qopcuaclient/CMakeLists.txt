@@ -4,7 +4,7 @@
 ## tst_qopcuaclient Test:
 #####################################################################
 
-qt_add_test(tst_qopcuaclient
+qt_internal_add_test(tst_qopcuaclient
     SOURCES
         ../../common/backend_environment.h
         tst_client.cpp
@@ -20,7 +20,7 @@ set(data_resource_files
     "../../open62541-testserver/pki/own/certs/open62541-testserver.der"
 )
 
-qt_add_resource(tst_qopcuaclient "data"
+qt_internal_add_resource(tst_qopcuaclient "data"
     PREFIX
         "/"
     FILES
@@ -31,7 +31,7 @@ qt_add_resource(tst_qopcuaclient "data"
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_qopcuaclient CONDITION QT_FEATURE_open62541_security AND QT_FEATURE_open62541 # special case
+qt_internal_extend_target(tst_qopcuaclient CONDITION QT_FEATURE_open62541_security AND QT_FEATURE_open62541 # special case
     DEFINES
         SERVER_SUPPORTS_SECURITY
 )

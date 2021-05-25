@@ -4,7 +4,7 @@
 ## open62541-testserver Binary:
 #####################################################################
 
-qt_add_executable(open62541-testserver
+qt_internal_add_executable(open62541-testserver
     SOURCES
         ../../src/plugins/opcua/open62541/qopen62541utils.cpp
         ../../src/plugins/opcua/open62541/qopen62541valueconverter.cpp
@@ -31,7 +31,7 @@ set(certs_resource_files
     "pki/trusted/certs/tst_security.der"
 )
 
-qt_add_resource(open62541-testserver "certs"
+qt_internal_add_resource(open62541-testserver "certs"
     PREFIX
         "/"
     FILES
@@ -56,7 +56,7 @@ qt_opcua_disable_optimizations_in_current_dir()
 ## Scopes:
 #####################################################################
 
-qt_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
+qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
     SOURCES
         ../../src/3rdparty/open62541/open62541.h
     ../../src/3rdparty/open62541/open62541.c # special case
@@ -65,7 +65,7 @@ qt_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541 AND NOT QT_
 )
 
 # special case begin
-#qt_extend_target(open62541-testserver CONDITION QT_FEATURE_mbedtls AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
+#qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_mbedtls AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
 #    DEFINES
 #        UA_ENABLE_ENCRYPTION
 #        UA_ENABLE_ENCRYPTION_MBEDTLS
@@ -79,7 +79,7 @@ if (QT_FEATURE_open62541_security AND NOT QT_FEATURE_system_open62541)
     find_package(WrapOpenSSL 1.1)
 endif()
 
-qt_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541_security AND WrapOpenSSL_FOUND AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
+qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541_security AND WrapOpenSSL_FOUND AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
     DEFINES
         UA_ENABLE_ENCRYPTION
         UA_ENABLE_ENCRYPTION_OPENSSL
@@ -88,18 +88,18 @@ qt_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541_security AN
 )
 # special case end
 
-qt_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541 AND WIN32 AND MSVC AND NOT QT_FEATURE_system_open62541 # special case
+qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541 AND WIN32 AND MSVC AND NOT QT_FEATURE_system_open62541 # special case
     PUBLIC_LIBRARIES
         ws2_32.lib
 )
 
-qt_extend_target(open62541-testserver CONDITION (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541) AND (WIN32 AND GCC) # special case
+qt_internal_extend_target(open62541-testserver CONDITION (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541) AND (WIN32 AND GCC) # special case
     PUBLIC_LIBRARIES
         ws2_32
 )
 
 # special case begin
-#qt_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541 AND (WINRT OR WIN32 AND MSVC)
+#qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541 AND (WINRT OR WIN32 AND MSVC)
 #    SOURCES
 #        ../../src/3rdparty/open62541/open62541.c
 #)
@@ -133,7 +133,7 @@ endif()
 #### Keys ignored in scope 11:.:../../src/3rdparty:../../src/3rdparty/open62541.pri:silent:
 # open62541_compiler.commands = "@echo" "compiling" "${QMAKE_FILE_IN}" "&&"
 
-qt_extend_target(open62541-testserver CONDITION QT_FEATURE_system_open62541 OR NOT QT_FEATURE_open62541
+qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_system_open62541 OR NOT QT_FEATURE_open62541
     LIBRARIES
         open62541
 )

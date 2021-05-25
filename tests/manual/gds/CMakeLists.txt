@@ -4,7 +4,7 @@
 ## tst_gds Test:
 #####################################################################
 
-qt_add_test(tst_gds
+qt_internal_add_test(tst_gds
     SOURCES
         tst_gds.cpp
     PUBLIC_LIBRARIES

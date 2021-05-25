@@ -4,7 +4,7 @@
 ## tst_connection Test:
 #####################################################################
 
-qt_add_test(tst_connection
+qt_internal_add_test(tst_connection
     SOURCES
         ../../common/backend_environment.h
         tst_connection.cpp

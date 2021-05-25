@@ -4,7 +4,7 @@
 ## tst_opcua Test:
 #####################################################################
 
-qt_add_test(tst_opcua
+qt_internal_add_test(tst_opcua
     GUI
     QMLTEST
     QML_IMPORTPATH
@@ -27,7 +27,7 @@ qt_add_test(tst_opcua
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_opcua CONDITION QT_FEATURE_open62541_security # special case
+qt_internal_extend_target(tst_opcua CONDITION QT_FEATURE_open62541_security # special case
     DEFINES
         SERVER_SUPPORTS_SECURITY
 )

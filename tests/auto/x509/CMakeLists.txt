@@ -4,7 +4,7 @@
 ## tst_x509 Test:
 #####################################################################
 
-qt_add_test(tst_x509
+qt_internal_add_test(tst_x509
     SOURCES
         tst_x509.cpp
     PUBLIC_LIBRARIES

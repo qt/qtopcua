@@ -4,7 +4,7 @@
 ## tst_clientSetupInCpp Test:
 #####################################################################
 
-qt_add_test(tst_clientSetupInCpp
+qt_internal_add_test(tst_clientSetupInCpp
     GUI
     QMLTEST
     QML_IMPORTPATH
@@ -27,7 +27,7 @@ qt_add_test(tst_clientSetupInCpp
 ## Scopes:
 #####################################################################
 
-qt_extend_target(tst_clientSetupInCpp CONDITION QT_FEATURE_open62541_security # special case
+qt_internal_extend_target(tst_clientSetupInCpp CONDITION QT_FEATURE_open62541_security # special case
     DEFINES
         SERVER_SUPPORTS_SECURITY
 )

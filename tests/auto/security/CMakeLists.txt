@@ -4,7 +4,7 @@
 ## tst_security Test:
 #####################################################################
 
-qt_add_test(tst_security
+qt_internal_add_test(tst_security
     SOURCES
         ../../common/backend_environment.h
         tst_security.cpp
@@ -25,7 +25,7 @@ set(certs_resource_files
     "pki/trusted/crl/ca.crl.pem"
 )
 
-qt_add_resource(tst_security "certs"
+qt_internal_add_resource(tst_security "certs"
     PREFIX
         "/"
     FILES

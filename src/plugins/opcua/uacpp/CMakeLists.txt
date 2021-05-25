@@ -30,7 +30,7 @@ qt_internal_add_plugin(QUACppPlugin
 ## Scopes:
 #####################################################################
 
-qt_extend_target(QUACppPlugin CONDITION WIN32
+qt_internal_extend_target(QUACppPlugin CONDITION WIN32
     DEFINES
         _UA_STACK_USE_DLL
 )
