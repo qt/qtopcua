@@ -140,7 +140,7 @@ void OpcUaRelativeNodePath::setReferenceType(const QVariant &referenceType)
 
     if (referenceType.userType() == qMetaTypeId<QObject*>() && qobject_cast<OpcUaNodeId*>(referenceType.value<QObject*>()))
         valid = true;
-    else if (referenceType.userType() == QVariant::Int && QMetaEnum::fromType<QOpcUa::ReferenceTypeId>().valueToKey(referenceType.toInt()))
+    else if (referenceType.userType() == QMetaType::Int && QMetaEnum::fromType<QOpcUa::ReferenceTypeId>().valueToKey(referenceType.toInt()))
         valid = true;
 
     if (!valid) {
@@ -177,7 +177,7 @@ QOpcUaRelativePathElement OpcUaRelativeNodePath::toRelativePathElement(QOpcUaCli
     x.setIsInverse(isInverse());
     x.setIncludeSubtypes(includeSubtypes());
     x.setTargetName(m_browseNode.toQualifiedName());
-    if (m_referenceType.userType() == QVariant::Int
+    if (m_referenceType.userType() == QMetaType::Int
         || m_referenceType.userType() == qMetaTypeId<QOpcUa::ReferenceTypeId>())
         x.setReferenceTypeId(m_referenceType.value<QOpcUa::ReferenceTypeId>());
     else
