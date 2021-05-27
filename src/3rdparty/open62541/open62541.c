@@ -21,7 +21,7 @@
 #endif
 
 /* Disable security warnings for BSD sockets on MSVC */
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
 # define _CRT_SECURE_NO_WARNINGS
 #endif
 
