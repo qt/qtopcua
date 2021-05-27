@@ -722,7 +722,7 @@ void Open62541AsyncBackend::deleteReference(const QOpcUaDeleteReferenceItem &ref
                                                referenceToDelete.targetNodeId(), referenceToDelete.isForwardReference()};
 }
 
-static void convertBrowseResult(UA_BrowseResult *src, quint32 referencesSize, QList<QOpcUaReferenceDescription> &dst)
+static void convertBrowseResult(UA_BrowseResult *src, size_t referencesSize, QList<QOpcUaReferenceDescription> &dst)
 {
     if (!src)
         return;
