@@ -230,7 +230,7 @@ void OpcUaServerDiscovery::handleServers(const QList<QOpcUaApplicationDescriptio
     for (const auto &i : qAsConst(servers)) {
         const int newRow = QStandardItemModel::rowCount();
         QStandardItemModel::insertRow(newRow);
-        QStandardItemModel::setData(index(newRow, 0), i.applicationUri() + QLatin1String("\n") + i.productUri(), Qt::DisplayRole);
+        QStandardItemModel::setData(index(newRow, 0), QString(i.applicationUri() + u'\n' + i.productUri()), Qt::DisplayRole);
         QStandardItemModel::setData(index(newRow, 0), QVariant::fromValue(i), Qt::UserRole);
     }
     emit countChanged();
