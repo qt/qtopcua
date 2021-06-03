@@ -5,9 +5,9 @@ description = An OPC UA module for Qt
 version = $QT_VERSION
 
 sourcedirs += .. \
-              ../../imports
+              ../../declarative_opcua
 headerdirs += .. \
-              ../../imports
+              ../../declarative_opcua
 exampledirs += ../../../examples/opcua
 imagedirs += images
 

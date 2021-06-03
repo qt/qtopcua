@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 
 namespace QOpcUa {
 Q_OPCUA_EXPORT Q_NAMESPACE
+Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
 
 // see OPC-UA Part 3, 5.2.3 & 8.30
 enum class NodeClass {
