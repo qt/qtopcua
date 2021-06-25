@@ -433,7 +433,7 @@
     \section2 Open62541
 
     The Open62541 plugin is available under the same licenses as Qt OPC UA. The Open62541 library itself
-    is licensed under \l {https://open62541}{Mozilla Public License v2.0}.
+    is licensed under \l {https://open62541.org}{Mozilla Public License v2.0}.
 
     The security support is provided by the OpenSSL plugins of the open62541 library.
     If the open62541 plugin is built with security support and OpenSSL is not available
