@@ -54,9 +54,8 @@
 #define defineDataMethod(name) void name()\
 {\
     QTest::addColumn<QString>("backend");\
-    for (auto backend : m_backends) {\
-        const QString rowName = QString("%1").arg(backend); \
-        QTest::newRow(rowName.toLatin1().constData()) << backend ; \
+    for (const QString &backend : m_backends) {\
+        QTest::newRow(backend.toLatin1().constData()) << backend ; \
         QVERIFY(!backend.isEmpty()); \
     }\
 }

@@ -52,7 +52,7 @@
 {\
     QTest::addColumn<QString>("backend");\
     for (auto backend : m_backends) {\
-        const QString rowName = QString("%1").arg(backend); \
+        const QString rowName = QStringLiteral("%1").arg(backend); \
         QTest::newRow(rowName.toLatin1().constData()) << backend ; \
     }\
 }
@@ -158,7 +158,8 @@ void Tst_QOpcUaSecurity::keyPairs()
     QCOMPARE(loadedKey.privateKeyToByteArray(QOpcUaKeyPair::Cipher::Unencrypted, QString()), byteArray);
 
     // Check encrypted PEM export
-    byteArray = key.privateKeyToByteArray(QOpcUaKeyPair::Cipher::Aes128Cbc, QString("password"));
+    byteArray = key.privateKeyToByteArray(QOpcUaKeyPair::Cipher::Aes128Cbc,
+                                          QStringLiteral("password"));
     QVERIFY(byteArray.startsWith("-----BEGIN ENCRYPTED PRIVATE KEY-----\n"));
     QVERIFY(byteArray.endsWith("-----END ENCRYPTED PRIVATE KEY-----\n"));
     QCOMPARE(passwordSpy.count(), 0);

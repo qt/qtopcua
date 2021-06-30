@@ -127,8 +127,11 @@ void OpcUaMachineBackend::clientStateHandler(QOpcUaClient::ClientState state)
     if (state == QOpcUaClient::ClientState::Connecting)
         setMessage(QStringLiteral("Connecting"));
 
-    if (state == QOpcUaClient::ClientState::Disconnected)
-        setMessage(QString("Disconnected: %1").arg(QMetaEnum::fromType<QOpcUaClient::ClientError>().valueToKey(static_cast<int>(m_client->error()))));
+    if (state == QOpcUaClient::ClientState::Disconnected) {
+        setMessage(QStringLiteral("Disconnected: %1")
+                   .arg(QMetaEnum::fromType<QOpcUaClient::ClientError>().valueToKey(
+                            static_cast<int>(m_client->error()))));
+    }
 }
 
 void OpcUaMachineBackend::machineStateUpdated(QOpcUa::NodeAttribute attr, const QVariant &value)

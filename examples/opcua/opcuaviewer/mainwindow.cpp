@@ -277,7 +277,7 @@ void MainWindow::getEndpointsComplete(const QList<QOpcUaEndpointDescription> &en
                 continue;
             }
 
-            const QString EndpointName = QString("%1 (%2)")
+            const QString EndpointName = QStringLiteral("%1 (%2)")
                     .arg(endpoint.securityPolicy(), modes[endpoint.securityMode()]);
             ui->endpoints->addItem(EndpointName, index++);
         }

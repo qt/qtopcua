@@ -147,7 +147,8 @@ void OpcUaPathResolver::startNodeResolved(UniversalNode startNode, const QString
     startNode.resolveNamespace(m_client);
     m_node = m_client->node(startNode.fullNodeId());
     if (!m_node) {
-        emit resolvedNode(startNode, QString("Could not create node from '%1'").arg(startNode.fullNodeId()));
+        emit resolvedNode(startNode, QStringLiteral("Could not create node from '%1'")
+                          .arg(startNode.fullNodeId()));
         deleteLater();
         return;
     }
@@ -160,7 +161,7 @@ void OpcUaPathResolver::startNodeResolved(UniversalNode startNode, const QString
     qCDebug(QT_OPCUA_PLUGINS_QML) << "Starting browse on" << m_node->nodeId();
     connect(m_node, &QOpcUaNode::resolveBrowsePathFinished, this, &OpcUaPathResolver::browsePathFinished);
     if (!m_node->resolveBrowsePath(path)) {
-        emit resolvedNode(UniversalNode(), QString("Failed to start browse"));
+        emit resolvedNode(UniversalNode(), QStringLiteral("Failed to start browse"));
         deleteLater();
         return;
     }
@@ -173,18 +174,22 @@ void OpcUaPathResolver::browsePathFinished(QList<QOpcUaBrowsePathTarget> results
 
     if (status != QOpcUa::Good) {
         const char *name = QMetaEnum::fromType<QOpcUa::UaStatusCode>().valueToKey(status);
-        emit resolvedNode(UniversalNode(), QString("Resolving browse path return error code %1").arg(name));
+        emit resolvedNode(UniversalNode(),
+                          QStringLiteral("Resolving browse path return error code %1").arg(name));
         deleteLater();
         return;
     }
 
     if (results.size() == 0) {
-        emit resolvedNode(UniversalNode(), QString("Relative path could not be resolved: Results are empty"));
+        emit resolvedNode(UniversalNode(),
+                          QStringLiteral("Relative path could not be resolved: Results are empty"));
         deleteLater();
         return;
     } else if (results.size() == 1) {
         if (results.at(0).targetId().serverIndex() > 0) {
-            emit resolvedNode(UniversalNode(), QString("Relative path could not be resolved: Resulting node is located on a remote server"));
+            emit resolvedNode(UniversalNode(),
+                              QStringLiteral("Relative path could not be resolved: "
+                                             "Resulting node is located on a remote server"));
             deleteLater();
             return;
         }
@@ -197,7 +202,8 @@ void OpcUaPathResolver::browsePathFinished(QList<QOpcUaBrowsePathTarget> results
         for (const auto &result : results) {
             if (result.isFullyResolved()) {
                 if (result.targetId().serverIndex() > 0) {
-                    message = QString("Relative path could not be resolved: Resulting node is located on a remote server");
+                    message = QStringLiteral("Relative path could not be resolved: "
+                                             "Resulting node is located on a remote server");
                     continue;
                 }
                 if (!tmp.nodeIdentifier().isEmpty()) {

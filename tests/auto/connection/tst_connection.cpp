@@ -105,7 +105,7 @@ void Tst_Connection::initTestCase()
 
         QOpcUaClient *client = m_opcUa.createClient(backend, backendOptions);
         QVERIFY2(client != nullptr,
-                 QString("Loading backend failed: %1").arg(backend).toLatin1().data());
+                 QStringLiteral("Loading backend failed: %1").arg(backend).toLatin1().data());
         client->setParent(this);
         qDebug() << "Using SDK plugin:" << client->backend();
         m_clients.append(client);
@@ -155,7 +155,7 @@ void Tst_Connection::initTestCase()
     }
     QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
     QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-    m_discoveryEndpoint = QString("opc.tcp://%1:%2").arg(host).arg(port);
+    m_discoveryEndpoint = QStringLiteral("opc.tcp://%1:%2").arg(host).arg(port);
     qDebug() << "Using endpoint:" << m_discoveryEndpoint;
 
     QOpcUaClient *client = m_clients.first();

@@ -561,7 +561,7 @@ void Tst_QOpcUaClient::initTestCase()
 
         QOpcUaClient *client = m_opcUa.createClient(backend, backendOptions);
         QVERIFY2(client != nullptr,
-                 QString("Loading backend failed: %1").arg(backend).toLatin1().data());
+                 QStringLiteral("Loading backend failed: %1").arg(backend).toLatin1().data());
         client->setParent(this);
         qDebug() << "Using SDK plugin:" << client->backend();
         m_clients.append(client);
@@ -625,7 +625,7 @@ void Tst_QOpcUaClient::initTestCase()
     }
     QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
     QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-    m_discoveryEndpoint = QString("opc.tcp://%1:%2").arg(host).arg(port);
+    m_discoveryEndpoint = QStringLiteral("opc.tcp://%1:%2").arg(host).arg(port);
     qDebug() << "Using endpoint:" << m_discoveryEndpoint;
 
     QOpcUaClient *client = m_clients.first();
@@ -3716,7 +3716,7 @@ void Tst_QOpcUaClient::addNamespace()
     QCOMPARE(namespaceChangedSpy.count(), 0);
 
     auto namespaceArray = opcuaClient->namespaceArray();
-    QString newNamespaceName = QString("DynamicTestNamespace#%1").arg(namespaceArray.size());
+    QString newNamespaceName = QStringLiteral("DynamicTestNamespace#%1").arg(namespaceArray.size());
 
     QVERIFY(!namespaceArray.isEmpty());
     QVERIFY(!namespaceArray.contains(newNamespaceName));

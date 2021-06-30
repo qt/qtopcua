@@ -163,7 +163,9 @@ void UniversalNode::resolveNamespaceNameToIndex(QOpcUaClient *client)
 
     int index = resolveNamespaceNameToIndex(m_namespaceName, client);
     if (index < 0) {
-        qCWarning(QT_OPCUA_PLUGINS_QML) << "Could not resolve namespace for node" << (m_nodeIdentifier.isEmpty() ? QString() : (QString("(") + m_nodeIdentifier + ")"));
+        qCWarning(QT_OPCUA_PLUGINS_QML)
+                << "Could not resolve namespace for node"
+                << (m_nodeIdentifier.isEmpty() ? QString() : (u'(' + m_nodeIdentifier + u')'));
         return;
     }
     setMembers(true, index, true, m_namespaceName, false, QString());

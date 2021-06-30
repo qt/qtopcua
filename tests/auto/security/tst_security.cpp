@@ -131,7 +131,10 @@ static QString messageSecurityModeToString(QOpcUaEndpointDescription::MessageSec
     QTest::addColumn<QOpcUaEndpointDescription>("endpoint");\
     for (auto backend : m_backends)\
         for (auto endpoint : m_endpoints) { \
-            const QString rowName = QString("%1 using %2 %3").arg(backend).arg(endpoint.securityPolicy()).arg(messageSecurityModeToString(endpoint.securityMode())); \
+            const QString rowName = QStringLiteral("%1 using %2 %3") \
+                    .arg(backend) \
+                    .arg(endpoint.securityPolicy()) \
+                    .arg(messageSecurityModeToString(endpoint.securityMode())); \
             QTest::newRow(rowName.toLatin1().constData()) << backend << endpoint; \
         } \
 }
@@ -225,7 +228,7 @@ void Tst_QOpcUaSecurity::initTestCase()
     }
     QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
     QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-    m_discoveryEndpoint = QString("opc.tcp://%1:%2").arg(host).arg(port);
+    m_discoveryEndpoint = QStringLiteral("opc.tcp://%1:%2").arg(host).arg(port);
     qDebug() << "Using endpoint:" << m_discoveryEndpoint;
 
     QScopedPointer<QOpcUaClient> client(m_opcUa.createClient(m_backends.first()));
@@ -263,11 +266,13 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureUnencryptedKey()
     QFETCH(QOpcUaEndpointDescription, endpoint);
 
     QScopedPointer<QOpcUaClient> client(m_opcUa.createClient(backend));
-    QVERIFY2(client, QString("Loading backend failed: %1").arg(backend).toLatin1().data());
+    QVERIFY2(client, QStringLiteral("Loading backend failed: %1").arg(backend).toLatin1().data());
 
-    if (!client->supportedSecurityPolicies().contains(endpoint.securityPolicy()))
-        QSKIP(QString("This test is skipped because backend %1 does not support security policy %2").arg(
-            client->backend()).arg(endpoint.securityPolicy()).toLatin1().constData());
+    if (!client->supportedSecurityPolicies().contains(endpoint.securityPolicy())) {
+        QSKIP(QStringLiteral("This test is skipped because backend %1 "
+                             "does not support security policy %2")
+              .arg(client->backend()).arg(endpoint.securityPolicy()).toLatin1().constData());
+    }
 
     const QString pkidir = m_pkiData->path();
     QOpcUaPkiConfiguration pkiConfig;
@@ -329,13 +334,19 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureEncryptedKey()
     QFETCH(QOpcUaEndpointDescription, endpoint);
 
     QScopedPointer<QOpcUaClient> client(m_opcUa.createClient(backend));
-    QVERIFY2(client, QString("Loading backend failed: %1").arg(backend).toLatin1().data());
+    QVERIFY2(client, QStringLiteral("Loading backend failed: %1").arg(backend).toLatin1().data());
 
-    if (client->backend() == QLatin1String("open62541"))
-        QSKIP(QString("This test is skipped because backend %1 does not support encrypted keys").arg(client->backend()).toLatin1().constData());
+    if (client->backend() == QLatin1String("open62541")) {
+        QSKIP(QStringLiteral("This test is skipped because backend %1 "
+                             "does not support encrypted keys")
+              .arg(client->backend()).toLatin1().constData());
+    }
 
-    if (!client->supportedSecurityPolicies().contains(endpoint.securityPolicy()))
-        QSKIP(QString("This test is skipped because backend %1 does not support security policy %2").arg(client->backend()).arg(endpoint.securityPolicy()).toLatin1().constData());
+    if (!client->supportedSecurityPolicies().contains(endpoint.securityPolicy())) {
+        QSKIP(QStringLiteral("This test is skipped because backend %1 "
+                             "does not support security policy %2")
+              .arg(client->backend()).arg(endpoint.securityPolicy()).toLatin1().constData());
+    }
 
     const QString pkidir = m_pkiData->path();
     QOpcUaPkiConfiguration pkiConfig;

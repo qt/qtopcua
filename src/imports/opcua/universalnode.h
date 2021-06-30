@@ -97,7 +97,7 @@ public:
 
     static QString resolveNamespaceToNode(const QString &nodeId, const QString &namespaceName, QOpcUaClient *client);
     inline static QString createNodeString(int namespaceIndex, const QString &nodeIdentifier) {
-            return QString("ns=%1;%2").arg(namespaceIndex).arg(nodeIdentifier);
+            return QStringLiteral("ns=%1;%2").arg(namespaceIndex).arg(nodeIdentifier);
     }
     static bool splitNodeIdAndNamespace(const QString nodeIdentifier, int *namespaceIndex, QString *identifier);
 
