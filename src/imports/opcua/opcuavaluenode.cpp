@@ -138,9 +138,9 @@ void OpcUaValueNode::setupNode(const QString &absolutePath)
 
     connect(m_node, &QOpcUaNode::attributeWritten, this, [this](QOpcUa::NodeAttribute attribute, QOpcUa::UaStatusCode statusCode) {
         if (statusCode != QOpcUa::Good) {
-            QString msg = "Failed to write attribute "
+            QString msg = QStringLiteral("Failed to write attribute ")
                     + enumToString(attribute)
-                    + ": "
+                    + QStringLiteral(": ")
                     + enumToString(statusCode);
             setStatus(Status::FailedToWriteAttribute, msg);
             qCWarning(QT_OPCUA_PLUGINS_QML) << msg;
