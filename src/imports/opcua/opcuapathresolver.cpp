@@ -173,7 +173,8 @@ void OpcUaPathResolver::browsePathFinished(QList<QOpcUaBrowsePathTarget> results
     UniversalNode nodeToUse;
 
     if (status != QOpcUa::Good) {
-        const char *name = QMetaEnum::fromType<QOpcUa::UaStatusCode>().valueToKey(status);
+        const QString name = QString::fromUtf8(
+                    QMetaEnum::fromType<QOpcUa::UaStatusCode>().valueToKey(status));
         emit resolvedNode(UniversalNode(),
                           QStringLiteral("Resolving browse path return error code %1").arg(name));
         deleteLater();
@@ -197,7 +198,7 @@ void OpcUaPathResolver::browsePathFinished(QList<QOpcUaBrowsePathTarget> results
 
     } else { // greater than one
         UniversalNode tmp;
-        QString message = "No resolved node found";
+        QString message = QStringLiteral("No resolved node found");
 
         for (const auto &result : results) {
             if (result.isFullyResolved()) {

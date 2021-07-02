@@ -467,7 +467,7 @@ bool OpcUaConnection::readNodeAttributes(const QJSValue &value)
 
     QList<QOpcUaReadItem> readItemList;
 
-    for (int i = 0; i < value.property("length").toInt(); ++i){
+    for (int i = 0, end = value.property(QStringLiteral("length")).toInt(); i < end; ++i){
         const auto &readItem = qjsvalue_cast<OpcUaReadItem>(value.property(i));
         if (readItem.nodeId().isEmpty()) {
             qCWarning(QT_OPCUA_PLUGINS_QML) << tr("Invalid ReadItem in list of items at index %1").arg(i);
@@ -552,7 +552,7 @@ bool OpcUaConnection::writeNodeAttributes(const QJSValue &value)
 
     QList<QOpcUaWriteItem> writeItemList;
 
-    for (int i = 0; i < value.property("length").toInt(); ++i){
+    for (int i = 0, end = value.property(QStringLiteral("length")).toInt(); i < end; ++i) {
         const auto &writeItem = qjsvalue_cast<OpcUaWriteItem>(value.property(i));
         if (writeItem.nodeId().isEmpty()) {
             qCWarning(QT_OPCUA_PLUGINS_QML) << tr("Invalid WriteItem in list of items at index %1").arg(i);

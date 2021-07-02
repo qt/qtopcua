@@ -274,14 +274,14 @@ void UniversalNode::from(const UniversalNode &other)
 QString UniversalNode::fullNodeId() const
 {
     if (!m_namespaceIndexValid || m_nodeIdentifier.isEmpty()) {
-        QString message("Unable to construct a full node id");
+        QString message = QStringLiteral("Unable to construct a full node id");
         if (!m_nodeIdentifier.isEmpty())
-            message += " for node " + m_nodeIdentifier;
+            message += QStringLiteral(" for node ") + m_nodeIdentifier;
         else
-            message += " because node id string is empty.";
+            message += QStringLiteral(" because node id string is empty.");
 
         if (!m_namespaceIndexValid)
-            message += "; namespace index is not valid.";
+            message += QStringLiteral("; namespace index is not valid.");
         qCWarning(QT_OPCUA_PLUGINS_QML) << message;
         return QString();
     }
