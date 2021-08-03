@@ -203,7 +203,7 @@ bool QOpcUaBinaryDataEncoding::enoughData(int requiredSize)
 {
     if (!m_data)
         return false;
-    return (m_data->size() + m_offset) >= requiredSize;
+    return (m_data->size() - m_offset) >= requiredSize;
 }
 
 /*!
