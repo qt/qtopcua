@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QUACppPlugin
     OUTPUT_NAME uacpp_backend
-    TYPE opcua
+    PLUGIN_TYPE opcua
     SOURCES
         quacppbackend.cpp quacppbackend.h
         quacppclient.cpp quacppclient.h

@@ -6,7 +6,7 @@
 
 qt_internal_add_plugin(QOpen62541Plugin
     OUTPUT_NAME open62541_backend
-    TYPE opcua
+    PLUGIN_TYPE opcua
     SOURCES
         qopen62541.h
         qopen62541backend.cpp qopen62541backend.h
