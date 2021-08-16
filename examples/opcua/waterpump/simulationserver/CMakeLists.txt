@@ -1,6 +1,6 @@
 # Generated from simulationserver.pro.
 
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)
 project(simulationserver LANGUAGES CXX C) # special case
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
