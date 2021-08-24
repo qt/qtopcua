@@ -6,7 +6,7 @@ dependencies:
     ref: 6c5f03250623036f590ff95e7fb3965867c9627a
     required: true
   ../qtquickcontrols2:
-    ref: de645a3c28385d2f491fd6b627cd1c92d3370638
+    ref: 1e497b2f38b9444a88bc1fe50525aa88d0d7f9d6
     required: true
   ../qttools:
     ref: db3facebdcc5cdcd1d39b1c544f85d30b6a26808
