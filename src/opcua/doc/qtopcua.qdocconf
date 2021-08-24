@@ -24,10 +24,6 @@ qhp.QtOpcUa.virtualFolder = qtopcua
 qhp.QtOpcUa.indexTitle = Qt OPC UA
 qhp.QtOpcUa.indexRoot =
 
-qhp.QtOpcUa.filterAttributes = qtopcua $QT_VERSION qtrefdoc
-qhp.QtOpcUa.customFilters.Qt.name = QtOpcUa $QT_VERSION
-qhp.QtOpcUa.customFilters.Qt.filterAttributes = qtopcua $QT_VERSION
-
 qhp.QtOpcUa.subprojects = classes examples
 
 qhp.QtOpcUa.subprojects.classes.title = C++ Classes
