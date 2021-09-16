@@ -64,10 +64,19 @@ Open62541AsyncBackend::Open62541AsyncBackend(QOpen62541Client *parent)
     , m_clientIterateInterval(50)
     , m_asyncRequestTimeout(15000)
     , m_clientIterateTimer(this)
+    , m_disconnectAfterStateChangeTimer(this)
     , m_minPublishingInterval(0)
 {
     QObject::connect(&m_clientIterateTimer, &QTimer::timeout,
                      this, &Open62541AsyncBackend::iterateClient);
+
+    m_disconnectAfterStateChangeTimer.setSingleShot(true);
+    m_disconnectAfterStateChangeTimer.setInterval(0);
+
+    QObject::connect(&m_disconnectAfterStateChangeTimer, &QTimer::timeout,
+                     this, [this]() {
+        disconnectInternal(QOpcUaClient::ConnectionError);
+    });
 }
 
 Open62541AsyncBackend::~Open62541AsyncBackend()
@@ -832,9 +841,8 @@ void Open62541AsyncBackend::clientStateCallback(UA_Client *client,
     backend->m_useStateCallback = false;
     backend->m_clientIterateTimer.stop();
 
-    emit backend->stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ConnectionError);
-
-    UA_Client_disconnect(client);
+    // UA_Client_disconnect() must be called from outside this callback or open62541 will crash
+    backend->m_disconnectAfterStateChangeTimer.start();
 
     // Use a queued connection to make sure the subscription is not deleted if the callback was triggered
     // inside of one of its methods.
@@ -850,10 +858,7 @@ void Open62541AsyncBackend::inactivityCallback(UA_Client *client)
 
 void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
 {
-    cleanupSubscriptions();
-
-    if (m_uaclient)
-        UA_Client_delete(m_uaclient);
+    disconnectInternal();
 
     QString errorMessage;
     if (!verifyEndpointDescription(endpoint, &errorMessage)) {
@@ -872,8 +877,6 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
     }
 
     emit stateAndOrErrorChanged(QOpcUaClient::Connecting, QOpcUaClient::NoError);
-
-    m_useStateCallback = false;
 
     m_uaclient = UA_Client_new();
     auto conf = UA_Client_getConfig(m_uaclient);
@@ -900,6 +903,8 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
         if (!success) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load client certificate";
             emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
+            UA_Client_delete(m_uaclient);
+            m_uaclient = nullptr;
             return;
         }
 
@@ -910,6 +915,8 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
         if (!success) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load private key";
             emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
+            UA_Client_delete(m_uaclient);
+            m_uaclient = nullptr;
             return;
         }
 
@@ -920,6 +927,8 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
         if (!success) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load trust list";
             emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
+            UA_Client_delete(m_uaclient);
+            m_uaclient = nullptr;
             return;
         }
 
@@ -930,6 +939,8 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
         if (!success) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load revocation list";
             emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
+            UA_Client_delete(m_uaclient);
+            m_uaclient = nullptr;
             return;
         }
 
@@ -941,6 +952,8 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
         if (result != UA_STATUSCODE_GOOD) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to initialize PKI:" << static_cast<QOpcUa::UaStatusCode>(result);
             emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
+            UA_Client_delete(m_uaclient);
+            m_uaclient = nullptr;
             return;
         }
     } else {
@@ -987,6 +1000,8 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
         if (!suitableTokenFound) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "No suitable user token policy found";
             emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::NoError);
+            UA_Client_delete(m_uaclient);
+            m_uaclient = nullptr;
             return;
         }
 
@@ -997,6 +1012,8 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
         emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnsupportedAuthenticationInformation);
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to connect: Selected authentication type"
                                           << authInfo.authenticationType() << "is not supported.";
+        UA_Client_delete(m_uaclient);
+        m_uaclient = nullptr;
         return;
     }
 
@@ -1027,22 +1044,7 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
 
 void Open62541AsyncBackend::disconnectFromEndpoint()
 {
-    m_clientIterateTimer.stop();
-    cleanupSubscriptions();
-
-    m_useStateCallback = false;
-
-    if (m_uaclient) {
-        UA_StatusCode ret = UA_Client_disconnect(m_uaclient);
-        if (ret != UA_STATUSCODE_GOOD) {
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to disconnect";
-            // Fall through intentionally
-        }
-        UA_Client_delete(m_uaclient);
-        m_uaclient = nullptr;
-    }
-
-    emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::NoError);
+    disconnectInternal();
 }
 
 void Open62541AsyncBackend::requestEndpoints(const QUrl &url)
@@ -1605,6 +1607,20 @@ bool Open62541AsyncBackend::loadAllFilesInDirectory(const QString &location, UA_
     *size = tempSize;
 
     return true;
+}
+
+void Open62541AsyncBackend::disconnectInternal(QOpcUaClient::ClientError error)
+{
+    m_useStateCallback = false;
+    m_clientIterateTimer.stop();
+    cleanupSubscriptions();
+
+    if (m_uaclient) {
+        UA_Client_disconnect(m_uaclient);
+        UA_Client_delete(m_uaclient);
+        m_uaclient = nullptr;
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
+    }
 }
 
 UA_ExtensionObject Open62541AsyncBackend::assembleNodeAttributes(const QOpcUaNodeCreationAttributes &nodeAttributes,
