@@ -126,7 +126,10 @@ private:
     bool loadFileToByteString(const QString &location, UA_ByteString *target) const;
     bool loadAllFilesInDirectory(const QString &location, UA_ByteString **target, int *size) const;
 
+    void disconnectInternal(QOpcUaClient::ClientError error = QOpcUaClient::ClientError::NoError);
+
     QTimer m_clientIterateTimer;
+    QTimer m_disconnectAfterStateChangeTimer;
 
     QHash<quint32, QOpen62541Subscription *> m_subscriptions;
 
