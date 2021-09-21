@@ -56,8 +56,8 @@
 #include <QtOpcUa/qopcuarelativepathelement.h>
 #include <QtOpcUa/qopcuabrowsepathtarget.h>
 
+#include <QtCore/qcborarray.h>
 #include <private/qfactoryloader_p.h>
-#include <QtCore/qjsonarray.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qpluginloader.h>
 
@@ -95,32 +95,32 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, qOpcualoader,
         (QOpcUaProviderFactory_iid, QLatin1String("/opcua")))
 
 /*!
-    \fn static QHash<QString, QJsonObject> loadPluginMetadata()
+    \fn static QHash<QString, QCborMap> loadPluginMetadata()
 
     Reads the meta data from the plugins known by the loader.
 */
-static QHash<QString, QJsonObject> loadPluginMetadata()
+static QHash<QString, QCborMap> loadPluginMetadata()
 {
-    QHash<QString, QJsonObject> plugins;
+    QHash<QString, QCborMap> plugins;
     const QFactoryLoader *l = qOpcualoader();
-    QList<QJsonObject> const meta = l->metaData();
+    QList<QPluginParsedMetaData> const meta = l->metaData();
     for (int i = 0; i < meta.size(); ++i) {
-        QJsonObject obj = meta.at(i).value(QStringLiteral("MetaData")).toObject();
-        obj.insert(QStringLiteral("index"), i);
-        plugins.insert(obj.value(QStringLiteral("Provider")).toString(), obj);
+        QCborMap map = meta.at(i).value(QtPluginMetaDataKeys::MetaData).toMap();
+        map.insert(QLatin1String("index"), i);
+        plugins.insert(map.value(QLatin1String("Provider")).toString(), map);
     }
     return plugins;
 }
 
 /*!
-    \fn static QHash<QString, QJsonObject> plugins()
+    \fn static QHash<QString, QCborMap> plugins()
 
     Returns a \l QHash mapping names to JSON objects containing the meta data of
     available plugins.
 */
-static QHash<QString, QJsonObject> plugins()
+static QHash<QString, QCborMap> plugins()
 {
-    static QHash<QString, QJsonObject> plugins;
+    static QHash<QString, QCborMap> plugins;
     static bool alreadyDiscovered = false;
 
     if (!alreadyDiscovered) {
