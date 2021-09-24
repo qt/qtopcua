@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 basysKom GmbH, opensource@basyskom.com
+** Copyright (C) 2021 basysKom GmbH, opensource@basyskom.com
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.

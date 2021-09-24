@@ -186,10 +186,29 @@ enum class ReferenceTypeId : quint32 {
     HasEffect = 54,
     HasHistoricalConfiguration = 56,
     HasSubStateMachine = 117,
+    HasArgumentDescription = 129,
+    HasOptionalInputArgumentDescription = 131,
     AlwaysGeneratesEvent = 3065,
     HasTrueSubState = 9004,
     HasFalseSubState = 9005,
-    HasCondition = 9006
+    HasCondition = 9006,
+    HasPubSubConnection = 14476,
+    DataSetToWriter = 14936,
+    HasGuard = 15112,
+    HasDataSetWriter = 15296,
+    HasDataSetReader = 15297,
+    HasAlarmSuppressionGroup = 16361,
+    AlarmGroupMember = 16362,
+    HasEffectDisable = 17276,
+    HasDictionaryEntry = 17597,
+    HasInterface = 17603,
+    HasAddIn = 17604,
+    HasEffectEnable = 17983,
+    HasEffectSuppressed = 17984,
+    HasEffectUnsuppressed = 17985,
+    HasWriterGroup = 18804,
+    HasReaderGroup = 18805,
+    AliasFor = 23469
 };
 Q_ENUM_NS(ReferenceTypeId)
 

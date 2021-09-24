@@ -100,10 +100,29 @@ QT_BEGIN_NAMESPACE
     \value HasEffect The type for a reference to an event that may be raised when a transition occurs.
     \value HasHistoricalConfiguration The type for a reference to the historical configuration for a data variable.
     \value HasSubStateMachine The type for a reference to a substate for a state.
+    \value HasArgumentDescription The type for a reference to an argument description
+    \value HasOptionalInputArgumentDescription The type for a reference to an optional input argument description
     \value AlwaysGeneratesEvent The type for references from a node to an event type that is always raised by node.
     \value HasTrueSubState The type for references from a TRUE super state node to a subordinate state node.
     \value HasFalseSubState The type for references from a FALSE super state node to a subordinate state node.
     \value HasCondition The type for references from a ConditionSource node to a Condition.
+    \value HasPubSubConnection The type for a reference to a PubSub connection
+    \value DataSetToWriter The type for a reference to a data set writer
+    \value HasGuard The type for a reference to a guard
+    \value HasDataSetWriter The type for a reference to a data set writer
+    \value HasDataSetReader The type for a reference to data set reader
+    \value HasAlarmSuppressionGroup The type for a reference to an alarm suppression group
+    \value AlarmGroupMember The type for a reference to an alarm group member
+    \value HasEffectDisable The type for a reference to an alarm which is disabled by a transition
+    \value HasDictionaryEntry The type for a reference to a dictionary entry
+    \value HasInterface The type for a reference to an interface
+    \value HasAddIn The type for a reference to an addin
+    \value HasEffectEnable The type for a reference to an alarm which is enabled by a transition
+    \value HasEffectSuppressed The type for a reference to an alarm which is suppressed by a transition
+    \value HasEffectUnsuppressed The type for a reference to an alarm which is unsuppressed by a transition
+    \value HasWriterGroup The type for a reference to a writer group
+    \value HasReaderGroup The type for a reference to a reader group
+    \value AliasFor The type for a reference to the node represented by an alias
 */
 
 /*!
