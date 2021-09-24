@@ -5,7 +5,7 @@
 #####################################################################
 
 qt_get_tool_target_name(target_name qtopcua-defaultnodeidsgenerator)
-qt_add_tool(${target_name}
+qt_internal_add_tool(${target_name}
     SOURCES
         main.cpp
 )
