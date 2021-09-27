@@ -428,7 +428,7 @@ Item {
             // The Value attribute is read and subscribed
             // The initial value from the subscription doesn't generate a changed signal
             // unless the value is modified by setting the value attribute before the update is published.
-            wait(500)
+            wait(1000);
 
             node12ValueSpy.clear();
             node12.value = 30;
@@ -437,6 +437,10 @@ Item {
             compare(node12ValueSpy.count, 1);
             compare(node12.value, 30);
             compare(node12.value, 30.0);
+
+            // There is a race condition where the local value can be updated after write success
+            // before the previous value change from the monitoring arrives.
+            wait(1000);
 
             node12ValueSpy.clear();
             node12.value = 1;
