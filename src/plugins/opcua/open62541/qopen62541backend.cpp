@@ -1274,9 +1274,9 @@ void Open62541AsyncBackend::asyncReadCallback(UA_Client *client, void *userdata,
             context.results[i].setStatusCode(QOpcUa::UaStatusCode::Good);
         if (res->results[i].hasValue && res->results[i].value.data)
                 context.results[i].setValue(QOpen62541ValueConverter::toQVariant(res->results[i].value));
-        if (res->results[i].hasServerTimestamp)
-            context.results[i].setSourceTimestamp(QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&res->results[i].sourceTimestamp));
         if (res->results[i].hasSourceTimestamp)
+            context.results[i].setSourceTimestamp(QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&res->results[i].sourceTimestamp));
+        if (res->results[i].hasServerTimestamp)
             context.results[i].setServerTimestamp(QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&res->results[i].serverTimestamp));
     }
 
