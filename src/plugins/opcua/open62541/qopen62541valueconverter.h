@@ -17,7 +17,7 @@ namespace QOpen62541ValueConverter {
 
     inline UA_AttributeId toUaAttributeId(QOpcUa::NodeAttribute attr)
     {
-        const int attributeIdUsedBits = 22;
+        const int attributeIdUsedBits = 23;
         for (int i = 0; i < attributeIdUsedBits; ++i)
             if (static_cast<int>(attr) == (1 << i))
                 return static_cast<UA_AttributeId>(i + 1);

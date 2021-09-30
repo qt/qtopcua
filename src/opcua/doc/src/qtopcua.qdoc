@@ -334,6 +334,26 @@
     \li X
     \li X
     \li QOpcUaExtensionObject
+    \row
+    \li StructureDefinition
+    \li X
+    \li
+    \li QOpcUaStructureDefinition
+    \row
+    \li StructureField
+    \li X
+    \li
+    \li QOpcUaStructureField
+    \row
+    \li EnumDefinition
+    \li X
+    \li
+    \li QOpcUaEnumDefinition
+    \row
+    \li EnumField
+    \li X
+    \li
+    \li QOpcUaEnumField
     \endtable
 
     \section1 Classes and Ownership

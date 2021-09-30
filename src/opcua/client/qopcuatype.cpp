@@ -121,6 +121,7 @@ QT_BEGIN_NAMESPACE
     \value Historizing True if historical data is collected.
     \value Executable True if the node is currently executable. Only relevant for Method nodes.
     \value UserExecutable Same as Executable, but for the current user.
+    \value DataTypeDefinition The data type definition attribute of a data type node.
 */
 
 /*!
@@ -222,6 +223,10 @@ QT_BEGIN_NAMESPACE
     \value XV A float value with a double precision position on an axis.
     \value ExpandedNodeId A node id with additional namespace URI and server index.
     \value Argument The OPC UA Argument type.
+    \value StructureDefinition The OPC UA StructureDefinition type
+    \value StructureField The OPC UA StructureField type
+    \value EnumDefinition The OPC UA EnumDefinition type
+    \value EnumField The OPC UA EnumField type
     \value Undefined
 */
 

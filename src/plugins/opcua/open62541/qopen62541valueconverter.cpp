@@ -7,6 +7,8 @@
 
 #include "qopcuadatavalue.h"
 #include "qopcuamultidimensionalarray.h"
+#include "qopcuastructuredefinition.h"
+#include "qopcuaenumdefinition.h"
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qloggingcategory.h>
@@ -113,6 +115,14 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
         return arrayFromQVariant<UA_Argument, QOpcUaArgument>(value, dt);
     case QOpcUa::ExtensionObject:
         return arrayFromQVariant<UA_ExtensionObject, QOpcUaExtensionObject>(value, dt);
+    case QOpcUa::StructureDefinition:
+        return arrayFromQVariant<UA_StructureDefinition, QOpcUaStructureDefinition>(value, dt);
+    case QOpcUa::StructureField:
+        return arrayFromQVariant<UA_StructureField, QOpcUaStructureField>(value, dt);
+    case QOpcUa::EnumDefinition:
+        return arrayFromQVariant<UA_EnumDefinition, QOpcUaEnumDefinition>(value, dt);
+    case QOpcUa::EnumField:
+        return arrayFromQVariant<UA_EnumField, QOpcUaEnumField>(value, dt);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion to Open62541 for typeIndex" << type << " not implemented";
     }
@@ -184,6 +194,14 @@ QVariant toQVariant(const UA_Variant &value)
         return arrayToQVariant<QOpcUaDoubleComplexNumber, UA_DoubleComplexNumberType>(value);
     else if (value.type == &UA_TYPES[UA_TYPES_XVTYPE])
         return arrayToQVariant<QOpcUaXValue, UA_XVType>(value);
+    else if (value.type == &UA_TYPES[UA_TYPES_STRUCTUREDEFINITION])
+        return arrayToQVariant<QOpcUaStructureDefinition, UA_StructureDefinition>(value);
+    else if (value.type == &UA_TYPES[UA_TYPES_STRUCTUREFIELD])
+        return arrayToQVariant<QOpcUaStructureField, UA_StructureField>(value);
+    else if (value.type == &UA_TYPES[UA_TYPES_ENUMDEFINITION])
+        return arrayToQVariant<QOpcUaEnumDefinition, UA_EnumDefinition>(value);
+    else if (value.type == &UA_TYPES[UA_TYPES_ENUMFIELD])
+        return arrayToQVariant<QOpcUaEnumField, UA_EnumField>(value);
 
     return uaVariantToQtExtensionObject(value);
 }
@@ -249,6 +267,14 @@ const UA_DataType *toDataType(QOpcUa::Types valueType)
         return &UA_TYPES[UA_TYPES_EXPANDEDNODEID];
     case QOpcUa::Argument:
         return &UA_TYPES[UA_TYPES_ARGUMENT];
+    case QOpcUa::StructureDefinition:
+        return &UA_TYPES[UA_TYPES_STRUCTUREDEFINITION];
+    case QOpcUa::StructureField:
+        return &UA_TYPES[UA_TYPES_STRUCTUREFIELD];
+    case QOpcUa::EnumDefinition:
+        return &UA_TYPES[UA_TYPES_ENUMDEFINITION];
+    case QOpcUa::EnumField:
+        return &UA_TYPES[UA_TYPES_ENUMFIELD];
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Trying to convert undefined type:" << valueType;
         return nullptr;
@@ -397,6 +423,64 @@ QOpcUaXValue scalarToQt<QOpcUaXValue, UA_XVType>(const UA_XVType *data)
     return QOpcUaXValue(data->x, data->value);
 }
 
+template<>
+QOpcUaStructureField scalarToQt<QOpcUaStructureField, UA_StructureField>(const UA_StructureField *data)
+{
+    QOpcUaStructureField temp;
+    temp.setName(scalarToQt<QString, UA_String>(&data->name));
+    temp.setDescription(scalarToQt<QOpcUaLocalizedText, UA_LocalizedText>(&data->description));
+    temp.setDataType(scalarToQt<QString, UA_NodeId>(&data->dataType));
+    temp.setIsOptional(data->isOptional);
+    temp.setMaxStringLength(scalarToQt<quint32, UA_UInt32>(&data->maxStringLength));
+    temp.setValueRank(scalarToQt<qint32, UA_Int32>(&data->valueRank));
+
+    QList<quint32> dimensions;
+    for (size_t i = 0; i < data->arrayDimensionsSize; ++i)
+        dimensions.append(data->arrayDimensions[i]);
+    temp.setArrayDimensions(dimensions);
+    return temp;
+}
+
+template<>
+QOpcUaStructureDefinition scalarToQt<QOpcUaStructureDefinition, UA_StructureDefinition>(const UA_StructureDefinition *data)
+{
+    QOpcUaStructureDefinition temp;
+    temp.setBaseDataType(scalarToQt<QString, UA_NodeId>(&data->baseDataType));
+    temp.setDefaultEncodingId(scalarToQt<QString, UA_NodeId>(&data->defaultEncodingId));
+    temp.setStructureType(static_cast<QOpcUaStructureDefinition::StructureType>(data->structureType));
+
+    QList<QOpcUaStructureField> fields;
+    for (size_t i = 0; i < data->fieldsSize; ++i)
+        fields.append(scalarToQt<QOpcUaStructureField, UA_StructureField>(&data->fields[i]));
+    temp.setFields(fields);
+    return temp;
+}
+
+template<>
+QOpcUaEnumField scalarToQt<QOpcUaEnumField, UA_EnumField>(const UA_EnumField *data)
+{
+    QOpcUaEnumField temp;
+    temp.setName(scalarToQt<QString, UA_String>(&data->name));
+    temp.setDisplayName(scalarToQt<QOpcUaLocalizedText, UA_LocalizedText>(&data->displayName));
+    temp.setValue(data->value);
+    temp.setDescription(scalarToQt<QOpcUaLocalizedText, UA_LocalizedText>(&data->description));
+
+    return temp;
+}
+
+template<>
+QOpcUaEnumDefinition scalarToQt<QOpcUaEnumDefinition, UA_EnumDefinition>(const UA_EnumDefinition *data)
+{
+    QOpcUaEnumDefinition temp;
+
+    QList<QOpcUaEnumField> fields;
+    for (size_t i = 0; i < data->fieldsSize; ++i)
+        fields.push_back(scalarToQt<QOpcUaEnumField, UA_EnumField>(&data->fields[i]));
+    temp.setFields(fields);
+
+    return temp;
+}
+
 template <>
 QVariant scalarToQt<QVariant, UA_ExtensionObject>(const UA_ExtensionObject *data)
 {
@@ -444,6 +528,26 @@ QVariant scalarToQt<QVariant, UA_ExtensionObject>(const UA_ExtensionObject *data
         if (data->content.decoded.type == &UA_TYPES[UA_TYPES_XVTYPE] && data->content.decoded.data) {
             return scalarToQt<QOpcUaXValue, UA_XVType>
                     (reinterpret_cast<UA_XVType *>(data->content.decoded.data));
+        }
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_STRUCTUREDEFINITION]) {
+            return scalarToQt<QOpcUaStructureDefinition, UA_StructureDefinition>
+                    (reinterpret_cast<UA_StructureDefinition *>(data->content.decoded.data));
+        }
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_STRUCTUREFIELD]) {
+            return scalarToQt<QOpcUaStructureField, UA_StructureField>
+                    (reinterpret_cast<UA_StructureField *>(data->content.decoded.data));
+        }
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_ENUMDEFINITION]) {
+            return scalarToQt<QOpcUaEnumDefinition, UA_EnumDefinition>
+                    (reinterpret_cast<UA_EnumDefinition *>(data->content.decoded.data));
+        }
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_ENUMFIELD]) {
+            return scalarToQt<QOpcUaEnumField, UA_EnumField>
+                    (reinterpret_cast<UA_EnumField *>(data->content.decoded.data));
         }
 
         bool success = false;
@@ -636,6 +740,62 @@ void scalarFromQt<UA_XVType, QOpcUaXValue>(const QOpcUaXValue &value, UA_XVType 
 {
     ptr->x = value.x();
     ptr->value = value.value();
+}
+
+template<>
+void scalarFromQt<UA_StructureField, QOpcUaStructureField>(const QOpcUaStructureField &value, UA_StructureField *ptr)
+{
+    scalarFromQt<UA_NodeId, QString>(value.dataType(), &ptr->dataType);
+    ptr->maxStringLength = value.maxStringLength();
+    ptr->isOptional = value.isOptional();
+    ptr->valueRank = value.valueRank();
+    scalarFromQt<UA_String, QString>(value.name(), &ptr->name);
+    scalarFromQt<UA_LocalizedText, QOpcUaLocalizedText>(value.description(), &ptr->description);
+
+    ptr->arrayDimensionsSize = value.arrayDimensions().size();
+    if (ptr->arrayDimensionsSize) {
+        ptr->arrayDimensions = static_cast<quint32 *>(UA_Array_new(ptr->arrayDimensionsSize, &UA_TYPES[UA_TYPES_UINT32]));
+
+        for (int i = 0; i < value.arrayDimensions().size(); ++i)
+            ptr->arrayDimensions[i] = value.arrayDimensions().at(i);
+    }
+}
+
+template<>
+void scalarFromQt<UA_StructureDefinition, QOpcUaStructureDefinition>(const QOpcUaStructureDefinition &value, UA_StructureDefinition *ptr)
+{
+    scalarFromQt<UA_NodeId, QString>(value.baseDataType(), &ptr->baseDataType);
+    scalarFromQt<UA_NodeId, QString>(value.defaultEncodingId(), &ptr->defaultEncodingId);
+    ptr->structureType = static_cast<UA_StructureType>(value.structureType());
+
+    if (!value.fields().isEmpty()) {
+        ptr->fieldsSize = value.fields().size();
+        ptr->fields = static_cast<UA_StructureField *>(UA_Array_new(ptr->fieldsSize, &UA_TYPES[UA_TYPES_STRUCTUREFIELD]));
+
+        for (int i = 0; i < value.fields().size(); ++i)
+            scalarFromQt<UA_StructureField, QOpcUaStructureField>(value.fields().at(i), &ptr->fields[i]);
+    }
+}
+
+template<>
+void scalarFromQt<UA_EnumField, QOpcUaEnumField>(const QOpcUaEnumField &value, UA_EnumField *ptr)
+{
+    scalarFromQt<UA_String, QString>(value.name(), &ptr->name);
+    scalarFromQt<UA_LocalizedText, QOpcUaLocalizedText>(value.description(), &ptr->description);
+    scalarFromQt<UA_LocalizedText, QOpcUaLocalizedText>(value.displayName(), &ptr->displayName);
+    ptr->value = value.value();
+}
+
+template<>
+void scalarFromQt<UA_EnumDefinition, QOpcUaEnumDefinition>(const QOpcUaEnumDefinition &value, UA_EnumDefinition *ptr)
+{
+    if (!value.fields().isEmpty()) {
+        ptr->fieldsSize = value.fields().size();
+        ptr->fields = static_cast<UA_EnumField *>(UA_Array_new(ptr->fieldsSize, &UA_TYPES[UA_TYPES_ENUMFIELD]));
+
+        for (int i = 0; i < value.fields().size(); ++i)
+            scalarFromQt<UA_EnumField, QOpcUaEnumField>(value.fields().at(i), &ptr->fields[i]);
+    }
 }
 
 template<>

@@ -103,6 +103,18 @@ QT_BEGIN_NAMESPACE
         \row
             \li QOpcUaApplicationRecordDataType
             \li ApplicationRecordDataType
+        \row
+            \li QOpcUaStructureDefinition
+            \li StructureDefintion
+        \row
+            \li QOpcUaStructureField
+            \li StructureField
+        \row
+            \li QOpcUaEnumDefinition
+            \li EnumDefintion
+        \row
+            \li QOpcUaEnumField
+            \li EnumField
     \endtable
 */
 

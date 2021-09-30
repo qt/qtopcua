@@ -22,6 +22,8 @@
 #include <QtOpcUa/qopcuaexpandednodeid.h>
 #include <QtOpcUa/qopcuarelativepathelement.h>
 #include <QtOpcUa/qopcuabrowsepathtarget.h>
+#include <QtOpcUa/qopcuaenumdefinition.h>
+#include <QtOpcUa/qopcuastructuredefinition.h>
 
 #include <QtCore/qcborarray.h>
 #include <private/qfactoryloader_p.h>
@@ -155,6 +157,10 @@ QOpcUaProvider::QOpcUaProvider(QObject *parent)
     qRegisterMetaType<QList<QOpcUaApplicationDescription>>();
     qRegisterMetaType<QOpcUaApplicationIdentity>();
     qRegisterMetaType<QOpcUaPkiConfiguration>();
+    qRegisterMetaType<QOpcUaStructureDefinition>();
+    qRegisterMetaType<QOpcUaStructureField>();
+    qRegisterMetaType<QOpcUaEnumDefinition>();
+    qRegisterMetaType<QOpcUaEnumField>();
 }
 
 QOpcUaProvider::~QOpcUaProvider()

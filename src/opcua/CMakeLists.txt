@@ -33,6 +33,8 @@ qt_internal_add_module(OpcUa
         client/qopcuadoublecomplexnumber.cpp client/qopcuadoublecomplexnumber.h
         client/qopcuaelementoperand.cpp client/qopcuaelementoperand.h
         client/qopcuaendpointdescription.cpp client/qopcuaendpointdescription.h
+        client/qopcuaenumdefinition.cpp client/qopcuaenumdefinition.h
+        client/qopcuaenumfield.cpp client/qopcuaenumfield.h
         client/qopcuaerrorstate.cpp client/qopcuaerrorstate.h
         client/qopcuaeuinformation.cpp client/qopcuaeuinformation.h
         client/qopcuaeventfilterresult.cpp client/qopcuaeventfilterresult.h
@@ -59,6 +61,8 @@ qt_internal_add_module(OpcUa
         client/qopcuareferencedescription.cpp client/qopcuareferencedescription.h
         client/qopcuarelativepathelement.cpp client/qopcuarelativepathelement.h
         client/qopcuasimpleattributeoperand.cpp client/qopcuasimpleattributeoperand.h
+        client/qopcuastructuredefinition.cpp client/qopcuastructuredefinition.h
+        client/qopcuastructurefield.cpp client/qopcuastructurefield.h
         client/qopcuatype.cpp client/qopcuatype.h
         client/qopcuausertokenpolicy.cpp client/qopcuausertokenpolicy.h
         client/qopcuawriteitem.cpp client/qopcuawriteitem.h

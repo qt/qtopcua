@@ -22,6 +22,8 @@
 #include <QtOpcUa/QOpcUaQualifiedName>
 #include <QtOpcUa/QOpcUaRange>
 #include <QtOpcUa/QOpcUaXValue>
+#include <QtOpcUa/QOpcUaStructureDefinition>
+#include <QtOpcUa/QOpcUaEnumDefinition>
 
 #include <csignal>
 
@@ -189,6 +191,42 @@ int main()
                        QList<quint32>(), UA_VALUERANK_ANY, true);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Historizing2.ContinuationPoint", "HistorizingContinuationPointTest2", 0, QOpcUa::Types::Int32,
                        QList<quint32>(), UA_VALUERANK_ANY, true, 5);
+
+    // DataTypeDefinition nodes
+    QOpcUaStructureField structureField;
+    structureField.setArrayDimensions({1, 2, 3});
+    structureField.setDataType(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::Double));
+    structureField.setDescription(QOpcUaLocalizedText("en", "This is a test"));
+    structureField.setIsOptional(false);
+    structureField.setMaxStringLength(100);
+    structureField.setName("MyDouble");
+    structureField.setValueRank(-1);
+
+    QOpcUaStructureDefinition structureDefinition;
+    structureDefinition.setBaseDataType(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::Structure));
+    structureDefinition.setDefaultEncodingId("ns=2;i=1234");
+    structureDefinition.setStructureType(QOpcUaStructureDefinition::StructureType::Structure);
+    structureDefinition.setFields({structureField});
+
+    QOpcUaEnumField enumField;
+    enumField.setDescription(QOpcUaLocalizedText("en", "This is a Test"));
+    enumField.setDisplayName(QOpcUaLocalizedText("en", "Test"));
+    enumField.setName("MyOption");
+    enumField.setValue(0)
+            ;
+    QOpcUaEnumDefinition enumDefinition;
+    enumDefinition.setFields({enumField});
+
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.StructureField", "StructureField", structureField, QOpcUa::Types::StructureField);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.StructureDefinition", "StructureDefinition", structureDefinition, QOpcUa::Types::StructureDefinition);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.EnumField", "EnumField", enumField, QOpcUa::Types::EnumField);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.EnumDefinition", "EnumDefinition", enumDefinition, QOpcUa::Types::EnumDefinition);
+
+
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.StructureField", "StructureFieldArray", QVariantList{structureField}, QOpcUa::Types::StructureField, {0}, UA_VALUERANK_ONE_DIMENSION);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.StructureDefinition", "StructureDefinitionArray", QVariantList{structureDefinition}, QOpcUa::Types::StructureDefinition, {0}, UA_VALUERANK_ONE_DIMENSION);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.EnumField", "EnumFieldArray", QVariantList{enumField}, QOpcUa::Types::EnumField, {0}, UA_VALUERANK_ONE_DIMENSION);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.EnumDefinition", "EnumDefinitionArray", QVariantList{enumDefinition}, QOpcUa::Types::EnumDefinition, {0}, UA_VALUERANK_ONE_DIMENSION);
 
     // Create folders containing child nodes with string, guid and opaque node ids
     UA_NodeId testStringIdsFolder = server.addFolder("ns=3;s=testStringIdsFolder", "testStringIdsFolder");

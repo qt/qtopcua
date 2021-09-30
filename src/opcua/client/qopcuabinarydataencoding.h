@@ -17,6 +17,8 @@
 #include <QtOpcUa/qopcuarange.h>
 #include <QtOpcUa/qopcuatype.h>
 #include <QtOpcUa/qopcuaxvalue.h>
+#include <QtOpcUa/qopcuastructuredefinition.h>
+#include <QtOpcUa/qopcuaenumdefinition.h>
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qendian.h>
@@ -546,6 +548,102 @@ inline QOpcUaArgument QOpcUaBinaryDataEncoding::decode<QOpcUaArgument>(bool &suc
     return temp;
 }
 
+template <>
+inline QOpcUaStructureField QOpcUaBinaryDataEncoding::decode<QOpcUaStructureField>(bool &success)
+{
+    QOpcUaStructureField temp;
+
+    temp.setName(decode<QString>(success));
+    if (!success)
+        return QOpcUaStructureField();
+
+    temp.setDescription(decode<QOpcUaLocalizedText>(success));
+    if (!success)
+        return QOpcUaStructureField();
+
+    temp.setDataType(decode<QString, QOpcUa::NodeId>(success));
+    if (!success)
+        return QOpcUaStructureField();
+
+    temp.setValueRank(decode<qint32>(success));
+    if (!success)
+        return QOpcUaStructureField();
+
+    temp.setArrayDimensions(decodeArray<quint32>(success));
+    if (!success)
+        return QOpcUaStructureField();
+
+    temp.setMaxStringLength(decode<quint32>(success));
+    if (!success)
+        return QOpcUaStructureField();
+
+    temp.setIsOptional(decode<bool>(success));
+    if (!success)
+        return QOpcUaStructureField();
+
+    return temp;
+}
+
+template <>
+inline QOpcUaStructureDefinition QOpcUaBinaryDataEncoding::decode<QOpcUaStructureDefinition>(bool &success)
+{
+    QOpcUaStructureDefinition temp;
+
+    temp.setDefaultEncodingId(decode<QString, QOpcUa::NodeId>(success));
+    if (!success)
+        return QOpcUaStructureDefinition();
+
+    temp.setBaseDataType(decode<QString, QOpcUa::NodeId>(success));
+    if (!success)
+        return QOpcUaStructureDefinition();
+
+    temp.setStructureType(static_cast<QOpcUaStructureDefinition::StructureType>(decode<qint32>(success)));
+    if (!success)
+        return QOpcUaStructureDefinition();
+
+    temp.setFields(decodeArray<QOpcUaStructureField>(success));
+    if (!success)
+        return QOpcUaStructureDefinition();
+
+    return temp;
+}
+
+template <>
+inline QOpcUaEnumField QOpcUaBinaryDataEncoding::decode<QOpcUaEnumField>(bool &success)
+{
+    QOpcUaEnumField temp;
+
+    temp.setValue(decode<qint64>(success));
+    if (!success)
+        return QOpcUaEnumField();
+
+    temp.setDisplayName(decode<QOpcUaLocalizedText>(success));
+    if (!success)
+        return QOpcUaEnumField();
+
+    temp.setDescription(decode<QOpcUaLocalizedText>(success));
+    if (!success)
+        return QOpcUaEnumField();
+
+    temp.setName(decode<QString>(success));
+    if (!success)
+        return QOpcUaEnumField();
+
+    return temp;
+}
+
+template <>
+inline QOpcUaEnumDefinition QOpcUaBinaryDataEncoding::decode<QOpcUaEnumDefinition>(bool &success)
+{
+    QOpcUaEnumDefinition temp;
+
+    temp.setFields(decodeArray<QOpcUaEnumField>(success));
+    if (!success)
+        return QOpcUaEnumDefinition();
+
+    return temp;
+}
+
 template<typename T, QOpcUa::Types OVERLAY>
 inline bool QOpcUaBinaryDataEncoding::encode(const T &src)
 {
@@ -1015,6 +1113,62 @@ inline bool QOpcUaBinaryDataEncoding::encode<QOpcUaApplicationRecordDataType>(co
     if (!encodeArray<QString>(src.discoveryUrls()))
         return false;
     if (!encodeArray<QString>(src.serverCapabilityIdentifiers()))
+        return false;
+    return true;
+}
+
+template <>
+inline bool QOpcUaBinaryDataEncoding::encode<QOpcUaStructureField>(const QOpcUaStructureField &src)
+{
+    if (!encode<QString>(src.name()))
+        return false;
+    if (!encode<QOpcUaLocalizedText>(src.description()))
+        return false;
+    if (!encode<QString, QOpcUa::NodeId>(src.dataType()))
+        return false;
+    if (!encode<qint32>(src.valueRank()))
+        return false;
+    if (!encodeArray<quint32>(src.arrayDimensions()))
+        return false;
+    if (!encode<quint32>(src.maxStringLength()))
+        return false;
+    if (!encode<bool>(src.isOptional()))
+        return false;
+    return true;
+}
+
+template <>
+inline bool QOpcUaBinaryDataEncoding::encode<QOpcUaStructureDefinition>(const QOpcUaStructureDefinition &src)
+{
+    if (!encode<QString, QOpcUa::NodeId>(src.defaultEncodingId()))
+        return false;
+    if (!encode<QString, QOpcUa::NodeId>(src.baseDataType()))
+        return false;
+    if (!encode<qint32>(static_cast<qint32>(src.structureType())))
+        return false;
+    if (!encodeArray<QOpcUaStructureField>(src.fields()))
+        return false;
+    return true;
+}
+
+template <>
+inline bool QOpcUaBinaryDataEncoding::encode<QOpcUaEnumField>(const QOpcUaEnumField &src)
+{
+    if (!encode<qint64>(src.value()))
+        return false;
+    if (!encode<QOpcUaLocalizedText>(src.displayName()))
+        return false;
+    if (!encode<QOpcUaLocalizedText>(src.description()))
+        return false;
+    if (!encode<QString>(src.name()))
+        return false;
+    return true;
+}
+
+template <>
+inline bool QOpcUaBinaryDataEncoding::encode<QOpcUaEnumDefinition>(const QOpcUaEnumDefinition &src)
+{
+    if (!encodeArray<QOpcUaEnumField>(src.fields()))
         return false;
     return true;
 }

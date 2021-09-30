@@ -60,6 +60,8 @@ enum class NodeAttribute {
     // and isAbstract attributes, see part 4, 5.6.5
     Executable = (1 << 20),
     UserExecutable = (1 << 21), // Method attributes, see part 4, 5.7
+    // Data type attributes
+    DataTypeDefinition = (1 << 22),
 };
 Q_ENUM_NS(NodeAttribute)
 Q_DECLARE_FLAGS(NodeAttributes, NodeAttribute)
@@ -210,6 +212,10 @@ enum Types
     XV              = 26,
     ExpandedNodeId  = 27,
     Argument        = 28,
+    StructureDefinition = 29,
+    StructureField  = 30,
+    EnumDefinition  = 31,
+    EnumField       = 32,
     Undefined       = 0xFFFFFFFF
 };
 Q_ENUM_NS(Types)
