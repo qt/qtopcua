@@ -124,6 +124,7 @@ public:
     OpcUaNode::Status status() const;
     const QString &errorMessage() const;
 
+    using QObject::eventFilter;
     OpcUaEventFilter *eventFilter() const;
     void setEventFilter(OpcUaEventFilter *eventFilter);
 

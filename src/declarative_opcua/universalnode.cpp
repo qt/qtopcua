@@ -373,7 +373,7 @@ bool UniversalNode::splitNodeIdAndNamespace(const QString nodeIdentifier, int *n
         }
 
         const QString ns = token[0].mid(3);
-        bool ok;
+        bool ok = false;
         if (namespaceIndex)
             *namespaceIndex = ns.toUInt(&ok);
         if (!ok) {
