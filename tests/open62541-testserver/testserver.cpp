@@ -2,6 +2,12 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "testserver.h"
+
+#include "generated/namespace_qtopcuatestmodel_generated.h"
+#include "generated/types_qtopcuatestmodel_generated.h"
+#include "generated/types_qtopcuatestmodel_generated_handling.h"
+#include "generated/qtopcuatestmodel_nodeids.h"
+
 #include "qopen62541utils.h"
 #include "qopen62541valueconverter.h"
 #include <QtOpcUa/qopcuatype.h>
@@ -756,7 +762,21 @@ UA_StatusCode TestServer::addServerStatusTypeTestNodes(const UA_NodeId &parent)
     const auto createTestValue = [](int index) -> UA_ServerStatusDataType {
         UA_ServerStatusDataType s;
         UA_ServerStatusDataType_init(&s);
-        s.startTime = index + 1;
+
+        const UA_DateTime testDateTime = UA_DATETIME_UNIX_EPOCH + 1691996809123 * UA_DATETIME_MSEC;
+
+        s.currentTime = testDateTime + index * UA_DATETIME_MSEC;
+        s.startTime = testDateTime + index * UA_DATETIME_MSEC;
+        s.secondsTillShutdown = 23;
+        s.shutdownReason = UA_LOCALIZEDTEXT_ALLOC("en", "ShutdownReason");
+        s.state = UA_SERVERSTATE_TEST;
+        s.buildInfo.buildDate = testDateTime + index * UA_DATETIME_MSEC;
+        s.buildInfo.buildNumber = UA_STRING_ALLOC("BuildNumber");
+        s.buildInfo.manufacturerName = UA_STRING_ALLOC("ManufacturerName");
+        s.buildInfo.productName = UA_STRING_ALLOC("ProductName");
+        s.buildInfo.productUri = UA_STRING_ALLOC("ProductUri");
+        s.buildInfo.softwareVersion = UA_STRING_ALLOC("SoftwareVersion");
+
         return s;
     };
 
@@ -1022,6 +1042,188 @@ UA_StatusCode TestServer::addEventTrigger(const UA_NodeId &parent)
     UA_QualifiedName_clear(&browseName);
     UA_MethodAttributes_clear(&methodAttr);
     UA_Argument_clear(&severityArgument);
+
+    return result;
+}
+
+static UA_DataTypeArray customTypes = {
+    nullptr,
+    UA_TYPES_QTOPCUATESTMODEL_COUNT,
+    &UA_TYPES_QTOPCUATESTMODEL[0]
+};
+
+// This method must be called after the other test namespaces have been added
+UA_StatusCode TestServer::addEncoderTestModel()
+{
+    auto result = namespace_qtopcuatestmodel_generated(m_server);
+
+    if (result != UA_STATUSCODE_GOOD)
+        return result;
+
+    auto config = UA_Server_getConfig(m_server);
+    customTypes.next = config->customDataTypes;
+    config->customDataTypes = &customTypes;
+
+    {
+        UA_QtTestStructType data;
+        UA_QtTestStructType_init(&data);
+
+        data.enumMember = UA_QTTESTENUMERATION_FIRSTOPTION;
+        data.int64ArrayMemberSize = 3;
+        data.int64ArrayMember = static_cast<UA_Int64 *>(UA_Array_new(3, &UA_TYPES[UA_TYPES_INT64]));
+        data.int64ArrayMember[0] = std::numeric_limits<qint64>::max();
+        data.int64ArrayMember[1] = std::numeric_limits<qint64>::max() - 1;
+        data.int64ArrayMember[2] = std::numeric_limits<qint64>::min();
+
+        data.stringMember = UA_STRING_ALLOC("TestString");
+        data.localizedTextMember = UA_LOCALIZEDTEXT_ALLOC("en", "TestText");
+        data.qualifiedNameMember = UA_QUALIFIEDNAME_ALLOC(1, "TestName");
+
+        data.nestedStructMember.doubleSubtypeMember = 42;
+
+        data.nestedStructArrayMemberSize = 2;
+        data.nestedStructArrayMember = static_cast<UA_QtInnerTestStructType *>(
+            UA_Array_new(2, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTINNERTESTSTRUCTTYPE]));
+
+        data.nestedStructArrayMember[0].doubleSubtypeMember = 23.0;
+        data.nestedStructArrayMember[1].doubleSubtypeMember = 42.0;
+
+        UA_Variant var;
+        UA_Variant_init(&var);
+        UA_Variant_setScalarCopy(&var, &data, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTTYPE]);
+
+        result = UA_Server_writeValue(m_server, UA_NODEID_NUMERIC(4, UA_QTOPCUATESTMODELID_DECODERTESTNODES_NESTEDSTRUCT), var);
+        UA_Variant_clear(&var);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qWarning() << "Failed to write nested struct node";
+            return result;
+        }
+    }
+
+    {
+        UA_QtTestUnionType data;
+        UA_QtTestUnionType_init(&data);
+
+        data.switchField = UA_QTTESTUNIONTYPESWITCH_MEMBER1;
+        data.fields.member1 = 42;
+
+        UA_Variant var;
+        UA_Variant_init(&var);
+        UA_Variant_setScalarCopy(&var, &data, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTUNIONTYPE]);
+
+        result = UA_Server_writeValue(m_server, UA_NODEID_NUMERIC(4, UA_QTOPCUATESTMODELID_DECODERTESTNODES_UNIONWITHFIRSTMEMBER), var);
+        UA_Variant_clear(&var);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qWarning() << "Failed to write union struct node";
+            return result;
+        }
+    }
+
+    {
+        UA_QtTestUnionType data;
+        UA_QtTestUnionType_init(&data);
+
+        data.switchField = UA_QTTESTUNIONTYPESWITCH_MEMBER2;
+        data.fields.member2.doubleSubtypeMember = 23.0;
+
+        UA_Variant var;
+        UA_Variant_init(&var);
+        UA_Variant_setScalarCopy(&var, &data, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTUNIONTYPE]);
+
+        result = UA_Server_writeValue(m_server, UA_NODEID_NUMERIC(4, UA_QTOPCUATESTMODELID_DECODERTESTNODES_UNIONWITHSECONDMEMBER), var);
+        UA_Variant_clear(&var);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qWarning() << "Failed to write union struct node";
+            return result;
+        }
+    }
+
+    {
+        UA_QtStructWithOptionalFieldType data;
+        UA_QtStructWithOptionalFieldType_init(&data);
+
+        data.mandatoryMember =  42.0;
+        data.optionalMember = UA_Double_new();
+        *data.optionalMember = 23.0;
+
+        UA_Variant var;
+        UA_Variant_init(&var);
+        UA_Variant_setScalarCopy(&var, &data, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTSTRUCTWITHOPTIONALFIELDTYPE]);
+
+        result = UA_Server_writeValue(m_server, UA_NODEID_NUMERIC(4, UA_QTOPCUATESTMODELID_DECODERTESTNODES_STRUCTWITHOPTIONALFIELD), var);
+        UA_Variant_clear(&var);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qWarning() << "Failed to write optional field struct node";
+            return result;
+        }
+    }
+
+    {
+        UA_QtStructWithOptionalFieldType data;
+        UA_QtStructWithOptionalFieldType_init(&data);
+
+        data.mandatoryMember =  42.0;
+
+        UA_Variant var;
+        UA_Variant_init(&var);
+        UA_Variant_setScalarCopy(&var, &data, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTSTRUCTWITHOPTIONALFIELDTYPE]);
+
+        result = UA_Server_writeValue(m_server, UA_NODEID_NUMERIC(4, UA_QTOPCUATESTMODELID_DECODERTESTNODES_STRUCTWIHOUTOPTIONALFIELD), var);
+        UA_Variant_clear(&var);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qWarning() << "Failed to write optional field struct node";
+            return result;
+        }
+    }
+
+    {
+        auto data = UA_QtTestStructWithDiagnosticInfo_new();
+
+        data->diagnosticInfoMember.hasSymbolicId = true;
+        data->diagnosticInfoMember.symbolicId = 1;
+        data->diagnosticInfoMember.hasNamespaceUri = true;
+        data->diagnosticInfoMember.namespaceUri = 2;
+        data->diagnosticInfoMember.hasLocalizedText = true;
+        data->diagnosticInfoMember.localizedText = 3;
+        data->diagnosticInfoMember.hasLocale = true;
+        data->diagnosticInfoMember.locale = 4;
+        data->diagnosticInfoMember.hasAdditionalInfo = true;
+        data->diagnosticInfoMember.additionalInfo = UA_STRING_ALLOC("My additional info");
+        data->diagnosticInfoMember.hasInnerStatusCode = true;
+        data->diagnosticInfoMember.innerStatusCode = UA_STATUSCODE_BADINTERNALERROR;
+        data->diagnosticInfoMember.hasInnerDiagnosticInfo = true;
+
+        data->diagnosticInfoMember.innerDiagnosticInfo = UA_DiagnosticInfo_new();
+        data->diagnosticInfoMember.innerDiagnosticInfo->hasAdditionalInfo = true;
+        data->diagnosticInfoMember.innerDiagnosticInfo->additionalInfo = UA_STRING_ALLOC("My inner additional info");
+
+        data->diagnosticInfoArrayMemberSize = 2;
+        data->diagnosticInfoArrayMember = static_cast<UA_DiagnosticInfo *>(UA_Array_new(2, &UA_TYPES[UA_TYPES_DIAGNOSTICINFO]));
+
+        UA_DiagnosticInfo_copy(&data->diagnosticInfoMember, &data->diagnosticInfoArrayMember[0]);
+
+        data->diagnosticInfoArrayMember[1].hasLocale = true;
+        data->diagnosticInfoArrayMember[1].locale = 1;
+        data->diagnosticInfoArrayMember[1].hasInnerStatusCode = true;
+        data->diagnosticInfoArrayMember[1].innerStatusCode = UA_STATUSCODE_BADTYPEMISMATCH;
+
+        UA_Variant var;
+        UA_Variant_init(&var);
+        UA_Variant_setScalar(&var, data, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTWITHDIAGNOSTICINFO]);
+
+        result = UA_Server_writeValue(m_server, UA_NODEID_NUMERIC(4, UA_QTOPCUATESTMODELID_DECODERTESTNODES_STRUCTWITHDIAGNOSTICINFO), var);
+        UA_Variant_clear(&var);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qWarning() << "Failed to write diagnostic info field struct node";
+            return result;
+        }
+    }
 
     return result;
 }

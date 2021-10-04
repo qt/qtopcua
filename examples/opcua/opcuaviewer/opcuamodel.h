@@ -9,6 +9,7 @@
 #include <QAbstractItemModel>
 #include <QOpcUaClient>
 #include <QOpcUaNode>
+#include <QOpcUaGenericStructHandler>
 
 #include <memory>
 
@@ -21,7 +22,9 @@ public:
     OpcUaModel(QObject *parent = nullptr);
 
     void setOpcUaClient(QOpcUaClient *);
+    void setGenericStructHandler(QOpcUaGenericStructHandler *handler);
     QOpcUaClient* opcUaClient() const;
+    QOpcUaGenericStructHandler *genericStructHandler() const;
 
     QVariant data(const QModelIndex &index, int role) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
@@ -32,6 +35,7 @@ public:
 
 private:
     QOpcUaClient *mOpcUaClient = nullptr;
+    QOpcUaGenericStructHandler *mGenericStructHandler = nullptr;
     std::unique_ptr<TreeItem> mRootItem;
 
     friend class TreeItem;

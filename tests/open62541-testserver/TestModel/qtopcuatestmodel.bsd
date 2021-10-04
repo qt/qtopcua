@@ -1,0 +1,40 @@
+<opc:TypeDictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tns="http://qt-project.org/QtOpcUaTestModel/" DefaultByteOrder="LittleEndian" xmlns:opc="http://opcfoundation.org/BinarySchema/" xmlns:ua="http://opcfoundation.org/UA/" TargetNamespace="http://qt-project.org/QtOpcUaTestModel/">
+    <opc:Import Namespace="http://opcfoundation.org/UA/"/>
+    <opc:StructuredType BaseType="ua:ExtensionObject" Name="QtAbstractBaseStruct"/>
+    <opc:StructuredType BaseType="tns:QtAbstractBaseStruct" Name="QtInnerTestStructType">
+        <opc:Field TypeName="opc:Double" Name="DoubleSubtypeMember"/>
+    </opc:StructuredType>
+    <opc:StructuredType BaseType="tns:QtAbstractBaseStruct" Name="QtStructWithOptionalFieldType">
+        <opc:Field TypeName="opc:Bit" Name="OptionalMemberSpecified"/>
+        <opc:Field Length="31" TypeName="opc:Bit" Name="Reserved1"/>
+        <opc:Field TypeName="opc:Double" Name="MandatoryMember"/>
+        <opc:Field SwitchField="OptionalMemberSpecified" TypeName="opc:Double" Name="OptionalMember"/>
+    </opc:StructuredType>
+    <opc:StructuredType BaseType="tns:QtAbstractBaseStruct" Name="QtTestStructType">
+        <opc:Field TypeName="opc:CharArray" Name="StringMember"/>
+        <opc:Field TypeName="ua:LocalizedText" Name="LocalizedTextMember"/>
+        <opc:Field TypeName="ua:QualifiedName" Name="QualifiedNameMember"/>
+        <opc:Field TypeName="opc:Int32" Name="NoOfInt64ArrayMember"/>
+        <opc:Field LengthField="NoOfInt64ArrayMember" TypeName="opc:Int64" Name="Int64ArrayMember"/>
+        <opc:Field TypeName="tns:QtTestEnumeration" Name="EnumMember"/>
+        <opc:Field TypeName="tns:QtInnerTestStructType" Name="NestedStructMember"/>
+        <opc:Field TypeName="opc:Int32" Name="NoOfNestedStructArrayMember"/>
+        <opc:Field LengthField="NoOfNestedStructArrayMember" TypeName="tns:QtInnerTestStructType" Name="NestedStructArrayMember"/>
+    </opc:StructuredType>
+    <opc:StructuredType BaseType="tns:QtAbstractBaseStruct" Name="QtTestStructWithDiagnosticInfo">
+        <opc:Field TypeName="ua:DiagnosticInfo" Name="DiagnosticInfoMember"/>
+        <opc:Field TypeName="opc:Int32" Name="NoOfDiagnosticInfoArrayMember"/>
+        <opc:Field LengthField="NoOfDiagnosticInfoArrayMember" TypeName="ua:DiagnosticInfo" Name="DiagnosticInfoArrayMember"/>
+    </opc:StructuredType>
+    <opc:StructuredType BaseType="ua:Union" Name="QtTestUnionType">
+        <opc:Field TypeName="opc:UInt32" Name="SwitchField"/>
+        <opc:Field SwitchField="SwitchField" TypeName="opc:Int64" SwitchValue="1" Name="Member1"/>
+        <opc:Field SwitchField="SwitchField" TypeName="tns:QtInnerTestStructType" SwitchValue="2" Name="Member2"/>
+    </opc:StructuredType>
+    <opc:EnumeratedType LengthInBits="32" Name="QtTestEnumeration">
+        <opc:EnumeratedValue Name="Unknown" Value="0"/>
+        <opc:EnumeratedValue Name="FirstOption" Value="1"/>
+        <opc:EnumeratedValue Name="SecondOption" Value="2"/>
+        <opc:EnumeratedValue Name="ThirdOption" Value="3"/>
+    </opc:EnumeratedType>
+</opc:TypeDictionary>

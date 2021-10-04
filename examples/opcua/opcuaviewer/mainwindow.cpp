@@ -298,6 +298,7 @@ void MainWindow::clientDisconnected()
     mOpcUaClient->deleteLater();
     mOpcUaClient = nullptr;
     mOpcUaModel->setOpcUaClient(nullptr);
+    mOpcUaModel->setGenericStructHandler(nullptr);
     updateUiState();
 }
 
@@ -309,6 +310,20 @@ void MainWindow::namespacesArrayUpdated(const QStringList &namespaceArray)
     }
 
     disconnect(mOpcUaClient, &QOpcUaClient::namespaceArrayUpdated, this, &MainWindow::namespacesArrayUpdated);
+
+    mGenericStructHandler.reset(new QOpcUaGenericStructHandler(mOpcUaClient));
+    connect(mGenericStructHandler.get(), &QOpcUaGenericStructHandler::initializeFinished, this, &MainWindow::handleGenericStructHandlerInitFinished);
+    mGenericStructHandler->initialize();
+}
+
+void MainWindow::handleGenericStructHandlerInitFinished(bool success)
+{
+    if (!success) {
+        qWarning() << "Failed to initialize generic struct handler, decoding of generic structs will be unavailable";
+    } else {
+        mOpcUaModel->setGenericStructHandler(mGenericStructHandler.get());
+    }
+
     mOpcUaModel->setOpcUaClient(mOpcUaClient);
     ui->treeView->header()->setSectionResizeMode(1 /* Value column*/, QHeaderView::Interactive);
 }

@@ -19,7 +19,7 @@ QT_DECLARE_QSDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaStructureFieldData, Q_OPCU
 class QOpcUaStructureField
 {
 public:
-    Q_OPCUA_EXPORT QOpcUaStructureField();
+    Q_OPCUA_EXPORT QOpcUaStructureField(qint32 valueRank = -1);
     Q_OPCUA_EXPORT QOpcUaStructureField(const QOpcUaStructureField &other);
     void swap(QOpcUaStructureField &other) noexcept
     { data.swap(other.data); }

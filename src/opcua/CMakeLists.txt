@@ -45,6 +45,10 @@ qt_internal_add_module(OpcUa
         client/qopcuahistoryreadresponse.cpp client/qopcuahistoryreadresponse.h
         client/qopcuahistoryreadresponseimpl.cpp client/qopcuahistoryreadresponseimpl_p.h
         client/qopcuahistoryreadresponse_p.h
+        client/qopcuainternaldatatypenode.cpp client/qopcuainternaldatatypenode_p.h
+        client/qopcuagenericstructvalue.cpp client/qopcuagenericstructvalue.h
+        client/qopcuagenericstructhandler.cpp client/qopcuagenericstructhandler.h
+        client/qopcuagenericstructhandlerprivate.cpp client/qopcuagenericstructhandler_p.h
         client/qopcualiteraloperand.cpp client/qopcualiteraloperand.h
         client/qopcualocalizedtext.cpp client/qopcualocalizedtext.h
         client/qopcuamonitoringparameters.cpp client/qopcuamonitoringparameters.h client/qopcuamonitoringparameters_p.h

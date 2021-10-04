@@ -1,6 +1,18 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
+# This CMake function call can be used to update the generated code
+#if (QT_FEATURE_system_open62541)
+# ua_generate_nodeset_and_datatypes(
+#    NAME "qtopcuatestmodel"
+#    FILE_NS "${CMAKE_CURRENT_SOURCE_DIR}/TestModel/qtopcuatestmodel.xml"
+#    FILE_BSD "${CMAKE_CURRENT_SOURCE_DIR}/TestModel/qtopcuatestmodel.bsd"
+#    FILE_CSV "${CMAKE_CURRENT_SOURCE_DIR}/TestModel/qtopcuatestmodel.csv"
+#    NAMESPACE_MAP "4:http://qt-project.org/QtOpcUaTestModel/"
+#    OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/generated"
+# )
+#endif()
+
 #####################################################################
 ## open62541-testserver Binary:
 #####################################################################
@@ -11,8 +23,15 @@ qt_internal_add_executable(open62541-testserver
         ../../src/plugins/opcua/open62541/qopen62541valueconverter.cpp
         main.cpp
         testserver.cpp testserver.h
+        generated/namespace_qtopcuatestmodel_generated.c
+        generated/qtopcuatestmodel_nodeids.h
+        generated/types_qtopcuatestmodel_generated_handling.h
+        generated/namespace_qtopcuatestmodel_generated.h
+        generated/types_qtopcuatestmodel_generated.c
+        generated/types_qtopcuatestmodel_generated.h
     INCLUDE_DIRECTORIES
         ../../src/plugins/opcua/open62541
+        generated/
     OUTPUT_DIRECTORY
         "${CMAKE_CURRENT_BINARY_DIR}"
     LIBRARIES
@@ -52,6 +71,8 @@ qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541 AN
     ../../src/3rdparty/open62541/open62541.c
     INCLUDE_DIRECTORIES
         ../../src/3rdparty/open62541
+    DEFINES
+        UA_ENABLE_AMALGAMATION
 )
 
 #qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_mbedtls AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541

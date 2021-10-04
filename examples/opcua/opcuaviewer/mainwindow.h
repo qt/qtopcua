@@ -7,6 +7,7 @@
 #include <QItemSelection>
 #include <QMainWindow>
 #include <QOpcUaClient>
+#include <QOpcUaGenericStructHandler>
 #include <QOpcUaHistoryData>
 #include <QOpcUaProvider>
 
@@ -36,6 +37,7 @@ private slots:
     void clientConnected();
     void clientDisconnected();
     void namespacesArrayUpdated(const QStringList &namespaceArray);
+    void handleGenericStructHandlerInitFinished(bool success);
     void clientError(QOpcUaClient::ClientError);
     void clientState(QOpcUaClient::ClientState);
     void showErrorDialog(QOpcUaErrorState *errorState);
@@ -54,6 +56,7 @@ private:
     OpcUaModel *mOpcUaModel;
     QOpcUaProvider *mOpcUaProvider;
     QOpcUaClient *mOpcUaClient = nullptr;
+    QScopedPointer<QOpcUaGenericStructHandler> mGenericStructHandler;
     QList<QOpcUaEndpointDescription> mEndpointList;
     bool mClientConnected = false;
     QOpcUaApplicationIdentity m_identity;

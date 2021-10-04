@@ -1,0 +1,25 @@
+###########################
+# UaModeler Project File  #
+# Generated at 23.08.2023 #
+###########################
+
+PROJECTNAME = QtOpcUaTestModel
+
+TEMPLATESET = ($TEMPLATES)/modeling/v1_0/t0/modeling.tt2set
+
+MODELS += ($MODELS)/Opc.Ua.NodeSet2.ua \
+    qtopcuatestmodel.ua
+
+COLORS = ($MODELS)/Opc.Ua.NodeSet2.ua: #0000ff\
+    qtopcuatestmodel.ua: #008000
+
+OUTPUTPATH = GridCon
+
+GENERATE += qtopcuatestmodel.ua
+
+NODEACCESSINFOROLES += Administrator \
+    SecurityAdmin \
+    ConfigurationAdmin \
+    Operator \
+    Observer
+

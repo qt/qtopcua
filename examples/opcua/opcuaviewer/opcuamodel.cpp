@@ -22,9 +22,19 @@ void OpcUaModel::setOpcUaClient(QOpcUaClient *client)
     endResetModel();
 }
 
+void OpcUaModel::setGenericStructHandler(QOpcUaGenericStructHandler *handler)
+{
+    mGenericStructHandler = handler;
+}
+
 QOpcUaClient *OpcUaModel::opcUaClient() const
 {
     return mOpcUaClient;
+}
+
+QOpcUaGenericStructHandler *OpcUaModel::genericStructHandler() const
+{
+    return mGenericStructHandler;
 }
 
 QVariant OpcUaModel::data(const QModelIndex &index, int role) const

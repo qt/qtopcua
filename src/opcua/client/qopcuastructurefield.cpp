@@ -29,9 +29,10 @@ public:
 
 QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QOpcUaStructureFieldData);
 
-QOpcUaStructureField::QOpcUaStructureField()
+QOpcUaStructureField::QOpcUaStructureField(qint32 valueRank)
     : data(new QOpcUaStructureFieldData)
 {
+    data->valueRank = valueRank;
 }
 
 /*!

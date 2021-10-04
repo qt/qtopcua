@@ -3,6 +3,7 @@
 
 #include "testserver.h"
 #include "qopen62541utils.h"
+#include "generated/namespace_qtopcuatestmodel_generated.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
@@ -297,7 +298,13 @@ int main()
 
     server.addServerStatusTypeTestNodes(testFolder);
 
-    const auto result = server.run(&running);
+    // Add test nodes for the generic type decoder
+    auto result = server.addEncoderTestModel();
+
+    if (result != UA_STATUSCODE_GOOD)
+        qFatal("Failed to initialize decoder test nodeset: %s", UA_StatusCode_name(result));
+
+    result = server.run(&running);
 
     if (result != UA_STATUSCODE_GOOD)
         qFatal("Failed to launch open62541 test server");

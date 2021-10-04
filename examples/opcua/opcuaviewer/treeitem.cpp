@@ -341,7 +341,17 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
                     localizedTextToString(a.description()));
     }
     if (value.canConvert<QOpcUaExtensionObject>()) {
-        const auto obj = value.value<QOpcUaExtensionObject>();
+        auto obj = value.value<QOpcUaExtensionObject>();
+
+        if (mModel->genericStructHandler() &&
+            mModel->genericStructHandler()->dataTypeKindForTypeId(mModel->genericStructHandler()->typeIdForBinaryEncodingId(obj.encodingTypeId()))
+                                                  == QOpcUaGenericStructHandler::DataTypeKind::Struct) {
+            bool decodeSuccess = false;
+            const auto decodedValue = mModel->genericStructHandler()->decode(obj, decodeSuccess);
+            if (decodeSuccess)
+                return decodedValue.toString();
+        }
+
         return QStringLiteral("[TypeId: \"%1\", Encoding: %2, Body: 0x%3]").arg(obj.encodingTypeId(),
                     obj.encoding() == QOpcUaExtensionObject::Encoding::NoBody ?
                         "NoBody" : (obj.encoding() == QOpcUaExtensionObject::Encoding::ByteString ?

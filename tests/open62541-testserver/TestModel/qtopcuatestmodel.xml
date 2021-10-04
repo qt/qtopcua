@@ -1,0 +1,655 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UANodeSet xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:uax="http://opcfoundation.org/UA/2008/02/Types.xsd" xmlns="http://opcfoundation.org/UA/2011/03/UANodeSet.xsd" xmlns:s1="http://qt-project.org/QtOpcUaTestModel/Types.xsd" xmlns:ua="http://unifiedautomation.com/Configuration/NodeSet.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <NamespaceUris>
+        <Uri>http://qt-project.org/QtOpcUaTestModel/</Uri>
+    </NamespaceUris>
+    <Aliases>
+        <Alias Alias="Int64">i=8</Alias>
+        <Alias Alias="Double">i=11</Alias>
+        <Alias Alias="String">i=12</Alias>
+        <Alias Alias="ByteString">i=15</Alias>
+        <Alias Alias="QualifiedName">i=20</Alias>
+        <Alias Alias="LocalizedText">i=21</Alias>
+        <Alias Alias="DiagnosticInfo">i=25</Alias>
+        <Alias Alias="Organizes">i=35</Alias>
+        <Alias Alias="HasModellingRule">i=37</Alias>
+        <Alias Alias="HasEncoding">i=38</Alias>
+        <Alias Alias="HasDescription">i=39</Alias>
+        <Alias Alias="HasTypeDefinition">i=40</Alias>
+        <Alias Alias="HasSubtype">i=45</Alias>
+        <Alias Alias="HasProperty">i=46</Alias>
+        <Alias Alias="HasComponent">i=47</Alias>
+        <Alias Alias="QtTestEnumeration">ns=1;i=3002</Alias>
+        <Alias Alias="QtTestStructType">ns=1;i=3003</Alias>
+        <Alias Alias="QtInnerTestStructType">ns=1;i=3004</Alias>
+        <Alias Alias="QtTestUnionType">ns=1;i=3005</Alias>
+        <Alias Alias="QtStructWithOptionalFieldType">ns=1;i=3006</Alias>
+        <Alias Alias="MyDoubleSubtype">ns=1;i=3007</Alias>
+        <Alias Alias="QtTestStructWithDiagnosticInfo">ns=1;i=3009</Alias>
+    </Aliases>
+    <Extensions>
+        <Extension>
+            <ua:ModelInfo Tool="UaModeler" Hash="+meaQ+dmQrll0fzxsafyig==" Version="1.6.5"/>
+        </Extension>
+    </Extensions>
+    <UADataType NodeId="ns=1;i=3002" BrowseName="1:QtTestEnumeration">
+        <DisplayName>QtTestEnumeration</DisplayName>
+        <References>
+            <Reference ReferenceType="HasProperty">ns=1;i=6001</Reference>
+            <Reference ReferenceType="HasSubtype" IsForward="false">i=29</Reference>
+        </References>
+        <Definition Name="1:QtTestEnumeration">
+            <Field Name="Unknown" Value="0"/>
+            <Field Name="FirstOption" Value="1"/>
+            <Field Name="SecondOption" Value="2"/>
+            <Field Name="ThirdOption" Value="3"/>
+        </Definition>
+    </UADataType>
+    <UAVariable DataType="LocalizedText" ParentNodeId="ns=1;i=3002" ValueRank="1" NodeId="ns=1;i=6001" ArrayDimensions="4" BrowseName="EnumStrings">
+        <DisplayName>EnumStrings</DisplayName>
+        <References>
+            <Reference ReferenceType="HasProperty" IsForward="false">ns=1;i=3002</Reference>
+            <Reference ReferenceType="HasModellingRule">i=78</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:ListOfLocalizedText>
+                <uax:LocalizedText>
+                    <uax:Text>Unknown</uax:Text>
+                </uax:LocalizedText>
+                <uax:LocalizedText>
+                    <uax:Text>FirstOption</uax:Text>
+                </uax:LocalizedText>
+                <uax:LocalizedText>
+                    <uax:Text>SecondOption</uax:Text>
+                </uax:LocalizedText>
+                <uax:LocalizedText>
+                    <uax:Text>ThirdOption</uax:Text>
+                </uax:LocalizedText>
+            </uax:ListOfLocalizedText>
+        </Value>
+    </UAVariable>
+    <UADataType NodeId="ns=1;i=3007" BrowseName="1:MyDoubleSubtype">
+        <DisplayName>MyDoubleSubtype</DisplayName>
+        <References>
+            <Reference ReferenceType="HasSubtype" IsForward="false">i=11</Reference>
+        </References>
+    </UADataType>
+    <UADataType IsAbstract="true" NodeId="ns=1;i=3008" BrowseName="1:QtAbstractBaseStruct">
+        <DisplayName>QtAbstractBaseStruct</DisplayName>
+        <References>
+            <Reference ReferenceType="HasEncoding">ns=1;i=5006</Reference>
+            <Reference ReferenceType="HasEncoding">ns=1;i=5012</Reference>
+            <Reference ReferenceType="HasSubtype" IsForward="false">i=22</Reference>
+        </References>
+        <Definition Name="1:QtAbstractBaseStruct"/>
+    </UADataType>
+    <UAVariable DataType="String" ParentNodeId="ns=1;i=6012" NodeId="ns=1;i=6024" BrowseName="1:QtAbstractBaseStruct">
+        <DisplayName>QtAbstractBaseStruct</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=69</Reference>
+            <Reference ReferenceType="HasDescription" IsForward="false">ns=1;i=5006</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6012</Reference>
+        </References>
+        <Value>
+            <uax:String>QtAbstractBaseStruct</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable DataType="String" ParentNodeId="ns=1;i=6014" NodeId="ns=1;i=6025" BrowseName="1:QtAbstractBaseStruct">
+        <DisplayName>QtAbstractBaseStruct</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=69</Reference>
+            <Reference ReferenceType="HasDescription" IsForward="false">ns=1;i=5012</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6014</Reference>
+        </References>
+        <Value>
+            <uax:String>//xs:element[@name='QtAbstractBaseStruct']</uax:String>
+        </Value>
+    </UAVariable>
+    <UADataType NodeId="ns=1;i=3004" BrowseName="1:QtInnerTestStructType">
+        <DisplayName>QtInnerTestStructType</DisplayName>
+        <References>
+            <Reference ReferenceType="HasEncoding">ns=1;i=5004</Reference>
+            <Reference ReferenceType="HasEncoding">ns=1;i=5005</Reference>
+            <Reference ReferenceType="HasSubtype" IsForward="false">ns=1;i=3008</Reference>
+        </References>
+        <Definition Name="1:QtInnerTestStructType">
+            <Field DataType="MyDoubleSubtype" Name="DoubleSubtypeMember"/>
+        </Definition>
+    </UADataType>
+    <UAVariable DataType="String" ParentNodeId="ns=1;i=6012" NodeId="ns=1;i=6016" BrowseName="1:QtInnerTestStructType">
+        <DisplayName>QtInnerTestStructType</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=69</Reference>
+            <Reference ReferenceType="HasDescription" IsForward="false">ns=1;i=5004</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6012</Reference>
+        </References>
+        <Value>
+            <uax:String>QtInnerTestStructType</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable DataType="String" ParentNodeId="ns=1;i=6014" NodeId="ns=1;i=6017" BrowseName="1:QtInnerTestStructType">
+        <DisplayName>QtInnerTestStructType</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=69</Reference>
+            <Reference ReferenceType="HasDescription" IsForward="false">ns=1;i=5005</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6014</Reference>
+        </References>
+        <Value>
+            <uax:String>//xs:element[@name='QtInnerTestStructType']</uax:String>
+        </Value>
+    </UAVariable>
+    <UADataType NodeId="ns=1;i=3006" BrowseName="1:QtStructWithOptionalFieldType">
+        <DisplayName>QtStructWithOptionalFieldType</DisplayName>
+        <References>
+            <Reference ReferenceType="HasEncoding">ns=1;i=5010</Reference>
+            <Reference ReferenceType="HasEncoding">ns=1;i=5011</Reference>
+            <Reference ReferenceType="HasSubtype" IsForward="false">ns=1;i=3008</Reference>
+        </References>
+        <Definition Name="1:QtStructWithOptionalFieldType">
+            <Field DataType="Double" Name="MandatoryMember"/>
+            <Field IsOptional="true" DataType="Double" Name="OptionalMember"/>
+        </Definition>
+    </UADataType>
+    <UAVariable DataType="String" ParentNodeId="ns=1;i=6012" NodeId="ns=1;i=6018" BrowseName="1:QtStructWithOptionalFieldType">
+        <DisplayName>QtStructWithOptionalFieldType</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=69</Reference>
+            <Reference ReferenceType="HasDescription" IsForward="false">ns=1;i=5010</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6012</Reference>
+        </References>
+        <Value>
+            <uax:String>QtStructWithOptionalFieldType</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable DataType="String" ParentNodeId="ns=1;i=6014" NodeId="ns=1;i=6019" BrowseName="1:QtStructWithOptionalFieldType">
+        <DisplayName>QtStructWithOptionalFieldType</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=69</Reference>
+            <Reference ReferenceType="HasDescription" IsForward="false">ns=1;i=5011</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6014</Reference>
+        </References>
+        <Value>
+            <uax:String>//xs:element[@name='QtStructWithOptionalFieldType']</uax:String>
+        </Value>
+    </UAVariable>
+    <UADataType NodeId="ns=1;i=3003" BrowseName="1:QtTestStructType">
+        <DisplayName>QtTestStructType</DisplayName>
+        <References>
+            <Reference ReferenceType="HasEncoding">ns=1;i=5001</Reference>
+            <Reference ReferenceType="HasEncoding">ns=1;i=5002</Reference>
+            <Reference ReferenceType="HasSubtype" IsForward="false">ns=1;i=3008</Reference>
+        </References>
+        <Definition Name="1:QtTestStructType">
+            <Field DataType="String" Name="StringMember"/>
+            <Field DataType="LocalizedText" Name="LocalizedTextMember"/>
+            <Field DataType="QualifiedName" Name="QualifiedNameMember"/>
+            <Field DataType="Int64" ValueRank="1" ArrayDimensions="0" Name="Int64ArrayMember"/>
+            <Field DataType="QtTestEnumeration" Name="EnumMember"/>
+            <Field DataType="QtInnerTestStructType" Name="NestedStructMember"/>
+            <Field DataType="QtInnerTestStructType" ValueRank="1" ArrayDimensions="0" Name="NestedStructArrayMember"/>
+        </Definition>
+    </UADataType>
+    <UAVariable DataType="String" ParentNodeId="ns=1;i=6012" NodeId="ns=1;i=6020" BrowseName="1:QtTestStructType">
+        <DisplayName>QtTestStructType</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=69</Reference>
+            <Reference ReferenceType="HasDescription" IsForward="false">ns=1;i=5001</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6012</Reference>
+        </References>
+        <Value>
+            <uax:String>QtTestStructType</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable DataType="String" ParentNodeId="ns=1;i=6014" NodeId="ns=1;i=6021" BrowseName="1:QtTestStructType">
+        <DisplayName>QtTestStructType</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=69</Reference>
+            <Reference ReferenceType="HasDescription" IsForward="false">ns=1;i=5002</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6014</Reference>
+        </References>
+        <Value>
+            <uax:String>//xs:element[@name='QtTestStructType']</uax:String>
+        </Value>
+    </UAVariable>
+    <UADataType NodeId="ns=1;i=3009" BrowseName="1:QtTestStructWithDiagnosticInfo">
+        <DisplayName>QtTestStructWithDiagnosticInfo</DisplayName>
+        <References>
+            <Reference ReferenceType="HasEncoding">ns=1;i=5003</Reference>
+            <Reference ReferenceType="HasEncoding">ns=1;i=5013</Reference>
+            <Reference ReferenceType="HasSubtype" IsForward="false">ns=1;i=3008</Reference>
+        </References>
+        <Definition Name="1:QtTestStructWithDiagnosticInfo">
+            <Field DataType="DiagnosticInfo" Name="DiagnosticInfoMember"/>
+            <Field DataType="DiagnosticInfo" ValueRank="1" ArrayDimensions="0" Name="DiagnosticInfoArrayMember"/>
+        </Definition>
+    </UADataType>
+    <UAVariable DataType="String" ParentNodeId="ns=1;i=6012" NodeId="ns=1;i=6004" BrowseName="1:QtTestStructWithDiagnosticInfo">
+        <DisplayName>QtTestStructWithDiagnosticInfo</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6012</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=69</Reference>
+            <Reference ReferenceType="HasDescription" IsForward="false">ns=1;i=5003</Reference>
+        </References>
+        <Value>
+            <uax:String>QtTestStructWithDiagnosticInfo</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable DataType="String" ParentNodeId="ns=1;i=6014" NodeId="ns=1;i=6005" BrowseName="1:QtTestStructWithDiagnosticInfo">
+        <DisplayName>QtTestStructWithDiagnosticInfo</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6014</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=69</Reference>
+            <Reference ReferenceType="HasDescription" IsForward="false">ns=1;i=5013</Reference>
+        </References>
+        <Value>
+            <uax:String>//xs:element[@name='QtTestStructWithDiagnosticInfo']</uax:String>
+        </Value>
+    </UAVariable>
+    <UADataType NodeId="ns=1;i=3005" BrowseName="1:QtTestUnionType">
+        <DisplayName>QtTestUnionType</DisplayName>
+        <References>
+            <Reference ReferenceType="HasEncoding">ns=1;i=5007</Reference>
+            <Reference ReferenceType="HasEncoding">ns=1;i=5008</Reference>
+            <Reference ReferenceType="HasSubtype" IsForward="false">i=12756</Reference>
+        </References>
+        <Definition Name="1:QtTestUnionType" IsUnion="true">
+            <Field DataType="Int64" Name="Member1"/>
+            <Field DataType="QtInnerTestStructType" Name="Member2"/>
+        </Definition>
+    </UADataType>
+    <UAVariable DataType="String" ParentNodeId="ns=1;i=6012" NodeId="ns=1;i=6022" BrowseName="1:QtTestUnionType">
+        <DisplayName>QtTestUnionType</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=69</Reference>
+            <Reference ReferenceType="HasDescription" IsForward="false">ns=1;i=5007</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6012</Reference>
+        </References>
+        <Value>
+            <uax:String>QtTestUnionType</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable DataType="String" ParentNodeId="ns=1;i=6014" NodeId="ns=1;i=6023" BrowseName="1:QtTestUnionType">
+        <DisplayName>QtTestUnionType</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=69</Reference>
+            <Reference ReferenceType="HasDescription" IsForward="false">ns=1;i=5008</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6014</Reference>
+        </References>
+        <Value>
+            <uax:String>//xs:element[@name='QtTestUnionType']</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable SymbolicName="TypeDictionary_BinarySchema" DataType="ByteString" NodeId="ns=1;i=6012" BrowseName="1:TypeDictionary">
+        <DisplayName>TypeDictionary</DisplayName>
+        <Description>Collects the data type descriptions of http://qt-project.org/QtOpcUaTestModel/</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=72</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;i=6013</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6024</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6016</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6018</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6020</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6004</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6022</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">i=93</Reference>
+        </References>
+        <Value>
+            <uax:ByteString>PG9wYzpUeXBlRGljdGlvbmFyeSB4bWxuczp4c2k9Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvWE1MU2NoZ
+        W1hLWluc3RhbmNlIiB4bWxuczp0bnM9Imh0dHA6Ly9xdC1wcm9qZWN0Lm9yZy9RdE9wY1VhV
+        GVzdE1vZGVsLyIgRGVmYXVsdEJ5dGVPcmRlcj0iTGl0dGxlRW5kaWFuIiB4bWxuczpvcGM9I
+        mh0dHA6Ly9vcGNmb3VuZGF0aW9uLm9yZy9CaW5hcnlTY2hlbWEvIiB4bWxuczp1YT0iaHR0c
+        DovL29wY2ZvdW5kYXRpb24ub3JnL1VBLyIgVGFyZ2V0TmFtZXNwYWNlPSJodHRwOi8vcXQtc
+        HJvamVjdC5vcmcvUXRPcGNVYVRlc3RNb2RlbC8iPgogPG9wYzpJbXBvcnQgTmFtZXNwYWNlP
+        SJodHRwOi8vb3BjZm91bmRhdGlvbi5vcmcvVUEvIi8+CiA8b3BjOlN0cnVjdHVyZWRUeXBlI
+        EJhc2VUeXBlPSJ1YTpFeHRlbnNpb25PYmplY3QiIE5hbWU9IlF0QWJzdHJhY3RCYXNlU3Ryd
+        WN0Ii8+CiA8b3BjOlN0cnVjdHVyZWRUeXBlIEJhc2VUeXBlPSJ0bnM6UXRBYnN0cmFjdEJhc
+        2VTdHJ1Y3QiIE5hbWU9IlF0SW5uZXJUZXN0U3RydWN0VHlwZSI+CiAgPG9wYzpGaWVsZCBUe
+        XBlTmFtZT0ib3BjOkRvdWJsZSIgTmFtZT0iRG91YmxlU3VidHlwZU1lbWJlciIvPgogPC9vc
+        GM6U3RydWN0dXJlZFR5cGU+CiA8b3BjOlN0cnVjdHVyZWRUeXBlIEJhc2VUeXBlPSJ0bnM6U
+        XRBYnN0cmFjdEJhc2VTdHJ1Y3QiIE5hbWU9IlF0U3RydWN0V2l0aE9wdGlvbmFsRmllbGRUe
+        XBlIj4KICA8b3BjOkZpZWxkIFR5cGVOYW1lPSJvcGM6Qml0IiBOYW1lPSJPcHRpb25hbE1lb
+        WJlclNwZWNpZmllZCIvPgogIDxvcGM6RmllbGQgTGVuZ3RoPSIzMSIgVHlwZU5hbWU9Im9wY
+        zpCaXQiIE5hbWU9IlJlc2VydmVkMSIvPgogIDxvcGM6RmllbGQgVHlwZU5hbWU9Im9wYzpEb
+        3VibGUiIE5hbWU9Ik1hbmRhdG9yeU1lbWJlciIvPgogIDxvcGM6RmllbGQgU3dpdGNoRmllb
+        GQ9Ik9wdGlvbmFsTWVtYmVyU3BlY2lmaWVkIiBUeXBlTmFtZT0ib3BjOkRvdWJsZSIgTmFtZ
+        T0iT3B0aW9uYWxNZW1iZXIiLz4KIDwvb3BjOlN0cnVjdHVyZWRUeXBlPgogPG9wYzpTdHJ1Y
+        3R1cmVkVHlwZSBCYXNlVHlwZT0idG5zOlF0QWJzdHJhY3RCYXNlU3RydWN0IiBOYW1lPSJRd
+        FRlc3RTdHJ1Y3RUeXBlIj4KICA8b3BjOkZpZWxkIFR5cGVOYW1lPSJvcGM6Q2hhckFycmF5I
+        iBOYW1lPSJTdHJpbmdNZW1iZXIiLz4KICA8b3BjOkZpZWxkIFR5cGVOYW1lPSJ1YTpMb2Nhb
+        Gl6ZWRUZXh0IiBOYW1lPSJMb2NhbGl6ZWRUZXh0TWVtYmVyIi8+CiAgPG9wYzpGaWVsZCBUe
+        XBlTmFtZT0idWE6UXVhbGlmaWVkTmFtZSIgTmFtZT0iUXVhbGlmaWVkTmFtZU1lbWJlciIvP
+        gogIDxvcGM6RmllbGQgVHlwZU5hbWU9Im9wYzpJbnQzMiIgTmFtZT0iTm9PZkludDY0QXJyY
+        XlNZW1iZXIiLz4KICA8b3BjOkZpZWxkIExlbmd0aEZpZWxkPSJOb09mSW50NjRBcnJheU1lb
+        WJlciIgVHlwZU5hbWU9Im9wYzpJbnQ2NCIgTmFtZT0iSW50NjRBcnJheU1lbWJlciIvPgogI
+        DxvcGM6RmllbGQgVHlwZU5hbWU9InRuczpRdFRlc3RFbnVtZXJhdGlvbiIgTmFtZT0iRW51b
+        U1lbWJlciIvPgogIDxvcGM6RmllbGQgVHlwZU5hbWU9InRuczpRdElubmVyVGVzdFN0cnVjd
+        FR5cGUiIE5hbWU9Ik5lc3RlZFN0cnVjdE1lbWJlciIvPgogIDxvcGM6RmllbGQgVHlwZU5hb
+        WU9Im9wYzpJbnQzMiIgTmFtZT0iTm9PZk5lc3RlZFN0cnVjdEFycmF5TWVtYmVyIi8+CiAgP
+        G9wYzpGaWVsZCBMZW5ndGhGaWVsZD0iTm9PZk5lc3RlZFN0cnVjdEFycmF5TWVtYmVyIiBUe
+        XBlTmFtZT0idG5zOlF0SW5uZXJUZXN0U3RydWN0VHlwZSIgTmFtZT0iTmVzdGVkU3RydWN0Q
+        XJyYXlNZW1iZXIiLz4KIDwvb3BjOlN0cnVjdHVyZWRUeXBlPgogPG9wYzpTdHJ1Y3R1cmVkV
+        HlwZSBCYXNlVHlwZT0idG5zOlF0QWJzdHJhY3RCYXNlU3RydWN0IiBOYW1lPSJRdFRlc3RTd
+        HJ1Y3RXaXRoRGlhZ25vc3RpY0luZm8iPgogIDxvcGM6RmllbGQgVHlwZU5hbWU9InVhOkRpY
+        Wdub3N0aWNJbmZvIiBOYW1lPSJEaWFnbm9zdGljSW5mb01lbWJlciIvPgogIDxvcGM6Rmllb
+        GQgVHlwZU5hbWU9Im9wYzpJbnQzMiIgTmFtZT0iTm9PZkRpYWdub3N0aWNJbmZvQXJyYXlNZ
+        W1iZXIiLz4KICA8b3BjOkZpZWxkIExlbmd0aEZpZWxkPSJOb09mRGlhZ25vc3RpY0luZm9Bc
+        nJheU1lbWJlciIgVHlwZU5hbWU9InVhOkRpYWdub3N0aWNJbmZvIiBOYW1lPSJEaWFnbm9zd
+        GljSW5mb0FycmF5TWVtYmVyIi8+CiA8L29wYzpTdHJ1Y3R1cmVkVHlwZT4KIDxvcGM6U3Ryd
+        WN0dXJlZFR5cGUgQmFzZVR5cGU9InVhOlVuaW9uIiBOYW1lPSJRdFRlc3RVbmlvblR5cGUiP
+        gogIDxvcGM6RmllbGQgVHlwZU5hbWU9Im9wYzpVSW50MzIiIE5hbWU9IlN3aXRjaEZpZWxkI
+        i8+CiAgPG9wYzpGaWVsZCBTd2l0Y2hGaWVsZD0iU3dpdGNoRmllbGQiIFR5cGVOYW1lPSJvc
+        GM6SW50NjQiIFN3aXRjaFZhbHVlPSIxIiBOYW1lPSJNZW1iZXIxIi8+CiAgPG9wYzpGaWVsZ
+        CBTd2l0Y2hGaWVsZD0iU3dpdGNoRmllbGQiIFR5cGVOYW1lPSJ0bnM6UXRJbm5lclRlc3RTd
+        HJ1Y3RUeXBlIiBTd2l0Y2hWYWx1ZT0iMiIgTmFtZT0iTWVtYmVyMiIvPgogPC9vcGM6U3Ryd
+        WN0dXJlZFR5cGU+CiA8b3BjOkVudW1lcmF0ZWRUeXBlIExlbmd0aEluQml0cz0iMzIiIE5hb
+        WU9IlF0VGVzdEVudW1lcmF0aW9uIj4KICA8b3BjOkVudW1lcmF0ZWRWYWx1ZSBOYW1lPSJVb
+        mtub3duIiBWYWx1ZT0iMCIvPgogIDxvcGM6RW51bWVyYXRlZFZhbHVlIE5hbWU9IkZpcnN0T
+        3B0aW9uIiBWYWx1ZT0iMSIvPgogIDxvcGM6RW51bWVyYXRlZFZhbHVlIE5hbWU9IlNlY29uZ
+        E9wdGlvbiIgVmFsdWU9IjIiLz4KICA8b3BjOkVudW1lcmF0ZWRWYWx1ZSBOYW1lPSJUaGlyZ
+        E9wdGlvbiIgVmFsdWU9IjMiLz4KIDwvb3BjOkVudW1lcmF0ZWRUeXBlPgo8L29wYzpUeXBlR
+        GljdGlvbmFyeT4K</uax:ByteString>
+        </Value>
+    </UAVariable>
+    <UAVariable DataType="String" ParentNodeId="ns=1;i=6012" NodeId="ns=1;i=6013" BrowseName="NamespaceUri">
+        <DisplayName>NamespaceUri</DisplayName>
+        <References>
+            <Reference ReferenceType="HasProperty" IsForward="false">ns=1;i=6012</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>http://qt-project.org/QtOpcUaTestModel/</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable SymbolicName="TypeDictionary_XmlSchema" DataType="ByteString" NodeId="ns=1;i=6014" BrowseName="1:TypeDictionary">
+        <DisplayName>TypeDictionary</DisplayName>
+        <Description>Collects the data type descriptions of http://qt-project.org/QtOpcUaTestModel/</Description>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=72</Reference>
+            <Reference ReferenceType="HasProperty">ns=1;i=6015</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6025</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6017</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6019</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6021</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6005</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6023</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">i=92</Reference>
+        </References>
+        <Value>
+            <uax:ByteString>PHhzOnNjaGVtYSBlbGVtZW50Rm9ybURlZmF1bHQ9InF1YWxpZmllZCIgdGFyZ2V0TmFtZXNwYWNlPSJod
+        HRwOi8vcXQtcHJvamVjdC5vcmcvUXRPcGNVYVRlc3RNb2RlbC9UeXBlcy54c2QiIHhtbG5zO
+        nRucz0iaHR0cDovL3F0LXByb2plY3Qub3JnL1F0T3BjVWFUZXN0TW9kZWwvVHlwZXMueHNkI
+        iB4bWxuczp1YT0iaHR0cDovL29wY2ZvdW5kYXRpb24ub3JnL1VBLzIwMDgvMDIvVHlwZXMue
+        HNkIiB4bWxuczp4cz0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEiPgogPHhzO
+        mltcG9ydCBuYW1lc3BhY2U9Imh0dHA6Ly9vcGNmb3VuZGF0aW9uLm9yZy9VQS8yMDA4LzAyL
+        1R5cGVzLnhzZCIvPgogPHhzOnNpbXBsZVR5cGUgbmFtZT0iUXRUZXN0RW51bWVyYXRpb24iP
+        gogIDx4czpyZXN0cmljdGlvbiBiYXNlPSJ4czpzdHJpbmciPgogICA8eHM6ZW51bWVyYXRpb
+        24gdmFsdWU9IlVua25vd25fMCIvPgogICA8eHM6ZW51bWVyYXRpb24gdmFsdWU9IkZpcnN0T
+        3B0aW9uXzEiLz4KICAgPHhzOmVudW1lcmF0aW9uIHZhbHVlPSJTZWNvbmRPcHRpb25fMiIvP
+        gogICA8eHM6ZW51bWVyYXRpb24gdmFsdWU9IlRoaXJkT3B0aW9uXzMiLz4KICA8L3hzOnJlc
+        3RyaWN0aW9uPgogPC94czpzaW1wbGVUeXBlPgogPHhzOmVsZW1lbnQgdHlwZT0idG5zOlF0V
+        GVzdEVudW1lcmF0aW9uIiBuYW1lPSJRdFRlc3RFbnVtZXJhdGlvbiIvPgogPHhzOmNvbXBsZ
+        XhUeXBlIG5hbWU9Ikxpc3RPZlF0VGVzdEVudW1lcmF0aW9uIj4KICA8eHM6c2VxdWVuY2U+C
+        iAgIDx4czplbGVtZW50IG1pbk9jY3Vycz0iMCIgbWF4T2NjdXJzPSJ1bmJvdW5kZWQiIHR5c
+        GU9InRuczpRdFRlc3RFbnVtZXJhdGlvbiIgbmFtZT0iUXRUZXN0RW51bWVyYXRpb24iIG5pb
+        GxhYmxlPSJ0cnVlIi8+CiAgPC94czpzZXF1ZW5jZT4KIDwveHM6Y29tcGxleFR5cGU+CiA8e
+        HM6ZWxlbWVudCB0eXBlPSJ0bnM6TGlzdE9mUXRUZXN0RW51bWVyYXRpb24iIG5hbWU9Ikxpc
+        3RPZlF0VGVzdEVudW1lcmF0aW9uIiBuaWxsYWJsZT0idHJ1ZSIvPgogPHhzOmNvbXBsZXhUe
+        XBlIG5hbWU9IlF0QWJzdHJhY3RCYXNlU3RydWN0Ij4KICA8eHM6c2VxdWVuY2UvPgogPC94c
+        zpjb21wbGV4VHlwZT4KIDx4czplbGVtZW50IHR5cGU9InRuczpRdEFic3RyYWN0QmFzZVN0c
+        nVjdCIgbmFtZT0iUXRBYnN0cmFjdEJhc2VTdHJ1Y3QiLz4KIDx4czpjb21wbGV4VHlwZSBuY
+        W1lPSJMaXN0T2ZRdEFic3RyYWN0QmFzZVN0cnVjdCI+CiAgPHhzOnNlcXVlbmNlPgogICA8e
+        HM6ZWxlbWVudCBtaW5PY2N1cnM9IjAiIG1heE9jY3Vycz0idW5ib3VuZGVkIiB0eXBlPSJ0b
+        nM6UXRBYnN0cmFjdEJhc2VTdHJ1Y3QiIG5hbWU9IlF0QWJzdHJhY3RCYXNlU3RydWN0IiBua
+        WxsYWJsZT0idHJ1ZSIvPgogIDwveHM6c2VxdWVuY2U+CiA8L3hzOmNvbXBsZXhUeXBlPgogP
+        HhzOmVsZW1lbnQgdHlwZT0idG5zOkxpc3RPZlF0QWJzdHJhY3RCYXNlU3RydWN0IiBuYW1lP
+        SJMaXN0T2ZRdEFic3RyYWN0QmFzZVN0cnVjdCIgbmlsbGFibGU9InRydWUiLz4KIDx4czpjb
+        21wbGV4VHlwZSBuYW1lPSJRdElubmVyVGVzdFN0cnVjdFR5cGUiPgogIDx4czpjb21wbGV4Q
+        29udGVudCBtaXhlZD0iZmFsc2UiPgogICA8eHM6ZXh0ZW5zaW9uIGJhc2U9InRuczpRdEFic
+        3RyYWN0QmFzZVN0cnVjdCI+CiAgICA8eHM6c2VxdWVuY2U+CiAgICAgPHhzOmVsZW1lbnQgb
+        WluT2NjdXJzPSIwIiBtYXhPY2N1cnM9IjEiIHR5cGU9InhzOmRvdWJsZSIgbmFtZT0iRG91Y
+        mxlU3VidHlwZU1lbWJlciIvPgogICAgPC94czpzZXF1ZW5jZT4KICAgPC94czpleHRlbnNpb
+        24+CiAgPC94czpjb21wbGV4Q29udGVudD4KIDwveHM6Y29tcGxleFR5cGU+CiA8eHM6ZWxlb
+        WVudCB0eXBlPSJ0bnM6UXRJbm5lclRlc3RTdHJ1Y3RUeXBlIiBuYW1lPSJRdElubmVyVGVzd
+        FN0cnVjdFR5cGUiLz4KIDx4czpjb21wbGV4VHlwZSBuYW1lPSJMaXN0T2ZRdElubmVyVGVzd
+        FN0cnVjdFR5cGUiPgogIDx4czpzZXF1ZW5jZT4KICAgPHhzOmVsZW1lbnQgbWluT2NjdXJzP
+        SIwIiBtYXhPY2N1cnM9InVuYm91bmRlZCIgdHlwZT0idG5zOlF0SW5uZXJUZXN0U3RydWN0V
+        HlwZSIgbmFtZT0iUXRJbm5lclRlc3RTdHJ1Y3RUeXBlIiBuaWxsYWJsZT0idHJ1ZSIvPgogI
+        DwveHM6c2VxdWVuY2U+CiA8L3hzOmNvbXBsZXhUeXBlPgogPHhzOmVsZW1lbnQgdHlwZT0id
+        G5zOkxpc3RPZlF0SW5uZXJUZXN0U3RydWN0VHlwZSIgbmFtZT0iTGlzdE9mUXRJbm5lclRlc
+        3RTdHJ1Y3RUeXBlIiBuaWxsYWJsZT0idHJ1ZSIvPgogPHhzOmNvbXBsZXhUeXBlIG5hbWU9I
+        lF0U3RydWN0V2l0aE9wdGlvbmFsRmllbGRUeXBlIj4KICA8eHM6c2VxdWVuY2U+CiAgIDx4c
+        zplbGVtZW50IG1pbk9jY3Vycz0iMCIgdHlwZT0ieHM6dW5zaWduZWRJbnQiIG5hbWU9IkVuY
+        29kaW5nTWFzayIvPgogICA8eHM6ZWxlbWVudCBtaW5PY2N1cnM9IjAiIG1heE9jY3Vycz0iM
+        SIgdHlwZT0ieHM6ZG91YmxlIiBuYW1lPSJNYW5kYXRvcnlNZW1iZXIiLz4KICAgPHhzOmVsZ
+        W1lbnQgbWluT2NjdXJzPSIwIiBtYXhPY2N1cnM9IjEiIHR5cGU9InhzOmRvdWJsZSIgbmFtZ
+        T0iT3B0aW9uYWxNZW1iZXIiLz4KICA8L3hzOnNlcXVlbmNlPgogPC94czpjb21wbGV4VHlwZ
+        T4KIDx4czplbGVtZW50IHR5cGU9InRuczpRdFN0cnVjdFdpdGhPcHRpb25hbEZpZWxkVHlwZ
+        SIgbmFtZT0iUXRTdHJ1Y3RXaXRoT3B0aW9uYWxGaWVsZFR5cGUiLz4KIDx4czpjb21wbGV4V
+        HlwZSBuYW1lPSJMaXN0T2ZRdFN0cnVjdFdpdGhPcHRpb25hbEZpZWxkVHlwZSI+CiAgPHhzO
+        nNlcXVlbmNlPgogICA8eHM6ZWxlbWVudCBtaW5PY2N1cnM9IjAiIG1heE9jY3Vycz0idW5ib
+        3VuZGVkIiB0eXBlPSJ0bnM6UXRTdHJ1Y3RXaXRoT3B0aW9uYWxGaWVsZFR5cGUiIG5hbWU9I
+        lF0U3RydWN0V2l0aE9wdGlvbmFsRmllbGRUeXBlIiBuaWxsYWJsZT0idHJ1ZSIvPgogIDwve
+        HM6c2VxdWVuY2U+CiA8L3hzOmNvbXBsZXhUeXBlPgogPHhzOmVsZW1lbnQgdHlwZT0idG5zO
+        kxpc3RPZlF0U3RydWN0V2l0aE9wdGlvbmFsRmllbGRUeXBlIiBuYW1lPSJMaXN0T2ZRdFN0c
+        nVjdFdpdGhPcHRpb25hbEZpZWxkVHlwZSIgbmlsbGFibGU9InRydWUiLz4KIDx4czpjb21wb
+        GV4VHlwZSBuYW1lPSJRdFRlc3RTdHJ1Y3RUeXBlIj4KICA8eHM6Y29tcGxleENvbnRlbnQgb
+        Wl4ZWQ9ImZhbHNlIj4KICAgPHhzOmV4dGVuc2lvbiBiYXNlPSJ0bnM6UXRBYnN0cmFjdEJhc
+        2VTdHJ1Y3QiPgogICAgPHhzOnNlcXVlbmNlPgogICAgIDx4czplbGVtZW50IG1pbk9jY3Vyc
+        z0iMCIgbWF4T2NjdXJzPSIxIiB0eXBlPSJ4czpzdHJpbmciIG5hbWU9IlN0cmluZ01lbWJlc
+        iIvPgogICAgIDx4czplbGVtZW50IG1pbk9jY3Vycz0iMCIgbWF4T2NjdXJzPSIxIiB0eXBlP
+        SJ1YTpMb2NhbGl6ZWRUZXh0IiBuYW1lPSJMb2NhbGl6ZWRUZXh0TWVtYmVyIi8+CiAgICAgP
+        HhzOmVsZW1lbnQgbWluT2NjdXJzPSIwIiBtYXhPY2N1cnM9IjEiIHR5cGU9InVhOlF1YWxpZ
+        mllZE5hbWUiIG5hbWU9IlF1YWxpZmllZE5hbWVNZW1iZXIiLz4KICAgICA8eHM6ZWxlbWVud
+        CBtaW5PY2N1cnM9IjAiIG1heE9jY3Vycz0iMSIgdHlwZT0idWE6TGlzdE9mSW50NjQiIG5hb
+        WU9IkludDY0QXJyYXlNZW1iZXIiLz4KICAgICA8eHM6ZWxlbWVudCBtaW5PY2N1cnM9IjAiI
+        G1heE9jY3Vycz0iMSIgdHlwZT0idG5zOlF0VGVzdEVudW1lcmF0aW9uIiBuYW1lPSJFbnVtT
+        WVtYmVyIi8+CiAgICAgPHhzOmVsZW1lbnQgbWluT2NjdXJzPSIwIiBtYXhPY2N1cnM9IjEiI
+        HR5cGU9InRuczpRdElubmVyVGVzdFN0cnVjdFR5cGUiIG5hbWU9Ik5lc3RlZFN0cnVjdE1lb
+        WJlciIvPgogICAgIDx4czplbGVtZW50IG1pbk9jY3Vycz0iMCIgbWF4T2NjdXJzPSIxIiB0e
+        XBlPSJ0bnM6TGlzdE9mUXRJbm5lclRlc3RTdHJ1Y3RUeXBlIiBuYW1lPSJOZXN0ZWRTdHJ1Y
+        3RBcnJheU1lbWJlciIvPgogICAgPC94czpzZXF1ZW5jZT4KICAgPC94czpleHRlbnNpb24+C
+        iAgPC94czpjb21wbGV4Q29udGVudD4KIDwveHM6Y29tcGxleFR5cGU+CiA8eHM6ZWxlbWVud
+        CB0eXBlPSJ0bnM6UXRUZXN0U3RydWN0VHlwZSIgbmFtZT0iUXRUZXN0U3RydWN0VHlwZSIvP
+        gogPHhzOmNvbXBsZXhUeXBlIG5hbWU9Ikxpc3RPZlF0VGVzdFN0cnVjdFR5cGUiPgogIDx4c
+        zpzZXF1ZW5jZT4KICAgPHhzOmVsZW1lbnQgbWluT2NjdXJzPSIwIiBtYXhPY2N1cnM9InVuY
+        m91bmRlZCIgdHlwZT0idG5zOlF0VGVzdFN0cnVjdFR5cGUiIG5hbWU9IlF0VGVzdFN0cnVjd
+        FR5cGUiIG5pbGxhYmxlPSJ0cnVlIi8+CiAgPC94czpzZXF1ZW5jZT4KIDwveHM6Y29tcGxle
+        FR5cGU+CiA8eHM6ZWxlbWVudCB0eXBlPSJ0bnM6TGlzdE9mUXRUZXN0U3RydWN0VHlwZSIgb
+        mFtZT0iTGlzdE9mUXRUZXN0U3RydWN0VHlwZSIgbmlsbGFibGU9InRydWUiLz4KIDx4czpjb
+        21wbGV4VHlwZSBuYW1lPSJRdFRlc3RTdHJ1Y3RXaXRoRGlhZ25vc3RpY0luZm8iPgogIDx4c
+        zpjb21wbGV4Q29udGVudCBtaXhlZD0iZmFsc2UiPgogICA8eHM6ZXh0ZW5zaW9uIGJhc2U9I
+        nRuczpRdEFic3RyYWN0QmFzZVN0cnVjdCI+CiAgICA8eHM6c2VxdWVuY2U+CiAgICAgPHhzO
+        mVsZW1lbnQgbWluT2NjdXJzPSIwIiBtYXhPY2N1cnM9IjEiIHR5cGU9InVhOkRpYWdub3N0a
+        WNJbmZvIiBuYW1lPSJEaWFnbm9zdGljSW5mb01lbWJlciIvPgogICAgIDx4czplbGVtZW50I
+        G1pbk9jY3Vycz0iMCIgbWF4T2NjdXJzPSIxIiB0eXBlPSJ1YTpMaXN0T2ZEaWFnbm9zdGljS
+        W5mbyIgbmFtZT0iRGlhZ25vc3RpY0luZm9BcnJheU1lbWJlciIvPgogICAgPC94czpzZXF1Z
+        W5jZT4KICAgPC94czpleHRlbnNpb24+CiAgPC94czpjb21wbGV4Q29udGVudD4KIDwveHM6Y
+        29tcGxleFR5cGU+CiA8eHM6ZWxlbWVudCB0eXBlPSJ0bnM6UXRUZXN0U3RydWN0V2l0aERpY
+        Wdub3N0aWNJbmZvIiBuYW1lPSJRdFRlc3RTdHJ1Y3RXaXRoRGlhZ25vc3RpY0luZm8iLz4KI
+        Dx4czpjb21wbGV4VHlwZSBuYW1lPSJMaXN0T2ZRdFRlc3RTdHJ1Y3RXaXRoRGlhZ25vc3RpY
+        0luZm8iPgogIDx4czpzZXF1ZW5jZT4KICAgPHhzOmVsZW1lbnQgbWluT2NjdXJzPSIwIiBtY
+        XhPY2N1cnM9InVuYm91bmRlZCIgdHlwZT0idG5zOlF0VGVzdFN0cnVjdFdpdGhEaWFnbm9zd
+        GljSW5mbyIgbmFtZT0iUXRUZXN0U3RydWN0V2l0aERpYWdub3N0aWNJbmZvIiBuaWxsYWJsZ
+        T0idHJ1ZSIvPgogIDwveHM6c2VxdWVuY2U+CiA8L3hzOmNvbXBsZXhUeXBlPgogPHhzOmVsZ
+        W1lbnQgdHlwZT0idG5zOkxpc3RPZlF0VGVzdFN0cnVjdFdpdGhEaWFnbm9zdGljSW5mbyIgb
+        mFtZT0iTGlzdE9mUXRUZXN0U3RydWN0V2l0aERpYWdub3N0aWNJbmZvIiBuaWxsYWJsZT0id
+        HJ1ZSIvPgogPHhzOmNvbXBsZXhUeXBlIG5hbWU9IlF0VGVzdFVuaW9uVHlwZSI+CiAgPHhzO
+        nNlcXVlbmNlPgogICA8eHM6ZWxlbWVudCBtaW5PY2N1cnM9IjAiIG1heE9jY3Vycz0iMSIgd
+        HlwZT0ieHM6dW5zaWduZWRJbnQiIG5hbWU9IlN3aXRjaEZpZWxkIi8+CiAgIDx4czpjaG9pY
+        2U+CiAgICA8eHM6ZWxlbWVudCBtaW5PY2N1cnM9IjAiIG1heE9jY3Vycz0iMSIgdHlwZT0ie
+        HM6bG9uZyIgbmFtZT0iTWVtYmVyMSIvPgogICAgPHhzOmVsZW1lbnQgbWluT2NjdXJzPSIwI
+        iBtYXhPY2N1cnM9IjEiIHR5cGU9InRuczpRdElubmVyVGVzdFN0cnVjdFR5cGUiIG5hbWU9I
+        k1lbWJlcjIiLz4KICAgPC94czpjaG9pY2U+CiAgPC94czpzZXF1ZW5jZT4KIDwveHM6Y29tc
+        GxleFR5cGU+CiA8eHM6ZWxlbWVudCB0eXBlPSJ0bnM6UXRUZXN0VW5pb25UeXBlIiBuYW1lP
+        SJRdFRlc3RVbmlvblR5cGUiLz4KIDx4czpjb21wbGV4VHlwZSBuYW1lPSJMaXN0T2ZRdFRlc
+        3RVbmlvblR5cGUiPgogIDx4czpzZXF1ZW5jZT4KICAgPHhzOmVsZW1lbnQgbWluT2NjdXJzP
+        SIwIiBtYXhPY2N1cnM9InVuYm91bmRlZCIgdHlwZT0idG5zOlF0VGVzdFVuaW9uVHlwZSIgb
+        mFtZT0iUXRUZXN0VW5pb25UeXBlIiBuaWxsYWJsZT0idHJ1ZSIvPgogIDwveHM6c2VxdWVuY
+        2U+CiA8L3hzOmNvbXBsZXhUeXBlPgogPHhzOmVsZW1lbnQgdHlwZT0idG5zOkxpc3RPZlF0V
+        GVzdFVuaW9uVHlwZSIgbmFtZT0iTGlzdE9mUXRUZXN0VW5pb25UeXBlIiBuaWxsYWJsZT0id
+        HJ1ZSIvPgo8L3hzOnNjaGVtYT4K</uax:ByteString>
+        </Value>
+    </UAVariable>
+    <UAVariable DataType="String" ParentNodeId="ns=1;i=6014" NodeId="ns=1;i=6015" BrowseName="NamespaceUri">
+        <DisplayName>NamespaceUri</DisplayName>
+        <References>
+            <Reference ReferenceType="HasProperty" IsForward="false">ns=1;i=6014</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=68</Reference>
+        </References>
+        <Value>
+            <uax:String>http://qt-project.org/QtOpcUaTestModel/Types.xsd</uax:String>
+        </Value>
+    </UAVariable>
+    <UAObject NodeId="ns=1;i=5009" BrowseName="1:DecoderTestNodes">
+        <DisplayName>DecoderTestNodes</DisplayName>
+        <References>
+            <Reference ReferenceType="Organizes" IsForward="false">i=85</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=61</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6009</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6002</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6006</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6010</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6003</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6011</Reference>
+        </References>
+    </UAObject>
+    <UAVariable DataType="QtTestStructType" NodeId="ns=1;i=6009" BrowseName="1:NestedStruct" AccessLevel="3">
+        <DisplayName>NestedStruct</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5009</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable DataType="QtStructWithOptionalFieldType" NodeId="ns=1;i=6002" BrowseName="1:StructWihoutOptionalField" AccessLevel="3">
+        <DisplayName>StructWihoutOptionalField</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5009</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable DataType="QtTestStructWithDiagnosticInfo" NodeId="ns=1;i=6006" BrowseName="1:StructWithDiagnosticInfo" AccessLevel="3">
+        <DisplayName>StructWithDiagnosticInfo</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5009</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable DataType="QtStructWithOptionalFieldType" NodeId="ns=1;i=6010" BrowseName="1:StructWithOptionalField" AccessLevel="3">
+        <DisplayName>StructWithOptionalField</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5009</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable DataType="QtTestUnionType" NodeId="ns=1;i=6003" BrowseName="1:UnionWithSecondMember" AccessLevel="3">
+        <DisplayName>UnionWithSecondMember</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5009</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable DataType="QtTestUnionType" NodeId="ns=1;i=6011" BrowseName="1:UnionWithFirstMember" AccessLevel="3">
+        <DisplayName>UnionWithFirstMember</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5009</Reference>
+        </References>
+    </UAVariable>
+    <UAObject SymbolicName="DefaultBinary" NodeId="ns=1;i=5001" BrowseName="Default Binary">
+        <DisplayName>Default Binary</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=76</Reference>
+            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3003</Reference>
+            <Reference ReferenceType="HasDescription">ns=1;i=6020</Reference>
+        </References>
+    </UAObject>
+    <UAObject SymbolicName="DefaultXml" NodeId="ns=1;i=5002" BrowseName="Default XML">
+        <DisplayName>Default XML</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=76</Reference>
+            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3003</Reference>
+            <Reference ReferenceType="HasDescription">ns=1;i=6021</Reference>
+        </References>
+    </UAObject>
+    <UAObject SymbolicName="DefaultBinary" NodeId="ns=1;i=5003" BrowseName="Default Binary">
+        <DisplayName>Default Binary</DisplayName>
+        <References>
+            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3009</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=76</Reference>
+            <Reference ReferenceType="HasDescription">ns=1;i=6004</Reference>
+        </References>
+    </UAObject>
+    <UAObject SymbolicName="DefaultBinary" NodeId="ns=1;i=5004" BrowseName="Default Binary">
+        <DisplayName>Default Binary</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=76</Reference>
+            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3004</Reference>
+            <Reference ReferenceType="HasDescription">ns=1;i=6016</Reference>
+        </References>
+    </UAObject>
+    <UAObject SymbolicName="DefaultXml" NodeId="ns=1;i=5005" BrowseName="Default XML">
+        <DisplayName>Default XML</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=76</Reference>
+            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3004</Reference>
+            <Reference ReferenceType="HasDescription">ns=1;i=6017</Reference>
+        </References>
+    </UAObject>
+    <UAObject SymbolicName="DefaultBinary" NodeId="ns=1;i=5006" BrowseName="Default Binary">
+        <DisplayName>Default Binary</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=76</Reference>
+            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3008</Reference>
+            <Reference ReferenceType="HasDescription">ns=1;i=6024</Reference>
+        </References>
+    </UAObject>
+    <UAObject SymbolicName="DefaultBinary" NodeId="ns=1;i=5007" BrowseName="Default Binary">
+        <DisplayName>Default Binary</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=76</Reference>
+            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3005</Reference>
+            <Reference ReferenceType="HasDescription">ns=1;i=6022</Reference>
+        </References>
+    </UAObject>
+    <UAObject SymbolicName="DefaultXml" NodeId="ns=1;i=5008" BrowseName="Default XML">
+        <DisplayName>Default XML</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=76</Reference>
+            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3005</Reference>
+            <Reference ReferenceType="HasDescription">ns=1;i=6023</Reference>
+        </References>
+    </UAObject>
+    <UAObject SymbolicName="DefaultBinary" NodeId="ns=1;i=5010" BrowseName="Default Binary">
+        <DisplayName>Default Binary</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=76</Reference>
+            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3006</Reference>
+            <Reference ReferenceType="HasDescription">ns=1;i=6018</Reference>
+        </References>
+    </UAObject>
+    <UAObject SymbolicName="DefaultXml" NodeId="ns=1;i=5011" BrowseName="Default XML">
+        <DisplayName>Default XML</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=76</Reference>
+            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3006</Reference>
+            <Reference ReferenceType="HasDescription">ns=1;i=6019</Reference>
+        </References>
+    </UAObject>
+    <UAObject SymbolicName="DefaultXml" NodeId="ns=1;i=5012" BrowseName="Default XML">
+        <DisplayName>Default XML</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=76</Reference>
+            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3008</Reference>
+            <Reference ReferenceType="HasDescription">ns=1;i=6025</Reference>
+        </References>
+    </UAObject>
+    <UAObject SymbolicName="DefaultXml" NodeId="ns=1;i=5013" BrowseName="Default XML">
+        <DisplayName>Default XML</DisplayName>
+        <References>
+            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3009</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=76</Reference>
+            <Reference ReferenceType="HasDescription">ns=1;i=6005</Reference>
+        </References>
+    </UAObject>
+</UANodeSet>
