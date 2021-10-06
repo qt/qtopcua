@@ -141,4 +141,11 @@ void QOpcUaQualifiedName::setName(const QString &name)
     data->name = name;
 }
 
+QDebug operator<<(QDebug debug, const QOpcUaQualifiedName &qn)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace().quote() << "QOpcUaQualifiedname(" << qn.namespaceIndex() << ", " << qn.name() << ")";
+    return debug;
+}
+
 QT_END_NAMESPACE

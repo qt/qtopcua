@@ -180,4 +180,11 @@ void QOpcUaLocalizedText::setLocale(const QString &locale)
     data->locale = locale;
 }
 
+QDebug operator<<(QDebug debug, const QOpcUaLocalizedText &lt)
+{
+    QDebugStateSaver saver(debug);
+    debug.nospace().quote() << "QOpcUaLocalizedText(" << lt.locale() << ", " << lt.text() << ")";
+    return debug;
+}
+
 QT_END_NAMESPACE

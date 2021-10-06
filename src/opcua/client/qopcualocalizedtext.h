@@ -70,6 +70,8 @@ private:
     QSharedDataPointer<QOpcUaLocalizedTextData> data;
 };
 
+Q_OPCUA_EXPORT QDebug operator<<(QDebug debug, const QOpcUaLocalizedText &lt);
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QOpcUaLocalizedText)
