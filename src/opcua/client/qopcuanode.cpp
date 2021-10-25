@@ -788,8 +788,8 @@ bool QOpcUaNode::browse(const QOpcUaBrowseRequest &request)
     Starts a read history request for this node. This is the Qt OPC UA representation for the OPC UA
     ReadHistory service for reading raw historical data defined in
     \l {https://reference.opcfoundation.org/v104/Core/docs/Part4/5.10.3/} {OPC-UA part 4, 5.10.3}.
-    The start timestamp, end timestamp, number of values per node and returnBounds can
-    be specified in the according parameters.
+    It reads the history based on the parementers, \a startTime, \a endTime,
+    \a numValues, and \a returnBounds.
 
     Returns a \l QOpcUaHistoryReadResponse which contains the state of the request if the asynchronous
     request has been successfully dispatched. The results are returned in the

@@ -55,13 +55,17 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn QOpcUaHistoryReadResponse::readHistoryDataFinished(QList<QOpcUaHistoryData> results, QOpcUa::UaStatusCode serviceResult);
 
-    This signal is emitted when a historical data request is finished
+    This signal is emitted when a historical data request is finished. It adds
+    to \a results and sets \a serviceResult to indicate the state of the result.
+
+    \sa data(), serviceResult()
 */
 
 /*!
     \fn QOpcUaHistoryReadResponse::stateChanged(State state)
 
-    This signal is emitted when the of a historical data request is changed
+    This signal is emitted when the of a historical data request is changed.
+    It sets \a state to indicate the state of the change.
 */
 QOpcUaHistoryReadResponse::QOpcUaHistoryReadResponse(QOpcUaHistoryReadResponseImpl *impl)
     : QObject(*new QOpcUaHistoryReadResponsePrivate(impl), nullptr)

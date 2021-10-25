@@ -937,7 +937,7 @@ QList<QOpcUaUserTokenPolicy::TokenType> QOpcUaClient::supportedUserTokenTypes() 
 
 /*!
 
-    Starts a read raw history request for one or multiple nodes. This is the Qt OPC UA representation for the OPC UA
+    Starts a read raw history \a request for one or multiple nodes. This is the Qt OPC UA representation for the OPC UA
     ReadHistory service for reading raw historical data defined in
     \l {https://reference.opcfoundation.org/v104/Core/docs/Part4/5.10.3/} {OPC-UA part 4, 5.10.3}.
 

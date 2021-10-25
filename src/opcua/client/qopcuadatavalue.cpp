@@ -41,7 +41,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QOpcUaDataValue
     \inmodule QtOpcUa
-    \brief This class stores OPC UA value data and associated metadata
+    \brief This class stores OPC UA value data and associated metadata.
 
     This clas corresponds to the OPC UA DataValue type.
 */

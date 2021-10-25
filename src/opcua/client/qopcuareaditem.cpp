@@ -96,9 +96,9 @@ QOpcUaReadItem &QOpcUaReadItem::operator=(const QOpcUaReadItem &rhs)
 }
 
 /*!
-    Returns true if other is equal to this read item; otherwise returns false.
+    Returns \c true if \a other is equal to this read item; otherwise returns \c false.
 
-    Two read items are considered equal if their \a nodeId, \a attribute and \a indexRange are equal.
+    Two read items are considered equal if their \c nodeId, \c attribute, and \c indexRange are equal.
 */
 bool QOpcUaReadItem::operator==(const QOpcUaReadItem &other) const
 {

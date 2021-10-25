@@ -106,7 +106,7 @@ QDateTime QOpcUaHistoryReadRawRequest::startTimestamp() const
 }
 
 /*!
-    Sets the start time stamp.
+    Sets \a startTimestamp for the historical data to be fetched.
 */
 void QOpcUaHistoryReadRawRequest::setStartTimestamp(QDateTime startTimestamp)
 {
@@ -125,7 +125,7 @@ QDateTime QOpcUaHistoryReadRawRequest::endTimestamp() const
 }
 
 /*!
-    Sets the end time stamp.
+    Sets \a endTimestamp for the historical data to be fetched.
 */
 void QOpcUaHistoryReadRawRequest::setEndTimestamp(QDateTime endTimestamp)
 {
@@ -144,7 +144,8 @@ quint32 QOpcUaHistoryReadRawRequest::numValuesPerNode() const
 }
 
 /*!
-    Sets the number of values per node.
+    Sets \a numValuesPerNode to indicate the number of values per node to be
+    fetched.
 */
 void QOpcUaHistoryReadRawRequest::setNumValuesPerNode(quint32 numValuesPerNode)
 {
@@ -163,7 +164,7 @@ bool QOpcUaHistoryReadRawRequest::returnBounds() const
 }
 
 /*!
-    Sets if the return bounds should be requested.
+    Sets \a returnBounds to indicate if the return bounds should be requested.
 */
 void QOpcUaHistoryReadRawRequest::setReturnBounds(bool returnBounds)
 {
@@ -179,7 +180,7 @@ QList<QOpcUaReadItem> QOpcUaHistoryReadRawRequest::nodesToRead() const
 }
 
 /*!
-    Sets the list of nodes to read.
+    Sets the \a nodesToRead list.
 */
 void QOpcUaHistoryReadRawRequest::setNodesToRead(QList<QOpcUaReadItem> nodesToRead)
 {
@@ -187,7 +188,7 @@ void QOpcUaHistoryReadRawRequest::setNodesToRead(QList<QOpcUaReadItem> nodesToRe
 }
 
 /*!
-    Adds a node to the list of nodes to read.
+    Adds a node to the \a nodeToRead list.
 */
 void QOpcUaHistoryReadRawRequest::addNodeToRead(QOpcUaReadItem nodeToRead)
 {
@@ -205,10 +206,10 @@ QOpcUaHistoryReadRawRequest &QOpcUaHistoryReadRawRequest::operator=(const QOpcUa
 }
 
 /*!
-    Returns true if other is equal to this QOpcUaHistoryReadRawRequest item; otherwise returns false.
+    Returns \c true if \a other is equal to this QOpcUaHistoryReadRawRequest item; otherwise returns \c false.
 
-    Two QOpcUaHistoryReadRawRequest items are considered equal if their \a startTimestamp, \a endTimestamp,
-    \a numValuesPerNode, \a returnBounds and \a nodesToRead are equal.
+    Two QOpcUaHistoryReadRawRequest items are considered equal if their \c startTimestamp, \c endTimestamp,
+    \c numValuesPerNode, \c returnBounds and \c nodesToRead are equal.
 */
 bool QOpcUaHistoryReadRawRequest::operator==(const QOpcUaHistoryReadRawRequest &other) const
 {
@@ -220,10 +221,10 @@ bool QOpcUaHistoryReadRawRequest::operator==(const QOpcUaHistoryReadRawRequest &
 }
 
 /*!
-    Returns true if other is not equal to this QOpcUaHistoryReadRawRequest item; otherwise returns false.
+    Returns \c true if \a other is not equal to this QOpcUaHistoryReadRawRequest item; otherwise returns \c false.
 
-    Two QOpcUaHistoryReadRawRequest items are considered not equal if their \a startTimestamp, \a endTimestamp,
-    \a numValuesPerNode, \a returnBounds or \a nodesToRead are not equal.
+    Two QOpcUaHistoryReadRawRequest items are considered not equal if their \c startTimestamp, \c endTimestamp,
+    \c numValuesPerNode, and \c returnBounds or \c nodesToRead are not equal.
 */
 bool QOpcUaHistoryReadRawRequest::operator!=(const QOpcUaHistoryReadRawRequest &other) const
 {
