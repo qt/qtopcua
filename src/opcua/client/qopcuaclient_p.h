@@ -63,6 +63,8 @@ QT_BEGIN_NAMESPACE
 class Q_OPCUA_EXPORT QOpcUaClientPrivate : public QObjectPrivate
 {
 public:
+    Q_DECLARE_PUBLIC(QOpcUaClient)
+
     QOpcUaClientPrivate(QOpcUaClientImpl *impl);
     ~QOpcUaClientPrivate() override;
 
@@ -92,7 +94,6 @@ public:
     QOpcUaPkiConfiguration pkiConfiguration() const;
 
 private:
-    Q_DECLARE_PUBLIC(QOpcUaClient)
     QStringList m_namespaceArray;
     QScopedPointer<QOpcUaNode> m_namespaceArrayNode;
     bool m_namespaceArrayAutoupdateEnabled;
