@@ -1,5 +1,5 @@
 # Generated from waterpump.pro.
 
-add_subdirectory(simulationserver)
-add_subdirectory(waterpump-qmlcpp)
-add_subdirectory(waterpump-qml)
+qt_internal_add_example(simulationserver)
+qt_internal_add_example(waterpump-qmlcpp)
+qt_internal_add_example(waterpump-qml)
