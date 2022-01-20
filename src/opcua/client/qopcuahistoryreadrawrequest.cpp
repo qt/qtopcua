@@ -45,6 +45,7 @@ QT_BEGIN_NAMESPACE
     \class QOpcUaHistoryReadRawRequest
     \inmodule QtOpcUa
     \brief This class stores the necessary information to request historic data from a server.
+    \since 6.3
 
     This is the Qt OPC UA representation for the OPC UA ReadRawModifiedDetails for reading historical data
     defined in \l {https://reference.opcfoundation.org/Core/docs/Part11/6.4.3/} {OPC-UA part 11, 6.4.3}.
@@ -66,6 +67,9 @@ public:
     QList<QOpcUaReadItem> nodesToRead;
 };
 
+/*!
+    Constructs an invalid QOpcUaHistoryReadRawRequest.
+ */
 QOpcUaHistoryReadRawRequest::QOpcUaHistoryReadRawRequest()
     : data(new QOpcUaHistoryReadRawRequestData)
 {
@@ -96,6 +100,9 @@ QOpcUaHistoryReadRawRequest::QOpcUaHistoryReadRawRequest(const QOpcUaHistoryRead
 {
 }
 
+/*!
+    Destroys the request object.
+ */
 QOpcUaHistoryReadRawRequest::~QOpcUaHistoryReadRawRequest()
 {
 }
