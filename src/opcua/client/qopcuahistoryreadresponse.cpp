@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
     \class QOpcUaHistoryReadResponse
     \inmodule QtOpcUa
     \brief This class is used for requesting historical data and storing the results.
+    \since 6.3
 
     A historical data request to an OPC UA server can be specified by a \l QOpcUaHistoryReadRawRequest.
 

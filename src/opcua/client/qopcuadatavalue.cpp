@@ -45,8 +45,9 @@ QT_BEGIN_NAMESPACE
     \class QOpcUaDataValue
     \inmodule QtOpcUa
     \brief This class stores OPC UA value data and associated metadata.
+    \since 6.3
 
-    This clas corresponds to the OPC UA DataValue type.
+    This class corresponds to the OPC UA DataValue type.
 */
 class QOpcUaDataValueData : public QSharedData
 {
@@ -57,6 +58,9 @@ public:
     QVariant value;
 };
 
+/*!
+    Constructs an invalid data value.
+*/
 QOpcUaDataValue::QOpcUaDataValue()
     : data(new QOpcUaDataValueData)
 {
@@ -80,6 +84,9 @@ QOpcUaDataValue &QOpcUaDataValue::operator=(const QOpcUaDataValue &rhs)
     return *this;
 }
 
+/*!
+    Destroys the data value.
+*/
 QOpcUaDataValue::~QOpcUaDataValue()
 {
 }

@@ -45,6 +45,7 @@ QT_BEGIN_NAMESPACE
     \class QOpcUaHistoryData
     \inmodule QtOpcUa
     \brief This class stores historical data values from a node.
+    \since 6.3
 
     When a request to read history data is being handled, instances of this class
     are used to store information about which node has been read, its values and
@@ -61,6 +62,9 @@ public:
     QString nodeId;
 };
 
+/*!
+    Constructs an invalid  history data item.
+ */
 QOpcUaHistoryData::QOpcUaHistoryData()
     : data(new QOpcUaHistoryDataData)
 {
@@ -85,6 +89,9 @@ QOpcUaHistoryData::QOpcUaHistoryData(const QOpcUaHistoryData &other)
 {
 }
 
+/*!
+    Destroys the history data item.
+ */
 QOpcUaHistoryData::~QOpcUaHistoryData()
 {
 }
