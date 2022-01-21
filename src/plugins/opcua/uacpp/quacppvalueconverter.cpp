@@ -261,7 +261,7 @@ QVariant scalarToQVariant<QVariant, OpcUa_ExtensionObject>(OpcUa_ExtensionObject
     switch (objType) {
     case Namespace0::EUInformation_Encoding_DefaultBinary: {
         // ### TODO: Check for non ns=0 cases. Apparently there is an auto-conversion happening in the
-        // underlaying OpcUA SDK for ns=0 nodes, hence we do not receive a ByteStream, but rather an
+        // underlying OpcUA SDK for ns=0 nodes, hence we do not receive a ByteStream, but rather an
         // already decoded object. For non ns=0, we might be able to use the generic decoder from the module.
         // Same for AxisInformation
         UaEUInformation info(*data);

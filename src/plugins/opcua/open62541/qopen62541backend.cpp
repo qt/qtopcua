@@ -1104,7 +1104,7 @@ void Open62541AsyncBackend::requestEndpoints(const QUrl &url)
         if (res == UA_STATUSCODE_GOOD)
             qWarning() << "Server returned an empty endpoint list";
         else
-            qWarning() << "Failed to retrive endpoints from " << url.toString(QUrl::RemoveUserInfo).toUtf8().constData()
+            qWarning() << "Failed to retrieve endpoints from " << url.toString(QUrl::RemoveUserInfo).toUtf8().constData()
                        << "with status" << UA_StatusCode_name(res);
     }
 

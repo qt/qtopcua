@@ -275,7 +275,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \internal QOpcUaNodeImpl is an opaque type (as seen from the public API).
-    This prevents users of the public API to use this constructor (eventhough
+    This prevents users of the public API to use this constructor (even though
     it is public).
 */
 QOpcUaNode::QOpcUaNode(QOpcUaNodeImpl *impl, QOpcUaClient *client, QObject *parent)

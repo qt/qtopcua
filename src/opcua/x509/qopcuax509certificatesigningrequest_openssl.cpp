@@ -218,7 +218,7 @@ static bool setSubjectName(X509_NAME *subject, const QOpcUaX509DistinguishedName
         }
 
         if (!q_X509_NAME_add_entry_by_OBJ(subject, obj, MBSTRING_UTF8, (const unsigned char*)(value.toUtf8().constData()), -1, -1, 0)) {
-            qCWarning(lcSsl) << "Failed to set CSR enrty:" << getOpenSslError();
+            qCWarning(lcSsl) << "Failed to set CSR entry:" << getOpenSslError();
             return false;
         }
     }

@@ -105,7 +105,7 @@ UaNodeId nodeIdFromQString(const QString &name)
 
 // We only need this for template<> QVariant scalarToQVariant<QString, OpcUa_NodeId>(OpcUa_NodeId *data, QMetaType::Type type)
 // And also only because our unit tests assume that ns=0 has to be included in the string. Even though ns=0
-// can be assumed implicity
+// can be assumed implicitly
 QString nodeIdToQString(const UaNodeId &id)
 {
     QString result = QString::fromLatin1("ns=%1;").arg(id.namespaceIndex());

@@ -1237,7 +1237,7 @@ bool q_resolveOpenSslSymbols()
 
 //==============================================================================
 // contributed by Jay Case of Sarvega, Inc.; http://sarvega.com/
-// Based on X509_cmp_time() for intitial buffer hacking.
+// Based on X509_cmp_time() for initial buffer hacking.
 //==============================================================================
 QDateTime q_getTimeFromASN1(const ASN1_TIME *aTime)
 {

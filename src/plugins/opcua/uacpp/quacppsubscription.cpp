@@ -78,7 +78,7 @@ quint32 QUACppSubscription::createOnServer()
 
     if (result.isGood()) {
         const OpcUa_UInt32 subId = m_nativeSubscription->subscriptionId();
-        qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Subscription suceeded, returning id:" << subId;
+        qCDebug(QT_OPCUA_PLUGINS_UACPP) << "Subscription succeeded, returning id:" << subId;
         return subId;
     }
 

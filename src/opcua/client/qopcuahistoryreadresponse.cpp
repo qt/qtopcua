@@ -84,7 +84,7 @@ bool QOpcUaHistoryReadResponse::hasMoreData() const
 }
 
 /*!
-    Returns \c true if read request for more historic values is succesfull dispatched.
+    Returns \c true if a read request for more historic values is successfully dispatched.
 */
 bool QOpcUaHistoryReadResponse::readMoreData()
 {
@@ -117,7 +117,7 @@ bool QOpcUaHistoryReadResponse::releaseContinuationPoints()
 }
 
 /*!
-    Returns a list which contains the requestet historic data.
+    Returns a list which contains the requested historic data.
 */
 QList<QOpcUaHistoryData> QOpcUaHistoryReadResponse::data() const
 {

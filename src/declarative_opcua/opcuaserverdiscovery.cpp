@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     When starting the request, the list of available servers is cleared
     and the status is set to \l {Status::Status}{Status.GoodCompletesAsynchronously}.
     Once the request is finished, \l status changes.
-    Make sure to check the \l status before acessing the list of servers.
+    Make sure to check the \l status before accessing the list of servers.
 
     \code
     onServersChanged: {
@@ -116,7 +116,7 @@ QT_BEGIN_NAMESPACE
     In a called function, you should first the the \l status of the object.
     In case the status is \l Status.GoodCompletesAsynchronously, the request is still running.
     In case the status is \l Status.Good, the request has finished and the application descriptions
-    can be read. In case the status is not good, an error happended and \l status contains the
+    can be read. In case the status is not good, an error happened and \l status contains the
     returned error code.
 
     \code
