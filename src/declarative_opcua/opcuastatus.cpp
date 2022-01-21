@@ -72,7 +72,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlproperty Status.Status Status::status
 
-    Returns the exact status code. This allows to handle the status specificly.
+    Returns the exact status code. This allows to handle the status specifically.
 
     \code
     if (resultStatus.status == QtOpcUa.Status.BadTimeout) {

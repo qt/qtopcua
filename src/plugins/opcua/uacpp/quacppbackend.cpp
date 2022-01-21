@@ -416,7 +416,7 @@ void UACppAsyncBackend::requestEndpoints(const QUrl &url)
         if (res.isGood())
             qWarning() << "Server returned an empty endpoint list";
         else
-            qWarning() << "Failed to retrive endpoints from " << url.toString(QUrl::RemoveUserInfo).toUtf8().constData()
+            qWarning() << "Failed to retrieve endpoints from " << url.toString(QUrl::RemoveUserInfo).toUtf8().constData()
                        << "with status" << res.toString().toUtf8();
     }
 

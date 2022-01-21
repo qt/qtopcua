@@ -95,7 +95,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlproperty QOpcUa::ReferenceTypeId RelativeNodePath::referenceType
 
-    Type of reference when mathing this path element.
+    Type of reference when matching this path element.
     This can be a \l QOpcUa::ReferenceTypeId or a \l NodeId.
     The default value of this property is \c Constants.ReferenceTypeId.References.
 */

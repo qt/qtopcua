@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
     This class is just for internal use in the declarative backend and not exposed to users.
 
-    It caches node attribute values and provides accesss. Main purpose is to
+    It caches node attribute values and provides access. Main purpose is to
     let \l OpcUaAttributeValue provide separate value change signals for each attribute.
 
     \sa OpcUaAttributeValue

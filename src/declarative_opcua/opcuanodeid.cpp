@@ -68,8 +68,8 @@ QT_BEGIN_NAMESPACE
 /*!
     \qmlproperty string NodeId::identifier
 
-    Identifer of the node.
-    The identifier has to be given in one of the followig types.
+    Identifier of the node.
+    The identifier has to be given in one of the following types.
 
     \table
     \header

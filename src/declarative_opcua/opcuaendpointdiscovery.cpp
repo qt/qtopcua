@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
     and the status is set to \l {Status::Status}{Status.GoodCompletesAsynchronously}. Once the request is finished,
     \l status changes.
 
-    Make sure to check \l status before acessing the list of endpoints.
+    Make sure to check \l status before accessing the list of endpoints.
 
     \sa endpointsChanged
 */
@@ -105,15 +105,15 @@ QT_BEGIN_NAMESPACE
     the request is still running.
     If the status is \l {Status::Status}{Status.Good}, the request has finished
     and the endpoint descriptions can be read. If the status is not good, an
-    error happended and \l status contains the returned error code.
+    error happened and \l status contains the returned error code.
 
     \code
     onEndpointsChanged: {
             if (endpoints.status.isGood) {
                 if (endpoints.status.status == QtOpcua.Status.GoodCompletesAsynchronusly)
                     return; // wait until finished
-                if (enpoints.count > 0) {
-                    var endpointUrl = enpoints.at(0).endpointUrl();
+                if (endpoints.count > 0) {
+                    var endpointUrl = endpoints.at(0).endpointUrl();
                     console.log(endpointUrl);
                 }
             } else {

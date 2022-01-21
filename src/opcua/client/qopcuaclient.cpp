@@ -169,7 +169,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
     \fn QOpcUaClient::connectError(QOpcUaErrorState *errorState)
     \since QtOpcUa 5.13
 
-    This signal is emitted when an error happended during connection establishment.
+    This signal is emitted when an error happened during connection establishment.
     The parameter \a errorState contains information about the error.
 
     In case of client side errors, these can be ignored by calling
@@ -186,7 +186,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 
     This signal is emitted when a password for an encrypted private key is required.
     The parameter \a keyFilePath contains the file path to key which is used.
-    The parameter \a previousTryWasInvalid is true if a previous try to decrypt the key failed (aka invalid pasword).
+    The parameter \a previousTryWasInvalid is true if a previous try to decrypt the key failed (aka invalid password).
     The parameter \a password points to a QString that has to be filled with the actual password for the key.
     In case the previous try failed it contains the previously used password.
 
@@ -298,7 +298,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 
 /*!
     \internal QOpcUaClientImpl is an opaque type (as seen from the public API).
-    This prevents users of the public API to use this constructor (eventhough
+    This prevents users of the public API to use this constructor (even though
     it is public).
 */
 QOpcUaClient::QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent)
@@ -876,7 +876,7 @@ void QOpcUaClient::setNamespaceAutoupdateInterval(int interval)
 }
 
 /*!
-    Returns the current revised update inverval of the namespace array.
+    Returns the current revised update interval of the namespace array.
 
     \sa setNamespaceAutoupdateInterval(int interval)
 */

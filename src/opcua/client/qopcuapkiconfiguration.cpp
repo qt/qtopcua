@@ -81,7 +81,7 @@ public:
     QString m_privateKeyFile;           /**< Private key filename which belongs to m_certificateFile */
     QString m_trustListDirectory;            /**< Path to trust list directory */
     QString m_revocationListDirectory;       /**< Folder containing  certificate revocation list */
-    QString m_issuerListDirectory;           /**< Folder containing issuer intermediate certficates (untrusted) */
+    QString m_issuerListDirectory;           /**< Folder containing issuer intermediate certificates (untrusted) */
     QString m_issuerRevocationListDirectory; /**< Folder containing issuer revocation list */
 };
 

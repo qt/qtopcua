@@ -84,7 +84,7 @@
     \section2 Building the SDK
 
     On Linux, we want to build using the system provided OpenSSL library.
-    Therefor you need to install OpenSSL development packages. The same
+    Therefore you need to install OpenSSL development packages. The same
     applies for LibXML2.
 
     \code
