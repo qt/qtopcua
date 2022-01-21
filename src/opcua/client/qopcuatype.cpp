@@ -140,7 +140,7 @@ QT_BEGIN_NAMESPACE
     \enum QOpcUa::WriteMaskBit
 
     This enum contains all possible bits for the WriteMask and UserWriteMask node attributes
-    defined in OPC-UA part 3, Tabe 3.
+    defined in OPC-UA part 3, Table 3.
 
     \value None No attribute is writable.
     \value AccessLevel The AccessLevel attribute is writable.
@@ -491,7 +491,7 @@ QT_BEGIN_NAMESPACE
 /*!
     This method can be used to check if a call has successfully finished.
 
-    Returns \c true if \a statusCode's serverity field is Good.
+    Returns \c true if \a statusCode's severity field is Good.
 */
 bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
 {

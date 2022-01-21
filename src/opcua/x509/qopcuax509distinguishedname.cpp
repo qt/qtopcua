@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
     \value LocalityName
         Locality name
     \value StateOrProvinceName
-        State or provice name
+        State or province name
     \value OrganizationName
         Organization name
 */

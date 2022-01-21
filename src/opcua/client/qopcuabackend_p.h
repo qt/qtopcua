@@ -82,7 +82,7 @@ Q_SIGNALS:
     void stateAndOrErrorChanged(QOpcUaClient::ClientState state,
                                 QOpcUaClient::ClientError error);
     void attributesRead(quint64 handle, QList<QOpcUaReadResult> attributes, QOpcUa::UaStatusCode serviceResult);
-    void attributeWritten(quint64 hande, QOpcUa::NodeAttribute attribute, QVariant value, QOpcUa::UaStatusCode statusCode);
+    void attributeWritten(quint64 handle, QOpcUa::NodeAttribute attribute, QVariant value, QOpcUa::UaStatusCode statusCode);
     void methodCallFinished(quint64 handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode);
 
     void dataChangeOccurred(quint64 handle, QOpcUaReadResult res);

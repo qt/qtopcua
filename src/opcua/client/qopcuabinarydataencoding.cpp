@@ -192,7 +192,7 @@ QOpcUaBinaryDataEncoding::QOpcUaBinaryDataEncoding(QByteArray *buffer)
 /*!
     Constructs a binary data encoding object using the encoded body of \a object as data buffer.
 
-    \a object must not be deleted as long as this binary data encoding oject is used.
+    \a object must not be deleted as long as this binary data encoding object is used.
 */
 QOpcUaBinaryDataEncoding::QOpcUaBinaryDataEncoding(QOpcUaExtensionObject &object)
     : m_data(&object.encodedBodyRef())
