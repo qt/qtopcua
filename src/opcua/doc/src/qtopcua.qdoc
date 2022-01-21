@@ -31,6 +31,7 @@
     \title Qt OPC UA C++ Classes
     \ingroup modules
     \qtvariable opcua
+    \qtcmakepackage OpcUa
     \since 5.11
     \brief List of C++ classes that provide the Qt OPC UA functionality.
 
