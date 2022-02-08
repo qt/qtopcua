@@ -57,9 +57,10 @@ class Q_OPCUA_EXPORT QOpcUaHistoryReadResponse : public QObject {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QOpcUaHistoryReadResponse)
 public:
-    QOpcUaHistoryReadResponse(QOpcUaHistoryReadResponseImpl *impl);
+    explicit QOpcUaHistoryReadResponse(QOpcUaHistoryReadResponseImpl *impl);
+    ~QOpcUaHistoryReadResponse();
 
-    enum class State {
+    enum class State : quint32 {
         Unknown,
         Reading,
         Finished,
