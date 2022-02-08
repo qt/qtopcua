@@ -56,9 +56,9 @@ class Q_OPCUA_EXPORT QOpcUaHistoryReadRawRequest
 {
 public:
     QOpcUaHistoryReadRawRequest();
-    explicit QOpcUaHistoryReadRawRequest(QList<QOpcUaReadItem> nodesToRead,
-                                         QDateTime startTimestamp,
-                                         QDateTime endTimestamp,
+    explicit QOpcUaHistoryReadRawRequest(const QList<QOpcUaReadItem> &nodesToRead,
+                                         const QDateTime &startTimestamp,
+                                         const QDateTime &endTimestamp,
                                          quint32 numValuesPerNode = 0,
                                          bool returnBounds = false);
 
@@ -66,10 +66,10 @@ public:
     ~QOpcUaHistoryReadRawRequest();
 
     QDateTime startTimestamp() const;
-    void setStartTimestamp(QDateTime startTimestamp);
+    void setStartTimestamp(const QDateTime &startTimestamp);
 
     QDateTime endTimestamp() const;
-    void setEndTimestamp(QDateTime endTimestamp);
+    void setEndTimestamp(const QDateTime &endTimestamp);
 
     quint32 numValuesPerNode() const;
     void setNumValuesPerNode(quint32 numValuesPerNode);
@@ -78,9 +78,9 @@ public:
     void setReturnBounds(bool returnBounds);
 
     QList<QOpcUaReadItem> nodesToRead() const;
-    void setNodesToRead(QList<QOpcUaReadItem> nodesToRead);
+    void setNodesToRead(const QList<QOpcUaReadItem> &nodesToRead);
 
-    void addNodeToRead(QOpcUaReadItem nodeToRead);
+    void addNodeToRead(const QOpcUaReadItem &nodeToRead);
 
     QOpcUaHistoryReadRawRequest &operator=(const QOpcUaHistoryReadRawRequest &other);
     bool operator==(const QOpcUaHistoryReadRawRequest& other) const;

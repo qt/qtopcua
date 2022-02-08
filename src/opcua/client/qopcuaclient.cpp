@@ -950,7 +950,7 @@ QList<QOpcUaUserTokenPolicy::TokenType> QOpcUaClient::supportedUserTokenTypes() 
 
     Returns a \l QOpcUaHistoryReadResponse which contains the state of the request if the asynchronous
     request has been successfully dispatched. The results are returned in the
-    \l QOpcUaHistoryReadResponse::readHistoryDataFinished(QList<QOpcUaHistoryData> results, QOpcUa::UaStatusCode serviceResult)
+    \l QOpcUaHistoryReadResponse::readHistoryDataFinished(const QList<QOpcUaHistoryData> &results, QOpcUa::UaStatusCode serviceResult)
     signal.
 
     In the following example, the historic data from the last two days of two nodes are requested and printed.

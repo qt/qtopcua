@@ -51,13 +51,13 @@ QT_BEGIN_NAMESPACE
 
     A historical data request to an OPC UA server can be specified by a \l QOpcUaHistoryReadRawRequest.
 
-    Objects of this class and the statuscode of the request are returned in the \l QOpcUaHistoryReadResponse::readHistoryDataFinished(QList<QOpcUaHistoryData> results, QOpcUa::UaStatusCode serviceResult)
+    Objects of this class and the statuscode of the request are returned in the \l QOpcUaHistoryReadResponse::readHistoryDataFinished(const QList<QOpcUaHistoryData> &results, QOpcUa::UaStatusCode serviceResult)
     signal and contain the result of a request.
 
 */
 
 /*!
-    \fn QOpcUaHistoryReadResponse::readHistoryDataFinished(QList<QOpcUaHistoryData> results, QOpcUa::UaStatusCode serviceResult);
+    \fn QOpcUaHistoryReadResponse::readHistoryDataFinished(const QList<QOpcUaHistoryData> &results, QOpcUa::UaStatusCode serviceResult);
 
     This signal is emitted when a historical data request is finished. It adds
     to \a results and sets \a serviceResult to indicate the state of the result.
