@@ -121,14 +121,6 @@ QList<QOpcUaDataValue> QOpcUaHistoryData::result() const
 }
 
 /*!
-   Returns a reference to the result list.
-*/
-QList<QOpcUaDataValue> &QOpcUaHistoryData::resultRef()
-{
-    return data->result;
-}
-
-/*!
     Returns the number of available data value objects.
 */
 int QOpcUaHistoryData::count() const
