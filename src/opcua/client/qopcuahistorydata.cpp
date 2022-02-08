@@ -109,6 +109,7 @@ QOpcUa::UaStatusCode QOpcUaHistoryData::statusCode() const
 */
 void QOpcUaHistoryData::setStatusCode(QOpcUa::UaStatusCode statusCode)
 {
+    data.detach();
     data->statusCode = statusCode;
 }
 
@@ -133,6 +134,7 @@ int QOpcUaHistoryData::count() const
 */
 void QOpcUaHistoryData::addValue(const QOpcUaDataValue &value)
 {
+    data.detach();
     data->result.append(value);
 }
 
@@ -149,6 +151,7 @@ QString QOpcUaHistoryData::nodeId() const
 */
 void QOpcUaHistoryData::setNodeId(const QString &nodeId)
 {
+    data.detach();
     data->nodeId = nodeId;
 }
 

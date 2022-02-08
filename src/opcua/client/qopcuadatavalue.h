@@ -68,7 +68,7 @@ public:
     void setValue(const QVariant &value);
 
 private:
-    QSharedDataPointer<QOpcUaDataValueData> data;
+    QExplicitlySharedDataPointer<QOpcUaDataValueData> data;
 };
 
 QT_END_NAMESPACE
