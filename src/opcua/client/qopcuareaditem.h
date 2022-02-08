@@ -54,7 +54,6 @@ public:
     QOpcUaReadItem(const QString &nodeId, QOpcUa::NodeAttribute attr = QOpcUa::NodeAttribute::Value,
                    const QString &indexRange = QString());
     QOpcUaReadItem &operator=(const QOpcUaReadItem &rhs);
-    bool operator==(const QOpcUaReadItem &other) const;
     ~QOpcUaReadItem();
 
     QString nodeId() const;
@@ -68,6 +67,13 @@ public:
 
 private:
     QSharedDataPointer<QOpcUaReadItemData> data;
+
+    friend Q_OPCUA_EXPORT bool operator==(const QOpcUaReadItem &lhs,
+                                          const QOpcUaReadItem &rhs) noexcept;
+    friend inline bool operator!=(const QOpcUaReadItem &lhs, const QOpcUaReadItem &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
 };
 
 QT_END_NAMESPACE
