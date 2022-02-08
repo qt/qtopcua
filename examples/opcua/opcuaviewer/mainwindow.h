@@ -51,6 +51,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QtOpcUa/QOpcUaHistoryData>
+
 #include <QMainWindow>
 #include <QOpcUaClient>
 #include <QItemSelection>

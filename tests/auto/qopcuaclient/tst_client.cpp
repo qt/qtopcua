@@ -44,6 +44,7 @@
 #include <QtOpcUa/QOpcUaNode>
 #include <QtOpcUa/QOpcUaProvider>
 #include <QtOpcUa/qopcuabinarydataencoding.h>
+#include <QtOpcUa/QOpcUaHistoryReadResponse>
 #include <QtOpcUa/qopcuamultidimensionalarray.h>
 
 #include <QtCore/QCoreApplication>

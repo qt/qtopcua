@@ -52,7 +52,6 @@
 #include <QtOpcUa/qopcuaaddreferenceitem.h>
 #include <QtOpcUa/qopcuadeletereferenceitem.h>
 #include <QtOpcUa/qopcuaendpointdescription.h>
-#include <QtOpcUa/qopcuahistoryreadrawrequest.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -67,6 +66,7 @@ class QOpcUaErrorState;
 class QOpcUaExpandedNodeId;
 class QOpcUaQualifiedName;
 class QOpcUaEndpointDescription;
+class QOpcUaReadRawRequest;
 
 class Q_OPCUA_EXPORT QOpcUaClient : public QObject
 {

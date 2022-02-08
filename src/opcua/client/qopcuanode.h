@@ -47,8 +47,6 @@
 #include <QtOpcUa/qopcuatype.h>
 #include <QtOpcUa/qopcuabrowsepathtarget.h>
 #include <QtOpcUa/qopcuarelativepathelement.h>
-#include <QtOpcUa/qopcuahistoryreadrawrequest.h>
-#include <QtOpcUa/qopcuahistoryreadresponse.h>
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qdebug.h>
@@ -60,6 +58,8 @@ QT_BEGIN_NAMESPACE
 class QOpcUaNodePrivate;
 class QOpcUaNodeImpl;
 class QOpcUaClient;
+class QOpcUaHistoryReadRawRequest;
+class QOpcUaHistoryReadResponse;
 
 class Q_OPCUA_EXPORT QOpcUaNode : public QObject
 {
