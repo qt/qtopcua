@@ -104,6 +104,7 @@ QVariant QOpcUaDataValue::value() const
 */
 void QOpcUaDataValue::setValue(const QVariant &value)
 {
+    data.detach();
     data->value = value;
 }
 
@@ -121,6 +122,7 @@ QOpcUa::UaStatusCode QOpcUaDataValue::statusCode() const
 */
 void QOpcUaDataValue::setStatusCode(QOpcUa::UaStatusCode statusCode)
 {
+    data.detach();
     data->statusCode = statusCode;
 }
 
@@ -137,6 +139,7 @@ QDateTime QOpcUaDataValue::sourceTimestamp() const
 */
 void QOpcUaDataValue::setSourceTimestamp(const QDateTime &sourceTimestamp)
 {
+    data.detach();
     data->sourceTimestamp = sourceTimestamp;
 }
 
@@ -153,6 +156,7 @@ QDateTime QOpcUaDataValue::serverTimestamp() const
 */
 void QOpcUaDataValue::setServerTimestamp(const QDateTime &serverTimestamp)
 {
+    data.detach();
     data->serverTimestamp = serverTimestamp;
 }
 

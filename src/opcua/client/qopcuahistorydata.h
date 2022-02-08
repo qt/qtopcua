@@ -67,7 +67,7 @@ public:
 
     QOpcUaHistoryData &operator=(const QOpcUaHistoryData &rhs);
 private:
-    QSharedDataPointer<QOpcUaHistoryDataData> data;
+    QExplicitlySharedDataPointer<QOpcUaHistoryDataData> data;
 };
 
 QT_END_NAMESPACE
