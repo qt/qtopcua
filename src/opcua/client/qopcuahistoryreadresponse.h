@@ -79,7 +79,7 @@ public:
     QOpcUa::UaStatusCode serviceResult() const;
 
 Q_SIGNALS:
-    void readHistoryDataFinished(QList<QOpcUaHistoryData> results, QOpcUa::UaStatusCode serviceResult);
+    void readHistoryDataFinished(const QList<QOpcUaHistoryData> &results, QOpcUa::UaStatusCode serviceResult);
     void stateChanged(State state);
 };
 

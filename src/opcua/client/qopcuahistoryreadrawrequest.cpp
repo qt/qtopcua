@@ -78,9 +78,9 @@ QOpcUaHistoryReadRawRequest::QOpcUaHistoryReadRawRequest()
 /*!
     Constructs a QOpcUaHistoryReadRawRequest item with the given values.
 */
-QOpcUaHistoryReadRawRequest::QOpcUaHistoryReadRawRequest(QList<QOpcUaReadItem> nodesToRead,
-                                                         QDateTime startTimestamp,
-                                                         QDateTime endTimestamp,
+QOpcUaHistoryReadRawRequest::QOpcUaHistoryReadRawRequest(const QList<QOpcUaReadItem> &nodesToRead,
+                                                         const QDateTime &startTimestamp,
+                                                         const QDateTime &endTimestamp,
                                                          quint32 numValuesPerNode,
                                                          bool returnBounds)
     : data(new QOpcUaHistoryReadRawRequestData)
@@ -118,7 +118,7 @@ QDateTime QOpcUaHistoryReadRawRequest::startTimestamp() const
 /*!
     Sets \a startTimestamp for the historical data to be fetched.
 */
-void QOpcUaHistoryReadRawRequest::setStartTimestamp(QDateTime startTimestamp)
+void QOpcUaHistoryReadRawRequest::setStartTimestamp(const QDateTime &startTimestamp)
 {
     if (data->startTimestamp == startTimestamp)
         return;
@@ -137,7 +137,7 @@ QDateTime QOpcUaHistoryReadRawRequest::endTimestamp() const
 /*!
     Sets \a endTimestamp for the historical data to be fetched.
 */
-void QOpcUaHistoryReadRawRequest::setEndTimestamp(QDateTime endTimestamp)
+void QOpcUaHistoryReadRawRequest::setEndTimestamp(const QDateTime &endTimestamp)
 {
     if (data->endTimestamp == endTimestamp)
         return;
@@ -192,7 +192,7 @@ QList<QOpcUaReadItem> QOpcUaHistoryReadRawRequest::nodesToRead() const
 /*!
     Sets the \a nodesToRead list.
 */
-void QOpcUaHistoryReadRawRequest::setNodesToRead(QList<QOpcUaReadItem> nodesToRead)
+void QOpcUaHistoryReadRawRequest::setNodesToRead(const QList<QOpcUaReadItem> &nodesToRead)
 {
     data->nodesToRead = nodesToRead;
 }
@@ -200,7 +200,7 @@ void QOpcUaHistoryReadRawRequest::setNodesToRead(QList<QOpcUaReadItem> nodesToRe
 /*!
     Adds a node to the \a nodeToRead list.
 */
-void QOpcUaHistoryReadRawRequest::addNodeToRead(QOpcUaReadItem nodeToRead)
+void QOpcUaHistoryReadRawRequest::addNodeToRead(const QOpcUaReadItem &nodeToRead)
 {
     data->nodesToRead.append(nodeToRead);
 }
