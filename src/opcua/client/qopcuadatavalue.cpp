@@ -75,12 +75,12 @@ QOpcUaDataValue::QOpcUaDataValue(const QOpcUaDataValue &other)
 }
 
 /*!
-    Sets the values from \a rhs in this data value.
+    Sets the values from \a other in this data value.
 */
-QOpcUaDataValue &QOpcUaDataValue::operator=(const QOpcUaDataValue &rhs)
+QOpcUaDataValue &QOpcUaDataValue::operator=(const QOpcUaDataValue &other)
 {
-    if (this != &rhs)
-        data.operator=(rhs.data);
+    if (this != &other)
+        data.operator=(other.data);
     return *this;
 }
 

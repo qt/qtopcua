@@ -153,12 +153,12 @@ void QOpcUaHistoryData::setNodeId(const QString &nodeId)
 }
 
 /*!
-    Sets the values from \a rhs in this history data item.
+    Sets the values from \a other in this history data item.
 */
-QOpcUaHistoryData &QOpcUaHistoryData::operator=(const QOpcUaHistoryData &rhs)
+QOpcUaHistoryData &QOpcUaHistoryData::operator=(const QOpcUaHistoryData &other)
 {
-    if (this != &rhs)
-        data.operator=(rhs.data);
+    if (this != &other)
+        data.operator=(other.data);
     return *this;
 }
 

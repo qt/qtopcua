@@ -64,7 +64,7 @@ public:
     QString nodeId() const;
     void setNodeId(const QString &nodeId);
 
-    QOpcUaHistoryData &operator=(const QOpcUaHistoryData &rhs);
+    QOpcUaHistoryData &operator=(const QOpcUaHistoryData &other);
 private:
     QSharedDataPointer<QOpcUaHistoryDataData> data;
 };
