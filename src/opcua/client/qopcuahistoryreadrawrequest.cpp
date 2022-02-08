@@ -216,33 +216,32 @@ QOpcUaHistoryReadRawRequest &QOpcUaHistoryReadRawRequest::operator=(const QOpcUa
 }
 
 /*!
-    Returns \c true if \a other is equal to this QOpcUaHistoryReadRawRequest item; otherwise returns \c false.
+    \fn bool QOpcUaHistoryReadRawRequest::operator==(const QOpcUaHistoryReadRawRequest& lhs,
+                                                     const QOpcUaHistoryReadRawRequest &rhs)
 
-    Two QOpcUaHistoryReadRawRequest items are considered equal if their \c startTimestamp, \c endTimestamp,
-    \c numValuesPerNode, \c returnBounds and \c nodesToRead are equal.
+    Returns \c true if \a lhs is equal to \a rhs; otherwise returns \c false.
+
+    Two QOpcUaHistoryReadRawRequest items are considered equal if their \c startTimestamp,
+    \c endTimestamp, \c numValuesPerNode, \c returnBounds and \c nodesToRead are equal.
 */
-bool QOpcUaHistoryReadRawRequest::operator==(const QOpcUaHistoryReadRawRequest &other) const
+bool operator==(const QOpcUaHistoryReadRawRequest &lhs,
+                const QOpcUaHistoryReadRawRequest &rhs) noexcept
 {
-    return (data->startTimestamp == other.startTimestamp() &&
-            data->endTimestamp == other.endTimestamp() &&
-            data->numValuesPerNode == other.numValuesPerNode() &&
-            data->returnBounds == other.returnBounds() &&
-            data->nodesToRead == other.nodesToRead());
+    return (lhs.data->startTimestamp == rhs.data->startTimestamp &&
+            lhs.data->endTimestamp == rhs.data->endTimestamp &&
+            lhs.data->numValuesPerNode == rhs.data->numValuesPerNode &&
+            lhs.data->returnBounds == rhs.data->returnBounds &&
+            lhs.data->nodesToRead == rhs.data->nodesToRead);
 }
 
 /*!
-    Returns \c true if \a other is not equal to this QOpcUaHistoryReadRawRequest item; otherwise returns \c false.
+    \fn bool QOpcUaHistoryReadRawRequest::operator!=(const QOpcUaHistoryReadRawRequest &lhs,
+                                                     const QOpcUaHistoryReadRawRequest &rhs)
 
-    Two QOpcUaHistoryReadRawRequest items are considered not equal if their \c startTimestamp, \c endTimestamp,
-    \c numValuesPerNode, and \c returnBounds or \c nodesToRead are not equal.
+    Returns \c true if \a lhs is not equal to \a rhs; otherwise returns \c false.
+
+    Two QOpcUaHistoryReadRawRequest items are considered not equal if their \c startTimestamp,
+    \c endTimestamp, \c numValuesPerNode, \c returnBounds or \c nodesToRead are not equal.
 */
-bool QOpcUaHistoryReadRawRequest::operator!=(const QOpcUaHistoryReadRawRequest &other) const
-{
-    return (data->startTimestamp != other.startTimestamp() ||
-            data->endTimestamp != other.endTimestamp() ||
-            data->numValuesPerNode != other.numValuesPerNode() ||
-            data->returnBounds != other.returnBounds() ||
-            data->nodesToRead != other.nodesToRead());
-}
 
 QT_END_NAMESPACE

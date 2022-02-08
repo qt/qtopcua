@@ -83,11 +83,17 @@ public:
     void addNodeToRead(const QOpcUaReadItem &nodeToRead);
 
     QOpcUaHistoryReadRawRequest &operator=(const QOpcUaHistoryReadRawRequest &other);
-    bool operator==(const QOpcUaHistoryReadRawRequest& other) const;
-    bool operator!=(const QOpcUaHistoryReadRawRequest& other) const;
 
 private:
     QSharedDataPointer<QOpcUaHistoryReadRawRequestData> data;
+
+    friend Q_OPCUA_EXPORT bool operator==(const QOpcUaHistoryReadRawRequest &lhs,
+                                          const QOpcUaHistoryReadRawRequest &rhs) noexcept;
+    friend inline bool operator!=(const QOpcUaHistoryReadRawRequest &lhs,
+                                  const QOpcUaHistoryReadRawRequest &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
 };
 
 QT_END_NAMESPACE

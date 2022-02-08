@@ -98,18 +98,6 @@ QOpcUaReadItem &QOpcUaReadItem::operator=(const QOpcUaReadItem &rhs)
     return *this;
 }
 
-/*!
-    Returns \c true if \a other is equal to this read item; otherwise returns \c false.
-
-    Two read items are considered equal if their \c nodeId, \c attribute, and \c indexRange are equal.
-*/
-bool QOpcUaReadItem::operator==(const QOpcUaReadItem &other) const
-{
-    return data->nodeId == other.data->nodeId &&
-            data->attribute == other.data->attribute &&
-            data->indexRange == other.data->indexRange;
-}
-
 QOpcUaReadItem::~QOpcUaReadItem()
 {
 }
@@ -161,5 +149,29 @@ void QOpcUaReadItem::setNodeId(const QString &nodeId)
 {
     data->nodeId = nodeId;
 }
+
+/*!
+    \fn bool QOpcUaReadItem::operator==(const QOpcUaReadItem &lhs, const QOpcUaReadItem &rhs)
+
+    Returns \c true if \a lhs is equal to \a rhs; otherwise returns \c false.
+
+    Two read items are considered equal if their \c nodeId, \c attribute, and \c indexRange are
+    equal.
+*/
+bool operator==(const QOpcUaReadItem &lhs, const QOpcUaReadItem &rhs) noexcept
+{
+    return lhs.data->nodeId == rhs.data->nodeId &&
+            lhs.data->attribute == rhs.data->attribute &&
+            lhs.data->indexRange == rhs.data->indexRange;
+}
+
+/*!
+    \fn bool QOpcUaReadItem::operator!=(const QOpcUaReadItem &lhs, const QOpcUaReadItem &rhs)
+
+    Returns \c true if \a lhs is not equal to \a rhs; otherwise returns \c false.
+
+    Two read items are considered not equal if their \c nodeId, \c attribute or \c indexRange are
+    not equal.
+*/
 
 QT_END_NAMESPACE
