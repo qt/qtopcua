@@ -211,7 +211,7 @@ enum class ReferenceTypeId : quint32 {
     HasEffectUnsuppressed = 17985,
     HasWriterGroup = 18804,
     HasReaderGroup = 18805,
-    AliasFor = 23469
+    AliasFor = 23469,
 };
 Q_ENUM_NS(ReferenceTypeId)
 
