@@ -71,9 +71,11 @@ public:
 
 private:
     QSharedDataPointer<QOpcUaLocalizedTextData> data;
-};
 
-Q_OPCUA_EXPORT QDebug operator<<(QDebug debug, const QOpcUaLocalizedText &lt);
+#ifndef QT_NO_DEBUG_STREAM
+    friend Q_OPCUA_EXPORT QDebug operator<<(QDebug debug, const QOpcUaLocalizedText &lt);
+#endif
+};
 
 QT_END_NAMESPACE
 

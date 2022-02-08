@@ -67,9 +67,11 @@ public:
 
 private:
     QSharedDataPointer<QOpcUaQualifiedNameData> data;
-};
 
-Q_OPCUA_EXPORT QDebug operator<<(QDebug debug, const QOpcUaQualifiedName &qn);
+#ifndef QT_NO_DEBUG_STREAM
+    friend Q_OPCUA_EXPORT QDebug operator<<(QDebug debug, const QOpcUaQualifiedName &qn);
+#endif
+};
 
 QT_END_NAMESPACE
 
