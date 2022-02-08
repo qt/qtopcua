@@ -76,6 +76,13 @@ QOpcUaHistoryReadResponse::QOpcUaHistoryReadResponse(QOpcUaHistoryReadResponseIm
 {}
 
 /*!
+    The destructor for QOpcUaHistoryReadResponse
+ */
+QOpcUaHistoryReadResponse::~QOpcUaHistoryReadResponse()
+{
+}
+
+/*!
     Returns \c true if there are more values available from the historic data request.
 */
 bool QOpcUaHistoryReadResponse::hasMoreData() const
