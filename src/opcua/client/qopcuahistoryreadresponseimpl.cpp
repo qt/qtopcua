@@ -144,7 +144,7 @@ void QOpcUaHistoryReadResponseImpl::handleDataAvailable(const QList<QOpcUaHistor
             auto &target = m_data[m_dataMapping.at(index++)];
             target.setStatusCode(result.statusCode());
             for (const auto &value : result.result()) {
-                target.resultRef().append(value);
+                target.addValue(value);
             }
         }
     }

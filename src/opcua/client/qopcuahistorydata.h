@@ -59,7 +59,6 @@ public:
     QOpcUa::UaStatusCode statusCode() const;
     void setStatusCode(QOpcUa::UaStatusCode statusCode);
     QList<QOpcUaDataValue> result() const;
-    QList<QOpcUaDataValue> &resultRef();
     int count() const;
     void addValue(const QOpcUaDataValue &value);
     QString nodeId() const;
