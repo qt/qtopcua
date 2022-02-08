@@ -82,7 +82,7 @@ public:
 
     void addNodeToRead(QOpcUaReadItem nodeToRead);
 
-    QOpcUaHistoryReadRawRequest &operator=(const QOpcUaHistoryReadRawRequest &rhs);
+    QOpcUaHistoryReadRawRequest &operator=(const QOpcUaHistoryReadRawRequest &other);
     bool operator==(const QOpcUaHistoryReadRawRequest& other) const;
     bool operator!=(const QOpcUaHistoryReadRawRequest& other) const;
 

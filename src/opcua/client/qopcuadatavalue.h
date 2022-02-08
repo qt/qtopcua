@@ -52,7 +52,7 @@ class Q_OPCUA_EXPORT QOpcUaDataValue
 public:
     QOpcUaDataValue();
     QOpcUaDataValue(const QOpcUaDataValue &other);
-    QOpcUaDataValue &operator=(const QOpcUaDataValue &rhs);
+    QOpcUaDataValue &operator=(const QOpcUaDataValue &other);
     ~QOpcUaDataValue();
 
     QDateTime serverTimestamp() const;

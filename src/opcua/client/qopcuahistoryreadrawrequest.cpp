@@ -206,12 +206,12 @@ void QOpcUaHistoryReadRawRequest::addNodeToRead(QOpcUaReadItem nodeToRead)
 }
 
 /*!
-    Sets the values from \a rhs in this QOpcUaHistoryReadRawRequest item.
+    Sets the values from \a other in this QOpcUaHistoryReadRawRequest item.
 */
-QOpcUaHistoryReadRawRequest &QOpcUaHistoryReadRawRequest::operator=(const QOpcUaHistoryReadRawRequest &rhs)
+QOpcUaHistoryReadRawRequest &QOpcUaHistoryReadRawRequest::operator=(const QOpcUaHistoryReadRawRequest &other)
 {
-    if (this != &rhs)
-        data.operator=(rhs.data);
+    if (this != &other)
+        data.operator=(other.data);
     return *this;
 }
 
