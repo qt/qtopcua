@@ -51,7 +51,7 @@ class QOpcUaHistoryDataData;
 class Q_OPCUA_EXPORT QOpcUaHistoryData
 {
 public:
-    explicit QOpcUaHistoryData();
+    QOpcUaHistoryData();
     explicit QOpcUaHistoryData(const QString &nodeId);
     QOpcUaHistoryData(const QOpcUaHistoryData &other);
     ~QOpcUaHistoryData();

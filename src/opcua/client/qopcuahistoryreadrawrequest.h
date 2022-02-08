@@ -55,7 +55,7 @@ class QOpcUaHistoryReadRawRequestData;
 class Q_OPCUA_EXPORT QOpcUaHistoryReadRawRequest
 {
 public:
-    explicit QOpcUaHistoryReadRawRequest();
+    QOpcUaHistoryReadRawRequest();
     explicit QOpcUaHistoryReadRawRequest(QList<QOpcUaReadItem> nodesToRead,
                                          QDateTime startTimestamp,
                                          QDateTime endTimestamp,
