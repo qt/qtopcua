@@ -41,6 +41,7 @@
 #include "qopen62541utils.h"
 #include "qopen62541valueconverter.h"
 
+#include "qopcuadatavalue.h"
 #include "qopcuamultidimensionalarray.h"
 
 #include <QtCore/qdatetime.h>

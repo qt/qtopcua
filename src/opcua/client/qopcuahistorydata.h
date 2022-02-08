@@ -40,8 +40,8 @@
 #ifndef QOPCUAHISTORYDATA_H
 #define QOPCUAHISTORYDATA_H
 
-#include "QtOpcUa/qopcuatype.h"
-#include "QtOpcUa/qopcuadatavalue.h"
+#include <QtOpcUa/qopcuatype.h>
+#include <QtOpcUa/qopcuadatavalue.h>
 
 #include <QtOpcUa/qopcuaglobal.h>
 

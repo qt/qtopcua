@@ -40,12 +40,12 @@
 #ifndef QHISTORYREADRAWREQUEST_H
 #define QHISTORYREADRAWREQUEST_H
 
-#include <QObject>
-#include <QDateTime>
+#include <QtCore/qobject.h>
+#include <QtCore/qdatetime.h>
 #include <QtCore/qshareddata.h>
 
-#include "QtOpcUa/qopcuareaditem.h"
-#include "QtOpcUa/qopcuahistorydata.h"
+#include <QtOpcUa/qopcuareaditem.h>
+#include <QtOpcUa/qopcuahistorydata.h>
 
 #include <QtOpcUa/qopcuaglobal.h>
 
