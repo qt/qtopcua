@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2016 basysKom GmbH, opensource@basyskom.com
+** Copyright (C) 2019 basysKom GmbH, opensource@basyskom.com
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the QtOpcUa module of the Qt Toolkit.
@@ -62,6 +62,7 @@
 #include <QtOpcUa/qopcuahistoryreadrawrequest.h>
 
 #include <QtCore/qvariant.h>
+#include <QtCore/private/qglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -46,6 +46,7 @@
 #include <QtOpcUa/qopcuausertokenpolicy.h>
 #include <QtOpcUa/qopcuaapplicationdescription.h>
 #include <QtOpcUa/qopcuausertokenpolicy.h>
+#include <QtCore/private/qglobal_p.h>
 
 //
 //  W A R N I N G

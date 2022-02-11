@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2018 The Qt Company Ltd.
+** Copyright (C) 2021 The Qt Company Ltd.
 ** Contact: https://www.qt.io/licensing/
 **
 ** This file is part of the Qt OPC UA module.
@@ -40,6 +40,7 @@
 #pragma once
 
 #include <QObject>
+#include <private/qglobal_p.h>
 
 //
 //  W A R N I N G
