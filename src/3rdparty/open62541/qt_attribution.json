@@ -6,19 +6,8 @@
     "Description": "Open62541 is an open source implementation of the OPC UA protocol.",
     "Homepage": "https://open62541.org/",
     "Version": "1.1",
-    "License": "Mozilla Public License 2.0",
-    "LicenseId": "MPL-2.0",
-    "LicenseFile": "mpl-2.0.815ca599c9df.txt",
-    "Copyright": "Bauer, Maximilian
-                  Ebrahimi, Reza <reza.ebrahimi.dev (at) gmail.com>
-                  Graube, Markus <markus.graube (at) tu-dresden.de>
-                  Gruener, Sten <s.gruener (at) plt.rwth-aachen.de>
-                  Iatrou, Chris Paul <chris_paul.iatrou (at) tu-dresden.de>
-                  Jeromin, Holger
-                  Palm, Florian <f.palm (at) plt.rwth-aachen.de>
-                  Pfrommer, Julius <julius.pfrommer (at) iosb.fraunhofer.edu>
-                  Profanter, Stefan <profanter (at) fortiss.org>
-                  Stalder, Thomas <t.stalder (at) bluetimeconcept.ch>
-                  Urbas, Leon <leon.urbas (at) tu-dresden.de>
-    "
+    "License": "Mozilla Public License 2.0 and Creative Commons Zero v1.0 Universal and Creative Commons Attribution Non Commercial Share Alike 4.0 International and BSD 3-Clause \"New\" or \"Revised\" License and Apache License 2.0 and MIT License",
+    "LicenseId": "MPL-2.0 AND CC0-1.0 AND CC-BY-SA-4.0 AND BSD-3-Clause AND Apache-2.0 AND MIT",
+    "LicenseFiles": [ "mpl-2.0.815ca599c9df.txt", "LICENSE-CC0", "CC-BY-SA-4.0", "BSD-3-CLAUSE", "LICENSE-2.0.txt", "MIT" ],
+    "CopyrightFile": "AUTHORS"
 }
