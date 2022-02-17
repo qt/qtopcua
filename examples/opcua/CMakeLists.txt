@@ -1,5 +1,3 @@
-# Generated from opcua.pro.
-
 if(TARGET Qt::Widgets)
     qt_internal_add_example(opcuaviewer)
 endif()

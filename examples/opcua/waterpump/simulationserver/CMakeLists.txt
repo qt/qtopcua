@@ -1,44 +1,36 @@
-# Generated from simulationserver.pro.
-
 cmake_minimum_required(VERSION 3.16)
-project(simulationserver LANGUAGES CXX C) # special case
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+project(simulationserver LANGUAGES CXX C)
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
 
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
-  set(INSTALL_EXAMPLESDIR "examples")
+    set(INSTALL_EXAMPLESDIR "examples")
 endif()
 
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/opcua/waterpump/simulationserver")
 
-find_package(Qt6 COMPONENTS Core)
-find_package(Qt6 COMPONENTS OpcUa)
+find_package(Qt6 REQUIRED COMPONENTS Core OpcUa)
 
-# special case begin
 if (EXISTS ../../../../../../../${QT_REPO_MODULE_VERSION}/Automation/sources/qtopcua/)
     set(MODULE_SOURCE ../../../../../../../${QT_REPO_MODULE_VERSION}/Automation/sources/qtopcua/)
 else()
     set(MODULE_SOURCE ../../../../)
 endif()
-# special case end
 
 qt_add_executable(simulationserver
-    ${MODULE_SOURCE}/src/plugins/opcua/open62541/qopen62541utils.cpp # special case
-    ${MODULE_SOURCE}/src/plugins/opcua/open62541/qopen62541valueconverter.cpp # special case
+    ${MODULE_SOURCE}/src/plugins/opcua/open62541/qopen62541utils.cpp
+    ${MODULE_SOURCE}/src/plugins/opcua/open62541/qopen62541valueconverter.cpp
     main.cpp
     simulationserver.cpp simulationserver.h
 )
+
 set_target_properties(simulationserver PROPERTIES
     WIN32_EXECUTABLE FALSE
     MACOSX_BUNDLE TRUE
 )
 
 target_include_directories(simulationserver PUBLIC
-    ${MODULE_SOURCE}/src/plugins/opcua/open62541 # special case
+    ${MODULE_SOURCE}/src/plugins/opcua/open62541
 )
 
 target_link_libraries(simulationserver PUBLIC
@@ -47,7 +39,6 @@ target_link_libraries(simulationserver PUBLIC
     Qt::OpcUaPrivate
 )
 
-# special case begin
 if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541)
     target_sources(simulationserver PRIVATE
         ${MODULE_SOURCE}/src/3rdparty/open62541/open62541.h
@@ -65,7 +56,7 @@ endif()
 qt_opcua_disable_optimizations_in_current_dir()
 
 if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541)
-    if (NOT (WINRT OR WIN32 AND MSVC)) # special case
+    if (NOT (WINRT OR WIN32 AND MSVC))
         set_source_files_properties(${MODULE_SOURCE}/src/3rdparty/open62541/open62541.c
         PROPERTIES COMPILE_OPTIONS
             "-Wno-unused-parameter;-Wno-unused-function;-Wno-format;-Wno-format-security;-Wno-strict-aliasing;-Wno-unused-result;-std=c99")
@@ -78,7 +69,6 @@ if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541)
                 "/Zc:strictStrings-;/permissive;/wd2362")
     endif()
 endif()
-# special case end
 
 if(QT_FEATURE_system_open62541 OR NOT QT_FEATURE_open62541)
     target_link_libraries(simulationserver PRIVATE

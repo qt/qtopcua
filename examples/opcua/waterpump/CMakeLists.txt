@@ -1,5 +1,3 @@
-# Generated from waterpump.pro.
-
 qt_internal_add_example(simulationserver)
 qt_internal_add_example(waterpump-qmlcpp)
 qt_internal_add_example(waterpump-qml)
