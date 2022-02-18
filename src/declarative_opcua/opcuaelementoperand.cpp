@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
         where: [
             QtOpcUa.FilterElement {
                 operator: QtOpcUa.FilterElement.GreaterThan
-                firstOperand: QtOpcUA.SimpleAttributeOperand {
+                firstOperand: QtOpcUa.SimpleAttributeOperand {
                     browsePath: [
                         QtOpcUa.NodeId {
                             identifier: "Severity"
@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
             }
             QtOpcUa.FilterElement {
                 operator: QtOpcUa.FilterElement.Equals
-                firstOperand: QtOpcUA.SimpleAttributeOperand {
+                firstOperand: QtOpcUa.SimpleAttributeOperand {
                     browsePath: [
                         QtOpcUa.NodeId {
                             identifier: "Message"
@@ -96,7 +96,7 @@ QT_BEGIN_NAMESPACE
             }
             QtOpcUa.FilterElement {
                 operator: QtOpcUa.FilterElement.And
-                firstOperand: QtOpcUA.ElementOperand {
+                firstOperand: QtOpcUa.ElementOperand {
                     index: 0
                 }
                 secondOperand: QtOpcUa.ElementOperand {
