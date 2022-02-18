@@ -75,7 +75,7 @@ QT_BEGIN_NAMESPACE
     \code
     import QtOpcUa 5.13 as QtOpcUa
 
-    QtOpcUA.SimpleAttributeOperand {
+    QtOpcUa.SimpleAttributeOperand {
         ...
         browsePath: [
             QtOpcUa.NodeId {

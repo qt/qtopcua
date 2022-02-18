@@ -72,7 +72,7 @@
 
     \section2 QML API
 
-    The \l{Qt OPC UA QML Types}{QML types} are available through the \c QtOpcUA import. To use the
+    The \l{Qt OPC UA QML Types}{QML types} are available through the \c QtOpcUa import. To use the
     types, add the following import statement to your .qml file:
 
     \qml
