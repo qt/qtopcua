@@ -279,7 +279,7 @@ int q_BN_is_word(BIGNUM *a, BN_ULONG w);
 #endif // !opensslv11
 
 BN_ULONG q_BN_mod_word(const BIGNUM *a, BN_ULONG w);
-int q_BN_set_word(const BIGNUM *a, BN_ULONG w);
+int q_BN_set_word(BIGNUM *a, BN_ULONG w);
 BIGNUM *q_BN_new();
 void q_BN_clear(BIGNUM *a);
 void q_BN_free(BIGNUM *a);
@@ -385,7 +385,7 @@ int q_PEM_write_bio_RSAPrivateKey(BIO *a, RSA *b, const EVP_CIPHER *c, unsigned 
                                   int e, pem_password_cb *f, void *g);
 int q_PEM_write_bio_PrivateKey(BIO *a, EVP_PKEY *b, const EVP_CIPHER *c, unsigned char *d,
                                int e, pem_password_cb *f, void *g);
-int q_PEM_write_bio_PKCS8PrivateKey(BIO *a, EVP_PKEY *b, const EVP_CIPHER *c, unsigned char *d,
+int q_PEM_write_bio_PKCS8PrivateKey(BIO *a, EVP_PKEY *b, const EVP_CIPHER *c, char *d,
                                int e, pem_password_cb *f, void *g);
 #ifndef OPENSSL_NO_EC
 int q_PEM_write_bio_ECPrivateKey(BIO *a, EC_KEY *b, const EVP_CIPHER *c, unsigned char *d,
