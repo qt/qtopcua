@@ -822,6 +822,8 @@ bool QOpcUaNode::browse(const QOpcUaBrowseRequest &request)
             });
         }
     \endcode
+
+    \since 6.3
 */
 QOpcUaHistoryReadResponse *QOpcUaNode::readHistoryRaw(const QDateTime &startTime, const QDateTime &endTime, quint32 numValues, bool returnBounds)
 {
