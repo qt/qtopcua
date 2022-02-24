@@ -56,6 +56,9 @@ public:
     QOpcUaHistoryData(const QOpcUaHistoryData &other);
     ~QOpcUaHistoryData();
 
+    void swap(QOpcUaHistoryData &other) noexcept
+    { data.swap(other.data); }
+
     QOpcUa::UaStatusCode statusCode() const;
     void setStatusCode(QOpcUa::UaStatusCode statusCode);
     QList<QOpcUaDataValue> result() const;
@@ -68,6 +71,8 @@ public:
 private:
     QExplicitlySharedDataPointer<QOpcUaHistoryDataData> data;
 };
+
+Q_DECLARE_SHARED(QOpcUaHistoryData)
 
 QT_END_NAMESPACE
 

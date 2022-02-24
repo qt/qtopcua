@@ -55,6 +55,9 @@ public:
     QOpcUaDataValue &operator=(const QOpcUaDataValue &other);
     ~QOpcUaDataValue();
 
+    void swap(QOpcUaDataValue &other) noexcept
+    { data.swap(other.data); }
+
     QDateTime serverTimestamp() const;
     void setServerTimestamp(const QDateTime &serverTimestamp);
 
@@ -70,6 +73,8 @@ public:
 private:
     QExplicitlySharedDataPointer<QOpcUaDataValueData> data;
 };
+
+Q_DECLARE_SHARED(QOpcUaDataValue)
 
 QT_END_NAMESPACE
 
