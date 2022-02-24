@@ -65,6 +65,9 @@ public:
     QOpcUaHistoryReadRawRequest(const QOpcUaHistoryReadRawRequest &other);
     ~QOpcUaHistoryReadRawRequest();
 
+    void swap(QOpcUaHistoryReadRawRequest &other) noexcept
+    { data.swap(other.data); }
+
     QDateTime startTimestamp() const;
     void setStartTimestamp(const QDateTime &startTimestamp);
 
@@ -95,6 +98,8 @@ private:
         return !(lhs == rhs);
     }
 };
+
+Q_DECLARE_SHARED(QOpcUaHistoryReadRawRequest)
 
 QT_END_NAMESPACE
 
