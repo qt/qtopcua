@@ -15,7 +15,7 @@ qt_internal_add_plugin(QUACppPlugin
         quacppsubscription.cpp quacppsubscription.h
         quacpputils.cpp quacpputils.h
         quacppvalueconverter.cpp quacppvalueconverter.h
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::CorePrivate
         Qt::Network

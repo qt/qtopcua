@@ -65,12 +65,12 @@ qt_internal_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_open62541_securi
 # special case end
 
 qt_internal_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_open62541 AND WIN32 AND MSVC AND NOT QT_FEATURE_system_open62541 # special case
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ws2_32.lib
 )
 
 qt_internal_extend_target(QOpen62541Plugin CONDITION (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541) AND (WIN32 AND GCC) # special case
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ws2_32
 )
 
