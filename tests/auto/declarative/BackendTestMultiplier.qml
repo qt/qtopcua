@@ -37,8 +37,8 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.3
-import QtOpcUa 5.13 as QtOpcUa
+import QtQuick
+import QtOpcUa as QtOpcUa
 
 Item {
     property int currentTest: 0

@@ -48,7 +48,7 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.10
+import QtQuick
 
 Rectangle {
     property real percentFilled: 0

@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.3
+import QtQuick
 
 BackendTestMultiplier {
     testName: "AuthorizationTest"

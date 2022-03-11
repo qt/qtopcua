@@ -48,10 +48,10 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.10
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.3
-import OpcUaMachineBackend 1.0
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls
+import OpcUaMachineBackend
 
 RowLayout {
     opacity: uaBackend.connected ? 1.0 : 0.25
