@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
     any connection attempt.
 
     \code
-    import QtOpcUa 5.13 as QtOpcUa
+    import QtOpcUa as QtOpcUa
 
     QtOpcUa.Connection {
         backend: "open62541"
@@ -242,7 +242,7 @@ QT_BEGIN_NAMESPACE
     use the connection.
 
     \code
-    import QtOpcUa 5.13 as QtOpcUa
+    import QtOpcUa as QtOpcUa
 
     MyClass {
         id: myclass

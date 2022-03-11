@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
     The following EventFilter tells the server to report the value of the "Message" field for events that have a "Severity" field with value >= 500:
 
     \code
-        import QtOpcUa 5.13 as QtOpcUa
+        import QtOpcUa as QtOpcUa
         QtOpcUa.Node {
             ...
 

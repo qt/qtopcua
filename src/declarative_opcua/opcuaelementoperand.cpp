@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
     with the indices of the two conditions created before:
 
     \code
-    import QtOpcUa 5.13 as QtOpcUa
+    import QtOpcUa as QtOpcUa
 
     QtOpcUa.EventFilter {
         select : [ ... ]

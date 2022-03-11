@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
     of the "Severity" field of the base event type:
 
     \code
-    import QtOpcUa 5.13 as QtOpcUa
+    import QtOpcUa as QtOpcUa
 
     QtOpcUa.SimpleAttributeOperand {
         identifier: "Severity"
@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
     Browse path to the node holding the attribute.
 
     \code
-    import QtOpcUa 5.13 as QtOpcUa
+    import QtOpcUa as QtOpcUa
 
     QtOpcUa.SimpleAttributeOperand {
         ...
@@ -94,7 +94,7 @@ QT_BEGIN_NAMESPACE
     Index range string used to identify a single value or subset of the attribute's value.
 
     \code
-    import QtOpcUa 5.13 as QtOpcUa
+    import QtOpcUa as QtOpcUa
 
     QtOpcUa.SimpleAttributeOperand {
         ...
@@ -110,7 +110,7 @@ QT_BEGIN_NAMESPACE
     The default value is \c Constants.NodeAttribute.Value.
 
     \code
-    import QtOpcUa 5.13 as QtOpcUa
+    import QtOpcUa as QtOpcUa
 
     QtOpcUa.SimpleAttributeOperand {
         ...
@@ -126,7 +126,7 @@ QT_BEGIN_NAMESPACE
     The default value is \c "ns=0;i=2041".
 
     \code
-    import QtOpcUa 5.13 as QtOpcUa
+    import QtOpcUa as QtOpcUa
 
     QtOpcUa.SimpleAttributeOperand {
         ...

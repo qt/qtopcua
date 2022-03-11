@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
     matches can not be handled and are treated as error.
 
     \code
-    import QtOpcUa 5.13 as QtOpcUa
+    import QtOpcUa as QtOpcUa
 
     QtOpcUa.RelativeNodeId {
         startNode: QtOpcUa.RelativeNodeId {

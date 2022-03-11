@@ -49,7 +49,7 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.10
+import QtQuick
 
 Rectangle {
     property bool machineIsPumping;

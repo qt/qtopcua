@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
     not match on the server.
 
     \code
-    import QtOpcUa 5.13 as QtOpcUa
+    import QtOpcUa as QtOpcUa
 
     QtOpcUa.LiteralOperand {
         value: 43.21

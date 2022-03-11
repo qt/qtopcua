@@ -37,9 +37,9 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.3
-import QtTest 1.0
-import QtOpcUa 5.13 as QtOpcUa
+import QtQuick
+import QtTest
+import QtOpcUa as QtOpcUa
 
 Item {
     property string backendName

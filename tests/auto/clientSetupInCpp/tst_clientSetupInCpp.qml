@@ -37,10 +37,10 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.3
-import QtTest 1.0
-import QtOpcUa 5.13 as QtOpcUa
-import App 1.0
+import QtQuick
+import QtTest
+import QtOpcUa as QtOpcUa
+import App
 
 Item {
     QtOpcUa.Connection {

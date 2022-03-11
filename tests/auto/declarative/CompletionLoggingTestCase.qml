@@ -37,7 +37,7 @@
 **
 ****************************************************************************/
 
-import QtTest 1.0
+import QtTest
 
 TestCase {
     onCompletedChanged: parent.completedTestCases += (completed ? 1 : -1)

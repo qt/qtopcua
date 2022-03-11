@@ -48,8 +48,8 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.10
-import OpcUaMachineBackend 1.0
+import QtQuick
+import OpcUaMachineBackend
 
 Rectangle {
     id: pump

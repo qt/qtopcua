@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     Browse path to the node holding the attribute.
 
     \code
-    import QtOpcUa 5.13 as QtOpcUa
+    import QtOpcUa as QtOpcUa
 
     QtOpcUa.AttributeOperand {
         ...
@@ -82,7 +82,7 @@ QT_BEGIN_NAMESPACE
     Index range string used to identify a single value or subset of the attribute's value.
 
     \code
-    import QtOpcUa 5.13 as QtOpcUa
+    import QtOpcUa as QtOpcUa
 
     QtOpcUa.AttributeOperand {
         ...
@@ -98,7 +98,7 @@ QT_BEGIN_NAMESPACE
     The default value is \c Constants.NodeAttribute.Value.
 
     \code
-    import QtOpcUa 5.13 as QtOpcUa
+    import QtOpcUa as QtOpcUa
 
     QtOpcUa.AttributeOperand {
         ...
@@ -113,7 +113,7 @@ QT_BEGIN_NAMESPACE
     Node id of the type definition node. The operand will be of the type or one of its subtypes.
 
     \code
-    import QtOpcUa 5.13 as QtOpcUa
+    import QtOpcUa as QtOpcUa
 
     QtOpcUa.AttributeOperand {
         ...
