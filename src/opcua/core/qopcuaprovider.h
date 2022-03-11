@@ -45,6 +45,7 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qmap.h> // for QVariantMap
 
 QT_BEGIN_NAMESPACE
 

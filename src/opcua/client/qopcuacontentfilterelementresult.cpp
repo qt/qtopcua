@@ -38,6 +38,7 @@
 ****************************************************************************/
 
 #include "qopcuacontentfilterelementresult.h"
+#include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 

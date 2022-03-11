@@ -44,6 +44,7 @@
 #include <QtOpcUa/qopcuadatavalue.h>
 
 #include <QtOpcUa/qopcuaglobal.h>
+#include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 

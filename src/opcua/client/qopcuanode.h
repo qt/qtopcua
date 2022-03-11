@@ -52,6 +52,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qobject.h>
+#include <QtCore/qmap.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -44,6 +44,7 @@
 
 #include <QtCore/qshareddata.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -43,6 +43,7 @@
 #include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/qshareddata.h>
+#include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 

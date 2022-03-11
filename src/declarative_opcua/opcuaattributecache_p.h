@@ -40,8 +40,9 @@
 #pragma once
 
 #include "qopcuatype.h"
-#include <QObject>
+#include <QtCore/qobject.h>
 #include <private/qglobal_p.h>
+#include <QtCore/qhash.h>
 
 //
 //  W A R N I N G

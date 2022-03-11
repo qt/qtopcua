@@ -56,6 +56,7 @@
 
 #include "openssl_symbols_p.h"
 #include <QtCore/qurl.h>
+#include <QtCore/qset.h>
 
 #ifdef Q_OS_WIN
 # include <private/qsystemlibrary_p.h>

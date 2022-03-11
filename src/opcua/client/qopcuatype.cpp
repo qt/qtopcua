@@ -42,6 +42,8 @@
 #include <QMetaEnum>
 #include <QRegularExpression>
 #include <QUuid>
+#include <QString>
+#include <QList>
 
 QT_BEGIN_NAMESPACE
 

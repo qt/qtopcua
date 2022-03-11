@@ -39,6 +39,7 @@
 
 #include "qopcuaattributeoperand.h"
 #include "qopcuarelativepathelement.h"
+#include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
 
