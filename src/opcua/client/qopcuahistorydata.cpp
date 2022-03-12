@@ -97,6 +97,13 @@ QOpcUaHistoryData::~QOpcUaHistoryData()
 }
 
 /*!
+    \fn QOpcUaHistoryData::swap(QOpcUaHistoryData &other)
+
+    Swaps this data value instance with \a other. This function is very
+    fast and never fails.
+ */
+
+/*!
     Returns the status code which indicates if an error occurred while fetching the history data.
 */
 QOpcUa::UaStatusCode QOpcUaHistoryData::statusCode() const
