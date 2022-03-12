@@ -108,6 +108,13 @@ QOpcUaHistoryReadRawRequest::~QOpcUaHistoryReadRawRequest()
 }
 
 /*!
+    \fn QOpcUaHistoryReadRawRequest::swap(QOpcUaHistoryReadRawRequest &other)
+
+    Swaps this request instance with \a other. This function is very
+    fast and never fails.
+ */
+
+/*!
     Returns the start time stamp.
 */
 QDateTime QOpcUaHistoryReadRawRequest::startTimestamp() const

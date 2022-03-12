@@ -92,6 +92,13 @@ QOpcUaDataValue::~QOpcUaDataValue()
 }
 
 /*!
+    \fn QOpcUaDataValue::swap(QOpcUaDataValue &other)
+
+    Swaps this data value instance with \a other. This function is very
+    fast and never fails.
+*/
+
+/*!
     Returns the value.
 */
 QVariant QOpcUaDataValue::value() const
