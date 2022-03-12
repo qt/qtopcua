@@ -57,6 +57,18 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QOpcUaHistoryReadResponse::State
+
+    This enum specifies the state the response is in.
+
+    \value Unknown
+    \value Reading
+    \value Finished
+    \value MoreDataAvailable
+    \value Error
+*/
+
+/*!
     \fn QOpcUaHistoryReadResponse::readHistoryDataFinished(const QList<QOpcUaHistoryData> &results, QOpcUa::UaStatusCode serviceResult);
 
     This signal is emitted when a historical data request is finished. It adds
@@ -100,14 +112,6 @@ bool QOpcUaHistoryReadResponse::readMoreData()
 
 /*!
     Returns the current state of historic data request.
-    The states are
-    \list
-    \li Unknown
-    \li Reading
-    \li Finished
-    \li MoreDataAvailable
-    \li Error
-    \endlist
 */
 QOpcUaHistoryReadResponse::State QOpcUaHistoryReadResponse::state() const
 {
