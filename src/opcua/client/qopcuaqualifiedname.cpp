@@ -145,12 +145,22 @@ void QOpcUaQualifiedName::setName(const QString &name)
 }
 
 #ifndef QT_NO_DEBUG_STREAM
+
+/*!
+    \fn QDebug QOpcUaQualifiedName::operator<<(QDebug debug, const QOpcUaQualifiedName &name)
+    \since 6.3
+
+    Writes the qualified \a name to the \a debug output.
+
+    \sa QDebug
+*/
 QDebug operator<<(QDebug debug, const QOpcUaQualifiedName &qn)
 {
     QDebugStateSaver saver(debug);
     debug.nospace().quote() << "QOpcUaQualifiedname(" << qn.namespaceIndex() << ", " << qn.name() << ")";
     return debug;
 }
+
 #endif
 
 QT_END_NAMESPACE

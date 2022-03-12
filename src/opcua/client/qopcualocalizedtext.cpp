@@ -184,12 +184,22 @@ void QOpcUaLocalizedText::setLocale(const QString &locale)
 }
 
 #ifndef QT_NO_DEBUG_STREAM
+
+/*!
+    \fn QDebug QOpcUaLocalizedText::operator<<(QDebug debug, const QOpcUaLocalizedText &text)
+    \since 6.3
+
+    Writes the localized \a text to the \a debug output.
+
+    \sa QDebug
+*/
 QDebug operator<<(QDebug debug, const QOpcUaLocalizedText &lt)
 {
     QDebugStateSaver saver(debug);
     debug.nospace().quote() << "QOpcUaLocalizedText(" << lt.locale() << ", " << lt.text() << ")";
     return debug;
 }
+
 #endif
 
 QT_END_NAMESPACE
