@@ -9,5 +9,11 @@ instructions:
     - !include "{{qt/qtbase}}/coin_module_build_template_v2.yaml"
 
   Test:
-    - !include "{{qt/qtbase}}/coin_module_test_template_v3.yaml"
-    - !include "{{qt/qtbase}}/coin_module_test_docs.yaml"
+    - type: Group
+      instructions:
+        - !include "{{qt/qtbase}}/coin_module_test_template_v3.yaml"
+        - !include "{{qt/qtbase}}/coin_module_test_docs.yaml"
+      enable_if:
+        condition: property
+        property: target.os
+        not_equals_value: QNX
