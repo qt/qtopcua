@@ -54,10 +54,6 @@ qt_internal_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_open62541 AND NO
 #special case end
 
 # special case begin
-if (QT_FEATURE_open62541_security AND NOT QT_FEATURE_system_open62541)
-    find_package(WrapOpenSSL 1.1)
-endif()
-
 qt_internal_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_open62541_security AND WrapOpenSSL_FOUND AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
     DEFINES
         UA_ENABLE_ENCRYPTION
