@@ -14,10 +14,6 @@ if (INPUT_open62541 STREQUAL "system")
     qt_find_package(Open62541 PROVIDED_TARGETS open62541)
 endif()
 qt_find_package(Uacpp PROVIDED_TARGETS uacpp)
-
-if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows" OR NOT CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64" OR NOT CMAKE_SYSTEM_VERSION STREQUAL "10")
-    find_package(WrapOpenSSL 1.1)
-endif()
 # special case end
 
 #### Tests
