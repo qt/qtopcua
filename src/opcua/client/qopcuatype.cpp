@@ -13,7 +13,6 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \namespace QOpcUa
-    \ingroup modules
     \inmodule QtOpcua
 
     \brief The QOpcUa namespace contains miscellaneous identifiers used throughout the Qt OPC UA library.
