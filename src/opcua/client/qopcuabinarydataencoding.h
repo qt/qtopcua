@@ -119,7 +119,7 @@ inline QString QOpcUaBinaryDataEncoding::decode<QString>(bool &success)
 
     const auto length = decode<qint32>(success);
 
-    if (length > 0 && !enoughData(static_cast<size_t>(length))) {
+    if (length > 0 && !enoughData(length)) {
         success = false;
         return QString();
     }
@@ -580,7 +580,7 @@ inline bool QOpcUaBinaryDataEncoding::encode<QString>(const QString &src)
         return false;
 
     QByteArray arr = src.toUtf8();
-    if (!encode<qint32>(arr.isNull() ? -1 : arr.length()))
+    if (!encode<qint32>(arr.isNull() ? -1 : int(arr.length())))
         return false;
     m_data->append(arr);
     return true;
@@ -710,7 +710,7 @@ inline bool QOpcUaBinaryDataEncoding::encode<QByteArray>(const QByteArray &src)
     if (src.size() > upperBound<qint32>())
         return false;
 
-    if (!encode<qint32>(src.isNull() ? -1 : src.size()))
+    if (!encode<qint32>(src.isNull() ? -1 : int(src.size())))
         return false;
     if (src.size() > 1)
         m_data->append(src);
@@ -953,7 +953,7 @@ inline bool QOpcUaBinaryDataEncoding::encodeArray(const QList<T> &src)
     if (src.size() > upperBound<qint32>())
         return false;
 
-    if (!encode<qint32>(src.size()))
+    if (!encode<qint32>(int(src.size())))
         return false;
     for (const auto &element : src) {
         if (!encode<T, OVERLAY>(element))
