@@ -93,17 +93,18 @@ qt_internal_extend_target(OpcUa CONDITION QT_FEATURE_gds AND QT_FEATURE_ssl AND 
     SOURCES
         client/qopcuagdsclient.cpp client/qopcuagdsclient_p.h
         x509/openssl_symbols.cpp
-        x509/qopcuakeypair.cpp
+        x509/qopcuakeypair.cpp x509/qopcuakeypair.h
         x509/qopcuakeypair_openssl.cpp
-        x509/qopcuax509certificatesigningrequest.cpp
+        x509/qopcuax509certificatesigningrequest.cpp x509/qopcuax509certificatesigningrequest.h
         x509/qopcuax509certificatesigningrequest_openssl.cpp
-        x509/qopcuax509distinguishedname.cpp
-        x509/qopcuax509extension.cpp
-        x509/qopcuax509extensionbasicconstraints.cpp
-        x509/qopcuax509extensionextendedkeyusage.cpp
-        x509/qopcuax509extensionkeyusage.cpp
+        x509/qopcuax509distinguishedname.cpp x509/qopcuax509distinguishedname.h
+        x509/qopcuax509extension.cpp x509/qopcuax509extension.h
+        x509/qopcuax509extensionbasicconstraints.cpp x509/qopcuax509extensionbasicconstraints.h
+        x509/qopcuax509extensionextendedkeyusage.cpp x509/qopcuax509extensionextendedkeyusage.h
+        x509/qopcuax509extensionkeyusage.cpp x509/qopcuax509extensionkeyusage.h
         x509/qopcuax509extensionsubjectalternativename.cpp
-        x509/qopcuax509utils.cpp
+        x509/qopcuax509extensionsubjectalternativename.h
+        x509/qopcuax509utils.cpp x509/qopcuax509utils_p.h
 )
 
 # special case begin
