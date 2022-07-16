@@ -1810,7 +1810,7 @@ void QOpcUaGdsClientPrivate::handleGetTrustListFinished(const QVariant &result, 
         return;
     }
 
-    QObject::connect(m_trustListNode, &QOpcUaNode::attributeUpdated, [this, q](QOpcUa::NodeAttribute attr, QVariant value) {
+    QObject::connect(m_trustListNode, &QOpcUaNode::attributeUpdated, [q](QOpcUa::NodeAttribute attr, QVariant value) {
         Q_UNUSED(value);
         if (attr == QOpcUa::NodeAttribute::Value)
             emit q->trustListUpdated();
