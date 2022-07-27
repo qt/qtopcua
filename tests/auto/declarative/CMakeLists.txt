@@ -17,7 +17,7 @@ qt_internal_add_test(tst_opcua
         tst_opcua.cpp
     INCLUDE_DIRECTORIES
         ../../common
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::OpcUaPrivate
         Qt::Qml

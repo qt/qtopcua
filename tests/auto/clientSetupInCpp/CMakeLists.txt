@@ -17,7 +17,7 @@ qt_internal_add_test(tst_clientSetupInCpp
         tst_clientSetupInCpp.cpp
     INCLUDE_DIRECTORIES
         ../../common
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Gui
         Qt::OpcUaPrivate
         Qt::Qml

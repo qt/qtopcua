@@ -13,7 +13,7 @@ qt_internal_add_test(tst_connection
         tst_connection.cpp
     INCLUDE_DIRECTORIES
         ../../common
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::OpcUa
 )
 

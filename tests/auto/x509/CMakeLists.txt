@@ -10,7 +10,7 @@
 qt_internal_add_test(tst_x509
     SOURCES
         tst_x509.cpp
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
         Qt::OpcUa
 )

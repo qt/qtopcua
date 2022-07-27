@@ -17,7 +17,7 @@ qt_internal_add_executable(open62541-testserver
         ../../src/plugins/opcua/open62541
     OUTPUT_DIRECTORY # special case
         "${CMAKE_CURRENT_BINARY_DIR}" # special case
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Core
         Qt::OpcUaPrivate
 )
@@ -92,12 +92,12 @@ qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541_se
 # special case end
 
 qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541 AND WIN32 AND MSVC AND NOT QT_FEATURE_system_open62541 # special case
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ws2_32.lib
 )
 
 qt_internal_extend_target(open62541-testserver CONDITION (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541) AND (WIN32 AND GCC) # special case
-    PUBLIC_LIBRARIES
+    LIBRARIES
         ws2_32
 )
 

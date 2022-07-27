@@ -13,7 +13,7 @@ qt_internal_add_test(tst_security
         tst_security.cpp
     INCLUDE_DIRECTORIES
         ../../common
-    PUBLIC_LIBRARIES
+    LIBRARIES
         Qt::Network
         Qt::OpcUa
 )
