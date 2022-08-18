@@ -159,7 +159,7 @@
     to build a release version. See \l{https://cmake.org/cmake/help/v3.8/variable/CMAKE_BUILD_TYPE.html}{here} for more information.
 
     Instead of building on console, you can also generate a Visual Studio solution
-    by replacing "-GNinja" with "-G 'Visual Studio 15 2017'". See "cmake --help" to get a list of available generators.
+    by replacing \c{-GNinja} with \c{-G 'Visual Studio 15 2017'}. See \c{cmake --help} to get a list of available generators.
 
     \section2 Building the Qt OPC UA UACPP Plugin
 
