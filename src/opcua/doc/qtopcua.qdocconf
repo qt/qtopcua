@@ -60,8 +60,5 @@ depends += \
    qmake \
    qtwidgets
 
-Cpp.ignoretokens   += \
-   Q_OPCUA_EXPORT
-
 # Fail the documentation build if there are more warnings than the limit
 warninglimit = 0
