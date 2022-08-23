@@ -1,3 +1,6 @@
 # QTBUG-100007
 [SubscriptionsTest: open62541: Create String Node Id::test_nodeTest]
 macos
+# QTBUG-104418
+[AbsoluteNodeTest: open62541: Assign int value to double node::test_nodeTest]
+macos
