@@ -40,9 +40,9 @@
 #ifndef QOPCUAKEYPAIR_H
 #define QOPCUAKEYPAIR_H
 
-#include <QObject>
-#include <QString>
-#include <QSharedPointer>
+#include <QtCore/qobject.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qsharedpointer.h>
 #include <QtOpcUa/qopcuaglobal.h>
 
 QT_BEGIN_NAMESPACE
