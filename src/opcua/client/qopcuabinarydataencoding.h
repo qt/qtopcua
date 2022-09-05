@@ -19,10 +19,11 @@
 #include <QtOpcUa/qopcuaxvalue.h>
 
 #include <QtCore/qdatetime.h>
-#include <QtCore/qmetatype.h>
-#include <QtCore/quuid.h>
 #include <QtCore/qendian.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qmetatype.h>
+#include <QtCore/qtimezone.h>
+#include <QtCore/quuid.h>
 
 #include <limits>
 
@@ -476,7 +477,7 @@ inline QDateTime QOpcUaBinaryDataEncoding::decode<QDateTime>(bool &success)
         return QDateTime();
 
     // OPC-UA part 6, 5.2.2.5
-    const QDateTime epochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
+    const QDateTime epochStart(QDate(1601, 1, 1), QTime(0, 0), QTimeZone::UTC);
     return epochStart.addMSecs(timestamp / 10000);
 }
 
@@ -868,7 +869,7 @@ inline bool QOpcUaBinaryDataEncoding::encode<QDateTime>(const QDateTime &src)
         return true;
     }
 
-    const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
+    const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), QTimeZone::UTC);
 
     if (src <= uaEpochStart) {
         if (!encode<qint64>(0))

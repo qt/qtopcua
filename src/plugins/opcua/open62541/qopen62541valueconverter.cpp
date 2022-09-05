@@ -10,7 +10,9 @@
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qtimezone.h>
 #include <QtCore/quuid.h>
+
 #include <cstring>
 
 QT_BEGIN_NAMESPACE
@@ -294,7 +296,7 @@ QDateTime scalarToQt<QDateTime, UA_DateTime>(const UA_DateTime *data)
     if (*data == (std::numeric_limits<qint64>::min)() || *data == (std::numeric_limits<qint64>::max)())
         return QDateTime();
 
-    const QDateTime epochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
+    const QDateTime epochStart(QDate(1601, 1, 1), QTime(0, 0), QTimeZone::UTC);
     return epochStart.addMSecs(*data / UA_DATETIME_MSEC).toLocalTime();
 }
 
@@ -557,7 +559,7 @@ void scalarFromQt<UA_DateTime, QDateTime>(const QDateTime &value, UA_DateTime *p
     }
 
     // OPC-UA part 3, Table C.9
-    const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
+    const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), QTimeZone::UTC);
 
     *ptr = UA_DATETIME_MSEC * (value.toMSecsSinceEpoch() - uaEpochStart.toMSecsSinceEpoch());
 }

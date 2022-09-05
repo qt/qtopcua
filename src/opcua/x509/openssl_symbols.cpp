@@ -29,6 +29,7 @@
 #endif
 #include <QtCore/qmutex.h>
 #include <QtCore/qdatetime.h>
+#include <QtCore/qtimezone.h>
 #if defined(Q_OS_UNIX)
 #include <QtCore/qdir.h>
 #endif
@@ -1270,7 +1271,7 @@ QDateTime q_getTimeFromASN1(const ASN1_TIME *aTime)
         QDate resDate(lTime.tm_year + 1900, lTime.tm_mon + 1, lTime.tm_mday);
         QTime resTime(lTime.tm_hour, lTime.tm_min, lTime.tm_sec);
 
-        QDateTime result(resDate, resTime, Qt::UTC);
+        QDateTime result(resDate, resTime, QTimeZone::UTC);
         result = result.addSecs(lSecondsFromUCT);
         return result;
 
@@ -1292,7 +1293,7 @@ QDateTime q_getTimeFromASN1(const ASN1_TIME *aTime)
         QDate resDate(lTime.tm_year, lTime.tm_mon, lTime.tm_mday);
         QTime resTime(lTime.tm_hour, lTime.tm_min, lTime.tm_sec);
 
-        QDateTime result(resDate, resTime, Qt::UTC);
+        QDateTime result(resDate, resTime, QTimeZone::UTC);
         return result;
 
     } else {

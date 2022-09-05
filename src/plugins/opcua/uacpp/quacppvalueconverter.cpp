@@ -9,6 +9,7 @@
 
 #include <QtCore/QDateTime>
 #include <QtCore/QLoggingCategory>
+#include <QtCore/QTimeZone>
 #include <QtCore/QUuid>
 
 #include <uastring.h>
@@ -955,7 +956,7 @@ QDateTime toQDateTime(const OpcUa_DateTime *dt)
         return QDateTime();
 
     // OPC-UA part 3, Table C.9
-    const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
+    const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), QTimeZone::UTC);
     const UaDateTime temp(*dt);
 
     // OpcUa time is defined in part 6, 5.2.2.5 in 100ns which need to be converted to milliseconds.
@@ -965,7 +966,7 @@ QDateTime toQDateTime(const OpcUa_DateTime *dt)
 OpcUa_DateTime toUACppDateTime(const QDateTime &qtDateTime)
 {
     // OPC-UA part 3, Table C.9
-    const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), Qt::UTC);
+    const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), QTimeZone::UTC);
     // OpcUa time is defined in part 6, 5.2.2.5 in 100ns which need to be converted to milliseconds.
     UaDateTime tmp((qtDateTime.toMSecsSinceEpoch() - uaEpochStart.toMSecsSinceEpoch()) * 10000);
     OpcUa_DateTime returnValue;
