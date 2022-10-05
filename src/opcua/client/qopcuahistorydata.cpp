@@ -97,7 +97,7 @@ QList<QOpcUaDataValue> QOpcUaHistoryData::result() const
 */
 int QOpcUaHistoryData::count() const
 {
-    return data->result.count();
+    return data->result.size();
 }
 
 /*!

@@ -77,7 +77,7 @@ void Open62541AsyncBackend::readAttributes(quint64 handle, UA_NodeId id, QOpcUa:
 
         current.attributeId = QOpen62541ValueConverter::toUaAttributeId(attribute);
         UA_NodeId_copy(&id, &current.nodeId);
-        if (indexRange.length())
+        if (indexRange.size())
             QOpen62541ValueConverter::scalarFromQt<UA_String, QString>(indexRange, &current.indexRange);
 
         QOpcUaReadResult temp;
@@ -118,7 +118,7 @@ void Open62541AsyncBackend::writeAttribute(quint64 handle, UA_NodeId id, QOpcUa:
     req.nodesToWrite->nodeId = id;
     req.nodesToWrite->value.value = QOpen62541ValueConverter::toOpen62541Variant(value, type);
     req.nodesToWrite->value.hasValue = true;
-    if (indexRange.length())
+    if (indexRange.size())
         QOpen62541ValueConverter::scalarFromQt<UA_String, QString>(indexRange, &req.nodesToWrite->indexRange);
 
     quint32 requestId = 0;
@@ -1513,14 +1513,14 @@ bool Open62541AsyncBackend::loadFileToByteString(const QString &location, UA_Byt
     QByteArray data = file.readAll();
 
     UA_ByteString temp;
-    temp.length = data.length();
+    temp.length = data.size();
     if (data.isEmpty())
         temp.data = nullptr;
     else {
         if (data.startsWith('-')) { // PEM file
             // mbedTLS expects PEM encoded data to be null terminated
             data = data.append('\0');
-            temp.length = data.length();
+            temp.length = data.size();
         }
         temp.data = reinterpret_cast<unsigned char *>(data.data());
     }

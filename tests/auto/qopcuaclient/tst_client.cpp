@@ -41,9 +41,9 @@ public:
         opcuaClient->connectToEndpoint(endPoint);
         QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
 
-        QCOMPARE(connectedSpy.count(), 1); // one connected signal fired
-        QCOMPARE(disconnectedSpy.count(), 0); // zero disconnected signals fired
-        QCOMPARE(stateSpy.count(), 2);
+        QCOMPARE(connectedSpy.size(), 1); // one connected signal fired
+        QCOMPARE(disconnectedSpy.size(), 0); // zero disconnected signals fired
+        QCOMPARE(stateSpy.size(), 2);
 
         QCOMPARE(stateSpy.at(0).at(0).value<QOpcUaClient::ClientState>(),
                  QOpcUaClient::ClientState::Connecting);
@@ -71,9 +71,9 @@ public:
 
             QTRY_VERIFY(opcuaClient->state() == QOpcUaClient::Disconnected);
 
-            QCOMPARE(connectedSpy.count(), 0);
-            QCOMPARE(disconnectedSpy.count(), 1);
-            QCOMPARE(stateSpy.count(), 2);
+            QCOMPARE(connectedSpy.size(), 0);
+            QCOMPARE(disconnectedSpy.size(), 1);
+            QCOMPARE(stateSpy.size(), 2);
             QCOMPARE(stateSpy.at(0).at(0).value<QOpcUaClient::ClientState>(),
                      QOpcUaClient::ClientState::Closing);
             QCOMPARE(stateSpy.at(1).at(0).value<QOpcUaClient::ClientState>(),
@@ -656,7 +656,7 @@ void Tst_QOpcUaClient::connectInvalidPassword()
     QSignalSpy connectSpy(opcuaClient, &QOpcUaClient::stateChanged);
 
     opcuaClient->connectToEndpoint(m_endpoint);
-    QTRY_VERIFY_WITH_TIMEOUT(connectSpy.count() == 2, 3000);
+    QTRY_VERIFY_WITH_TIMEOUT(connectSpy.size() == 2, 3000);
     QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connecting);
     QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Disconnected);
 
@@ -677,7 +677,7 @@ void Tst_QOpcUaClient::connectAndDisconnectPassword()
     opcuaClient->connectToEndpoint(m_endpoint);
     connectSpy.wait(signalSpyTimeout);
 
-    QTRY_COMPARE(connectSpy.count(), 2);
+    QTRY_COMPARE(connectSpy.size(), 2);
     QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connecting);
     QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connected);
 
@@ -687,7 +687,7 @@ void Tst_QOpcUaClient::connectAndDisconnectPassword()
     connectSpy.clear();
     opcuaClient->disconnectFromEndpoint();
     connectSpy.wait(signalSpyTimeout);
-    QCOMPARE(connectSpy.count(), 2);
+    QCOMPARE(connectSpy.size(), 2);
     QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Closing);
     QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Disconnected);
 }
@@ -838,7 +838,7 @@ void Tst_QOpcUaClient::readInvalidNode()
     node->readAttributes(QOpcUaNode::mandatoryBaseAttributes());
     attributeReadSpy.wait(signalSpyTimeout);
 
-    QCOMPARE(attributeReadSpy.count(), 1);
+    QCOMPARE(attributeReadSpy.size(), 1);
     QCOMPARE(attributeReadSpy.at(0).at(0).value<QOpcUa::NodeAttributes>(), QOpcUaNode::mandatoryBaseAttributes());
 
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::DisplayName), QVariant());
@@ -877,7 +877,7 @@ void Tst_QOpcUaClient::writeInvalidNode()
 
     responseSpy.wait(signalSpyTimeout);
 
-    QCOMPARE(responseSpy.count(), 1);
+    QCOMPARE(responseSpy.size(), 1);
     QCOMPARE(responseSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
     QCOMPARE(responseSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadNodeIdUnknown);
 }
@@ -1205,7 +1205,7 @@ void Tst_QOpcUaClient::addAndRemoveObjectNode()
 
     addNodeSpy.wait(signalSpyTimeout);
 
-    QCOMPARE(addNodeSpy.count(), 1);
+    QCOMPARE(addNodeSpy.size(), 1);
 
     QCOMPARE(addNodeSpy.at(0).at(0).value<QOpcUaExpandedNodeId>().nodeId(), requestedNewId.nodeId());
     QCOMPARE(addNodeSpy.at(0).at(1), requestedNewId.nodeId());
@@ -1288,7 +1288,7 @@ void Tst_QOpcUaClient::addAndRemoveVariableNode()
 
     addNodeSpy.wait(signalSpyTimeout);
 
-    QCOMPARE(addNodeSpy.count(), 1);
+    QCOMPARE(addNodeSpy.size(), 1);
 
     QCOMPARE(addNodeSpy.at(0).at(0).value<QOpcUaExpandedNodeId>().nodeId(), requestedNewId.nodeId());
     QCOMPARE(addNodeSpy.at(0).at(1), requestedNewId.nodeId());
@@ -1355,7 +1355,7 @@ void Tst_QOpcUaClient::addAndRemoveReference()
     opcuaClient->addReference(refInfo);
     addReferenceSpy.wait(signalSpyTimeout);
 
-    QCOMPARE(addReferenceSpy.count(), 1);
+    QCOMPARE(addReferenceSpy.size(), 1);
     QCOMPARE(addReferenceSpy.at(0).at(0), QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::RootFolder));
     QCOMPARE(addReferenceSpy.at(0).at(1), referenceType);
     QCOMPARE(addReferenceSpy.at(0).at(2).value<QOpcUaExpandedNodeId>().nodeId(), target.nodeId());
@@ -1397,7 +1397,7 @@ void Tst_QOpcUaClient::addAndRemoveReference()
     opcuaClient->deleteReference(refDelInfo);
     deleteReferenceSpy.wait(signalSpyTimeout);
 
-    QCOMPARE(deleteReferenceSpy.count(), 1);
+    QCOMPARE(deleteReferenceSpy.size(), 1);
     QCOMPARE(deleteReferenceSpy.at(0).at(0), QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::RootFolder));
     QCOMPARE(deleteReferenceSpy.at(0).at(1), referenceType);
     QCOMPARE(deleteReferenceSpy.at(0).at(2).value<QOpcUaExpandedNodeId>().nodeId(), target.nodeId());
@@ -2105,7 +2105,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant booleanArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(booleanArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(booleanArray.toList().length(), 3);
+    QCOMPARE(booleanArray.toList().size(), 3);
     QCOMPARE(booleanArray.toList()[0].metaType().id(), QMetaType::Bool);
     QCOMPARE(booleanArray.toList()[0].toBool(), true);
     QCOMPARE(booleanArray.toList()[1].toBool(), false);
@@ -2116,7 +2116,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant int32Array = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(int32Array.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(int32Array.toList().length(), 3);
+    QCOMPARE(int32Array.toList().size(), 3);
     QCOMPARE(int32Array.toList()[0].metaType().id(), QMetaType::Int);
     QCOMPARE(int32Array.toList()[0].toInt(), std::numeric_limits<qint32>::min());
     QCOMPARE(int32Array.toList()[1].toInt(), (std::numeric_limits<qint32>::max)());
@@ -2127,7 +2127,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant uint32Array = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(uint32Array.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(uint32Array.toList().length(), 3);
+    QCOMPARE(uint32Array.toList().size(), 3);
     QCOMPARE(uint32Array.toList()[0].metaType().id(), QMetaType::UInt);
     QCOMPARE(uint32Array.toList()[0].toUInt(), std::numeric_limits<quint32>::min());
     QCOMPARE(uint32Array.toList()[1].toUInt(), (std::numeric_limits<quint32>::max)());
@@ -2138,7 +2138,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant doubleArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(doubleArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(doubleArray.toList().length(), 3);
+    QCOMPARE(doubleArray.toList().size(), 3);
     QCOMPARE(doubleArray.toList()[0].metaType().id(), QMetaType::Double);
     QCOMPARE(doubleArray.toList()[0].toDouble(), double(23.5));
     QCOMPARE(doubleArray.toList()[1].toDouble(), double(23.6));
@@ -2149,7 +2149,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant floatArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(floatArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(floatArray.toList().length(), 3);
+    QCOMPARE(floatArray.toList().size(), 3);
     QCOMPARE(floatArray.toList()[0].userType(), QMetaType::Float);
     QCOMPARE(floatArray.toList()[0].toFloat(), float(23.5));
     QCOMPARE(floatArray.toList()[1].toFloat(), float(23.6));
@@ -2160,7 +2160,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant stringArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(stringArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(stringArray.toList().length(), 3);
+    QCOMPARE(stringArray.toList().size(), 3);
     QCOMPARE(stringArray.toList()[0].metaType().id(), QMetaType::QString);
     QCOMPARE(stringArray.toList()[0].toString(), QStringLiteral("Test1"));
     QCOMPARE(stringArray.toList()[1].toString(), QStringLiteral("Test2"));
@@ -2171,7 +2171,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant dateTimeArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(dateTimeArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(dateTimeArray.toList().length(), 3);
+    QCOMPARE(dateTimeArray.toList().size(), 3);
     QCOMPARE(dateTimeArray.toList()[0].metaType().id(), QMetaType::QDateTime);
 
     node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.LocalizedText"));
@@ -2179,7 +2179,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant ltArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(ltArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(ltArray.toList().length(), 3);
+    QCOMPARE(ltArray.toList().size(), 3);
     QCOMPARE(ltArray.toList()[0].value<QOpcUaLocalizedText>(), localizedTexts[0]);
     QCOMPARE(ltArray.toList()[1].value<QOpcUaLocalizedText>(), localizedTexts[1]);
     QCOMPARE(ltArray.toList()[2].value<QOpcUaLocalizedText>(), localizedTexts[2]);
@@ -2189,7 +2189,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant uint16Array = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(uint16Array.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(uint16Array.toList().length(), 3);
+    QCOMPARE(uint16Array.toList().size(), 3);
     QCOMPARE(uint16Array.toList()[0].userType(), QMetaType::UShort);
     QCOMPARE(uint16Array.toList()[0], std::numeric_limits<quint16>::min());
     QCOMPARE(uint16Array.toList()[1], (std::numeric_limits<quint16>::max)());
@@ -2200,7 +2200,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant int16Array = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(int16Array.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(int16Array.toList().length(), 3);
+    QCOMPARE(int16Array.toList().size(), 3);
     QCOMPARE(int16Array.toList()[0].userType(), QMetaType::Short);
     QCOMPARE(int16Array.toList()[0], std::numeric_limits<qint16>::min());
     QCOMPARE(int16Array.toList()[1], (std::numeric_limits<qint16>::max)());
@@ -2211,7 +2211,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant uint64Array = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(uint64Array.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(uint64Array.toList().length(), 3);
+    QCOMPARE(uint64Array.toList().size(), 3);
     QCOMPARE(uint64Array.toList()[0].metaType().id(), QMetaType::ULongLong);
     QCOMPARE(uint64Array.toList()[0], std::numeric_limits<quint64>::min());
     QCOMPARE(uint64Array.toList()[1], (std::numeric_limits<quint64>::max)());
@@ -2222,7 +2222,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant int64Array = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(int64Array.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(int64Array.toList().length(), 3);
+    QCOMPARE(int64Array.toList().size(), 3);
     QCOMPARE(int64Array.toList()[0].metaType().id(), QMetaType::LongLong);
     QCOMPARE(int64Array.toList()[0], std::numeric_limits<qint64>::min());
     QCOMPARE(int64Array.toList()[1], (std::numeric_limits<qint64>::max)());
@@ -2233,7 +2233,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant byteArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(byteArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(byteArray.toList().length(), 3);
+    QCOMPARE(byteArray.toList().size(), 3);
     QCOMPARE(byteArray.toList()[0].userType(), QMetaType::UChar);
     QCOMPARE(byteArray.toList()[0], std::numeric_limits<quint8>::min());
     QCOMPARE(byteArray.toList()[1], (std::numeric_limits<quint8>::max)());
@@ -2244,7 +2244,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant byteStringArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(byteStringArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(byteStringArray.toList().length(), 3);
+    QCOMPARE(byteStringArray.toList().size(), 3);
     QCOMPARE(byteStringArray.toList()[0].userType(), QMetaType::QByteArray);
     QCOMPARE(byteStringArray.toList()[0].value<QByteArray>(), "abc");
     QCOMPARE(byteStringArray.toList()[1].value<QByteArray>(), "def");
@@ -2258,7 +2258,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant guidArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(guidArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(guidArray.toList().length(), 3);
+    QCOMPARE(guidArray.toList().size(), 3);
     QCOMPARE(guidArray.toList()[0].toUuid(), testUuid[0]);
     QCOMPARE(guidArray.toList()[1].toUuid(), testUuid[1]);
     QCOMPARE(guidArray.toList()[2].toUuid(), testUuid[2]);
@@ -2268,7 +2268,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant sbyteArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(sbyteArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(sbyteArray.toList().length(), 3);
+    QCOMPARE(sbyteArray.toList().size(), 3);
     QCOMPARE(sbyteArray.toList()[0].userType(), QMetaType::SChar);
     QCOMPARE(sbyteArray.toList()[0], std::numeric_limits<qint8>::min());
     QCOMPARE(sbyteArray.toList()[1], (std::numeric_limits<qint8>::max)());
@@ -2279,7 +2279,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant nodeIdArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(nodeIdArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(nodeIdArray.toList().length(), 3);
+    QCOMPARE(nodeIdArray.toList().size(), 3);
     QCOMPARE(nodeIdArray.toList()[0].metaType().id(), QMetaType::QString);
     QCOMPARE(nodeIdArray.toList()[0].toString(), QStringLiteral("ns=0;i=0"));
     QCOMPARE(nodeIdArray.toList()[1].toString(), QStringLiteral("ns=0;i=1"));
@@ -2290,7 +2290,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node)
     QVariant qualifiedNameArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(qualifiedNameArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(qualifiedNameArray.toList().length(), 3);
+    QCOMPARE(qualifiedNameArray.toList().size(), 3);
     QCOMPARE(qualifiedNameArray.toList()[0].value<QOpcUaQualifiedName>(), QOpcUaQualifiedName(0, "Test0"));
     QCOMPARE(qualifiedNameArray.toList()[1].value<QOpcUaQualifiedName>(), QOpcUaQualifiedName(1, "Test1"));
     QCOMPARE(qualifiedNameArray.toList()[2].value<QOpcUaQualifiedName>(), QOpcUaQualifiedName(2, "Test2"));
@@ -2300,7 +2300,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant statusCodeArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(statusCodeArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(statusCodeArray.toList().length(), 3);
+    QCOMPARE(statusCodeArray.toList().size(), 3);
     QCOMPARE(statusCodeArray.toList()[0].value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
     QCOMPARE(statusCodeArray.toList()[1].value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadUnexpectedError);
     QCOMPARE(statusCodeArray.toList()[2].value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadInternalError);
@@ -2310,7 +2310,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant rangeArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(rangeArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(rangeArray.toList().length(), 3);
+    QCOMPARE(rangeArray.toList().size(), 3);
     QCOMPARE(rangeArray.toList()[0].value<QOpcUaRange>(), testRanges[0]);
     QCOMPARE(rangeArray.toList()[1].value<QOpcUaRange>(), testRanges[1]);
     QCOMPARE(rangeArray.toList()[2].value<QOpcUaRange>(), testRanges[2]);
@@ -2320,7 +2320,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant euiArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(euiArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(euiArray.toList().length(), 3);
+    QCOMPARE(euiArray.toList().size(), 3);
     QCOMPARE(euiArray.toList()[0].value<QOpcUaEUInformation>(), testEUInfos[0]);
     QCOMPARE(euiArray.toList()[1].value<QOpcUaEUInformation>(), testEUInfos[1]);
     QCOMPARE(euiArray.toList()[2].value<QOpcUaEUInformation>(), testEUInfos[2]);
@@ -2330,7 +2330,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant complexArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(complexArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(complexArray.toList().length(), 3);
+    QCOMPARE(complexArray.toList().size(), 3);
     QCOMPARE(complexArray.toList()[0].value<QOpcUaComplexNumber>(), testComplex[0]);
     QCOMPARE(complexArray.toList()[1].value<QOpcUaComplexNumber>(), testComplex[1]);
     QCOMPARE(complexArray.toList()[2].value<QOpcUaComplexNumber>(), testComplex[2]);
@@ -2340,7 +2340,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant doubleComplexArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(doubleComplexArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(doubleComplexArray.toList().length(), 3);
+    QCOMPARE(doubleComplexArray.toList().size(), 3);
     QCOMPARE(doubleComplexArray.toList()[0].value<QOpcUaDoubleComplexNumber>(), testDoubleComplex[0]);
     QCOMPARE(doubleComplexArray.toList()[1].value<QOpcUaDoubleComplexNumber>(), testDoubleComplex[1]);
     QCOMPARE(doubleComplexArray.toList()[2].value<QOpcUaDoubleComplexNumber>(), testDoubleComplex[2]);
@@ -2350,7 +2350,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant axisInfoArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(axisInfoArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(axisInfoArray.toList().length(), 3);
+    QCOMPARE(axisInfoArray.toList().size(), 3);
 
     QCOMPARE(axisInfoArray.toList()[0].value<QOpcUaAxisInformation>(), testAxisInfo[0]);
     QCOMPARE(axisInfoArray.toList()[1].value<QOpcUaAxisInformation>(), testAxisInfo[1]);
@@ -2361,7 +2361,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node);
     QVariant xVArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(xVArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(xVArray.toList().length(), 3);
+    QCOMPARE(xVArray.toList().size(), 3);
     QCOMPARE(xVArray.toList()[0].value<QOpcUaXValue>(), testXV[0]);
     QCOMPARE(xVArray.toList()[1].value<QOpcUaXValue>(), testXV[1]);
     QCOMPARE(xVArray.toList()[2].value<QOpcUaXValue>(), testXV[2]);
@@ -2384,7 +2384,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node)
     QVariant xmlElementArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(xmlElementArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(xmlElementArray.toList().length(), 3);
+    QCOMPARE(xmlElementArray.toList().size(), 3);
     QCOMPARE(xmlElementArray.toList()[0].metaType().id(), QMetaType::QString);
     QCOMPARE(xmlElementArray.toList()[0].toString(), xmlElements[0]);
     QCOMPARE(xmlElementArray.toList()[1].toString(), xmlElements[1]);
@@ -2395,7 +2395,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node)
     QVariant expandedNodeIdArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(expandedNodeIdArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(expandedNodeIdArray.toList().length(), 3);
+    QCOMPARE(expandedNodeIdArray.toList().size(), 3);
     QCOMPARE(expandedNodeIdArray.toList()[0].value<QOpcUaExpandedNodeId>(), testExpandedNodeId[0]);
     QCOMPARE(expandedNodeIdArray.toList()[1].value<QOpcUaExpandedNodeId>(), testExpandedNodeId[1]);
     QCOMPARE(expandedNodeIdArray.toList()[2].value<QOpcUaExpandedNodeId>(), testExpandedNodeId[2]);
@@ -2405,7 +2405,7 @@ void Tst_QOpcUaClient::readArray()
     READ_MANDATORY_VARIABLE_NODE(node)
     QVariant argumentArray = node->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(argumentArray.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(argumentArray.toList().length(), 3);
+    QCOMPARE(argumentArray.toList().size(), 3);
     QCOMPARE(argumentArray.toList()[0].value<QOpcUaArgument>(), testArguments[0]);
     QCOMPARE(argumentArray.toList()[1].value<QOpcUaArgument>(), testArguments[1]);
     QCOMPARE(argumentArray.toList()[2].value<QOpcUaArgument>(), testArguments[2]);
@@ -2780,7 +2780,7 @@ void Tst_QOpcUaClient::indexRange()
     QSignalSpy attributeReadSpy(node.data(), &QOpcUaNode::attributeRead);
     node->readAttributeRange(QOpcUa::NodeAttribute::Value, "0:6");
     attributeReadSpy.wait(signalSpyTimeout);
-    QCOMPARE(attributeReadSpy.count(), 1);
+    QCOMPARE(attributeReadSpy.size(), 1);
 
     QCOMPARE(node->attribute(QOpcUa::NodeAttribute::Value).toList(), QVariantList({10, 11, 12, 13, 4, 5, 6}));
 }
@@ -2806,7 +2806,7 @@ void Tst_QOpcUaClient::invalidIndexRange()
     QSignalSpy attributeReadSpy(node.data(), &QOpcUaNode::attributeRead);
     node->readAttributeRange(QOpcUa::NodeAttribute::Value, "notavalidrange");
     attributeReadSpy.wait(signalSpyTimeout);
-    QCOMPARE(attributeReadSpy.count(), 1);
+    QCOMPARE(attributeReadSpy.size(), 1);
 
     QCOMPARE(node->attributeError(QOpcUa::NodeAttribute::Value), QOpcUa::UaStatusCode::BadIndexRangeInvalid);
 }
@@ -3267,7 +3267,7 @@ void Tst_QOpcUaClient::stringCharset()
 
     result = stringArrayNode->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(result.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(result.toList().length(), 2);
+    QCOMPARE(result.toList().size(), 2);
     QCOMPARE(result.toList()[0].metaType().id(), QMetaType::QString);
     QCOMPARE(result.toList()[0].toString(), testString);
     QCOMPARE(result.toList()[1].metaType().id(), QMetaType::QString);
@@ -3275,7 +3275,7 @@ void Tst_QOpcUaClient::stringCharset()
 
     result = localizedArrayNode->attribute(QOpcUa::NodeAttribute::Value);
     QCOMPARE(result.metaType().id(), QMetaType::QVariantList);
-    QCOMPARE(result.toList().length(), 2);
+    QCOMPARE(result.toList().size(), 2);
     QCOMPARE(result.toList()[0].value<QOpcUaLocalizedText>(), lt1);
     QCOMPARE(result.toList()[1].value<QOpcUaLocalizedText>(), lt2);
 }
@@ -3677,8 +3677,8 @@ void Tst_QOpcUaClient::addNamespace()
     opcuaClient->updateNamespaceArray();
     namespaceUpdatedSpy.wait(signalSpyTimeout);
     namespaceChangedSpy.wait(signalSpyTimeout);
-    QVERIFY(namespaceUpdatedSpy.count() > 0);
-    QCOMPARE(namespaceChangedSpy.count(), 1);
+    QVERIFY(namespaceUpdatedSpy.size() > 0);
+    QCOMPARE(namespaceChangedSpy.size(), 1);
 
     // Update second time: No change signal emitted
     namespaceChangedSpy.clear();
@@ -3686,8 +3686,8 @@ void Tst_QOpcUaClient::addNamespace()
     opcuaClient->updateNamespaceArray();
     namespaceUpdatedSpy.wait(signalSpyTimeout);
     namespaceChangedSpy.wait(signalSpyTimeout);
-    QCOMPARE(namespaceUpdatedSpy.count(), 1);
-    QCOMPARE(namespaceChangedSpy.count(), 0);
+    QCOMPARE(namespaceUpdatedSpy.size(), 1);
+    QCOMPARE(namespaceChangedSpy.size(), 0);
 
     auto namespaceArray = opcuaClient->namespaceArray();
     QString newNamespaceName = QStringLiteral("DynamicTestNamespace#%1").arg(namespaceArray.size());

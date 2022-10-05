@@ -107,7 +107,7 @@ void OpcUaRelativeNodeId::appendPath(OpcUaRelativeNodePath* p) {
 
 int OpcUaRelativeNodeId::pathCount() const
 {
-    return m_paths.count();
+    return m_paths.size();
 }
 
 OpcUaRelativeNodePath *OpcUaRelativeNodeId::path(int index) const

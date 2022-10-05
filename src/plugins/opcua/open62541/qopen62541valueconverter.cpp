@@ -580,9 +580,9 @@ void scalarFromQt<UA_LocalizedText, QOpcUaLocalizedText>(const QOpcUaLocalizedTe
 template<>
 void scalarFromQt<UA_ByteString, QByteArray>(const QByteArray &value, UA_ByteString *ptr)
 {
-    ptr->length = value.length();
+    ptr->length = value.size();
     UA_StatusCode success = UA_Array_copy(reinterpret_cast<const UA_Byte *>(value.constData()),
-                                          value.length(), reinterpret_cast<void **>(&ptr->data), &UA_TYPES[UA_TYPES_BYTE]);
+                                          value.size(), reinterpret_cast<void **>(&ptr->data), &UA_TYPES[UA_TYPES_BYTE]);
     if (success != UA_STATUSCODE_GOOD) {
         ptr->length = 0;
         ptr->data = nullptr;
@@ -754,7 +754,7 @@ void createExtensionObject(QByteArray &data, const UA_NodeId &typeEncodingId, UA
     if (encoding != QOpcUaExtensionObject::Encoding::NoBody) {
         obj.encoding = static_cast<UA_ExtensionObjectEncoding>(encoding);
         obj.content.encoded.body.data = reinterpret_cast<UA_Byte *>(data.data());
-        obj.content.encoded.body.length = data.length();
+        obj.content.encoded.body.length = data.size();
     }
     obj.content.encoded.typeId = typeEncodingId;
     UA_ExtensionObject_copy(&obj, ptr);

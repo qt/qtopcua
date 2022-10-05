@@ -35,9 +35,9 @@ public:
         opcuaClient->connectToEndpoint(endPoint);
         QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
 
-        QCOMPARE(connectedSpy.count(), 1); // one connected signal fired
-        QCOMPARE(disconnectedSpy.count(), 0); // zero disconnected signals fired
-        QCOMPARE(stateSpy.count(), 2);
+        QCOMPARE(connectedSpy.size(), 1); // one connected signal fired
+        QCOMPARE(disconnectedSpy.size(), 0); // zero disconnected signals fired
+        QCOMPARE(stateSpy.size(), 2);
 
         QCOMPARE(stateSpy.at(0).at(0).value<QOpcUaClient::ClientState>(),
                  QOpcUaClient::ClientState::Connecting);
@@ -65,9 +65,9 @@ public:
 
             QTRY_VERIFY(opcuaClient->state() == QOpcUaClient::Disconnected);
 
-            QCOMPARE(connectedSpy.count(), 0);
-            QCOMPARE(disconnectedSpy.count(), 1);
-            QCOMPARE(stateSpy.count(), 2);
+            QCOMPARE(connectedSpy.size(), 0);
+            QCOMPARE(disconnectedSpy.size(), 1);
+            QCOMPARE(stateSpy.size(), 2);
             QCOMPARE(stateSpy.at(0).at(0).value<QOpcUaClient::ClientState>(),
                      QOpcUaClient::ClientState::Closing);
             QCOMPARE(stateSpy.at(1).at(0).value<QOpcUaClient::ClientState>(),
@@ -273,7 +273,7 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureUnencryptedKey()
     if (client->state() == QOpcUaClient::Connecting)
         connectSpy.wait(signalSpyTimeout);
 
-    QCOMPARE(connectSpy.count(), 2);
+    QCOMPARE(connectSpy.size(), 2);
     QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connecting);
     connectSpy.wait(signalSpyTimeout);
     QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connected);
@@ -287,7 +287,7 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureUnencryptedKey()
     connectSpy.clear();
     client->disconnectFromEndpoint();
     connectSpy.wait(signalSpyTimeout);
-    QCOMPARE(connectSpy.count(), 2);
+    QCOMPARE(connectSpy.size(), 2);
     QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Closing);
     QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Disconnected);
 }
@@ -359,7 +359,7 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureEncryptedKey()
     if (client->state() == QOpcUaClient::Connecting)
         connectSpy.wait(signalSpyTimeout);
 
-    QCOMPARE(connectSpy.count(), 2);
+    QCOMPARE(connectSpy.size(), 2);
     QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Connecting);
     QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Connected);
 
@@ -372,7 +372,7 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureEncryptedKey()
     connectSpy.clear();
     client->disconnectFromEndpoint();
     connectSpy.wait(signalSpyTimeout);
-    QCOMPARE(connectSpy.count(), 2);
+    QCOMPARE(connectSpy.size(), 2);
     QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Closing);
     QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Disconnected);
 }
