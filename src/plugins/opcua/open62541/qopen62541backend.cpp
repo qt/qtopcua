@@ -257,7 +257,7 @@ QOpen62541Subscription *Open62541AsyncBackend::getSubscription(const QOpcUaMonit
     if (settings.subscriptionType() == QOpcUaMonitoringParameters::SubscriptionType::Shared) {
         // Requesting multiple subscriptions with publishing interval < minimum publishing interval breaks subscription sharing
         double interval = revisePublishingInterval(settings.publishingInterval(), m_minPublishingInterval);
-        for (auto entry : qAsConst(m_subscriptions)) {
+        for (auto entry : std::as_const(m_subscriptions)) {
             if (qFuzzyCompare(entry->interval(), interval) && entry->shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared)
                 return entry;
         }
@@ -1092,7 +1092,7 @@ void Open62541AsyncBackend::iterateClient()
 
 void Open62541AsyncBackend::handleSubscriptionTimeout(QOpen62541Subscription *sub, QList<QPair<quint64, QOpcUa::NodeAttribute>> items)
 {
-    for (auto it : qAsConst(items)) {
+    for (auto it : std::as_const(items)) {
         auto item = m_attributeMapping.find(it.first);
         if (item == m_attributeMapping.end())
             continue;

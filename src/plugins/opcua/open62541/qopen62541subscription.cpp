@@ -106,7 +106,7 @@ bool QOpen62541Subscription::removeOnServer()
         m_subscriptionId = 0;
     }
 
-    for (auto it : qAsConst(m_itemIdToItemMapping)) {
+    for (auto it : std::as_const(m_itemIdToItemMapping)) {
         QOpcUaMonitoringParameters s;
         s.setStatusCode(m_timeout ? QOpcUa::UaStatusCode::BadTimeout : QOpcUa::UaStatusCode::BadDisconnect);
         emit m_backend->monitoringEnableDisable(it->handle, it->attr, false, s);
@@ -343,7 +343,7 @@ void QOpen62541Subscription::monitoredValueUpdated(UA_UInt32 monId, UA_DataValue
 void QOpen62541Subscription::sendTimeoutNotification()
 {
     QList<QPair<quint64, QOpcUa::NodeAttribute>> items;
-    for (const auto &it : qAsConst(m_nodeHandleToItemMapping)) {
+    for (const auto &it : std::as_const(m_nodeHandleToItemMapping)) {
         for (auto item : it) {
             items.push_back({item->handle, item->attr});
         }
@@ -688,7 +688,7 @@ bool QOpen62541Subscription::modifySubscriptionParameters(quint64 nodeHandle, QO
             p.setPriority(m_priority);
             p.setMaxNotificationsPerPublish(m_maxNotificationsPerPublish);
 
-            for (auto it : qAsConst(m_itemIdToItemMapping))
+            for (auto it : std::as_const(m_itemIdToItemMapping))
                 emit m_backend->monitoringStatusChanged(it->handle, it->attr, changed, p);
         }
         return true;

@@ -714,7 +714,7 @@ UA_Variant arrayFromQVariant(const QVariant &var, const UA_DataType *type)
         if (list.isEmpty())
             return open62541value;
 
-        for (const auto &it : qAsConst(list)) {
+        for (const auto &it : std::as_const(list)) {
             if (!it.canConvert<QTTYPE>()) {
                 qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Value type" << var.typeName() <<
                                                          "in the QVariant does not match type parameter" << type->typeName;

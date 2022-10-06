@@ -670,7 +670,7 @@ QUACppSubscription *UACppAsyncBackend::getSubscription(const QOpcUaMonitoringPar
     if (settings.subscriptionType() == QOpcUaMonitoringParameters::SubscriptionType::Shared) {
         // Requesting multiple subscriptions with publishing interval < minimum publishing interval breaks subscription sharing
         double interval = revisePublishingInterval(settings.publishingInterval(), m_minPublishingInterval);
-        for (auto entry : qAsConst(m_subscriptions)) {
+        for (auto entry : std::as_const(m_subscriptions)) {
             if (qFuzzyCompare(entry->interval(), interval) && entry->shared() == QOpcUaMonitoringParameters::SubscriptionType::Shared)
                 return entry;
         }

@@ -194,7 +194,7 @@ void OpcUaServerDiscovery::handleServers(const QList<QOpcUaApplicationDescriptio
     }
 
     clearData();
-    for (const auto &i : qAsConst(servers)) {
+    for (const auto &i : std::as_const(servers)) {
         const int newRow = QStandardItemModel::rowCount();
         QStandardItemModel::insertRow(newRow);
         QStandardItemModel::setData(index(newRow, 0), QString(i.applicationUri() + u'\n' + i.productUri()), Qt::DisplayRole);

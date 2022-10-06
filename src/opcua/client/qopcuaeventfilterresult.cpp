@@ -55,14 +55,14 @@ QOpcUaEventFilterResult::~QOpcUaEventFilterResult()
 */
 bool QOpcUaEventFilterResult::isGood() const
 {
-    for (auto status : qAsConst(data->selectClauseResults)) {
+    for (auto status : std::as_const(data->selectClauseResults)) {
         if (status != QOpcUa::UaStatusCode::Good)
             return false;
     }
-    for (QOpcUaContentFilterElementResult element : qAsConst(data->whereClauseResults)) {
+    for (QOpcUaContentFilterElementResult element : std::as_const(data->whereClauseResults)) {
         if (element.statusCode() != QOpcUa::UaStatusCode::Good)
             return false;
-        for (auto status : qAsConst(element.operandStatusCodesRef())) {
+        for (auto status : std::as_const(element.operandStatusCodesRef())) {
             if (status != QOpcUa::UaStatusCode::Good)
                 return false;
         }

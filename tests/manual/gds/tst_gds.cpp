@@ -146,7 +146,7 @@ void Tst_QOpcUaGds::initTestCase()
     const auto desc = endpointSpy.at(0).at(0).value<QList<QOpcUaEndpointDescription>>();
     QVERIFY(desc.size() > 0);
 
-    for (const auto &i : qAsConst(desc)) {
+    for (const auto &i : std::as_const(desc)) {
         if (i.securityPolicy().endsWith("#Basic256Sha256")
             && i.securityMode() == QOpcUaEndpointDescription::MessageSecurityMode::SignAndEncrypt)
             m_endpoint = i;

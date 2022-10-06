@@ -42,7 +42,7 @@ public:
             QOpcUa::NodeAttributes updatedAttributes;
             Q_Q(QOpcUaNode);
 
-            for (auto &entry : qAsConst(attr)) {
+            for (auto &entry : std::as_const(attr)) {
                 if (serviceResult == QOpcUa::UaStatusCode::Good)
                     m_nodeAttributes[entry.attribute()] = entry;
                 else {

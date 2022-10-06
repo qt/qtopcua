@@ -898,7 +898,7 @@ void QOpcUaGdsClientPrivate::resolveMethodNodes()
 
 
     // Resolve all needed nodes from the directory
-    for (const auto &key : qAsConst(elementsToResolve)) {
+    for (const auto &key : std::as_const(elementsToResolve)) {
         if (!m_directoryNodes.value(key).isEmpty())
             continue; // Already resolved
 

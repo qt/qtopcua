@@ -196,7 +196,7 @@ QOpcUaApplicationIdentity QOpcUaPkiConfiguration::applicationIdentity() const
     }
 
     auto extensions = certList[0].extensions();
-    for (const auto &extension : qAsConst(extensions)) {
+    for (const auto &extension : std::as_const(extensions)) {
         if (extension.name() == QLatin1String("subjectAltName")) { // OID: 2.5.29.17
             const auto value = extension.value().toMap();
             // const QString dns = value[QLatin1String("DNS")].toString();

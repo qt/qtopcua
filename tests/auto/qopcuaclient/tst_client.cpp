@@ -1511,7 +1511,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
         monitoringModifiedSpy.wait(signalSpyTimeout);
 
     attrs = {QOpcUa::NodeAttribute::Value, QOpcUa::NodeAttribute::DisplayName};
-    for (auto it : qAsConst(monitoringModifiedSpy)) {
+    for (auto it : std::as_const(monitoringModifiedSpy)) {
         QOpcUa::NodeAttribute temp = it.at(0).value<QOpcUa::NodeAttribute>();
         QVERIFY(attrs.contains(temp));
         QVERIFY(it.at(1).value<QOpcUaMonitoringParameters::Parameters>() &  QOpcUaMonitoringParameters::Parameter::PublishingInterval);
@@ -1536,7 +1536,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
     QCOMPARE(monitoringDisabledSpy.size(), 3);
 
     attrs = {QOpcUa::NodeAttribute::Value, QOpcUa::NodeAttribute::DisplayName, QOpcUa::NodeAttribute::NodeId};
-    for (auto it : qAsConst(monitoringDisabledSpy)) {
+    for (auto it : std::as_const(monitoringDisabledSpy)) {
         QOpcUa::NodeAttribute temp = it.at(0).value<QOpcUa::NodeAttribute>();
         QVERIFY(attrs.contains(temp));
         QCOMPARE(node->monitoringStatus(temp).subscriptionId(), (quint32)0);
@@ -1627,7 +1627,7 @@ void Tst_QOpcUaClient::dataChangeSubscriptionSharing()
     QCOMPARE(monitoringDisabledSpy.size(), 2);
 
     QList<QOpcUa::NodeAttribute> attrs = {QOpcUa::NodeAttribute::Value, QOpcUa::NodeAttribute::DisplayName};
-    for (auto it : qAsConst(monitoringDisabledSpy)) {
+    for (auto it : std::as_const(monitoringDisabledSpy)) {
         auto temp = it.at(0).value<QOpcUa::NodeAttribute>();
         QVERIFY(attrs.contains(temp));
         QCOMPARE(node->monitoringStatus(temp).subscriptionId(), (quint32)0);
