@@ -208,7 +208,7 @@ Q_DECLARE_LOGGING_CATEGORY(lcSsl)
 
 #endif // !defined QT_LINKED_OPENSSL
 
-#if QT_CONFIG(opensslv11)
+#if QT_CONFIG(opensslv11) | QT_CONFIG(opensslv30)
 #include "qsslsocket_openssl11_symbols_p.h"
 #else
 #include "qsslsocket_opensslpre11_symbols_p.h"
@@ -227,7 +227,7 @@ int q_BIO_read(BIO *a, void *b, int c);
 Q_AUTOTEST_EXPORT int q_BIO_write(BIO *a, const void *b, int c);
 int q_BN_num_bits(const BIGNUM *a);
 
-#if QT_CONFIG(opensslv11)
+#if QT_CONFIG(opensslv11) | QT_CONFIG(opensslv30)
 int q_BN_is_word(BIGNUM *a, BN_ULONG w);
 #else // opensslv11
 // BN_is_word is implemented purely as a
@@ -277,7 +277,7 @@ void q_X509_EXTENSION_free(X509_EXTENSION *ext);
 int q_X509_EXTENSION_set_critical(X509_EXTENSION *ex, int crit);
 ASN1_INTEGER *q_ASN1_INTEGER_dup(const ASN1_INTEGER *x);
 
-#if QT_CONFIG(opensslv11)
+#if QT_CONFIG(opensslv11) | QT_CONFIG(opensslv30)
 X509_NAME *q_X509_REQ_get_subject_name(X509_REQ *req);
 #define q_ERR_load_crypto_strings() \
     q_OPENSSL_init_crypto(OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NULL)
@@ -486,7 +486,7 @@ void q_PKCS12_free(PKCS12 *pkcs12);
 #define q_SSL_CTX_set_mode(ctx,op) q_SSL_CTX_ctrl((ctx),SSL_CTRL_MODE,(op),NULL)
 #define q_sk_GENERAL_NAME_num(st) q_SKM_sk_num(GENERAL_NAME, (st))
 #define q_sk_GENERAL_NAME_value(st, i) q_SKM_sk_value(GENERAL_NAME, (st), (i))
-#if QT_CONFIG(opensslv11)
+#if QT_CONFIG(opensslv11) | QT_CONFIG(opensslv30)
 #define q_sk_GENERAL_NAME_push(st, val) q_OPENSSL_sk_push((st), (val))
 #else
 #define q_sk_GENERAL_NAME_push(st, val) q_SKM_sk_push(GENERAL_NAME, (st), (val))

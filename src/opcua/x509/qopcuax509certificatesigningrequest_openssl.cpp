@@ -420,7 +420,7 @@ QByteArray QOpcUaX509CertificateSigningRequestPrivate::createSelfSignedCertifica
     generalName->type = GEN_DIRNAME;
     generalName->d.directoryName = q_X509_NAME_dup(q_X509_get_subject_name(x509));
 
-#if QT_CONFIG(opensslv11)
+#if QT_CONFIG(opensslv11) | QT_CONFIG(opensslv30)
     q_sk_GENERAL_NAME_push((OPENSSL_STACK*)akid->issuer, generalName);
 #else
     q_sk_GENERAL_NAME_push(akid->issuer, generalName);
