@@ -580,7 +580,7 @@ inline bool QOpcUaBinaryDataEncoding::encode<QString>(const QString &src)
         return false;
 
     QByteArray arr = src.toUtf8();
-    if (!encode<qint32>(arr.isNull() ? -1 : arr.length()))
+    if (!encode<qint32>(arr.isNull() ? -1 : arr.size()))
         return false;
     m_data->append(arr);
     return true;
@@ -600,16 +600,16 @@ template<>
 inline bool QOpcUaBinaryDataEncoding::encode<QOpcUaLocalizedText>(const QOpcUaLocalizedText &src)
 {
     quint8 mask = 0;
-    if (src.locale().length() != 0)
+    if (src.locale().size() != 0)
         mask |= 0x01;
-    if (src.text().length() != 0)
+    if (src.text().size() != 0)
         mask |= 0x02;
     if (!encode<quint8>(mask))
         return false;
-    if (src.locale().length())
+    if (src.locale().size())
         if (!encode<QString>(src.locale()))
             return false;
-    if (src.text().length())
+    if (src.text().size())
         if (!encode<QString>(src.text()))
             return false;
     return true;

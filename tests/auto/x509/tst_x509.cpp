@@ -121,7 +121,7 @@ void Tst_QOpcUaSecurity::keyPairs()
 
     QVERIFY(loadedKey.loadFromPemData(byteArray));
     QVERIFY(loadedKey.hasPrivateKey() == true);
-    QCOMPARE(passwordSpy.count(), 0);
+    QCOMPARE(passwordSpy.size(), 0);
     QCOMPARE(loadedKey.privateKeyToByteArray(QOpcUaKeyPair::Cipher::Unencrypted, QString()), byteArray);
 
     // Check encrypted PEM export
@@ -129,7 +129,7 @@ void Tst_QOpcUaSecurity::keyPairs()
                                           QStringLiteral("password"));
     QVERIFY(byteArray.startsWith("-----BEGIN ENCRYPTED PRIVATE KEY-----\n"));
     QVERIFY(byteArray.endsWith("-----END ENCRYPTED PRIVATE KEY-----\n"));
-    QCOMPARE(passwordSpy.count(), 0);
+    QCOMPARE(passwordSpy.size(), 0);
 
     // Setup password callback
     QString passphraseToReturn;
@@ -143,14 +143,14 @@ void Tst_QOpcUaSecurity::keyPairs()
     qDebug() << "Trying to decrypt with wrong password; will cause an error";
     passphraseToReturn = "WrongPassword";
     QVERIFY(!loadedKey.loadFromPemData(byteArray));
-    QCOMPARE(passwordSpy.count(), 1);
+    QCOMPARE(passwordSpy.size(), 1);
     QVERIFY(loadedKey.hasPrivateKey() == false);
 
     // Load key with right password
     qDebug() << "Trying to decrypt with right password; will cause no error";
     passphraseToReturn = "password";
     QVERIFY(loadedKey.loadFromPemData(byteArray));
-    QCOMPARE(passwordSpy.count(), 2);
+    QCOMPARE(passwordSpy.size(), 2);
     QCOMPARE(loadedKey.privateKeyToByteArray(QOpcUaKeyPair::Cipher::Unencrypted, QString()),
              key.privateKeyToByteArray(QOpcUaKeyPair::Cipher::Unencrypted, QString()));
     QVERIFY(loadedKey.hasPrivateKey() == true);

@@ -208,7 +208,7 @@ QByteArray QOpcUaKeyPairPrivate::privateKeyToByteArray(QOpcUaKeyPair::Cipher cip
 
     if (0 == q_PEM_write_bio_PKCS8PrivateKey(bio, m_keyData, enc,
                                          enc ? password.toUtf8().data() : NULL,
-                                         enc ? password.length() : 0,
+                                         enc ? password.size() : 0,
                                          NULL /* callback */, NULL /* userdata */)) {
         qCWarning(lcSsl) << "Failed to write private key:" << getOpenSslError();
         return QByteArray();

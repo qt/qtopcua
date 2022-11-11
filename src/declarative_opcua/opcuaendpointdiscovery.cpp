@@ -124,7 +124,7 @@ void OpcUaEndpointDiscovery::setServerUrl(const QString &serverUrl)
 
 int OpcUaEndpointDiscovery::count() const
 {
-    return m_endpoints.count();
+    return m_endpoints.size();
 }
 
 /*!
@@ -151,7 +151,7 @@ int OpcUaEndpointDiscovery::count() const
 
 QOpcUaEndpointDescription OpcUaEndpointDiscovery::at(int row) const
 {
-    if (row >= m_endpoints.count())
+    if (row >= m_endpoints.size())
         return QOpcUaEndpointDescription();
     return m_endpoints.at(row);
 }

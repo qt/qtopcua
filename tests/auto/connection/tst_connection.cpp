@@ -155,9 +155,9 @@ void Tst_Connection::connectMultipleTimes()
     opcuaClient->connectToEndpoint(m_endpoint);
     QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
 
-    QCOMPARE(connectedSpy.count(), 1);
-    QCOMPARE(disconnectedSpy.count(), 0);
-    QCOMPARE(stateSpy.count(), 2);
+    QCOMPARE(connectedSpy.size(), 1);
+    QCOMPARE(disconnectedSpy.size(), 0);
+    QCOMPARE(stateSpy.size(), 2);
 
     QCOMPARE(stateSpy.at(0).at(0).value<QOpcUaClient::ClientState>(),
              QOpcUaClient::ClientState::Connecting);
@@ -175,9 +175,9 @@ void Tst_Connection::connectMultipleTimes()
     stateSpy.wait(signalSpyTimeout);
     QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
 
-    QCOMPARE(connectedSpy.count(), 1);
-    QCOMPARE(disconnectedSpy.count(), 1);
-    QCOMPARE(stateSpy.count(), 3);
+    QCOMPARE(connectedSpy.size(), 1);
+    QCOMPARE(disconnectedSpy.size(), 1);
+    QCOMPARE(stateSpy.size(), 3);
 
     QCOMPARE(stateSpy.at(0).at(0).value<QOpcUaClient::ClientState>(),
              QOpcUaClient::ClientState::Disconnected);

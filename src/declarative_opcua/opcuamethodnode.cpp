@@ -248,7 +248,7 @@ OpcUaMethodArgument* OpcUaMethodNode::argument(QQmlListProperty<OpcUaMethodArgum
 }
 
 qsizetype OpcUaMethodNode::argumentCount(QQmlListProperty<OpcUaMethodArgument>* list) {
-    return reinterpret_cast< QList<OpcUaMethodArgument*>* >(list->data)->count();
+    return reinterpret_cast< QList<OpcUaMethodArgument*>* >(list->data)->size();
 }
 
 
