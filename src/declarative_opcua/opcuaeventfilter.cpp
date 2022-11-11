@@ -107,10 +107,10 @@ bool OpcUaEventFilter::operator==(const OpcUaEventFilter &other) const
 QOpcUaMonitoringParameters::EventFilter OpcUaEventFilter::filter(QOpcUaClient *client) const
 {
     QOpcUaMonitoringParameters::EventFilter filterValue;
-    for (const auto &i : qAsConst(m_selectors))
+    for (const auto &i : std::as_const(m_selectors))
         filterValue.selectClausesRef().append(i->toSimpleAttributeOperand(client));
 
-    for (const auto &i : qAsConst(m_filterElements))
+    for (const auto &i : std::as_const(m_filterElements))
         filterValue.whereClauseRef().append(i->toFilterElement(client));
 
     return filterValue;

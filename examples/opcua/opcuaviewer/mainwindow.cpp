@@ -195,7 +195,7 @@ void MainWindow::findServersComplete(const QList<QOpcUaApplicationDescription> &
         ui->servers->clear();
         for (const auto &server : servers) {
             const auto urls = server.discoveryUrls();
-            for (const auto &url : qAsConst(urls))
+            for (const auto &url : std::as_const(urls))
                 ui->servers->addItem(url);
         }
     }

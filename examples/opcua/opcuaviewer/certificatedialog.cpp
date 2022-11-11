@@ -36,7 +36,7 @@ int CertificateDialog::showCertificate(const QString &message, const QByteArray 
         ui->btnTrust->setEnabled(false);
     }
 
-    for (const QSslCertificate &cert : qAsConst(certs))
+    for (const QSslCertificate &cert : std::as_const(certs))
         ui->certificate->appendPlainText(cert.toText());
 
     ui->message->setText(message);

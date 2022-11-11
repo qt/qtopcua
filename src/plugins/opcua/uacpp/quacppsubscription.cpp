@@ -610,7 +610,7 @@ bool QUACppSubscription::modifySubscriptionParameters(quint64 nodeHandle, QOpcUa
             m_subscriptionParameters.setMaxKeepAliveCount(p.maxKeepAliveCount());
             m_subscriptionParameters.setPublishingInterval(p.publishingInterval());
 
-            for (auto it : qAsConst(m_monitoredIds))
+            for (auto it : std::as_const(m_monitoredIds))
                 emit m_backend->monitoringStatusChanged(it.first, it.second, changed, p);
         }
         return true;

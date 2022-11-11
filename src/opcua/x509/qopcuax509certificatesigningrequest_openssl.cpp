@@ -67,7 +67,7 @@ static X509_EXTENSION *createExtension(QOpcUaX509Extension *extension)
     if (const auto *san = dynamic_cast<const QOpcUaX509ExtensionSubjectAlternativeName *>(extension)) {
         QStringList data;
 
-        for (const auto &pair : qAsConst(san->entries())) {
+        for (const auto &pair : std::as_const(san->entries())) {
             QString prefix;
             if (pair.first == QOpcUaX509ExtensionSubjectAlternativeName::Type::DNS)
                 prefix = QLatin1String("DNS:");
