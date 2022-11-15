@@ -652,8 +652,13 @@ static LoadedOpenSsl loadOpenSsl()
 #define QT_SSL_SUFFIX
 #endif // !Q_PROCESSOR_x86_64
 
+#if QT_CONFIG(opensslv11)
     tryToLoadOpenSslWin32Library(QLatin1String("libssl-1_1" QT_SSL_SUFFIX),
                                  QLatin1String("libcrypto-1_1" QT_SSL_SUFFIX), result);
+#elif QT_CONFIG(opensslv30)
+    tryToLoadOpenSslWin32Library(QLatin1String("libssl-3" QT_SSL_SUFFIX),
+                                 QLatin1String("libcrypto-3" QT_SSL_SUFFIX), result);
+#endif
 
 #undef QT_SSL_SUFFIX
 
