@@ -4,9 +4,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(opcuaviewer LANGUAGES CXX)
 
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
-
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
 endif()
@@ -14,6 +11,8 @@ endif()
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/opcua/opcuaviewer")
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui OpcUa Widgets)
+
+qt_standard_project_setup()
 
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/pki"
     DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
@@ -31,11 +30,11 @@ set_target_properties(opcuaviewer PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(opcuaviewer PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::OpcUa
-    Qt::Widgets
+target_link_libraries(opcuaviewer PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::OpcUa
+    Qt6::Widgets
 )
 
 install(TARGETS opcuaviewer

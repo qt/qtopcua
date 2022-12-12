@@ -4,8 +4,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(waterpump-qmlcpp LANGUAGES CXX)
 
-set(CMAKE_AUTOMOC ON)
-
 if(NOT DEFINED INSTALL_EXAMPLESDIR)
     set(INSTALL_EXAMPLESDIR "examples")
 endif()
@@ -13,6 +11,8 @@ endif()
 set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/opcua/waterpump/waterpump-qmlcpp")
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui OpcUa Quick)
+
+qt_standard_project_setup()
 
 qt_add_executable(waterpump-qmlcpp
     main.cpp
@@ -24,11 +24,11 @@ set_target_properties(waterpump-qmlcpp PROPERTIES
     MACOSX_BUNDLE TRUE
 )
 
-target_link_libraries(waterpump-qmlcpp PUBLIC
-    Qt::Core
-    Qt::Gui
-    Qt::OpcUa
-    Qt::Quick
+target_link_libraries(waterpump-qmlcpp PRIVATE
+    Qt6::Core
+    Qt6::Gui
+    Qt6::OpcUa
+    Qt6::Quick
 )
 
 # Resources:
