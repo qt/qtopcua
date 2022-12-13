@@ -12,15 +12,23 @@ set(INSTALL_EXAMPLEDIR "${INSTALL_EXAMPLESDIR}/opcua/opcuaviewer")
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui OpcUa Widgets)
 
-file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/pki"
-    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
-
 qt_add_executable(opcuaviewer
     certificatedialog.cpp certificatedialog.h certificatedialog.ui
     main.cpp
     mainwindow.cpp mainwindow.h mainwindow.ui
     opcuamodel.cpp opcuamodel.h
     treeitem.cpp treeitem.h
+)
+
+qt_add_resources(opcuaviewer "pki"
+    PREFIX /
+    FILES
+        pki/own/certs/opcuaviewer.der
+        pki/own/private/opcuaviewer.pem
+        pki/trusted/certs/3d8ec65c47524d6ad67bed912c19a895.der
+        pki/trusted/certs/ca.der
+        pki/trusted/certs/open62541-testserver.der
+        pki/trusted/crl/ca.crl.pem
 )
 
 set_target_properties(opcuaviewer PROPERTIES
