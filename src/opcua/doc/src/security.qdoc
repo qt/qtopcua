@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
 
 /*!
-    \page security.html
+    \page qtopcua-security.html
     \title Creating OPC UA Clients with security support
     \brief Instructions how to create OPC UA Clients with security support
 
