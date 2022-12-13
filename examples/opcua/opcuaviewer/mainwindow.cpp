@@ -9,6 +9,7 @@
 #include <QApplication>
 #include <QDir>
 #include <QMessageBox>
+#include <QStandardPaths>
 #include <QTextCharFormat>
 #include <QTextBlock>
 #include <QOpcUaProvider>
@@ -117,23 +118,51 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+static bool copyDirRecursively(const QString &from, const QString &to)
+{
+    const QDir srcDir(from);
+    const QDir targetDir(to);
+    if (!QDir().mkpath(to))
+        return false;
+
+    const QFileInfoList infos =
+            srcDir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
+    for (const QFileInfo &info : infos) {
+        const QString srcItemPath = info.absoluteFilePath();
+        const QString dstItemPath = targetDir.absoluteFilePath(info.fileName());
+        if (info.isDir()) {
+            if (!copyDirRecursively(srcItemPath, dstItemPath))
+                return false;
+        } else if (info.isFile()) {
+            if (!QFile::copy(srcItemPath, dstItemPath))
+                return false;
+        }
+    }
+    return true;
+}
+
 //! [PKI Configuration]
 void MainWindow::setupPkiConfiguration()
 {
-    QString pkidir = QCoreApplication::applicationDirPath();
-#ifdef Q_OS_WIN
-    pkidir += "../";
-#endif
-    pkidir += "/pki";
-    m_pkiConfig.setClientCertificateFile(pkidir + "/own/certs/opcuaviewer.der");
-    m_pkiConfig.setPrivateKeyFile(pkidir + "/own/private/opcuaviewer.pem");
-    m_pkiConfig.setTrustListDirectory(pkidir + "/trusted/certs");
-    m_pkiConfig.setRevocationListDirectory(pkidir + "/trusted/crl");
-    m_pkiConfig.setIssuerListDirectory(pkidir + "/issuers/certs");
-    m_pkiConfig.setIssuerRevocationListDirectory(pkidir + "/issuers/crl");
+    const QDir pkidir =
+            QDir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/pki");
 
-    // create the folders if they don't exist yet
-    createPkiFolders();
+    if (!pkidir.exists() && !copyDirRecursively(":/pki", pkidir.path()))
+        qFatal("Could not set up directory %s!", qUtf8Printable(pkidir.path()));
+
+    m_pkiConfig.setClientCertificateFile(pkidir.absoluteFilePath("own/certs/opcuaviewer.der"));
+    m_pkiConfig.setPrivateKeyFile(pkidir.absoluteFilePath("own/private/opcuaviewer.pem"));
+    m_pkiConfig.setTrustListDirectory(pkidir.absoluteFilePath("trusted/certs"));
+    m_pkiConfig.setRevocationListDirectory(pkidir.absoluteFilePath("trusted/crl"));
+    m_pkiConfig.setIssuerListDirectory(pkidir.absoluteFilePath("issuers/certs"));
+    m_pkiConfig.setIssuerRevocationListDirectory(pkidir.absoluteFilePath("issuers/crl"));
+
+    const QStringList toCreate = { m_pkiConfig.issuerListDirectory(),
+                                   m_pkiConfig.issuerRevocationListDirectory() };
+    for (const QString &dir : toCreate) {
+        if (!QDir().mkpath(dir))
+            qFatal("Could not create directory %s!", qUtf8Printable(dir));
+    }
 }
 //! [PKI Configuration]
 
@@ -341,41 +370,6 @@ void MainWindow::log(const QString &text, const QString &context, const QColor &
 void MainWindow::log(const QString &text, const QColor &color)
 {
     log(text, QString(), color);
-}
-
-bool MainWindow::createPkiPath(const QString &path)
-{
-    const QString msg = tr("Creating PKI path '%1': %2");
-
-    QDir dir;
-    const bool ret = dir.mkpath(path);
-    if (ret)
-        qDebug() << msg.arg(path, "SUCCESS.");
-    else
-        qCritical("%s", qPrintable(msg.arg(path, "FAILED.")));
-
-    return ret;
-}
-
-bool MainWindow::createPkiFolders()
-{
-    bool result = createPkiPath(m_pkiConfig.trustListDirectory());
-    if (!result)
-        return result;
-
-    result = createPkiPath(m_pkiConfig.revocationListDirectory());
-    if (!result)
-        return result;
-
-    result = createPkiPath(m_pkiConfig.issuerListDirectory());
-    if (!result)
-        return result;
-
-    result = createPkiPath(m_pkiConfig.issuerRevocationListDirectory());
-    if (!result)
-        return result;
-
-    return result;
 }
 
 void MainWindow::showErrorDialog(QOpcUaErrorState *errorState)
