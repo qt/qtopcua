@@ -48,8 +48,6 @@ private:
     void createClient();
     void updateUiState();
     void setupPkiConfiguration();
-    bool createPkiFolders();
-    bool createPkiPath(const QString &path);
 
 private:
     Ui::MainWindow *ui;
