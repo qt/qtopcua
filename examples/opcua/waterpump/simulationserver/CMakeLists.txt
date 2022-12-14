@@ -14,9 +14,10 @@ find_package(Qt6 REQUIRED COMPONENTS Core OpcUa)
 
 qt_standard_project_setup()
 
-if (EXISTS ../../../../../../../${QT_REPO_MODULE_VERSION}/Automation/sources/qtopcua/)
-    set(MODULE_SOURCE ../../../../../../../${QT_REPO_MODULE_VERSION}/Automation/sources/qtopcua/)
+if (EXISTS ../../../../../${Qt6_VERSION}/Src/qtopcua/)
+    set(MODULE_SOURCE ../../../../../${Qt6_VERSION}/Src/qtopcua/)
 else()
+    # Build from source tree
     set(MODULE_SOURCE ../../../../)
 endif()
 

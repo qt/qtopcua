@@ -4,7 +4,12 @@ QT += opcua opcua-private
 QT -= gui
 
 # Installed example package
-MODULE_SOURCES=../../../../../../../$$QT_VERSION/Automation/sources/qtopcua/
+greaterThan(QT_MAJOR_VERSION, 5) {
+    MODULE_SOURCES=../../../../../$$QT_VERSION/Src/qtopcua/
+} else {
+    MODULE_SOURCES=../../../../../$$QT_VERSION/Automation/sources/qtopcua/
+}
+
 !exists($$MODULE_SOURCES):{
   # Build from source tree
   MODULE_SOURCES=$$PWD/../../../../
