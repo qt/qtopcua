@@ -17,8 +17,6 @@
 #include <QMetaEnum>
 #include <QPixmap>
 
-QT_BEGIN_NAMESPACE
-
 const int numberOfDisplayColumns = 8; // NodeId, Value, NodeClass, DataType, BrowseName, DisplayName, Description, Historizing
 
 TreeItem::TreeItem(OpcUaModel *model) : QObject(nullptr)
@@ -371,5 +369,3 @@ QString TreeItem::euInformationToString(const QOpcUaEUInformation &info) const
     return QStringLiteral("[UnitId: %1, NamespaceUri: \"%2\", DisplayName: %3, Description: %4]").arg(info.unitId()).arg(
                 info.namespaceUri()).arg(localizedTextToString(info.displayName())).arg(localizedTextToString(info.description()));
 }
-
-QT_END_NAMESPACE

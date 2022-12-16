@@ -5,13 +5,13 @@
 #define OPCUAMODEL_H
 
 #include "treeitem.h"
+
 #include <QAbstractItemModel>
+#include <QOpcUaClient>
 #include <QOpcUaNode>
+
 #include <memory>
 
-QT_BEGIN_NAMESPACE
-
-class QOpcUaClient;
 class TreeItem;
 
 class OpcUaModel : public QAbstractItemModel
@@ -36,7 +36,5 @@ private:
 
     friend class TreeItem;
 };
-
-QT_END_NAMESPACE
 
 #endif // OPCUAMODEL_H
