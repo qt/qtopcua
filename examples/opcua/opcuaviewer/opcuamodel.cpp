@@ -7,8 +7,6 @@
 #include <QOpcUaNode>
 #include <QIcon>
 
-QT_BEGIN_NAMESPACE
-
 OpcUaModel::OpcUaModel(QObject *parent) : QAbstractItemModel(parent)
 {
 }
@@ -129,5 +127,3 @@ int OpcUaModel::columnCount(const QModelIndex &parent) const
         return static_cast<TreeItem*>(parent.internalPointer())->columnCount();
     return mRootItem ? mRootItem->columnCount() : 0;
 }
-
-QT_END_NAMESPACE

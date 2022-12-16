@@ -6,8 +6,6 @@
 #include <QFile>
 #include <QPushButton>
 
-QT_BEGIN_NAMESPACE
-
 CertificateDialog::CertificateDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::CertificateDialog)
@@ -58,5 +56,3 @@ void CertificateDialog::saveCertificate()
        file.close();
    }
 }
-
-QT_END_NAMESPACE

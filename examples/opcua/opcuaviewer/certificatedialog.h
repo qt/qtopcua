@@ -8,10 +8,10 @@
 #include <QSslCertificate>
 
 QT_BEGIN_NAMESPACE
-
 namespace Ui {
 class CertificateDialog;
 }
+QT_END_NAMESPACE
 
 class CertificateDialog : public QDialog
 {
@@ -31,7 +31,5 @@ private:
     QSslCertificate m_cert;
     QString         m_trustListDirectory;
 };
-
-QT_END_NAMESPACE
 
 #endif // CERTIFICATEDIALOG_H

@@ -4,20 +4,19 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QtOpcUa/QOpcUaHistoryData>
-
+#include <QItemSelection>
 #include <QMainWindow>
 #include <QOpcUaClient>
-#include <QItemSelection>
+#include <QOpcUaHistoryData>
+#include <QOpcUaProvider>
 
-QT_BEGIN_NAMESPACE
-
-class QOpcUaProvider;
 class OpcUaModel;
 
+QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
 }
+QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
 {
@@ -67,7 +66,5 @@ private:
     QAction *mContextMenuHistorizingAction;
     QScopedPointer<QOpcUaHistoryReadResponse> mHistoryReadResponse;
 };
-
-QT_END_NAMESPACE
 
 #endif // MAINWINDOW_H
