@@ -18,8 +18,6 @@
 
 #include <QOpcUaHistoryReadRawRequest>
 
-QT_BEGIN_NAMESPACE
-
 static MainWindow *mainWindowGlobal = nullptr;
 static QtMessageHandler oldMessageHandler = nullptr;
 
@@ -487,5 +485,3 @@ void MainWindow::handleReadHistoryDataFinished(QList<QOpcUaHistoryData> results,
         }
     }
 }
-
-QT_END_NAMESPACE

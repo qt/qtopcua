@@ -5,14 +5,13 @@
 #define TREEITEM_H
 
 #include <QObject>
+#include <QOpcUaEUInformation>
 #include <QOpcUaNode>
+#include <QOpcUaRange>
+
 #include <memory>
 
-QT_BEGIN_NAMESPACE
-
 class OpcUaModel;
-class QOpcUaRange;
-class QOpcUaEUInformation;
 
 class TreeItem : public QObject
 {
@@ -77,7 +76,5 @@ QString TreeItem::numberArrayToString(const QList<T> &vec) const
     list.append(QLatin1Char(']'));
     return list;
 }
-
-QT_END_NAMESPACE
 
 #endif // TREEITEM_H
