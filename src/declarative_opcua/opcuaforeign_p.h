@@ -39,7 +39,6 @@ namespace QOpcUaApplicationDescriptionForeign
     Q_NAMESPACE
     QML_FOREIGN_NAMESPACE(QOpcUaApplicationDescription)
     QML_NAMED_ELEMENT(ApplicationDescription)
-    QML_UNCREATABLE("This type can not be created.")
     QML_ADDED_IN_VERSION(5, 13)
 };
 
@@ -48,7 +47,6 @@ namespace QOpcUaUserTokenPolicyForeign
     Q_NAMESPACE
     QML_FOREIGN_NAMESPACE(QOpcUaUserTokenPolicy)
     QML_NAMED_ELEMENT(UserTokenPolicy)
-    QML_UNCREATABLE("This type can not be created.")
     QML_ADDED_IN_VERSION(5, 13)
 };
 
