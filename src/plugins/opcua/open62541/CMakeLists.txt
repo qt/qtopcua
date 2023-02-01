@@ -43,6 +43,10 @@ qt_internal_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_open62541 AND NO
         ../../../3rdparty/open62541
 )
 
+set_source_files_properties(QOpen62541Plugin
+                            qopen62541valueconverter.cpp
+                            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
+
 # special case begin
 #qt_internal_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_mbedtls AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
 #    DEFINES
