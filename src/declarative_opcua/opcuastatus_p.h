@@ -289,7 +289,6 @@ namespace OpcuaStatusForeign
     QML_FOREIGN_NAMESPACE(OpcUaStatus)
     QML_NAMED_ELEMENT(Status)
     QML_ADDED_IN_VERSION(5, 13)
-    QML_UNCREATABLE("This type can not be created.")
 };
 
 QT_END_NAMESPACE
