@@ -1,6 +1,9 @@
 // Copyright (C) 2017 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
+#ifndef QOPEN62541BACKEND_H
+#define QOPEN62541BACKEND_H
+
 #include "qopen62541client.h"
 #include "qopen62541subscription.h"
 #include <private/qopcuabackend_p.h>
@@ -186,3 +189,5 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // QOPEN62541BACKEND_H
