@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from declarative.pro.
-
 #####################################################################
 ## tst_opcua Test:
 #####################################################################
@@ -23,20 +21,14 @@ qt_internal_add_test(tst_opcua
         Qt::Qml
 )
 
-#### Keys ignored in scope 1:.:.:declarative.pro:<TRUE>:
-# IMPORTPATH = "$$PWD/../../../src/plugins/declarative"
-# TEMPLATE = "app"
-
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(tst_opcua CONDITION QT_FEATURE_open62541_security # special case
+qt_internal_extend_target(tst_opcua CONDITION QT_FEATURE_open62541_security
     DEFINES
         SERVER_SUPPORTS_SECURITY
 )
 
-# special case begin
 if (WIN32)
     target_compile_definitions(tst_opcua PRIVATE TESTS_CMAKE_SPECIFIC_PATH)
 endif()
-# special case end

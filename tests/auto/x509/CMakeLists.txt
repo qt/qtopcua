@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from x509.pro.
-
 #####################################################################
 ## tst_x509 Test:
 #####################################################################

@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from connection.pro.
-
 #####################################################################
 ## tst_connection Test:
 #####################################################################
@@ -17,8 +15,6 @@ qt_internal_add_test(tst_connection
         Qt::OpcUa
 )
 
-# special case begin
 if (WIN32)
     target_compile_definitions(tst_connection PRIVATE TESTS_CMAKE_SPECIFIC_PATH)
 endif()
-# special case end
