@@ -1,7 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from tests.pro.
 
 if(QT_BUILD_STANDALONE_TESTS)
     # Add qt_find_package calls for extra dependencies that need to be found when building
@@ -9,8 +8,6 @@ if(QT_BUILD_STANDALONE_TESTS)
 endif()
 qt_build_tests()
 
-# special case begin
 if(QT_FEATURE_open62541)
     add_subdirectory(open62541-testserver)
 endif()
-# special case end

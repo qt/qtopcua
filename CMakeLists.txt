@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from qtopcua.pro.
-
 cmake_minimum_required(VERSION 3.16)
 
 include(.cmake.conf)
@@ -13,15 +11,11 @@ project(QtOpcUa
     LANGUAGES CXX C
 )
 
-# special case begin
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core Network)
 find_package(Qt6 ${PROJECT_VERSION} CONFIG OPTIONAL_COMPONENTS Gui Quick QuickTest Widgets)
-# special case end
 
-# special case begin
 # Needed for qt_opcua_disable_optimizations_in_current_dir.
 include(src/opcua/Qt6OpcUaMacros.cmake)
-# special case end
 
 if(QNX)
     message(NOTICE "Skipping the build as the condition \"NOT QNX\" is not met.")

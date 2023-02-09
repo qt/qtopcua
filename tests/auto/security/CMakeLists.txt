@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from security.pro.
-
 #####################################################################
 ## tst_security Test:
 #####################################################################
@@ -35,8 +33,6 @@ qt_internal_add_resource(tst_security "certs"
         ${certs_resource_files}
 )
 
-# special case begin
 if (WIN32)
     target_compile_definitions(tst_security PRIVATE TESTS_CMAKE_SPECIFIC_PATH)
 endif()
-# special case end

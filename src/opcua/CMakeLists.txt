@@ -1,8 +1,6 @@
 # Copyright (C) 2022 The Qt Company Ltd.
 # SPDX-License-Identifier: BSD-3-Clause
 
-# Generated from opcua.pro.
-
 #####################################################################
 ## OpcUa Module:
 #####################################################################
@@ -84,9 +82,6 @@ qt_internal_add_module(OpcUa
     GENERATE_CPP_EXPORTS
 )
 
-#### Keys ignored in scope 1:.:.:opcua.pro:<TRUE>:
-# QT_FOR_CONFIG = "core-private"
-
 ## Scopes:
 #####################################################################
 
@@ -108,12 +103,10 @@ qt_internal_extend_target(OpcUa CONDITION QT_FEATURE_gds AND QT_FEATURE_ssl AND 
         x509/qopcuax509utils.cpp x509/qopcuax509utils_p.h
 )
 
-# special case begin
 if (QT_FEATURE_gds AND QT_FEATURE_ssl)
     qt_internal_extend_target(OpcUa
         LIBRARIES WrapOpenSSL::WrapOpenSSL)
 endif()
-# special case end
 
 if(MSVC)
     target_compile_options(OpcUa PRIVATE /constexpr:steps3000000)
