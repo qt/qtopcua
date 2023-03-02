@@ -1259,8 +1259,10 @@ UA_atomic_addUInt32(volatile uint32_t *addr, uint32_t increase) {
     return __sync_add_and_fetch(addr, increase);
 #endif
 #else
-    *addr += increase;
-    return *addr;
+    uint32_t accu = *addr;
+    accu += increase;
+    *addr = accu;
+    return accu;
 #endif
 }
 
@@ -1273,8 +1275,10 @@ UA_atomic_addSize(volatile size_t *addr, size_t increase) {
     return __sync_add_and_fetch(addr, increase);
 #endif
 #else
-    *addr += increase;
-    return *addr;
+    size_t accu = *addr;
+    accu += increase;
+    *addr = accu;
+    return accu;
 #endif
 }
 
@@ -1287,8 +1291,10 @@ UA_atomic_subUInt32(volatile uint32_t *addr, uint32_t decrease) {
     return __sync_sub_and_fetch(addr, decrease);
 #endif
 #else
-    *addr -= decrease;
-    return *addr;
+    uint32_t accu = *addr;
+    accu -= decrease;
+    *addr = accu;
+    return accu;
 #endif
 }
 
@@ -1301,8 +1307,10 @@ UA_atomic_subSize(volatile size_t *addr, size_t decrease) {
     return __sync_sub_and_fetch(addr, decrease);
 #endif
 #else
-    *addr -= decrease;
-    return *addr;
+    size_t accu = *addr;
+    accu -= decrease;
+    *addr = accu;
+    return accu;
 #endif
 }
 
@@ -22533,7 +22541,7 @@ UA_constantTimeEqual(const void *ptr1, const void *ptr2, size_t length) {
     volatile UA_Byte c = 0;
     for(size_t i = 0; i < length; ++i) {
         UA_Byte x = a[i], y = b[i];
-        c |= x ^ y;
+        c = c | (x ^ y);
     }
     return !c;
 }
