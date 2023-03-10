@@ -8,10 +8,10 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QOpcUaConnectionSettings
     \inmodule QtOpcUa
-    \brief The common parameters for a connection to a server
+    \brief The common parameters for a connection to a server.
 
-    This class stores common connection parameters like the session timeout, the secure channel lifetime
-    and the localeIds.
+    This class stores common connection parameters like the session timeout, the
+    secure channel lifetime and the localeIds.
 
     The information from this class is currently only used by the open62541 backend.
 */
