@@ -13,6 +13,7 @@ project(QtOpcUa
 
 find_package(Qt6 ${PROJECT_VERSION} CONFIG REQUIRED COMPONENTS BuildInternals Core Network)
 find_package(Qt6 ${PROJECT_VERSION} CONFIG OPTIONAL_COMPONENTS Gui Quick QuickTest Widgets)
+qt_internal_project_setup()
 
 # Needed for qt_opcua_disable_optimizations_in_current_dir.
 include(src/opcua/Qt6OpcUaMacros.cmake)
