@@ -46,10 +46,14 @@ const unsigned char * q_ASN1_STRING_get0_data(const ASN1_STRING *x);
 Q_AUTOTEST_EXPORT BIO *q_BIO_new(const BIO_METHOD *a);
 Q_AUTOTEST_EXPORT const BIO_METHOD *q_BIO_s_mem();
 
-int q_DSA_bits(DSA *a);
 int q_EVP_CIPHER_CTX_reset(EVP_CIPHER_CTX *c);
+#if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
+int q_EVP_PKEY_get_base_id(const EVP_PKEY *pkey);
+#define q_EVP_PKEY_base_id q_EVP_PKEY_get_base_id
+#else
 int q_EVP_PKEY_base_id(EVP_PKEY *a);
-int q_RSA_bits(RSA *a);
+#endif // OPENSSL_VERSION_MAJOR >= 3
+
 Q_AUTOTEST_EXPORT int q_OPENSSL_sk_num(OPENSSL_STACK *a);
 Q_AUTOTEST_EXPORT void q_OPENSSL_sk_pop_free(OPENSSL_STACK *a, void (*b)(void *));
 Q_AUTOTEST_EXPORT OPENSSL_STACK *q_OPENSSL_sk_new_null();
@@ -74,7 +78,6 @@ EVP_PKEY *q_X509_get_pubkey(X509 *a);
 void q_X509_STORE_set_verify_cb(X509_STORE *ctx, X509_STORE_CTX_verify_cb verify_cb);
 STACK_OF(X509) *q_X509_STORE_CTX_get0_chain(X509_STORE_CTX *ctx);
 void q_DH_get0_pqg(const DH *dh, const BIGNUM **p, const BIGNUM **q, const BIGNUM **g);
-int q_DH_bits(DH *dh);
 
 # define q_SSL_load_error_strings() q_OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS \
                                                        | OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NULL)
@@ -138,5 +141,13 @@ int q_EVP_PKEY_keygen(EVP_PKEY_CTX *ctx, EVP_PKEY **pkey);
 
 #define q_SSL_CTX_set_max_proto_version(ctx, version) \
         q_SSL_CTX_ctrl(ctx, SSL_CTRL_SET_MAX_PROTO_VERSION, version, nullptr)
+
+#ifndef OPENSSL_NO_DEPRECATED_3_0
+
+int q_DSA_bits(DSA *a);
+int q_RSA_bits(RSA *a);
+int q_DH_bits(DH *dh);
+
+#endif // OPENSSL_NO_DEPRECATED_3_0
 
 #endif
