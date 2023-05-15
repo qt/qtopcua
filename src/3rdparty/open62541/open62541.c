@@ -48477,6 +48477,8 @@ AttributeReadCallback(UA_Client *client, void *userdata,
     UA_LOG_DEBUG(&UA_Client_getConfig(client)->logger, UA_LOGCATEGORY_CLIENT,
                 "Async read response for request %" PRIu32, requestId);
 
+    UA_DataValue *dv = NULL;
+
     /* Check the ServiceResult */
     UA_StatusCode res = rr->responseHeader.serviceResult;
     if(res != UA_STATUSCODE_GOOD)
@@ -48489,7 +48491,7 @@ AttributeReadCallback(UA_Client *client, void *userdata,
     }
 
     /* A Value attribute */
-    UA_DataValue *dv = &rr->results[0];
+    dv = &rr->results[0];
     if(ctx->resultType == &UA_TYPES[UA_TYPES_DATAVALUE]) {
         ctx->userCallback(client, ctx->userContext, requestId,
                           UA_STATUSCODE_GOOD, dv);
@@ -49503,6 +49505,7 @@ ua_MonitoredItems_delete(UA_Client *client, UA_Client_Subscription *sub,
 static void
 ua_MonitoredItems_delete_handler(UA_Client *client, void *d, UA_UInt32 requestId,
                                  void *r) {
+    UA_Client_Subscription *sub = NULL;
     CustomCallback *cc = (CustomCallback *)d;
     UA_DeleteMonitoredItemsResponse *response = (UA_DeleteMonitoredItemsResponse *)r;
     UA_DeleteMonitoredItemsRequest *request =
@@ -49510,7 +49513,7 @@ ua_MonitoredItems_delete_handler(UA_Client *client, void *d, UA_UInt32 requestId
     if(response->responseHeader.serviceResult != UA_STATUSCODE_GOOD)
         goto cleanup;
 
-    UA_Client_Subscription *sub = findSubscription(client, request->subscriptionId);
+    sub = findSubscription(client, request->subscriptionId);
     if(!sub) {
         UA_LOG_INFO(&client->config.logger, UA_LOGCATEGORY_CLIENT,
                     "No internal representation of subscription %" PRIu32,
