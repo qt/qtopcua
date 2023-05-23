@@ -28,11 +28,6 @@
 
 #include <limits>
 
-// We only undef max and do not use NOMINMAX, as the UA SDK seems to rely on it.
-#ifdef max
-#undef max
-#endif
-
 quint32 UACppAsyncBackend::m_numClients = 0;
 bool UACppAsyncBackend::m_platformLayerInitialized = false;
 
