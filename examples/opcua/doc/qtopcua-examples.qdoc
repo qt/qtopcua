@@ -5,7 +5,6 @@
     \title Qt OPC UA Examples
     \group qtopcua-examples
     \brief List of Qt OPC UA examples.
-    \ingroup all-examples
 
     The examples show how to use Qt OPC UA from C++ and QML.
 
