@@ -16,6 +16,8 @@ qt_internal_add_plugin(QUACppPlugin
         quacppsubscription.cpp quacppsubscription.h
         quacpputils.cpp quacpputils.h
         quacppvalueconverter.cpp quacppvalueconverter.h
+    DEFINES
+        QT_NO_CONTEXTLESS_CONNECT
     LIBRARIES
         Qt::Core
         Qt::CorePrivate

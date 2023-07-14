@@ -17,6 +17,8 @@ qt_internal_add_plugin(QOpen62541Plugin
         qopen62541subscription.cpp qopen62541subscription.h
         qopen62541utils.cpp qopen62541utils.h
         qopen62541valueconverter.cpp qopen62541valueconverter.h
+    DEFINES
+        QT_NO_CONTEXTLESS_CONNECT
     LIBRARIES
         Qt::Core
         Qt::CorePrivate
