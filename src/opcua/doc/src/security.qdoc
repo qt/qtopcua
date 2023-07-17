@@ -48,7 +48,8 @@
 
     [ req_ext ]
     basicConstraints = critical, CA:FALSE
-    keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment
+    keyUsage = critical, nonRepudiation, digitalSignature, keyEncipherment, dataEncipherment
+    extendedKeyUsage = clientAuth
     subjectAltName = URI:urn:foo.com:The%20Qt%20Company:QtOpcUaViewer,DNS:foo.com
     subjectKeyIdentifier = hash
     authorityKeyIdentifier=keyid:always,issuer:always
