@@ -36,8 +36,13 @@ public:
         : m_impl(impl)
         , m_client(client)
     {
-        m_attributesReadConnection = QObject::connect(impl, &QOpcUaNodeImpl::attributesRead,
-                [this](QList<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
+    }
+
+    void createConnections()
+    {
+        Q_Q(QOpcUaNode);
+        m_attributesReadConnection = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::attributesRead,
+                q, [this](QList<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
         {
             QOpcUa::NodeAttributes updatedAttributes;
             Q_Q(QOpcUaNode);
@@ -59,8 +64,8 @@ public:
             emit q->attributeRead(updatedAttributes);
         });
 
-        m_attributeWrittenConnection = QObject::connect(impl, &QOpcUaNodeImpl::attributeWritten,
-                [this](QOpcUa::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode)
+        m_attributeWrittenConnection = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::attributeWritten,
+                q, [this](QOpcUa::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode)
         {
             m_nodeAttributes[attr].setStatusCode(statusCode);
             Q_Q(QOpcUaNode);
@@ -73,8 +78,8 @@ public:
             emit q->attributeWritten(attr, statusCode);
         });
 
-        m_dataChangeOccurredConnection = QObject::connect(impl, &QOpcUaNodeImpl::dataChangeOccurred,
-                [this](QOpcUa::NodeAttribute attr, QOpcUaReadResult value)
+        m_dataChangeOccurredConnection = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::dataChangeOccurred,
+                q, [this](QOpcUa::NodeAttribute attr, QOpcUaReadResult value)
         {
             this->m_nodeAttributes[attr] = value;
             Q_Q(QOpcUaNode);
@@ -82,8 +87,8 @@ public:
             emit q->attributeUpdated(attr, value.value());
         });
 
-        m_monitoringEnableDisableConnection = QObject::connect(impl, &QOpcUaNodeImpl::monitoringEnableDisable,
-                [this](QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status)
+        m_monitoringEnableDisableConnection = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::monitoringEnableDisable,
+               q, [this](QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status)
         {
             if (subscribe == true) {
                 if (status.statusCode() != QOpcUa::UaStatusCode::BadEntryExists) // Don't overwrite a valid entry
@@ -98,8 +103,8 @@ public:
             }
         });
 
-        m_monitoringStatusChangedConnection = QObject::connect(impl, &QOpcUaNodeImpl::monitoringStatusChanged,
-                [this](QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items, QOpcUaMonitoringParameters param)
+        m_monitoringStatusChangedConnection = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::monitoringStatusChanged,
+                q, [this](QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items, QOpcUaMonitoringParameters param)
         {
             auto it = m_monitoringStatus.find(attr);
             if (param.statusCode() == QOpcUa::UaStatusCode::Good && it != m_monitoringStatus.end()) {
@@ -141,35 +146,19 @@ public:
             emit q->monitoringStatusChanged(attr, items, param.statusCode());
         });
 
+        m_methodCallFinishedConnection =
+                QObject::connect(m_impl.get(), &QOpcUaNodeImpl::methodCallFinished, q,
+                                 &QOpcUaNode::methodCallFinished);
 
-        m_methodCallFinishedConnection = QObject::connect(impl, &QOpcUaNodeImpl::methodCallFinished,
-            [this](QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode)
-        {
-            Q_Q(QOpcUaNode);
-            emit q->methodCallFinished(methodNodeId, result, statusCode);
-        });
+        m_browseFinishedConnection = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::browseFinished,
+                                                      q, &QOpcUaNode::browseFinished);
 
-        m_browseFinishedConnection = QObject::connect(impl, &QOpcUaNodeImpl::browseFinished,
-                [this](QList<QOpcUaReferenceDescription> children, QOpcUa::UaStatusCode statusCode)
-        {
-            Q_Q(QOpcUaNode);
-            emit q->browseFinished(children, statusCode);
-        });
+        m_resolveBrowsePathFinishedConnection =
+                QObject::connect(m_impl.get(), &QOpcUaNodeImpl::resolveBrowsePathFinished, q,
+                                 &QOpcUaNode::resolveBrowsePathFinished);
 
-        m_resolveBrowsePathFinishedConnection = QObject::connect(impl, &QOpcUaNodeImpl::resolveBrowsePathFinished,
-                [this](QList<QOpcUaBrowsePathTarget> targets, QList<QOpcUaRelativePathElement> path,
-                                                                   QOpcUa::UaStatusCode statusCode)
-        {
-            Q_Q(QOpcUaNode);
-            emit q->resolveBrowsePathFinished(targets, path, statusCode);
-        });
-
-        m_eventOccurredConnection = QObject::connect(impl, &QOpcUaNodeImpl::eventOccurred,
-            [this](QVariantList eventFields)
-        {
-            Q_Q(QOpcUaNode);
-            emit q->eventOccurred(eventFields);
-        });
+        m_eventOccurredConnection = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::eventOccurred,
+                                                     q, &QOpcUaNode::eventOccurred);
     }
 
     ~QOpcUaNodePrivate()

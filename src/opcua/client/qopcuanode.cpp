@@ -245,6 +245,7 @@ QT_BEGIN_NAMESPACE
 QOpcUaNode::QOpcUaNode(QOpcUaNodeImpl *impl, QOpcUaClient *client, QObject *parent)
     : QObject(*new QOpcUaNodePrivate(impl, client), parent)
 {
+    d_func()->createConnections();
 }
 
 QOpcUaNode::~QOpcUaNode()
