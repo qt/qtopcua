@@ -22,68 +22,6 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
     , m_namespaceArrayAutoupdateEnabled(false)
     , m_namespaceArrayUpdateInterval(1000)
 {
-    // callback from client implementation
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::stateAndOrErrorChanged,
-                    [this](QOpcUaClient::ClientState state, QOpcUaClient::ClientError error) {
-        setStateAndError(state, error);
-        if (state == QOpcUaClient::ClientState::Connected) {
-            updateNamespaceArray();
-            setupNamespaceArrayMonitoring();
-        }
-    });
-
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::endpointsRequestFinished, m_impl.data(),
-                     [this](const QList<QOpcUaEndpointDescription> &e, QOpcUa::UaStatusCode s, const QUrl &requestUrl) {
-        Q_Q(QOpcUaClient);
-        emit q->endpointsRequestFinished(e, s, requestUrl);
-    });
-
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::findServersFinished, [this](const QList<QOpcUaApplicationDescription> &a, QOpcUa::UaStatusCode s, const QUrl &requestUrl) {
-        Q_Q(QOpcUaClient);
-        emit q->findServersFinished(a, s, requestUrl);
-    });
-
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::readNodeAttributesFinished, [this](const QList<QOpcUaReadResult> &results, QOpcUa::UaStatusCode serviceResult) {
-        Q_Q(QOpcUaClient);
-        emit q->readNodeAttributesFinished(results, serviceResult);
-    });
-
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::writeNodeAttributesFinished, [this](const QList<QOpcUaWriteResult> &results, QOpcUa::UaStatusCode serviceResult) {
-        Q_Q(QOpcUaClient);
-        emit q->writeNodeAttributesFinished(results, serviceResult);
-    });
-
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::addNodeFinished, [this](const QOpcUaExpandedNodeId &requestedNodeId, const QString &assignedNodeId, QOpcUa::UaStatusCode statusCode) {
-        Q_Q(QOpcUaClient);
-        emit q->addNodeFinished(requestedNodeId, assignedNodeId, statusCode);
-    });
-
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::deleteNodeFinished, [this](const QString &nodeId, QOpcUa::UaStatusCode statusCode) {
-        Q_Q(QOpcUaClient);
-        emit q->deleteNodeFinished(nodeId, statusCode);
-    });
-
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::addReferenceFinished, [this](const QString &sourceNodeId, const QString &referenceTypeId,
-                     const QOpcUaExpandedNodeId &targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode) {
-        Q_Q(QOpcUaClient);
-        emit q->addReferenceFinished(sourceNodeId, referenceTypeId, targetNodeId, isForwardReference, statusCode);
-    });
-
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::deleteReferenceFinished, [this](const QString &sourceNodeId, const QString &referenceTypeId,
-                     const QOpcUaExpandedNodeId &targetNodeId, bool isForwardReference, QOpcUa::UaStatusCode statusCode) {
-        Q_Q(QOpcUaClient);
-        emit q->deleteReferenceFinished(sourceNodeId, referenceTypeId, targetNodeId, isForwardReference, statusCode);
-    });
-
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::connectError, [this](QOpcUaErrorState *errorState) {
-        Q_Q(QOpcUaClient);
-        emit q->connectError(errorState);
-    });
-
-    QObject::connect(m_impl.data(), &QOpcUaClientImpl::passwordForPrivateKeyRequired, [this](QString privateKeyFilePath, QString *password, bool previousTryWasInvalid) {
-        Q_Q(QOpcUaClient);
-        emit q->passwordForPrivateKeyRequired(privateKeyFilePath, password, previousTryWasInvalid);
-    });
 }
 
 QOpcUaClientPrivate::~QOpcUaClientPrivate()

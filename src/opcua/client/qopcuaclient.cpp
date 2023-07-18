@@ -269,6 +269,47 @@ QOpcUaClient::QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent)
     : QObject(*(new QOpcUaClientPrivate(impl)), parent)
 {
     impl->m_client = this;
+
+    // callback from client implementation
+    QObject::connect(impl, &QOpcUaClientImpl::stateAndOrErrorChanged, this,
+                    [this](QOpcUaClient::ClientState state, QOpcUaClient::ClientError error) {
+        Q_D(QOpcUaClient);
+        d->setStateAndError(state, error);
+        if (state == QOpcUaClient::ClientState::Connected) {
+            d->updateNamespaceArray();
+            d->setupNamespaceArrayMonitoring();
+        }
+    });
+
+    QObject::connect(impl, &QOpcUaClientImpl::endpointsRequestFinished,
+                     this, &QOpcUaClient::endpointsRequestFinished);
+
+    QObject::connect(impl, &QOpcUaClientImpl::findServersFinished,
+                     this, &QOpcUaClient::findServersFinished);
+
+    QObject::connect(impl, &QOpcUaClientImpl::readNodeAttributesFinished,
+                     this, &QOpcUaClient::readNodeAttributesFinished);
+
+    QObject::connect(impl, &QOpcUaClientImpl::writeNodeAttributesFinished,
+                     this, &QOpcUaClient::writeNodeAttributesFinished);
+
+    QObject::connect(impl, &QOpcUaClientImpl::addNodeFinished,
+                     this, &QOpcUaClient::addNodeFinished);
+
+    QObject::connect(impl, &QOpcUaClientImpl::deleteNodeFinished,
+                     this, &QOpcUaClient::deleteNodeFinished);
+
+    QObject::connect(impl, &QOpcUaClientImpl::addReferenceFinished,
+                     this, &QOpcUaClient::addReferenceFinished);
+
+    QObject::connect(impl, &QOpcUaClientImpl::deleteReferenceFinished,
+                     this, &QOpcUaClient::deleteReferenceFinished);
+
+    QObject::connect(impl, &QOpcUaClientImpl::connectError,
+                     this, &QOpcUaClient::connectError);
+
+    QObject::connect(impl, &QOpcUaClientImpl::passwordForPrivateKeyRequired,
+                     this, &QOpcUaClient::passwordForPrivateKeyRequired);
 }
 
 /*!
