@@ -25,6 +25,8 @@
 #include <QtCore/qscopedpointer.h>
 #include <QtCore/qhash.h>
 
+#include <array>
+
 QT_BEGIN_NAMESPACE
 
 class QOpcUaNodePrivate : public QObjectPrivate
@@ -41,19 +43,21 @@ public:
     void createConnections()
     {
         Q_Q(QOpcUaNode);
-        m_attributesReadConnection = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::attributesRead,
+
+        size_t index = 0;
+        m_connections[index++] = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::attributesRead,
                 q, [this](QList<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
         {
             handleAttributesRead(attr, serviceResult);
         });
 
-        m_attributeWrittenConnection = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::attributeWritten,
+        m_connections[index++] = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::attributeWritten,
                 q, [this](QOpcUa::NodeAttribute attr, QVariant value, QOpcUa::UaStatusCode statusCode)
         {
             handleAttributesWritten(attr, value, statusCode);
         });
 
-        m_dataChangeOccurredConnection = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::dataChangeOccurred,
+        m_connections[index++] = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::dataChangeOccurred,
                 q, [this](QOpcUa::NodeAttribute attr, QOpcUaReadResult value)
         {
             this->m_nodeAttributes[attr] = value;
@@ -62,44 +66,39 @@ public:
             emit q->attributeUpdated(attr, value.value());
         });
 
-        m_monitoringEnableDisableConnection = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::monitoringEnableDisable,
+        m_connections[index++] = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::monitoringEnableDisable,
                q, [this](QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status)
         {
             handleMonitoringEnableDisable(attr, subscribe, status);
         });
 
-        m_monitoringStatusChangedConnection = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::monitoringStatusChanged,
+        m_connections[index++] = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::monitoringStatusChanged,
                 q, [this](QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items, QOpcUaMonitoringParameters param)
         {
             handleMonitoringStatusChange(attr, items, param);
         });
 
-        m_methodCallFinishedConnection =
+        m_connections[index++] =
                 QObject::connect(m_impl.get(), &QOpcUaNodeImpl::methodCallFinished, q,
                                  &QOpcUaNode::methodCallFinished);
 
-        m_browseFinishedConnection = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::browseFinished,
+        m_connections[index++] = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::browseFinished,
                                                       q, &QOpcUaNode::browseFinished);
 
-        m_resolveBrowsePathFinishedConnection =
+        m_connections[index++] =
                 QObject::connect(m_impl.get(), &QOpcUaNodeImpl::resolveBrowsePathFinished, q,
                                  &QOpcUaNode::resolveBrowsePathFinished);
 
-        m_eventOccurredConnection = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::eventOccurred,
-                                                     q, &QOpcUaNode::eventOccurred);
+        m_connections[index++] = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::eventOccurred,
+                                                  q, &QOpcUaNode::eventOccurred);
+
+        Q_ASSERT(index == m_connections.size());
     }
 
     ~QOpcUaNodePrivate()
     {
-        QObject::disconnect(m_attributesReadConnection);
-        QObject::disconnect(m_attributeWrittenConnection);
-        QObject::disconnect(m_dataChangeOccurredConnection);
-        QObject::disconnect(m_monitoringEnableDisableConnection);
-        QObject::disconnect(m_monitoringStatusChangedConnection);
-        QObject::disconnect(m_methodCallFinishedConnection);
-        QObject::disconnect(m_browseFinishedConnection);
-        QObject::disconnect(m_resolveBrowsePathFinishedConnection);
-        QObject::disconnect(m_eventOccurredConnection);
+        for (auto &c : m_connections)
+            QObject::disconnect(c);
 
         // Disable remaining monitorings
         QOpcUa::NodeAttributes attr;
@@ -215,15 +214,7 @@ public:
     QHash<QOpcUa::NodeAttribute, QOpcUaReadResult> m_nodeAttributes;
     QHash<QOpcUa::NodeAttribute, QOpcUaMonitoringParameters> m_monitoringStatus;
 
-    QMetaObject::Connection m_attributesReadConnection;
-    QMetaObject::Connection m_attributeWrittenConnection;
-    QMetaObject::Connection m_dataChangeOccurredConnection;
-    QMetaObject::Connection m_monitoringEnableDisableConnection;
-    QMetaObject::Connection m_monitoringStatusChangedConnection;
-    QMetaObject::Connection m_methodCallFinishedConnection;
-    QMetaObject::Connection m_browseFinishedConnection;
-    QMetaObject::Connection m_resolveBrowsePathFinishedConnection;
-    QMetaObject::Connection m_eventOccurredConnection;
+    std::array<QMetaObject::Connection, 9> m_connections;
 };
 
 QT_END_NAMESPACE
