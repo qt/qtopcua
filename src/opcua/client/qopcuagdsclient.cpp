@@ -867,10 +867,20 @@ void QOpcUaGdsClientPrivate::resolveDirectoryNode()
             return;
         }
 
-        QObject::connect(m_directoryNode, SIGNAL(resolveBrowsePathFinished(QList<QOpcUaBrowsePathTarget>, QList<QOpcUaRelativePathElement>, QOpcUa::UaStatusCode)),
-                         q, SLOT(_q_handleResolveBrowsePathFinished(QList<QOpcUaBrowsePathTarget>, QList<QOpcUaRelativePathElement>, QOpcUa::UaStatusCode)));
-        QObject::connect(m_directoryNode, SIGNAL(methodCallFinished(QString, QVariant, QOpcUa::UaStatusCode)),
-                         q, SLOT(_q_handleDirectoryNodeMethodCallFinished(QString, QVariant, QOpcUa::UaStatusCode)));
+        auto handleResolve = [this](QList<QOpcUaBrowsePathTarget> targets,
+                                    QList<QOpcUaRelativePathElement> path,
+                                    QOpcUa::UaStatusCode statusCode) {
+            _q_handleResolveBrowsePathFinished(targets, path, statusCode);
+        };
+        QObject::connect(m_directoryNode, &QOpcUaNode::resolveBrowsePathFinished,
+                         q, std::move(handleResolve));
+
+        auto handleDirNode = [this](QString methodNodeId, QVariant result,
+                                    QOpcUa::UaStatusCode statusCode) {
+            _q_handleDirectoryNodeMethodCallFinished(methodNodeId, result, statusCode);
+        };
+        QObject::connect(m_directoryNode, &QOpcUaNode::methodCallFinished,
+                         q, std::move(handleDirNode));
 
         qCDebug(QT_OPCUA_GDSCLIENT) << "Directory node resolved:" << m_directoryNode->nodeId();
         this->resolveMethodNodes();
