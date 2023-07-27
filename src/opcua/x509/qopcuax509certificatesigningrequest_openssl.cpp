@@ -111,23 +111,23 @@ static X509_EXTENSION *createExtension(QOpcUaX509Extension *extension)
         QStringList data;
 
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::DigitalSignature))
-            data.append(QLatin1String("Digital Signature"));
+            data.append(QLatin1String("digitalSignature"));
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::NonRepudiation))
-            data.append(QLatin1String("Non Repudiation"));
+            data.append(QLatin1String("nonRepudiation"));
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::KeyEncipherment))
-            data.append(QLatin1String("Key Encipherment"));
+            data.append(QLatin1String("keyEncipherment"));
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::DataEncipherment))
-            data.append(QLatin1String("Data Encipherment"));
+            data.append(QLatin1String("dataEncipherment"));
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::KeyAgreement))
-            data.append(QLatin1String("Key Agreement"));
+            data.append(QLatin1String("keyAgreement"));
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::CertificateSigning))
-            data.append(QLatin1String("Certificate Sign"));
+            data.append(QLatin1String("keyCertSign"));
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::CrlSigning))
-            data.append(QLatin1String("CRL Sign"));
+            data.append(QLatin1String("cRLSign"));
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::EnciptherOnly))
-            data.append(QLatin1String("Encipther Only"));
+            data.append(QLatin1String("encipherOnly"));
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::DecipherOnly))
-            data.append(QLatin1String("Decipher Only"));
+            data.append(QLatin1String("decipherOnly"));
 
         ex = q_X509V3_EXT_conf_nid(NULL, NULL, NID_key_usage, data.join(QLatin1Char(',')).toUtf8().data());
         if (!ex) {
@@ -139,13 +139,13 @@ static X509_EXTENSION *createExtension(QOpcUaX509Extension *extension)
         QStringList data;
 
         if (eku->keyUsage(QOpcUaX509ExtensionExtendedKeyUsage::KeyUsage::TlsWebServerAuthentication))
-            data.append(QLatin1String("SSL Server"));
+            data.append(QLatin1String("serverAuth"));
         if (eku->keyUsage(QOpcUaX509ExtensionExtendedKeyUsage::KeyUsage::TlsWebClientAuthentication))
-            data.append(QLatin1String("SSL Client"));
+            data.append(QLatin1String("clientAuth"));
         if (eku->keyUsage(QOpcUaX509ExtensionExtendedKeyUsage::KeyUsage::SignExecutableCode))
-            data.append(QLatin1String("Object Signing"));
+            data.append(QLatin1String("codeSigning"));
         if (eku->keyUsage(QOpcUaX509ExtensionExtendedKeyUsage::KeyUsage::EmailProtection))
-            data.append(QLatin1String("S/MIME"));
+            data.append(QLatin1String("emailProtection"));
 
        // NID_ext_key_usage
         ex = q_X509V3_EXT_conf_nid(NULL, NULL, NID_ext_key_usage, data.join(QLatin1Char(',')).toUtf8().data());
