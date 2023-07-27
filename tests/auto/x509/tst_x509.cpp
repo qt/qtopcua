@@ -194,12 +194,19 @@ void Tst_QOpcUaSecurity::certificateSigningRequest()
     ku->setKeyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::NonRepudiation);
     ku->setKeyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::KeyEncipherment);
     ku->setKeyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::DataEncipherment);
+    ku->setKeyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::KeyAgreement);
     ku->setKeyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::CertificateSigning);
+    ku->setKeyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::CrlSigning);
+    ku->setKeyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::EnciptherOnly);
+    ku->setKeyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::DecipherOnly);
     csr.addExtension(ku);
 
     QOpcUaX509ExtensionExtendedKeyUsage *eku = new QOpcUaX509ExtensionExtendedKeyUsage;
     eku->setCritical(true);
+    eku->setKeyUsage(QOpcUaX509ExtensionExtendedKeyUsage::KeyUsage::TlsWebClientAuthentication);
+    eku->setKeyUsage(QOpcUaX509ExtensionExtendedKeyUsage::KeyUsage::TlsWebServerAuthentication);
     eku->setKeyUsage(QOpcUaX509ExtensionExtendedKeyUsage::KeyUsage::EmailProtection);
+    eku->setKeyUsage(QOpcUaX509ExtensionExtendedKeyUsage::KeyUsage::SignExecutableCode);
     csr.addExtension(eku);
 
     QByteArray csrData = csr.createRequest(key);
@@ -213,8 +220,11 @@ void Tst_QOpcUaSecurity::certificateSigningRequest()
     qDebug() << certData;
     QVERIFY(certData.startsWith("-----BEGIN CERTIFICATE-----\n"));
     QVERIFY(certData.endsWith("\n-----END CERTIFICATE-----\n"));
-    qDebug().noquote() << textifyCertificate(certData);
+    const auto textCert = QString::fromUtf8(textifyCertificate(certData));
+    qDebug().noquote() << textCert;
     qDebug().noquote() << asn1dump(certData);
+    QVERIFY(textCert.contains(QStringLiteral("Digital Signature, Non Repudiation, Key Encipherment, Data Encipherment, Key Agreement, Certificate Sign, CRL Sign, Encipher Only, Decipher Only")));
+    QVERIFY(textCert.contains(QStringLiteral("TLS Web Server Authentication, TLS Web Client Authentication, Code Signing, E-mail Protection")));
 }
 
 void Tst_QOpcUaSecurity::cleanupTestCase()

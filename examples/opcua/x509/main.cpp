@@ -7,6 +7,7 @@
 #include <QOpcUaX509ExtensionSubjectAlternativeName>
 #include <QOpcUaX509ExtensionBasicConstraints>
 #include <QOpcUaX509ExtensionKeyUsage>
+#include <QOpcUaX509ExtensionExtendedKeyUsage>
 #include <QFile>
 
 int main(int argc, char **argv)
@@ -51,6 +52,8 @@ int main(int argc, char **argv)
     bc->setCritical(true);
     csr.addExtension(bc);
 
+    // The required values for key usage and extended key usage are defined in OPC UA Part 6, 6.2.2, Table 43
+
     // Set the key usage constraints
     QOpcUaX509ExtensionKeyUsage *ku = new QOpcUaX509ExtensionKeyUsage;
     ku->setCritical(true);
@@ -58,8 +61,13 @@ int main(int argc, char **argv)
     ku->setKeyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::NonRepudiation);
     ku->setKeyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::KeyEncipherment);
     ku->setKeyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::DataEncipherment);
-    ku->setKeyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::CertificateSigning);
     csr.addExtension(ku);
+
+    // Set the extended key usage constraints
+    QOpcUaX509ExtensionExtendedKeyUsage *eku = new QOpcUaX509ExtensionExtendedKeyUsage;
+    eku->setCritical(true);
+    eku->setKeyUsage(QOpcUaX509ExtensionExtendedKeyUsage::KeyUsage::TlsWebClientAuthentication);
+    csr.addExtension(eku);
 
     // Now there are two options:
     // 1. When you need to get your certificate signing request signed by a certificate authority
