@@ -393,6 +393,8 @@ private slots:
     void writeScalar();
     defineDataMethod(readScalar_data)
     void readScalar();
+    defineDataMethod(readReencodedExtensionObject_data)
+    void readReencodedExtensionObject();
     defineDataMethod(indexRange_data)
     void indexRange();
     defineDataMethod(invalidIndexRange_data)
@@ -2763,6 +2765,70 @@ void Tst_QOpcUaClient::readScalar()
     QVariant argumentScalar = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(argumentScalar.isValid());
     QCOMPARE(argumentScalar.value<QOpcUaArgument>(), testArguments[0]);
+}
+
+void Tst_QOpcUaClient::readReencodedExtensionObject()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    const auto checkAndDecodeFirstMember = [](const QOpcUaExtensionObject &obj, int index) {
+        QCOMPARE(obj.encoding(), QOpcUaExtensionObject::Encoding::ByteString);
+        QCOMPARE(obj.encodingTypeId(), QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::ServerStatusDataType_Encoding_DefaultBinary));
+        QCOMPARE(obj.encodedBody().size(), 53);
+        auto data = obj.encodedBody();
+        auto decoder = QOpcUaBinaryDataEncoding(&data);
+        bool success = false;
+        const auto start = decoder.decode<qint64>(success);
+        QVERIFY(success);
+
+        QCOMPARE(start, index + 1);
+    };
+
+    // Scalar case
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=3;s=ServerStatusScalar"));
+
+    QSignalSpy scalarSpy(node.data(), &QOpcUaNode::attributeRead);
+    node->readValueAttribute();
+    scalarSpy.wait(signalSpyTimeout);
+    QCOMPARE(scalarSpy.size(), 1);
+
+    QCOMPARE(node->valueAttributeError(), QOpcUa::UaStatusCode::Good);
+    checkAndDecodeFirstMember(node->valueAttribute().value<QOpcUaExtensionObject>(), 0);
+
+    // Array case
+    node.reset(opcuaClient->node("ns=3;s=ServerStatusArray"));
+
+    QSignalSpy arraySpy(node.data(), &QOpcUaNode::attributeRead);
+    node->readValueAttribute();
+    arraySpy.wait(signalSpyTimeout);
+    QCOMPARE(arraySpy.size(), 1);
+
+    QCOMPARE(node->valueAttributeError(), QOpcUa::UaStatusCode::Good);
+    const auto arrayContent = node->valueAttribute().toList();
+    QCOMPARE(arrayContent.size(), 2);
+
+    for (int i = 0; i < arrayContent.size(); ++i) {
+        checkAndDecodeFirstMember(arrayContent.at(i).value<QOpcUaExtensionObject>(), i);
+    }
+
+    // Multi dimensional array case
+    node.reset(opcuaClient->node("ns=3;s=ServerStatusMultiDimensionalArray"));
+
+    QSignalSpy multiArraySpy(node.data(), &QOpcUaNode::attributeRead);
+    node->readValueAttribute();
+    multiArraySpy.wait(signalSpyTimeout);
+    QCOMPARE(multiArraySpy.size(), 1);
+
+    QCOMPARE(node->valueAttributeError(), QOpcUa::UaStatusCode::Good);
+    const auto multiArray = node->valueAttribute().value<QOpcUaMultiDimensionalArray>();
+    QVERIFY(multiArray.isValid());
+    QCOMPARE(multiArray.arrayDimensions(), QList<quint32>({2, 2}));
+
+    checkAndDecodeFirstMember(multiArray.value({0, 0}).value<QOpcUaExtensionObject>(), 0);
+    checkAndDecodeFirstMember(multiArray.value({0, 1}).value<QOpcUaExtensionObject>(), 1);
+    checkAndDecodeFirstMember(multiArray.value({1, 0}).value<QOpcUaExtensionObject>(), 2);
+    checkAndDecodeFirstMember(multiArray.value({1, 1}).value<QOpcUaExtensionObject>(), 3);
 }
 
 void Tst_QOpcUaClient::indexRange()

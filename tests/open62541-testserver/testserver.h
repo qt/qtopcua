@@ -43,6 +43,8 @@ public:
     UA_NodeId addAddNamespaceMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
     UA_NodeId addNodeWithFixedTimestamp(const UA_NodeId &folder, const QString &nodeId, const QString &displayName);
 
+    UA_StatusCode addServerStatusTypeTestNodes(const UA_NodeId &parent);
+
     UA_StatusCode addEventTrigger(const UA_NodeId &parent);
 
     static UA_StatusCode multiplyMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle,

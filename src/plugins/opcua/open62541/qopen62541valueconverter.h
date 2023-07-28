@@ -44,6 +44,9 @@ namespace QOpen62541ValueConverter {
 
     void createExtensionObject(QByteArray &data, const UA_NodeId &typeEncodingId, UA_ExtensionObject *ptr,
                                QOpcUaExtensionObject::Encoding encoding = QOpcUaExtensionObject::Encoding::ByteString);
+
+    QVariant uaVariantToQtExtensionObject(const UA_Variant &var);
+    QOpcUaExtensionObject encodeAsBinaryExtensionObject(const void *data, const UA_DataType *type, bool *success = nullptr);
 }
 
 QT_END_NAMESPACE

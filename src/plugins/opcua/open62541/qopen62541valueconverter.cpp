@@ -185,8 +185,7 @@ QVariant toQVariant(const UA_Variant &value)
     else if (value.type == &UA_TYPES[UA_TYPES_XVTYPE])
         return arrayToQVariant<QOpcUaXValue, UA_XVType>(value);
 
-    qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion from Open62541 for typeName" << value.type->typeName << " not implemented";
-    return QVariant();
+    return uaVariantToQtExtensionObject(value);
 }
 
 const UA_DataType *toDataType(QOpcUa::Types valueType)
@@ -447,45 +446,17 @@ QVariant scalarToQt<QVariant, UA_ExtensionObject>(const UA_ExtensionObject *data
                     (reinterpret_cast<UA_XVType *>(data->content.decoded.data));
         }
 
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unsupported decoded extension object type, unable to convert" << data->content.decoded.type->typeName;
-        return QVariant();
+        bool success = false;
+        const auto result = encodeAsBinaryExtensionObject(data->content.decoded.data, data->content.decoded.type, &success);
+        if (success)
+            return result;
+
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to re-encode decoded extension object, unable to convert" << data->content.decoded.type->typeName;
+        return {};
     }
 
     QByteArray buffer = QByteArray::fromRawData(reinterpret_cast<const char *>(data->content.encoded.body.data),
                                                 data->content.encoded.body.length);
-
-    // Decode recognized types, as required by OPC-UA part 4, 5.2.2.15
-    if (data->content.encoded.typeId.identifierType == UA_NODEIDTYPE_NUMERIC &&
-            data->content.encoded.typeId.namespaceIndex == 0 &&
-            data->encoding == UA_EXTENSIONOBJECT_ENCODED_BYTESTRING) {
-
-        QOpcUaBinaryDataEncoding decoder(&buffer);
-
-        bool success = false;
-        QVariant result;
-        Namespace0 objType = Namespace0(data->content.encoded.typeId.identifier.numeric);
-        switch (objType) {
-        case Namespace0::EUInformation_Encoding_DefaultBinary:
-            result = decoder.decode<QOpcUaEUInformation>(success);
-            break;
-        case Namespace0::ComplexNumberType_Encoding_DefaultBinary:
-            result = decoder.decode<QOpcUaComplexNumber>(success);
-            break;
-        case Namespace0::DoubleComplexNumberType_Encoding_DefaultBinary:
-            result = decoder.decode<QOpcUaDoubleComplexNumber>(success);
-            break;
-        case Namespace0::AxisInformation_Encoding_DefaultBinary:
-            result = decoder.decode<QOpcUaAxisInformation>(success);
-            break;
-        case Namespace0::XVType_Encoding_DefaultBinary:
-            result = decoder.decode<QOpcUaXValue>(success);
-            break;
-        default:
-            break;
-        }
-        if (success)
-            return result;
-    }
 
     // Return extension objects with binary or XML body as QOpcUaExtensionObject
     QOpcUaExtensionObject obj;
@@ -758,6 +729,57 @@ void createExtensionObject(QByteArray &data, const UA_NodeId &typeEncodingId, UA
     }
     obj.content.encoded.typeId = typeEncodingId;
     UA_ExtensionObject_copy(&obj, ptr);
+}
+
+QVariant uaVariantToQtExtensionObject(const UA_Variant &var)
+{
+    if (UA_Variant_isScalar(&var)) {
+        bool success = false;
+        const auto result = encodeAsBinaryExtensionObject(var.data, var.type, &success);
+        if (success)
+            return result;
+
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to re-encode decoded extension object, unable to convert" << var.type->typeName;
+        return {};
+    } else if (var.arrayLength == 0 && var.data == UA_EMPTY_ARRAY_SENTINEL) {
+        return QVariantList(); // Return empty QVariantList for empty array
+    }
+
+    // The array case is not handled here because open62541 always decodes arrays of types
+    // we need to re-encode to extension objects which are handled by a different code path.
+    // If this behavior should change with an update to open62541, it will be indicated by
+    // a failing test (Tst_QOpcUaClient::readReencodedExtensionObject).
+    return QVariant();
+}
+
+QOpcUaExtensionObject encodeAsBinaryExtensionObject(const void *data, const UA_DataType *type, bool *success)
+{
+    if (!data || !type) {
+        if (success)
+            *success = false;
+        return {};
+    }
+
+    UA_ByteString encodedData;
+    UA_ByteString_init(&encodedData);
+    const auto encodeResult = UA_encodeBinary(data, type, &encodedData);
+
+    if (encodeResult != UA_STATUSCODE_GOOD) {
+        if (success)
+            *success = false;
+
+        return {};
+    }
+
+    QOpcUaExtensionObject result;
+    result.setBinaryEncodedBody(scalarToQt<QByteArray, UA_ByteString>(&encodedData), scalarToQt<QString, UA_NodeId>(&type->typeId));
+    UA_ByteString_clear(&encodedData);
+    result.setEncodingTypeId(scalarToQt<QString, UA_NodeId>(&type->binaryEncodingId));
+
+    if (success)
+        *success = true;
+
+    return result;
 }
 
 }

@@ -751,6 +751,158 @@ UA_NodeId TestServer::addNodeWithFixedTimestamp(const UA_NodeId &folder, const Q
     return resultId;
 }
 
+UA_StatusCode TestServer::addServerStatusTypeTestNodes(const UA_NodeId &parent)
+{
+    const auto createTestValue = [](int index) -> UA_ServerStatusDataType {
+        UA_ServerStatusDataType s;
+        UA_ServerStatusDataType_init(&s);
+        s.startTime = index + 1;
+        return s;
+    };
+
+    {
+        UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString("ns=3;s=ServerStatusScalar");
+
+        auto value = UA_ServerStatusDataType_new();
+        *value = createTestValue(0);
+        auto var = UA_Variant();
+        UA_Variant_init(&var);
+        UA_Variant_setScalar(&var, value, &UA_TYPES[UA_TYPES_SERVERSTATUSDATATYPE]);
+
+        UA_VariableAttributes attr = UA_VariableAttributes_default;
+        attr.value = var;
+        attr.valueRank = UA_VALUERANK_SCALAR;
+        attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", "ServerStatusScalar");
+        attr.dataType = attr.value.type->typeId;
+        attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+
+        UA_QualifiedName variableName;
+        variableName.namespaceIndex = variableNodeId.namespaceIndex;
+        variableName.name = UA_STRING_STATIC("ServerStatusScalar");
+
+        UA_NodeId resultId;
+        UA_StatusCode result = UA_Server_addVariableNode(m_server,
+                                                         variableNodeId,
+                                                         parent,
+                                                         UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                         variableName,
+                                                         UA_NODEID_NULL,
+                                                         attr,
+                                                         nullptr,
+                                                         &resultId);
+
+        UA_NodeId_clear(&variableNodeId);
+        UA_VariableAttributes_clear(&attr);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qWarning() << "Could not add scalar server status variable";
+            return result;
+        }
+    }
+
+    {
+        UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString("ns=3;s=ServerStatusArray");
+
+        auto value = static_cast<UA_ServerStatusDataType *>(UA_Array_new(2, &UA_TYPES[UA_TYPES_SERVERSTATUSDATATYPE]));
+        for (int i = 0; i < 2; ++i)
+            value[i] = createTestValue(i);
+        auto var = UA_Variant();
+        UA_Variant_init(&var);
+        UA_Variant_setArray(&var, value, 2, &UA_TYPES[UA_TYPES_SERVERSTATUSDATATYPE]);
+
+        UA_VariableAttributes attr = UA_VariableAttributes_default;
+        attr.value = var;
+        attr.valueRank = UA_VALUERANK_ONE_DIMENSION;
+        quint32 arrayDimensions[] = { 0 };
+        attr.arrayDimensionsSize = 1;
+        attr.arrayDimensions = arrayDimensions;
+        attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", "ServerStatusArray");
+        attr.dataType = attr.value.type->typeId;
+        attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+
+        UA_QualifiedName variableName;
+        variableName.namespaceIndex = variableNodeId.namespaceIndex;
+        variableName.name = UA_STRING_STATIC("ServerStatusArray");
+
+        UA_NodeId resultId;
+        UA_StatusCode result = UA_Server_addVariableNode(m_server,
+                                                         variableNodeId,
+                                                         parent,
+                                                         UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                         variableName,
+                                                         UA_NODEID_NULL,
+                                                         attr,
+                                                         nullptr,
+                                                         &resultId);
+
+        attr.arrayDimensionsSize = 0;
+        attr.arrayDimensions = nullptr;
+
+        UA_NodeId_clear(&variableNodeId);
+        UA_VariableAttributes_clear(&attr);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qWarning() << "Could not add array server status variable:" << UA_StatusCode_name(result);
+            return result;
+        }
+    }
+
+    {
+        UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString("ns=3;s=ServerStatusMultiDimensionalArray");
+
+        auto value = static_cast<UA_ServerStatusDataType *>(UA_Array_new(4, &UA_TYPES[UA_TYPES_SERVERSTATUSDATATYPE]));
+        for (int i = 0; i < 4; ++i)
+            value[i] = createTestValue(i);
+        auto var = UA_Variant();
+        UA_Variant_init(&var);
+        UA_Variant_setArray(&var, value, 4, &UA_TYPES[UA_TYPES_SERVERSTATUSDATATYPE]);
+
+        quint32 arrayDimensions[] = { 2, 2 };
+
+        var.arrayDimensionsSize = 2;
+        var.arrayDimensions = arrayDimensions;
+
+        UA_VariableAttributes attr = UA_VariableAttributes_default;
+        attr.value = var;
+        attr.valueRank = UA_VALUERANK_TWO_DIMENSIONS;
+        attr.arrayDimensionsSize = 2;
+        attr.arrayDimensions = arrayDimensions;
+        attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", "ServerStatusMultiDimensionalArray");
+        attr.dataType = attr.value.type->typeId;
+        attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+
+        UA_QualifiedName variableName;
+        variableName.namespaceIndex = variableNodeId.namespaceIndex;
+        variableName.name = UA_STRING_STATIC("ServerStatusMultiDimensionalArray");
+
+        UA_NodeId resultId;
+        UA_StatusCode result = UA_Server_addVariableNode(m_server,
+                                                         variableNodeId,
+                                                         parent,
+                                                         UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                         variableName,
+                                                         UA_NODEID_NULL,
+                                                         attr,
+                                                         nullptr,
+                                                         &resultId);
+
+        attr.arrayDimensionsSize = 0;
+        attr.arrayDimensions = nullptr;
+        attr.value.arrayDimensionsSize = 0;
+        attr.value.arrayDimensions = nullptr;
+
+        UA_NodeId_clear(&variableNodeId);
+        UA_VariableAttributes_clear(&attr);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qWarning() << "Could not add multi dimensional array server status variable:" << UA_StatusCode_name(result);
+            return result;
+        }
+    }
+
+    return UA_STATUSCODE_GOOD;
+}
+
 // The event test methods are based on the open62541 tutorial_server_events.c example
 UA_StatusCode TestServer::generateEventCallback(UA_Server *server,
                                                 const UA_NodeId *sessionId, void *sessionHandle,
