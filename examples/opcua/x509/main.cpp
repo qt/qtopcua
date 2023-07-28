@@ -16,10 +16,14 @@ int main(int argc, char **argv)
 
     // Generate RSA Key
     QOpcUaKeyPair key;
-    key.generateRsaKey(QOpcUaKeyPair::RsaKeyStrength::Bits1024);
+    key.generateRsaKey(QOpcUaKeyPair::RsaKeyStrength::Bits2048);
 
     // Save private key to file
-    QByteArray keyData = key.privateKeyToByteArray(QOpcUaKeyPair::Cipher::Aes128Cbc, "password");
+    QByteArray keyData = key.privateKeyToByteArray(QOpcUaKeyPair::Cipher::Unencrypted, QString());
+
+    // In order to create a private key file with password for the Unified Automation plugin,
+    // the following invocation can be used:
+    // QByteArray keyData = key.privateKeyToByteArray(QOpcUaKeyPair::Cipher::Aes128Cbc, "password");
 
     QFile keyFile("privateKey.pem");
     keyFile.open(QFile::WriteOnly);
