@@ -1,3 +1,4 @@
 # QTBUG-106285
 [connectAndDisconnectSecureUnencryptedKey]
 rhel-9.0
+rhel-9.2
