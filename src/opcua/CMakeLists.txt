@@ -68,8 +68,6 @@ qt_internal_add_module(OpcUa
         core/qopcuaprovider.cpp core/qopcuaprovider.h
         qopcuaglobal.h
 
-    DEFINES
-        QT_NO_FOREACH
     LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
