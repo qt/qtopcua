@@ -154,10 +154,40 @@ bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
         return false;
     }
 
-    result = UA_ServerConfig_addAllSecurityPolicies(config, &certificate, &privateKey);
+    // result = UA_ServerConfig_addAllSecurityPolicies(config, &certificate, &privateKey);
 
-    if (result != UA_STATUSCODE_GOOD) {
-        qWarning() << "Failed to add security policies";
+    // Add the security policies manually because we need to skip Basic128Rsa15 and Basic256
+    // if OpenSSL doesn't support SHA-1 signatures (e.g. RHEL 9).
+
+    UA_StatusCode retval = UA_ServerConfig_addSecurityPolicyNone(config, &certificate);
+    if(retval != UA_STATUSCODE_GOOD) {
+        qWarning() << "Failed to add security policy None";
+        return false;
+    }
+
+    if (Open62541Utils::checkSha1SignatureSupport()) {
+        retval = UA_ServerConfig_addSecurityPolicyBasic128Rsa15(config, &certificate, &privateKey);
+        if(retval != UA_STATUSCODE_GOOD) {
+            qWarning() << "Failed to add security policy Basic128Rsa15";
+            return false;
+        }
+
+        retval = UA_ServerConfig_addSecurityPolicyBasic256(config, &certificate, &privateKey);
+        if(retval != UA_STATUSCODE_GOOD) {
+            qWarning() << "Failed to add security policy Basic256";
+            return false;
+        }
+    }
+
+    retval = UA_ServerConfig_addSecurityPolicyBasic256Sha256(config, &certificate, &privateKey);
+    if(retval != UA_STATUSCODE_GOOD) {
+        qWarning() << "Failed to add security policy Basic256Sha256";
+        return false;
+    }
+
+    retval = UA_ServerConfig_addSecurityPolicyAes128Sha256RsaOaep(config, &certificate, &privateKey);
+    if(retval != UA_STATUSCODE_GOOD) {
+        qWarning() << "Failed to add security policy Aes128Sha256RsaOaep";
         return false;
     }
 
