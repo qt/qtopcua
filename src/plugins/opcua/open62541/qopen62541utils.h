@@ -63,6 +63,10 @@ private:
 namespace Open62541Utils {
     UA_NodeId nodeIdFromQString(const QString &name);
     QString nodeIdToQString(UA_NodeId id);
+
+#ifdef UA_ENABLE_ENCRYPTION
+    bool checkSha1SignatureSupport();
+#endif
 }
 
 QT_END_NAMESPACE

@@ -8,6 +8,11 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/quuid.h>
 
+#ifdef UA_ENABLE_ENCRYPTION
+#include <openssl/evp.h>
+#include <openssl/rsa.h>
+#endif
+
 #include <cstring>
 
 QT_BEGIN_NAMESPACE
@@ -104,5 +109,60 @@ QString Open62541Utils::nodeIdToQString(UA_NodeId id)
     }
     return result;
 }
+
+#ifdef UA_ENABLE_ENCRYPTION
+bool Open62541Utils::checkSha1SignatureSupport()
+{
+    auto mdCtx = EVP_MD_CTX_create ();
+
+    if (!mdCtx)
+        return false;
+
+    auto pkCtx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
+
+    if (!pkCtx) {
+        EVP_MD_CTX_destroy(mdCtx);
+        return false;
+    }
+
+    auto ret = EVP_PKEY_keygen_init(pkCtx);
+
+    if (ret != 1) {
+        EVP_PKEY_CTX_free(pkCtx);
+        EVP_MD_CTX_destroy(mdCtx);
+        return false;
+    }
+
+    ret = EVP_PKEY_CTX_set_rsa_keygen_bits(pkCtx, 2048);
+
+    if (ret != 1) {
+        EVP_PKEY_CTX_free(pkCtx);
+        EVP_MD_CTX_destroy(mdCtx);
+        return false;
+    }
+
+    EVP_PKEY *pKey = nullptr;
+    ret = EVP_PKEY_keygen(pkCtx, &pKey);
+
+    if (ret != 1) {
+        EVP_PKEY_CTX_free(pkCtx);
+        EVP_MD_CTX_destroy(mdCtx);
+        EVP_PKEY_free(pKey);
+        return false;
+    }
+
+    bool hasSupport = false;
+
+    ret = EVP_DigestSignInit (mdCtx, NULL, EVP_sha1(), NULL, pKey);
+    if (ret == 1)
+        hasSupport = true;
+
+    EVP_PKEY_CTX_free(pkCtx);
+    EVP_MD_CTX_destroy(mdCtx);
+    EVP_PKEY_free(pKey);
+
+    return hasSupport;
+}
+#endif
 
 QT_END_NAMESPACE

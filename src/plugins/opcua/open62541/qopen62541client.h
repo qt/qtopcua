@@ -58,6 +58,10 @@ private:
     friend class QOpen62541Node;
     QThread *m_thread;
     Open62541AsyncBackend *m_backend;
+
+#ifdef UA_ENABLE_ENCRYPTION
+    bool m_hasSha1SignatureSupport = false;
+#endif
 };
 
 QT_END_NAMESPACE

@@ -23,6 +23,14 @@ QOpen62541Client::QOpen62541Client(const QVariantMap &backendProperties)
     : QOpcUaClientImpl()
     , m_backend(new Open62541AsyncBackend(this))
 {
+#ifdef UA_ENABLE_ENCRYPTION
+    m_hasSha1SignatureSupport = Open62541Utils::checkSha1SignatureSupport();
+
+    if (!m_hasSha1SignatureSupport)
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "SHA-1 signatures are not supported by OpenSSL"
+                                              << "The security policies Basic128Rsa15 and Basic256 will not be available";
+#endif
+
     bool ok = false;
     const quint32 clientIterateInterval = backendProperties.value(QStringLiteral("clientIterateIntervalMs"), 50)
             .toUInt(&ok);
@@ -157,15 +165,20 @@ bool QOpen62541Client::deleteReference(const QOpcUaDeleteReferenceItem &referenc
 
 QStringList QOpen62541Client::supportedSecurityPolicies() const
 {
-    return QStringList {
+    auto result = QStringList {
         "http://opcfoundation.org/UA/SecurityPolicy#None"
-#ifdef UA_ENABLE_ENCRYPTION
-        , "http://opcfoundation.org/UA/SecurityPolicy#Basic128Rsa15"
-        , "http://opcfoundation.org/UA/SecurityPolicy#Basic256"
-        , "http://opcfoundation.org/UA/SecurityPolicy#Basic256Sha256"
-        , "http://opcfoundation.org/UA/SecurityPolicy#Aes128_Sha256_RsaOaep"
-#endif
     };
+#ifdef UA_ENABLE_ENCRYPTION
+    if (m_hasSha1SignatureSupport) {
+        result.append("http://opcfoundation.org/UA/SecurityPolicy#Basic128Rsa15");
+        result.append("http://opcfoundation.org/UA/SecurityPolicy#Basic256");
+    }
+
+     result.append("http://opcfoundation.org/UA/SecurityPolicy#Basic256Sha256");
+    result.append("http://opcfoundation.org/UA/SecurityPolicy#Aes128_Sha256_RsaOaep");
+#endif
+
+    return result;
 }
 
 QList<QOpcUaUserTokenPolicy::TokenType> QOpen62541Client::supportedUserTokenTypes() const
