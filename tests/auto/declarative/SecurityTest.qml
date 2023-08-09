@@ -33,7 +33,9 @@ Item {
                 compare(connection2.supportedUserTokenTypes.length, 3);
             } else if (backendName === "open62541") {
                 if (SERVER_SUPPORTS_SECURITY)
-                    compare(connection2.supportedSecurityPolicies.length, 5);
+                    compare(connection2.supportedSecurityPolicies.length,
+                            connection2.supportedSecurityPolicies.includes("http://opcfoundation.org/UA/SecurityPolicy#Basic128Rsa15")
+                            ? 5 : 3);
                 else
                     compare(connection2.supportedSecurityPolicies.length, 1);
                 compare(connection2.supportedUserTokenTypes.length, 2);
