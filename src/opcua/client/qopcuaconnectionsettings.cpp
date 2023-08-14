@@ -30,6 +30,7 @@ public:
     std::chrono::milliseconds requestTimeout = 5s;
     std::chrono::milliseconds connectTimeout = 5s;
 };
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QOpcUaConnectionSettingsData)
 
 /*!
     Constructs a connection settings object.
@@ -43,27 +44,19 @@ QOpcUaConnectionSettings::QOpcUaConnectionSettings()
     Constructs a connection settings object with the values of \a other.
 */
 QOpcUaConnectionSettings::QOpcUaConnectionSettings(const QOpcUaConnectionSettings &other)
-    : data(other.data)
-{
-}
+    = default;
 
 /*!
     Sets the values from \a rhs in this connection settings object.
 */
 QOpcUaConnectionSettings &QOpcUaConnectionSettings::operator=(const QOpcUaConnectionSettings &rhs)
-{
-    if (this != &rhs)
-        data = rhs.data;
-
-    return *this;
-}
+    = default;
 
 /*!
     Destroys this connection settings object.
 */
 QOpcUaConnectionSettings::~QOpcUaConnectionSettings()
-{
-}
+    = default;
 
 /*!
     \fn bool QOpcUaConnectionSettings::operator==(const QOpcUaConnectionSettings &rhs, const QOpcUaConnectionSettings &rhs)
@@ -96,6 +89,9 @@ QStringList QOpcUaConnectionSettings::sessionLocaleIds() const
 */
 void QOpcUaConnectionSettings::setSessionLocaleIds(const QStringList &localeIds)
 {
+    if (data->sessionLocaleIds == localeIds)
+        return;
+    data.detach();
     data->sessionLocaleIds = localeIds;
 }
 
@@ -114,6 +110,9 @@ std::chrono::milliseconds QOpcUaConnectionSettings::secureChannelLifeTime() cons
 */
 void QOpcUaConnectionSettings::setSecureChannelLifeTime(std::chrono::milliseconds lifeTime)
 {
+    if (data->secureChannelLifeTime == lifeTime)
+        return;
+    data.detach();
     data->secureChannelLifeTime = lifeTime;
 }
 
@@ -132,6 +131,9 @@ std::chrono::milliseconds QOpcUaConnectionSettings::sessionTimeout() const
 */
 void QOpcUaConnectionSettings::setSessionTimeout(std::chrono::milliseconds timeout)
 {
+    if (data->sessionTimeout == timeout)
+        return;
+    data.detach();
     data->sessionTimeout = timeout;
 }
 
@@ -150,6 +152,9 @@ std::chrono::milliseconds QOpcUaConnectionSettings::requestTimeout() const
 */
 void QOpcUaConnectionSettings::setRequestTimeout(std::chrono::milliseconds timeout)
 {
+    if (data->requestTimeout == timeout)
+        return;
+    data.detach();
     data->requestTimeout = timeout;
 }
 
@@ -168,6 +173,9 @@ std::chrono::milliseconds QOpcUaConnectionSettings::connectTimeout() const
 */
 void QOpcUaConnectionSettings::setConnectTimeout(std::chrono::milliseconds timeout)
 {
+    if (data->connectTimeout == timeout)
+        return;
+    data.detach();
     data->connectTimeout = timeout;
 }
 
