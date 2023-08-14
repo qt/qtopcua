@@ -22,8 +22,6 @@ public:
     QOpcUaConnectionSettings &operator=(const QOpcUaConnectionSettings &rhs);
     ~QOpcUaConnectionSettings();
 
-    bool operator==(const QOpcUaConnectionSettings &rhs) const;
-
     QStringList sessionLocaleIds() const;
     void setSessionLocaleIds(const QStringList &localeIds);
 
@@ -38,6 +36,13 @@ public:
 
     std::chrono::milliseconds connectTimeout() const;
     void setConnectTimeout(std::chrono::milliseconds timeout);
+
+private:
+    friend Q_OPCUA_EXPORT bool operator==(const QOpcUaConnectionSettings &lhs,
+                                          const QOpcUaConnectionSettings &rhs) noexcept;
+    friend bool operator!=(const QOpcUaConnectionSettings &lhs,
+                           const QOpcUaConnectionSettings &rhs) noexcept
+    { return !(lhs == rhs); }
 
 private:
     QSharedDataPointer<QOpcUaConnectionSettingsData> data;

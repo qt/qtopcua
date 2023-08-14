@@ -66,14 +66,18 @@ QOpcUaConnectionSettings::~QOpcUaConnectionSettings()
 }
 
 /*!
-    Returns \c true if this connection settings object has the same value as \a rhs.
+    \fn bool QOpcUaConnectionSettings::operator==(const QOpcUaConnectionSettings &rhs, const QOpcUaConnectionSettings &rhs)
+    \fn bool QOpcUaConnectionSettings::operator!=(const QOpcUaConnectionSettings &rhs, const QOpcUaConnectionSettings &rhs)
+
+    Returns whether connection settings object \a lhs has the same value as \a rhs.
 */
-bool QOpcUaConnectionSettings::operator==(const QOpcUaConnectionSettings &rhs) const
+bool operator==(const QOpcUaConnectionSettings &lhs, const QOpcUaConnectionSettings &rhs) noexcept
 {
-    return data->sessionLocaleIds == rhs.data->sessionLocaleIds &&
-            data->secureChannelLifeTime == rhs.data->secureChannelLifeTime &&
-            data->sessionTimeout == rhs.data->sessionTimeout &&
-            data->requestTimeout == rhs.data->requestTimeout;
+    return  lhs.data->sessionLocaleIds == rhs.data->sessionLocaleIds &&
+            lhs.data->connectTimeout == rhs.data->connectTimeout &&
+            lhs.data->secureChannelLifeTime == rhs.data->secureChannelLifeTime &&
+            lhs.data->sessionTimeout == rhs.data->sessionTimeout &&
+            lhs.data->requestTimeout == rhs.data->requestTimeout;
 }
 
 /*!
