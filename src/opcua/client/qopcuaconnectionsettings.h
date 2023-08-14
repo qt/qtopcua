@@ -7,7 +7,6 @@
 #include <QtOpcUa/qopcuaglobal.h>
 
 #include <QtCore/qcontainerfwd.h>
-#include <QtCore/qmetatype.h>
 #include <QtCore/qshareddata.h>
 
 #include <chrono>
@@ -45,7 +44,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QOpcUaConnectionSettings)
 
 #endif // QOPCUACONNECTIONSETTINGS_H
