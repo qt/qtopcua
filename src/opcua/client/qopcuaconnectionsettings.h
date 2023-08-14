@@ -6,9 +6,9 @@
 
 #include <QtOpcUa/qopcuaglobal.h>
 
+#include <QtCore/qcontainerfwd.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qshareddata.h>
-#include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE
 
