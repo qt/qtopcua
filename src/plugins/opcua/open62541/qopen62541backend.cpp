@@ -965,7 +965,8 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
     } else if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Username) {
 
         bool suitableTokenFound = false;
-        for (const auto &token : endpoint.userIdentityTokens()) {
+        const auto userIdentityTokens = endpoint.userIdentityTokens();
+        for (const auto &token : userIdentityTokens) {
             if (token.tokenType() == QOpcUaUserTokenPolicy::Username &&
                     m_clientImpl->supportedSecurityPolicies().contains(token.securityPolicy())) {
                 suitableTokenFound = true;
