@@ -14,6 +14,7 @@
 QT_BEGIN_NAMESPACE
 
 class QOpcUaConnectionSettingsData;
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaConnectionSettingsData, Q_OPCUA_EXPORT)
 class QOpcUaConnectionSettings
 {
 public:
@@ -45,7 +46,7 @@ private:
     { return !(lhs == rhs); }
 
 private:
-    QSharedDataPointer<QOpcUaConnectionSettingsData> data;
+    QExplicitlySharedDataPointer<QOpcUaConnectionSettingsData> data;
 };
 
 QT_END_NAMESPACE
