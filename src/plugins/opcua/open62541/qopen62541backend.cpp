@@ -296,7 +296,7 @@ void Open62541AsyncBackend::callMethod(quint64 handle, UA_NodeId objectId, UA_No
 
     if (args.size()) {
         inputArgs = static_cast<UA_Variant *>(UA_Array_new(args.size(), &UA_TYPES[UA_TYPES_VARIANT]));
-        for (int i = 0; i < args.size(); ++i)
+        for (qsizetype i = 0; i < args.size(); ++i)
             inputArgs[i] = QOpen62541ValueConverter::toOpen62541Variant(args[i].first, args[i].second);
     }
 
@@ -338,7 +338,7 @@ void Open62541AsyncBackend::resolveBrowsePath(quint64 handle, UA_NodeId startNod
     req.browsePaths->relativePath.elementsSize = path.size();
     req.browsePaths->relativePath.elements = static_cast<UA_RelativePathElement *>(UA_Array_new(path.size(), &UA_TYPES[UA_TYPES_RELATIVEPATHELEMENT]));
 
-    for (int i = 0 ; i < path.size(); ++i) {
+    for (qsizetype i = 0 ; i < path.size(); ++i) {
         req.browsePaths->relativePath.elements[i].includeSubtypes = path[i].includeSubtypes();
         req.browsePaths->relativePath.elements[i].isInverse = path[i].isInverse();
         req.browsePaths->relativePath.elements[i].referenceTypeId = Open62541Utils::nodeIdFromQString(path[i].referenceTypeId());
@@ -424,7 +424,7 @@ void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &loca
     UA_String *uaServerUris = nullptr;
     if (!serverUris.isEmpty()) {
         uaServerUris = static_cast<UA_String *>(UA_Array_new(serverUris.size(), &UA_TYPES[UA_TYPES_STRING]));
-        for (int i = 0; i < serverUris.size(); ++i)
+        for (qsizetype i = 0; i < serverUris.size(); ++i)
             QOpen62541ValueConverter::scalarFromQt(serverUris.at(i), &uaServerUris[i]);
     }
     UaArrayDeleter<UA_TYPES_STRING> serverUrisDeleter(uaServerUris, serverUris.size());
@@ -432,7 +432,7 @@ void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &loca
     UA_String *uaLocaleIds = nullptr;
     if (!localeIds.isEmpty()) {
         uaLocaleIds = static_cast<UA_String *>(UA_Array_new(localeIds.size(), &UA_TYPES[UA_TYPES_STRING]));
-        for (int i = 0; i < localeIds.size(); ++i)
+        for (qsizetype i = 0; i < localeIds.size(); ++i)
             QOpen62541ValueConverter::scalarFromQt(localeIds.at(i), &uaLocaleIds[i]);
     }
     UaArrayDeleter<UA_TYPES_STRING> localeIdsDeleter(uaLocaleIds, localeIds.size());
@@ -473,7 +473,7 @@ void Open62541AsyncBackend::readNodeAttributes(const QList<QOpcUaReadItem> &node
     req.nodesToRead = static_cast<UA_ReadValueId *>(UA_Array_new(nodesToRead.size(), &UA_TYPES[UA_TYPES_READVALUEID]));
     req.timestampsToReturn = UA_TIMESTAMPSTORETURN_BOTH;
 
-    for (int i = 0; i < nodesToRead.size(); ++i) {
+    for (qsizetype i = 0; i < nodesToRead.size(); ++i) {
         UA_ReadValueId_init(&req.nodesToRead[i]);
         req.nodesToRead[i].attributeId = QOpen62541ValueConverter::toUaAttributeId(nodesToRead.at(i).attribute());
         req.nodesToRead[i].nodeId = Open62541Utils::nodeIdFromQString(nodesToRead.at(i).nodeId());
@@ -509,7 +509,7 @@ void Open62541AsyncBackend::writeNodeAttributes(const QList<QOpcUaWriteItem> &no
     req.nodesToWriteSize = nodesToWrite.size();
     req.nodesToWrite = static_cast<UA_WriteValue *>(UA_Array_new(nodesToWrite.size(), &UA_TYPES[UA_TYPES_WRITEVALUE]));
 
-    for (int i = 0; i < nodesToWrite.size(); ++i) {
+    for (qsizetype i = 0; i < nodesToWrite.size(); ++i) {
         const auto &currentItem = nodesToWrite.at(i);
         auto &currentUaItem = req.nodesToWrite[i];
         currentUaItem.attributeId = QOpen62541ValueConverter::toUaAttributeId(currentItem.attribute());
@@ -859,9 +859,9 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
         UA_ByteString localCertificate;
         UA_ByteString privateKey;
         UA_ByteString *trustList = nullptr;
-        int trustListSize = 0;
+        qsizetype trustListSize = 0;
         UA_ByteString *revocationList = nullptr;
-        int revocationListSize = 0;
+        qsizetype revocationListSize = 0;
 
         bool success = loadFileToByteString(pkiConfig.clientCertificateFile(), &localCertificate);
 
@@ -1292,7 +1292,7 @@ void Open62541AsyncBackend::asyncReadCallback(UA_Client *client, void *userdata,
 
     const auto res = static_cast<UA_ReadResponse *>(response);
 
-    for (int i = 0; i < context.results.size(); ++i) {
+    for (qsizetype i = 0; i < context.results.size(); ++i) {
         // Use the service result as status code if there is no specific result for the current value.
         // This ensures a result for each attribute when UA_Client_Service_read is called for a disconnected client.
         if (static_cast<size_t>(i) >= res->resultsSize) {
@@ -1403,7 +1403,7 @@ void Open62541AsyncBackend::asyncBatchReadCallback(UA_Client *client, void *user
     } else {
         QList<QOpcUaReadResult> ret;
 
-        for (int i = 0; i < context.nodesToRead.size(); ++i) {
+        for (qsizetype i = 0; i < context.nodesToRead.size(); ++i) {
             QOpcUaReadResult item;
             item.setAttribute(context.nodesToRead.at(i).attribute());
             item.setNodeId(context.nodesToRead.at(i).nodeId());
@@ -1445,7 +1445,7 @@ void Open62541AsyncBackend::asyncBatchWriteCallback(UA_Client *client, void *use
     } else {
         QList<QOpcUaWriteResult> ret;
 
-        for (int i = 0; i < context.nodesToWrite.size(); ++i) {
+        for (qsizetype i = 0; i < context.nodesToWrite.size(); ++i) {
             QOpcUaWriteResult item;
             item.setAttribute(context.nodesToWrite.at(i).attribute());
             item.setNodeId(context.nodesToWrite.at(i).nodeId());
@@ -1542,7 +1542,7 @@ bool Open62541AsyncBackend::loadFileToByteString(const QString &location, UA_Byt
     return UA_ByteString_copy(&temp, target) == UA_STATUSCODE_GOOD;
 }
 
-bool Open62541AsyncBackend::loadAllFilesInDirectory(const QString &location, UA_ByteString **target, int *size) const
+bool Open62541AsyncBackend::loadAllFilesInDirectory(const QString &location, UA_ByteString **target, qsizetype *size) const
 {
     if (location.isEmpty()) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unable to read from empty file path";
@@ -1566,7 +1566,7 @@ bool Open62541AsyncBackend::loadAllFilesInDirectory(const QString &location, UA_
         return true;
     }
 
-    const int tempSize = entries.size();
+    const qsizetype tempSize = entries.size();
     UA_ByteString *list = static_cast<UA_ByteString *>(UA_Array_new(tempSize, &UA_TYPES[UA_TYPES_BYTESTRING]));
 
     if (!list) {
@@ -1574,7 +1574,7 @@ bool Open62541AsyncBackend::loadAllFilesInDirectory(const QString &location, UA_
         return false;
     }
 
-    for (int i = 0; i < entries.size(); ++i) {
+    for (qsizetype i = 0; i < entries.size(); ++i) {
         if (!loadFileToByteString(dir.filePath(entries.at(i)), &list[i])) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to open file" << entries.at(i);
             UA_Array_delete(list, tempSize, &UA_TYPES[UA_TYPES_BYTESTRING]);
