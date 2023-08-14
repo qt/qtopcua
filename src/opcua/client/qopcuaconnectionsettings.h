@@ -21,7 +21,11 @@ public:
     Q_OPCUA_EXPORT QOpcUaConnectionSettings();
     Q_OPCUA_EXPORT QOpcUaConnectionSettings(const QOpcUaConnectionSettings &other);
     Q_OPCUA_EXPORT QOpcUaConnectionSettings &operator=(const QOpcUaConnectionSettings &rhs);
+    QOpcUaConnectionSettings(QOpcUaConnectionSettings &&other) noexcept = default;
+    QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QOpcUaConnectionSettings)
     Q_OPCUA_EXPORT ~QOpcUaConnectionSettings();
+
+    void swap(QOpcUaConnectionSettings &other) noexcept { data.swap(other.data); }
 
     Q_OPCUA_EXPORT QStringList sessionLocaleIds() const;
     Q_OPCUA_EXPORT void setSessionLocaleIds(const QStringList &localeIds);
@@ -48,6 +52,7 @@ private:
 private:
     QExplicitlySharedDataPointer<QOpcUaConnectionSettingsData> data;
 };
+Q_DECLARE_SHARED(QOpcUaConnectionSettings)
 
 QT_END_NAMESPACE
 
