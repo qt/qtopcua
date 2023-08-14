@@ -97,7 +97,7 @@ private:
 
     // Helper
     bool loadFileToByteString(const QString &location, UA_ByteString *target) const;
-    bool loadAllFilesInDirectory(const QString &location, UA_ByteString **target, int *size) const;
+    bool loadAllFilesInDirectory(const QString &location, UA_ByteString **target, qsizetype *size) const;
 
     void disconnectInternal(QOpcUaClient::ClientError error = QOpcUaClient::ClientError::NoError);
 
