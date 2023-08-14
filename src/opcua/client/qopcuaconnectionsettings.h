@@ -10,6 +10,8 @@
 #include <QtCore/qmetatype.h>
 #include <QtCore/qshareddata.h>
 
+#include <chrono>
+
 QT_BEGIN_NAMESPACE
 
 class QOpcUaConnectionSettingsData;
@@ -26,17 +28,17 @@ public:
     QStringList sessionLocaleIds() const;
     void setSessionLocaleIds(const QStringList &localeIds);
 
-    quint32 secureChannelLifeTimeMs() const;
-    void setSecureChannelLifeTimeMs(quint32 lifeTimeMs);
+    std::chrono::milliseconds secureChannelLifeTime() const;
+    void setSecureChannelLifeTime(std::chrono::milliseconds lifeTime);
 
-    quint32 sessionTimeoutMs() const;
-    void setSessionTimeoutMs(quint32 timeoutMs);
+    std::chrono::milliseconds sessionTimeout() const;
+    void setSessionTimeout(std::chrono::milliseconds timeout);
 
-    quint32 requestTimeoutMs() const;
-    void setRequestTimeoutMs(quint32 timeoutMs);
+    std::chrono::milliseconds requestTimeout() const;
+    void setRequestTimeout(std::chrono::milliseconds timeout);
 
-    quint32 connectTimeoutMs() const;
-    void setConnectTimeoutMs(quint32 timeoutMs);
+    std::chrono::milliseconds connectTimeout() const;
+    void setConnectTimeout(std::chrono::milliseconds timeout);
 
 private:
     QSharedDataPointer<QOpcUaConnectionSettingsData> data;

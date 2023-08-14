@@ -5,6 +5,8 @@
 
 #include <QtCore/qstringlist.h>
 
+using namespace std::chrono_literals;
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -23,10 +25,10 @@ class QOpcUaConnectionSettingsData : public QSharedData
 public:
     QStringList sessionLocaleIds;
 
-    quint32 secureChannelLifeTimeMs = 10 * 60 * 1000;
-    quint32 sessionTimeoutMs = 20 * 60 * 1000;
-    quint32 requestTimeoutMs = 5 * 1000;
-    quint32 connectTimeoutMs = 5 * 1000;
+    std::chrono::milliseconds secureChannelLifeTime = 10min;
+    std::chrono::milliseconds sessionTimeout = 20min;
+    std::chrono::milliseconds requestTimeout = 5s;
+    std::chrono::milliseconds connectTimeout = 5s;
 };
 
 /*!
@@ -69,9 +71,9 @@ QOpcUaConnectionSettings::~QOpcUaConnectionSettings()
 bool QOpcUaConnectionSettings::operator==(const QOpcUaConnectionSettings &rhs) const
 {
     return data->sessionLocaleIds == rhs.data->sessionLocaleIds &&
-            data->secureChannelLifeTimeMs == rhs.data->secureChannelLifeTimeMs &&
-            data->sessionTimeoutMs == rhs.data->sessionTimeoutMs &&
-            data->requestTimeoutMs == rhs.data->requestTimeoutMs;
+            data->secureChannelLifeTime == rhs.data->secureChannelLifeTime &&
+            data->sessionTimeout == rhs.data->sessionTimeout &&
+            data->requestTimeout == rhs.data->requestTimeout;
 }
 
 /*!
@@ -96,37 +98,37 @@ void QOpcUaConnectionSettings::setSessionLocaleIds(const QStringList &localeIds)
 /*!
     Returns the secure channel lifetime.
 */
-quint32 QOpcUaConnectionSettings::secureChannelLifeTimeMs() const
+std::chrono::milliseconds QOpcUaConnectionSettings::secureChannelLifeTime() const
 {
-    return data->secureChannelLifeTimeMs;
+    return data->secureChannelLifeTime;
 }
 
 /*!
-    Sets \a lifeTimeMs as new the new secure channel lifetime.
+    Sets \a lifeTime as the new secure channel lifetime.
 
     For details, see \l{https://reference.opcfoundation.org/v104/Core/docs/Part4/5.5.2/#Table11}
 */
-void QOpcUaConnectionSettings::setSecureChannelLifeTimeMs(quint32 lifeTimeMs)
+void QOpcUaConnectionSettings::setSecureChannelLifeTime(std::chrono::milliseconds lifeTime)
 {
-    data->secureChannelLifeTimeMs = lifeTimeMs;
+    data->secureChannelLifeTime = lifeTime;
 }
 
 /*!
     Returns the requested session timeout.
 */
-quint32 QOpcUaConnectionSettings::sessionTimeoutMs() const
+std::chrono::milliseconds QOpcUaConnectionSettings::sessionTimeout() const
 {
-    return data->sessionTimeoutMs;
+    return data->sessionTimeout;
 }
 
 /*!
-    Sets \a timeoutMs as the new requested session timeout.
+    Sets \a timeout as the new requested session timeout.
 
     For details, see \l{https://reference.opcfoundation.org/v104/Core/docs/Part4/5.6.2/#Table15}
 */
-void QOpcUaConnectionSettings::setSessionTimeoutMs(quint32 timeoutMs)
+void QOpcUaConnectionSettings::setSessionTimeout(std::chrono::milliseconds timeout)
 {
-    data->sessionTimeoutMs = timeoutMs;
+    data->sessionTimeout = timeout;
 }
 
 /*!
@@ -134,17 +136,17 @@ void QOpcUaConnectionSettings::setSessionTimeoutMs(quint32 timeoutMs)
 
     This value determines how long a synchronous service call will wait for a reply.
 */
-quint32 QOpcUaConnectionSettings::requestTimeoutMs() const
+std::chrono::milliseconds QOpcUaConnectionSettings::requestTimeout() const
 {
-    return data->requestTimeoutMs;
+    return data->requestTimeout;
 }
 
 /*!
-    Sets \a timeoutMs as new request timeout.
+    Sets \a timeout as the new request timeout.
 */
-void QOpcUaConnectionSettings::setRequestTimeoutMs(quint32 timeoutMs)
+void QOpcUaConnectionSettings::setRequestTimeout(std::chrono::milliseconds timeout)
 {
-    data->requestTimeoutMs = timeoutMs;
+    data->requestTimeout = timeout;
 }
 
 /*!
@@ -152,17 +154,17 @@ void QOpcUaConnectionSettings::setRequestTimeoutMs(quint32 timeoutMs)
 
     This value determines how long the connect will wait for a reply.
 */
-quint32 QOpcUaConnectionSettings::connectTimeoutMs() const
+std::chrono::milliseconds QOpcUaConnectionSettings::connectTimeout() const
 {
-    return data->connectTimeoutMs;
+    return data->connectTimeout;
 }
 
 /*!
-    Sets \a timeoutMs as new connect timeout.
+    Sets \a timeout as the new connect timeout.
 */
-void QOpcUaConnectionSettings::setConnectTimeoutMs(quint32 timeoutMs)
+void QOpcUaConnectionSettings::setConnectTimeout(std::chrono::milliseconds timeout)
 {
-    data->connectTimeoutMs = timeoutMs;
+    data->connectTimeout = timeout;
 }
 
 QT_END_NAMESPACE

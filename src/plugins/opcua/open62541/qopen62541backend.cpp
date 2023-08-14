@@ -15,6 +15,7 @@
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qurl.h>
+#include <QtCore/private/qnumeric_p.h> // for qt_saturate
 
 #include <algorithm>
 #include <limits>
@@ -927,9 +928,10 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
         UA_ClientConfig_setDefault(conf);
     }
 
-    conf->timeout = connectionSettings.connectTimeoutMs();
-    conf->secureChannelLifeTime = connectionSettings.secureChannelLifeTimeMs();
-    conf->requestedSessionTimeout = connectionSettings.sessionTimeoutMs();
+    using Timeout_t = decltype(conf->timeout);
+    conf->timeout = qt_saturate<Timeout_t>(connectionSettings.connectTimeout().count());
+    conf->secureChannelLifeTime = qt_saturate<Timeout_t>(connectionSettings.secureChannelLifeTime().count());
+    conf->requestedSessionTimeout = qt_saturate<Timeout_t>(connectionSettings.sessionTimeout().count());
 
     if (!connectionSettings.sessionLocaleIds().isEmpty()) {
         conf->sessionLocaleIds = static_cast<UA_String *>(UA_Array_new(connectionSettings.sessionLocaleIds().size(), &UA_TYPES[UA_TYPES_STRING]));
@@ -1014,7 +1016,7 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
         return;
     }
 
-    conf->timeout = connectionSettings.requestTimeoutMs();
+    conf->timeout = qt_saturate<Timeout_t>(connectionSettings.requestTimeout().count());
 
     m_useStateCallback = true;
     m_clientIterateTimer.start(m_clientIterateInterval);
