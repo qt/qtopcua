@@ -933,12 +933,12 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
     conf->secureChannelLifeTime = qt_saturate<Timeout_t>(connectionSettings.secureChannelLifeTime().count());
     conf->requestedSessionTimeout = qt_saturate<Timeout_t>(connectionSettings.sessionTimeout().count());
 
-    if (!connectionSettings.sessionLocaleIds().isEmpty()) {
-        conf->sessionLocaleIds = static_cast<UA_String *>(UA_Array_new(connectionSettings.sessionLocaleIds().size(), &UA_TYPES[UA_TYPES_STRING]));
-        for (int i = 0; i < connectionSettings.sessionLocaleIds().size(); ++i) {
-          conf->sessionLocaleIds[i] = UA_STRING_ALLOC(connectionSettings.sessionLocaleIds().at(i).toUtf8().constData());
-        }
-        conf->sessionLocaleIdsSize = connectionSettings.sessionLocaleIds().size();
+    const auto sessionLocaleIds = connectionSettings.sessionLocaleIds();
+    if (!sessionLocaleIds.isEmpty()) {
+        conf->sessionLocaleIds = static_cast<UA_String *>(UA_Array_new(sessionLocaleIds.size(), &UA_TYPES[UA_TYPES_STRING]));
+        for (qsizetype i = 0; i < sessionLocaleIds.size(); ++i)
+            conf->sessionLocaleIds[i] = UA_STRING_ALLOC(sessionLocaleIds[i].toUtf8().constData());
+        conf->sessionLocaleIdsSize = sessionLocaleIds.size();
     }
 
     UA_LocalizedText_clear(&conf->clientDescription.applicationName);
