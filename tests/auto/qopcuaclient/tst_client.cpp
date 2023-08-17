@@ -9,6 +9,7 @@
 #include <QtOpcUa/QOpcUaProvider>
 #include <QtOpcUa/qopcuabinarydataencoding.h>
 #include <QtOpcUa/QOpcUaHistoryReadResponse>
+#include <QtOpcUa/QOpcUaLiteralOperand>
 #include <QtOpcUa/qopcuamultidimensionalarray.h>
 
 #include <QtCore/QCoreApplication>
@@ -3739,24 +3740,23 @@ void Tst_QOpcUaClient::eventSubscription()
     QScopedPointer<QOpcUaNode> serverNode(opcuaClient->node(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::Server)));
     QVERIFY(serverNode != nullptr);
 
+    QScopedPointer<QOpcUaNode> serverNode2(opcuaClient->node(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::Server)));
+    QVERIFY(serverNode2 != nullptr);
+
     QScopedPointer<QOpcUaNode> testFolderNode(opcuaClient->node("ns=3;s=TestFolder"));
     QVERIFY(testFolderNode != nullptr);
 
     QSignalSpy enabledSpy(serverNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QSignalSpy enabledSpy2(serverNode2.data(), &QOpcUaNode::enableMonitoringFinished);
     QSignalSpy eventSpy(serverNode.data(), &QOpcUaNode::eventOccurred);
+    QSignalSpy eventSpy2(serverNode2.data(), &QOpcUaNode::eventOccurred);
 
     QOpcUaMonitoringParameters::EventFilter filter;
     filter << QOpcUaSimpleAttributeOperand("Severity");
     filter << QOpcUaSimpleAttributeOperand("Message");
 
-//    // Only the OfType operator of the where clause is supported in the open62541 server
-//    // Only events with severity >= 700
-//    QOpcUaContentFilterElement whereElement;
-//    whereElement << QOpcUaContentFilterElement::FilterOperator::GreaterThanOrEqual << QOpcUaSimpleAttributeOperand("Severity") <<
-//                    QOpcUaLiteralOperand(quint16(700), QOpcUa::Types::UInt16);
-//    filter << whereElement;
-
     QOpcUaMonitoringParameters p(0);
+    p.setQueueSize(10); // Without setting the queue size, we get a queue overflow event after triggering both events without waiting
     p.setFilter(filter);
 
     serverNode->enableMonitoring(QOpcUa::NodeAttribute::EventNotifier, p);
@@ -3768,20 +3768,57 @@ void Tst_QOpcUaClient::eventSubscription()
     QCOMPARE(serverNode->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filter().value<QOpcUaMonitoringParameters::EventFilter>(),
              filter);
 
+    // Add a second monitoring with where clause
+    QOpcUaMonitoringParameters::EventFilter filterWithWhereClause = filter;
+
+    // Only events with severity >= 700
+    QOpcUaContentFilterElement whereElement;
+    whereElement << QOpcUaContentFilterElement::FilterOperator::GreaterThanOrEqual << QOpcUaSimpleAttributeOperand("Severity") <<
+        QOpcUaLiteralOperand(quint16(700), QOpcUa::Types::UInt16);
+    filterWithWhereClause << whereElement;
+    p.setFilter(filterWithWhereClause);
+
+    serverNode2->enableMonitoring(QOpcUa::NodeAttribute::EventNotifier, p);
+    enabledSpy2.wait();
+    QCOMPARE(enabledSpy2.size(), 1);
+    QCOMPARE(enabledSpy2.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::EventNotifier);
+    QCOMPARE(enabledSpy2.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    QCOMPARE(serverNode2->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filter().value<QOpcUaMonitoringParameters::EventFilter>(),
+             filterWithWhereClause);
+
 //    Disabled because the open62541 server does not currently return an EventFilterResult
 //    QVERIFY(serverNode->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filterResult().isValid());
 //    QOpcUaEventFilterResult res = serverNode->monitoringStatus(QOpcUa::NodeAttribute::EventNotifier).filterResult().value<QOpcUaEventFilterResult>();
 //    QVERIFY(res.isGood() == true);
 
-    testFolderNode->callMethod(QStringLiteral("ns=2;s=TriggerEvent"), { QOpcUa::TypedVariant(750, QOpcUa::Types::UInt16) }); // Trigger event
-    eventSpy.wait();
-    QCOMPARE(eventSpy.size(), 1);
-    QCOMPARE(eventSpy.at(0).at(0).toList().size(), 2);
-    quint16 severity = eventSpy.at(0).at(0).toList().at(0).value<quint16>();
-    QOpcUaLocalizedText message = eventSpy.at(0).at(0).toList().at(1).value<QOpcUaLocalizedText>();
+    testFolderNode->callMethod(QStringLiteral("ns=2;s=TriggerEvent"), { QOpcUa::TypedVariant(750, QOpcUa::Types::UInt16) }); // Trigger event over the severity threshold
+    testFolderNode->callMethod(QStringLiteral("ns=2;s=TriggerEvent"), { QOpcUa::TypedVariant(699, QOpcUa::Types::UInt16) }); // Trigger event below the severity threshold
 
-    QCOMPARE(severity, 750);
-    QCOMPARE(message, QOpcUaLocalizedText("en", "An event has been generated"));
+    eventSpy.wait();
+    if (eventSpy.size() != 2)
+        eventSpy.wait();
+
+    eventSpy2.wait();
+    if (eventSpy2.size() < 1)
+        eventSpy2.wait();
+
+    QCOMPARE(eventSpy.size(), 2);
+    QCOMPARE(eventSpy.at(0).at(0).toList().size(), 2);
+
+    const auto expectedMessage = QOpcUaLocalizedText("en", "An event has been generated");
+
+    QCOMPARE(eventSpy.at(0).at(0).toList().at(0).value<quint16>(), 750);
+    QCOMPARE(eventSpy.at(0).at(0).toList().at(1).value<QOpcUaLocalizedText>(), expectedMessage);
+
+    QCOMPARE(eventSpy.at(1).at(0).toList().size(), 2);
+    QCOMPARE(eventSpy.at(1).at(0).toList().at(0).value<quint16>(), 699);
+    QCOMPARE(eventSpy.at(1).at(0).toList().at(1).value<QOpcUaLocalizedText>(), expectedMessage);
+
+    QCOMPARE(eventSpy2.size(), 1);
+    QCOMPARE(eventSpy2.at(0).at(0).toList().size(), 2);
+    QCOMPARE(eventSpy2.at(0).at(0).toList().at(0).value<quint16>(), 750);
+    QCOMPARE(eventSpy2.at(0).at(0).toList().at(1).value<QOpcUaLocalizedText>(), expectedMessage);
 
     eventSpy.clear();
 
@@ -3800,13 +3837,9 @@ void Tst_QOpcUaClient::eventSubscription()
     eventSpy.wait();
     QCOMPARE(eventSpy.size(), 1);
     QCOMPARE(eventSpy.at(0).at(0).toList().size(), 3);
-    severity = eventSpy.at(0).at(0).toList().at(0).value<quint16>();
-    message = eventSpy.at(0).at(0).toList().at(1).value<QOpcUaLocalizedText>();
-    QString sourceNode = eventSpy.at(0).at(0).toList().at(2).toString();
-
-    QCOMPARE(severity, 800);
-    QCOMPARE(message, QOpcUaLocalizedText("en", "An event has been generated"));
-    QCOMPARE(sourceNode, QStringLiteral("ns=0;i=2253"));
+    QCOMPARE(eventSpy.at(0).at(0).toList().at(0).value<quint16>(), 800);
+    QCOMPARE(eventSpy.at(0).at(0).toList().at(1).value<QOpcUaLocalizedText>(), expectedMessage);
+    QCOMPARE(eventSpy.at(0).at(0).toList().at(2).toString(), QStringLiteral("ns=0;i=2253"));
 
     QSignalSpy disabledSpy(serverNode.data(), &QOpcUaNode::disableMonitoringFinished);
     serverNode->disableMonitoring(QOpcUa::NodeAttribute::EventNotifier);
