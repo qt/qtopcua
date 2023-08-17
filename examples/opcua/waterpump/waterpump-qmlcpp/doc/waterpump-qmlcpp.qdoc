@@ -6,6 +6,7 @@
     \example waterpump/waterpump-qmlcpp
     \ingroup qtopcua-examples
     \title Waterpump Example
+    \examplecategory {Data Processing & I/O}
     \brief Interacting with an OPC UA server to build a QML-based HMI for a
     simple machine.
 
