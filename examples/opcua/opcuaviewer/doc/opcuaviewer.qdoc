@@ -5,6 +5,7 @@
     \example opcuaviewer
     \ingroup qtopcua-examples
     \title Qt OPC UA Viewer Example
+    \examplecategory {Data Processing & I/O}
     \brief Using the model/view approach to display all nodes of an
     OPC UA server in a tree view.
 
