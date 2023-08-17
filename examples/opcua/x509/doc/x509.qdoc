@@ -5,8 +5,9 @@
     \example x509
     \ingroup qtopcua-examples
     \title Qt OPC UA X509 Support Example
+    \examplecategory {Data Processing & I/O}
     \brief Shows how to generate keys and certificate signing requests.
 
-    This example show how client applications can generate their own self-signed certificate
+    This example shows how client applications can generate their own self-signed certificate
     or generate a certificate signing request.
 */
