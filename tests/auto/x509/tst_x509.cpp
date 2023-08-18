@@ -223,6 +223,8 @@ void Tst_QOpcUaSecurity::certificateSigningRequest()
     const auto textCert = QString::fromUtf8(textifyCertificate(certData));
     qDebug().noquote() << textCert;
     qDebug().noquote() << asn1dump(certData);
+    if (textCert.isEmpty())
+        QEXPECT_FAIL("", "Textified cert is empty, is the openssl executable in your PATH?", Abort);
     QVERIFY(textCert.contains(QStringLiteral("Digital Signature, Non Repudiation, Key Encipherment, Data Encipherment, Key Agreement, Certificate Sign, CRL Sign, Encipher Only, Decipher Only")));
     QVERIFY(textCert.contains(QStringLiteral("TLS Web Server Authentication, TLS Web Client Authentication, Code Signing, E-mail Protection")));
 }
