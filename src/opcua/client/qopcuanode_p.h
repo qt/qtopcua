@@ -64,6 +64,9 @@ public:
             Q_Q(QOpcUaNode);
             emit q->dataChangeOccurred(attr, value.value());
             emit q->attributeUpdated(attr, value.value());
+
+            if (attr == QOpcUa::NodeAttribute::Value)
+                emit q->valueAttributeUpdated(value.value());
         });
 
         m_connections[index++] = QObject::connect(m_impl.get(), &QOpcUaNodeImpl::monitoringEnableDisable,
@@ -129,6 +132,9 @@ public:
 
             updatedAttributes |= entry.attribute();
             emit q->attributeUpdated(entry.attribute(), entry.value());
+
+            if (entry.attribute() == QOpcUa::NodeAttribute::Value)
+                emit q->valueAttributeUpdated(entry.value());
         }
 
         emit q->attributeRead(updatedAttributes);
@@ -143,6 +149,9 @@ public:
         if (statusCode == QOpcUa::UaStatusCode::Good) {
             m_nodeAttributes[attr].setValue(value);
             emit q->attributeUpdated(attr, value);
+
+            if (attr == QOpcUa::NodeAttribute::Value)
+                emit q->valueAttributeUpdated(value);
         }
 
         emit q->attributeWritten(attr, statusCode);

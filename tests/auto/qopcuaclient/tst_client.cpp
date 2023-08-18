@@ -413,6 +413,8 @@ private slots:
     void checkMonitoredItemCleanup();
     defineDataMethod(checkAttributeUpdated_data);
     void checkAttributeUpdated();
+    defineDataMethod(checkValueAttributeUpdated_data);
+    void checkValueAttributeUpdated();
 
     defineDataMethod(stringCharset_data)
     void stringCharset();
@@ -3209,6 +3211,38 @@ void Tst_QOpcUaClient::checkAttributeUpdated()
         QCOMPARE(it.at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
         QVERIFY(it.at(1).isValid());
     }
+}
+
+void Tst_QOpcUaClient::checkValueAttributeUpdated()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node(QStringLiteral("ns=3;s=TestNode.ReadWrite")));
+    QVERIFY(node != nullptr);
+
+    QSignalSpy spy(node.data(), &QOpcUaNode::valueAttributeUpdated);
+
+    node->writeValueAttribute(23.0, QOpcUa::Types::Double);
+    spy.wait(signalSpyTimeout);
+    QCOMPARE(spy.size(), 1);
+    spy.clear();
+
+    node->readAttributes(QOpcUa::NodeAttribute::Value);
+    spy.wait(signalSpyTimeout);
+    QCOMPARE(spy.size(), 1);
+
+    node->writeValueAttribute(23.0, QOpcUa::Types::Double);
+    spy.wait(signalSpyTimeout);
+    QCOMPARE(spy.size(), 2);
+
+    node->enableMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters(100));
+    spy.wait(signalSpyTimeout);
+    QCOMPARE(spy.size(), 3);
+
+    QCOMPARE(spy.at(0).at(0), 23.0);
+    QCOMPARE(spy.at(1).at(0), 23.0);
+    QCOMPARE(spy.at(2).at(0), 23.0);
 }
 
 void Tst_QOpcUaClient::stringCharset()

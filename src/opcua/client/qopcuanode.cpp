@@ -150,7 +150,18 @@ QT_BEGIN_NAMESPACE
     data change notification from the server, a read or a write operation. \a value contains the
     new value for the node attribute \a attr.
 
-    \sa attribute() attributeError() serverTimestamp() sourceTimestamp()
+    \sa attribute() attributeError() serverTimestamp() sourceTimestamp() valueAttributeUpdated()
+*/
+
+/*!
+    \fn void QOpcUaNode::valueAttributeUpdated(QVariant value)
+    \since 6.7
+
+    This signal is emitted after the value attribute in the attribute cache has been updated by a
+    data change notification from the server, a read or a write operation. \a value contains the
+    new value for the value attribute.
+
+    \sa attribute() attributeError() serverTimestamp() sourceTimestamp() attributeUpdated()
 */
 
 /*!
