@@ -1,6 +1,6 @@
 /* THIS IS A SINGLE-FILE DISTRIBUTION CONCATENATED FROM THE OPEN62541 SOURCES
  * visit http://open62541.org/ for information about this software
- * Git-Revision: v1.3.4
+ * Git-Revision: v1.3.6
  */
 
 /*
@@ -2424,12 +2424,23 @@ typedef TAILQ_HEAD(NotificationMessageQueue, UA_NotificationMessageEntry)
 /* MonitoredItem */
 /*****************/
 
+/* The type of sampling for MonitoredItems depends on the sampling interval.
+ *
+ * >0: Cyclic callback
+ * =0: Attached to the node. Sampling is triggered after every "write".
+ * <0: Attached to the subscription. Triggered just before every "publish". */
+typedef enum {
+    UA_MONITOREDITEMSAMPLINGTYPE_NONE = 0,
+    UA_MONITOREDITEMSAMPLINGTYPE_CYCLIC, /* Cyclic callback */
+    UA_MONITOREDITEMSAMPLINGTYPE_EVENT,  /* Attached to the node. Can be a "write
+                                          * event" for DataChange MonitoredItems
+                                          * with a zero sampling interval .*/
+    UA_MONITOREDITEMSAMPLINGTYPE_PUBLISH /* Attached to the subscription */
+} UA_MonitoredItemSamplingType;
+
 struct UA_MonitoredItem {
     UA_TimerEntry delayedFreePointers;
     LIST_ENTRY(UA_MonitoredItem) listEntry; /* Linked list in the Subscription */
-    UA_MonitoredItem *next; /* Linked list of MonitoredItems directly attached
-                             * to a Node. Initialized to ~0 to indicate that the
-                             * MonitoredItem is not added to a node. */
     UA_Subscription *subscription; /* If NULL, then this is a Local MonitoredItem */
     UA_UInt32 monitoredItemId;
 
@@ -2437,8 +2448,7 @@ struct UA_MonitoredItem {
     UA_ReadValueId itemToMonitor;
     UA_MonitoringMode monitoringMode;
     UA_TimestampsToReturn timestampsToReturn;
-    UA_Boolean sampleCallbackIsRegistered;
-    UA_Boolean registered; /* Registered in the server / Subscription */
+    UA_Boolean registered;       /* Registered in the server / Subscription */
     UA_DateTime triggeredUntil;  /* If the MonitoringMode is SAMPLING,
                                   * triggering the MonitoredItem puts the latest
                                   * Notification into the publishing queue (of
@@ -2461,8 +2471,14 @@ struct UA_MonitoredItem {
      * changed at runtime of the MonitoredItem */
     UA_MonitoringParameters parameters;
 
-    /* Sampling Callback */
-    UA_UInt64 sampleCallbackId;
+    /* Sampling */
+    UA_MonitoredItemSamplingType samplingType;
+    union {
+        UA_UInt64 callbackId;
+        UA_MonitoredItem *nodeListNext; /* Event-Based: Attached to Node */
+        LIST_ENTRY(UA_MonitoredItem) samplingListEntry; /* Publish-interval: Linked in
+                                                         * Subscription */
+    } sampling;
     UA_DataValue lastValue;
 
     /* Triggering Links */
@@ -2597,6 +2613,10 @@ struct UA_Subscription {
     LIST_HEAD(, UA_MonitoredItem) monitoredItems;
     UA_UInt32 monitoredItemsSize;
 
+    /* MonitoredItems that are sampled in every publish callback (with the
+     * publish interval of the subscription) */
+    LIST_HEAD(, UA_MonitoredItem) samplingMonitoredItems;
+
     /* Global list of notifications from the MonitoredItems */
     TAILQ_HEAD(, UA_Notification) notificationQueue;
     UA_UInt32 notificationQueueSize; /* Total queue size */
@@ -2645,6 +2665,12 @@ Subscription_unregisterPublishCallback(UA_Server *server,
 UA_MonitoredItem *
 UA_Subscription_getMonitoredItem(UA_Subscription *sub,
                                  UA_UInt32 monitoredItemId);
+
+void
+UA_Subscription_sampleAndPublish(UA_Server *server, UA_Subscription *sub);
+
+UA_Boolean
+UA_Subscription_publishOnce(UA_Server *server, UA_Subscription *sub);
 
 void
 UA_Subscription_publish(UA_Server *server, UA_Subscription *sub);
@@ -2964,6 +2990,9 @@ typedef struct {
     size_t rawMessageLength;
 } UA_NetworkMessageOffsetBuffer;
 
+void
+UA_NetworkMessageOffsetBuffer_clear(UA_NetworkMessageOffsetBuffer *ob);
+
 /**
  * DataSetMessage
  * ^^^^^^^^^^^^^^ */
@@ -3064,10 +3093,6 @@ UA_NetworkMessage_signEncrypt(UA_NetworkMessage *nm, UA_MessageSecurityMode secu
 
 void
 UA_NetworkMessage_clear(UA_NetworkMessage* p);
-
-void
-UA_NetworkMessage_delete(UA_NetworkMessage* p);
-
 
 #ifdef UA_ENABLE_JSON_ENCODING
 UA_StatusCode
@@ -5018,12 +5043,16 @@ struct UA_Client {
     UA_SessionState oldSessionState;
     UA_StatusCode oldConnectStatus;
 
+    UA_Boolean findServersHandshake;   /* Ongoing FindServers */
     UA_Boolean endpointsHandshake;     /* Ongoing GetEndpoints */
     UA_Boolean noSession;              /* Don't open a session */
 
     /* Connection */
     UA_Connection connection;
-    UA_String endpointUrl; /* Only for the async connect */
+    UA_String endpointUrl;  /* Used to extract address and port */
+    UA_String discoveryUrl; /* The discoveryUrl (also used to signal which
+                               application we want to connect to in the HEL/ACK
+                               handshake). */
 
     /* SecureChannel */
     UA_SecureChannel channel;
@@ -5064,6 +5093,11 @@ connectIterate(UA_Client *client, UA_UInt32 timeout);
 
 UA_StatusCode
 receiveResponseAsync(UA_Client *client, UA_UInt32 timeout);
+
+void
+Client_warnEndpointsResult(UA_Client *client,
+                           const UA_GetEndpointsResponse *response,
+                           const UA_String *endpointUrl);
 
 _UA_END_DECLS
 
@@ -5448,15 +5482,12 @@ NodeId_copy(UA_NodeId const *src, UA_NodeId *dst, const UA_DataType *_) {
         *dst = *src;
         return UA_STATUSCODE_GOOD;
     case UA_NODEIDTYPE_STRING:
-        retval |= UA_String_copy(&src->identifier.string,
-                                 &dst->identifier.string);
+    case UA_NODEIDTYPE_BYTESTRING:
+        retval |= String_copy(&src->identifier.string,
+                              &dst->identifier.string, NULL);
         break;
     case UA_NODEIDTYPE_GUID:
-        retval |= UA_Guid_copy(&src->identifier.guid, &dst->identifier.guid);
-        break;
-    case UA_NODEIDTYPE_BYTESTRING:
-        retval |= UA_ByteString_copy(&src->identifier.byteString,
-                                     &dst->identifier.byteString);
+        dst->identifier.guid = src->identifier.guid;
         break;
     default:
         return UA_STATUSCODE_BADINTERNALERROR;
@@ -5549,7 +5580,7 @@ static UA_StatusCode
 ExpandedNodeId_copy(UA_ExpandedNodeId const *src, UA_ExpandedNodeId *dst,
                     const UA_DataType *_) {
     UA_StatusCode retval = NodeId_copy(&src->nodeId, &dst->nodeId, NULL);
-    retval |= UA_String_copy(&src->namespaceUri, &dst->namespaceUri);
+    retval |= String_copy(&src->namespaceUri, &dst->namespaceUri, NULL);
     dst->serverIndex = src->serverIndex;
     return retval;
 }
@@ -5610,8 +5641,9 @@ ExtensionObject_copy(UA_ExtensionObject const *src, UA_ExtensionObject *dst,
         dst->encoding = src->encoding;
         retval = NodeId_copy(&src->content.encoded.typeId,
                              &dst->content.encoded.typeId, NULL);
-        retval |= UA_ByteString_copy(&src->content.encoded.body,
-                                     &dst->content.encoded.body);
+        /* ByteString -> copy as string */
+        retval |= String_copy(&src->content.encoded.body,
+                              &dst->content.encoded.body, NULL);
         break;
     case UA_EXTENSIONOBJECT_DECODED:
     case UA_EXTENSIONOBJECT_DECODED_NODELETE:
@@ -6107,8 +6139,8 @@ LocalizedText_clear(UA_LocalizedText *p, const UA_DataType *_) {
 static UA_StatusCode
 LocalizedText_copy(UA_LocalizedText const *src, UA_LocalizedText *dst,
                    const UA_DataType *_) {
-    UA_StatusCode retval = UA_String_copy(&src->locale, &dst->locale);
-    retval |= UA_String_copy(&src->text, &dst->text);
+    UA_StatusCode retval = String_copy(&src->locale, &dst->locale, NULL);
+    retval |= String_copy(&src->text, &dst->text, NULL);
     return retval;
 }
 
@@ -6158,7 +6190,7 @@ DiagnosticInfo_copy(UA_DiagnosticInfo const *src, UA_DiagnosticInfo *dst,
     dst->innerDiagnosticInfo = NULL;
     UA_StatusCode retval = UA_STATUSCODE_GOOD;
     if(src->hasAdditionalInfo)
-       retval = UA_String_copy(&src->additionalInfo, &dst->additionalInfo);
+        retval = String_copy(&src->additionalInfo, &dst->additionalInfo, NULL);
     if(src->hasInnerDiagnosticInfo && src->innerDiagnosticInfo) {
         dst->innerDiagnosticInfo = (UA_DiagnosticInfo*)
             UA_malloc(sizeof(UA_DiagnosticInfo));
@@ -8549,9 +8581,10 @@ encodeBinaryStructWithOptFields(const void *src, const UA_DataType *type, Ctx *c
                 encodingMask |= (UA_UInt32) 1 << optFieldCounter;
             ptr += sizeof(void *);
             optFieldCounter++;
+        } else if (m->isArray) {
+            ptr += sizeof(size_t);
+            ptr += sizeof(void *);
         } else {
-            if(m->isArray)
-                ptr += sizeof(size_t);
             ptr += mt->memSize;
         }
     }
@@ -9166,8 +9199,13 @@ calcSizeBinaryStructureWithOptFields(const void *p, const UA_DataType *type) {
             continue;
         }
         /* Scalar */
-        s += calcSizeBinaryJumpTable[membertype->typeKind]((const void*)ptr, membertype);
-        member->isOptional ? (ptr += sizeof(void *)) : (ptr += membertype->memSize);
+        if (member->isOptional) {
+            s += calcSizeBinaryJumpTable[membertype->typeKind](*(void* const*)ptr, membertype);
+            ptr += sizeof(void *);
+        } else {
+            s += calcSizeBinaryJumpTable[membertype->typeKind]((const void*)ptr, membertype);
+            ptr += membertype->memSize;
+        }
     }
     return s;
 }
@@ -21660,7 +21698,7 @@ getNamespaceByIndex(UA_Server *server, const size_t namespaceIndex,
     /* ensure that the uri for ns1 is set up from the app description */
     setupNs1Uri(server);
     UA_StatusCode res = UA_STATUSCODE_BADNOTFOUND;
-    if(namespaceIndex > server->namespacesSize)
+    if(namespaceIndex >= server->namespacesSize)
         return res;
     res = UA_String_copy(&server->namespaces[namespaceIndex], foundUri);
     return res;
@@ -21860,6 +21898,11 @@ UA_Server_init(UA_Server *server) {
 
 #if UA_MULTITHREADING >= 100
     UA_AsyncManager_init(&server->asyncManager, server);
+#endif
+
+    /* Initialized discovery */
+#ifdef UA_ENABLE_DISCOVERY
+    UA_DiscoveryManager_init(&server->discoveryManager, server);
 #endif
 
     /* Add a regular callback for cleanup and maintenance. With a 10s interval. */
@@ -22141,11 +22184,6 @@ UA_Server_run_startup(UA_Server *server) {
         UA_LOG_WARNING(&server->config.logger, UA_LOGCATEGORY_SERVER,
                        "There has to be at least one endpoint.");
     }
-
-    /* Initialized discovery */
-#ifdef UA_ENABLE_DISCOVERY
-    UA_DiscoveryManager_init(&server->discoveryManager, server);
-#endif
 
     /* Does the ApplicationURI match the local certificates? */
 #ifdef UA_ENABLE_ENCRYPTION
@@ -27128,9 +27166,8 @@ UA_NetworkMessage_calcSizeBinary(UA_NetworkMessage *p, UA_NetworkMessageOffsetBu
                     return 0;
                 offsetBuffer->offsets[pos].offset = size;
                 offsetBuffer->offsets[pos].offsetData.value.value = UA_DataValue_new();
-                UA_DataValue_init(offsetBuffer->offsets[pos].offsetData.value.value);
                 UA_Variant_setScalarCopy(&offsetBuffer->offsets[pos].offsetData.value.value->value,
-                                     &p->groupHeader.sequenceNumber, &UA_TYPES[UA_TYPES_UINT16]);
+                                         &p->groupHeader.sequenceNumber, &UA_TYPES[UA_TYPES_UINT16]);
                 offsetBuffer->offsets[pos].contentType = UA_PUBSUB_OFFSETTYPE_NETWORKMESSAGE_SEQUENCENUMBER;
             }
             size += UA_UInt16_calcSizeBinary(&p->groupHeader.sequenceNumber);
@@ -27264,10 +27301,6 @@ UA_NetworkMessage_clear(UA_NetworkMessage* p) {
     }
 
     memset(p, 0, sizeof(UA_NetworkMessage));
-}
-
-void UA_NetworkMessage_delete(UA_NetworkMessage* p) {
-    UA_NetworkMessage_clear(p);
 }
 
 UA_Boolean
@@ -27717,7 +27750,6 @@ UA_DataSetMessage_calcSizeBinary(UA_DataSetMessage* p, UA_NetworkMessageOffsetBu
             return 0;
         offsetBuffer->offsets[pos].offset = size;
         offsetBuffer->offsets[pos].offsetData.value.value = UA_DataValue_new();
-        UA_DataValue_init(offsetBuffer->offsets[pos].offsetData.value.value);
         UA_Variant_setScalar(&offsetBuffer->offsets[pos].offsetData.value.value->value,
                              &p->header.fieldEncoding, &UA_TYPES[UA_TYPES_UINT32]);
         offsetBuffer->offsets[pos].contentType = UA_PUBSUB_OFFSETTYPE_NETWORKMESSAGE_FIELDENCDODING;
@@ -27735,7 +27767,6 @@ UA_DataSetMessage_calcSizeBinary(UA_DataSetMessage* p, UA_NetworkMessageOffsetBu
                 return 0;
             offsetBuffer->offsets[pos].offset = size;
             offsetBuffer->offsets[pos].offsetData.value.value = UA_DataValue_new();
-            UA_DataValue_init(offsetBuffer->offsets[pos].offsetData.value.value);
             UA_Variant_setScalarCopy(&offsetBuffer->offsets[pos].offsetData.value.value->value,
                                  &p->header.dataSetMessageSequenceNr, &UA_TYPES[UA_TYPES_UINT16]);
             offsetBuffer->offsets[pos].contentType = UA_PUBSUB_OFFSETTYPE_DATASETMESSAGE_SEQUENCENUMBER;
@@ -27865,6 +27896,40 @@ UA_DataSetMessage_clear(const UA_DataSetMessage* p) {
         }
     }
 }
+
+void
+UA_NetworkMessageOffsetBuffer_clear(UA_NetworkMessageOffsetBuffer *ob) {
+    UA_ByteString_clear(&ob->buffer);
+    if(ob->nm) {
+        UA_NetworkMessage_clear(ob->nm);
+        UA_free(ob->nm);
+    }
+    ob->nm = NULL;
+    ob->rawMessageLength = 0;
+
+    for(size_t i = 0; i < ob->offsetsSize; i++) {
+        UA_NetworkMessageOffset *nmo = &ob->offsets[i];
+        if(nmo->contentType == UA_PUBSUB_OFFSETTYPE_PAYLOAD_VARIANT ||
+           nmo->contentType == UA_PUBSUB_OFFSETTYPE_PAYLOAD_RAW ||
+           nmo->contentType == UA_PUBSUB_OFFSETTYPE_PAYLOAD_DATAVALUE) {
+            UA_DataValue_delete(nmo->offsetData.value.value);
+        } else if(nmo->contentType == UA_PUBSUB_OFFSETTYPE_DATASETMESSAGE_SEQUENCENUMBER ||
+                  nmo->contentType == UA_PUBSUB_OFFSETTYPE_NETWORKMESSAGE_SEQUENCENUMBER) {
+            UA_DataValue_delete(nmo->offsetData.value.value);
+        } else if(nmo->contentType == UA_PUBSUB_OFFSETTYPE_NETWORKMESSAGE_FIELDENCDODING) {
+            nmo->offsetData.value.value->value.data = NULL;
+            UA_DataValue_delete(nmo->offsetData.value.value);
+        }
+    }
+
+    UA_free(ob->offsets);
+    ob->offsets = NULL;
+    ob->offsetsSize = 0;
+
+    ob->RTsubscriberEnabled = false;
+
+}
+
 #endif /* UA_ENABLE_PUBSUB */
 
 /**** amalgamated original file "/src/pubsub/ua_pubsub_writer.c" ****/
@@ -28155,6 +28220,7 @@ generateFieldMetaData(UA_Server *server, UA_DataSetField *field,
                sizeof(UA_UInt32)*value.arrayDimensionsSize);
     }
     fieldMetaData->arrayDimensionsSize = value.arrayDimensionsSize;
+    UA_Variant_clear(&value);
 
     /* Set the DataType */
     res = UA_Server_readDataType(server, pp->publishedVariable,
@@ -29491,6 +29557,7 @@ UA_Server_freezeWriterGroupConfiguration(UA_Server *server,
     if(res != UA_STATUSCODE_GOOD)
         goto cleanup_dsm;
 
+    /* Generate the offset-buffer (done inside calcSizeBinary) */
     memset(&wg->bufferedMessage, 0, sizeof(UA_NetworkMessageOffsetBuffer));
     UA_NetworkMessage_calcSizeBinary(&networkMessage, &wg->bufferedMessage);
 
@@ -29558,8 +29625,8 @@ UA_Server_unfreezeWriterGroupConfiguration(UA_Server *server,
         }
         dataSetWriter->configurationFrozen = UA_FALSE;
     }
-    if(wg->config.rtLevel == UA_PUBSUB_RT_FIXED_SIZE)
-        UA_ByteString_clear(&wg->bufferedMessage.buffer);
+
+    UA_NetworkMessageOffsetBuffer_clear(&wg->bufferedMessage);
 
     return UA_STATUSCODE_GOOD;
 }
@@ -29751,19 +29818,7 @@ UA_WriterGroup_clear(UA_Server *server, UA_WriterGroup *writerGroup) {
         UA_Server_removeDataSetWriter(server, dataSetWriter->identifier);
     }
 
-    if(writerGroup->bufferedMessage.offsetsSize > 0){
-        for(size_t i = 0; i < writerGroup->bufferedMessage.offsetsSize; i++) {
-            if((writerGroup->bufferedMessage.offsets[i].contentType == UA_PUBSUB_OFFSETTYPE_PAYLOAD_VARIANT) ||
-                (writerGroup->bufferedMessage.offsets[i].contentType == UA_PUBSUB_OFFSETTYPE_PAYLOAD_RAW)) {
-                UA_DataValue_delete(writerGroup->bufferedMessage.offsets[i].offsetData.value.value);
-            } else if(writerGroup->bufferedMessage.offsets[i].contentType == UA_PUBSUB_OFFSETTYPE_NETWORKMESSAGE_FIELDENCDODING) {
-                writerGroup->bufferedMessage.offsets[i].offsetData.value.value->value.data = NULL;
-                UA_DataValue_delete(writerGroup->bufferedMessage.offsets[i].offsetData.value.value);
-            }
-        }
-        UA_ByteString_clear(&writerGroup->bufferedMessage.buffer);
-        UA_free(writerGroup->bufferedMessage.offsets);
-    }
+    UA_NetworkMessageOffsetBuffer_clear(&writerGroup->bufferedMessage);
 
 #ifdef UA_ENABLE_PUBSUB_ENCRYPTION
     if(writerGroup->config.securityPolicy && writerGroup->securityPolicyContext) {
@@ -32387,11 +32442,10 @@ UA_Server_freezeReaderGroupConfiguration(UA_Server *server,
         return UA_STATUSCODE_BADINTERNALERROR;
     }
 
-    memset(&dataSetReader->bufferedMessage, 0, sizeof(UA_NetworkMessageOffsetBuffer));
-    dataSetReader->bufferedMessage.RTsubscriberEnabled = true;
-
     /* Fix the offsets necessary to decode */
+    memset(&dataSetReader->bufferedMessage, 0, sizeof(UA_NetworkMessageOffsetBuffer));
     UA_NetworkMessage_calcSizeBinary(networkMessage, &dataSetReader->bufferedMessage);
+    dataSetReader->bufferedMessage.RTsubscriberEnabled = true;
     dataSetReader->bufferedMessage.nm = networkMessage;
 
     return UA_STATUSCODE_GOOD;
@@ -32419,31 +32473,8 @@ UA_Server_unfreezeReaderGroupConfiguration(UA_Server *server,
     /* DataSetReader unfreeze */
     UA_DataSetReader *dataSetReader;
     LIST_FOREACH(dataSetReader, &rg->readers, listEntry) {
-        dataSetReader->configurationFrozen = UA_FALSE;
-    }
-
-    if(rg->config.rtLevel != UA_PUBSUB_RT_FIXED_SIZE)
-        return UA_STATUSCODE_GOOD;
-
-    dataSetReader = LIST_FIRST(&rg->readers);
-    if(dataSetReader->bufferedMessage.offsetsSize > 0) {
-        for(size_t i = 0; i < dataSetReader->bufferedMessage.offsetsSize; i++) {
-            UA_NetworkMessageOffset *offset = &dataSetReader->bufferedMessage.offsets[i];
-            if((offset->contentType == UA_PUBSUB_OFFSETTYPE_PAYLOAD_VARIANT) ||
-                (offset->contentType == UA_PUBSUB_OFFSETTYPE_PAYLOAD_RAW)) {
-                UA_DataValue_delete(offset->offsetData.value.value);
-            } else if(offset->contentType == UA_PUBSUB_OFFSETTYPE_NETWORKMESSAGE_FIELDENCDODING) {
-                offset->offsetData.value.value->value.data = NULL;
-                UA_DataValue_delete(offset->offsetData.value.value);
-            }
-        }
-        UA_free(dataSetReader->bufferedMessage.offsets);
-    }
-
-    if(dataSetReader->bufferedMessage.RTsubscriberEnabled &&
-       dataSetReader->bufferedMessage.nm) {
-        UA_NetworkMessage_delete(dataSetReader->bufferedMessage.nm);
-        UA_free(dataSetReader->bufferedMessage.nm);
+        UA_NetworkMessageOffsetBuffer_clear(&dataSetReader->bufferedMessage);
+        dataSetReader->configurationFrozen = false;
     }
 
     return UA_STATUSCODE_GOOD;
@@ -32634,6 +32665,18 @@ UA_Server_removePubSubConnection(UA_Server *server, const UA_NodeId connection) 
     UA_PubSubConnection *currentConnection = UA_PubSubConnection_findConnectionbyId(server, connection);
     if(!currentConnection)
         return UA_STATUSCODE_BADNOTFOUND;
+
+    UA_WriterGroup *wg, *wg_tmp;
+    LIST_FOREACH_SAFE(wg, &currentConnection->writerGroups, listEntry, wg_tmp) {
+        UA_Server_unfreezeWriterGroupConfiguration(server, wg->identifier);
+        UA_Server_removeWriterGroup(server, wg->identifier);
+    }
+
+    UA_ReaderGroup *rg, *rg_tmp;
+    LIST_FOREACH_SAFE(rg, &currentConnection->readerGroups, listEntry, rg_tmp) {
+        UA_Server_unfreezeReaderGroupConfiguration(server, rg->identifier);
+        UA_Server_removeReaderGroup(server, rg->identifier);
+    }
 
 #ifdef UA_ENABLE_PUBSUB_INFORMATIONMODEL
     removePubSubConnectionRepresentation(server, currentConnection);
@@ -33207,11 +33250,11 @@ onRead(UA_Server *server, const UA_NodeId *sessionId, void *sessionContext,
         switch(nodeContext->elementClassiefier) {
         case UA_NS0ID_PUBSUBCONNECTIONTYPE_PUBLISHERID:
             if(pubSubConnection->config->publisherIdType == UA_PUBSUB_PUBLISHERID_STRING) {
-                UA_Variant_setScalar(&value, &pubSubConnection->config->publisherId.numeric,
-                                     &UA_TYPES[UA_TYPES_STRING]);
+                UA_Variant_setScalarCopy(&value, &pubSubConnection->config->publisherId.numeric,
+                                         &UA_TYPES[UA_TYPES_STRING]);
             } else {
-                UA_Variant_setScalar(&value, &pubSubConnection->config->publisherId.numeric,
-                                     &UA_TYPES[UA_TYPES_UINT32]);
+                UA_Variant_setScalarCopy(&value, &pubSubConnection->config->publisherId.numeric,
+                                         &UA_TYPES[UA_TYPES_UINT32]);
             }
             break;
         default:
@@ -33227,8 +33270,8 @@ onRead(UA_Server *server, const UA_NodeId *sessionId, void *sessionContext,
 
         switch(nodeContext->elementClassiefier) {
         case UA_NS0ID_DATASETREADERTYPE_PUBLISHERID:
-            UA_Variant_setScalar(&value, dataSetReader->config.publisherId.data,
-                                 dataSetReader->config.publisherId.type);
+            UA_Variant_setScalarCopy(&value, dataSetReader->config.publisherId.data,
+                                     dataSetReader->config.publisherId.type);
             break;
         default:
             UA_LOG_WARNING(&server->config.logger, UA_LOGCATEGORY_SERVER,
@@ -33242,8 +33285,8 @@ onRead(UA_Server *server, const UA_NodeId *sessionId, void *sessionContext,
             return;
         switch(nodeContext->elementClassiefier){
         case UA_NS0ID_WRITERGROUPTYPE_PUBLISHINGINTERVAL:
-            UA_Variant_setScalar(&value, &writerGroup->config.publishingInterval,
-                                 &UA_TYPES[UA_TYPES_DURATION]);
+            UA_Variant_setScalarCopy(&value, &writerGroup->config.publishingInterval,
+                                     &UA_TYPES[UA_TYPES_DURATION]);
             break;
         default:
             UA_LOG_WARNING(&server->config.logger, UA_LOGCATEGORY_SERVER,
@@ -33258,8 +33301,8 @@ onRead(UA_Server *server, const UA_NodeId *sessionId, void *sessionContext,
 
         switch(nodeContext->elementClassiefier) {
             case UA_NS0ID_DATASETWRITERTYPE_DATASETWRITERID:
-                UA_Variant_setScalar(&value, &dataSetWriter->config.dataSetWriterId,
-                                     &UA_TYPES[UA_TYPES_UINT16]);
+                UA_Variant_setScalarCopy(&value, &dataSetWriter->config.dataSetWriterId,
+                                         &UA_TYPES[UA_TYPES_UINT16]);
                 break;
             default:
                 UA_LOG_WARNING(&server->config.logger, UA_LOGCATEGORY_SERVER,
@@ -33279,8 +33322,7 @@ onRead(UA_Server *server, const UA_NodeId *sessionId, void *sessionContext,
             UA_DataSetField *field;
             TAILQ_FOREACH(field, &publishedDataSet->fields, listEntry) {
                 pvd[counter].attributeId = UA_ATTRIBUTEID_VALUE;
-                pvd[counter].publishedVariable = field->config.field.variable.publishParameters.publishedVariable;
-                //UA_NodeId_copy(&field->config.field.variable.publishParameters.publishedVariable, &pvd[counter].publishedVariable);
+                UA_NodeId_copy(&field->config.field.variable.publishParameters.publishedVariable, &pvd[counter].publishedVariable);
                 counter++;
             }
             UA_Variant_setArray(&value, pvd, publishedDataSet->fieldSize,
@@ -33307,6 +33349,7 @@ onRead(UA_Server *server, const UA_NodeId *sessionId, void *sessionContext,
                        "Read error! Unknown parent element.");
     }
     UA_Server_writeValue(server, *nodeid, value);
+    UA_Variant_clear(&value);
 }
 
 static void
@@ -33494,71 +33537,70 @@ addSubscribedVariables(UA_Server *server, UA_NodeId dataSetReaderId,
                        UA_DataSetReaderDataType *dataSetReaderDataType,
                        UA_DataSetMetaDataType *pMetaData) {
     UA_StatusCode retVal = UA_STATUSCODE_GOOD;
-    UA_TargetVariablesDataType targetVars;
     UA_ExtensionObject *eoTargetVar = &dataSetReaderDataType->subscribedDataSet;
-    if(eoTargetVar->encoding == UA_EXTENSIONOBJECT_DECODED){
-        if(eoTargetVar->content.decoded.type == &UA_TYPES[UA_TYPES_TARGETVARIABLESDATATYPE]){
-            if(UA_TargetVariablesDataType_copy((UA_TargetVariablesDataType *) eoTargetVar->content.decoded.data,
-                                                &targetVars) != UA_STATUSCODE_GOOD){
-                return UA_STATUSCODE_BADOUTOFMEMORY;
-            }
-        }
-        UA_NodeId folderId;
-        UA_String folderName = pMetaData->name;
-        UA_ObjectAttributes oAttr = UA_ObjectAttributes_default;
-        UA_QualifiedName folderBrowseName;
-        if(folderName.length > 0) {
-            oAttr.displayName.locale = UA_STRING("");
-            oAttr.displayName.text = folderName;
-            folderBrowseName.namespaceIndex = 1;
-            folderBrowseName.name = folderName;
-        } else {
-            oAttr.displayName = UA_LOCALIZEDTEXT("", "Subscribed Variables");
-            folderBrowseName = UA_QUALIFIEDNAME(1, "Subscribed Variables");
-        }
+    if(eoTargetVar->encoding != UA_EXTENSIONOBJECT_DECODED ||
+       eoTargetVar->content.decoded.type != &UA_TYPES[UA_TYPES_TARGETVARIABLESDATATYPE])
+        return UA_STATUSCODE_BADINTERNALERROR;
 
-        UA_Server_addObjectNode(server, UA_NODEID_NULL,
-                                UA_NODEID_NUMERIC (0, UA_NS0ID_OBJECTSFOLDER),
-                                UA_NODEID_NUMERIC (0, UA_NS0ID_ORGANIZES),
-                                folderBrowseName, UA_NODEID_NUMERIC (0,
-                                UA_NS0ID_BASEOBJECTTYPE), oAttr, NULL, &folderId);
-        /**
-        * **TargetVariables**
-        *
-        * The SubscribedDataSet option TargetVariables defines a list of Variable mappings between
-        * received DataSet fields and target Variables in the Subscriber AddressSpace.
-        * The values subscribed from the Publisher are updated in the value field of these variables */
-        /* Create the TargetVariables with respect to DataSetMetaData fields */
-        UA_FieldTargetVariable *targetVarsData = (UA_FieldTargetVariable *)
-            UA_calloc(targetVars.targetVariablesSize, sizeof(UA_FieldTargetVariable));
-        for(size_t i = 0; i < targetVars.targetVariablesSize; i++) {
-            /* Variable to subscribe data */
-            UA_VariableAttributes vAttr = UA_VariableAttributes_default;
-            UA_LocalizedText_copy(&pMetaData->fields[i].description,
-                                &vAttr.description);
-            vAttr.displayName.locale = UA_STRING("");
-            vAttr.displayName.text = pMetaData->fields[i].name;
-            vAttr.dataType = pMetaData->fields[i].dataType;
+    const UA_TargetVariablesDataType *targetVars =
+        (UA_TargetVariablesDataType *) eoTargetVar->content.decoded.data;
 
-            UA_NodeId newNode;
-            retVal |= UA_Server_addVariableNode(server, targetVars.targetVariables[i].targetNodeId,
-                                                folderId,
-                                                UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT),
-                                                UA_QUALIFIEDNAME(1, (char *)pMetaData->fields[i].name.data),
-                                                UA_NODEID_NUMERIC(0, UA_NS0ID_BASEDATAVARIABLETYPE),
-                                                vAttr, NULL, &newNode);
-
-            /* For creating Targetvariables */
-            UA_FieldTargetDataType_init(&targetVarsData[i].targetVariable);
-            targetVarsData[i].targetVariable.attributeId  = targetVars.targetVariables[i].attributeId;
-            targetVarsData[i].targetVariable.targetNodeId = newNode;
-        }
-        retVal = UA_Server_DataSetReader_createTargetVariables(server, dataSetReaderId,
-                                                                targetVars.targetVariablesSize, targetVarsData);
-        for(size_t j = 0; j < targetVars.targetVariablesSize; j++)
-            UA_FieldTargetDataType_clear(&targetVarsData[j].targetVariable);
-        UA_free(targetVarsData);
+    UA_NodeId folderId;
+    UA_String folderName = pMetaData->name;
+    UA_ObjectAttributes oAttr = UA_ObjectAttributes_default;
+    UA_QualifiedName folderBrowseName;
+    if(folderName.length > 0) {
+        oAttr.displayName.locale = UA_STRING("");
+        oAttr.displayName.text = folderName;
+        folderBrowseName.namespaceIndex = 1;
+        folderBrowseName.name = folderName;
+    } else {
+        oAttr.displayName = UA_LOCALIZEDTEXT("", "Subscribed Variables");
+        folderBrowseName = UA_QUALIFIEDNAME(1, "Subscribed Variables");
     }
+
+    UA_Server_addObjectNode(server, UA_NODEID_NULL, UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER),
+                            UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES), folderBrowseName,
+                            UA_NODEID_NUMERIC(0, UA_NS0ID_BASEOBJECTTYPE), oAttr, NULL, &folderId);
+    /**
+     * **TargetVariables**
+     *
+     * The SubscribedDataSet option TargetVariables defines a list of Variable
+     * mappings between received DataSet fields and target Variables in the Subscriber
+     * AddressSpace. The values subscribed from the Publisher are updated in the value
+     * field of these variables */
+    /* Create the TargetVariables with respect to DataSetMetaData fields */
+    UA_FieldTargetVariable *targetVarsData = (UA_FieldTargetVariable *)
+        UA_calloc(targetVars->targetVariablesSize, sizeof(UA_FieldTargetVariable));
+    for(size_t i = 0; i < targetVars->targetVariablesSize; i++) {
+        /* Variable to subscribe data */
+        UA_VariableAttributes vAttr = UA_VariableAttributes_default;
+        UA_LocalizedText_copy(&pMetaData->fields[i].description, &vAttr.description);
+        vAttr.displayName.locale = UA_STRING("");
+        vAttr.displayName.text = pMetaData->fields[i].name;
+        vAttr.dataType = pMetaData->fields[i].dataType;
+
+        UA_QualifiedName browseName;
+        browseName.namespaceIndex = 1;
+        browseName.name = pMetaData->fields[i].name;
+
+        UA_NodeId newNode;
+        retVal |= UA_Server_addVariableNode(
+            server, targetVars->targetVariables[i].targetNodeId, folderId,
+            UA_NODEID_NUMERIC(0, UA_NS0ID_HASCOMPONENT), browseName,
+            UA_NODEID_NUMERIC(0, UA_NS0ID_BASEDATAVARIABLETYPE), vAttr, NULL, &newNode);
+
+        /* For creating Targetvariables */
+        targetVarsData[i].targetVariable.attributeId =
+            targetVars->targetVariables[i].attributeId;
+        targetVarsData[i].targetVariable.targetNodeId = newNode;
+    }
+    retVal =
+        UA_Server_DataSetReader_createTargetVariables(server, dataSetReaderId,
+                                                      targetVars->targetVariablesSize, targetVarsData);
+    for(size_t j = 0; j < targetVars->targetVariablesSize; j++)
+        UA_FieldTargetDataType_clear(&targetVarsData[j].targetVariable);
+    UA_free(targetVarsData);
 
     return retVal;
 }
@@ -33785,29 +33827,34 @@ addPubSubConnectionAction(UA_Server *server,
 
     for(size_t i = 0; i < pubSubConnectionDataType.readerGroupsSize; i++){
         UA_NodeId readerGroupId;
-        UA_ReaderGroupDataType *readerGroupDataType = &pubSubConnectionDataType.readerGroups[i];
-        retVal |= addReaderGroupConfig(server, connectionId, readerGroupDataType, &readerGroupId);
+        UA_ReaderGroupDataType *rg = &pubSubConnectionDataType.readerGroups[i];
+        retVal |= addReaderGroupConfig(server, connectionId, rg, &readerGroupId);
         if(retVal != UA_STATUSCODE_GOOD) {
+            UA_NodeId_clear(&readerGroupId);
             UA_LOG_ERROR(&server->config.logger, UA_LOGCATEGORY_SERVER, "addReaderGroup failed");
             return retVal;
         }
 
-        for(size_t j = 0; j < pubSubConnectionDataType.readerGroups[i].dataSetReadersSize; j++){
+        for(size_t j = 0; j < rg->dataSetReadersSize; j++) {
             UA_NodeId dataSetReaderId;
-            UA_DataSetReaderDataType *dataSetReaderDataType =  &readerGroupDataType->dataSetReaders[j];
+            UA_DataSetReaderDataType *dataSetReaderDataType =  &rg->dataSetReaders[j];
             retVal |= addDataSetReaderConfig(server, readerGroupId, dataSetReaderDataType, &dataSetReaderId);
             if(retVal != UA_STATUSCODE_GOOD) {
+                UA_NodeId_clear(&readerGroupId);
                 UA_LOG_ERROR(&server->config.logger, UA_LOGCATEGORY_SERVER, "addDataSetReader failed");
                 return retVal;
             }
         }
+
         //TODO: Need to handle the UA_Server_setReaderGroupOperational based on the status variable in information model
         if(pubSubConnectionDataType.enabled) {
             UA_Server_freezeReaderGroupConfiguration(server, readerGroupId);
             UA_Server_setReaderGroupOperational(server, readerGroupId);
-        }
-        else
+        } else {
             UA_Server_setReaderGroupDisabled(server, readerGroupId);
+        }
+
+        UA_NodeId_clear(&readerGroupId);
     }
     //set ouput value
     UA_Variant_setScalarCopy(output, &connectionId, &UA_TYPES[UA_TYPES_NODEID]);
@@ -34101,7 +34148,14 @@ addPublishedDataItemsAction(UA_Server *server,
     size_t fieldFlagsSize = input[2].arrayLength;
     UA_DataSetFieldFlags * fieldFlags = (UA_DataSetFieldFlags *) input[2].data;
     size_t variablesToAddSize = input[3].arrayLength;
-    UA_ExtensionObject *eoAddVar = (UA_ExtensionObject *)input[3].data;
+    UA_PublishedVariableDataType *variablesToAdd = NULL;
+    UA_ExtensionObject *eoAddVar = NULL;
+    if(input[3].type == &UA_TYPES[UA_TYPES_PUBLISHEDVARIABLEDATATYPE])
+        variablesToAdd = (UA_PublishedVariableDataType*)input[3].data;
+    else if(input[3].type == &UA_TYPES[UA_TYPES_EXTENSIONOBJECT])
+        eoAddVar = (UA_ExtensionObject *)input[3].data;
+    else
+        return UA_STATUSCODE_BADINTERNALERROR;
 
     if(!(fieldNameAliasesSize == fieldFlagsSize || fieldFlagsSize == variablesToAddSize))
         return UA_STATUSCODE_BADINVALIDARGUMENT;
@@ -34122,30 +34176,33 @@ addPublishedDataItemsAction(UA_Server *server,
 
     UA_DataSetFieldConfig dataSetFieldConfig;
     for(size_t j = 0; j < variablesToAddSize; ++j) {
+        /* Prepare the config */
         memset(&dataSetFieldConfig, 0, sizeof(UA_DataSetFieldConfig));
         dataSetFieldConfig.dataSetFieldType = UA_PUBSUB_DATASETFIELD_VARIABLE;
         dataSetFieldConfig.field.variable.fieldNameAlias = fieldNameAliases[j];
         if(fieldFlags[j] == UA_DATASETFIELDFLAGS_PROMOTEDFIELD)
             dataSetFieldConfig.field.variable.promotedField = true;
 
-        UA_PublishedVariableDataType variablesToAddField;
-        UA_PublishedVariableDataType_init(&variablesToAddField);
-        if(eoAddVar[j].encoding == UA_EXTENSIONOBJECT_DECODED){
-            if(eoAddVar[j].content.decoded.type == &UA_TYPES[UA_TYPES_PUBLISHEDVARIABLEDATATYPE]){
-                if(UA_PublishedVariableDataType_copy((UA_PublishedVariableDataType *) eoAddVar[j].content.decoded.data,
-                                                      &variablesToAddField) != UA_STATUSCODE_GOOD){
-                    return UA_STATUSCODE_BADOUTOFMEMORY;
-                }
-            }
+        UA_PublishedVariableDataType *variableToAdd;
+        if(variablesToAdd) {
+            variableToAdd = &variablesToAdd[j];
+        } else {
+            if(eoAddVar[j].content.decoded.type !=
+               &UA_TYPES[UA_TYPES_PUBLISHEDVARIABLEDATATYPE])
+                return UA_STATUSCODE_BADINTERNALERROR;
+            variableToAdd = (UA_PublishedVariableDataType*)
+                eoAddVar[j].content.decoded.data;
         }
-        dataSetFieldConfig.field.variable.publishParameters = variablesToAddField;
-        retVal |= UA_Server_addDataSetField(server, dataSetItemsNodeId, &dataSetFieldConfig, NULL).result;
+        dataSetFieldConfig.field.variable.publishParameters = *variableToAdd;
+
+        /* Add the dataset field */
+        retVal |= UA_Server_addDataSetField(server, dataSetItemsNodeId,
+                                            &dataSetFieldConfig, NULL).result;
         if(retVal != UA_STATUSCODE_GOOD) {
-           UA_LOG_ERROR(&server->config.logger, UA_LOGCATEGORY_SERVER, "addDataSetField failed");
+           UA_LOG_ERROR(&server->config.logger, UA_LOGCATEGORY_SERVER,
+                        "addDataSetField failed");
            return retVal;
         }
-
-        UA_PublishedVariableDataType_clear(&variablesToAddField);
     }
 
     UA_Variant_setScalarCopy(output, &dataSetItemsNodeId, &UA_TYPES[UA_TYPES_NODEID]);
@@ -35477,6 +35534,7 @@ browseReferences(UA_Server *server, const UA_NodeHead *head,
                 /* Make a deep copy */
                 UA_ExpandedNodeId tmpEn =
                     UA_NodePointer_toExpandedNodeId(ref->targetId);
+                UA_ExpandedNodeId_clear(&cp->nextTarget);
                 return UA_ExpandedNodeId_copy(&tmpEn, &cp->nextTarget);
             }
 
@@ -39068,7 +39126,8 @@ updateLocalizedText(const UA_LocalizedText *source, UA_LocalizedText *target) {
 static void
 triggerImmediateDataChange(UA_Server *server, UA_Session *session,
                            UA_Node *node, const UA_WriteValue *wvalue) {
-    for(UA_MonitoredItem *mon = node->head.monitoredItems; mon != NULL; mon = mon->next) {
+    UA_MonitoredItem *mon = node->head.monitoredItems;
+    for(; mon != NULL; mon = mon->sampling.nodeListNext) {
         if(mon->itemToMonitor.attributeId != wvalue->attributeId)
             continue;
         UA_DataValue value;
@@ -40609,38 +40668,45 @@ Service_Publish(UA_Server *server, UA_Session *session,
     UA_Session_queuePublishReq(session, entry, false);
     UA_LOG_DEBUG_SESSION(&server->config.logger, session, "Queued a publication message");
 
+    /* If we still had publish requests in the queue, none of the subscriptions
+     * is late. So we don't have to search for one. */
+    if(session->responseQueueSize > 1) {
+        return UA_STATUSCODE_GOOD;
+    }
+
     /* If there are late subscriptions, the new publish request is used to
      * answer them immediately. Late subscriptions with higher priority are
      * considered earlier. However, a single subscription that generates many
      * notifications must not "starve" other late subscriptions. Hence we move
      * it to the end of the queue for the subscriptions of that priority. */
-    UA_Subscription *late = NULL;
-    TAILQ_FOREACH(late, &session->subscriptions, sessionListEntry) {
+    UA_Subscription *late, *late_tmp;
+    TAILQ_FOREACH_SAFE(late, &session->subscriptions, sessionListEntry, late_tmp) {
         if(late->state != UA_SUBSCRIPTIONSTATE_LATE)
             continue;
 
         UA_LOG_DEBUG_SUBSCRIPTION(&server->config.logger, late,
                                   "Send PublishResponse on a late subscription");
-        UA_Subscription_publish(server, late);
+        UA_Subscription_publishOnce(server, late);
 
-        /* The subscription was detached from the session during publish? */
-        if(!late->session)
+        /* Skip re-insert if the subscription was deleted during publishOnce */
+        if(late->session) {
+            /* Find the first element with smaller priority and insert before
+             * that. If there is none, insert at the end of the queue. */
+            UA_Subscription *after = TAILQ_NEXT(late, sessionListEntry);
+            while(after && after->priority >= late->priority)
+                after = TAILQ_NEXT(after, sessionListEntry);
+            TAILQ_REMOVE(&session->subscriptions, late, sessionListEntry);
+            if(after)
+                TAILQ_INSERT_BEFORE(after, late, sessionListEntry);
+            else
+                TAILQ_INSERT_TAIL(&session->subscriptions, late, sessionListEntry);
+        }
+
+        /* In case of an error we might not have used the publish request that
+         * was just enqueued. Continue to find late subscriptions in that
+         * case. */
+        if(session->responseQueueSize == 0)
             break;
-
-        /* Find the first element with smaller priority. If there is none,
-         * insert at the end. */
-        UA_Subscription *after = TAILQ_NEXT(late, sessionListEntry);
-        while(after && after->priority >= late->priority)
-            after = TAILQ_NEXT(after, sessionListEntry);
-
-        TAILQ_REMOVE(&session->subscriptions, late, sessionListEntry);
-
-        if(after)
-            TAILQ_INSERT_BEFORE(after, late, sessionListEntry);
-        else
-            TAILQ_INSERT_TAIL(&session->subscriptions, late, sessionListEntry);
-
-        break;
     }
 
     return UA_STATUSCODE_GOOD;
@@ -40837,8 +40903,8 @@ Operation_TransferSubscription(UA_Server *server, UA_Session *session,
 
     /* Move over the notification queue */
     TAILQ_INIT(&newSub->notificationQueue);
-    UA_Notification *nn;
-    TAILQ_FOREACH(nn, &sub->notificationQueue, globalEntry) {
+    UA_Notification *nn, *nn_tmp;
+    TAILQ_FOREACH_SAFE(nn, &sub->notificationQueue, globalEntry, nn_tmp) {
         TAILQ_REMOVE(&sub->notificationQueue, nn, globalEntry);
         TAILQ_INSERT_TAIL(&newSub->notificationQueue, nn, globalEntry);
     }
@@ -40873,9 +40939,11 @@ Operation_TransferSubscription(UA_Server *server, UA_Session *session,
      * queued to send a StatusChangeNotification. */
     sub->statusChange = UA_STATUSCODE_GOODSUBSCRIPTIONTRANSFERRED;
     UA_Subscription_publish(server, sub);
+
+    /* The original subscription has been deactivated */
     UA_assert(sub->publishCallbackId == 0);
 
-    /* Create notifications with the current values */
+    /* Re-create notifications with the current values for the new subscription */
     if(*sendInitialValues) {
         LIST_FOREACH(mon, &newSub->monitoredItems, listEntry) {
 
@@ -40952,7 +41020,7 @@ void Service_TransferSubscriptions(UA_Server *server, UA_Session *session,
  *    Copyright 2018 (c) Ari Breitkreuz, fortiss GmbH
  *    Copyright 2017 (c) Mattias Bornhager
  *    Copyright 2017 (c) Henrik Norrman
- *    Copyright 2017-2018 (c) Thomas Stalder, Blue Time Concept SA
+ *    Copyright 2017-2023 (c) Thomas Stalder, Blue Time Concept SA
  *    Copyright 2018 (c) Fabian Arndt, Root-Core
  *    Copyright 2020 (c) Kalycito Infotech Private Limited
  *    Copyright 2021 (c) Uranik, Berisha
@@ -41149,19 +41217,40 @@ checkAdjustMonitoredItemParams(UA_Server *server, UA_Session *session,
         const UA_Node *node = UA_NODESTORE_GET(server, &mon->itemToMonitor.nodeId);
         if(node) {
             const UA_VariableNode *vn = &node->variableNode;
-            if(node->head.nodeClass == UA_NODECLASS_VARIABLE &&
-               params->samplingInterval < vn->minimumSamplingInterval)
-                params->samplingInterval = vn->minimumSamplingInterval;
+            if(node->head.nodeClass == UA_NODECLASS_VARIABLE) {
+                /* Take into account if the publishing interval is used for sampling */
+                UA_Double samplingInterval = params->samplingInterval;
+                if(samplingInterval < 0 && mon->subscription)
+                    samplingInterval = mon->subscription->publishingInterval;
+                /* Adjust if smaller than the allowed minimum for the variable */
+                if(samplingInterval < vn->minimumSamplingInterval)
+                    params->samplingInterval = vn->minimumSamplingInterval;
+            }
             UA_NODESTORE_RELEASE(server, node);
         }
     }
         
-    /* Adjust to sampling interval to lie within the limits */
-    if(params->samplingInterval <= 0.0) {
-        /* A sampling interval of zero is possible and indicates that the
-         * MonitoredItem is checked for every write operation */
-        params->samplingInterval = 0.0;
+    /* Adjust sampling interval */
+    if(params->samplingInterval < 0.0) {
+        /* A negative number indicates that the sampling interval is the
+         * publishing interval of the Subscription. */
+        if(!mon->subscription) {
+            /* Not possible for local MonitoredItems */
+            params->samplingInterval = server->config.samplingIntervalLimits.min;
+        } else {
+            /* Test if the publishing interval is a valid sampling interval. If
+             * not, adjust to lie within the limits. */
+            UA_BOUNDEDVALUE_SETWBOUNDS(server->config.samplingIntervalLimits,
+                                       mon->subscription->publishingInterval,
+                                       params->samplingInterval);
+            if(params->samplingInterval == mon->subscription->publishingInterval) {
+                /* The publishing interval is valid also for sampling. The
+                 * standard says any negative number is interpreted as -1.*/
+                params->samplingInterval = -1.0;
+            }
+        }
     } else {
+        /* Adjust positive sampling interval to lie within the limits */
         UA_BOUNDEDVALUE_SETWBOUNDS(server->config.samplingIntervalLimits,
                                    params->samplingInterval, params->samplingInterval);
         /* Check for NaN */
@@ -44920,6 +45009,8 @@ addMdnsRecordForNetworkLayer(UA_Server *server, const UA_String *appName,
 }
 
 void startMulticastDiscoveryServer(UA_Server *server) {
+    initMulticastDiscoveryServer(&server->discoveryManager, server);
+
     UA_String *appName = &server->config.mdnsConfig.mdnsServerName;
     for(size_t i = 0; i < server->config.networkLayersSize; i++)
         addMdnsRecordForNetworkLayer(server, appName, &server->config.networkLayers[i]);
@@ -45486,6 +45577,8 @@ UA_ClientConfig_clear(UA_ClientConfig *config) {
     UA_EndpointDescription_clear(&config->endpoint);
     UA_UserTokenPolicy_clear(&config->userTokenPolicy);
 
+    UA_String_clear(&config->applicationUri);
+
     if(config->certificateVerification.clear)
         config->certificateVerification.clear(&config->certificateVerification);
 
@@ -45512,11 +45605,19 @@ UA_ClientConfig_clear(UA_ClientConfig *config) {
 
 static void
 UA_Client_clear(UA_Client *client) {
+    /* Prevent new async service calls in UA_Client_AsyncService_removeAll */
+    UA_SessionState oldState = client->sessionState;
+    client->sessionState = UA_SESSIONSTATE_CLOSING;
+
     /* Delete the async service calls with BADHSUTDOWN */
     UA_Client_AsyncService_removeAll(client, UA_STATUSCODE_BADSHUTDOWN);
 
+    /* Reset to the old state to properly close the session */
+    client->sessionState = oldState;
+
     UA_Client_disconnect(client);
     UA_String_clear(&client->endpointUrl);
+    UA_String_clear(&client->discoveryUrl);
 
     UA_String_clear(&client->remoteNonce);
     UA_String_clear(&client->localNonce);
@@ -46117,7 +46218,9 @@ UA_Client_run_iterate(UA_Client *client, UA_UInt32 timeout) {
 
     /* Make sure we have an open channel */
     UA_StatusCode retval = UA_STATUSCODE_GOOD;
-    if((client->noSession && client->channel.state != UA_SECURECHANNELSTATE_OPEN) ||
+    if(client->endpointsHandshake || client->findServersHandshake ||
+       client->discoveryUrl.length == 0 ||
+       (client->noSession && client->channel.state != UA_SECURECHANNELSTATE_OPEN) ||
        client->sessionState < UA_SESSIONSTATE_ACTIVATED) {
         retval = connectIterate(client, timeout);
         notifyClientState(client);
@@ -46177,6 +46280,21 @@ UA_Client_findDataType(UA_Client *client, const UA_NodeId *typeId) {
  */
 
 
+
+/* Some OPC UA servers only return all Endpoints if the EndpointURL used during
+ * the HEL/ACK handshake exactly matches -- including the path following the
+ * address and port! Hence for the first connection we only call FindServers and
+ * reopen a new TCP connection using then EndpointURL found there.
+ *
+ * The overall process is this:
+ * - Connect with the EndpointURL provided by the user (HEL/ACK)
+ * - Call FindServers
+ *   - If one of the results has an exactly matching EndpointUrl, continue.
+ *   - Otherwise select a matching server, update the endpointURL member of
+ *     UA_Client and reconnect. -
+ * - Call GetEndpoints and select an Endpoint
+ * - Open a SecureChannel and Session for that Endpoint
+ */
 
 #define UA_MINMESSAGESIZE 8192
 #define UA_SESSION_LOCALNONCELENGTH 32
@@ -46469,7 +46587,13 @@ sendHELMessage(UA_Client *client) {
     hello.sendBufferSize = client->config.localConnectionConfig.sendBufferSize;
     hello.maxMessageSize = client->config.localConnectionConfig.localMaxMessageSize;
     hello.maxChunkCount = client->config.localConnectionConfig.localMaxChunkCount;
-    hello.endpointUrl = client->endpointUrl;
+
+    /* Use the DiscoveryUrl -- if already known via FindServers */
+    if(client->discoveryUrl.length > 0) {
+        hello.endpointUrl = client->discoveryUrl;
+    } else {
+        hello.endpointUrl = client->endpointUrl;
+    }
 
     UA_Byte *bufPos = &message.data[8]; /* skip the header */
     const UA_Byte *bufEnd = &message.data[message.length];
@@ -46753,6 +46877,9 @@ responseGetEndpoints(UA_Client *client, void *userdata, UA_UInt32 requestId,
                      void *response) {
     client->endpointsHandshake = false;
 
+    UA_LOG_DEBUG(&client->config.logger, UA_LOGCATEGORY_CLIENT,
+                 "Received FindServersResponse");
+
     UA_GetEndpointsResponse *resp = (UA_GetEndpointsResponse*)response;
     /* GetEndpoints not possible. Fail the connection */
     if(resp->responseHeader.serviceResult != UA_STATUSCODE_GOOD) {
@@ -46764,16 +46891,24 @@ responseGetEndpoints(UA_Client *client, void *userdata, UA_UInt32 requestId,
         return;
     }
 
+    /* Warn if the Endpoints look incomplete / don't match the EndpointUrl */
+    Client_warnEndpointsResult(client, resp, &client->discoveryUrl);
+
     UA_Boolean endpointFound = false;
     UA_Boolean tokenFound = false;
     const UA_String binaryTransport = UA_STRING("http://opcfoundation.org/UA-Profile/"
                                                 "Transport/uatcp-uasc-uabinary");
 
-    // TODO: compare endpoint information with client->endpointUri
-    UA_EndpointDescription* endpointArray = resp->endpoints;
-    size_t endpointArraySize = resp->endpointsSize;
-    for(size_t i = 0; i < endpointArraySize; ++i) {
-        UA_EndpointDescription* endpoint = &endpointArray[i];
+    /* Find a matching combination of Endpoint and UserTokenPolicy */
+    for(size_t i = 0; i < resp->endpointsSize; ++i) {
+        UA_EndpointDescription* endpoint = &resp->endpoints[i];
+
+        /* Filter by the ApplicationURI if defined */
+        if(client->config.applicationUri.length > 0 &&
+           !UA_String_equal(&client->config.applicationUri,
+                            &endpoint->server.applicationUri))
+            continue;
+
         /* Look out for binary transport endpoints.
          * Note: Siemens returns empty ProfileUrl, we will accept it as binary. */
         if(endpoint->transportProfileUri.length != 0 &&
@@ -46884,7 +47019,8 @@ responseGetEndpoints(UA_Client *client, void *userdata, UA_UInt32 requestId,
             /* Log the selected endpoint */
             UA_LOG_INFO(&client->config.logger, UA_LOGCATEGORY_CLIENT,
                         "Selected endpoint %lu in URL %.*s with SecurityMode %s and SecurityPolicy %.*s",
-                        (long unsigned)i, (int)endpoint->endpointUrl.length, endpoint->endpointUrl.data,
+                        (long unsigned)i, (int)endpoint->endpointUrl.length,
+                        endpoint->endpointUrl.data,
                         securityModeNames[endpoint->securityMode - 1],
                         (int)endpoint->securityPolicyUri.length,
                         endpoint->securityPolicyUri.data);
@@ -46936,7 +47072,10 @@ requestGetEndpoints(UA_Client *client) {
     UA_GetEndpointsRequest_init(&request);
     request.requestHeader.timestamp = UA_DateTime_now();
     request.requestHeader.timeoutHint = 10000;
-    request.endpointUrl = client->endpointUrl;
+    if(client->discoveryUrl.length > 0)
+        request.endpointUrl = client->discoveryUrl;
+    else
+        request.endpointUrl = client->endpointUrl;
     UA_StatusCode retval =
         UA_Client_sendAsyncRequest(client, &request, &UA_TYPES[UA_TYPES_GETENDPOINTSREQUEST],
                                    (UA_ClientAsyncServiceCallback) responseGetEndpoints,
@@ -46945,9 +47084,114 @@ requestGetEndpoints(UA_Client *client) {
         client->endpointsHandshake = true;
     else
         UA_LOG_ERROR(&client->config.logger, UA_LOGCATEGORY_CLIENT,
-                           "RequestGetEndpoints failed when sending the request with error code %s",
-                           UA_StatusCode_name(retval));
+                     "RequestGetEndpoints failed when sending the request with error code %s",
+                     UA_StatusCode_name(retval));
     return retval;
+}
+
+static void
+responseFindServers(UA_Client *client, void *userdata,
+                    UA_UInt32 requestId, void *response) {
+    client->findServersHandshake = false;
+
+    UA_LOG_DEBUG(&client->config.logger, UA_LOGCATEGORY_CLIENT,
+                 "Received FindServersResponse");
+
+    /* Error handling. Log the error but continue to connect with the current
+     * EndpointURL. */
+    UA_FindServersResponse *fsr = (UA_FindServersResponse*)response;
+    if(fsr->responseHeader.serviceResult != UA_STATUSCODE_GOOD) {
+        UA_LOG_WARNING(&client->config.logger, UA_LOGCATEGORY_CLIENT,
+                       "FindServers failed with error code %s. Continue with the "
+                       "EndpointURL %.*s.",
+                       UA_StatusCode_name(fsr->responseHeader.serviceResult),
+                       (int)client->endpointUrl.length, client->endpointUrl.data);
+        UA_String_copy(&client->endpointUrl, &client->discoveryUrl);
+        return;
+    }
+
+    /* Check if one of the returned servers matches the EndpointURL already used */
+    for(size_t i = 0; i < fsr->serversSize; i++) {
+        UA_ApplicationDescription *server = &fsr->servers[i];
+
+        /* Filter by the ApplicationURI if defined */
+        if(client->config.applicationUri.length > 0 &&
+           !UA_String_equal(&client->config.applicationUri,
+                            &server->applicationUri))
+            continue;
+
+        for(size_t j = 0; j < server->discoveryUrlsSize; j++) {
+            if(UA_String_equal(&client->endpointUrl, &server->discoveryUrls[j])) {
+                UA_LOG_INFO(&client->config.logger, UA_LOGCATEGORY_CLIENT,
+                            "The initially defined EndpointURL %.*s"
+                            "is valid for the server",
+                            (int)client->endpointUrl.length,
+                            client->endpointUrl.data);
+                UA_String_copy(&client->endpointUrl, &client->discoveryUrl);
+                return;
+            }
+        }
+    }
+
+    /* The current EndpointURL is not usable. Pick the first DiscoveryUrl of a
+     * returned server. */
+    for(size_t i = 0; i < fsr->serversSize; i++) {
+        UA_ApplicationDescription *server = &fsr->servers[i];
+        if(server->applicationType != UA_APPLICATIONTYPE_SERVER)
+            continue;
+        if(server->discoveryUrlsSize == 0)
+            continue;
+
+        /* Filter by the ApplicationURI if defined */
+        if(client->config.applicationUri.length > 0 &&
+           !UA_String_equal(&client->config.applicationUri,
+                            &server->applicationUri))
+            continue;
+
+        /* Use this DiscoveryUrl in the client */
+        UA_String_clear(&client->discoveryUrl);
+        client->discoveryUrl = server->discoveryUrls[0];
+        UA_String_init(&server->discoveryUrls[0]);
+
+        UA_LOG_INFO(&client->config.logger, UA_LOGCATEGORY_CLIENT,
+                    "Use the EndpointURL %.*s returned from FindServers",
+                    (int)client->discoveryUrl.length,
+                    client->discoveryUrl.data);
+
+        /* Close the SecureChannel to build it up new with the correct
+         * EndpointURL in the HEL/ACK handshake */
+        closeSecureChannel(client);
+        return;
+    }
+
+    /* Could not find a suitable server. Try to continue. */
+    UA_LOG_WARNING(&client->config.logger, UA_LOGCATEGORY_CLIENT,
+                   "FindServers did not returned a suitable DiscoveryURL. "
+                   "Continue with the EndpointURL %.*s.",
+                   (int)client->endpointUrl.length, client->endpointUrl.data);
+    UA_String_copy(&client->endpointUrl, &client->discoveryUrl);
+}
+
+static UA_StatusCode
+requestFindServers(UA_Client *client) {
+    UA_FindServersRequest request;
+    UA_FindServersRequest_init(&request);
+    request.requestHeader.timestamp = UA_DateTime_now();
+    request.requestHeader.timeoutHint = 10000;
+    request.endpointUrl = client->endpointUrl;
+    UA_StatusCode retval =
+        UA_Client_sendAsyncRequest(client, &request, &UA_TYPES[UA_TYPES_FINDSERVERSREQUEST],
+                                   (UA_ClientAsyncServiceCallback) responseFindServers,
+                                   &UA_TYPES[UA_TYPES_FINDSERVERSRESPONSE], NULL, NULL);
+    if(retval != UA_STATUSCODE_GOOD) {
+        UA_LOG_ERROR(&client->config.logger, UA_LOGCATEGORY_CLIENT,
+                     "FindServers failed when sending the request with error code %s",
+                     UA_StatusCode_name(retval));
+        return retval;
+    }
+
+    client->findServersHandshake = true;
+    return UA_STATUSCODE_GOOD;
 }
 
 static void
@@ -47131,6 +47375,19 @@ connectIterate(UA_Client *client, UA_UInt32 timeout) {
         break;
     }
 
+    /* Call FindServers to see whether we need to reconnect with the correct
+     * EndpointUrl */
+    if(!client->findServersHandshake && client->discoveryUrl.length == 0) {
+        client->connectStatus = requestFindServers(client);
+        return client->connectStatus;
+    }
+
+    /* FindServers was sent out, but we are still waiting for the response */
+    if(client->discoveryUrl.length == 0) {
+        receiveResponseAsync(client, timeout);
+        return client->connectStatus;
+    }
+
     /* Have a SecureChannel but no session */
     if(client->noSession)
         return client->connectStatus;
@@ -47241,6 +47498,7 @@ UA_StatusCode
 UA_Client_connectAsync(UA_Client *client, const char *endpointUrl) {
     /* Set the endpoint URL the client connects to */
     UA_String_clear(&client->endpointUrl);
+    UA_String_clear(&client->discoveryUrl);
     client->endpointUrl = UA_STRING_ALLOC(endpointUrl);
 
     /* Open a Session when possible */
@@ -47254,6 +47512,7 @@ UA_StatusCode
 UA_Client_connectSecureChannelAsync(UA_Client *client, const char *endpointUrl) {
     /* Set the endpoint URL the client connects to */
     UA_String_clear(&client->endpointUrl);
+    UA_String_clear(&client->discoveryUrl);
     client->endpointUrl = UA_STRING_ALLOC(endpointUrl);
 
     /* Don't open a Session */
@@ -47273,9 +47532,10 @@ connectSync(UA_Client *client) {
         return retval;
 
     while(retval == UA_STATUSCODE_GOOD) {
-        if(client->sessionState == UA_SESSIONSTATE_ACTIVATED)
-            break;
-        if(client->noSession && client->channel.state == UA_SECURECHANNELSTATE_OPEN)
+        if(!client->endpointsHandshake && !client->findServersHandshake &&
+           client->discoveryUrl.length > 0 &&
+           (client->sessionState == UA_SESSIONSTATE_ACTIVATED ||
+            (client->noSession && client->channel.state == UA_SECURECHANNELSTATE_OPEN)))
             break;
         now = UA_DateTime_nowMonotonic();
         if(maxDate < now)
@@ -47291,6 +47551,7 @@ UA_StatusCode
 UA_Client_connect(UA_Client *client, const char *endpointUrl) {
     /* Set the endpoint URL the client connects to */
     UA_String_clear(&client->endpointUrl);
+    UA_String_clear(&client->discoveryUrl);
     client->endpointUrl = UA_STRING_ALLOC(endpointUrl);
 
     /* Open a Session when possible */
@@ -47304,6 +47565,7 @@ UA_StatusCode
 UA_Client_connectSecureChannel(UA_Client *client, const char *endpointUrl) {
     /* Set the endpoint URL the client connects to */
     UA_String_clear(&client->endpointUrl);
+    UA_String_clear(&client->discoveryUrl);
     client->endpointUrl = UA_STRING_ALLOC(endpointUrl);
 
     /* Don't open a Session */
@@ -47445,6 +47707,34 @@ UA_Client_disconnect(UA_Client *client) {
  */
 
 
+/* Helper method for additional warnings */
+void
+Client_warnEndpointsResult(UA_Client *client,
+                           const UA_GetEndpointsResponse *response,
+                           const UA_String *endpointUrl) {
+    if(response->endpointsSize == 0) {
+        UA_LOG_WARNING(&client->config.logger, UA_LOGCATEGORY_CLIENT,
+                       "The server did not return any endpoints. "
+                       "Did you use the correct endpointUrl?");
+        return;
+    }
+
+    if(!UA_String_equal(endpointUrl, &response->endpoints[0].endpointUrl) ||
+       (response->endpoints[0].server.discoveryUrlsSize > 0 &&
+        !UA_String_equal(endpointUrl, &response->endpoints[0].server.discoveryUrls[0]))) {
+        UA_String *betterUrl = &response->endpoints[0].endpointUrl;
+        if(response->endpoints[0].server.discoveryUrlsSize > 0)
+            betterUrl = &response->endpoints[0].server.discoveryUrls[0];
+        UA_LOG_WARNING(&client->config.logger, UA_LOGCATEGORY_CLIENT,
+                       "The server returned Endpoints with a different EndpointUrl %.*s than was "
+                       "used to initialize the connection: %.*s. Some servers require a complete "
+                       "match of the EndpointUrl/DiscoveryUrl (including the path) "
+                       "to return all endpoints.",
+                       (int)betterUrl->length, betterUrl->data,
+                       (int)endpointUrl->length, endpointUrl->data);
+    }
+}
+
 /* Gets a list of endpoints. Memory is allocated for endpointDescription array */
 static UA_StatusCode
 UA_Client_getEndpointsInternal(UA_Client *client, const UA_String endpointUrl,
@@ -47469,6 +47759,7 @@ UA_Client_getEndpointsInternal(UA_Client *client, const UA_String endpointUrl,
         UA_GetEndpointsResponse_clear(&response);
         return retval;
     }
+
     *endpointDescriptions = response.endpoints;
     *endpointDescriptionsSize = response.endpointsSize;
     response.endpoints = NULL;
@@ -48873,9 +49164,13 @@ UA_Client_Subscriptions_create(UA_Client *client,
     __UA_Client_Service(client,
                         &request, &UA_TYPES[UA_TYPES_CREATESUBSCRIPTIONREQUEST],
                         &response, &UA_TYPES[UA_TYPES_CREATESUBSCRIPTIONRESPONSE]);
-
+    if (response.responseHeader.serviceResult != UA_STATUSCODE_GOOD)
+    {
+        UA_free (sub);
+        return response;
+    }
+    
     ua_Subscriptions_create(client, sub, &response);
-
     return response;
 }
 
@@ -49984,7 +50279,7 @@ UA_Client_Subscriptions_backgroundPublishInactivityCheck(UA_Client *client) {
 
 void
 UA_Client_Subscriptions_backgroundPublish(UA_Client *client) {
-    if(client->sessionState < UA_SESSIONSTATE_ACTIVATED)
+    if(client->sessionState != UA_SESSIONSTATE_ACTIVATED)
         return;
 
     /* The session must have at least one subscription */
@@ -50333,14 +50628,16 @@ UA_unbase64(const unsigned char *src, size_t len, size_t *out_len) {
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *    Copyright 2020 (c) Fraunhofer IOSB (Author: Julius Pfrommer)
  */
 
 #include <stddef.h>
 
-#if !defined(_MSC_VER) || _MSC_VER >= 1800
+#ifdef UNDER_CE
+  /* Windows CE: uintptr_t has already been defined by windows.h */
+#elif !defined(_MSC_VER) || _MSC_VER >= 1800
 # include <inttypes.h>
 #elif !defined(uintptr_t)
   /* Workaround missing standard includes in older Visual Studio */
@@ -56359,20 +56656,20 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Optional"),
 UA_NODEID_NUMERIC(ns[0], 77LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11569LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11567LU), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11574LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11573LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11570LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 3190LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11565LU), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2367LU), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11571LU), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2371LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11569LU), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11572LU), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11551LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2366LU), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2370LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11570LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11567LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11573LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 3190LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2366LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11565LU), false);
 return retVal;
 }
 
@@ -56429,25 +56726,25 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Mandatory"),
 UA_NODEID_NUMERIC(ns[0], 77LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2046LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2044LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 12078LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2035LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2050LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2043LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2375LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 7611LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2374LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2045LU), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11461LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2369LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2042LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2047LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2377LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 7611LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2046LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2045LU), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11241LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 12169LU), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2051LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 12078LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2044LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2050LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2369LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2375LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 12169LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2047LU), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2011LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2035LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2374LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2377LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2042LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2043LU), false);
 return retVal;
 }
 
@@ -58851,7 +59148,7 @@ UA_Subscription_nextSequenceNumber(UA_UInt32 sequenceNumber) {
 static void
 publishCallback(UA_Server *server, UA_Subscription *sub) {
     UA_LOCK(&server->serviceMutex);
-    UA_Subscription_publish(server, sub);
+    UA_Subscription_sampleAndPublish(server, sub);
     UA_UNLOCK(&server->serviceMutex);
 }
 
@@ -58916,12 +59213,9 @@ UA_Subscription_isLate(UA_Subscription *sub) {
 #endif
 }
 
-void
-UA_Subscription_publish(UA_Server *server, UA_Subscription *sub) {
-    UA_LOCK_ASSERT(&server->serviceMutex, 1);
-    UA_LOG_DEBUG_SUBSCRIPTION(&server->config.logger, sub, "Publish Callback");
-    UA_assert(sub);
-
+/* Returns true if done */
+UA_Boolean
+UA_Subscription_publishOnce(UA_Server *server, UA_Subscription *sub) {
     /* Dequeue a response */
     UA_PublishResponseEntry *pre = NULL;
     if(sub->session)
@@ -58946,7 +59240,7 @@ UA_Subscription_publish(UA_Server *server, UA_Subscription *sub) {
      * Subscription */
     if(sub->statusChange != UA_STATUSCODE_GOOD) {
         sendStatusChangeDelete(server, sub, pre);
-        return;
+        return true;
     }
 
     /* Count the available notifications */
@@ -58960,7 +59254,7 @@ UA_Subscription_publish(UA_Server *server, UA_Subscription *sub) {
         if(sub->currentKeepAliveCount < sub->maxKeepAliveCount) {
             if(pre)
                 UA_Session_queuePublishReq(sub->session, pre, true); /* Re-enqueue */
-            return;
+            return true;
         }
         UA_LOG_DEBUG_SUBSCRIPTION(&server->config.logger, sub, "Sending a KeepAlive");
     }
@@ -58975,7 +59269,7 @@ UA_Subscription_publish(UA_Server *server, UA_Subscription *sub) {
         UA_Subscription_isLate(sub);
         if(pre)
             UA_Session_queuePublishReq(sub->session, pre, true); /* Re-enqueue */
-        return;
+        return true;
     }
 
     UA_assert(pre);
@@ -59001,7 +59295,7 @@ UA_Subscription_publish(UA_Server *server, UA_Subscription *sub) {
 
                 UA_Subscription_isLate(sub);
                 UA_Session_queuePublishReq(sub->session, pre, true); /* Re-enqueue */
-                return;
+                return true;
             }
         }
 
@@ -59017,19 +59311,16 @@ UA_Subscription_publish(UA_Server *server, UA_Subscription *sub) {
                 UA_free(retransmission);
             UA_Subscription_isLate(sub);
             UA_Session_queuePublishReq(sub->session, pre, true); /* Re-enqueue */
-            return;
+            return true;
         }
     }
 
     /* <-- The point of no return --> */
 
-    /* Notifications remaining? */
-    UA_Boolean moreNotifications = (sub->notificationQueueSize > 0);
-
     /* Set up the response */
     response->responseHeader.timestamp = UA_DateTime_now();
     response->subscriptionId = sub->subscriptionId;
-    response->moreNotifications = moreNotifications;
+    response->moreNotifications = (sub->notificationQueueSize > 0);
     message->publishTime = response->responseHeader.timestamp;
 
     /* Set sequence number to message. Started at 1 which is given during
@@ -59073,8 +59364,18 @@ UA_Subscription_publish(UA_Server *server, UA_Subscription *sub) {
     sendResponse(server, sub->session, sub->session->header.channel, pre->requestId,
                  (UA_Response*)response, &UA_TYPES[UA_TYPES_PUBLISHRESPONSE]);
 
-    /* Reset subscription state to normal */
-    sub->state = UA_SUBSCRIPTIONSTATE_NORMAL;
+    /* Reset the Subscription state to NORMAL. But only if all notifications
+     * have been sent out. Otherwise keep the Subscription in the LATE state. So
+     * we immediately answer incoming Publish requests.
+     *
+     * (We also check that session->responseQueueSize > 0 in Service_Publish. To
+     * avoid answering Publish requests out of order. As we additionally may
+     * schedule an immediate next publishOnce if UA_Subscription_publishOnce
+     * returns "not done".) */
+    if(sub->notificationQueueSize == 0)
+        sub->state = UA_SUBSCRIPTIONSTATE_NORMAL;
+
+    /* Reset the KeepAlive after publishing */
     sub->currentKeepAliveCount = 0;
 
     /* Free the response */
@@ -59098,9 +59399,36 @@ UA_Subscription_publish(UA_Server *server, UA_Subscription *sub) {
     sub->notificationsCount += (sentDCN + sentEN);
 #endif
 
-    /* Repeat sending responses if there are more notifications to send */
-    if(moreNotifications)
-        UA_Subscription_publish(server, sub);
+    /* Re-run publishing if notifications are remaining */
+    return (sub->notificationQueueSize == 0);
+}
+
+/* Repeat the main publishing callback until all notifications are sent out or
+ * we have to stop */
+void
+UA_Subscription_publish(UA_Server *server, UA_Subscription *sub) {
+    UA_Boolean done = false;
+    do {
+        done = UA_Subscription_publishOnce(server, sub);
+    } while(!done);
+}
+
+void
+UA_Subscription_sampleAndPublish(UA_Server *server, UA_Subscription *sub) {
+    UA_LOCK_ASSERT(&server->serviceMutex, 1);
+    UA_LOG_DEBUG_SUBSCRIPTION(&server->config.logger, sub,
+                              "Sample and Publish Callback");
+    UA_assert(sub);
+
+    /* Sample the MonitoredItems with sampling interval <0 (which implies
+     * sampling in the same interval as the subscription) */
+    UA_MonitoredItem *mon;
+    LIST_FOREACH(mon, &sub->samplingMonitoredItems, sampling.samplingListEntry) {
+        monitoredItem_sampleCallback(server, mon);
+    }
+
+    /* Publish the queued notifications */
+    UA_Subscription_publish(server, sub);
 }
 
 UA_Boolean
@@ -59561,7 +59889,6 @@ UA_Notification_dequeueSub(UA_Notification *n) {
 void
 UA_MonitoredItem_init(UA_MonitoredItem *mon) {
     memset(mon, 0, sizeof(UA_MonitoredItem));
-    mon->next = (UA_MonitoredItem*)~0; /* Not added to a node */
     TAILQ_INIT(&mon->queue);
     mon->triggeredUntil = UA_INT64_MIN;
 }
@@ -59571,7 +59898,7 @@ addMonitoredItemBackpointer(UA_Server *server, UA_Session *session,
                             UA_Node *node, void *data) {
     UA_MonitoredItem *mon = (UA_MonitoredItem*)data;
     UA_assert(mon != (UA_MonitoredItem*)~0);
-    mon->next = node->head.monitoredItems;
+    mon->sampling.nodeListNext = node->head.monitoredItems;
     node->head.monitoredItems = mon;
     return UA_STATUSCODE_GOOD;
 }
@@ -59585,17 +59912,15 @@ removeMonitoredItemBackPointer(UA_Server *server, UA_Session *session,
     /* Edge case that it's the first element */
     UA_MonitoredItem *remove = (UA_MonitoredItem*)data;
     if(node->head.monitoredItems == remove) {
-        node->head.monitoredItems = remove->next;
-        remove->next = (UA_MonitoredItem*)~0;
+        node->head.monitoredItems = remove->sampling.nodeListNext;
         return UA_STATUSCODE_GOOD;
     }
 
     UA_MonitoredItem *prev = node->head.monitoredItems;
-    UA_MonitoredItem *entry = prev->next;
-    for(; entry != NULL; prev = entry, entry = entry->next) {
+    UA_MonitoredItem *entry = prev->sampling.nodeListNext;
+    for(; entry != NULL; prev = entry, entry = entry->sampling.nodeListNext) {
         if(entry == remove) {
-            prev->next = entry->next;
-            remove->next = (UA_MonitoredItem*)~0;
+            prev->sampling.nodeListNext = entry->sampling.nodeListNext;
             break;
         }
     }
@@ -59749,8 +60074,6 @@ UA_MonitoredItem_delete(UA_Server *server, UA_MonitoredItem *mon) {
     /* Remove the sampling callback */
     UA_MonitoredItem_unregisterSampling(server, mon);
 
-    UA_assert(mon->next == (UA_MonitoredItem*)~0); /* Not attached to any node */
-
     /* Deregister in Server and Subscription */
     if(mon->registered)
         UA_Server_unregisterMonitoredItem(server, mon);
@@ -59886,46 +60209,56 @@ UA_MonitoredItem_ensureQueueSpace(UA_Server *server, UA_MonitoredItem *mon) {
 UA_StatusCode
 UA_MonitoredItem_registerSampling(UA_Server *server, UA_MonitoredItem *mon) {
     UA_LOCK_ASSERT(&server->serviceMutex, 1);
-    if(mon->sampleCallbackIsRegistered)
+
+    /* Sampling is already registered */
+    if(mon->samplingType != UA_MONITOREDITEMSAMPLINGTYPE_NONE)
         return UA_STATUSCODE_GOOD;
 
-    UA_assert(mon->next == (UA_MonitoredItem*)~0); /* Not registered in a node */
-
-    /* Only DataChange MonitoredItems with a positive sampling interval have a
-     * repeated callback. Other MonitoredItems are attached to the Node in a
-     * linked list of backpointers. */
-    UA_StatusCode res;
+    UA_StatusCode res = UA_STATUSCODE_GOOD;
+    UA_Subscription *sub = mon->subscription;
     if(mon->itemToMonitor.attributeId == UA_ATTRIBUTEID_EVENTNOTIFIER ||
        mon->parameters.samplingInterval == 0.0) {
-        UA_Subscription *sub = mon->subscription;
+        /* Add to the linked list in the node */
         UA_Session *session = &server->adminSession;
         if(sub)
             session = sub->session;
         res = UA_Server_editNode(server, session, &mon->itemToMonitor.nodeId,
                                  addMonitoredItemBackpointer, mon);
+        if(res == UA_STATUSCODE_GOOD)
+            mon->samplingType = UA_MONITOREDITEMSAMPLINGTYPE_EVENT;
+        return res;
+    } else if(mon->parameters.samplingInterval < 0.0) {
+        /* Add to the subscription for sampling before every publish */
+        if(!sub)
+            return UA_STATUSCODE_BADINTERNALERROR; /* Not possible for local MonitoredItems */
+        LIST_INSERT_HEAD(&sub->samplingMonitoredItems, mon, sampling.samplingListEntry);
+        mon->samplingType = UA_MONITOREDITEMSAMPLINGTYPE_PUBLISH;
     } else {
+        /* DataChange MonitoredItems with a positive sampling interval have a
+         * repeated callback. Other MonitoredItems are attached to the Node in a
+         * linked list of backpointers. */
         res = addRepeatedCallback(server,
                                   (UA_ServerCallback)UA_MonitoredItem_sampleCallback,
                                   mon, mon->parameters.samplingInterval,
-                                  &mon->sampleCallbackId);
+                                  &mon->sampling.callbackId);
+        if(res == UA_STATUSCODE_GOOD)
+            mon->samplingType = UA_MONITOREDITEMSAMPLINGTYPE_CYCLIC;
     }
 
-    if(res == UA_STATUSCODE_GOOD)
-        mon->sampleCallbackIsRegistered = true;
     return res;
 }
 
 void
 UA_MonitoredItem_unregisterSampling(UA_Server *server, UA_MonitoredItem *mon) {
     UA_LOCK_ASSERT(&server->serviceMutex, 1);
-    if(!mon->sampleCallbackIsRegistered)
-        return;
 
-    mon->sampleCallbackIsRegistered = false;
+    switch(mon->samplingType) {
+    case UA_MONITOREDITEMSAMPLINGTYPE_CYCLIC:
+        /* Remove repeated callback */
+        removeCallback(server, mon->sampling.callbackId);
+        break;
 
-    /* Check for mon->next and not the samplingInterval. Because that might
-     * currently be changed. */
-    if(mon->next != (UA_MonitoredItem*)~0) {
+    case UA_MONITOREDITEMSAMPLINGTYPE_EVENT: {
         /* Added to a node */
         UA_Subscription *sub = mon->subscription;
         UA_Session *session = &server->adminSession;
@@ -59933,10 +60266,21 @@ UA_MonitoredItem_unregisterSampling(UA_Server *server, UA_MonitoredItem *mon) {
             session = sub->session;
         UA_Server_editNode(server, session, &mon->itemToMonitor.nodeId,
                            removeMonitoredItemBackPointer, mon);
-    } else {
-        /* Registered with a repeated callback */
-        removeCallback(server, mon->sampleCallbackId);
+        break;
     }
+
+    case UA_MONITOREDITEMSAMPLINGTYPE_PUBLISH:
+        /* Added to the subscription */
+        LIST_REMOVE(mon, sampling.samplingListEntry);
+        break;
+
+    case UA_MONITOREDITEMSAMPLINGTYPE_NONE:
+    default:
+        /* Sampling is not registered */
+        break;
+    }
+
+    mon->samplingType = UA_MONITOREDITEMSAMPLINGTYPE_NONE;
 }
 
 UA_StatusCode
@@ -60636,7 +60980,8 @@ triggerEvent(UA_Server *server, const UA_NodeId eventNodeId,
         }
 
         /* Add event to monitoreditems */
-        for(UA_MonitoredItem *mon = node->head.monitoredItems; mon != NULL; mon = mon->next) {
+        UA_MonitoredItem *mon = node->head.monitoredItems;
+        for(; mon != NULL; mon = mon->sampling.nodeListNext) {
             /* Is this an Event-MonitoredItem? */
             if(mon->itemToMonitor.attributeId != UA_ATTRIBUTEID_EVENTNOTIFIER)
                 continue;
@@ -66988,16 +67333,16 @@ asym_decrypt_sp_basic128rsa15(Basic128Rsa15_ChannelContext *cc,
     if(cc == NULL || data == NULL)
         return UA_STATUSCODE_BADINTERNALERROR;
 
-    mbedtls_rsa_context *rsaContext = mbedtls_pk_rsa(cc->policyContext->localPrivateKey);
+    Basic128Rsa15_PolicyContext *pc = cc->policyContext;
+    mbedtls_rsa_context *rsaContext = mbedtls_pk_rsa(pc->localPrivateKey);
     mbedtls_rsa_set_padding(rsaContext, MBEDTLS_RSA_PKCS_V15, MBEDTLS_MD_NONE);
 #if MBEDTLS_VERSION_NUMBER >= 0x02060000 && MBEDTLS_VERSION_NUMBER < 0x03000000
-    if(data->length % rsaContext->len != 0)
-            return UA_STATUSCODE_BADINTERNALERROR;
+    size_t keylen = rsaContext->len;
 #else
     size_t keylen = mbedtls_rsa_get_len(rsaContext);
-        if(data->length % keylen != 0)
-        return UA_STATUSCODE_BADINTERNALERROR;
 #endif
+    if(data->length % keylen != 0)
+        return UA_STATUSCODE_BADINTERNALERROR;
 
     size_t inOffset = 0;
     size_t outOffset = 0;
@@ -67005,25 +67350,16 @@ asym_decrypt_sp_basic128rsa15(Basic128Rsa15_ChannelContext *cc,
     unsigned char buf[512];
 
     while(inOffset < data->length) {
-#if MBEDTLS_VERSION_NUMBER >= 0x02060000 && MBEDTLS_VERSION_NUMBER < 0x03000000
-        int mbedErr = mbedtls_pk_decrypt(&cc->policyContext->localPrivateKey,
-                                         data->data + inOffset, rsaContext->len,
-                                         buf, &outLength, 512, NULL, NULL);
-#else
-        int mbedErr = mbedtls_pk_decrypt(&cc->policyContext->localPrivateKey,
+        int mbedErr = mbedtls_pk_decrypt(&pc->localPrivateKey,
                                          data->data + inOffset, keylen,
-                                         buf, &outLength, 512, NULL, NULL);
-#endif
-
+                                         buf, &outLength, 512,
+                                         mbedtls_ctr_drbg_random,
+                                         &pc->drbgContext);
         if(mbedErr)
             return UA_STATUSCODE_BADSECURITYCHECKSFAILED;
 
         memcpy(data->data + outOffset, buf, outLength);
-#if MBEDTLS_VERSION_NUMBER >= 0x02060000 && MBEDTLS_VERSION_NUMBER < 0x03000000
-        inOffset += rsaContext->len;
-#else
         inOffset += keylen;
-#endif
         outOffset += outLength;
     }
 
@@ -75826,10 +76162,10 @@ ServerNetworkLayerTCP_start(UA_ServerNetworkLayer *nl, const UA_Logger *logger,
         addServerSocket(layer, ai);
     }
     UA_freeaddrinfo(res);
-    
+
     if(layer->serverSocketsSize == 0) {
         return UA_STATUSCODE_BADCOMMUNICATIONERROR;
-    }    
+    }
 
     /* Get the discovery url from the hostname */
     UA_String du = UA_STRING_NULL;
@@ -76092,6 +76428,10 @@ UA_ClientConnectionTCP_poll(UA_Connection *connection, UA_UInt32 timeout,
 
     /* Connection timeout? */
     TCPClientConnection *tcpConnection = (TCPClientConnection*) connection->handle;
+    if(tcpConnection == NULL) {
+        connection->state = UA_CONNECTIONSTATE_CLOSED;
+        return UA_STATUSCODE_BADDISCONNECT;  // some thing is wrong
+    }
     if((UA_Double) (UA_DateTime_nowMonotonic() - tcpConnection->connStart)
        > (UA_Double) tcpConnection->timeout * UA_DATETIME_MSEC ) {
         UA_LOG_WARNING(logger, UA_LOGCATEGORY_NETWORK, "Timed out");
@@ -76223,9 +76563,16 @@ UA_ClientConnectionTCP_poll(UA_Connection *connection, UA_UInt32 timeout,
     socklen_t len = sizeof(so_error);
     ret = UA_getsockopt(connection->sockfd, SOL_SOCKET, SO_ERROR, &so_error, &len);
     if(ret != 0 || so_error != 0) {
-        // UA_LOG_SOCKET_ERRNO_GAI_WRAP because of so_error
+        // no UA_LOG_SOCKET_ERRNO_GAI_WRAP because of so_error
 #ifndef _WIN32
         char *errno_str = strerror(ret == 0 ? so_error : UA_ERRNO);
+#elif defined(UNDER_CE)
+        LPVOID errno_str = NULL;
+        FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+                        FORMAT_MESSAGE_IGNORE_INSERTS,
+                        NULL, ret == 0 ? so_error : WSAGetLastError(),
+                        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPWSTR)&errno_str, 0,
+                        NULL);
 #else
         char *errno_str = NULL;
         FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
