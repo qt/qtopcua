@@ -1,6 +1,6 @@
 /* THIS IS A SINGLE-FILE DISTRIBUTION CONCATENATED FROM THE OPEN62541 SOURCES
  * visit http://open62541.org/ for information about this software
- * Git-Revision: v1.3.4
+ * Git-Revision: v1.3.6
  */
 
 /*
@@ -30,10 +30,10 @@
  * ----------------- */
 #define UA_OPEN62541_VER_MAJOR 1
 #define UA_OPEN62541_VER_MINOR 3
-#define UA_OPEN62541_VER_PATCH 4
+#define UA_OPEN62541_VER_PATCH 6
 #define UA_OPEN62541_VER_LABEL "" /* Release candidate label, etc. */
-#define UA_OPEN62541_VER_COMMIT "v1.3.4"
-#define UA_OPEN62541_VERSION "v1.3.4"
+#define UA_OPEN62541_VER_COMMIT "v1.3.6"
+#define UA_OPEN62541_VERSION "v1.3.6"
 
 /**
  * Feature Options
@@ -27897,6 +27897,9 @@ typedef struct {
 
 struct UA_ServerConfig {
     UA_Logger logger;
+    void *context; /* Used to attach custom data to a server config. This can
+                    * then be retrieved e.g. in a callback that forwards a
+                    * pointer to the server. */
 
     /**
      * Server Description
@@ -29686,6 +29689,15 @@ typedef struct {
     UA_UserTokenPolicy userTokenPolicy;
 
     /**
+     * If the EndpointDescription has not been defined, the ApplicationURI
+     * constrains the servers considered in the FindServers service and the
+     * Endpoints considered in the GetEndpoints service.
+     *
+     * If empty the applicationURI is not used to filter.
+     */
+    UA_String applicationUri;
+
+    /**
      * Custom Data Types
      * ~~~~~~~~~~~~~~~~~
      * The following is a linked list of arrays with custom data types. All data
@@ -30302,6 +30314,7 @@ UA_Client_findDataType(UA_Client *client, const UA_NodeId *typeId);
  * .. toctree::
  *
  *    client_highlevel
+ *    client_highlevel_async
  *    client_subscriptions */
 
 _UA_END_DECLS
@@ -31564,7 +31577,7 @@ UA_Client_readUserExecutableAttribute_async(UA_Client *client, const UA_NodeId n
 
 /**
  * Write Attribute
- * ^^^^^^^^^^^^^^ */
+ * ^^^^^^^^^^^^^^^ */
 
 UA_StatusCode UA_EXPORT
 __UA_Client_writeAttribute_async(UA_Client *client, const UA_NodeId *nodeId,
