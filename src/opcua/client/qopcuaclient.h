@@ -16,7 +16,6 @@
 #include <QtOpcUa/qopcuaaddreferenceitem.h>
 #include <QtOpcUa/qopcuadeletereferenceitem.h>
 #include <QtOpcUa/qopcuaendpointdescription.h>
-#include <QtOpcUa/qopcuaconnectionsettings.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -27,6 +26,7 @@ class QOpcUaAuthenticationInformation;
 class QOpcUaApplicationDescription;
 class QOpcUaClientPrivate;
 class QOpcUaClientImpl;
+class QOpcUaConnectionSettings;
 class QOpcUaErrorState;
 class QOpcUaExpandedNodeId;
 class QOpcUaQualifiedName;
