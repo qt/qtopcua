@@ -877,7 +877,7 @@ void QOpcUaClient::setConnectionSettings(const QOpcUaConnectionSettings &connect
     d->m_connectionSettings = connectionSettings;
 }
 
-const QOpcUaConnectionSettings &QOpcUaClient::connectionSettings() const
+QOpcUaConnectionSettings QOpcUaClient::connectionSettings() const
 {
     Q_D(const QOpcUaClient);
     return d->m_connectionSettings;
