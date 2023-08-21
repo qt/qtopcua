@@ -108,7 +108,7 @@ public:
     const QOpcUaAuthenticationInformation &authenticationInformation() const;
 
     void setConnectionSettings(const QOpcUaConnectionSettings &connectionSettings);
-    const QOpcUaConnectionSettings &connectionSettings() const;
+    QOpcUaConnectionSettings connectionSettings() const;
 
     QStringList supportedSecurityPolicies() const;
     QList<QOpcUaUserTokenPolicy::TokenType> supportedUserTokenTypes() const;
