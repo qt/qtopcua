@@ -37,8 +37,6 @@ qt_internal_add_qml_module(DeclarativeOpcua
         opcuawriteitem.cpp opcuawriteitem_p.h
         opcuawriteresult.cpp opcuawriteresult_p.h
         universalnode.cpp universalnode_p.h
-    DEFINES
-        QT_NO_CONTEXTLESS_CONNECT
     LIBRARIES
         Qt::CorePrivate
     PUBLIC_LIBRARIES

@@ -261,7 +261,9 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureUnencryptedKey()
     qDebug() << "Testing security policy" << endpoint.securityPolicy();
     QSignalSpy connectSpy(client.data(), &QOpcUaClient::stateChanged);
     int passwordRequestSpy = 0;
-    connect(client.data(), &QOpcUaClient::passwordForPrivateKeyRequired, [&passwordRequestSpy](const QString &privateKeyFilePath, QString *password, bool previousTryFailed) {
+    connect(client.data(), &QOpcUaClient::passwordForPrivateKeyRequired,
+            this, [&passwordRequestSpy](const QString &privateKeyFilePath, QString *password,
+                                        bool previousTryFailed) {
         Q_UNUSED(privateKeyFilePath);
         Q_UNUSED(previousTryFailed);
         Q_UNUSED(password);
@@ -335,7 +337,9 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureEncryptedKey()
     qDebug() << "Testing security policy" << endpoint.securityPolicy();
     QSignalSpy connectSpy(client.data(), &QOpcUaClient::stateChanged);
     int passwordRequestSpy = 0;
-    connect(client.data(), &QOpcUaClient::passwordForPrivateKeyRequired, [&passwordRequestSpy, &pkiConfig](const QString &privateKeyFilePath, QString *password, bool previousTryFailed) {
+    connect(client.data(), &QOpcUaClient::passwordForPrivateKeyRequired,
+            this, [&passwordRequestSpy, &pkiConfig](const QString &privateKeyFilePath,
+                                                    QString *password, bool previousTryFailed) {
         qDebug() << "Password requested";
         if (passwordRequestSpy == 0) {
             QVERIFY(password->isEmpty());

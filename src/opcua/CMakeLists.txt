@@ -67,8 +67,7 @@ qt_internal_add_module(OpcUa
         core/qopcuaplugin.cpp core/qopcuaplugin.h
         core/qopcuaprovider.cpp core/qopcuaprovider.h
         qopcuaglobal.h
-    DEFINES
-        QT_NO_CONTEXTLESS_CONNECT
+
     LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate
