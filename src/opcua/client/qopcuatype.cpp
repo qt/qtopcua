@@ -227,6 +227,7 @@ QT_BEGIN_NAMESPACE
     \value StructureField The OPC UA StructureField type
     \value EnumDefinition The OPC UA EnumDefinition type
     \value EnumField The OPC UA EnumField type
+    \value DiagnosticInfo The OPC UA DiagnosticInfo type
     \value Undefined
 */
 

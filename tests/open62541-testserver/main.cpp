@@ -24,6 +24,7 @@
 #include <QtOpcUa/QOpcUaXValue>
 #include <QtOpcUa/QOpcUaStructureDefinition>
 #include <QtOpcUa/QOpcUaEnumDefinition>
+#include <QtOpcUa/QOpcUaDiagnosticInfo>
 
 #include <csignal>
 
@@ -227,6 +228,33 @@ int main()
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.StructureDefinition", "StructureDefinitionArray", QVariantList{structureDefinition}, QOpcUa::Types::StructureDefinition, {0}, UA_VALUERANK_ONE_DIMENSION);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.EnumField", "EnumFieldArray", QVariantList{enumField}, QOpcUa::Types::EnumField, {0}, UA_VALUERANK_ONE_DIMENSION);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.EnumDefinition", "EnumDefinitionArray", QVariantList{enumDefinition}, QOpcUa::Types::EnumDefinition, {0}, UA_VALUERANK_ONE_DIMENSION);
+
+    QOpcUaDiagnosticInfo diagnosticInfo;
+    diagnosticInfo.setHasSymbolicId(true);
+    diagnosticInfo.setSymbolicId(1);
+    diagnosticInfo.setHasNamespaceUri(true);
+    diagnosticInfo.setNamespaceUri(2);
+    diagnosticInfo.setHasLocale(true);
+    diagnosticInfo.setLocale(3);
+    diagnosticInfo.setHasLocalizedText(true);
+    diagnosticInfo.setLocalizedText(4);
+    diagnosticInfo.setHasAdditionalInfo(true);
+    diagnosticInfo.setAdditionalInfo(QStringLiteral("My additional info"));
+    diagnosticInfo.setHasInnerStatusCode(true);
+    diagnosticInfo.setInnerStatusCode(QOpcUa::UaStatusCode::BadInternalError);
+    diagnosticInfo.setHasInnerDiagnosticInfo(true);
+    diagnosticInfo.innerDiagnosticInfoRef().setHasAdditionalInfo(true);
+    diagnosticInfo.innerDiagnosticInfoRef().setAdditionalInfo(QStringLiteral("My inner additional info"));
+
+    QOpcUaDiagnosticInfo diagnosticInfo2;
+    diagnosticInfo2.setHasLocale(true);
+    diagnosticInfo2.setLocale(1);
+    diagnosticInfo2.setHasInnerStatusCode(true);
+    diagnosticInfo2.setInnerStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
+
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.DiagnosticInfo", "DiagnosticInfo", diagnosticInfo, QOpcUa::Types::DiagnosticInfo);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.DiagnosticInfo", "DiagnosticInfoArray", QVariantList{ diagnosticInfo, diagnosticInfo2 },
+                       QOpcUa::Types::DiagnosticInfo, {0}, UA_VALUERANK_ONE_DIMENSION);
 
     // Create folders containing child nodes with string, guid and opaque node ids
     UA_NodeId testStringIdsFolder = server.addFolder("ns=3;s=testStringIdsFolder", "testStringIdsFolder");

@@ -216,6 +216,7 @@ enum Types
     StructureField  = 30,
     EnumDefinition  = 31,
     EnumField       = 32,
+    DiagnosticInfo  = 33,
     Undefined       = 0xFFFFFFFF
 };
 Q_ENUM_NS(Types)

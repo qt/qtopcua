@@ -123,6 +123,8 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
         return arrayFromQVariant<UA_EnumDefinition, QOpcUaEnumDefinition>(value, dt);
     case QOpcUa::EnumField:
         return arrayFromQVariant<UA_EnumField, QOpcUaEnumField>(value, dt);
+    case QOpcUa::DiagnosticInfo:
+        return arrayFromQVariant<UA_DiagnosticInfo, QOpcUaDiagnosticInfo>(value, dt);
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Variant conversion to Open62541 for typeIndex" << type << " not implemented";
     }
@@ -202,6 +204,8 @@ QVariant toQVariant(const UA_Variant &value)
         return arrayToQVariant<QOpcUaEnumDefinition, UA_EnumDefinition>(value);
     else if (value.type == &UA_TYPES[UA_TYPES_ENUMFIELD])
         return arrayToQVariant<QOpcUaEnumField, UA_EnumField>(value);
+    else if (value.type == &UA_TYPES[UA_TYPES_DIAGNOSTICINFO])
+        return arrayToQVariant<QOpcUaDiagnosticInfo, UA_DiagnosticInfo>(value);
 
     return uaVariantToQtExtensionObject(value);
 }
@@ -275,6 +279,8 @@ const UA_DataType *toDataType(QOpcUa::Types valueType)
         return &UA_TYPES[UA_TYPES_ENUMDEFINITION];
     case QOpcUa::EnumField:
         return &UA_TYPES[UA_TYPES_ENUMFIELD];
+    case QOpcUa::DiagnosticInfo:
+        return &UA_TYPES[UA_TYPES_DIAGNOSTICINFO];
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Trying to convert undefined type:" << valueType;
         return nullptr;
@@ -477,6 +483,50 @@ QOpcUaEnumDefinition scalarToQt<QOpcUaEnumDefinition, UA_EnumDefinition>(const U
     for (size_t i = 0; i < data->fieldsSize; ++i)
         fields.push_back(scalarToQt<QOpcUaEnumField, UA_EnumField>(&data->fields[i]));
     temp.setFields(fields);
+
+    return temp;
+}
+
+template<>
+QOpcUaDiagnosticInfo scalarToQt<QOpcUaDiagnosticInfo, UA_DiagnosticInfo>(const UA_DiagnosticInfo *data)
+{
+    QOpcUaDiagnosticInfo temp;
+
+    if (data->hasSymbolicId) {
+        temp.setHasSymbolicId(true);
+        temp.setSymbolicId(data->symbolicId);
+    }
+
+    if (data->hasNamespaceUri) {
+        temp.setHasNamespaceUri(true);
+        temp.setNamespaceUri(data->namespaceUri);
+    }
+
+    if (data->hasLocale) {
+        temp.setHasLocale(true);
+        temp.setLocale(data->locale);
+    }
+
+    if (data->hasLocalizedText) {
+        temp.setHasLocalizedText(true);
+        temp.setLocalizedText(data->localizedText);
+    }
+
+    if (data->hasAdditionalInfo) {
+        temp.setHasAdditionalInfo(true);
+        temp.setAdditionalInfo(scalarToQt<QString, UA_String>(&data->additionalInfo));
+    }
+
+    if (data->hasInnerStatusCode) {
+        temp.setHasInnerStatusCode(true);
+        temp.setInnerStatusCode(scalarToQt<QOpcUa::UaStatusCode, UA_StatusCode>(&data->innerStatusCode));
+    }
+
+    if (data->hasInnerDiagnosticInfo) {
+        temp.setHasInnerDiagnosticInfo(true);
+        if (data->innerDiagnosticInfo)
+            temp.setInnerDiagnosticInfo(scalarToQt<QOpcUaDiagnosticInfo, UA_DiagnosticInfo>(data->innerDiagnosticInfo));
+    }
 
     return temp;
 }
@@ -795,6 +845,46 @@ void scalarFromQt<UA_EnumDefinition, QOpcUaEnumDefinition>(const QOpcUaEnumDefin
 
         for (int i = 0; i < value.fields().size(); ++i)
             scalarFromQt<UA_EnumField, QOpcUaEnumField>(value.fields().at(i), &ptr->fields[i]);
+    }
+}
+
+template<>
+void scalarFromQt<UA_DiagnosticInfo, QOpcUaDiagnosticInfo>(const QOpcUaDiagnosticInfo &value, UA_DiagnosticInfo *ptr)
+{
+    if (value.hasSymbolicId()) {
+        ptr->hasSymbolicId = true;
+        ptr->symbolicId = value.symbolicId();
+    }
+
+    if (value.hasNamespaceUri()) {
+        ptr->hasNamespaceUri = true;
+        ptr->namespaceUri = value.namespaceUri();
+    }
+
+    if (value.hasLocale()) {
+        ptr->hasLocale = true;
+        ptr->locale = value.locale();
+    }
+
+    if (value.hasLocalizedText()) {
+        ptr->hasLocalizedText = true;
+        ptr->localizedText = value.localizedText();
+    }
+
+    if (value.hasAdditionalInfo()) {
+        ptr->hasAdditionalInfo = true;
+        scalarFromQt<UA_String, QString>(value.additionalInfo(), &ptr->additionalInfo);
+    }
+
+    if (value.hasInnerStatusCode()) {
+        ptr->hasInnerStatusCode = true;
+        ptr->innerStatusCode = value.innerStatusCode();
+    }
+
+    if (value.hasInnerDiagnosticInfo()) {
+        ptr->hasInnerDiagnosticInfo = true;
+        ptr->innerDiagnosticInfo = UA_DiagnosticInfo_new();
+        scalarFromQt<UA_DiagnosticInfo, QOpcUaDiagnosticInfo>(value.innerDiagnosticInfo(), ptr->innerDiagnosticInfo);
     }
 }
 

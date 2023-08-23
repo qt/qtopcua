@@ -19,6 +19,7 @@
 #include <QtOpcUa/qopcuaxvalue.h>
 #include <QtOpcUa/qopcuastructuredefinition.h>
 #include <QtOpcUa/qopcuaenumdefinition.h>
+#include <QtOpcUa/qopcuadiagnosticinfo.h>
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qendian.h>
@@ -644,6 +645,67 @@ inline QOpcUaEnumDefinition QOpcUaBinaryDataEncoding::decode<QOpcUaEnumDefinitio
     return temp;
 }
 
+template <>
+inline QOpcUaDiagnosticInfo QOpcUaBinaryDataEncoding::decode<QOpcUaDiagnosticInfo>(bool &success) {
+    QOpcUaDiagnosticInfo temp;
+
+    const auto encodingMask = decode<quint8>(success);
+    if (!success)
+        return {};
+
+    temp.setHasSymbolicId(encodingMask & 0x01);
+    temp.setHasNamespaceUri(encodingMask & 0x02);
+    temp.setHasLocalizedText(encodingMask & 0x04);
+    temp.setHasLocale(encodingMask & 0x08);
+    temp.setHasAdditionalInfo(encodingMask & 0x10);
+    temp.setHasInnerStatusCode(encodingMask & 0x20);
+    temp.setHasInnerDiagnosticInfo(encodingMask & 0x40);
+
+    if (temp.hasSymbolicId()) {
+        temp.setSymbolicId(decode<qint32>(success));
+        if (!success)
+            return {};
+    }
+
+    if (temp.hasNamespaceUri()) {
+        temp.setNamespaceUri(decode<qint32>(success));
+        if (!success)
+            return {};
+    }
+
+    if (temp.hasLocale()) {
+        temp.setLocale(decode<qint32>(success));
+        if (!success)
+            return {};
+    }
+
+    if (temp.hasLocalizedText()) {
+        temp.setLocalizedText(decode<qint32>(success));
+        if (!success)
+            return {};
+    }
+
+    if (temp.hasAdditionalInfo()) {
+        temp.setAdditionalInfo(decode<QString>(success));
+        if (!success)
+            return {};
+    }
+
+    if (temp.hasInnerStatusCode()) {
+        temp.setInnerStatusCode(decode<QOpcUa::UaStatusCode>(success));
+        if (!success)
+            return {};
+    }
+
+    if (temp.hasInnerDiagnosticInfo()) {
+        temp.setInnerDiagnosticInfo(decode<QOpcUaDiagnosticInfo>(success));
+        if (!success)
+            return {};
+    }
+
+    return temp;
+}
+
 template<typename T, QOpcUa::Types OVERLAY>
 inline bool QOpcUaBinaryDataEncoding::encode(const T &src)
 {
@@ -1170,6 +1232,66 @@ inline bool QOpcUaBinaryDataEncoding::encode<QOpcUaEnumDefinition>(const QOpcUaE
 {
     if (!encodeArray<QOpcUaEnumField>(src.fields()))
         return false;
+    return true;
+}
+
+template <>
+inline bool QOpcUaBinaryDataEncoding::encode<QOpcUaDiagnosticInfo>(const QOpcUaDiagnosticInfo &src)
+{
+    quint8 encodingMask = 0;
+    if (src.hasSymbolicId())
+        encodingMask |= 0x01;
+    if (src.hasNamespaceUri())
+        encodingMask |= 0x02;
+    if (src.hasLocalizedText())
+        encodingMask |= 0x04;
+    if (src.hasLocale())
+        encodingMask |= 0x08;
+    if (src.hasAdditionalInfo())
+        encodingMask |= 0x10;
+    if (src.hasInnerStatusCode())
+        encodingMask |= 0x20;
+    if (src.hasInnerDiagnosticInfo())
+        encodingMask |= 0x40;
+
+    if (!encode<quint8>(encodingMask))
+        return false;
+
+    if (src.hasSymbolicId()) {
+        if (!encode<qint32>(src.symbolicId()))
+            return false;
+    }
+
+    if (src.hasNamespaceUri()) {
+        if (!encode<qint32>(src.namespaceUri()))
+            return false;
+    }
+
+    if (src.hasLocale()) {
+        if (!encode<qint32>(src.locale()))
+            return false;
+    }
+
+    if (src.hasLocalizedText()) {
+        if (!encode<qint32>(src.localizedText()))
+            return false;
+    }
+
+    if (src.hasAdditionalInfo()) {
+        if (!encode<QString>(src.additionalInfo()))
+            return false;
+    }
+
+    if (src.hasInnerStatusCode()) {
+        if (!encode<QOpcUa::UaStatusCode>(src.innerStatusCode()))
+            return false;
+    }
+
+    if (src.hasInnerDiagnosticInfo()) {
+        if (!encode<QOpcUaDiagnosticInfo>(src.innerDiagnosticInfo()))
+            return false;
+    }
+
     return true;
 }
 

@@ -13,6 +13,7 @@
 #include <QtOpcUa/qopcuamultidimensionalarray.h>
 #include <QtOpcUa/QOpcUaStructureDefinition>
 #include <QtOpcUa/QOpcUaEnumDefinition>
+#include <QtOpcUa/qopcuadiagnosticinfo.h>
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QProcess>
@@ -177,6 +178,7 @@ QList<QOpcUaStructureField> testStructureFields = {};
 QList<QOpcUaStructureDefinition> testStructureDefinitions = {};
 QList<QOpcUaEnumField> testEnumFields = {};
 QList<QOpcUaEnumDefinition> testEnumDefinitions = {};
+QList<QOpcUaDiagnosticInfo> testDiagnosticInfos = {};
 
 void populateDataTypeDefinitionTestData()
 {
@@ -232,6 +234,34 @@ void populateDataTypeDefinitionTestData()
     testStructureDefinitions = { sd1, sd2, sd2 };
     testEnumFields = { ef1, ef2, ef2 };
     testEnumDefinitions = { ed1, ed2, ed2 };
+}
+
+void populateDiagnosticInfoTestData()
+{
+    QOpcUaDiagnosticInfo diagnosticInfo;
+    diagnosticInfo.setHasSymbolicId(true);
+    diagnosticInfo.setSymbolicId(1);
+    diagnosticInfo.setHasNamespaceUri(true);
+    diagnosticInfo.setNamespaceUri(2);
+    diagnosticInfo.setHasLocale(true);
+    diagnosticInfo.setLocale(3);
+    diagnosticInfo.setHasLocalizedText(true);
+    diagnosticInfo.setLocalizedText(4);
+    diagnosticInfo.setHasAdditionalInfo(true);
+    diagnosticInfo.setAdditionalInfo(QStringLiteral("My additional info"));
+    diagnosticInfo.setHasInnerStatusCode(true);
+    diagnosticInfo.setInnerStatusCode(QOpcUa::UaStatusCode::BadInternalError);
+    diagnosticInfo.setHasInnerDiagnosticInfo(true);
+    diagnosticInfo.innerDiagnosticInfoRef().setHasAdditionalInfo(true);
+    diagnosticInfo.innerDiagnosticInfoRef().setAdditionalInfo(QStringLiteral("My inner additional info"));
+
+    QOpcUaDiagnosticInfo diagnosticInfo2;
+    diagnosticInfo2.setHasLocale(true);
+    diagnosticInfo2.setLocale(1);
+    diagnosticInfo2.setHasInnerStatusCode(true);
+    diagnosticInfo2.setInnerStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
+
+    testDiagnosticInfos = { diagnosticInfo, diagnosticInfo2 };
 }
 
 #define ENCODE_EXTENSION_OBJECT(obj, index) \
@@ -2232,6 +2262,13 @@ void Tst_QOpcUaClient::writeArray()
         node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EnumDefinition"));
         QVERIFY(node != nullptr);
         WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::EnumDefinition);
+
+        list.clear();
+        list.append(testDiagnosticInfos[0]);
+        list.append(testDiagnosticInfos[1]);
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DiagnosticInfo"));
+        QVERIFY(node != nullptr);
+        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::DiagnosticInfo);
     }
 }
 
@@ -2586,6 +2623,15 @@ void Tst_QOpcUaClient::readArray()
         QCOMPARE(enumDefinitionsArray.toList().length(), 2);
         QCOMPARE(enumDefinitionsArray.toList()[0].value<QOpcUaEnumDefinition>(), testEnumDefinitions[0]);
         QCOMPARE(enumDefinitionsArray.toList()[1].value<QOpcUaEnumDefinition>(), testEnumDefinitions[1]);
+
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DiagnosticInfo"));
+        QVERIFY(node != nullptr);
+        READ_MANDATORY_VARIABLE_NODE(node)
+        const QVariant diagnosticInfoArray = node->attribute(QOpcUa::NodeAttribute::Value);
+        QCOMPARE(diagnosticInfoArray.metaType().id(), QMetaType::QVariantList);
+        QCOMPARE(diagnosticInfoArray.toList().length(), 2);
+        QCOMPARE(diagnosticInfoArray.toList()[0].value<QOpcUaDiagnosticInfo>(), testDiagnosticInfos[0]);
+        QCOMPARE(diagnosticInfoArray.toList()[1].value<QOpcUaDiagnosticInfo>(), testDiagnosticInfos[1]);
     }
 }
 
@@ -2736,6 +2782,10 @@ void Tst_QOpcUaClient::writeScalar()
         node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EnumDefinition"));
         QVERIFY(node != nullptr);
         WRITE_VALUE_ATTRIBUTE(node, testEnumDefinitions[0], QOpcUa::EnumDefinition);
+
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DiagnosticInfo"));
+        QVERIFY(node != nullptr);
+        WRITE_VALUE_ATTRIBUTE(node, testDiagnosticInfos[0], QOpcUa::DiagnosticInfo);
     }
 }
 
@@ -2982,6 +3032,13 @@ void Tst_QOpcUaClient::readScalar()
         const QVariant enumDefinitionScalar = node->attribute(QOpcUa::NodeAttribute::Value);
         QVERIFY(enumDefinitionScalar.isValid());
         QCOMPARE(enumDefinitionScalar.value<QOpcUaEnumDefinition>(), testEnumDefinitions[0]);
+
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DiagnosticInfo"));
+        QVERIFY(node != nullptr);
+        READ_MANDATORY_VARIABLE_NODE(node)
+        const QVariant diagnosticInfoScalar = node->attribute(QOpcUa::NodeAttribute::Value);
+        QVERIFY(diagnosticInfoScalar.isValid());
+        QCOMPARE(diagnosticInfoScalar.value<QOpcUaDiagnosticInfo>(), testDiagnosticInfos[0]);
     }
 }
 
@@ -4580,7 +4637,6 @@ void Tst_QOpcUaClient::readHistoryDataFromClient()
     }
 }
 
-
 void Tst_QOpcUaClient::connectionLost()
 {
     // Restart the test server if necessary
@@ -4636,6 +4692,7 @@ void Tst_QOpcUaClient::cleanupTestCase()
 int main(int argc, char *argv[])
 {
     populateDataTypeDefinitionTestData();
+    populateDiagnosticInfoTestData();
 
     updateEnvironment();
     QCoreApplication app(argc, argv);

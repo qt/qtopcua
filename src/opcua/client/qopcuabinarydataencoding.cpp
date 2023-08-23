@@ -99,7 +99,9 @@ QT_BEGIN_NAMESPACE
         \row
             \li QOpcUaArgument
             \li Argument
-
+        \row
+            \li QOpcUaDiagnosticInfo
+            \li DiagnosticInfo
         \row
             \li QOpcUaApplicationRecordDataType
             \li ApplicationRecordDataType
