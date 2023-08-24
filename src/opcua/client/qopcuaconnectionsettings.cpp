@@ -59,10 +59,37 @@ QOpcUaConnectionSettings::~QOpcUaConnectionSettings()
     = default;
 
 /*!
+    \fn QOpcUaConnectionSettings::QOpcUaConnectionSettings(QOpcUaConnectionSettings &&other)
+
+    Move-constructs a new connection settings object from \a other.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
+*/
+
+/*!
+    \fn QOpcUaConnectionSettings &QOpcUaConnectionSettings::operator=(QOpcUaConnectionSettings &&other)
+
+    Move-assigns \a other to this QOpcUaConnectionSettings instance.
+
+    \note The moved-from object \a other is placed in a
+    partially-formed state, in which the only valid operations are
+    destruction and assignment of a new value.
+*/
+
+/*!
+    \fn void QOpcUaConnectionSettings::swap(QOpcUaConnectionSettings &other)
+
+    Swaps connection settings object \a other with this connection settings
+    object. This operation is very fast and never fails.
+*/
+
+/*!
     \fn bool QOpcUaConnectionSettings::operator==(const QOpcUaConnectionSettings &rhs, const QOpcUaConnectionSettings &rhs)
     \fn bool QOpcUaConnectionSettings::operator!=(const QOpcUaConnectionSettings &rhs, const QOpcUaConnectionSettings &rhs)
 
-    Returns whether connection settings object \a lhs has the same value as \a rhs.
+    Returns whether \a lhs contains the same connection settings as \a rhs.
 */
 bool operator==(const QOpcUaConnectionSettings &lhs, const QOpcUaConnectionSettings &rhs) noexcept
 {
