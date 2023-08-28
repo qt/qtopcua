@@ -186,10 +186,10 @@ bool OpcUaValueNode::checkValidity()
     if (m_node->attribute(QOpcUa::NodeAttribute::NodeClass).value<QOpcUa::NodeClass>() != QOpcUa::NodeClass::Variable) {
         setStatus(Status::InvalidNodeType);
         return false;
-    } else {
-        return true;
     }
 
+    setStatus(Status::Valid);
+    return true;
 }
 
 QVariant OpcUaValueNode::value() const
