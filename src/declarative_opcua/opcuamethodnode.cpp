@@ -187,6 +187,7 @@ void OpcUaMethodNode::handleObjectNodeIdChanged()
     m_objectNode->setNodeId(m_objectNodeId);
     connect(m_objectNode, &OpcUaNode::readyToUseChanged, this, [this](){
         connect(m_objectNode->node(), &QOpcUaNode::methodCallFinished, this, &OpcUaMethodNode::handleMethodCallFinished, Qt::UniqueConnection);
+        checkValidity();
     });
 
     emit objectNodeIdChanged();
@@ -227,6 +228,9 @@ bool OpcUaMethodNode::checkValidity()
         setStatus(Status::InvalidObjectNode, tr("Object node is not of type `Object' or `ObjectType'"));
         return false;
     }
+
+    setStatus(Status::Valid);
+
     return true;
 }
 
