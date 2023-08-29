@@ -912,12 +912,34 @@ const QOpcUaAuthenticationInformation &QOpcUaClient::authenticationInformation()
     return d->m_authenticationInformation;
 }
 
+/*!
+    Sets the connection settings for this client to \a connectionSettings.
+
+    Example:
+    \code
+    QOpcUaConnectionSettings settings;
+    // Ask the server to give localized texts in german with french as fallback
+    settings.setSessionLocaleIds({ "de", "fr" });
+    // We need to call some long running methods, increase the request timeout
+    settings.setRequestTimeout(std::chrono::minutes(2));
+    opcuaClient->setConnectionSettings(settings);
+    \endcode
+
+    The values from \a connectionSettings are applied to any new connections after this point.
+
+    \sa connectionSettings()
+ */
 void QOpcUaClient::setConnectionSettings(const QOpcUaConnectionSettings &connectionSettings)
 {
     Q_D(QOpcUaClient);
     d->m_connectionSettings = connectionSettings;
 }
 
+/*!
+    Returns the connection settings for this client.
+
+    \sa setConnectionSettings()
+ */
 QOpcUaConnectionSettings QOpcUaClient::connectionSettings() const
 {
     Q_D(const QOpcUaClient);
