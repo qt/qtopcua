@@ -13,6 +13,7 @@ QT_BEGIN_NAMESPACE
     \class QOpcUaConnectionSettings
     \inmodule QtOpcUa
     \brief The common parameters for a connection to a server.
+    \since 6.6
 
     This class stores common connection parameters like the session timeout, the
     secure channel lifetime and the localeIds.
@@ -86,10 +87,8 @@ QOpcUaConnectionSettings::~QOpcUaConnectionSettings()
 */
 
 /*!
-    \fn bool QOpcUaConnectionSettings::operator==(const QOpcUaConnectionSettings &rhs, const QOpcUaConnectionSettings &rhs)
-    \fn bool QOpcUaConnectionSettings::operator!=(const QOpcUaConnectionSettings &rhs, const QOpcUaConnectionSettings &rhs)
-
-    Returns whether \a lhs contains the same connection settings as \a rhs.
+    Returns \c true if \a lhs contains the same connection settings as \l rhs; otherwise returns \c
+    false.
 */
 bool operator==(const QOpcUaConnectionSettings &lhs, const QOpcUaConnectionSettings &rhs) noexcept
 {
@@ -99,6 +98,14 @@ bool operator==(const QOpcUaConnectionSettings &lhs, const QOpcUaConnectionSetti
             lhs.data->sessionTimeout == rhs.data->sessionTimeout &&
             lhs.data->requestTimeout == rhs.data->requestTimeout;
 }
+
+/*!
+    \fn bool QOpcUaConnectionSettings::operator!=(const QOpcUaConnectionSettings &rhs, const
+    QOpcUaConnectionSettings &rhs)
+
+    Returns \c true if \a lhs does not contain the same connection settings as \l rhs; otherwise
+    returns \c false.
+*/
 
 /*!
     Returns the session locale ids.
