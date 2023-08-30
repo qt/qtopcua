@@ -872,6 +872,8 @@ const QOpcUaAuthenticationInformation &QOpcUaClient::authenticationInformation()
 }
 
 /*!
+    \since 6.6
+
     Sets the connection settings for this client to \a connectionSettings.
 
     Example:
@@ -895,6 +897,8 @@ void QOpcUaClient::setConnectionSettings(const QOpcUaConnectionSettings &connect
 }
 
 /*!
+    \since 6.6
+
     Returns the connection settings for this client.
 
     \sa setConnectionSettings()
