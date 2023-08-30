@@ -305,6 +305,8 @@ int main()
 
     server.addVariableWithWriteMask(testFolder, "ns=3;s=Demo.Static.Scalar.FullyWritable", "FullyWritableTest", 1.0, QOpcUa::Types::Double, fullWritableMask);
 
+    server.addLocalizedTextNodeWithCallback(testFolder);
+
     server.addEventTrigger(testFolder);
 
     server.addEventHistorian(UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER));

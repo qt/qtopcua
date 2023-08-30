@@ -5,6 +5,7 @@
 #include <QtOpcUa/QOpcUaAuthenticationInformation>
 #include <QtOpcUa/qopcuaaxisinformation.h>
 #include <QtOpcUa/QOpcUaClient>
+#include <QtOpcUa/QOpcUaConnectionSettings>
 #include <QtOpcUa/QOpcUaNode>
 #include <QtOpcUa/QOpcUaProvider>
 #include <QtOpcUa/qopcuabinarydataencoding.h>
@@ -489,6 +490,8 @@ private slots:
     void connectToInvalid();
     defineDataMethod(connectAndDisconnect_data)
     void connectAndDisconnect();
+    defineDataMethod(checkSessionLocaleIds_data)
+    void checkSessionLocaleIds();
 
     // Password
     defineDataMethod(connectInvalidPassword_data)
@@ -882,6 +885,84 @@ void Tst_QOpcUaClient::connectAndDisconnect()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
     OpcuaConnector connector(opcuaClient, m_endpoint);
+}
+
+void Tst_QOpcUaClient::checkSessionLocaleIds()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    // Empty locale id => fallback to en
+    {
+        OpcuaConnector connector(opcuaClient, m_endpoint);
+
+        QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=LocalizedTextWithCallback"));
+        QVERIFY(node != nullptr);
+        READ_MANDATORY_VARIABLE_NODE(node);
+        QCOMPARE(node->valueAttribute(), QOpcUaLocalizedText("en", "Hello"));
+    }
+
+    // Invalid locale id => fallback to en
+    {
+        QOpcUaConnectionSettings settings;
+        settings.setSessionLocaleIds({ "xx" });
+        opcuaClient->setConnectionSettings(settings);
+        OpcuaConnector connector(opcuaClient, m_endpoint);
+
+        QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=LocalizedTextWithCallback"));
+        QVERIFY(node != nullptr);
+        READ_MANDATORY_VARIABLE_NODE(node);
+        QCOMPARE(node->valueAttribute(), QOpcUaLocalizedText("en", "Hello"));
+    }
+
+    // German locale id (short)
+    {
+        QOpcUaConnectionSettings settings;
+        settings.setSessionLocaleIds({ "de" });
+        opcuaClient->setConnectionSettings(settings);
+        OpcuaConnector connector(opcuaClient, m_endpoint);
+
+        QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=LocalizedTextWithCallback"));
+        READ_MANDATORY_VARIABLE_NODE(node);
+        QCOMPARE(node->valueAttribute(), QOpcUaLocalizedText("de", "Guten Tag"));
+    }
+
+    // German locale id
+    {
+        QOpcUaConnectionSettings settings;
+        settings.setSessionLocaleIds({ "de-DE" });
+        opcuaClient->setConnectionSettings(settings);
+        OpcuaConnector connector(opcuaClient, m_endpoint);
+
+        QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=LocalizedTextWithCallback"));
+        QVERIFY(node != nullptr);
+        READ_MANDATORY_VARIABLE_NODE(node);
+        QCOMPARE(node->valueAttribute(), QOpcUaLocalizedText("de", "Guten Tag"));
+    }
+
+    // French locale id (short)
+    {
+        QOpcUaConnectionSettings settings;
+        settings.setSessionLocaleIds({ "fr" });
+        opcuaClient->setConnectionSettings(settings);
+        OpcuaConnector connector(opcuaClient, m_endpoint);
+
+        QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=LocalizedTextWithCallback"));
+        READ_MANDATORY_VARIABLE_NODE(node);
+        QCOMPARE(node->valueAttribute(), QOpcUaLocalizedText("fr", "Bonjour"));
+    }
+
+    // French locale id
+    {
+        QOpcUaConnectionSettings settings;
+        settings.setSessionLocaleIds({ "fr-FR" });
+        opcuaClient->setConnectionSettings(settings);
+        OpcuaConnector connector(opcuaClient, m_endpoint);
+
+        QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=LocalizedTextWithCallback"));
+        QVERIFY(node != nullptr);
+        READ_MANDATORY_VARIABLE_NODE(node);
+        QCOMPARE(node->valueAttribute(), QOpcUaLocalizedText("fr", "Bonjour"));
+    }
 }
 
 void Tst_QOpcUaClient::connectInvalidPassword()

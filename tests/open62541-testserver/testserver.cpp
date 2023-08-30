@@ -940,6 +940,33 @@ UA_StatusCode TestServer::addServerStatusTypeTestNodes(const UA_NodeId &parent)
     return UA_STATUSCODE_GOOD;
 }
 
+UA_StatusCode TestServer::addLocalizedTextNodeWithCallback(const UA_NodeId &parent)
+{
+    UA_VariableAttributes attr = UA_VariableAttributes_default;
+    attr.displayName = UA_LocalizedText{UA_STRING_STATIC("en"), UA_STRING_STATIC("LocalizedTextWithCallback")};
+    attr.dataType = UA_TYPES[UA_TYPES_LOCALIZEDTEXT].typeId;
+    attr.accessLevel = UA_ACCESSLEVELMASK_READ; // Read Only
+
+    const UA_QualifiedName variableName{2, UA_STRING_STATIC("LocalizedTextWithCallback")};
+
+    auto variableNodeId = UA_NODEID_STRING_ALLOC(2, "LocalizedTextWithCallback");
+
+    const auto result = UA_Server_addDataSourceVariableNode(m_server, variableNodeId, parent,
+                                                            UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                            variableName, UA_NODEID_NULL, attr,
+                                                            { readLocalizedTextCallback, nullptr },
+                                                            this, nullptr);
+
+    UA_NodeId_clear(&variableNodeId);
+
+    if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not add variable:" << result;
+        return result;
+    }
+
+    return result;
+}
+
 // The event test methods are based on the open62541 tutorial_server_events.c example
 UA_StatusCode TestServer::generateEventCallback(UA_Server *server,
                                                 const UA_NodeId *sessionId, void *sessionHandle,
@@ -1111,6 +1138,49 @@ void TestServer::readHistoryEventCallback(UA_Server *server, void *hdbContext, c
             response->results[i].continuationPoint.data = reinterpret_cast<UA_Byte *>(dt);
         }
     }
+}
+
+UA_StatusCode TestServer::readLocalizedTextCallback(UA_Server *server, const UA_NodeId *sessionId, void *sessionContext,
+                                                    const UA_NodeId *nodeId, void *nodeContext, UA_Boolean includeSourceTimeStamp,
+                                                    const UA_NumericRange *range, UA_DataValue *value)
+{
+    Q_UNUSED(sessionContext);
+    Q_UNUSED(nodeId);
+    Q_UNUSED(nodeContext);
+    Q_UNUSED(includeSourceTimeStamp);
+    Q_UNUSED(range);
+
+    UA_Variant localeIdsVar;
+    UA_Variant_init(&localeIdsVar);
+
+    auto result = UA_Server_getSessionAttribute(server, sessionId, {0, UA_STRING_STATIC("localeIds")}, &localeIdsVar);
+
+    if (result != UA_STATUSCODE_GOOD)
+        return result;
+
+    if (localeIdsVar.type != &UA_TYPES[UA_TYPES_STRING])
+        return UA_STATUSCODE_BADINTERNALERROR;
+
+    const auto localeIds = static_cast<UA_LocaleId *>(localeIdsVar.data);
+
+    const auto english = UA_LocalizedText{ UA_STRING_STATIC("en"), UA_STRING_STATIC("Hello")};
+    const auto german = UA_LocalizedText{ UA_STRING_STATIC("de"), UA_STRING_STATIC("Guten Tag")};
+    const auto french = UA_LocalizedText{ UA_STRING_STATIC("fr"), UA_STRING_STATIC("Bonjour")};
+
+    const UA_LocalizedText *resultValue = &english;
+
+    for (size_t i = 0; i < localeIdsVar.arrayLength; ++i) {
+        const auto currentLocaleId = QOpen62541ValueConverter::scalarToQt<QString, UA_String>(&localeIds[i]);
+        if (currentLocaleId.startsWith(QStringLiteral("de")))
+            resultValue = &german;
+        if (currentLocaleId.startsWith(QStringLiteral("fr")))
+            resultValue = &french;
+    }
+
+    UA_Variant_setScalarCopy(&value->value, resultValue, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
+    value->hasValue = true;
+
+    return UA_STATUSCODE_GOOD;
 }
 
 UA_StatusCode TestServer::run(volatile bool *running)
