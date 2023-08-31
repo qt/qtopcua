@@ -45,7 +45,12 @@ UA_QtInnerTestStructType_clear(UA_QtInnerTestStructType *p) {
 static UA_INLINE void
 UA_QtInnerTestStructType_delete(UA_QtInnerTestStructType *p) {
     UA_delete(p, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTINNERTESTSTRUCTTYPE]);
+}static UA_INLINE UA_Boolean
+UA_QtInnerTestStructType_equal(const UA_QtInnerTestStructType *p1, const UA_QtInnerTestStructType *p2) {
+    return (UA_order(p1, p2, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTINNERTESTSTRUCTTYPE]) == UA_ORDER_EQ);
 }
+
+
 
 /* QtStructWithOptionalFieldType */
 static UA_INLINE void
@@ -76,7 +81,12 @@ UA_QtStructWithOptionalFieldType_clear(UA_QtStructWithOptionalFieldType *p) {
 static UA_INLINE void
 UA_QtStructWithOptionalFieldType_delete(UA_QtStructWithOptionalFieldType *p) {
     UA_delete(p, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTSTRUCTWITHOPTIONALFIELDTYPE]);
+}static UA_INLINE UA_Boolean
+UA_QtStructWithOptionalFieldType_equal(const UA_QtStructWithOptionalFieldType *p1, const UA_QtStructWithOptionalFieldType *p2) {
+    return (UA_order(p1, p2, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTSTRUCTWITHOPTIONALFIELDTYPE]) == UA_ORDER_EQ);
 }
+
+
 
 /* QtTestStructWithDataValue */
 static UA_INLINE void
@@ -107,7 +117,12 @@ UA_QtTestStructWithDataValue_clear(UA_QtTestStructWithDataValue *p) {
 static UA_INLINE void
 UA_QtTestStructWithDataValue_delete(UA_QtTestStructWithDataValue *p) {
     UA_delete(p, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTWITHDATAVALUE]);
+}static UA_INLINE UA_Boolean
+UA_QtTestStructWithDataValue_equal(const UA_QtTestStructWithDataValue *p1, const UA_QtTestStructWithDataValue *p2) {
+    return (UA_order(p1, p2, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTWITHDATAVALUE]) == UA_ORDER_EQ);
 }
+
+
 
 /* QtTestStructWithDiagnosticInfo */
 static UA_INLINE void
@@ -138,7 +153,12 @@ UA_QtTestStructWithDiagnosticInfo_clear(UA_QtTestStructWithDiagnosticInfo *p) {
 static UA_INLINE void
 UA_QtTestStructWithDiagnosticInfo_delete(UA_QtTestStructWithDiagnosticInfo *p) {
     UA_delete(p, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTWITHDIAGNOSTICINFO]);
+}static UA_INLINE UA_Boolean
+UA_QtTestStructWithDiagnosticInfo_equal(const UA_QtTestStructWithDiagnosticInfo *p1, const UA_QtTestStructWithDiagnosticInfo *p2) {
+    return (UA_order(p1, p2, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTWITHDIAGNOSTICINFO]) == UA_ORDER_EQ);
 }
+
+
 
 /* QtTestUnionType */
 static UA_INLINE void
@@ -169,7 +189,12 @@ UA_QtTestUnionType_clear(UA_QtTestUnionType *p) {
 static UA_INLINE void
 UA_QtTestUnionType_delete(UA_QtTestUnionType *p) {
     UA_delete(p, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTUNIONTYPE]);
+}static UA_INLINE UA_Boolean
+UA_QtTestUnionType_equal(const UA_QtTestUnionType *p1, const UA_QtTestUnionType *p2) {
+    return (UA_order(p1, p2, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTUNIONTYPE]) == UA_ORDER_EQ);
 }
+
+
 
 /* QtTestEnumeration */
 static UA_INLINE void
@@ -200,7 +225,12 @@ UA_QtTestEnumeration_clear(UA_QtTestEnumeration *p) {
 static UA_INLINE void
 UA_QtTestEnumeration_delete(UA_QtTestEnumeration *p) {
     UA_delete(p, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTENUMERATION]);
+}static UA_INLINE UA_Boolean
+UA_QtTestEnumeration_equal(const UA_QtTestEnumeration *p1, const UA_QtTestEnumeration *p2) {
+    return (UA_order(p1, p2, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTENUMERATION]) == UA_ORDER_EQ);
 }
+
+
 
 /* QtTestStructType */
 static UA_INLINE void
@@ -231,7 +261,12 @@ UA_QtTestStructType_clear(UA_QtTestStructType *p) {
 static UA_INLINE void
 UA_QtTestStructType_delete(UA_QtTestStructType *p) {
     UA_delete(p, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTTYPE]);
+}static UA_INLINE UA_Boolean
+UA_QtTestStructType_equal(const UA_QtTestStructType *p1, const UA_QtTestStructType *p2) {
+    return (UA_order(p1, p2, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTTYPE]) == UA_ORDER_EQ);
 }
+
+
 
 #if defined(__GNUC__) && __GNUC__ >= 4 && __GNUC_MINOR__ >= 6
 # pragma GCC diagnostic pop

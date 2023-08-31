@@ -22,12 +22,10 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined UA_ENABLE_ENCRYPTION
 static const size_t usernamePasswordsSize = 2;
 static UA_UsernamePasswordLogin usernamePasswords[2] = {
     {UA_STRING_STATIC("user1"), UA_STRING_STATIC("password")},
     {UA_STRING_STATIC("user2"), UA_STRING_STATIC("password1")}};
-#endif
 
 const UA_UInt16 portNumber = 43344;
 
@@ -54,8 +52,20 @@ bool TestServer::createInsecureServerConfig(UA_ServerConfig *config)
         return false;
     }
 
+    result = UA_AccessControl_default(config, true, nullptr, usernamePasswordsSize, usernamePasswords);
+
+    if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Failed to create access control";
+        return false;
+    }
+
     // This is needed for COIN because the hostname returned by gethostname() is not resolvable.
-    config->customHostname = UA_String_fromChars("localhost");
+    UA_Array_delete(config->serverUrls, config->serverUrlsSize, &UA_TYPES[UA_TYPES_STRING]);
+    config->serverUrls = UA_String_new();
+    config->serverUrls[0] = UA_STRING_ALLOC("opc.tcp://localhost:43344");
+    config->serverUrlsSize = 1;
+
+    config->tcpReuseAddr = true;
 
     return true;
 }
@@ -136,12 +146,26 @@ bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
        UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
           "No CA trust-list provided. Any remote certificate will be accepted.");
 
-    UA_ServerConfig_setBasics(config);
+    UA_ServerConfig_setBasics_withPort(config, 43344);
 
     // This is needed for COIN because the hostname returned by gethostname() is not resolvable.
-    config->customHostname = UA_String_fromChars("localhost");
+    UA_Array_delete(config->serverUrls, config->serverUrlsSize, &UA_TYPES[UA_TYPES_STRING]);
+    config->serverUrls = UA_String_new();
+    config->serverUrls[0] = UA_STRING_ALLOC("opc.tcp://localhost:43344");
+    config->serverUrlsSize = 1;
 
-    UA_StatusCode result = UA_CertificateVerification_Trustlist(&config->certificateVerification,
+    config->tcpReuseAddr = true;
+
+    UA_StatusCode result = UA_CertificateVerification_Trustlist(&config->sessionPKI,
+                                                                trustList, trustListSize,
+                                                                nullptr, 0,
+                                                                revocationList, revocationListSize);
+    if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Failed to initialize certificate verification";
+        return false;
+    }
+
+    result = UA_CertificateVerification_Trustlist(&config->secureChannelPKI,
                                                   trustList, trustListSize,
                                                   nullptr, 0,
                                                   revocationList, revocationListSize);
@@ -153,13 +177,6 @@ bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
     // Do not delete items on success.
     // They will be used by the server.
     trustListDeleter.release();
-
-    result = UA_ServerConfig_addNetworkLayerTCP(config, portNumber, 0, 0);
-
-    if (result != UA_STATUSCODE_GOOD) {
-        qWarning() << "Failed to add network layer";
-        return false;
-    }
 
     // result = UA_ServerConfig_addAllSecurityPolicies(config, &certificate, &privateKey);
 
@@ -186,6 +203,12 @@ bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
         }
     }
 
+    retval = UA_ServerConfig_addSecurityPolicyAes256Sha256RsaPss(config, &certificate, &privateKey);
+    if (retval != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not add SecurityPolicy#Aes256Sha256RsaPss";
+        return false;
+    }
+
     retval = UA_ServerConfig_addSecurityPolicyBasic256Sha256(config, &certificate, &privateKey);
     if(retval != UA_STATUSCODE_GOOD) {
         qWarning() << "Failed to add security policy Basic256Sha256";
@@ -203,9 +226,7 @@ bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
     certificateDeleter.release();
     privateKeyDeleter.release();
 
-    result = UA_AccessControl_default(config, true, nullptr,
-                &config->securityPolicies[0].policyUri,
-                usernamePasswordsSize, usernamePasswords);
+    result = UA_AccessControl_default(config, true, nullptr, usernamePasswordsSize, usernamePasswords);
 
     if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Failed to create access control";
@@ -218,6 +239,8 @@ bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
         qWarning() << "Failed to add endpoints";
         return false;
     }
+
+    config->allowNonePolicyPassword = true;
 
     return true;
 }
@@ -448,7 +471,7 @@ UA_NodeId TestServer::addEmptyArrayVariable(const UA_NodeId &folder, const QStri
     attr.value.data = UA_EMPTY_ARRAY_SENTINEL;
     attr.value.arrayDimensionsSize = 1;
     attr.value.arrayDimensions = UA_UInt32_new();
-    *attr.value.arrayDimensions = 1;
+    *attr.value.arrayDimensions = 0;
 
     UA_QualifiedName variableName;
     variableName.namespaceIndex = variableNodeId.namespaceIndex;
@@ -1151,7 +1174,8 @@ UA_StatusCode TestServer::addEventTrigger(const UA_NodeId &parent)
 static UA_DataTypeArray customTypes = {
     nullptr,
     UA_TYPES_QTOPCUATESTMODEL_COUNT,
-    &UA_TYPES_QTOPCUATESTMODEL[0]
+    &UA_TYPES_QTOPCUATESTMODEL[0],
+    false
 };
 
 // This method must be called after the other test namespaces have been added
@@ -1290,10 +1314,10 @@ UA_StatusCode TestServer::addEncoderTestModel()
         data->diagnosticInfoMember.symbolicId = 1;
         data->diagnosticInfoMember.hasNamespaceUri = true;
         data->diagnosticInfoMember.namespaceUri = 2;
-        data->diagnosticInfoMember.hasLocalizedText = true;
-        data->diagnosticInfoMember.localizedText = 3;
         data->diagnosticInfoMember.hasLocale = true;
-        data->diagnosticInfoMember.locale = 4;
+        data->diagnosticInfoMember.locale = 3;
+        data->diagnosticInfoMember.hasLocalizedText = true;
+        data->diagnosticInfoMember.localizedText = 4;
         data->diagnosticInfoMember.hasAdditionalInfo = true;
         data->diagnosticInfoMember.additionalInfo = UA_STRING_ALLOC("My additional info");
         data->diagnosticInfoMember.hasInnerStatusCode = true;

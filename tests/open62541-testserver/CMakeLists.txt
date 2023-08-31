@@ -3,12 +3,13 @@
 
 # This CMake function call can be used to update the generated code
 #if (QT_FEATURE_system_open62541)
+# find_package(open62541)
+# set(UA_FILE_NS0 "${UA_NODESET_DIR}/Opc.Ua.NodeSet2.xml")
 # ua_generate_nodeset_and_datatypes(
 #    NAME "qtopcuatestmodel"
 #    FILE_NS "${CMAKE_CURRENT_SOURCE_DIR}/TestModel/qtopcuatestmodel.xml"
 #    FILE_BSD "${CMAKE_CURRENT_SOURCE_DIR}/TestModel/qtopcuatestmodel.bsd"
 #    FILE_CSV "${CMAKE_CURRENT_SOURCE_DIR}/TestModel/qtopcuatestmodel.csv"
-#    NAMESPACE_MAP "4:http://qt-project.org/QtOpcUaTestModel/"
 #    OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/generated"
 # )
 #endif()
@@ -68,12 +69,18 @@ qt_opcua_disable_optimizations_in_current_dir()
 qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
     SOURCES
         ../../src/3rdparty/open62541/open62541.h
-    ../../src/3rdparty/open62541/open62541.c
+        ../../src/3rdparty/open62541/open62541.c
     INCLUDE_DIRECTORIES
-        ../../src/3rdparty/open62541
+        SYSTEM PRIVATE ../../src/3rdparty/open62541
     DEFINES
         UA_ENABLE_AMALGAMATION
 )
+
+if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541)
+    target_include_directories(open62541-testserver
+        SYSTEM PRIVATE ../../src/3rdparty/open62541
+    )
+endif()
 
 #qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_mbedtls AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541
 #    DEFINES
@@ -96,12 +103,12 @@ qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541_se
 
 qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541 AND WIN32 AND MSVC AND NOT QT_FEATURE_system_open62541
     LIBRARIES
-        ws2_32.lib
+        iphlpapi.lib
 )
 
-qt_internal_extend_target(open62541-testserver CONDITION (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541) AND (WIN32 AND GCC)
+qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541 AND WIN32 AND (GCC OR CLANG)
     LIBRARIES
-        ws2_32
+        iphlpapi
 )
 
 #qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541 AND (WINRT OR WIN32 AND MSVC)
@@ -110,16 +117,20 @@ qt_internal_extend_target(open62541-testserver CONDITION (QT_FEATURE_open62541 A
 #)
 
 if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541)
+    if (APPLE)
+        set_source_files_properties(../../src/3rdparty/open62541/open62541.c PROPERTIES
+        COMPILE_DEFINITIONS
+            "_DARWIN_C_SOURCE")
+    endif()
+
     if (NOT (WINRT OR WIN32 AND MSVC))
         set_source_files_properties(../../src/3rdparty/open62541/open62541.c PROPERTIES
         COMPILE_OPTIONS
-            "-Wno-unused-parameter;-Wno-unused-function;-Wno-format;-Wno-format-security;-Wno-strict-aliasing;-Wno-unused-result;-std=c99")
+            "-Wno-unused-parameter;-Wno-incompatible-pointer-types;-Wno-maybe-uninitialized;-Wno-format-overflow;-std=c99")
     elseif(WIN32 AND MSVC)
-        # CMake uses C11+ by default and the _Static_assert expansion fails during compilation
-        set_source_files_properties(../../src/3rdparty/open62541/open62541.c PROPERTIES LANGUAGE CXX)
         set_source_files_properties(../../src/3rdparty/open62541/open62541.c PROPERTIES
         COMPILE_OPTIONS
-            "/Zc:strictStrings-;/permissive;/wd4200")
+            "/wd4133")
     endif()
 endif()
 

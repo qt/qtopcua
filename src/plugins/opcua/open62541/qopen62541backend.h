@@ -56,6 +56,7 @@ public Q_SLOTS:
     QOpen62541Subscription *getSubscription(const QOpcUaMonitoringParameters &settings);
     bool removeSubscription(UA_UInt32 subscriptionId);
     void iterateClient();
+    void triggerIterateClient();
     void handleSubscriptionTimeout(QOpen62541Subscription *sub, QList<QPair<quint64, QOpcUa::NodeAttribute>> items);
     void cleanupSubscriptions();
 
@@ -83,7 +84,6 @@ public Q_SLOTS:
 public:
     UA_Client *m_uaclient;
     QOpen62541Client *m_clientImpl;
-    bool m_useStateCallback;
     quint32 m_clientIterateInterval;
     quint32 m_asyncRequestTimeout;
 
@@ -111,7 +111,7 @@ private:
     void disconnectInternal(QOpcUaClient::ClientError error = QOpcUaClient::ClientError::NoError);
 
     QTimer m_clientIterateTimer;
-    QTimer m_disconnectAfterStateChangeTimer;
+    QTimer m_clientIterateOnDemandTimer;
 
     QHash<quint32, QOpen62541Subscription *> m_subscriptions;
 
@@ -119,7 +119,7 @@ private:
 
     double m_minPublishingInterval;
 
-    const UA_Logger m_open62541Logger {open62541LogHandler, nullptr, nullptr};
+    UA_Logger m_open62541Logger {open62541LogHandler, nullptr, nullptr};
 
     // Async contexts
 

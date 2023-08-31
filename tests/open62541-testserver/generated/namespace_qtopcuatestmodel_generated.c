@@ -17,6 +17,7 @@ UA_NODEID_NUMERIC(ns[0], 45LU),
 UA_QUALIFIEDNAME(ns[1], "QtTestUnionType"),
  UA_NODEID_NULL,
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -39,7 +40,9 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Default XML"),
 UA_NODEID_NUMERIC(ns[0], 76LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 5008LU), UA_NODEID_NUMERIC(ns[0], 38LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 3005LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -62,7 +65,9 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Default Binary"),
 UA_NODEID_NUMERIC(ns[0], 76LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 5007LU), UA_NODEID_NUMERIC(ns[0], 38LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 3005LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -86,6 +91,7 @@ UA_NODEID_NUMERIC(ns[0], 45LU),
 UA_QUALIFIEDNAME(ns[1], "QtAbstractBaseStruct"),
  UA_NODEID_NULL,
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -108,7 +114,9 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Default XML"),
 UA_NODEID_NUMERIC(ns[0], 76LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 5012LU), UA_NODEID_NUMERIC(ns[0], 38LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 3008LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -131,7 +139,9 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Default Binary"),
 UA_NODEID_NUMERIC(ns[0], 76LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 5006LU), UA_NODEID_NUMERIC(ns[0], 38LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 3008LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -154,6 +164,7 @@ UA_NODEID_NUMERIC(ns[0], 45LU),
 UA_QUALIFIEDNAME(ns[1], "QtTestStructWithDataValue"),
  UA_NODEID_NULL,
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -176,7 +187,9 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Default XML"),
 UA_NODEID_NUMERIC(ns[0], 76LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 5015LU), UA_NODEID_NUMERIC(ns[0], 38LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 3010LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -199,7 +212,9 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Default Binary"),
 UA_NODEID_NUMERIC(ns[0], 76LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 5014LU), UA_NODEID_NUMERIC(ns[0], 38LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 3010LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -222,6 +237,7 @@ UA_NODEID_NUMERIC(ns[0], 45LU),
 UA_QUALIFIEDNAME(ns[1], "QtTestStructWithDiagnosticInfo"),
  UA_NODEID_NULL,
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -244,7 +260,9 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Default XML"),
 UA_NODEID_NUMERIC(ns[0], 76LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 5013LU), UA_NODEID_NUMERIC(ns[0], 38LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 3009LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -267,7 +285,9 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Default Binary"),
 UA_NODEID_NUMERIC(ns[0], 76LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 5003LU), UA_NODEID_NUMERIC(ns[0], 38LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 3009LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -290,6 +310,7 @@ UA_NODEID_NUMERIC(ns[0], 45LU),
 UA_QUALIFIEDNAME(ns[1], "QtStructWithOptionalFieldType"),
  UA_NODEID_NULL,
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -312,7 +333,9 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Default XML"),
 UA_NODEID_NUMERIC(ns[0], 76LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 5011LU), UA_NODEID_NUMERIC(ns[0], 38LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 3006LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -335,7 +358,9 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Default Binary"),
 UA_NODEID_NUMERIC(ns[0], 76LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 5010LU), UA_NODEID_NUMERIC(ns[0], 38LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 3006LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -358,6 +383,7 @@ UA_NODEID_NUMERIC(ns[0], 45LU),
 UA_QUALIFIEDNAME(ns[1], "QtInnerTestStructType"),
  UA_NODEID_NULL,
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -380,7 +406,9 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Default XML"),
 UA_NODEID_NUMERIC(ns[0], 76LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 5005LU), UA_NODEID_NUMERIC(ns[0], 38LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 3004LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -403,7 +431,9 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Default Binary"),
 UA_NODEID_NUMERIC(ns[0], 76LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 5004LU), UA_NODEID_NUMERIC(ns[0], 38LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 3004LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -426,6 +456,7 @@ UA_NODEID_NUMERIC(ns[0], 45LU),
 UA_QUALIFIEDNAME(ns[1], "QtTestStructType"),
  UA_NODEID_NULL,
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -448,7 +479,9 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Default XML"),
 UA_NODEID_NUMERIC(ns[0], 76LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 5002LU), UA_NODEID_NUMERIC(ns[0], 38LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 3003LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -471,7 +504,9 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Default Binary"),
 UA_NODEID_NUMERIC(ns[0], 76LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 5001LU), UA_NODEID_NUMERIC(ns[0], 38LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 3003LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -494,6 +529,7 @@ UA_NODEID_NUMERIC(ns[0], 45LU),
 UA_QUALIFIEDNAME(ns[1], "MyDoubleSubtype"),
  UA_NODEID_NULL,
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -516,6 +552,7 @@ UA_NODEID_NUMERIC(ns[0], 45LU),
 UA_QUALIFIEDNAME(ns[1], "QtTestEnumeration"),
  UA_NODEID_NULL,
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -553,7 +590,9 @@ UA_NODEID_NUMERIC(ns[0], 46LU),
 UA_QUALIFIEDNAME(ns[0], "EnumStrings"),
 UA_NODEID_NUMERIC(ns[0], 68LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 6001LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 78LU), true);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -576,6 +615,7 @@ UA_NODEID_NUMERIC(ns[0], 35LU),
 UA_QUALIFIEDNAME(ns[1], "DecoderTestNodes"),
 UA_NODEID_NUMERIC(ns[0], 61LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -604,6 +644,7 @@ UA_NODEID_NUMERIC(ns[0], 35LU),
 UA_QUALIFIEDNAME(ns[1], "StructWithDataValue"),
 UA_NODEID_NUMERIC(ns[0], 63LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -632,6 +673,7 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "UnionWithFirstMember"),
 UA_NODEID_NUMERIC(ns[0], 63LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -660,6 +702,7 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "StructWithOptionalField"),
 UA_NODEID_NUMERIC(ns[0], 63LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -688,6 +731,7 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "NestedStruct"),
 UA_NODEID_NUMERIC(ns[0], 63LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -716,6 +760,7 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "StructWithDiagnosticInfo"),
 UA_NODEID_NUMERIC(ns[0], 63LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -744,6 +789,7 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "UnionWithSecondMember"),
 UA_NODEID_NUMERIC(ns[0], 63LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -772,6 +818,7 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "StructWithoutOptionalField"),
 UA_NODEID_NUMERIC(ns[0], 63LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -812,6 +859,7 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "TypeDictionary"),
 UA_NODEID_NUMERIC(ns[0], 72LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 variablenode_ns_1_i_6014_variant_DataContents->data = NULL;
 variablenode_ns_1_i_6014_variant_DataContents->length = 0;
 UA_ByteString_delete(variablenode_ns_1_i_6014_variant_DataContents);
@@ -848,8 +896,10 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "QtAbstractBaseStruct"),
 UA_NODEID_NUMERIC(ns[0], 69LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 UA_String_delete(variablenode_ns_1_i_6025_variant_DataContents);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 6025LU), UA_NODEID_NUMERIC(ns[0], 39LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 5012LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -883,8 +933,10 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "QtTestUnionType"),
 UA_NODEID_NUMERIC(ns[0], 69LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 UA_String_delete(variablenode_ns_1_i_6023_variant_DataContents);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 6023LU), UA_NODEID_NUMERIC(ns[0], 39LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 5008LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -918,8 +970,10 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "QtTestStructType"),
 UA_NODEID_NUMERIC(ns[0], 69LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 UA_String_delete(variablenode_ns_1_i_6021_variant_DataContents);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 6021LU), UA_NODEID_NUMERIC(ns[0], 39LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 5002LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -953,8 +1007,10 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "QtStructWithOptionalFieldType"),
 UA_NODEID_NUMERIC(ns[0], 69LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 UA_String_delete(variablenode_ns_1_i_6019_variant_DataContents);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 6019LU), UA_NODEID_NUMERIC(ns[0], 39LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 5011LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -988,8 +1044,10 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "QtInnerTestStructType"),
 UA_NODEID_NUMERIC(ns[0], 69LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 UA_String_delete(variablenode_ns_1_i_6017_variant_DataContents);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 6017LU), UA_NODEID_NUMERIC(ns[0], 39LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 5005LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -1023,6 +1081,7 @@ UA_NODEID_NUMERIC(ns[0], 46LU),
 UA_QUALIFIEDNAME(ns[0], "NamespaceUri"),
 UA_NODEID_NUMERIC(ns[0], 68LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 UA_String_delete(variablenode_ns_1_i_6015_variant_DataContents);
 return retVal;
 }
@@ -1057,8 +1116,10 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "QtTestStructWithDataValue"),
 UA_NODEID_NUMERIC(ns[0], 69LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 UA_String_delete(variablenode_ns_1_i_6008_variant_DataContents);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 6008LU), UA_NODEID_NUMERIC(ns[0], 39LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 5015LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -1092,8 +1153,10 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "QtTestStructWithDiagnosticInfo"),
 UA_NODEID_NUMERIC(ns[0], 69LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 UA_String_delete(variablenode_ns_1_i_6005_variant_DataContents);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 6005LU), UA_NODEID_NUMERIC(ns[0], 39LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 5013LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -1134,6 +1197,7 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "TypeDictionary"),
 UA_NODEID_NUMERIC(ns[0], 72LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 variablenode_ns_1_i_6012_variant_DataContents->data = NULL;
 variablenode_ns_1_i_6012_variant_DataContents->length = 0;
 UA_ByteString_delete(variablenode_ns_1_i_6012_variant_DataContents);
@@ -1170,8 +1234,10 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "QtAbstractBaseStruct"),
 UA_NODEID_NUMERIC(ns[0], 69LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 UA_String_delete(variablenode_ns_1_i_6024_variant_DataContents);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 6024LU), UA_NODEID_NUMERIC(ns[0], 39LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 5006LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -1205,8 +1271,10 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "QtTestUnionType"),
 UA_NODEID_NUMERIC(ns[0], 69LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 UA_String_delete(variablenode_ns_1_i_6022_variant_DataContents);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 6022LU), UA_NODEID_NUMERIC(ns[0], 39LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 5007LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -1240,8 +1308,10 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "QtTestStructType"),
 UA_NODEID_NUMERIC(ns[0], 69LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 UA_String_delete(variablenode_ns_1_i_6020_variant_DataContents);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 6020LU), UA_NODEID_NUMERIC(ns[0], 39LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 5001LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -1275,8 +1345,10 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "QtStructWithOptionalFieldType"),
 UA_NODEID_NUMERIC(ns[0], 69LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 UA_String_delete(variablenode_ns_1_i_6018_variant_DataContents);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 6018LU), UA_NODEID_NUMERIC(ns[0], 39LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 5010LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -1310,8 +1382,10 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "QtInnerTestStructType"),
 UA_NODEID_NUMERIC(ns[0], 69LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 UA_String_delete(variablenode_ns_1_i_6016_variant_DataContents);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 6016LU), UA_NODEID_NUMERIC(ns[0], 39LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 5004LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -1345,6 +1419,7 @@ UA_NODEID_NUMERIC(ns[0], 46LU),
 UA_QUALIFIEDNAME(ns[0], "NamespaceUri"),
 UA_NODEID_NUMERIC(ns[0], 68LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 UA_String_delete(variablenode_ns_1_i_6013_variant_DataContents);
 return retVal;
 }
@@ -1379,8 +1454,10 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "QtTestStructWithDataValue"),
 UA_NODEID_NUMERIC(ns[0], 69LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 UA_String_delete(variablenode_ns_1_i_6007_variant_DataContents);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 6007LU), UA_NODEID_NUMERIC(ns[0], 39LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 5014LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -1414,8 +1491,10 @@ UA_NODEID_NUMERIC(ns[0], 47LU),
 UA_QUALIFIEDNAME(ns[1], "QtTestStructWithDiagnosticInfo"),
 UA_NODEID_NUMERIC(ns[0], 69LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES],NULL, NULL);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 UA_String_delete(variablenode_ns_1_i_6004_variant_DataContents);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[1], 6004LU), UA_NODEID_NUMERIC(ns[0], 39LU), UA_EXPANDEDNODEID_NUMERIC(ns[1], 5003LU), false);
+if (retVal != UA_STATUSCODE_GOOD) return retVal;
 return retVal;
 }
 
@@ -1428,7 +1507,8 @@ UA_NODEID_NUMERIC(ns[1], 6004LU)
 static UA_DataTypeArray customUA_TYPES_QTOPCUATESTMODEL = {
     NULL,
     UA_TYPES_QTOPCUATESTMODEL_COUNT,
-    UA_TYPES_QTOPCUATESTMODEL
+    UA_TYPES_QTOPCUATESTMODEL,
+    UA_FALSE
 };
 
 UA_StatusCode namespace_qtopcuatestmodel_generated(UA_Server *server) {
@@ -1437,6 +1517,13 @@ UA_StatusCode retVal = UA_STATUSCODE_GOOD;
 UA_UInt16 ns[2];
 ns[0] = UA_Server_addNamespace(server, "http://opcfoundation.org/UA/");
 ns[1] = UA_Server_addNamespace(server, "http://qt-project.org/QtOpcUaTestModel/");
+/* Change namespaceIndex from current namespace */
+#if UA_TYPES_QTOPCUATESTMODEL_COUNT > 0
+for(int i = 0; i < UA_TYPES_QTOPCUATESTMODEL_COUNT; i++) {
+UA_TYPES_QTOPCUATESTMODEL[i].typeId.namespaceIndex = ns[1];
+UA_TYPES_QTOPCUATESTMODEL[i].binaryEncodingId.namespaceIndex = ns[1];
+}
+#endif
 
 /* Load custom datatype definitions into the server */
 if(UA_TYPES_QTOPCUATESTMODEL_COUNT > 0) {

@@ -2,13 +2,15 @@ OPEN62541_SOURCES += $$PWD/open62541/open62541.c
 HEADERS += $$PWD/open62541/open62541.h
 INCLUDEPATH += $$PWD/open62541
 
-win32-msvc: LIBS += ws2_32.lib
-win32-g++: LIBS += -lws2_32
+win32-msvc: LIBS += ws2_32.lib iphlpapi.lib
+win32-g++: LIBS += -lws2_32 -liphlpapi
+
+macos|ios: DEFINES += _DARWIN_C_SOURCE
 
 win32-msvc|winrt: {
     SOURCES += $$OPEN62541_SOURCES
 } else {
-    OPEN62541_CFLAGS += -Wno-unused-parameter -Wno-unused-function -Wno-format -Wno-strict-aliasing -Wno-unused-result -std=c99
+    OPEN62541_CFLAGS += -Wno-unused-parameter -Wno-incompatible-pointer-types -Wno-maybe-uninitialized -Wno-format-overflow -std=c99
 
     # The open62541 source code produces lots of warnings.
     # This custom compiler will disable these warnings just for open62541.c

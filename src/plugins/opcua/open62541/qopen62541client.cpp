@@ -198,8 +198,8 @@ QStringList QOpen62541Client::supportedSecurityPolicies() const
         result.append("http://opcfoundation.org/UA/SecurityPolicy#Basic128Rsa15");
         result.append("http://opcfoundation.org/UA/SecurityPolicy#Basic256");
     }
-
-     result.append("http://opcfoundation.org/UA/SecurityPolicy#Basic256Sha256");
+    result.append("http://opcfoundation.org/UA/SecurityPolicy#Aes256_Sha256_RsaPss");
+    result.append("http://opcfoundation.org/UA/SecurityPolicy#Basic256Sha256");
     result.append("http://opcfoundation.org/UA/SecurityPolicy#Aes128_Sha256_RsaOaep");
 #endif
 

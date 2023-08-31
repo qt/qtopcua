@@ -63,7 +63,7 @@ Item {
             tryCompare(node1, "monitored", true);
             compare(node1.publishingInterval, 100.0);
 
-            compare(connection.currentEndpoint.endpointUrl, "opc.tcp://localhost:43344/");
+            compare(connection.currentEndpoint.endpointUrl, "opc.tcp://localhost:43344");
             compare(connection.currentEndpoint.securityPolicy, "http://opcfoundation.org/UA/SecurityPolicy#None");
             compare(connection.currentEndpoint.server.applicationUri, "urn:open62541.server.application");
         }

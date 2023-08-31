@@ -121,8 +121,9 @@ Item {
             compare(endpointsChangedSpy1.count, 2);
 
             tryVerify(function() { return myEndpoints1.count > 0;});
+
             if (SERVER_SUPPORTS_SECURITY)
-                compare(myEndpoints1.count, connection1.supportedSecurityPolicies.length === 3 ? 5 : 9);
+                compare(myEndpoints1.count, connection1.supportedSecurityPolicies.length === 4 ? 7 : 11);
             else
                 compare(myEndpoints1.count, 1);
             verify(myEndpoints1.at(0).endpointUrl.startsWith("opc.tcp://"));
@@ -229,7 +230,7 @@ Item {
             compare(endpointsStatusSpy2.count, 2);
             compare(endpointsChangedSpy2.count, 2);
             if (SERVER_SUPPORTS_SECURITY)
-                compare(myEndpoints2.count, connection2.supportedSecurityPolicies.length === 3 ? 5 : 9);
+                compare(myEndpoints2.count, connection2.supportedSecurityPolicies.length === 4 ? 7 : 11);
             else
                 compare(myEndpoints2.count, 1);
             verify(myEndpoints2.at(0).endpointUrl.startsWith("opc.tcp://"));

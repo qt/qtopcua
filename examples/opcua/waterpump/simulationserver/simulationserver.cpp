@@ -49,10 +49,13 @@ bool DemoServer::init()
     if (!m_server)
         return false;
 
-    UA_StatusCode result = UA_ServerConfig_setMinimal(UA_Server_getConfig(m_server), 43344, nullptr);
+    const auto config = UA_Server_getConfig(m_server);
+    UA_StatusCode result = UA_ServerConfig_setMinimal(config, 43344, nullptr);
 
     if (result != UA_STATUSCODE_GOOD)
         return false;
+
+    config->tcpReuseAddr = true;
 
     return true;
 }

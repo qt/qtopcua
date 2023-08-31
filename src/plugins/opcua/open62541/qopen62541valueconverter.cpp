@@ -1329,12 +1329,30 @@ QVariant uaVariantToQtExtensionObject(const UA_Variant &var)
         return {};
     } else if (var.arrayLength == 0 && var.data == UA_EMPTY_ARRAY_SENTINEL) {
         return QVariantList(); // Return empty QVariantList for empty array
+    } else if (var.arrayLength > 0) {
+        QVariantList values;
+        values.reserve(var.arrayLength);
+        for (size_t i = 0; i < var.arrayLength; ++i) {
+            bool success = false;
+            values.push_back(encodeAsBinaryExtensionObject(static_cast<quint8 *>(var.data) + (i * var.type->memSize), var.type, &success));
+
+            if (!success)
+                return {};
+        }
+
+        if (var.arrayDimensionsSize > 0) {
+            QOpcUaMultiDimensionalArray arr;
+            arr.setValueArray(values);
+            QList<quint32> arrayDimensions(var.arrayDimensionsSize);
+            for (size_t i = 0; i < var.arrayDimensionsSize; ++i)
+                arrayDimensions[i] = var.arrayDimensions[i];
+            arr.setArrayDimensions(arrayDimensions);
+            return arr;
+        }
+
+        return values;
     }
 
-    // The array case is not handled here because open62541 always decodes arrays of types
-    // we need to re-encode to extension objects which are handled by a different code path.
-    // If this behavior should change with an update to open62541, it will be indicated by
-    // a failing test (Tst_QOpcUaClient::readReencodedExtensionObject).
     return QVariant();
 }
 
