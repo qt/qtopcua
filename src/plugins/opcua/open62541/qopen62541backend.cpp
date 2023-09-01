@@ -165,7 +165,6 @@ void Open62541AsyncBackend::writeAttributes(quint64 handle, UA_NodeId id, QOpcUa
                                                       &requestId, m_asyncRequestTimeout);
 
     if (result != UA_STATUSCODE_GOOD) {
-        index = 0;
         for (auto it = toWrite.begin(); it != toWrite.end(); ++it) {
             emit attributeWritten(handle, it.key(), it.value(), static_cast<QOpcUa::UaStatusCode>(result));
         }
@@ -1359,7 +1358,7 @@ void Open62541AsyncBackend::asyncBrowseCallback(UA_Client *client, void *userdat
 
     convertBrowseResult(references, referencesSize, context.results);
 
-    if (statusCode == UA_STATUSCODE_GOOD && continuationPoint->length) {
+    if (statusCode == UA_STATUSCODE_GOOD && continuationPoint && continuationPoint->length) {
         UA_BrowseNextRequest request;
         UA_BrowseNextRequest_init(&request);
         UaDeleter<UA_BrowseNextRequest> requestDeleter(&request, UA_BrowseNextRequest_clear);

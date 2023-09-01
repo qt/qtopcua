@@ -303,10 +303,10 @@ bool QOpen62541Subscription::removeAttributeMonitoredItem(quint64 handle, QOpcUa
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not remove monitored item" << item->monitoredItemId << "from subscription" << m_subscriptionId << ":" << UA_StatusCode_name(res);
 
     m_itemIdToItemMapping.remove(item->monitoredItemId);
-    auto it = m_nodeHandleToItemMapping.find(handle);
+    const auto it = m_nodeHandleToItemMapping.find(handle);
     it->remove(attr);
     if (it->empty())
-        m_nodeHandleToItemMapping.erase(it);
+        m_nodeHandleToItemMapping.remove(it.key());
 
     delete item;
 
