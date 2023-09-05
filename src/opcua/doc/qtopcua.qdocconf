@@ -59,3 +59,6 @@ depends += \
    qtcmake \
    qmake \
    qtwidgets
+
+# Enforce zero documentation warnings
+warninglimit = 0

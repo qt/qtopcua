@@ -87,7 +87,10 @@ QOpcUaConnectionSettings::~QOpcUaConnectionSettings()
 */
 
 /*!
-    Returns \c true if \a lhs contains the same connection settings as \l rhs; otherwise returns \c
+    \fn bool QOpcUaConnectionSettings::operator==(const QOpcUaConnectionSettings &lhs,
+                                                  const QOpcUaConnectionSettings &rhs)
+
+    Returns \c true if \a lhs contains the same connection settings as \a rhs; otherwise returns \c
     false.
 */
 bool operator==(const QOpcUaConnectionSettings &lhs, const QOpcUaConnectionSettings &rhs) noexcept
@@ -100,10 +103,10 @@ bool operator==(const QOpcUaConnectionSettings &lhs, const QOpcUaConnectionSetti
 }
 
 /*!
-    \fn bool QOpcUaConnectionSettings::operator!=(const QOpcUaConnectionSettings &rhs, const
-    QOpcUaConnectionSettings &rhs)
+    \fn bool QOpcUaConnectionSettings::operator!=(const QOpcUaConnectionSettings &lhs,
+                                                  const QOpcUaConnectionSettings &rhs)
 
-    Returns \c true if \a lhs does not contain the same connection settings as \l rhs; otherwise
+    Returns \c true if \a lhs does not contain the same connection settings as \a rhs; otherwise
     returns \c false.
 */
 
