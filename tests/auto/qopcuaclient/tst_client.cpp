@@ -452,6 +452,9 @@ private slots:
     defineDataMethod(extensionObjectWithGuid_data)
     void extensionObjectWithGuid();
 
+    defineDataMethod(encodeEmptyStringNodeId_data)
+    void encodeEmptyStringNodeId();
+
     void statusStrings();
 
     defineDataMethod(readHistoryDataFromNode_data)
@@ -3681,6 +3684,19 @@ void Tst_QOpcUaClient::extensionObjectWithGuid()
     const auto decodedNodeId = decoder.decode<QString, QOpcUa::Types::NodeId>(success);
     QVERIFY(success);
     QCOMPARE(decodedNodeId, sampleNodeId);
+}
+
+void Tst_QOpcUaClient::encodeEmptyStringNodeId()
+{
+    QByteArray data;
+    QOpcUaBinaryDataEncoding encoder(&data);
+
+    auto success = encoder.encode<QString, QOpcUa::Types::NodeId>(QString());
+    QCOMPARE(success, true);
+
+    const auto result = encoder.decode<QString, QOpcUa::Types::NodeId>(success);
+    QCOMPARE(success, true);
+    QCOMPARE(result, QStringLiteral("ns=0;i=0"));
 }
 
 void Tst_QOpcUaClient::statusStrings()

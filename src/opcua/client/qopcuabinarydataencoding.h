@@ -727,7 +727,7 @@ inline bool QOpcUaBinaryDataEncoding::encode<QString, QOpcUa::Types::NodeId>(con
     quint16 index;
     QString identifier;
     char type;
-    if (!QOpcUa::nodeIdStringSplit(src, &index, &identifier, &type))
+    if (!QOpcUa::nodeIdStringSplit(src.isEmpty() ? QStringLiteral("ns=0;i=0") : src, &index, &identifier, &type))
         return false;
 
     qint32 identifierType;
