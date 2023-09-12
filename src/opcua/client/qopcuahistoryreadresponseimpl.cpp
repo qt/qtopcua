@@ -14,6 +14,13 @@ QOpcUaHistoryReadResponseImpl::QOpcUaHistoryReadResponseImpl(const QOpcUaHistory
 {
 }
 
+QOpcUaHistoryReadResponseImpl::QOpcUaHistoryReadResponseImpl(const QOpcUaHistoryReadEventRequest &request)
+    : m_requestType(RequestType::ReadEvent)
+    , m_readEventRequest(request)
+    , m_handle(++m_currentHandle)
+{
+}
+
 QOpcUaHistoryReadResponseImpl::~QOpcUaHistoryReadResponseImpl()
 {
     releaseContinuationPoints();
@@ -32,6 +39,10 @@ bool QOpcUaHistoryReadResponseImpl::readMoreData()
     if (m_requestType == RequestType::ReadRaw) {
         const auto request = createReadRawRequestWithContinuationPoints();
         emit historyReadRawRequested(request, m_continuationPoints, false, handle());
+        return true;
+    } else if (m_requestType == RequestType::ReadEvent) {
+        const auto request = createEventRequestWithContinuationPoints();
+        emit historyReadEventsRequested(request, m_continuationPoints, false, handle());
         return true;
     }
 
@@ -54,6 +65,15 @@ bool QOpcUaHistoryReadResponseImpl::releaseContinuationPoints()
         m_continuationPoints.clear();
 
         setState(QOpcUaHistoryReadResponse::State::Finished);
+    } else if (m_requestType == RequestType::ReadEvent) {
+        const auto request = createEventRequestWithContinuationPoints();
+
+        if (!request.nodesToRead().isEmpty())
+            emit historyReadEventsRequested(request, m_continuationPoints, true, handle());
+
+        m_continuationPoints.clear();
+
+        setState(QOpcUaHistoryReadResponse::State::Finished);
     };
 
     return true;
@@ -62,6 +82,11 @@ bool QOpcUaHistoryReadResponseImpl::releaseContinuationPoints()
 QList<QOpcUaHistoryData> QOpcUaHistoryReadResponseImpl::data() const
 {
     return m_data;
+}
+
+QList<QOpcUaHistoryEvent> QOpcUaHistoryReadResponseImpl::events() const
+{
+    return m_events;
 }
 
 QOpcUa::UaStatusCode QOpcUaHistoryReadResponseImpl::serviceResult() const
@@ -104,6 +129,43 @@ void QOpcUaHistoryReadResponseImpl::handleDataAvailable(const QList<QOpcUaHistor
         setState(QOpcUaHistoryReadResponse::State::Finished);
 
     emit readHistoryDataFinished(m_data, m_serviceResult);
+}
+
+void QOpcUaHistoryReadResponseImpl::handleEventsAvailable(const QList<QOpcUaHistoryEvent> &data, const QList<QByteArray> &continuationPoints,
+                                                          QOpcUa::UaStatusCode serviceResult, quint64 responseHandle)
+{
+    if (responseHandle != handle())
+        return;
+
+    m_serviceResult = serviceResult;
+    m_continuationPoints = continuationPoints;
+
+    if (m_events.empty()) {
+        m_events = data;
+    } else {
+        int index = 0;
+        for (const auto &result : data) {
+            auto &target = m_events[m_dataMapping.at(index++)];
+            target.setStatusCode(result.statusCode());
+            for (const auto &event : result.events()) {
+                target.addEvent(event);
+            }
+        }
+    }
+
+    bool found = false;
+    for (const auto &continuationPoint : m_continuationPoints) {
+        if (!continuationPoint.isEmpty()) {
+            setState(QOpcUaHistoryReadResponse::State::MoreDataAvailable);
+            found = true;
+            break;
+        }
+    }
+
+    if (!found)
+        setState(QOpcUaHistoryReadResponse::State::Finished);
+
+    emit readHistoryEventsFinished(m_events, m_serviceResult);
 }
 
 void QOpcUaHistoryReadResponseImpl::handleRequestError(quint64 requestHandle)
@@ -155,7 +217,40 @@ QOpcUaHistoryReadRawRequest QOpcUaHistoryReadResponseImpl::createReadRawRequestW
     }
 
     m_dataMapping = newDataMapping;
+    m_continuationPoints = newContinuationPoints;
 
+    return request;
+}
+
+QOpcUaHistoryReadEventRequest QOpcUaHistoryReadResponseImpl::createEventRequestWithContinuationPoints()
+{
+    QOpcUaHistoryReadEventRequest request;
+    request.setStartTimestamp(m_readEventRequest.startTimestamp());
+    request.setEndTimestamp(m_readEventRequest.endTimestamp());
+    request.setNumValuesPerNode(m_readEventRequest.numValuesPerNode());
+    request.setFilter(m_readEventRequest.filter());
+
+    int arrayIndex = 0;
+    QList<int> newDataMapping;
+    QList<QByteArray> newContinuationPoints;
+
+    for (const auto &continuationPoint : m_continuationPoints) {
+        int mappingIndex = 0;
+        if (m_dataMapping.empty())
+            mappingIndex = arrayIndex;
+        else
+            mappingIndex = m_dataMapping.at(arrayIndex);
+
+        if (!continuationPoint.isEmpty()) {
+            newDataMapping.push_back(mappingIndex);
+            newContinuationPoints.push_back(continuationPoint);
+            request.addNodeToRead(m_readEventRequest.nodesToRead().at(mappingIndex));
+        }
+
+        ++arrayIndex;
+    }
+
+    m_dataMapping = newDataMapping;
     m_continuationPoints = newContinuationPoints;
 
     return request;

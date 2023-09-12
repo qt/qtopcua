@@ -77,6 +77,9 @@ public:
     QOpcUaHistoryReadResponse *readHistoryRaw(const QDateTime &startTime, const QDateTime &endTime, quint32 numValues, bool returnBounds);
     QOpcUaHistoryReadResponse *readHistoryRaw(const QDateTime &startTime, const QDateTime &endTime, quint32 numValues, bool returnBounds, QOpcUa::TimestampsToReturn timestampsToReturn);
 
+    QOpcUaHistoryReadResponse *readHistoryEvents(const QDateTime &startTime, const QDateTime &endTime,
+                                                 QOpcUaMonitoringParameters::EventFilter &filter, quint32 numValues = 0);
+
 Q_SIGNALS:
     void attributeRead(QOpcUa::NodeAttributes attributes);
     void attributeWritten(QOpcUa::NodeAttribute attribute, QOpcUa::UaStatusCode statusCode);

@@ -51,6 +51,8 @@ public:
     virtual bool callMethod(const QString &methodNodeId, const QList<QOpcUa::TypedVariant> &args) = 0;
     virtual QOpcUaHistoryReadResponse *readHistoryRaw(const QDateTime &startTime, const QDateTime &endTime, quint32 numValues, bool returnBounds,
                                                       QOpcUa::TimestampsToReturn timestampsToReturn) = 0;
+    virtual QOpcUaHistoryReadResponse *readHistoryEvents(const QDateTime &startTime, const QDateTime &endTime,
+                                                         const QOpcUaMonitoringParameters::EventFilter &filter, quint32 numValues) = 0;
 
     virtual bool resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path) = 0;
 

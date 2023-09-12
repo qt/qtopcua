@@ -17,6 +17,7 @@
 
 #include <QtOpcUa/qopcuaclient.h>
 #include <QtOpcUa/qopcuaendpointdescription.h>
+#include <QtOpcUa/qopcuahistoryevent.h>
 #include <private/qopcuanodeimpl_p.h>
 
 #include <QtCore/qobject.h>
@@ -77,6 +78,7 @@ Q_SIGNALS:
     void passwordForPrivateKeyRequired(QString keyFilePath, QString *password, bool previousTryWasInvalid);
 
     void historyDataAvailable(QList<QOpcUaHistoryData> data, QList<QByteArray> continuationPoints, QOpcUa::UaStatusCode serviceResult, uintptr_t handle);
+    void historyEventsAvailable(QList<QOpcUaHistoryEvent> data, QList<QByteArray> continuationPoints, QOpcUa::UaStatusCode serviceResult, uintptr_t handle);
 
     void registerNodesFinished(QStringList nodesToRegister, QStringList registeredNodeIds, QOpcUa::UaStatusCode statusCode);
     void unregisterNodesFinished(QStringList nodesToUnregister, QOpcUa::UaStatusCode statusCode);

@@ -43,6 +43,8 @@ public Q_SLOTS:
     void writeNodeAttributes(const QList<QOpcUaWriteItem> &nodesToWrite);
 
     void readHistoryRaw(QOpcUaHistoryReadRawRequest request, QList<QByteArray> continuationPoints, bool releaseContinuationPoints, quint64 handle);
+    void readHistoryEvents(const QOpcUaHistoryReadEventRequest &request, const QList<QByteArray> &continuationPoints,
+                           bool releaseContinuationPoints, quint64 handle);
 
     // Node management
     void addNode(const QOpcUaAddNodeItem &nodeToAdd);
@@ -76,7 +78,7 @@ public Q_SLOTS:
     static void asyncReadHistoryDataCallBack(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response);
     static void asyncRegisterNodesCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response);
     static void asyncUnregisterNodesCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response);
-
+    static void asyncReadHistoryEventsCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response);
 
 public:
     UA_Client *m_uaclient;
@@ -198,6 +200,12 @@ private:
         QStringList nodeIds;
     };
     QMap<quint32, AsyncRegisterUnregisterNodesContext> m_asyncRegisterUnregisterNodesContext;
+
+    struct AsyncReadHistoryEventsContext {
+        quint64 handle;
+        QOpcUaHistoryReadEventRequest historyReadEventRequest;
+    };
+    QMap<quint32, AsyncReadHistoryEventsContext> m_asyncReadHistoryEventsContext;
 };
 
 QT_END_NAMESPACE

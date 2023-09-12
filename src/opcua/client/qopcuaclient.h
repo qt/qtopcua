@@ -16,6 +16,7 @@
 #include <QtOpcUa/qopcuaaddreferenceitem.h>
 #include <QtOpcUa/qopcuadeletereferenceitem.h>
 #include <QtOpcUa/qopcuaendpointdescription.h>
+#include <QtOpcUa/QOpcUaHistoryReadEventRequest>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qurl.h>
@@ -114,6 +115,7 @@ public:
     QList<QOpcUaUserTokenPolicy::TokenType> supportedUserTokenTypes() const;
 
     QOpcUaHistoryReadResponse *readHistoryData(const QOpcUaHistoryReadRawRequest &request);
+    QOpcUaHistoryReadResponse *readHistoryEvents(const QOpcUaHistoryReadEventRequest &request);
 
     bool registerNodes(const QStringList &nodesToRegister);
     bool unregisterNodes(const QStringList &nodesToUnregister);

@@ -624,6 +624,12 @@ private slots:
     defineDataMethod(readHistoryDataFromClient_data)
     void readHistoryDataFromClient();
 
+    defineDataMethod(readHistoryEventsFromNode_data)
+    void readHistoryEventsFromNode();
+
+    defineDataMethod(readHistoryEventsFromClient_data)
+    void readHistoryEventsFromClient();
+
     // Events
     defineDataMethod(eventSubscription_data)
     void eventSubscription();
@@ -5506,6 +5512,262 @@ void Tst_QOpcUaClient::readHistoryDataFromClient()
         QCOMPARE(readHistoryDataSpy.size(), 1);
         QCOMPARE(readHistoryDataSpy.at(0).at(1), QOpcUa::UaStatusCode::Good);
         QCOMPARE(response.data(), data);
+    }
+}
+
+void Tst_QOpcUaClient::readHistoryEventsFromNode()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=EventHistorian"));
+    QVERIFY(node != nullptr);
+
+    QOpcUaMonitoringParameters::EventFilter filter;
+    filter << QOpcUaSimpleAttributeOperand("Message");
+    filter << QOpcUaSimpleAttributeOperand("Time");
+
+    const auto firstAvailableEventTime = QDateTime::fromMSecsSinceEpoch(1694153836000 - 120 * 60 * 1000);
+    const auto lastAvailableEventTime = QDateTime::fromMSecsSinceEpoch(1694153836000);
+
+    // Read all at once
+    {
+        QScopedPointer<QOpcUaHistoryReadResponse> response(node->readHistoryEvents(firstAvailableEventTime, lastAvailableEventTime, filter, 10));
+        QVERIFY(response != nullptr);
+
+        QSignalSpy spy(response.get(), &QOpcUaHistoryReadResponse::readHistoryEventsFinished);
+        spy.wait();
+        QCOMPARE(spy.size(), 1);
+        QCOMPARE(spy.at(0).at(1), QOpcUa::UaStatusCode::Good);
+
+        QVERIFY(!response->hasMoreData());
+        QCOMPARE(response->state(), QOpcUaHistoryReadResponse::State::Finished);
+
+        QCOMPARE(response->events().size(), 1);
+        QCOMPARE(response->events().at(0).events().size(), 3);
+        QCOMPARE(response->events().at(0).events().at(0).size(), 2);
+        QCOMPARE(response->events().at(0).events().at(0).at(0), QOpcUaLocalizedText("en", "Message 1"));
+        QCOMPARE(response->events().at(0).events().at(0).at(1), QDateTime::fromMSecsSinceEpoch(1694146636000));
+        QCOMPARE(response->events().at(0).events().at(1).size(), 2);
+        QCOMPARE(response->events().at(0).events().at(1).at(0), QOpcUaLocalizedText("en", "Message 2"));
+        QCOMPARE(response->events().at(0).events().at(1).at(1), QDateTime::fromMSecsSinceEpoch(1694150236000));
+        QCOMPARE(response->events().at(0).events().at(2).size(), 2);
+        QCOMPARE(response->events().at(0).events().at(2).at(0), QOpcUaLocalizedText("en", "Message 3"));
+        QCOMPARE(response->events().at(0).events().at(2).at(1), QDateTime::fromMSecsSinceEpoch(1694153836000));
+
+        QCOMPARE(spy.at(0).at(0).value<QList<QOpcUaHistoryEvent>>(), response->events());
+    }
+
+    // Test continuation points
+    {
+        QScopedPointer<QOpcUaHistoryReadResponse> response(node->readHistoryEvents(firstAvailableEventTime, lastAvailableEventTime, filter, 1));
+        QVERIFY(response != nullptr);
+
+        QSignalSpy spy(response.get(), &QOpcUaHistoryReadResponse::readHistoryEventsFinished);
+        spy.wait();
+        QCOMPARE(spy.size(), 1);
+        QCOMPARE(spy.at(0).at(1), QOpcUa::UaStatusCode::Good);
+
+        QVERIFY(response->hasMoreData());
+        QCOMPARE(response->state(), QOpcUaHistoryReadResponse::State::MoreDataAvailable);
+        spy.clear();
+        response->readMoreData();
+        spy.wait();
+        QCOMPARE(spy.size(), 1);
+        QCOMPARE(spy.at(0).at(1), QOpcUa::UaStatusCode::Good);
+
+        QVERIFY(response->hasMoreData());
+        QCOMPARE(response->state(), QOpcUaHistoryReadResponse::State::MoreDataAvailable);
+        spy.clear();
+        response->readMoreData();
+        spy.wait();
+        QCOMPARE(spy.size(), 1);
+        QCOMPARE(spy.at(0).at(1), QOpcUa::UaStatusCode::Good);
+
+        QVERIFY(!response->hasMoreData());
+        QCOMPARE(response->state(), QOpcUaHistoryReadResponse::State::Finished);
+
+        QCOMPARE(response->events().size(), 1);
+        QCOMPARE(response->events().at(0).events().size(), 3);
+        QCOMPARE(response->events().at(0).events().at(0).size(), 2);
+        QCOMPARE(response->events().at(0).events().at(0).at(0), QOpcUaLocalizedText("en", "Message 1"));
+        QCOMPARE(response->events().at(0).events().at(0).at(1), QDateTime::fromMSecsSinceEpoch(1694146636000));
+        QCOMPARE(response->events().at(0).events().at(1).size(), 2);
+        QCOMPARE(response->events().at(0).events().at(1).at(0), QOpcUaLocalizedText("en", "Message 2"));
+        QCOMPARE(response->events().at(0).events().at(1).at(1), QDateTime::fromMSecsSinceEpoch(1694150236000));
+        QCOMPARE(response->events().at(0).events().at(2).size(), 2);
+        QCOMPARE(response->events().at(0).events().at(2).at(0), QOpcUaLocalizedText("en", "Message 3"));
+        QCOMPARE(response->events().at(0).events().at(2).at(1), QDateTime::fromMSecsSinceEpoch(1694153836000));
+    }
+}
+
+void Tst_QOpcUaClient::readHistoryEventsFromClient()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QOpcUaMonitoringParameters::EventFilter filter;
+    filter << QOpcUaSimpleAttributeOperand("Message");
+    filter << QOpcUaSimpleAttributeOperand("Time");
+
+    const auto firstAvailableEventTime = QDateTime::fromMSecsSinceEpoch(1694153836000 - 120 * 60 * 1000);
+    const auto lastAvailableEventTime = QDateTime::fromMSecsSinceEpoch(1694153836000);
+
+    // Read all at once
+    {
+        const QOpcUaHistoryReadEventRequest request({ QOpcUaReadItem("ns=2;s=EventHistorian"), QOpcUaReadItem("ns=2;s=EventHistorian2") },
+                                                    firstAvailableEventTime, lastAvailableEventTime, filter, 10);
+        QScopedPointer<QOpcUaHistoryReadResponse> response(opcuaClient->readHistoryEvents(request));
+        QVERIFY(response != nullptr);
+
+        QSignalSpy spy(response.get(), &QOpcUaHistoryReadResponse::readHistoryEventsFinished);
+        spy.wait();
+        QCOMPARE(spy.size(), 1);
+        QCOMPARE(spy.at(0).at(1), QOpcUa::UaStatusCode::Good);
+
+        QVERIFY(!response->hasMoreData());
+        QCOMPARE(response->state(), QOpcUaHistoryReadResponse::State::Finished);
+
+        QCOMPARE(response->events().size(), 2);
+        QCOMPARE(response->events().at(0).events().size(), 3);
+        QCOMPARE(response->events().at(0).events().at(0).size(), 2);
+        QCOMPARE(response->events().at(0).events().at(0).at(0), QOpcUaLocalizedText("en", "Message 1"));
+        QCOMPARE(response->events().at(0).events().at(0).at(1), QDateTime::fromMSecsSinceEpoch(1694146636000));
+        QCOMPARE(response->events().at(0).events().at(1).size(), 2);
+        QCOMPARE(response->events().at(0).events().at(1).at(0), QOpcUaLocalizedText("en", "Message 2"));
+        QCOMPARE(response->events().at(0).events().at(1).at(1), QDateTime::fromMSecsSinceEpoch(1694150236000));
+        QCOMPARE(response->events().at(0).events().at(2).size(), 2);
+        QCOMPARE(response->events().at(0).events().at(2).at(0), QOpcUaLocalizedText("en", "Message 3"));
+        QCOMPARE(response->events().at(0).events().at(2).at(1), QDateTime::fromMSecsSinceEpoch(1694153836000));
+
+        QCOMPARE(response->events().at(1).events().size(), 2);
+        QCOMPARE(response->events().at(1).events().at(0).size(), 2);
+        QCOMPARE(response->events().at(1).events().at(0).at(0), QOpcUaLocalizedText("en", "Message 1"));
+        QCOMPARE(response->events().at(1).events().at(0).at(1), QDateTime::fromMSecsSinceEpoch(1694146636000));
+        QCOMPARE(response->events().at(1).events().at(1).size(), 2);
+        QCOMPARE(response->events().at(1).events().at(1).at(0), QOpcUaLocalizedText("en", "Message 2"));
+        QCOMPARE(response->events().at(1).events().at(1).at(1), QDateTime::fromMSecsSinceEpoch(1694150236000));
+
+        QCOMPARE(spy.at(0).at(0).value<QList<QOpcUaHistoryEvent>>(), response->events());
+    }
+
+    // Test continuation points
+    {
+        const QOpcUaHistoryReadEventRequest request({ QOpcUaReadItem("ns=2;s=EventHistorian"), QOpcUaReadItem("ns=2;s=EventHistorian2") },
+                                                    firstAvailableEventTime, lastAvailableEventTime, filter, 1);
+
+        QScopedPointer<QOpcUaHistoryReadResponse> response(opcuaClient->readHistoryEvents(request));
+        QVERIFY(response != nullptr);
+
+        QSignalSpy spy(response.get(), &QOpcUaHistoryReadResponse::readHistoryEventsFinished);
+        spy.wait();
+        QCOMPARE(spy.size(), 1);
+        QCOMPARE(spy.at(0).at(1), QOpcUa::UaStatusCode::Good);
+
+        QVERIFY(response->hasMoreData());
+        QCOMPARE(response->state(), QOpcUaHistoryReadResponse::State::MoreDataAvailable);
+        spy.clear();
+        response->readMoreData();
+        spy.wait();
+        QCOMPARE(spy.size(), 1);
+        QCOMPARE(spy.at(0).at(1), QOpcUa::UaStatusCode::Good);
+
+        QVERIFY(response->hasMoreData());
+        QCOMPARE(response->state(), QOpcUaHistoryReadResponse::State::MoreDataAvailable);
+        spy.clear();
+        response->readMoreData();
+        spy.wait();
+        QCOMPARE(spy.size(), 1);
+        QCOMPARE(spy.at(0).at(1), QOpcUa::UaStatusCode::Good);
+
+        QVERIFY(!response->hasMoreData());
+        QCOMPARE(response->state(), QOpcUaHistoryReadResponse::State::Finished);
+
+        QCOMPARE(response->events().size(), 2);
+        QCOMPARE(response->events().at(0).events().size(), 3);
+        QCOMPARE(response->events().at(0).events().at(0).size(), 2);
+        QCOMPARE(response->events().at(0).events().at(0).at(0), QOpcUaLocalizedText("en", "Message 1"));
+        QCOMPARE(response->events().at(0).events().at(0).at(1), QDateTime::fromMSecsSinceEpoch(1694146636000));
+        QCOMPARE(response->events().at(0).events().at(1).size(), 2);
+        QCOMPARE(response->events().at(0).events().at(1).at(0), QOpcUaLocalizedText("en", "Message 2"));
+        QCOMPARE(response->events().at(0).events().at(1).at(1), QDateTime::fromMSecsSinceEpoch(1694150236000));
+        QCOMPARE(response->events().at(0).events().at(2).size(), 2);
+        QCOMPARE(response->events().at(0).events().at(2).at(0), QOpcUaLocalizedText("en", "Message 3"));
+        QCOMPARE(response->events().at(0).events().at(2).at(1), QDateTime::fromMSecsSinceEpoch(1694153836000));
+
+        QCOMPARE(response->events().at(1).events().size(), 2);
+        QCOMPARE(response->events().at(1).events().at(0).size(), 2);
+        QCOMPARE(response->events().at(1).events().at(0).at(0), QOpcUaLocalizedText("en", "Message 1"));
+        QCOMPARE(response->events().at(1).events().at(0).at(1), QDateTime::fromMSecsSinceEpoch(1694146636000));
+        QCOMPARE(response->events().at(1).events().at(1).size(), 2);
+        QCOMPARE(response->events().at(1).events().at(1).at(0), QOpcUaLocalizedText("en", "Message 2"));
+        QCOMPARE(response->events().at(1).events().at(1).at(1), QDateTime::fromMSecsSinceEpoch(1694150236000));
+    }
+
+    // Test continuation points release
+    {
+        const QOpcUaHistoryReadEventRequest request({ QOpcUaReadItem("ns=2;s=EventHistorian"), QOpcUaReadItem("ns=2;s=EventHistorian2") },
+                                                    firstAvailableEventTime, lastAvailableEventTime, filter, 1);
+
+        QScopedPointer<QOpcUaHistoryReadResponse> response(opcuaClient->readHistoryEvents(request));
+        QVERIFY(response != nullptr);
+
+        QSignalSpy spy(response.get(), &QOpcUaHistoryReadResponse::readHistoryEventsFinished);
+        spy.wait();
+        QCOMPARE(spy.size(), 1);
+        QCOMPARE(spy.at(0).at(1), QOpcUa::UaStatusCode::Good);
+
+        QVERIFY(response->hasMoreData());
+        QCOMPARE(response->state(), QOpcUaHistoryReadResponse::State::MoreDataAvailable);
+        spy.clear();
+        response->readMoreData();
+        spy.wait();
+        QCOMPARE(spy.size(), 1);
+        QCOMPARE(spy.at(0).at(1), QOpcUa::UaStatusCode::Good);
+
+        QVERIFY(response->hasMoreData());
+        QCOMPARE(response->state(), QOpcUaHistoryReadResponse::State::MoreDataAvailable);
+
+        const auto events = response->events();
+
+        response->releaseContinuationPoints();
+        QCOMPARE(response->state(), QOpcUaHistoryReadResponse::State::Finished);
+        spy.clear();
+        spy.wait();
+        QCOMPARE(spy.size(), 1);
+        QCOMPARE(spy.at(0).at(1), QOpcUa::UaStatusCode::Good);
+        QCOMPARE(response->events(), events);
+    }
+
+    // Check invalid node id
+    {
+        const QOpcUaHistoryReadEventRequest request({ QOpcUaReadItem("ns=2;s=EventHistorian"), QOpcUaReadItem("ns=2;s=EventHistorian3") },
+                                                    firstAvailableEventTime, lastAvailableEventTime, filter, 10);
+        QScopedPointer<QOpcUaHistoryReadResponse> response(opcuaClient->readHistoryEvents(request));
+        QVERIFY(response != nullptr);
+
+        QSignalSpy spy(response.get(), &QOpcUaHistoryReadResponse::readHistoryEventsFinished);
+        spy.wait();
+        QCOMPARE(spy.size(), 1);
+        QCOMPARE(spy.at(0).at(1), QOpcUa::UaStatusCode::Good);
+
+        QVERIFY(!response->hasMoreData());
+        QCOMPARE(response->state(), QOpcUaHistoryReadResponse::State::Finished);
+
+        QCOMPARE(response->events().size(), 2);
+        QCOMPARE(response->events().at(0).events().size(), 3);
+        QCOMPARE(response->events().at(0).events().at(0).size(), 2);
+        QCOMPARE(response->events().at(0).events().at(0).at(0), QOpcUaLocalizedText("en", "Message 1"));
+        QCOMPARE(response->events().at(0).events().at(0).at(1), QDateTime::fromMSecsSinceEpoch(1694146636000));
+        QCOMPARE(response->events().at(0).events().at(1).size(), 2);
+        QCOMPARE(response->events().at(0).events().at(1).at(0), QOpcUaLocalizedText("en", "Message 2"));
+        QCOMPARE(response->events().at(0).events().at(1).at(1), QDateTime::fromMSecsSinceEpoch(1694150236000));
+        QCOMPARE(response->events().at(0).events().at(2).size(), 2);
+        QCOMPARE(response->events().at(0).events().at(2).at(0), QOpcUaLocalizedText("en", "Message 3"));
+        QCOMPARE(response->events().at(0).events().at(2).at(1), QDateTime::fromMSecsSinceEpoch(1694153836000));
+
+        QCOMPARE(response->events().at(1).events().size(), 0);
+        QCOMPARE(response->events().at(1).statusCode(), QOpcUa::UaStatusCode::BadNodeIdInvalid);
     }
 }
 

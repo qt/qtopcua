@@ -41,7 +41,9 @@ qt_internal_add_module(OpcUa
         client/qopcuaexpandednodeid.cpp client/qopcuaexpandednodeid.h
         client/qopcuaextensionobject.cpp client/qopcuaextensionobject.h
         client/qopcuahistorydata.cpp client/qopcuahistorydata.h
+        client/qopcuahistoryevent.cpp client/qopcuahistoryevent.h
         client/qopcuahistoryreadrawrequest.cpp client/qopcuahistoryreadrawrequest.h
+        client/qopcuahistoryreadeventrequest.cpp client/qopcuahistoryreadeventrequest.h
         client/qopcuahistoryreadresponse.cpp client/qopcuahistoryreadresponse.h
         client/qopcuahistoryreadresponseimpl.cpp client/qopcuahistoryreadresponseimpl_p.h
         client/qopcuahistoryreadresponse_p.h

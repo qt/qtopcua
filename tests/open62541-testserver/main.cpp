@@ -300,6 +300,8 @@ int main()
 
     server.addEventTrigger(testFolder);
 
+    server.addEventHistorian(UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER));
+
     server.addServerStatusTypeTestNodes(testFolder);
 
     // Add test nodes for the generic type decoder

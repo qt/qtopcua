@@ -46,6 +46,7 @@ public:
     UA_StatusCode addServerStatusTypeTestNodes(const UA_NodeId &parent);
 
     UA_StatusCode addEventTrigger(const UA_NodeId &parent);
+    UA_StatusCode addEventHistorian(const UA_NodeId &parent);
 
     UA_StatusCode addEncoderTestModel();
 
@@ -72,6 +73,19 @@ public:
                              const UA_NodeId *objectId, void *objectContext,
                              size_t inputSize, const UA_Variant *input,
                              size_t outputSize, UA_Variant *output);
+
+    static void readHistoryEventCallback(UA_Server *server,
+                                  void *hdbContext,
+                                  const UA_NodeId *sessionId,
+                                  void *sessionContext,
+                                  const UA_RequestHeader *requestHeader,
+                                  const UA_ReadEventDetails *historyReadDetails,
+                                  UA_TimestampsToReturn timestampsToReturn,
+                                  UA_Boolean releaseContinuationPoints,
+                                  size_t nodesToReadSize,
+                                  const UA_HistoryReadValueId *nodesToRead,
+                                  UA_HistoryReadResponse *response,
+                                  UA_HistoryEvent * const * const historyData);
 
     UA_ServerConfig *m_config{nullptr};
     UA_Server *m_server{nullptr};

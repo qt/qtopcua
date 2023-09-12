@@ -165,6 +165,16 @@ QOpcUaHistoryReadResponse *QOpen62541Node::readHistoryRaw(const QDateTime &start
                                                                  startTime, endTime, numValues, returnBounds, timestampsToReturn});
 }
 
+QOpcUaHistoryReadResponse *QOpen62541Node::readHistoryEvents(const QDateTime &startTime, const QDateTime &endTime,
+                                                             const QOpcUaMonitoringParameters::EventFilter &filter, quint32 numValues)
+{
+    if (!m_client)
+        return nullptr;
+
+    return m_client->readHistoryEvents(QOpcUaHistoryReadEventRequest{{QOpcUaReadItem(m_nodeIdString)},
+                                                                     startTime, endTime, filter, numValues});
+}
+
 bool QOpen62541Node::resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path)
 {
     if (!m_client)

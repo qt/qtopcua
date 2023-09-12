@@ -45,6 +45,12 @@ public:
             if (q_func())
                 emit q_func()->stateChanged(state);
         });
+
+        QObject::connect(impl, &QOpcUaHistoryReadResponseImpl::readHistoryEventsFinished, impl,
+                         [this](const QList<QOpcUaHistoryEvent> &data, QOpcUa::UaStatusCode serviceResult) {
+                             if (q_func())
+                                 emit q_func()->readHistoryEventsFinished(data, serviceResult);
+                         });
     }
 
     ~QOpcUaHistoryReadResponsePrivate() = default;

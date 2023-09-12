@@ -827,6 +827,58 @@ QOpcUaHistoryReadResponse *QOpcUaNode::readHistoryRaw(const QDateTime &startTime
     return d->m_impl->readHistoryRaw(startTime, endTime, numValues, returnBounds, timestampsToReturn);
 }
 
+/*!
+    \since 6.7
+
+    Starts a read event history request for this node using the parameters \a startTime, \a endTime, \a filter and \a numValues.
+    The \a filter is used by the server to determine which events and which set of their fields shall be returned.
+
+    Returns a \l QOpcUaHistoryReadResponse which contains the state of the request if the asynchronous
+    request has been successfully dispatched. The results are returned in the
+    \l QOpcUaHistoryReadResponse::readHistoryEventsFinished(const QList<QOpcUaHistoryEvent> &results, QOpcUa::UaStatusCode serviceResult)
+    signal.
+
+    The following example retrieves historic events for the last two days. Up to 10 events are returned at a time. While there are more
+    events matching the filter and the provided time range, \c hasMoreData() will be true and more events can be fetched via \b readMoreData().
+
+    \code
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=EventHistorian"));
+    QVERIFY(node != nullptr);
+
+    QOpcUaMonitoringParameters::EventFilter filter;
+    filter << QOpcUaSimpleAttributeOperand("Message");
+    filter << QOpcUaSimpleAttributeOperand("Time");
+
+    const auto response = node->readHistoryEvents(QDateTime::currentDateTime().addDays(-2), QDateTime::currentDateTime(), filter, 10);
+
+    QObject::connect(response, &QOpcUaHistoryReadResponse::readHistoryEventsFinished, this,
+                     [response](const QList<QOpcUaHistoryEvent> &results, QOpcUa::UaStatusCode serviceResult) {
+                         if (serviceResult != QOpcUa::UaStatusCode::Good) {
+                             qDebug() << "Service call failed with" << serviceResult;
+                             return;
+                         }
+
+                         // Print what we got so far
+                         for (const auto &result : response->events()) {
+                             qDebug() << "Results for" << result.nodeId() << result.statusCode();
+                             for (const auto &event : result.events())
+                                 qDebug() << "    Event:" << event;
+                         }
+
+                         if (response->hasMoreData())
+                             response->readMoreData();
+                     });
+    \endcode
+*/
+QOpcUaHistoryReadResponse *QOpcUaNode::readHistoryEvents(const QDateTime &startTime, const QDateTime &endTime, QOpcUaMonitoringParameters::EventFilter &filter, quint32 numValues)
+{
+    Q_D(QOpcUaNode);
+    if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
+        return nullptr;
+
+    return d->m_impl->readHistoryEvents(startTime, endTime, filter, numValues);
+}
+
 QDebug operator<<(QDebug dbg, const QOpcUaNode &node)
 {
     dbg << "QOpcUaNode {"

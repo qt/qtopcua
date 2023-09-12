@@ -16,6 +16,7 @@
 #include <QtCore/QLoggingCategory>
 #include <QDir>
 #include <QFile>
+#include <QMap>
 
 #include <cstring>
 
@@ -244,7 +245,6 @@ bool TestServer::init()
 
     m_gathering = UA_HistoryDataGathering_Default(1);
     m_config->historyDatabase = UA_HistoryDatabase_default(m_gathering);
-
 
     if (!success || !m_config)
         return false;
@@ -998,6 +998,106 @@ UA_StatusCode TestServer::generateEventCallback(UA_Server *server,
     return ret;
 }
 
+void TestServer::readHistoryEventCallback(UA_Server *server, void *hdbContext, const UA_NodeId *sessionId, void *sessionContext,
+                                   const UA_RequestHeader *requestHeader, const UA_ReadEventDetails *historyReadDetails,
+                                   UA_TimestampsToReturn timestampsToReturn, UA_Boolean releaseContinuationPoints,
+                                   size_t nodesToReadSize, const UA_HistoryReadValueId *nodesToRead, UA_HistoryReadResponse *response,
+                                   UA_HistoryEvent * const * const historyData)
+{
+    Q_UNUSED(server)
+    Q_UNUSED(hdbContext)
+    Q_UNUSED(sessionId)
+    Q_UNUSED(sessionContext)
+    Q_UNUSED(requestHeader)
+    Q_UNUSED(timestampsToReturn)
+    Q_UNUSED(releaseContinuationPoints)
+
+    QMap<UA_DateTime, UA_LocalizedText> historyEvents {
+        { UA_DateTime_fromUnixTime(1694153836 - 120 * 60), UA_LocalizedText{UA_STRING_STATIC("en"), UA_STRING_STATIC("Message 1")}},
+        { UA_DateTime_fromUnixTime(1694153836 - 60 * 60), UA_LocalizedText{UA_STRING_STATIC("en"), UA_STRING_STATIC("Message 2")}},
+        { UA_DateTime_fromUnixTime(1694153836), UA_LocalizedText{UA_STRING_STATIC("en"), UA_STRING_STATIC("Message 3")}}
+    };
+
+    const auto historian1Id = QStringLiteral("ns=2;s=EventHistorian");
+    const auto historian2Id = QStringLiteral("ns=2;s=EventHistorian2");
+
+    for (size_t i = 0; i < nodesToReadSize; ++i) {
+        const auto idToRead = QOpen62541ValueConverter::scalarToQt<QString, UA_NodeId>(&nodesToRead[i].nodeId);
+
+        if (idToRead != historian1Id && idToRead != historian2Id) {
+            response->results[i].statusCode = UA_STATUSCODE_BADNODEIDINVALID;
+            continue;
+        }
+
+        if (releaseContinuationPoints)
+            continue;
+
+        QMap<UA_DateTime, UA_LocalizedText> eventsToReturn;
+        UA_DateTime continuationPoint = 0;
+
+        UA_DateTime providedContinuationPoint = 0;
+        if (nodesToRead[i].continuationPoint.length) {
+            if (nodesToRead[i].continuationPoint.length == sizeof(UA_DateTime)) {
+                providedContinuationPoint = *reinterpret_cast<UA_DateTime *>(nodesToRead[i].continuationPoint.data);
+            } else {
+                response->results[i].statusCode = UA_STATUSCODE_BADCONTINUATIONPOINTINVALID;
+                continue;
+            }
+        }
+
+        const auto isHistorian2 = QOpen62541ValueConverter::scalarToQt<QString, UA_NodeId>(&nodesToRead[i].nodeId) == historian2Id;
+
+        for (auto it = historyEvents.constBegin(); it != historyEvents.constEnd(); ++it) {
+            if (isHistorian2 && it.key() == UA_DateTime_fromUnixTime(1694153836))
+                break;
+
+            if (providedContinuationPoint && it.key() < providedContinuationPoint)
+                continue;
+
+            if (it.key() < historyReadDetails->startTime || it.key() > historyReadDetails->endTime)
+                continue;
+
+            if (eventsToReturn.size() && eventsToReturn.size() == historyReadDetails->numValuesPerNode) {
+                continuationPoint = it.key();
+                break;
+            }
+
+            eventsToReturn.insert(it.key(), it.value());
+        }
+
+        historyData[i]->eventsSize = eventsToReturn.size();
+        historyData[i]->events = static_cast<UA_HistoryEventFieldList *>(UA_Array_new(eventsToReturn.size(), &UA_TYPES[UA_TYPES_HISTORYEVENTFIELDLIST]));
+
+        for (int j = 0; j < eventsToReturn.size(); ++j) {
+            historyData[i]->events[j].eventFieldsSize = historyReadDetails->filter.selectClausesSize;
+            historyData[i]->events[j].eventFields = static_cast<UA_Variant *>(
+                UA_Array_new(historyData[i]->events[j].eventFieldsSize, &UA_TYPES[UA_TYPES_VARIANT]));
+
+            for (size_t k = 0; k < historyReadDetails->filter.selectClausesSize; ++k) {
+                if (historyReadDetails->filter.selectClauses[k].browsePathSize != 1)
+                    continue;
+
+                const auto timeName = UA_QualifiedName{0, UA_STRING_STATIC("Time")};
+                const auto messageName = UA_QualifiedName{0, UA_STRING_STATIC("Message")};
+                auto path = historyReadDetails->filter.selectClauses[k].browsePath;
+
+                if (UA_QualifiedName_equal(path, &timeName)) {
+                    UA_Variant_setScalarCopy(&historyData[i]->events[j].eventFields[k], &eventsToReturn.keys().at(j), &UA_TYPES[UA_TYPES_DATETIME]);
+                } else if (UA_QualifiedName_equal(path, &messageName)) {
+                    UA_Variant_setScalarCopy(&historyData[i]->events[j].eventFields[k], &eventsToReturn.values().at(j), &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
+                }
+            }
+        }
+
+        if (continuationPoint) {
+            response->results[i].continuationPoint.length = sizeof(UA_DateTime);
+            auto dt = UA_DateTime_new();
+            *dt = continuationPoint;
+            response->results[i].continuationPoint.data = reinterpret_cast<UA_Byte *>(dt);
+        }
+    }
+}
+
 UA_StatusCode TestServer::run(volatile bool *running)
 {
     return UA_Server_run(m_server, running);
@@ -1228,6 +1328,29 @@ UA_StatusCode TestServer::addEncoderTestModel()
     }
 
     return result;
+}
+
+UA_StatusCode TestServer::addEventHistorian(const UA_NodeId &parent)
+{
+    UA_ObjectAttributes attr = UA_ObjectAttributes_default;
+    attr.eventNotifier = UA_EVENTNOTIFIER_SUBSCRIBE_TO_EVENT | UA_EVENTNOTIFIER_HISTORY_READ;
+    attr.description = UA_LocalizedText{UA_STRING_STATIC("en"),
+                                        UA_STRING_STATIC("This node does not conform to part 11 of the OPC UA specification"
+                                                         "and only supports the event history unit tests scenario")};
+
+    UA_NodeId objectId = UA_NODEID_STRING_ALLOC(2, "EventHistorian");
+    auto result = UA_Server_addObjectNode(m_server, objectId, parent, UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                          UA_QualifiedName{2, UA_STRING_STATIC("EventHistorian")},
+                                          UA_NODEID_NUMERIC(0, UA_NS0ID_BASEOBJECTTYPE), attr, this, nullptr);
+
+    if (result != UA_STATUSCODE_GOOD) {
+        qWarning() << "Failed to add event historian object:" << UA_StatusCode_name(result);
+        return result;
+    }
+
+    m_config->historyDatabase.readEvent = readHistoryEventCallback;
+
+    return UA_STATUSCODE_GOOD;
 }
 
 QT_END_NAMESPACE

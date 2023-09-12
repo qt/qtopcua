@@ -138,6 +138,29 @@ QOpcUaHistoryReadResponse *QOpen62541Client::readHistoryData(const QOpcUaHistory
     return result;
 }
 
+QOpcUaHistoryReadResponse *QOpen62541Client::readHistoryEvents(const QOpcUaHistoryReadEventRequest &request)
+{
+    if (!m_client)
+        return nullptr;
+
+    auto impl = new QOpcUaHistoryReadResponseImpl(request);
+    const auto result = new QOpcUaHistoryReadResponse(impl);
+
+    // Connect signals
+    QObject::connect(m_backend, &QOpcUaBackend::historyEventsAvailable, impl, &QOpcUaHistoryReadResponseImpl::handleEventsAvailable);
+    QObject::connect(impl, &QOpcUaHistoryReadResponseImpl::historyReadEventsRequested, this, &QOpen62541Client::handleHistoryReadEventsRequested);
+    QObject::connect(this, &QOpen62541Client::historyReadRequestError, impl, &QOpcUaHistoryReadResponseImpl::handleRequestError);
+
+    const auto success = handleHistoryReadEventsRequested(request, {}, false, impl->handle());
+
+    if (!success) {
+        delete result;
+        return nullptr;
+    }
+
+    return result;
+}
+
 bool QOpen62541Client::addNode(const QOpcUaAddNodeItem &nodeToAdd)
 {
     return QMetaObject::invokeMethod(m_backend, "addNode", Qt::QueuedConnection,
@@ -217,6 +240,22 @@ bool QOpen62541Client::unregisterNodes(const QStringList &nodesToUnregister)
     return QMetaObject::invokeMethod(m_backend, "unregisterNodes",
                                      Qt::QueuedConnection,
                                      Q_ARG(QStringList, nodesToUnregister));
+}
+
+bool QOpen62541Client::handleHistoryReadEventsRequested(const QOpcUaHistoryReadEventRequest &request, const QList<QByteArray> &continuationPoints,
+                                                     bool releaseContinuationPoints, quint64 handle)
+{
+    const auto success = QMetaObject::invokeMethod(m_backend, "readHistoryEvents",
+                                                   Qt::QueuedConnection,
+                                                   Q_ARG(QOpcUaHistoryReadEventRequest, request),
+                                                   Q_ARG(QList<QByteArray>, continuationPoints),
+                                                   Q_ARG(bool, releaseContinuationPoints),
+                                                   Q_ARG(quint64, handle));
+
+    if (!success)
+        emit historyReadRequestError(handle);
+
+    return success;
 }
 
 QT_END_NAMESPACE

@@ -13,10 +13,13 @@ QT_BEGIN_NAMESPACE
     \brief This class is used for requesting historical data and storing the results.
     \since 6.3
 
-    A historical data request to an OPC UA server can be specified by a \l QOpcUaHistoryReadRawRequest.
+    A historical data request to an OPC UA server can be specified by a \l QOpcUaHistoryReadRawRequest
+    or \l QOpcUaHistoryReadEventRequest.
 
-    Objects of this class and the statuscode of the request are returned in the \l QOpcUaHistoryReadResponse::readHistoryDataFinished(const QList<QOpcUaHistoryData> &results, QOpcUa::UaStatusCode serviceResult)
-    signal and contain the result of a request.
+    Objects of this class and the statuscode of the request are returned in the
+    \l QOpcUaHistoryReadResponse::readHistoryDataFinished(const QList<QOpcUaHistoryData> &results, QOpcUa::UaStatusCode serviceResult)
+    or \l QOpcUaHistoryReadResponse::readHistoryEventsFinished(const QList<QOpcUaHistoryEvent> &results, QOpcUa::UaStatusCode serviceResult)
+    signal depending on the request type and contain the result of a request.
 
 */
 
@@ -39,6 +42,15 @@ QT_BEGIN_NAMESPACE
     to \a results and sets \a serviceResult to indicate the state of the result.
 
     \sa data(), serviceResult()
+*/
+
+/*!
+    \fn QOpcUaHistoryReadResponse::readHistoryEventsFinished(const QList<QOpcUaHistoryEvent> &results, QOpcUa::UaStatusCode serviceResult);
+
+    This signal is emitted when a historical event request is finished.
+    The new history data and any previous data is returned in \a results and \a serviceResult indicates the state of the result.
+
+    \sa events(), serviceResult()
 */
 
 /*!
@@ -97,6 +109,16 @@ bool QOpcUaHistoryReadResponse::releaseContinuationPoints()
 QList<QOpcUaHistoryData> QOpcUaHistoryReadResponse::data() const
 {
     return d_func()->m_impl->data();
+}
+
+/*!
+    \since 6.7
+    Returns a list of \l QOpcUaHistoryEvent containing a list of events for every node
+    to read in the request.
+*/
+QList<QOpcUaHistoryEvent> QOpcUaHistoryReadResponse::events() const
+{
+    return d_func()->m_impl->events();
 }
 
 /*!
