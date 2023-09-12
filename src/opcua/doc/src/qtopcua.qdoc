@@ -359,6 +359,40 @@
     \li X
     \li
     \li QOpcUaDiagnosticInfo
+    \li SimpleAttributeOperand
+    \li X
+    \li
+    \li QOpcUaSimpleAttributeOperand
+    \row
+    \li AttributeOperand
+    \li X
+    \li
+    \li QOpcUaAttributeOperand
+    \row
+    \li LiteralOperand
+    \li X
+    \li
+    \li QOpcUaLiteralOperand
+    \row
+    \li ElementOperand
+    \li X
+    \li
+    \li QOpcUaElementOperand
+    \row
+    \li RelativePathElement
+    \li X
+    \li
+    \row QOpcUaRelativePathElement
+    \row
+    \li ContentFilterElement
+    \li X
+    \li
+    \row QOpcUaContentFilterElement
+    \row
+    \li EventFilter
+    \li X
+    \li
+    \li QOpcUaMonitoringParameters::EventFilter
     \endtable
 
     \section1 Classes and Ownership

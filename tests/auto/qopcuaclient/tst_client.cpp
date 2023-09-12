@@ -15,6 +15,8 @@
 #include <QtOpcUa/QOpcUaEnumDefinition>
 #include <QtOpcUa/qopcuadiagnosticinfo.h>
 #include <QtOpcUa/qopcuagenericstructhandler.h>
+#include <QtOpcUa/qopcuaattributeoperand.h>
+#include <QtOpcUa/qopcuaelementoperand.h>
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QProcess>
@@ -264,6 +266,44 @@ void populateDiagnosticInfoTestData()
 
     testDiagnosticInfos = { diagnosticInfo, diagnosticInfo2 };
 }
+
+QList<QOpcUaMonitoringParameters::EventFilter> testEventFilters = {};
+
+void populateEventFilterTestData()
+{
+    QOpcUaMonitoringParameters::EventFilter f;
+    f << QOpcUaSimpleAttributeOperand("Message");
+    f << QOpcUaSimpleAttributeOperand("Severity");
+
+    QOpcUaSimpleAttributeOperand sao("Name");
+    sao.setIndexRange("0-2");
+
+    const QOpcUaLiteralOperand lo(42, QOpcUa::Types::Int16);
+
+    QOpcUaAttributeOperand ao;
+    ao.setAttributeId(QOpcUa::NodeAttribute::Value);
+    ao.setNodeId("ns=0;i=42");
+    ao.setAlias("Alias");
+    ao.setBrowsePath({ QOpcUaRelativePathElement(QOpcUaQualifiedName(0, "Name"),
+                                                QOpcUa::ReferenceTypeId::HasProperty) });
+    ao.setIndexRange("0-5");
+
+    const QOpcUaElementOperand eo(2);
+
+    f << (QOpcUaContentFilterElement() << QOpcUaContentFilterElement::FilterOperator::LessThan << sao << lo << ao << eo);
+    f << (QOpcUaContentFilterElement() << QOpcUaContentFilterElement::FilterOperator::LessThan << lo << sao << ao << eo);
+
+    QOpcUaMonitoringParameters::EventFilter f2;
+    f2 << QOpcUaSimpleAttributeOperand("Message");
+    f2 << QOpcUaSimpleAttributeOperand("Severity");
+
+    f2 << (QOpcUaContentFilterElement() << QOpcUaContentFilterElement::FilterOperator::LessThan << sao << lo << ao << eo);
+    f2 << (QOpcUaContentFilterElement() << QOpcUaContentFilterElement::FilterOperator::LessThan << eo << lo << ao << sao);
+
+    testEventFilters.push_back(f);
+    testEventFilters.push_back(f2);
+}
+
 
 #define ENCODE_EXTENSION_OBJECT(obj, index) \
 { \
@@ -2279,6 +2319,13 @@ void Tst_QOpcUaClient::writeArray()
         node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DiagnosticInfo"));
         QVERIFY(node != nullptr);
         WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::DiagnosticInfo);
+
+        list.clear();
+        list.append(QVariant::fromValue(testEventFilters[0]));
+        list.append(QVariant::fromValue(testEventFilters[1]));
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EventFilter"));
+        QVERIFY(node != nullptr);
+        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::EventFilter);
     }
 }
 
@@ -2642,6 +2689,15 @@ void Tst_QOpcUaClient::readArray()
         QCOMPARE(diagnosticInfoArray.toList().length(), 2);
         QCOMPARE(diagnosticInfoArray.toList()[0].value<QOpcUaDiagnosticInfo>(), testDiagnosticInfos[0]);
         QCOMPARE(diagnosticInfoArray.toList()[1].value<QOpcUaDiagnosticInfo>(), testDiagnosticInfos[1]);
+
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EventFilter"));
+        QVERIFY(node != nullptr);
+        READ_MANDATORY_VARIABLE_NODE(node)
+        QVariant eventFilterArray = node->attribute(QOpcUa::NodeAttribute::Value);
+        QCOMPARE(eventFilterArray.metaType().id(), QMetaType::QVariantList);
+        QCOMPARE(eventFilterArray.toList().size(), 2);
+        QCOMPARE(eventFilterArray.toList()[0].value<QOpcUaMonitoringParameters::EventFilter>(), testEventFilters[0]);
+        QCOMPARE(eventFilterArray.toList()[1].value<QOpcUaMonitoringParameters::EventFilter>(), testEventFilters[1]);
     }
 }
 
@@ -2796,6 +2852,10 @@ void Tst_QOpcUaClient::writeScalar()
         node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DiagnosticInfo"));
         QVERIFY(node != nullptr);
         WRITE_VALUE_ATTRIBUTE(node, testDiagnosticInfos[0], QOpcUa::DiagnosticInfo);
+
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EventFilter"));
+        QVERIFY(node != nullptr);
+        WRITE_VALUE_ATTRIBUTE(node, testEventFilters[0], QOpcUa::EventFilter);
     }
 }
 
@@ -3049,6 +3109,13 @@ void Tst_QOpcUaClient::readScalar()
         const QVariant diagnosticInfoScalar = node->attribute(QOpcUa::NodeAttribute::Value);
         QVERIFY(diagnosticInfoScalar.isValid());
         QCOMPARE(diagnosticInfoScalar.value<QOpcUaDiagnosticInfo>(), testDiagnosticInfos[0]);
+
+        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EventFilter"));
+        QVERIFY(node != nullptr);
+        READ_MANDATORY_VARIABLE_NODE(node)
+        QVariant eventFilterScalar = node->attribute(QOpcUa::NodeAttribute::Value);
+        QVERIFY(eventFilterScalar.isValid());
+        QCOMPARE(eventFilterScalar.value<QOpcUaMonitoringParameters::EventFilter>(), testEventFilters[0]);
     }
 }
 
@@ -5139,6 +5206,7 @@ int main(int argc, char *argv[])
 {
     populateDataTypeDefinitionTestData();
     populateDiagnosticInfoTestData();
+    populateEventFilterTestData();
 
     updateEnvironment();
     QCoreApplication app(argc, argv);

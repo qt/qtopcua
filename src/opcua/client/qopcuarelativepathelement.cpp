@@ -119,6 +119,16 @@ void QOpcUaRelativePathElement::setIncludeSubtypes(bool includeSubtypes)
 }
 
 /*!
+    \since 6.7
+
+    Returns a \l QVariant containing this relative path element.
+*/
+QOpcUaRelativePathElement::operator QVariant() const
+{
+    return QVariant::fromValue(*this);
+}
+
+/*!
     Returns the value of the isInverse flag.
 */
 bool QOpcUaRelativePathElement::isInverse() const
@@ -158,5 +168,13 @@ void QOpcUaRelativePathElement::setReferenceTypeId(QOpcUa::ReferenceTypeId refer
 {
     data->referenceTypeId = QOpcUa::nodeIdFromReferenceType(referenceTypeId);
 }
+
+/*!
+    \fn bool QOpcUaRelativePathElement::operator!=(const QOpcUaRelativePathElement &lhs,
+                                                   const QOpcUaRelativePathElement &rhs)
+    \since 6.7
+
+    Returns \c true if \a lhs has a different value than \a rhs.
+*/
 
 QT_END_NAMESPACE

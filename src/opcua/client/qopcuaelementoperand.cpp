@@ -104,4 +104,24 @@ void QOpcUaElementOperand::setIndex(quint32 index)
     data->index = index;
 }
 
+/*!
+    \fn bool QOpcUaElementOperand::operator==(const QOpcUaElementOperand &lhs,
+                                              const QOpcUaElementOperand &rhs)
+    \since 6.7
+
+    Returns \c true if \a lhs has the same value as \a rhs.
+*/
+bool operator==(const QOpcUaElementOperand &lhs, const QOpcUaElementOperand &rhs) noexcept
+{
+    return lhs.index() == rhs.index();
+}
+
+/*!
+    \fn bool QOpcUaElementOperand::operator!=(const QOpcUaElementOperand &lhs,
+                                              const QOpcUaElementOperand &rhs)
+    \since 6.7
+
+    Returns \c true if \a lhs a different value than \a rhs.
+*/
+
 QT_END_NAMESPACE

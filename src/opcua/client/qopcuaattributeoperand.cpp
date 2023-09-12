@@ -152,4 +152,26 @@ void QOpcUaAttributeOperand::setNodeId(const QString &nodeId)
     data->nodeId = nodeId;
 }
 
+/*!
+    \fn bool QOpcUaAttributeOperand::operator==(const QOpcUaAttributeOperand &lhs,
+                                                const QOpcUaAttributeOperand &rhs)
+    \since 6.7
+
+    Returns \c true if \a lhs has the same value as \a rhs.
+*/
+bool operator==(const QOpcUaAttributeOperand &lhs, const QOpcUaAttributeOperand &rhs) noexcept
+{
+    return lhs.nodeId() == rhs.nodeId() && lhs.attributeId() == rhs.attributeId() &&
+           lhs.alias() == rhs.alias() && lhs.browsePath() == rhs.browsePath() &&
+           lhs.indexRange() == rhs.indexRange();
+}
+
+/*!
+    \fn bool QOpcUaAttributeOperand::operator!=(const QOpcUaAttributeOperand &lhs,
+                                                const QOpcUaAttributeOperand &rhs)
+    \since 6.7
+
+    Returns \c true if \a lhs has a different value than \a rhs.
+*/
+
 QT_END_NAMESPACE

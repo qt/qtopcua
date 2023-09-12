@@ -99,4 +99,24 @@ void QOpcUaLiteralOperand::setValue(const QVariant &value)
     data->value = value;
 }
 
+/*!
+    \fn bool QOpcUaLiteralOperand::operator==(const QOpcUaLiteralOperand &lhs,
+                                              const QOpcUaLiteralOperand &rhs)
+    \since 6.7
+
+    Returns \c true if \a lhs has the same value as \a rhs.
+*/
+bool operator==(const QOpcUaLiteralOperand &lhs, const QOpcUaLiteralOperand &rhs) noexcept
+{
+    return lhs.value() == rhs.value() && lhs.type() == rhs.type();
+}
+
+/*!
+    \fn bool QOpcUaLiteralOperand::operator!=(const QOpcUaLiteralOperand &lhs,
+                                              const QOpcUaLiteralOperand &rhs)
+    \since 6.7
+
+    Returns \c true if \a lhs has a different value than \a rhs.
+*/
+
 QT_END_NAMESPACE

@@ -4,6 +4,8 @@
 #ifndef QOPEN62541UTILS_H
 #define QOPEN62541UTILS_H
 
+#include <QtOpcUa/qopcuamonitoringparameters.h>
+
 #include "qopen62541.h"
 
 #include <QString>
@@ -63,6 +65,8 @@ private:
 namespace Open62541Utils {
     UA_NodeId nodeIdFromQString(const QString &name);
     QString nodeIdToQString(UA_NodeId id);
+
+    void createEventFilter(const QOpcUaMonitoringParameters::EventFilter &filter, UA_ExtensionObject *out);
 
 #ifdef UA_ENABLE_ENCRYPTION
     bool checkSha1SignatureSupport();

@@ -34,8 +34,15 @@ public:
     bool includeSubtypes() const;
     void setIncludeSubtypes(bool includeSubtypes);
 
+    operator QVariant() const;
+
     QOpcUaQualifiedName targetName() const;
     void setTargetName(const QOpcUaQualifiedName &targetName);
+
+    friend inline bool operator!=(const QOpcUaRelativePathElement &lhs, const QOpcUaRelativePathElement &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
 
 private:
     QSharedDataPointer<QOpcUaRelativePathElementData> data;

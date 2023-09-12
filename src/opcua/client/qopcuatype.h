@@ -217,6 +217,13 @@ enum Types
     EnumDefinition  = 31,
     EnumField       = 32,
     DiagnosticInfo  = 33,
+    SimpleAttributeOperand = 34,
+    AttributeOperand = 35,
+    LiteralOperand =  36,
+    ElementOperand =  37,
+    RelativePathElement = 38,
+    ContentFilterElement = 39,
+    EventFilter =     40,
     Undefined       = 0xFFFFFFFF
 };
 Q_ENUM_NS(Types)

@@ -131,6 +131,8 @@ int main()
                                      QOpcUaArgument(QStringLiteral("Argument2"), QStringLiteral("ns=0;i=12"), 2,
                                                        {2, 2}, QOpcUaLocalizedText(QStringLiteral("en"), QStringLiteral("Description2")))}),
                        QOpcUa::Types::Argument);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.EventFilter", "EventFilterArrayTest",
+                       QVariantList{QOpcUaMonitoringParameters::EventFilter(), QOpcUaMonitoringParameters::EventFilter()}, QOpcUa::Types::EventFilter);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Arrays.ExtensionObject", "ExtensionObjectArrayTest",
                                                     QVariantList({QOpcUaExtensionObject(), QOpcUaExtensionObject()}),
                        QOpcUa::Types::ExtensionObject);
@@ -179,6 +181,8 @@ int main()
                        QOpcUaArgument(QStringLiteral("Argument1"), QStringLiteral("ns=0;i=12"), -1,
                                          {},QOpcUaLocalizedText(QStringLiteral("en"), QStringLiteral("Description1"))),
                        QOpcUa::Types::Argument);
+    server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.EventFilter", "EventFilterScalarTest", QOpcUaMonitoringParameters::EventFilter(),
+                       QOpcUa::Types::EventFilter);
     server.addVariable(testFolder, "ns=2;s=Demo.Static.Scalar.ExtensionObject", "ExtensionObjectScalarTest",
                                                     QOpcUaExtensionObject(), QOpcUa::Types::ExtensionObject);
     server.addNodeWithFixedTimestamp(testFolder, "ns=2;s=Demo.Static.FixedTimestamp", "FixedTimestamp");

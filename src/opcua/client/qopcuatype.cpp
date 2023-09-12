@@ -228,6 +228,13 @@ QT_BEGIN_NAMESPACE
     \value EnumDefinition The OPC UA EnumDefinition type
     \value EnumField The OPC UA EnumField type
     \value DiagnosticInfo The OPC UA DiagnosticInfo type
+    \value SimpleAttributeOperand The OPC UA SimpleAttributeOperand type.
+    \value AttributeOperand The OPC UA AttributeOperand type.
+    \value LiteralOperand The OPC UA LiteralOperand type.
+    \value ElementOperand The OPC UA ElementOperand type.
+    \value RelativePathElement The OPC UA RelativePathElement type.
+    \value ContentFilterElement The OPC UA ContentFilterElement type.
+    \value EventFilter The OPC UA EventFilter type.
     \value Undefined
 */
 

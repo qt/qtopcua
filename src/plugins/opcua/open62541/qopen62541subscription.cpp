@@ -10,9 +10,6 @@
 #include "qopen62541utils.h"
 #include <private/qopcuanode_p.h>
 
-#include "qopcuaelementoperand.h"
-#include "qopcualiteraloperand.h"
-#include "qopcuaattributeoperand.h"
 #include "qopcuacontentfilterelementresult.h"
 
 #include <QtCore/qloggingcategory.h>
@@ -405,7 +402,7 @@ UA_ExtensionObject QOpen62541Subscription::createFilter(const QVariant &filterDa
     }
 
     if (filterData.canConvert<QOpcUaMonitoringParameters::EventFilter>()) {
-        createEventFilter(filterData.value<QOpcUaMonitoringParameters::EventFilter>(), &obj);
+        Open62541Utils::createEventFilter(filterData.value<QOpcUaMonitoringParameters::EventFilter>(), &obj);
         return obj;
     }
 
@@ -424,138 +421,6 @@ void QOpen62541Subscription::createDataChangeFilter(const QOpcUaMonitoringParame
     out->encoding = UA_EXTENSIONOBJECT_DECODED;
     out->content.decoded.type = &UA_TYPES[UA_TYPES_DATACHANGEFILTER];
     out->content.decoded.data = uaFilter;
-}
-
-void QOpen62541Subscription::createEventFilter(const QOpcUaMonitoringParameters::EventFilter &filter, UA_ExtensionObject *out)
-{
-    UA_EventFilter *uaFilter = UA_EventFilter_new();
-    UA_EventFilter_init(uaFilter);
-    out->encoding = UA_EXTENSIONOBJECT_DECODED;
-    out->content.decoded.data = uaFilter;
-    out->content.decoded.type = &UA_TYPES[UA_TYPES_EVENTFILTER];
-
-    convertSelectClause(filter, &uaFilter->selectClauses, &uaFilter->selectClausesSize);
-    if (!convertWhereClause(filter, &uaFilter->whereClause))
-        UA_ExtensionObject_clear(out);
-}
-
-bool QOpen62541Subscription::convertSelectClause(const QOpcUaMonitoringParameters::EventFilter &filter,
-                                                 UA_SimpleAttributeOperand **selectClauses, size_t *size)
-{
-    if (!filter.selectClauses().isEmpty()) {
-        UA_SimpleAttributeOperand *select = static_cast<UA_SimpleAttributeOperand *>(
-                    UA_Array_new(filter.selectClauses().size(), &UA_TYPES[UA_TYPES_SIMPLEATTRIBUTEOPERAND]));
-
-        for (int i = 0; i < filter.selectClauses().size(); ++i) {
-            UA_SimpleAttributeOperand_init(&select[i]);
-            if (!filter.selectClauses().at(i).typeId().isEmpty())
-                select[i].typeDefinitionId = Open62541Utils::nodeIdFromQString(filter.selectClauses().at(i).typeId());
-            select[i].browsePathSize = filter.selectClauses().at(i).browsePath().size();
-            if (select[i].browsePathSize) {
-                select[i].browsePath = static_cast<UA_QualifiedName *>(
-                            UA_Array_new(select[i].browsePathSize, &UA_TYPES[UA_TYPES_QUALIFIEDNAME]));
-                for (size_t j = 0; j < select[i].browsePathSize; ++j)
-                    QOpen62541ValueConverter::scalarFromQt<UA_QualifiedName, QOpcUaQualifiedName>(
-                                filter.selectClauses().at(i).browsePath().at(j), &select[i].browsePath[j]);
-            }
-            if (!filter.selectClauses().at(i).indexRange().isEmpty())
-                QOpen62541ValueConverter::scalarFromQt<UA_String, QString>(filter.selectClauses().at(i).indexRange(),
-                                                                           &select[i].indexRange);
-            select[i].attributeId = QOpen62541ValueConverter::toUaAttributeId(filter.selectClauses().at(i).attributeId());
-        }
-
-        *selectClauses = select;
-        *size = filter.selectClauses().size();
-
-        return true;
-    }
-
-    *selectClauses = nullptr;
-    *size = 0;
-    return true;
-}
-
-bool QOpen62541Subscription::convertWhereClause(const QOpcUaMonitoringParameters::EventFilter &filter, UA_ContentFilter *result)
-{
-    if (!filter.whereClause().isEmpty()) {
-        result->elementsSize = filter.whereClause().size();
-        result->elements = static_cast<UA_ContentFilterElement *>(
-                    UA_Array_new(filter.whereClause().size(), &UA_TYPES[UA_TYPES_CONTENTFILTERELEMENT]));
-        for (int i = 0; i < filter.whereClause().size(); ++i) {
-            UA_ContentFilterElement_init(&result->elements[i]);
-            result->elements[i].filterOperator = static_cast<UA_FilterOperator>(filter.whereClause().at(i).filterOperator());
-            result->elements[i].filterOperandsSize = filter.whereClause().at(i).filterOperands().size();
-            result->elements[i].filterOperands = static_cast<UA_ExtensionObject *>(
-                        UA_Array_new(filter.whereClause().at(i).filterOperands().size(), &UA_TYPES[UA_TYPES_EXTENSIONOBJECT]));
-            for (int j = 0; j < filter.whereClause().at(i).filterOperands().size(); ++j) {
-                UA_ExtensionObject_init(&result->elements[i].filterOperands[j]);
-                result->elements[i].filterOperands[j].encoding = UA_EXTENSIONOBJECT_DECODED;
-                const QVariant currentOperand = filter.whereClause().at(i).filterOperands().at(j);
-                if (currentOperand.canConvert<QOpcUaElementOperand>()) {
-                    UA_ElementOperand *op = UA_ElementOperand_new();
-                    UA_ElementOperand_init(op);
-                    op->index = currentOperand.value<QOpcUaElementOperand>().index();
-                    result->elements[i].filterOperands[j].content.decoded.data = op;
-                    result->elements[i].filterOperands[j].content.decoded.type = &UA_TYPES[UA_TYPES_ELEMENTOPERAND];
-                } else if (currentOperand.canConvert<QOpcUaLiteralOperand>()) {
-                    UA_LiteralOperand *op = UA_LiteralOperand_new();
-                    UA_LiteralOperand_init(op);
-                    QOpcUaLiteralOperand litOp = currentOperand.value<QOpcUaLiteralOperand>();
-                    op->value = QOpen62541ValueConverter::toOpen62541Variant(litOp.value(), litOp.type());
-                    result->elements[i].filterOperands[j].content.decoded.data = op;
-                    result->elements[i].filterOperands[j].content.decoded.type = &UA_TYPES[UA_TYPES_LITERALOPERAND];
-                } else if (currentOperand.canConvert<QOpcUaSimpleAttributeOperand>()) {
-                    UA_SimpleAttributeOperand *op = UA_SimpleAttributeOperand_new();
-                    UA_SimpleAttributeOperand_init(op);
-                    QOpcUaSimpleAttributeOperand operand = currentOperand.value<QOpcUaSimpleAttributeOperand>();
-                    op->attributeId = QOpen62541ValueConverter::toUaAttributeId(operand.attributeId());
-                    QOpen62541ValueConverter::scalarFromQt<UA_String, QString>(operand.indexRange(), &op->indexRange);
-                    if (!operand.typeId().isEmpty())
-                        op->typeDefinitionId = Open62541Utils::nodeIdFromQString(operand.typeId());
-                    op->browsePathSize = operand.browsePath().size();
-                    op->browsePath = static_cast<UA_QualifiedName *>(UA_Array_new(operand.browsePath().size(),
-                                                                                  &UA_TYPES[UA_TYPES_QUALIFIEDNAME]));
-                    for (int k = 0; k < operand.browsePath().size(); ++k)
-                        QOpen62541ValueConverter::scalarFromQt<UA_QualifiedName, QOpcUaQualifiedName>(
-                                    operand.browsePath().at(k), &op->browsePath[k]);
-                    result->elements[i].filterOperands[j].content.decoded.data = op;
-                    result->elements[i].filterOperands[j].content.decoded.type = &UA_TYPES[UA_TYPES_SIMPLEATTRIBUTEOPERAND];
-                } else if (currentOperand.canConvert<QOpcUaAttributeOperand>()) {
-                    UA_AttributeOperand *op = UA_AttributeOperand_new();
-                    UA_AttributeOperand_init(op);
-                    QOpcUaAttributeOperand operand = currentOperand.value<QOpcUaAttributeOperand>();
-                    op->attributeId = QOpen62541ValueConverter::toUaAttributeId(operand.attributeId());
-                    QOpen62541ValueConverter::scalarFromQt<UA_String, QString>(operand.indexRange(), &op->indexRange);
-                    op->alias = UA_STRING_ALLOC(operand.alias().toUtf8().constData());
-                    if (!operand.nodeId().isEmpty())
-                        op->nodeId = Open62541Utils::nodeIdFromQString(operand.nodeId());
-                    op->browsePath.elementsSize = operand.browsePath().size();
-                    op->browsePath.elements = static_cast<UA_RelativePathElement *>(
-                                UA_Array_new(operand.browsePathRef().size(), &UA_TYPES[UA_TYPES_RELATIVEPATHELEMENT]));
-
-                    for (int k = 0; k < operand.browsePathRef().size(); ++k) {
-                        UA_RelativePathElement_init(&op->browsePath.elements[k]);
-                        op->browsePath.elements[k].includeSubtypes = operand.browsePath().at(k).includeSubtypes();
-                        op->browsePath.elements[k].isInverse = operand.browsePath().at(k).isInverse();
-                        if (!operand.browsePath().at(k).referenceTypeId().isEmpty())
-                            op->browsePath.elements[k].referenceTypeId = Open62541Utils::nodeIdFromQString(
-                                        operand.browsePath().at(k).referenceTypeId());
-                        QOpen62541ValueConverter::scalarFromQt<UA_QualifiedName, QOpcUaQualifiedName>(
-                                    operand.browsePath().at(k).targetName(), &op->browsePath.elements[k].targetName);
-                    }
-
-                    result->elements[i].filterOperands[j].content.decoded.data = op;
-                    result->elements[i].filterOperands[j].content.decoded.type = &UA_TYPES[UA_TYPES_ATTRIBUTEOPERAND];
-                } else {
-                    qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unknown filter operand type for event filter" <<
-                                                             filter.whereClause().at(i).filterOperands().at(j).typeName();
-                    UA_ContentFilter_clear(result);
-                    return false;
-                }
-            }
-        }
-    }
-    return true;
 }
 
 QOpcUaEventFilterResult QOpen62541Subscription::convertEventFilterResult(UA_ExtensionObject *obj)

@@ -43,6 +43,11 @@ public:
     QString indexRange() const;
     void setIndexRange(const QString &indexRange);
 
+    friend inline bool operator!=(const QOpcUaSimpleAttributeOperand &lhs, const QOpcUaSimpleAttributeOperand &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
+
 private:
     QSharedDataPointer<QOpcUaSimpleAttributeOperandData> data;
 };

@@ -3,6 +3,7 @@
 
 #include "qopen62541utils.h"
 #include <qopcuatype.h>
+#include "qopen62541valueconverter.h"
 
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qstringlist.h>
@@ -108,6 +109,17 @@ QString Open62541Utils::nodeIdToQString(UA_NodeId id)
         result.clear();
     }
     return result;
+}
+
+void Open62541Utils::createEventFilter(const QOpcUaMonitoringParameters::EventFilter &filter, UA_ExtensionObject *out)
+{
+    UA_EventFilter *uaFilter = UA_EventFilter_new();
+    UA_EventFilter_init(uaFilter);
+    out->encoding = UA_EXTENSIONOBJECT_DECODED;
+    out->content.decoded.data = uaFilter;
+    out->content.decoded.type = &UA_TYPES[UA_TYPES_EVENTFILTER];
+
+    QOpen62541ValueConverter::scalarFromQt<UA_EventFilter, QOpcUaMonitoringParameters::EventFilter>(filter, uaFilter);
 }
 
 #ifdef UA_ENABLE_ENCRYPTION

@@ -64,6 +64,11 @@ public:
     QList<QVariant> &filterOperandsRef();
     void setFilterOperands(const QList<QVariant> &filterOperands);
 
+    friend inline bool operator!=(const QOpcUaContentFilterElement &lhs, const QOpcUaContentFilterElement &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
+
 private:
     QSharedDataPointer<QOpcUaContentFilterElementData> data;
 };

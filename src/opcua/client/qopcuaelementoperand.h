@@ -26,6 +26,12 @@ public:
     quint32 index() const;
     void setIndex(quint32 index);
 
+    friend Q_OPCUA_EXPORT bool operator==(const QOpcUaElementOperand &lhs, const QOpcUaElementOperand &rhs) noexcept;
+    friend inline bool operator!=(const QOpcUaElementOperand &lhs, const QOpcUaElementOperand &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
+
 private:
     QSharedDataPointer<QOpcUaElementOperandData> data;
 };

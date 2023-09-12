@@ -10,6 +10,10 @@
 #include "qopcuastructuredefinition.h"
 #include "qopcuaenumdefinition.h"
 
+#include <QtOpcUa/qopcualiteraloperand.h>
+#include <QtOpcUa/qopcuaelementoperand.h>
+#include <QtOpcUa/qopcuaattributeoperand.h>
+
 #include <QtCore/qdatetime.h>
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qtimezone.h>
@@ -113,6 +117,20 @@ UA_Variant toOpen62541Variant(const QVariant &value, QOpcUa::Types type)
         return arrayFromQVariant<UA_ExpandedNodeId, QOpcUaExpandedNodeId>(value, dt);
     case QOpcUa::Argument:
         return arrayFromQVariant<UA_Argument, QOpcUaArgument>(value, dt);
+    case QOpcUa::SimpleAttributeOperand:
+        return arrayFromQVariant<UA_SimpleAttributeOperand, QOpcUaSimpleAttributeOperand>(value, dt);
+    case QOpcUa::AttributeOperand:
+        return arrayFromQVariant<UA_AttributeOperand, QOpcUaAttributeOperand>(value, dt);
+    case QOpcUa::LiteralOperand:
+        return arrayFromQVariant<UA_LiteralOperand, QOpcUaLiteralOperand>(value, dt);
+    case QOpcUa::ElementOperand:
+        return arrayFromQVariant<UA_SimpleAttributeOperand, QOpcUaSimpleAttributeOperand>(value, dt);
+    case QOpcUa::RelativePathElement:
+        return arrayFromQVariant<UA_RelativePathElement, QOpcUaRelativePathElement>(value, dt);
+    case QOpcUa::ContentFilterElement:
+        return arrayFromQVariant<UA_ContentFilterElement, QOpcUaContentFilterElement>(value, dt);
+    case QOpcUa::EventFilter:
+        return arrayFromQVariant<UA_EventFilter, QOpcUaMonitoringParameters::EventFilter>(value, dt);
     case QOpcUa::ExtensionObject:
         return arrayFromQVariant<UA_ExtensionObject, QOpcUaExtensionObject>(value, dt);
     case QOpcUa::StructureDefinition:
@@ -206,6 +224,20 @@ QVariant toQVariant(const UA_Variant &value)
         return arrayToQVariant<QOpcUaEnumField, UA_EnumField>(value);
     else if (value.type == &UA_TYPES[UA_TYPES_DIAGNOSTICINFO])
         return arrayToQVariant<QOpcUaDiagnosticInfo, UA_DiagnosticInfo>(value);
+    else if (value.type == &UA_TYPES[UA_TYPES_SIMPLEATTRIBUTEOPERAND])
+        return arrayToQVariant<QOpcUaSimpleAttributeOperand, UA_SimpleAttributeOperand>(value);
+    else if (value.type == &UA_TYPES[UA_TYPES_ATTRIBUTEOPERAND])
+        return arrayToQVariant<QOpcUaSimpleAttributeOperand, UA_SimpleAttributeOperand>(value);
+    else if (value.type == &UA_TYPES[UA_TYPES_LITERALOPERAND])
+        return arrayToQVariant<QOpcUaLiteralOperand, UA_LiteralOperand>(value);
+    else if (value.type == &UA_TYPES[UA_TYPES_ELEMENTOPERAND])
+        return arrayToQVariant<QOpcUaElementOperand, UA_ElementOperand>(value);
+    else if (value.type == &UA_TYPES[UA_TYPES_RELATIVEPATHELEMENT])
+        return arrayToQVariant<QOpcUaRelativePathElement, UA_RelativePathElement>(value);
+    else if (value.type == &UA_TYPES[UA_TYPES_CONTENTFILTERELEMENT])
+        return arrayToQVariant<QOpcUaContentFilterElement, UA_ContentFilterElement>(value);
+    else if (value.type == &UA_TYPES[UA_TYPES_EVENTFILTER])
+        return arrayToQVariant<QOpcUaMonitoringParameters::EventFilter, UA_EventFilter>(value);
 
     return uaVariantToQtExtensionObject(value);
 }
@@ -281,6 +313,20 @@ const UA_DataType *toDataType(QOpcUa::Types valueType)
         return &UA_TYPES[UA_TYPES_ENUMFIELD];
     case QOpcUa::DiagnosticInfo:
         return &UA_TYPES[UA_TYPES_DIAGNOSTICINFO];
+    case QOpcUa::SimpleAttributeOperand:
+        return &UA_TYPES[UA_TYPES_SIMPLEATTRIBUTEOPERAND];
+    case QOpcUa::AttributeOperand:
+        return &UA_TYPES[UA_TYPES_ATTRIBUTEOPERAND];
+    case QOpcUa::LiteralOperand:
+        return &UA_TYPES[UA_TYPES_LITERALOPERAND];
+    case QOpcUa::ElementOperand:
+        return &UA_TYPES[UA_TYPES_ELEMENTOPERAND];
+    case QOpcUa::RelativePathElement:
+        return &UA_TYPES[UA_TYPES_RELATIVEPATHELEMENT];
+    case QOpcUa::ContentFilterElement:
+        return &UA_TYPES[UA_TYPES_CONTENTFILTERELEMENT];
+    case QOpcUa::EventFilter:
+        return &UA_TYPES[UA_TYPES_EVENTFILTER];
     default:
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Trying to convert undefined type:" << valueType;
         return nullptr;
@@ -531,6 +577,124 @@ QOpcUaDiagnosticInfo scalarToQt<QOpcUaDiagnosticInfo, UA_DiagnosticInfo>(const U
     return temp;
 }
 
+template<>
+QOpcUaSimpleAttributeOperand scalarToQt<QOpcUaSimpleAttributeOperand, UA_SimpleAttributeOperand>(const UA_SimpleAttributeOperand *data)
+{
+    QOpcUaSimpleAttributeOperand result;
+
+    result.setAttributeId(toQtAttributeId(static_cast<UA_AttributeId>(data->attributeId)));
+    result.setIndexRange(scalarToQt<QString, UA_String>(&data->indexRange));
+    result.setTypeId(scalarToQt<QString, UA_NodeId>(&data->typeDefinitionId));
+
+    QList<QOpcUaQualifiedName> browsePath;
+    for (size_t i = 0; i < data->browsePathSize; ++i)
+        browsePath.push_back(scalarToQt<QOpcUaQualifiedName, UA_QualifiedName>(&data->browsePath[i]));
+
+    result.setBrowsePath(browsePath);
+
+    return result;
+}
+
+template<>
+QOpcUaLiteralOperand scalarToQt<QOpcUaLiteralOperand, UA_LiteralOperand>(const UA_LiteralOperand *data)
+{
+    QOpcUaLiteralOperand result;
+    result.setValue(toQVariant(data->value));
+    result.setType(toQtDataType(data->value.type));
+
+    return result;
+}
+
+template<>
+QOpcUaElementOperand scalarToQt<QOpcUaElementOperand, UA_ElementOperand>(const UA_ElementOperand *data)
+{
+    QOpcUaElementOperand result;
+    result.setIndex(data->index);
+
+    return result;
+}
+
+template<>
+QOpcUaRelativePathElement scalarToQt<QOpcUaRelativePathElement, UA_RelativePathElement>(const UA_RelativePathElement *data)
+{
+    QOpcUaRelativePathElement result;
+    result.setIncludeSubtypes(data->includeSubtypes);
+    result.setIsInverse(data->isInverse);
+    result.setReferenceTypeId(scalarToQt<QString, UA_NodeId>(&data->referenceTypeId));
+    result.setTargetName(scalarToQt<QOpcUaQualifiedName, UA_QualifiedName>(&data->targetName));
+
+    return result;
+}
+
+template<>
+QOpcUaAttributeOperand scalarToQt<QOpcUaAttributeOperand, UA_AttributeOperand>(const UA_AttributeOperand *data)
+{
+    QOpcUaAttributeOperand result;
+    result.setAttributeId(toQtAttributeId(static_cast<UA_AttributeId>(data->attributeId)));
+    result.setNodeId(scalarToQt<QString, UA_NodeId>(&data->nodeId));
+    result.setAlias(scalarToQt<QString, UA_String>(&data->alias));
+    result.setIndexRange(scalarToQt<QString, UA_String>(&data->indexRange));
+
+    QList<QOpcUaRelativePathElement> browsePath;
+
+    for (size_t i = 0; i < data->browsePath.elementsSize; ++i)
+        browsePath.push_back(scalarToQt<QOpcUaRelativePathElement, UA_RelativePathElement>(&data->browsePath.elements[i]));
+
+    result.setBrowsePath(browsePath);
+
+    return result;
+}
+
+template<>
+QOpcUaContentFilterElement scalarToQt<QOpcUaContentFilterElement, UA_ContentFilterElement>(const UA_ContentFilterElement *data)
+{
+    QOpcUaContentFilterElement result;
+
+    result.setFilterOperator(QOpcUaContentFilterElement::FilterOperator(data->filterOperator));
+    QVariantList filterOperands;
+
+    for (size_t i = 0; i < data->filterOperandsSize; ++i) {
+        if (data->filterOperands[i].encoding < UA_EXTENSIONOBJECT_DECODED) {
+            filterOperands.push_back(scalarToQt<QOpcUaExtensionObject, UA_ExtensionObject>(&data->filterOperands[i]));
+        } else if (data->filterOperands[i].content.decoded.type == &UA_TYPES[UA_TYPES_LITERALOPERAND]) {
+            filterOperands.push_back(scalarToQt<QOpcUaLiteralOperand, UA_LiteralOperand>(
+                static_cast<UA_LiteralOperand *>(data->filterOperands[i].content.decoded.data)));
+        } else if (data->filterOperands[i].content.decoded.type == &UA_TYPES[UA_TYPES_ELEMENTOPERAND]) {
+            filterOperands.push_back(scalarToQt<QOpcUaElementOperand, UA_ElementOperand>(
+                static_cast<UA_ElementOperand *>(data->filterOperands[i].content.decoded.data)));
+        } else if (data->filterOperands[i].content.decoded.type == &UA_TYPES[UA_TYPES_ATTRIBUTEOPERAND]) {
+            filterOperands.push_back(scalarToQt<QOpcUaAttributeOperand, UA_AttributeOperand>(
+                static_cast<UA_AttributeOperand *>(data->filterOperands[i].content.decoded.data)));
+        } else if (data->filterOperands[i].content.decoded.type == &UA_TYPES[UA_TYPES_SIMPLEATTRIBUTEOPERAND]) {
+            filterOperands.push_back(scalarToQt<QOpcUaSimpleAttributeOperand, UA_SimpleAttributeOperand>(
+                static_cast<UA_SimpleAttributeOperand *>(data->filterOperands[i].content.decoded.data)));
+        } else {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unknown operand in content filter element, unable to convert";
+            return {};
+        }
+    }
+
+    result.setFilterOperands(filterOperands);
+
+    return result;
+}
+
+template<>
+QOpcUaMonitoringParameters::EventFilter scalarToQt<QOpcUaMonitoringParameters::EventFilter, UA_EventFilter>(const UA_EventFilter *data)
+{
+    QOpcUaMonitoringParameters::EventFilter eventFilter;
+
+    for (size_t i = 0; i < data->selectClausesSize; ++i) {
+        eventFilter << scalarToQt<QOpcUaSimpleAttributeOperand, UA_SimpleAttributeOperand>(&data->selectClauses[i]);
+    }
+
+    for (size_t i = 0; i < data->whereClause.elementsSize; ++i) {
+        eventFilter << scalarToQt<QOpcUaContentFilterElement, UA_ContentFilterElement>(&data->whereClause.elements[i]);
+    }
+
+    return eventFilter;
+}
+
 template <>
 QVariant scalarToQt<QVariant, UA_ExtensionObject>(const UA_ExtensionObject *data)
 {
@@ -598,6 +762,41 @@ QVariant scalarToQt<QVariant, UA_ExtensionObject>(const UA_ExtensionObject *data
         if (data->content.decoded.type == &UA_TYPES[UA_TYPES_ENUMFIELD]) {
             return scalarToQt<QOpcUaEnumField, UA_EnumField>
                     (reinterpret_cast<UA_EnumField *>(data->content.decoded.data));
+        }
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_SIMPLEATTRIBUTEOPERAND] && data->content.decoded.data) {
+            return scalarToQt<QOpcUaSimpleAttributeOperand, UA_SimpleAttributeOperand>
+                (reinterpret_cast<UA_SimpleAttributeOperand *>(data->content.decoded.data));
+        }
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_ATTRIBUTEOPERAND] && data->content.decoded.data) {
+            return scalarToQt<QOpcUaAttributeOperand, UA_AttributeOperand>
+                (reinterpret_cast<UA_AttributeOperand *>(data->content.decoded.data));
+        }
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_LITERALOPERAND] && data->content.decoded.data) {
+            return scalarToQt<QOpcUaLiteralOperand, UA_LiteralOperand>
+                (reinterpret_cast<UA_LiteralOperand *>(data->content.decoded.data));
+        }
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_ELEMENTOPERAND] && data->content.decoded.data) {
+            return scalarToQt<QOpcUaElementOperand, UA_ElementOperand>
+                (reinterpret_cast<UA_ElementOperand *>(data->content.decoded.data));
+        }
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_RELATIVEPATHELEMENT] && data->content.decoded.data) {
+            return scalarToQt<QOpcUaRelativePathElement, UA_RelativePathElement>
+                (reinterpret_cast<UA_RelativePathElement *>(data->content.decoded.data));
+        }
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_CONTENTFILTERELEMENT] && data->content.decoded.data) {
+            return scalarToQt<QOpcUaContentFilterElement, UA_ContentFilterElement>
+                (reinterpret_cast<UA_ContentFilterElement *>(data->content.decoded.data));
+        }
+
+        if (data->content.decoded.type == &UA_TYPES[UA_TYPES_EVENTFILTER] && data->content.decoded.data) {
+            return scalarToQt<QOpcUaMonitoringParameters::EventFilter, UA_EventFilter>
+                (reinterpret_cast<UA_EventFilter *>(data->content.decoded.data));
         }
 
         bool success = false;
@@ -919,6 +1118,126 @@ void scalarFromQt<UA_Argument, QOpcUaArgument>(const QOpcUaArgument &value, UA_A
         ptr->arrayDimensionsSize = 0;
 }
 
+template<>
+void scalarFromQt<UA_SimpleAttributeOperand, QOpcUaSimpleAttributeOperand>(const QOpcUaSimpleAttributeOperand &value, UA_SimpleAttributeOperand *ptr)
+{
+    ptr->attributeId = toUaAttributeId(value.attributeId());
+    if (!value.indexRange().isEmpty())
+        scalarFromQt<UA_String, QString>(value.indexRange(), &ptr->indexRange);
+    scalarFromQt<UA_NodeId, QString>(value.typeId(), &ptr->typeDefinitionId);
+    ptr->browsePathSize = value.browsePath().size();
+    if (!value.browsePath().isEmpty()) {
+        ptr->browsePath = static_cast<UA_QualifiedName *>(UA_Array_new(value.browsePath().size(), &UA_TYPES[UA_TYPES_QUALIFIEDNAME]));
+        for (size_t i = 0; i < ptr->browsePathSize; ++i)
+            scalarFromQt<UA_QualifiedName, QOpcUaQualifiedName>(value.browsePath().at(i), &ptr->browsePath[i]);
+    }
+}
+
+template<>
+void scalarFromQt<UA_LiteralOperand, QOpcUaLiteralOperand>(const QOpcUaLiteralOperand &value, UA_LiteralOperand *ptr)
+{
+    ptr->value = toOpen62541Variant(value.value(), value.type());
+}
+
+template<>
+void scalarFromQt<UA_ElementOperand, QOpcUaElementOperand>(const QOpcUaElementOperand &value, UA_ElementOperand *ptr)
+{
+    ptr->index = value.index();
+}
+
+template<>
+void scalarFromQt<UA_RelativePathElement, QOpcUaRelativePathElement>(const QOpcUaRelativePathElement &value, UA_RelativePathElement *ptr)
+{
+    ptr->includeSubtypes = value.includeSubtypes();
+    ptr->isInverse = value.isInverse();
+    scalarFromQt<UA_NodeId, QString>(value.referenceTypeId(), &ptr->referenceTypeId);
+    scalarFromQt<UA_QualifiedName, QOpcUaQualifiedName>(value.targetName(), &ptr->targetName);
+}
+
+template<>
+void scalarFromQt<UA_AttributeOperand, QOpcUaAttributeOperand>(const QOpcUaAttributeOperand &value, UA_AttributeOperand *ptr)
+{
+    ptr->attributeId = toUaAttributeId(value.attributeId());
+    scalarFromQt<UA_String, QString>(value.alias(), &ptr->alias);
+    if (!value.indexRange().isEmpty())
+        scalarFromQt<UA_String, QString>(value.indexRange(), &ptr->indexRange);
+    scalarFromQt<UA_NodeId, QString>(value.nodeId(), &ptr->nodeId);
+    ptr->browsePath.elementsSize = value.browsePath().size();
+    if (ptr->browsePath.elementsSize) {
+        ptr->browsePath.elements = static_cast<UA_RelativePathElement *>(UA_Array_new(ptr->browsePath.elementsSize,
+                                                                                      &UA_TYPES[UA_TYPES_RELATIVEPATHELEMENT]));
+        for (size_t i = 0; i < ptr->browsePath.elementsSize; ++i)
+            scalarFromQt<UA_RelativePathElement, QOpcUaRelativePathElement>(value.browsePath().at(i),
+                                                                            &ptr->browsePath.elements[i]);
+    }
+}
+
+template<>
+void scalarFromQt<UA_ContentFilterElement, QOpcUaContentFilterElement>(const QOpcUaContentFilterElement &value, UA_ContentFilterElement *ptr)
+{
+    ptr->filterOperator = static_cast<UA_FilterOperator>(value.filterOperator());
+    ptr->filterOperandsSize = value.filterOperands().size();
+    if (ptr->filterOperandsSize) {
+        ptr->filterOperands = static_cast<UA_ExtensionObject *>(UA_Array_new(ptr->filterOperandsSize, &UA_TYPES[UA_TYPES_EXTENSIONOBJECT]));
+
+        for (size_t i = 0; i < ptr->filterOperandsSize; ++i) {
+            if (value.filterOperands().at(i).canConvert<QOpcUaElementOperand>()) {
+                const auto operand = UA_ElementOperand_new();
+                scalarFromQt<UA_ElementOperand, QOpcUaElementOperand>(value.filterOperands().at(i).value<QOpcUaElementOperand>(), operand);
+                ptr->filterOperands[i].encoding = UA_EXTENSIONOBJECT_DECODED;
+                ptr->filterOperands[i].content.decoded.data = operand;
+                ptr->filterOperands[i].content.decoded.type = &UA_TYPES[UA_TYPES_ELEMENTOPERAND];
+            } else if (value.filterOperands().at(i).canConvert<QOpcUaLiteralOperand>()) {
+                const auto operand = UA_LiteralOperand_new();
+                scalarFromQt<UA_LiteralOperand, QOpcUaLiteralOperand>(value.filterOperands().at(i).value<QOpcUaLiteralOperand>(), operand);
+                ptr->filterOperands[i].encoding = UA_EXTENSIONOBJECT_DECODED;
+                ptr->filterOperands[i].content.decoded.data = operand;
+                ptr->filterOperands[i].content.decoded.type = &UA_TYPES[UA_TYPES_LITERALOPERAND];
+            } else if (value.filterOperands().at(i).canConvert<QOpcUaAttributeOperand>()) {
+                const auto operand = UA_AttributeOperand_new();
+                scalarFromQt<UA_AttributeOperand, QOpcUaAttributeOperand>(value.filterOperands().at(i).value<QOpcUaAttributeOperand>(), operand);
+                ptr->filterOperands[i].encoding = UA_EXTENSIONOBJECT_DECODED;
+                ptr->filterOperands[i].content.decoded.data = operand;
+                ptr->filterOperands[i].content.decoded.type = &UA_TYPES[UA_TYPES_ATTRIBUTEOPERAND];
+            } else if (value.filterOperands().at(i).canConvert<QOpcUaSimpleAttributeOperand>()) {
+                const auto operand = UA_SimpleAttributeOperand_new();
+                scalarFromQt<UA_SimpleAttributeOperand, QOpcUaSimpleAttributeOperand>(value.filterOperands().at(i).value<QOpcUaSimpleAttributeOperand>(), operand);
+                ptr->filterOperands[i].encoding = UA_EXTENSIONOBJECT_DECODED;
+                ptr->filterOperands[i].content.decoded.data = operand;
+                ptr->filterOperands[i].content.decoded.type = &UA_TYPES[UA_TYPES_SIMPLEATTRIBUTEOPERAND];
+            } else {
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unsupported operand type in content filter element, unable to convert";
+                UA_ContentFilterElement_clear(ptr);
+                return;
+            }
+        }
+    }
+}
+
+template<>
+void scalarFromQt<UA_EventFilter, QOpcUaMonitoringParameters::EventFilter>(const QOpcUaMonitoringParameters::EventFilter &value, UA_EventFilter *ptr)
+{
+    ptr->selectClausesSize = value.selectClauses().size();
+    if (ptr->selectClausesSize) {
+        ptr->selectClauses = static_cast<UA_SimpleAttributeOperand *>(
+            UA_Array_new(ptr->selectClausesSize, &UA_TYPES[UA_TYPES_SIMPLEATTRIBUTEOPERAND]));
+
+        for (size_t i = 0; i < ptr->selectClausesSize; ++i)
+            scalarFromQt<UA_SimpleAttributeOperand, QOpcUaSimpleAttributeOperand>(value.selectClauses().at(i),
+                                                                                  &ptr->selectClauses[i]);
+    }
+
+    ptr->whereClause.elementsSize = value.whereClause().size();
+    if (ptr->whereClause.elementsSize) {
+        ptr->whereClause.elements = static_cast<UA_ContentFilterElement *>(
+            UA_Array_new(ptr->whereClause.elementsSize, &UA_TYPES[UA_TYPES_CONTENTFILTERELEMENT]));
+
+        for (size_t i = 0; i < ptr->whereClause.elementsSize; ++i)
+            scalarFromQt<UA_ContentFilterElement, QOpcUaContentFilterElement>(value.whereClause().at(i),
+                                                                              &ptr->whereClause.elements[i]);
+    }
+}
+
 template<typename TARGETTYPE, typename QTTYPE>
 UA_Variant arrayFromQVariant(const QVariant &var, const UA_DataType *type)
 {
@@ -1032,6 +1351,94 @@ QOpcUaExtensionObject encodeAsBinaryExtensionObject(const void *data, const UA_D
     return result;
 }
 
+QOpcUa::Types toQtDataType(const UA_DataType *type)
+{
+    if (type == &UA_TYPES[UA_TYPES_BOOLEAN])
+        return QOpcUa::Types::Boolean;
+    if (type == &UA_TYPES[UA_TYPES_INT32])
+        return QOpcUa::Types::Int32;
+    if (type == &UA_TYPES[UA_TYPES_UINT32])
+        return QOpcUa::Types::UInt32;
+    if (type == &UA_TYPES[UA_TYPES_DOUBLE])
+        return QOpcUa::Types::Double;
+    if (type == &UA_TYPES[UA_TYPES_FLOAT])
+        return QOpcUa::Types::Float;
+    if (type == &UA_TYPES[UA_TYPES_STRING])
+        return QOpcUa::Types::String;
+    if (type == &UA_TYPES[UA_TYPES_LOCALIZEDTEXT])
+        return QOpcUa::Types::LocalizedText;
+    if (type == &UA_TYPES[UA_TYPES_DATETIME])
+        return QOpcUa::Types::DateTime;
+    if (type == &UA_TYPES[UA_TYPES_UINT16])
+        return QOpcUa::Types::UInt16;
+    if (type == &UA_TYPES[UA_TYPES_INT16])
+        return QOpcUa::Types::Int16;
+    if (type == &UA_TYPES[UA_TYPES_UINT64])
+        return QOpcUa::Types::UInt64;
+    if (type == &UA_TYPES[UA_TYPES_INT64])
+        return QOpcUa::Types::Int64;
+    if (type == &UA_TYPES[UA_TYPES_BYTE])
+        return QOpcUa::Types::Byte;
+    if (type == &UA_TYPES[UA_TYPES_SBYTE])
+        return QOpcUa::Types::SByte;
+    if (type == &UA_TYPES[UA_TYPES_BYTESTRING])
+        return QOpcUa::Types::ByteString;
+    if (type == &UA_TYPES[UA_TYPES_XMLELEMENT])
+        return QOpcUa::Types::XmlElement;
+    if (type == &UA_TYPES[UA_TYPES_NODEID])
+        return QOpcUa::Types::NodeId;
+    if (type == &UA_TYPES[UA_TYPES_GUID])
+        return QOpcUa::Types::Guid;
+    if (type == &UA_TYPES[UA_TYPES_QUALIFIEDNAME])
+        return QOpcUa::Types::QualifiedName;
+    if (type == &UA_TYPES[UA_TYPES_STATUSCODE])
+        return QOpcUa::Types::StatusCode;
+    if (type == &UA_TYPES[UA_TYPES_RANGE])
+        return QOpcUa::Types::Range;
+    if (type == &UA_TYPES[UA_TYPES_EUINFORMATION])
+        return QOpcUa::Types::EUInformation;
+    if (type == &UA_TYPES[UA_TYPES_COMPLEXNUMBERTYPE])
+        return QOpcUa::Types::ComplexNumber;
+    if (type == &UA_TYPES[UA_TYPES_DOUBLECOMPLEXNUMBERTYPE])
+        return QOpcUa::Types::DoubleComplexNumber;
+    if (type == &UA_TYPES[UA_TYPES_AXISINFORMATION])
+        return QOpcUa::Types::AxisInformation;
+    if (type == &UA_TYPES[UA_TYPES_XVTYPE])
+        return QOpcUa::Types::XV;
+    if (type == &UA_TYPES[UA_TYPES_EXTENSIONOBJECT])
+        return QOpcUa::Types::ExtensionObject;
+    if (type == &UA_TYPES[UA_TYPES_EXPANDEDNODEID])
+        return QOpcUa::Types::ExpandedNodeId;
+    if (type == &UA_TYPES[UA_TYPES_ARGUMENT])
+        return QOpcUa::Types::Argument;
+    if (type == &UA_TYPES[UA_TYPES_STRUCTUREDEFINITION])
+        return QOpcUa::Types::StructureDefinition;
+    if (type == &UA_TYPES[UA_TYPES_STRUCTUREFIELD])
+        return QOpcUa::Types::StructureField;
+    if (type == &UA_TYPES[UA_TYPES_ENUMDEFINITION])
+        return QOpcUa::Types::EnumDefinition;
+    if (type == &UA_TYPES[UA_TYPES_ENUMFIELD])
+        return QOpcUa::Types::EnumField;
+    if (type == &UA_TYPES[UA_TYPES_DIAGNOSTICINFO])
+        return QOpcUa::Types::DiagnosticInfo;
+    if (type == &UA_TYPES[UA_TYPES_SIMPLEATTRIBUTEOPERAND])
+        return QOpcUa::Types::SimpleAttributeOperand;
+    if (type == &UA_TYPES[UA_TYPES_ATTRIBUTEOPERAND])
+        return QOpcUa::Types::AttributeOperand;
+    if (type == &UA_TYPES[UA_TYPES_LITERALOPERAND])
+        return QOpcUa::Types::LiteralOperand;
+    if (type == &UA_TYPES[UA_TYPES_ELEMENTOPERAND])
+        return QOpcUa::Types::ElementOperand;
+    if (type == &UA_TYPES[UA_TYPES_RELATIVEPATHELEMENT])
+        return QOpcUa::Types::RelativePathElement;
+    if (type == &UA_TYPES[UA_TYPES_CONTENTFILTERELEMENT])
+        return QOpcUa::Types::ContentFilterElement;
+    if (type == &UA_TYPES[UA_TYPES_EVENTFILTER])
+        return QOpcUa::Types::EventFilter;
+
+    qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Trying to convert unhandled type:" << (type ? type->typeName : "Unknown");
+    return QOpcUa::Types::Undefined;
+}
 }
 
 QT_END_NAMESPACE

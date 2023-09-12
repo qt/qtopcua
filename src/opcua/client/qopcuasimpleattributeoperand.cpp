@@ -171,4 +171,12 @@ void QOpcUaSimpleAttributeOperand::setTypeId(const QString &typeId)
     data->typeId = typeId;
 }
 
+/*!
+    \fn bool QOpcUaSimpleAttributeOperand::operator!=(const QOpcUaSimpleAttributeOperand &lhs,
+                                                      const QOpcUaSimpleAttributeOperand &rhs)
+    \since 6.7
+
+    Returns \c true if \a lhs has a different value than \a rhs.
+*/
+
 QT_END_NAMESPACE

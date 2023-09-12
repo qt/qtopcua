@@ -189,4 +189,12 @@ QOpcUaContentFilterElement &QOpcUaContentFilterElement::operator<<(const QOpcUaE
     return *this;
 }
 
+/*!
+    \fn bool QOpcUaContentFilterElement::operator!=(const QOpcUaContentFilterElement &lhs,
+                                                    const QOpcUaContentFilterElement &rhs)
+    \since 6.7
+
+    Returns \c true if \a lhs has a different value than \a rhs.
+*/
+
 QT_END_NAMESPACE
