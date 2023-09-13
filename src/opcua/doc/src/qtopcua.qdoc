@@ -354,6 +354,11 @@
     \li X
     \li
     \li QOpcUaEnumField
+    \row
+    \li DiagnosticInfo
+    \li X
+    \li
+    \li QOpcUaDiagnosticInfo
     \endtable
 
     \section1 Classes and Ownership
