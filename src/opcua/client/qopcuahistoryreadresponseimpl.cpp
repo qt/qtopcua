@@ -30,35 +30,7 @@ bool QOpcUaHistoryReadResponseImpl::readMoreData()
         return false;
 
     if (m_requestType == RequestType::ReadRaw) {
-        QOpcUaHistoryReadRawRequest request;
-        request.setStartTimestamp(m_readRawRequest.startTimestamp());
-        request.setEndTimestamp(m_readRawRequest.endTimestamp());
-        request.setNumValuesPerNode(m_readRawRequest.numValuesPerNode());
-        request.setReturnBounds(m_readRawRequest.returnBounds());
-
-        int arrayIndex = 0;
-        QList<int> newDataMapping;
-        QList<QByteArray> newContinuationPoints;
-
-        for (const auto &continuationPoint : m_continuationPoints) {
-            int mappingIndex = 0;
-            if (m_dataMapping.empty())
-                mappingIndex = arrayIndex;
-            else
-                mappingIndex = m_dataMapping.at(arrayIndex);
-
-            if (!continuationPoint.isEmpty()) {
-                newDataMapping.push_back(mappingIndex);
-                newContinuationPoints.push_back(continuationPoint);
-                request.addNodeToRead(m_readRawRequest.nodesToRead().at(mappingIndex));
-            }
-
-            ++arrayIndex;
-        }
-
-        m_dataMapping = newDataMapping;
-
-        m_continuationPoints = newContinuationPoints;
+        const auto request = createReadRawRequestWithContinuationPoints();
         emit historyReadRawRequested(request, m_continuationPoints, false, handle());
         return true;
     }
@@ -74,7 +46,13 @@ QOpcUaHistoryReadResponse::State QOpcUaHistoryReadResponseImpl::state() const
 bool QOpcUaHistoryReadResponseImpl::releaseContinuationPoints()
 {
     if (m_requestType == RequestType::ReadRaw) {
-        emit historyReadRawRequested(m_readRawRequest, m_continuationPoints, true, handle());
+        const auto request = createReadRawRequestWithContinuationPoints();
+
+        if (!request.nodesToRead().isEmpty())
+            emit historyReadRawRequested(request, m_continuationPoints, true, handle());
+
+        m_continuationPoints.clear();
+
         setState(QOpcUaHistoryReadResponse::State::Finished);
     };
 
@@ -145,6 +123,41 @@ void QOpcUaHistoryReadResponseImpl::setState(QOpcUaHistoryReadResponse::State st
         m_state = state;
         emit stateChanged(state);
     }
+}
+
+QOpcUaHistoryReadRawRequest QOpcUaHistoryReadResponseImpl::createReadRawRequestWithContinuationPoints()
+{
+    QOpcUaHistoryReadRawRequest request;
+    request.setStartTimestamp(m_readRawRequest.startTimestamp());
+    request.setEndTimestamp(m_readRawRequest.endTimestamp());
+    request.setNumValuesPerNode(m_readRawRequest.numValuesPerNode());
+    request.setReturnBounds(m_readRawRequest.returnBounds());
+
+    int arrayIndex = 0;
+    QList<int> newDataMapping;
+    QList<QByteArray> newContinuationPoints;
+
+    for (const auto &continuationPoint : m_continuationPoints) {
+        int mappingIndex = 0;
+        if (m_dataMapping.empty())
+            mappingIndex = arrayIndex;
+        else
+            mappingIndex = m_dataMapping.at(arrayIndex);
+
+        if (!continuationPoint.isEmpty()) {
+            newDataMapping.push_back(mappingIndex);
+            newContinuationPoints.push_back(continuationPoint);
+            request.addNodeToRead(m_readRawRequest.nodesToRead().at(mappingIndex));
+        }
+
+        ++arrayIndex;
+    }
+
+    m_dataMapping = newDataMapping;
+
+    m_continuationPoints = newContinuationPoints;
+
+    return request;
 }
 
 QT_END_NAMESPACE

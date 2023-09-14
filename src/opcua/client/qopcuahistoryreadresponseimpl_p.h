@@ -53,6 +53,8 @@ Q_SIGNALS:
 protected:
     void setState(QOpcUaHistoryReadResponse::State state);
 
+    QOpcUaHistoryReadRawRequest createReadRawRequestWithContinuationPoints();
+
 private:
     enum class RequestType {
         Unknown,

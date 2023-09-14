@@ -4263,6 +4263,43 @@ void Tst_QOpcUaClient::readHistoryDataFromClient()
 
         QCOMPARE(response->hasMoreData(), false);
     }
+
+    // Don't follow the continuation points to the end and release remaining
+    {
+        WRITE_VALUE_ATTRIBUTE(nodeWithLimit, 20, QOpcUa::Types::Int32);
+
+        QOpcUaHistoryReadRawRequest request(
+            {QOpcUaReadItem(node->nodeId()), QOpcUaReadItem(nodeWithLimit->nodeId())},
+            QDateTime::currentDateTime(),
+            QDateTime::currentDateTime().addDays(-1),
+            15,
+            false
+            );
+
+        QScopedPointer<QOpcUaHistoryReadResponse> response(opcuaClient->readHistoryData(request));
+        QVERIFY(response != nullptr);
+
+        QSignalSpy readHistoryDataSpy(response.get(), &QOpcUaHistoryReadResponse::readHistoryDataFinished);
+        readHistoryDataSpy.wait(signalSpyTimeout);
+
+        QCOMPARE(readHistoryDataSpy.size(), 1);
+        QCOMPARE(readHistoryDataSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+        QCOMPARE(response->hasMoreData(), true);
+        readHistoryDataSpy.clear();
+        response->readMoreData();
+        readHistoryDataSpy.wait(signalSpyTimeout);
+        QCOMPARE(readHistoryDataSpy.size(), 1);
+        QCOMPARE(response->hasMoreData(), true);
+
+        const auto data = response.data();
+
+        response->releaseContinuationPoints();
+        readHistoryDataSpy.clear();
+        readHistoryDataSpy.wait(signalSpyTimeout);
+        QCOMPARE(readHistoryDataSpy.size(), 1);
+        QCOMPARE(readHistoryDataSpy.at(0).at(1), QOpcUa::UaStatusCode::Good);
+        QCOMPARE(response.data(), data);
+    }
 }
 
 
