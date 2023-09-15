@@ -3,8 +3,8 @@
 
 #include <QtOpcUa/qopcuastructuredefinition.h>
 
-#include <QHash>
-#include <QSharedData>
+#include <QtCore/qhash.h>
+#include <QtCore/qshareddata.h>
 
 #ifndef QOPCUAGENERICSTRUCTVALUE_H
 #define QOPCUAGENERICSTRUCTVALUE_H

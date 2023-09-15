@@ -7,7 +7,7 @@
 #include <QtOpcUa/qopcuabinarydataencoding.h>
 #include <QtOpcUa/qopcuagenericstructvalue.h>
 
-#include <QObject>
+#include <QtCore/qobject.h>
 
 #ifndef QOPCUAGENERICSTRUCTHANDLER_H
 #define QOPCUAGENERICSTRUCTHANDLER_H

@@ -3,7 +3,7 @@
 
 #include <QtOpcUa/qopcuatype.h>
 
-#include <QSharedData>
+#include <QtCore/qshareddata.h>
 
 #ifndef QOPCUADIAGNOSTICINFO_H
 #define QOPCUADIAGNOSTICINFO_H
