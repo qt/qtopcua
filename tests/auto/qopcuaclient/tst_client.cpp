@@ -1505,24 +1505,46 @@ void Tst_QOpcUaClient::dataChangeSubscription()
 
     QSignalSpy monitoringModifiedSpy(node.data(), &QOpcUaNode::monitoringStatusChanged);
     node->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::PublishingInterval, 200);
+    node->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::LifetimeCount, valueStatus.lifetimeCount() + 1);
+    node->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::MaxKeepAliveCount, valueStatus.maxKeepAliveCount() + 1);
+    node->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::Priority, valueStatus.priority() + 1);
+    node->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::MaxNotificationsPerPublish,
+                           valueStatus.maxNotificationsPerPublish());
 
-    monitoringModifiedSpy.wait(signalSpyTimeout);
-    if (monitoringModifiedSpy.size() < 2)
+    for (int i = 0; i < 10; ++i) {
         monitoringModifiedSpy.wait(signalSpyTimeout);
 
-    attrs = {QOpcUa::NodeAttribute::Value, QOpcUa::NodeAttribute::DisplayName};
-    for (auto it : std::as_const(monitoringModifiedSpy)) {
-        QOpcUa::NodeAttribute temp = it.at(0).value<QOpcUa::NodeAttribute>();
-        QVERIFY(attrs.contains(temp));
-        QVERIFY(it.at(1).value<QOpcUaMonitoringParameters::Parameters>() &  QOpcUaMonitoringParameters::Parameter::PublishingInterval);
-        QCOMPARE(it.at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
-        QCOMPARE(node->monitoringStatus(temp).publishingInterval(), 200.0);
-        attrs.remove(attrs.indexOf(temp));
+        if (monitoringModifiedSpy.size() == 10)
+            break;
     }
-    QCOMPARE(attrs.size(), 0);
+
+    QCOMPARE(monitoringModifiedSpy.size(), 10);
+
+    const QOpcUaMonitoringParameters::Parameters params =
+        QOpcUaMonitoringParameters::Parameter::PublishingInterval |
+        QOpcUaMonitoringParameters::Parameter::LifetimeCount |
+        QOpcUaMonitoringParameters::Parameter::MaxKeepAliveCount |
+        QOpcUaMonitoringParameters::Parameter::Priority |
+        QOpcUaMonitoringParameters::Parameter::MaxNotificationsPerPublish;
+
+    QHash<QOpcUa::NodeAttribute, QOpcUaMonitoringParameters::Parameters> expectedEntries = {
+        { QOpcUa::NodeAttribute::Value, params },
+        { QOpcUa::NodeAttribute::DisplayName, params }
+    };
+
+    for (auto &it : std::as_const(monitoringModifiedSpy)) {
+        QOpcUa::NodeAttribute temp = it.at(0).value<QOpcUa::NodeAttribute>();
+        QVERIFY(expectedEntries.contains(temp));
+        const auto includedFlags = it.at(1).value<QOpcUaMonitoringParameters::Parameters>();
+        QCOMPARE(includedFlags.testAnyFlags(expectedEntries.value(temp)), true);
+        QCOMPARE(it.at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+        expectedEntries[temp].setFlag(QOpcUaMonitoringParameters::Parameter(includedFlags.toInt()), false);
+    }
 
     QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::Value).publishingInterval(),  200.0);
     QCOMPARE(node->monitoringStatus(QOpcUa::NodeAttribute::DisplayName).publishingInterval(), 200.0);
+    QCOMPARE(expectedEntries.value(QOpcUa::NodeAttribute::Value).toInt(), 0);
+    QCOMPARE(expectedEntries.value(QOpcUa::NodeAttribute::DisplayName).toInt(), 0);
 
     QSignalSpy monitoringDisabledSpy(node.data(), &QOpcUaNode::disableMonitoringFinished);
 
@@ -1619,7 +1641,7 @@ void Tst_QOpcUaClient::dataChangeSubscriptionSharing()
 
     QSignalSpy monitoringDisabledSpy(node.data(), &QOpcUaNode::disableMonitoringFinished);
 
-    node->disableMonitoring(QOpcUa::NodeAttribute::Value | QOpcUa::NodeAttribute::DisplayName | QOpcUa::NodeAttribute::NodeId);
+    node->disableMonitoring(QOpcUa::NodeAttribute::Value | QOpcUa::NodeAttribute::DisplayName);
     monitoringDisabledSpy.wait(signalSpyTimeout);
     if (monitoringDisabledSpy.size() < 2)
         monitoringDisabledSpy.wait(signalSpyTimeout);
@@ -3083,6 +3105,30 @@ void Tst_QOpcUaClient::modifyMonitoredItem()
     QCOMPARE(monitoringStatusSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
     QVERIFY(monitoringStatusSpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>() & QOpcUaMonitoringParameters::Parameter::SamplingInterval);
 
+    monitoringStatusSpy.clear();
+    doubleNode->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::DiscardOldest, true);
+    monitoringStatusSpy.wait(signalSpyTimeout);
+    QCOMPARE(monitoringStatusSpy.size(), 1);
+    QCOMPARE(monitoringStatusSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(monitoringStatusSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QVERIFY(monitoringStatusSpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>() & QOpcUaMonitoringParameters::Parameter::DiscardOldest);
+
+    monitoringStatusSpy.clear();
+    doubleNode->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::QueueSize, quint32(42));
+    monitoringStatusSpy.wait(signalSpyTimeout);
+    QCOMPARE(monitoringStatusSpy.size(), 1);
+    QCOMPARE(monitoringStatusSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(monitoringStatusSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QVERIFY(monitoringStatusSpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>() & QOpcUaMonitoringParameters::Parameter::QueueSize);
+
+    monitoringStatusSpy.clear();
+    doubleNode->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::DiscardOldest, true);
+    monitoringStatusSpy.wait(signalSpyTimeout);
+    QCOMPARE(monitoringStatusSpy.size(), 1);
+    QCOMPARE(monitoringStatusSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(monitoringStatusSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QVERIFY(monitoringStatusSpy.at(0).at(1).value<QOpcUaMonitoringParameters::Parameters>() & QOpcUaMonitoringParameters::Parameter::DiscardOldest);
+
     WRITE_VALUE_ATTRIBUTE(doubleNode, 3.0, QOpcUa::Types::Double);
 
     dataChangeSpy.wait(signalSpyTimeout);
@@ -3814,6 +3860,12 @@ void Tst_QOpcUaClient::eventSubscription()
     QCOMPARE(disabledSpy.size(), 1);
     QCOMPARE(disabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::EventNotifier);
     QCOMPARE(disabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+    disabledSpy.clear();
+    serverNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
+    disabledSpy.wait(signalSpyTimeout);
+    QCOMPARE(disabledSpy.size(), 1);
+    QCOMPARE(disabledSpy.at(0).at(1), QOpcUa::UaStatusCode::BadMonitoredItemIdInvalid);
 }
 
 void Tst_QOpcUaClient::readHistoryDataFromNode()
