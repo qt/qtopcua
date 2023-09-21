@@ -240,6 +240,8 @@ bool TestServer::init()
     success = createInsecureServerConfig(m_config);
 #endif
 
+    m_config->maxReferencesPerNode = 10;
+
     m_gathering = UA_HistoryDataGathering_Default(1);
     m_config->historyDatabase = UA_HistoryDatabase_default(m_gathering);
 
