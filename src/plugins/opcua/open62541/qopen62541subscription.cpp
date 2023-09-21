@@ -667,11 +667,11 @@ bool QOpen62541Subscription::modifySubscriptionParameters(quint64 nodeHandle, QO
             emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
         } else {
             QOpcUaMonitoringParameters::Parameters changed = item;
-            if (!qFuzzyCompare(p.publishingInterval(), m_interval))
+            if (!qFuzzyCompare(res.revisedPublishingInterval, m_interval))
                 changed |= QOpcUaMonitoringParameters::Parameter::PublishingInterval;
-            if (p.lifetimeCount() != m_lifetimeCount)
+            if (res.revisedLifetimeCount != m_lifetimeCount)
                 changed |= QOpcUaMonitoringParameters::Parameter::LifetimeCount;
-            if (p.maxKeepAliveCount() != m_maxKeepaliveCount)
+            if (res.revisedMaxKeepAliveCount != m_maxKeepaliveCount)
                 changed |= QOpcUaMonitoringParameters::Parameter::MaxKeepAliveCount;
 
             m_lifetimeCount = res.revisedLifetimeCount;

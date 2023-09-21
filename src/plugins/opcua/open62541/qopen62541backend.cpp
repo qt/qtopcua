@@ -235,6 +235,11 @@ void Open62541AsyncBackend::disableMonitoring(quint64 handle, QOpcUa::NodeAttrib
             m_attributeMapping[handle].remove(attribute);
             if (sub->monitoredItemsCount() == 0)
                 removeSubscription(sub->subscriptionId());
+        } else {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "There is no monitored item for this attribute";
+            QOpcUaMonitoringParameters s;
+            s.setStatusCode(QOpcUa::UaStatusCode::BadMonitoredItemIdInvalid);
+            emit monitoringEnableDisable(handle, attribute, false, s);
         }
     });
 }
