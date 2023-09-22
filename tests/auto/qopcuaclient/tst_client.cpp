@@ -783,7 +783,7 @@ void Tst_QOpcUaClient::initTestCase()
     }
     QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
     QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-    m_discoveryEndpoint = QStringLiteral("opc.tcp://%1:%2").arg(host).arg(port);
+    m_discoveryEndpoint = QStringLiteral("opc.tcp://%1:%2").arg(host, port);
     qDebug() << "Using endpoint:" << m_discoveryEndpoint;
 
     QOpcUaClient *client = m_clients.first();
@@ -2186,7 +2186,7 @@ void Tst_QOpcUaClient::addAndRemoveReference()
         const auto results = browseSpy.at(0).at(0).value<QList<QOpcUaReferenceDescription>>();
         QVERIFY(!results.isEmpty());
         bool referenceExists = false;
-        for (auto item : results) {
+        for (const auto &item : results) {
             if (item.targetNodeId().nodeId() == target.nodeId()) {
                 referenceExists = true;
                 break;
@@ -2227,7 +2227,7 @@ void Tst_QOpcUaClient::addAndRemoveReference()
         QCOMPARE(browseSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
         const auto results = browseSpy.at(0).at(0).value<QList<QOpcUaReferenceDescription>>();
         QVERIFY(!results.isEmpty());
-        for (auto item : results)
+        for (const auto &item : results)
             QVERIFY(item.targetNodeId().nodeId() != target.nodeId());
     }
 
@@ -2383,7 +2383,7 @@ void Tst_QOpcUaClient::dataChangeSubscription()
     QCOMPARE(monitoringDisabledSpy.size(), 3);
 
     attrs = {QOpcUa::NodeAttribute::Value, QOpcUa::NodeAttribute::DisplayName, QOpcUa::NodeAttribute::NodeId};
-    for (auto it : std::as_const(monitoringDisabledSpy)) {
+    for (const auto &it : std::as_const(monitoringDisabledSpy)) {
         QOpcUa::NodeAttribute temp = it.at(0).value<QOpcUa::NodeAttribute>();
         QVERIFY(attrs.contains(temp));
         QCOMPARE(node->monitoringStatus(temp).subscriptionId(), (quint32)0);
@@ -2474,7 +2474,7 @@ void Tst_QOpcUaClient::dataChangeSubscriptionSharing()
     QCOMPARE(monitoringDisabledSpy.size(), 2);
 
     QList<QOpcUa::NodeAttribute> attrs = {QOpcUa::NodeAttribute::Value, QOpcUa::NodeAttribute::DisplayName};
-    for (auto it : std::as_const(monitoringDisabledSpy)) {
+    for (const auto &it : std::as_const(monitoringDisabledSpy)) {
         auto temp = it.at(0).value<QOpcUa::NodeAttribute>();
         QVERIFY(attrs.contains(temp));
         QCOMPARE(node->monitoringStatus(temp).subscriptionId(), (quint32)0);
@@ -2490,7 +2490,6 @@ void Tst_QOpcUaClient::methodCall()
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QList<QOpcUa::TypedVariant> args;
-    QList<QVariant> ret;
     for (int i = 0; i < 2; i++)
         args.push_back(QOpcUa::TypedVariant(double(4), QOpcUa::Double));
 
@@ -2516,7 +2515,6 @@ void Tst_QOpcUaClient::methodCallInvalid()
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QList<QOpcUa::TypedVariant> args;
-    QList<QVariant> ret;
     for (int i = 0; i < 3; i++)
         args.push_back(QOpcUa::TypedVariant(double(4), QOpcUa::Double));
 
@@ -4254,7 +4252,7 @@ void Tst_QOpcUaClient::checkMonitoredItemCleanup()
         monitoringEnabledSpy.wait(signalSpyTimeout);
     QCOMPARE(monitoringEnabledSpy.size(), 2);
 
-    for (auto entry : monitoringEnabledSpy) {
+    for (const auto &entry : monitoringEnabledSpy) {
         QVERIFY(attr & entry.at(0).value<QOpcUa::NodeAttribute>());
         QCOMPARE(entry.at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
     }
@@ -4270,7 +4268,7 @@ void Tst_QOpcUaClient::checkMonitoredItemCleanup()
     methodSpy.wait(signalSpyTimeout);
     QCOMPARE(methodSpy.size(), 1);
 
-    for (auto entry : methodSpy) {
+    for (const auto &entry : methodSpy) {
         QCOMPARE(entry.at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
         QCOMPARE(entry.at(1).toList().size(), 2); // Two monitored items
         QCOMPARE(entry.at(1).toList().at(0).toList().size(), 2); // One server handle for each monitored item
@@ -4309,7 +4307,7 @@ void Tst_QOpcUaClient::checkAttributeUpdated()
     spy.wait(signalSpyTimeout);
     QCOMPARE(spy.size(), 3);
 
-    for (auto it : spy) {
+    for (const auto &it : spy) {
         QCOMPARE(it.at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
         QVERIFY(it.at(1).isValid());
     }

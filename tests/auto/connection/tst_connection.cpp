@@ -122,7 +122,7 @@ void Tst_Connection::initTestCase()
     }
     QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
     QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-    m_discoveryEndpoint = QStringLiteral("opc.tcp://%1:%2").arg(host).arg(port);
+    m_discoveryEndpoint = QStringLiteral("opc.tcp://%1:%2").arg(host, port);
     qDebug() << "Using endpoint:" << m_discoveryEndpoint;
 
     QOpcUaClient *client = m_clients.first();

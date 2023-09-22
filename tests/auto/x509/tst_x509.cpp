@@ -18,7 +18,7 @@
 #define defineDataMethod(name) void name()\
 {\
     QTest::addColumn<QString>("backend");\
-    for (auto backend : m_backends) {\
+    for (const auto &backend : m_backends) {\
         const QString rowName = QStringLiteral("%1").arg(backend); \
         QTest::newRow(rowName.toLatin1().constData()) << backend ; \
     }\
@@ -90,8 +90,6 @@ void Tst_QOpcUaSecurity::initTestCase()
 
 void Tst_QOpcUaSecurity::keyPairs()
 {
-    QFETCH(QString, backend);
-
     QOpcUaKeyPair key;
     QOpcUaKeyPair loadedKey;
     QByteArray byteArray;
@@ -158,8 +156,6 @@ void Tst_QOpcUaSecurity::keyPairs()
 
 void Tst_QOpcUaSecurity::certificateSigningRequest()
 {
-    QFETCH(QString, backend);
-
     QOpcUaKeyPair key;
 
     // Generate key

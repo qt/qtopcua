@@ -96,12 +96,11 @@ static QString messageSecurityModeToString(QOpcUaEndpointDescription::MessageSec
 {\
     QTest::addColumn<QString>("backend");\
     QTest::addColumn<QOpcUaEndpointDescription>("endpoint");\
-    for (auto backend : m_backends)\
-        for (auto endpoint : m_endpoints) { \
+    for (const auto &backend : m_backends)\
+        for (const auto &endpoint : m_endpoints) { \
             const QString rowName = QStringLiteral("%1 using %2 %3") \
-                    .arg(backend) \
-                    .arg(endpoint.securityPolicy()) \
-                    .arg(messageSecurityModeToString(endpoint.securityMode())); \
+                    .arg(backend, endpoint.securityPolicy(), \
+                         messageSecurityModeToString(endpoint.securityMode())); \
             QTest::newRow(rowName.toLatin1().constData()) << backend << endpoint; \
         } \
 }
@@ -195,7 +194,7 @@ void Tst_QOpcUaSecurity::initTestCase()
     }
     QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
     QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-    m_discoveryEndpoint = QStringLiteral("opc.tcp://%1:%2").arg(host).arg(port);
+    m_discoveryEndpoint = QStringLiteral("opc.tcp://%1:%2").arg(host, port);
     qDebug() << "Using endpoint:" << m_discoveryEndpoint;
 
     QScopedPointer<QOpcUaClient> client(m_opcUa.createClient(m_backends.first()));
@@ -238,7 +237,7 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureUnencryptedKey()
     if (!client->supportedSecurityPolicies().contains(endpoint.securityPolicy())) {
         QSKIP(QStringLiteral("This test is skipped because backend %1 "
                              "does not support security policy %2")
-              .arg(client->backend()).arg(endpoint.securityPolicy()).toLatin1().constData());
+              .arg(client->backend(), endpoint.securityPolicy()).toLatin1().constData());
     }
 
     const QString pkidir = m_pkiData->path();
@@ -314,7 +313,7 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureEncryptedKey()
     if (!client->supportedSecurityPolicies().contains(endpoint.securityPolicy())) {
         QSKIP(QStringLiteral("This test is skipped because backend %1 "
                              "does not support security policy %2")
-              .arg(client->backend()).arg(endpoint.securityPolicy()).toLatin1().constData());
+              .arg(client->backend(), endpoint.securityPolicy()).toLatin1().constData());
     }
 
     const QString pkidir = m_pkiData->path();

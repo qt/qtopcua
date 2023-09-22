@@ -365,7 +365,7 @@ void DemoServer::launch()
      UA_NodeId_clear(&tank1Object);
      UA_NodeId_clear(&tank2Object);
 
-     QObject::connect(&m_machineTimer, &QTimer::timeout, [this]() {
+     QObject::connect(&m_machineTimer, &QTimer::timeout, this, [this]() {
 
          double targetValue = readTank2TargetValue();
          if (m_state == MachineState::Pumping && m_percentFilledTank1 > 0 && m_percentFilledTank2 < targetValue) {

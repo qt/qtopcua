@@ -672,7 +672,8 @@ bool QOpcUa::nodeIdStringSplit(const QString &nodeIdString, quint16 *nsIndex, QS
     if (components.size() > 2)
         return false;
 
-    if (components.size() == 2 && components.at(0).contains(QRegularExpression(QLatin1String("^ns=[0-9]+")))) {
+    static const QRegularExpression namespaceRegex(QLatin1String("^ns=[0-9]+"));
+    if (components.size() == 2 && components.at(0).contains(namespaceRegex)) {
         bool success = false;
         uint ns = QStringView(components.at(0)).mid(3).toUInt(&success);
         if (!success || ns > (std::numeric_limits<quint16>::max)())
@@ -683,7 +684,8 @@ bool QOpcUa::nodeIdStringSplit(const QString &nodeIdString, quint16 *nsIndex, QS
     if (components.last().size() < 3)
         return false;
 
-    if (!components.last().contains(QRegularExpression(QLatin1String("^[isgb]="))))
+    static const QRegularExpression identifierRegex(QLatin1String("^[isgb]="));
+    if (!components.last().contains(identifierRegex))
         return false;
 
     if (nsIndex)

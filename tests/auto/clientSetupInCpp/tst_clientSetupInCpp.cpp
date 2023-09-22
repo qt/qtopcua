@@ -50,7 +50,7 @@ public slots:
 
         QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
         QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-        const auto discoveryEndpoint = QStringLiteral("opc.tcp://%1:%2").arg(host).arg(port);
+        const auto discoveryEndpoint = QStringLiteral("opc.tcp://%1:%2").arg(host, port);
 
         QSignalSpy endpointSpy(client, &QOpcUaClient::endpointsRequestFinished);
         client->requestEndpoints(discoveryEndpoint);
@@ -130,7 +130,7 @@ public slots:
         }
         const QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
         const QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-        m_opcuaDiscoveryUrl = QString::fromLatin1("opc.tcp://%1:%2").arg(host).arg(port);
+        m_opcuaDiscoveryUrl = QString::fromLatin1("opc.tcp://%1:%2").arg(host, port);
     }
     void qmlEngineAvailable(QQmlEngine *engine) {
         bool value = false;

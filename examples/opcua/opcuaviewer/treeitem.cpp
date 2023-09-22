@@ -324,9 +324,9 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
     if (value.canConvert<QOpcUaAxisInformation>()) {
         const auto info = value.value<QOpcUaAxisInformation>();
         return QStringLiteral("[EUInformation: %1, EURange: %2, Title: %3 , AxisScaleType: %4, AxisSteps: %5]").arg(
-                    euInformationToString(info.engineeringUnits())).arg(rangeToString(info.eURange())).arg(localizedTextToString(info.title())).arg(
-                        info.axisScaleType() == QOpcUa::AxisScale::Linear ? "Linear" : (info.axisScaleType() == QOpcUa::AxisScale::Ln) ? "Ln" : "Log").arg(
-                        numberArrayToString(info.axisSteps()));
+            euInformationToString(info.engineeringUnits()), rangeToString(info.eURange()), localizedTextToString(info.title()),
+            info.axisScaleType() == QOpcUa::AxisScale::Linear ? "Linear" : (info.axisScaleType() == QOpcUa::AxisScale::Ln) ? "Ln" : "Log",
+            numberArrayToString(info.axisSteps()));
     }
     if (value.canConvert<QOpcUaExpandedNodeId>()) {
         const auto id = value.value<QOpcUaExpandedNodeId>();
@@ -366,7 +366,7 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
 
 QString TreeItem::localizedTextToString(const QOpcUaLocalizedText &text) const
 {
-    return QStringLiteral("[Locale: \"%1\", Text: \"%2\"]").arg(text.locale()).arg(text.text());
+    return QStringLiteral("[Locale: \"%1\", Text: \"%2\"]").arg(text.locale(), text.text());
 }
 
 QString TreeItem::rangeToString(const QOpcUaRange &range) const
@@ -377,5 +377,5 @@ QString TreeItem::rangeToString(const QOpcUaRange &range) const
 QString TreeItem::euInformationToString(const QOpcUaEUInformation &info) const
 {
     return QStringLiteral("[UnitId: %1, NamespaceUri: \"%2\", DisplayName: %3, Description: %4]").arg(info.unitId()).arg(
-                info.namespaceUri()).arg(localizedTextToString(info.displayName())).arg(localizedTextToString(info.description()));
+                info.namespaceUri(), localizedTextToString(info.displayName()), localizedTextToString(info.description()));
 }
