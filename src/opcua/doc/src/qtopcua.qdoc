@@ -83,7 +83,7 @@
 
        \list
            \li \l{Qt OPC UA Overview}{Overview}
-           \li \l{Using the OpenSSL Dependency for GDS Support}
+           \li \l{Using the OpenSSL Dependency for Security Support and GDS}
            \li \l{Building Qt OPC UA Open62541 Plugin}
            \li \l{Building Qt OPC UA UACPP Plugin}
            \li \l{https://opcfoundation.org/about/opc-technologies/opc-ua/}
@@ -563,28 +563,23 @@
 */
 
 /*!
-    \page qtopcua-build-openssl-gds.html
-    \title Using the OpenSSL Dependency for GDS Support
-    \brief Using the OpenSSL dependency for GDS support.
+    \page qtopcua-build-openssl.html
+    \title Using the OpenSSL Dependency for Security Support and GDS
+    \brief Using the OpenSSL Dependency for Security Support and GDS
 
-    The GDS feature of Qt OPC UA requires the OpenSSL 1.1 headers and libraries.
+    The GDS feature of Qt OPC UA as well as the security support for the Open62541 plugin
+    requires the OpenSSL >= 1.1 headers and libraries.
 
     If OpenSSL is not installed to a path that is searched by default, the
     location of the headers and libraries must be passed to the build process.
 
-    For example, if OpenSSL 1.1 has been installed to \c{/opt/openssl}, the
+    For example, if OpenSSL has been installed to \c{/opt/openssl}, the
     locations must be passed as follows:
 
     \badcode
         -DOPENSSL_ROOT_DIR=/opt/openssl/
     \endcode
 
-    If GDS support is not required, it can be disabled by using the following
-    parameters:
-
-    \badcode
-        -DFEATURE_gds=OFF
-    \endcode
-
-    In this case, OpenSSL is not required.
+    The security capabilities of the Open62541 plugin and the GDS feature will be
+    automatically disabled if OpenSSL is not detected during configuration.
 */
