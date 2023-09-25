@@ -265,7 +265,7 @@ QOpcUaNode::~QOpcUaNode()
 
 /*!
     Starts an asynchronous read operation for the node attribute \a attribute.
-    \a indexRange is a string which can be used to select a part of an array. It is defined in OPC-UA part 4, 7.22.
+    \a indexRange is a string which can be used to select a part of an array. It is defined in OPC UA 1.05 part 4, 7.27.
     The first element in an array is 0, "1" returns the second element, "0:9" returns the first 10 elements,
     "0,1" returns the second element of the first row in a two-dimensional array.
 
@@ -685,7 +685,7 @@ bool QOpcUaNode::callMethod(const QString &methodNodeId, const QList<QOpcUa::Typ
 
 /*!
     Resolves the browse path \a path to one or more node ids starting from this node
-    using the TranslateBrowsePathsToNodeIds service specified in OPC-UA part 4, 5.8.4.
+    using the TranslateBrowsePathsToNodeIds service specified in OPC UA 1.05 part 4, 5.8.4.
 
     Returns \c true if the asynchronous call has been successfully dispatched.
 
@@ -766,7 +766,7 @@ bool QOpcUaNode::browse(const QOpcUaBrowseRequest &request)
 /*!
     Starts a read history request for this node. This is the Qt OPC UA representation for the OPC UA
     ReadHistory service for reading raw historical data defined in
-    \l {https://reference.opcfoundation.org/v104/Core/docs/Part4/5.10.3/} {OPC-UA part 4, 5.10.3}.
+    \l {https://reference.opcfoundation.org/v105/Core/docs/Part4/5.10.3/} {OPC UA 1.05 part 4, 5.10.3}.
     It reads the history based on the parementers, \a startTime, \a endTime,
     \a numValues, and \a returnBounds.
 

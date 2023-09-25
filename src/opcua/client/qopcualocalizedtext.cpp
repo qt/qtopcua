@@ -10,10 +10,10 @@ QT_BEGIN_NAMESPACE
     \inmodule QtOpcUa
     \brief The OPC UA LocalizedText type.
 
-    This is the Qt OPC UA representation for the OPC UA LocalizedText type defined in OPC-UA part 3, 8.5.
+    This is the Qt OPC UA representation for the OPC UA LocalizedText type defined in OPC UA 1.05 part 3, 8.5.
     A LocalizedText value contains a text string with associated locale information in a second string (e. g. "en" or "en-US").
     The format of the locale information string is <language>[-<country/region>]. Language is usually given as ISO 639 two letter code,
-    country/region as ISO 3166 two letter code. Custom codes are also allowed (see OPC-UA part 3, 8.4).
+    country/region as ISO 3166 two letter code. Custom codes are also allowed (see OPC UA 1.05 part 3, 8.4).
     It can be used to provide multiple text strings in different languages for a value using an array of LocalizedText elements.
 */
 
@@ -43,7 +43,7 @@ QT_BEGIN_NAMESPACE
 
     Locale of the contained text.
     This has to be in a modified ISO standard notation, for example \c en-US.
-    See OPC UA specification part 3, 8.4 for details.
+    See OPC UA specification 1.05 part 3, 8.4 for details.
 */
 
 /*!
@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
     Locale of the contained text.
     This has to be in a modified ISO standard notation, for example \c en-US.
-    See OPC UA specification part 3, 8.4 for details.
+    See OPC UA specification 1.05 part 3, 8.4 for details.
 */
 
 class QOpcUaLocalizedTextData : public QSharedData

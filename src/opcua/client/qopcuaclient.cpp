@@ -727,7 +727,7 @@ bool QOpcUaClient::requestEndpoints(const QUrl &url)
     Returns \c true if the asynchronous call has been successfully dispatched.
 
     \a localeIds can be used to select the language of the application names returned by the request.
-    The format is specified in OPC-UA part 3, 8.4, for example "en" for English, or "de-DE" for
+    The format is specified in OPC UA 1.05 part 3, 8.4, for example "en" for English, or "de-DE" for
     German (Germany). If more than one locale ID is specified, the server uses the first match. If there
     is no match or \a localeIds is empty, a default locale is chosen by the server.
 
@@ -987,7 +987,7 @@ QList<QOpcUaUserTokenPolicy::TokenType> QOpcUaClient::supportedUserTokenTypes() 
 
     Starts a read raw history \a request for one or multiple nodes. This is the Qt OPC UA representation for the OPC UA
     ReadHistory service for reading raw historical data defined in
-    \l {https://reference.opcfoundation.org/v104/Core/docs/Part4/5.10.3/} {OPC-UA part 4, 5.10.3}.
+    \l {https://reference.opcfoundation.org/v105/Core/docs/Part4/5.10.3/} {OPC UA 1.05 part 4, 5.10.3}.
 
     The start timestamp, end timestamp, number of values per node, returnBounds and nodes to read
     can be specified in a \l QOpcUaHistoryReadRawRequest.

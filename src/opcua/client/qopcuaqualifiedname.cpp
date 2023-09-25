@@ -10,7 +10,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtOpcUa
     \brief The OPC UA QualifiedName type.
 
-    This is the Qt OPC UA representation for the OPC UA QualifiedName type defined in OPC-UA part 3, 8.3.
+    This is the Qt OPC UA representation for the OPC UA QualifiedName type defined in OPC UA 1.05 part 3, 8.3.
     A QualifiedName is a name qualified by a namespace index. The namespace index corresponds to an entry in the server's namespace array.
     QualifiedName is mainly used to represent the BrowseName attribute of a node.
 */

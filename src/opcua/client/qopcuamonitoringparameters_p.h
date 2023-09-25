@@ -34,7 +34,7 @@ public:
         , subscriptionId(0)
         , monitoredItemId(0)
         , publishingInterval(0)
-        , lifetimeCount(150) // Must be at least three times the maxKeepAliveCount (OPC-UA part 4, page 76).
+        , lifetimeCount(150) // Must be at least three times the maxKeepAliveCount (OPC UA 1.05 part 4, page 5.13.2.2).
         , maxKeepAliveCount(50) // Allow 50 publishing intervals before a keepalive is expected to reduce the network traffic.
         , maxNotificationsPerPublish(0)
         , priority(0)

@@ -17,7 +17,7 @@ namespace QOpcUa {
 Q_OPCUA_EXPORT Q_NAMESPACE
 Q_CLASSINFO("RegisterEnumClassesUnscoped", "false")
 
-// see OPC-UA Part 3, 5.2.3 & 8.30
+// see OPC UA 1.05 Part 3, 5.2.3 & 8.29
 enum class NodeClass {
     Undefined = 0,
     Object = 1,
@@ -40,14 +40,14 @@ enum class NodeAttribute {
     DisplayName = (1 << 3),
     Description = (1 << 4),
     WriteMask = (1 << 5),
-    UserWriteMask = (1 << 6), // Base attributes, see part 4, 5.2.1
+    UserWriteMask = (1 << 6), // Base attributes, see OPC UA 1.05 part 3, 5.2.1
     IsAbstract = (1 << 7),
     Symmetric = (1 << 8),
-    InverseName = (1 << 9),   // Reference attributes, see part 4, 5.3.1
+    InverseName = (1 << 9),   // Reference attributes, see OPC UA 1.05 part 3, 5.3.1
     ContainsNoLoops = (1 << 10),
-    EventNotifier = (1 << 11), // View attributes, see part 4, 5.4
-    // Objects also add the EventNotifier attribute, see part 4, 5.5.1
-    // ObjectType also add the IsAbstract attribute, see part 4, 5.5.2
+    EventNotifier = (1 << 11), // View attributes, see OPC UA 1.05 part 3, 5.4
+    // Objects also add the EventNotifier attribute, see OPC UA 1.05 part 3, 5.5.1
+    // ObjectType also add the IsAbstract attribute, see OPC UA 1.05 part 3, 5.5.2
     Value = (1 << 12),
     DataType = (1 << 13),
     ValueRank = (1 << 14),
@@ -55,18 +55,18 @@ enum class NodeAttribute {
     AccessLevel = (1 << 16),
     UserAccessLevel = (1 << 17),
     MinimumSamplingInterval = (1 << 18),
-    Historizing = (1 << 19),   // Value attributes, see part 4, 5.6.2
+    Historizing = (1 << 19),   // Value attributes, see OPC UA 1.05 part 3, 5.6.2
     // VariableType also adds the Value, DataType, ValueRank, ArrayDimensions
-    // and isAbstract attributes, see part 4, 5.6.5
+    // and isAbstract attributes, see OPC UA 1.05 part 3, 5.6.5
     Executable = (1 << 20),
-    UserExecutable = (1 << 21), // Method attributes, see part 4, 5.7
+    UserExecutable = (1 << 21), // Method attributes, see OPC UA 1.05 part 3, 5.7
     // Data type attributes
     DataTypeDefinition = (1 << 22),
 };
 Q_ENUM_NS(NodeAttribute)
 Q_DECLARE_FLAGS(NodeAttributes, NodeAttribute)
 
-// Defined in OPC-UA part 3, Table 8.
+// Defined in OPC UA 1.05 part 3, 8.60.
 enum class WriteMaskBit : quint32 {
     None = 0,
     AccessLevel = (1 << 0),
@@ -95,7 +95,7 @@ enum class WriteMaskBit : quint32 {
 Q_ENUM_NS(WriteMaskBit)
 Q_DECLARE_FLAGS(WriteMask, WriteMaskBit)
 
-// Defined in OPC-UA part 3, Table 8.
+// Defined in OPC UA 1.05 part 3, 8.57.
 enum class AccessLevelBit : quint8 {
     None = 0,
     CurrentRead = (1 << 0),
@@ -109,7 +109,7 @@ enum class AccessLevelBit : quint8 {
 Q_ENUM_NS(AccessLevelBit)
 Q_DECLARE_FLAGS(AccessLevel, AccessLevelBit)
 
-// Defined in OPC-UA part 3, Table 6.
+// Defined in OPC UA 1.05 part 3, 8.59.
 enum class EventNotifierBit : quint8 {
     None = 0,
     SubscribeToEvents = (1 << 0),
@@ -129,7 +129,7 @@ inline uint qHash(const QOpcUa::NodeAttribute& attr)
 }
 
 // The reference types are nodes in namespace 0, the enum value is their numeric identifier.
-// Identifiers are specified in https://opcfoundation.org/UA/schemas/1.03/NodeIds.csv
+// Identifiers are specified in https://opcfoundation.org/UA/schemas/1.05/NodeIds.csv
 enum class ReferenceTypeId : quint32 {
     Unspecified = 0,
     References = 31,
@@ -178,6 +178,25 @@ enum class ReferenceTypeId : quint32 {
     HasWriterGroup = 18804,
     HasReaderGroup = 18805,
     AliasFor = 23469,
+    IsDeprecated = 23562,
+    HasStructuredComponent = 24136,
+    AssociatedWith = 24137,
+    UsesPriorityMappingTable = 25237,
+    HasLowerLayerInterface = 25238,
+    IsExecutableOn = 25253,
+    Controls = 25254,
+    Utilizes = 25255,
+    Requires = 25256,
+    IsPhysicallyConnectedTo = 25257,
+    RepresentsSameEntityAs = 25258,
+    RepresentsSameHardwareAs = 25259,
+    RepresentsSameFunctionalityAs = 25260,
+    IsHostedBy = 25261,
+    HasPhysicalComponent = 25262,
+    HasContainedComponent = 25263,
+    HasAttachedComponent = 25264,
+    IsExecutingOn = 25265,
+    HasPushedSecurityGroup = 25345
 };
 Q_ENUM_NS(ReferenceTypeId)
 
@@ -228,11 +247,13 @@ enum Types
 };
 Q_ENUM_NS(Types)
 
-// OpcUa Specification Part 4, Chapter 7.34 "Status Code"
-// OpcUa Specification Part 6, Annex A.2 "Status Codes
+// OpcUa Specification 1.05 Part 4, Chapter 7.39 "Status Code"
+// OpcUa Specification 1.05 Part 6, Annex A.2 "Status Codes
 enum UaStatusCode : quint32
 {
-    Good = 0,
+    Good = 0x00000000,
+    Uncertain = 0x40000000,
+    Bad = 0x80000000,
     BadUnexpectedError = 0x80010000,
     BadInternalError = 0x80020000,
     BadOutOfMemory = 0x80030000,
@@ -255,6 +276,7 @@ enum UaStatusCode : quint32
     BadDataTypeIdUnknown = 0x80110000,
     BadCertificateInvalid = 0x80120000,
     BadSecurityChecksFailed = 0x80130000,
+    BadCertificatePolicyCheckFailed = 0x81140000,
     BadCertificateTimeInvalid = 0x80140000,
     BadCertificateIssuerTimeInvalid = 0x80150000,
     BadCertificateHostNameInvalid = 0x80160000,
@@ -281,6 +303,9 @@ enum UaStatusCode : quint32
     BadTimestampsToReturnInvalid = 0x802B0000,
     BadRequestCancelledByClient = 0x802C0000,
     BadTooManyArguments = 0x80E50000,
+    BadLicenseExpired = 0x810E0000,
+    BadLicenseLimitsExceeded = 0x810F0000,
+    BadLicenseNotAvailable = 0x81100000,
     GoodSubscriptionTransferred = 0x002D0000,
     GoodCompletesAsynchronously = 0x002E0000,
     GoodOverload = 0x002F0000,
@@ -320,6 +345,7 @@ enum UaStatusCode : quint32
     BadReferenceTypeIdInvalid = 0x804C0000,
     BadBrowseDirectionInvalid = 0x804D0000,
     BadNodeNotInView = 0x804E0000,
+    BadNumericOverflow = 0x81120000,
     BadServerUriInvalid = 0x804F0000,
     BadServerNameMissing = 0x80500000,
     BadDiscoveryUrlMissing = 0x80510000,
@@ -370,13 +396,16 @@ enum UaStatusCode : quint32
     BadTypeMismatch = 0x80740000,
     BadMethodInvalid = 0x80750000,
     BadArgumentsMissing = 0x80760000,
+    BadNotExecutable = 0x81110000,
     BadTooManySubscriptions = 0x80770000,
     BadTooManyPublishRequests = 0x80780000,
     BadNoSubscription = 0x80790000,
     BadSequenceNumberUnknown = 0x807A0000,
+    GoodRetransmissionQueueNotSupported = 0x00DF0000,
     BadMessageNotAvailable = 0x807B0000,
     BadInsufficientClientProfile = 0x807C0000,
     BadStateNotActive = 0x80BF0000,
+    BadAlreadyExists = 0x81150000,
     BadTcpServerTooBusy = 0x807D0000,
     BadTcpMessageTypeInvalid = 0x807E0000,
     BadTcpSecureChannelUnknown = 0x807F0000,
@@ -436,6 +465,9 @@ enum UaStatusCode : quint32
     BadAggregateConfigurationRejected = 0x80DA0000,
     GoodDataIgnored = 0x00D90000,
     BadRequestNotAllowed = 0x80E40000,
+    BadRequestNotComplete = 0x81130000,
+    BadTicketRequired = 0x811F0000,
+    BadTicketInvalid = 0x81200000,
     GoodEdited = 0x00DC0000,
     GoodPostActionFailed = 0x00DD0000,
     UncertainDominantValueChanged = 0x40DE0000,
@@ -443,6 +475,15 @@ enum UaStatusCode : quint32
     BadDominantValueChanged = 0x80E10000,
     UncertainDependentValueChanged = 0x40E20000,
     BadDependentValueChanged = 0x80E30000,
+    GoodEdited_DependentValueChanged = 0x01160000,
+    GoodEdited_DominantValueChanged = 0x01170000,
+    GoodEdited_DominantValueChanged_DependentValueChanged = 0x01180000,
+    BadEdited_OutOfRange = 0x81190000,
+    BadInitialValue_OutOfRange = 0x811A0000,
+    BadOutOfRange_DominantValueChanged = 0x811B0000,
+    BadEdited_OutOfRange_DominantValueChanged = 0x811C0000,
+    BadOutOfRange_DominantValueChanged_DependentValueChanged = 0x811D0000,
+    BadEdited_OutOfRange_DominantValueChanged_DependentValueChanged = 0x811E0000,
     GoodCommunicationEvent = 0x00A70000,
     GoodShutdownEvent = 0x00A80000,
     GoodCallAgain = 0x00A90000,
@@ -459,7 +500,19 @@ enum UaStatusCode : quint32
     BadExpectedStreamToBlock = 0x80B40000,
     BadWouldBlock = 0x80B50000,
     BadSyntaxError = 0x80B60000,
-    BadMaxConnectionsReached = 0x80B70000
+    BadMaxConnectionsReached = 0x80B70000,
+    UncertainTransducerInManual = 0x42080000,
+    UncertainSimulatedValue = 0x42090000,
+    UncertainSensorCalibration = 0x420A0000,
+    UncertainConfigurationError = 0x420F0000,
+    GoodCascadeInitializationAcknowledged = 0x04010000,
+    GoodCascadeInitializationRequest = 0x04020000,
+    GoodCascadeNotInvited = 0x04030000,
+    GoodCascadeNotSelected = 0x04040000,
+    GoodFaultStateActive = 0x04070000,
+    GoodInitiateFaultState = 0x04080000,
+    GoodCascade = 0x04090000,
+    BadDataSetIdInvalid = 0x80E70000,
 };
 Q_ENUM_NS(UaStatusCode)
 

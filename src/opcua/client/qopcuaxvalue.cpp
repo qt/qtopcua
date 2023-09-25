@@ -10,7 +10,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtOpcUa
     \brief The OPC UA XVType.
 
-    This is the Qt OPC UA representation for the OPC UA XVType type defined in OPC-UA part 8, 5.6.8.
+    This is the Qt OPC UA representation for the OPC UA XVType type defined in OPC UA 1.05 part 8, 5.6.8.
     This type is used to position values of float precision on an axis with double precision.
 */
 

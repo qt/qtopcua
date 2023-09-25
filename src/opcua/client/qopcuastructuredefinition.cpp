@@ -11,7 +11,7 @@ QT_BEGIN_NAMESPACE
     \since 6.7
     \brief The OPC UA StructureDefinition type.
 
-    This is the Qt OPC UA representation for the OPC UA StructureDefinition type defined in OPC-UA part 3.
+    This is the Qt OPC UA representation for the OPC UA StructureDefinition type defined in OPC UA part 3.
     It describes the structure of a structured type.
 */
 

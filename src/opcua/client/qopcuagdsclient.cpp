@@ -901,7 +901,7 @@ void QOpcUaGdsClientPrivate::resolveDirectoryNode()
 
 void QOpcUaGdsClientPrivate::resolveMethodNodes()
 {
-    // See OPC UA Specification 1.04 part 12 6.3.2 "Directory"
+    // See OPC UA Specification 1.05 part 12 6.6.2 "Directory"
 
     QOpcUaRelativePathElement pathElement(QOpcUaQualifiedName(m_gdsNamespaceIndex, QLatin1String()),
                                            QOpcUa::ReferenceTypeId::HasComponent);
@@ -970,7 +970,7 @@ void QOpcUaGdsClientPrivate::_q_handleResolveBrowsePathFinished(QList<QOpcUaBrow
 
 void QOpcUaGdsClientPrivate::getApplication()
 {
-    // See OPC UA Specification 1.04 part 12 6.3.9 "GetApplication"
+    // See OPC UA Specification 1.05 part 12 6.6.9 "GetApplication"
 
     if (!m_client || m_client->state() != QOpcUaClient::Connected) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "No connection";
@@ -1162,7 +1162,7 @@ void QOpcUaGdsClientPrivate::handleRegisterApplicationFinished(const QVariant &r
 
 void QOpcUaGdsClientPrivate::getCertificateGroups()
 {
-    // OPC UA Specification Version 1.04 Part 4 Chapter 7.6.6 GetCertificateGroups
+    // OPC UA Specification Version 1.05 Part 12 Chapter 7.9.7 GetCertificateGroups
 
     if (!m_client || m_client->state() != QOpcUaClient::Connected) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "No connection";
@@ -1331,7 +1331,7 @@ void QOpcUaGdsClientPrivate::registrationDone()
 
 void QOpcUaGdsClientPrivate::getCertificateStatus()
 {
-    // OPC UA Specification Version 1.04 Part 4 Chapter 7.6.8 GetCertificateStatus
+    // OPC UA Specification Version 1.05 Part 12 Chapter 7.9.10 GetCertificateStatus
 
     if (!m_client || m_client->state() != QOpcUaClient::Connected) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "No connection";
@@ -1384,7 +1384,7 @@ void QOpcUaGdsClientPrivate::handleGetCertificateStatusFinished(const QVariant &
 
 void QOpcUaGdsClientPrivate::startCertificateRequest()
 {
-    // OPC UA Specification Version 1.04 Part 4 Chapter 7.6.3 StartSigningRequest
+    // OPC UA Specification Version 1.05 Part 12 Chapter 7.9.3 StartSigningRequest
 
     if (!m_client || m_client->state() != QOpcUaClient::Connected) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "No connection";
@@ -1469,7 +1469,7 @@ void QOpcUaGdsClientPrivate::handleStartSigningRequestFinished(const QVariant &r
 
 void QOpcUaGdsClientPrivate::finishCertificateRequest()
 {
-    // OPC UA Specification Version 1.04 Part 4 Chapter 7.6.5 FinishRequest
+    // OPC UA Specification Version 1.05 Part 12 Chapter 7.9.5 FinishRequest
 
     if (!m_client || m_client->state() != QOpcUaClient::Connected) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "No connection";
@@ -1780,7 +1780,7 @@ void QOpcUaGdsClientPrivate::_q_certificateCheckTimeout()
 
 void QOpcUaGdsClientPrivate::_q_updateTrustList()
 {
-    // OPC UA Specification Version 1.04 Part 4 Chapter 7.6.7 GetTrustList
+    // OPC UA Specification Version 1.05 Part 12 Chapter 7.9.9 GetTrustList
 
     if (!m_client || m_client->state() != QOpcUaClient::Connected) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "No connection";

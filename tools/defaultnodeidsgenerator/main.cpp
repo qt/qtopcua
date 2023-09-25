@@ -9,7 +9,7 @@
 
 /*
  * This generator should be run if there is a new version of the NodeIds.csv file available in
- * https://opcfoundation.org/UA/schemas/1.03/
+ * https://opcfoundation.org/UA/schemas/1.05/
  *
  * Building
  * Qt OPC UA must be configured with -feature-ns0idgenerator to enable building the generator.
@@ -25,7 +25,7 @@
 void createLicenseHeader(QTextStream &output)
 {
     output << R"(
-// Copyright (C) 2021 basysKom GmbH, opensource@basyskom.com
+// Copyright (C) 2023 basysKom GmbH, opensource@basyskom.com
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 )";
 }
@@ -33,7 +33,7 @@ void createLicenseHeader(QTextStream &output)
 void createHeader(QTextStream &output)
 {
     createLicenseHeader(output);
-    output << "\n\n";
+    output << "\n";
     output << "#ifndef QOPCUANODEIDS_H" << "\n";
     output << "#define QOPCUANODEIDS_H" << "\n\n";
     output << "#include <QtOpcUa/qopcuaglobal.h>" << "\n\n";
@@ -63,7 +63,7 @@ void createFooter(QTextStream &output)
 void createSourceHeader(QTextStream &output)
 {
     createLicenseHeader(output);
-    output << "\n\n";
+    output << "\n";
     output << "#include \"qopcuanodeids.h\"" << "\n\n";
     output << "QT_BEGIN_NAMESPACE" << "\n\n";
     output << R"(/*!
@@ -77,7 +77,7 @@ void createSourceHeader(QTextStream &output)
     \enum QOpcUa::NodeIds::Namespace0
 
     Contains all numeric node identifiers from namespace 0 defined in the OPC Foundation's
-    \l {https://opcfoundation.org/UA/schemas/1.03/NodeIds.csv} {NodeIds.csv} file.
+    \l {https://opcfoundation.org/UA/schemas/1.05/NodeIds.csv} {NodeIds.csv} file.
 
     The values in this enum follow the naming from the CSV file and can be converted between
     enum and node id string using \l QOpcUa::namespace0Id() and \l QOpcUa::namespace0IdFromNodeId().

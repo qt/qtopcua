@@ -32,7 +32,7 @@
 
 QT_BEGIN_NAMESPACE
 
-// This class implements a subset of the OPC UA Binary DataEncoding defined in OPC-UA part 6, 5.2.
+// This class implements a subset of the OPC UA Binary DataEncoding defined in OPC UA 1.05 part 6, 5.2.
 class Q_OPCUA_EXPORT QOpcUaBinaryDataEncoding
 {
 public:
@@ -376,11 +376,11 @@ inline QString QOpcUaBinaryDataEncoding::decode<QString, QOpcUa::Types::NodeId>(
 
     if (identifierType == 0x00) {
         // encodingType 0x00 does not transfer the namespace index, it has to be zero
-        // Part 6, Chapter 5.2.2.9, Section "Two Byte NodeId Binary DataEncoding"
+        // OPC UA 1.05 Part 6, Chapter 5.2.2.9, Section "Two Byte NodeId Binary DataEncoding"
         namespaceIndex = 0;
     } else if (identifierType == 0x01){
         // encodingType 0x01 transfers only one byte namespace index, has to be in range 0-255
-        // Part 6, Chapter 5.2.2.9, Section "Four Byte NodeId Binary DataEncoding"
+        // OPC UA 1.05 Part 6, Chapter 5.2.2.9, Section "Four Byte NodeId Binary DataEncoding"
         namespaceIndex = decode<quint8>(success);
     } else {
         namespaceIndex = decode<quint16>(success);
@@ -479,7 +479,7 @@ inline QDateTime QOpcUaBinaryDataEncoding::decode<QDateTime>(bool &success)
     if (timestamp == 0 || timestamp == upperBound<qint64>())
         return QDateTime();
 
-    // OPC-UA part 6, 5.2.2.5
+    // OPC UA 1.05 part 6, 5.2.2.5
     const QDateTime epochStart(QDate(1601, 1, 1), QTime(0, 0), QTimeZone::UTC);
     return epochStart.addMSecs(timestamp / 10000);
 }
@@ -921,14 +921,14 @@ inline bool QOpcUaBinaryDataEncoding::encode<QString, QOpcUa::Types::NodeId>(con
 
         if (integerIdentifier <= 255 && index == 0) {
             // encodingType 0x00 does not transfer the namespace index, it has to be zero
-            // Part 6, Chapter 5.2.2.9, Section "Two Byte NodeId Binary DataEncoding"
+            // OPC UA 1.05 Part 6, Chapter 5.2.2.9, Section "Two Byte NodeId Binary DataEncoding"
             if (!encoder.encode<quint8>(integerIdentifier))
                 return false;
             encodingType = 0x00; // 8 bit numeric
             break;
         } else if (integerIdentifier <= 65535 && index <= 255) {
             // encodingType 0x01 transfers only one byte namespace index, has to be in range 0-255
-            // Part 6, Chapter 5.2.2.9, Section "Four Byte NodeId Binary DataEncoding"
+            // OPC UA 1.05 Part 6, Chapter 5.2.2.9, Section "Four Byte NodeId Binary DataEncoding"
             if (!encoder.encode<quint16>(integerIdentifier))
                 return false;
             encodingType = 0x01; // 16 bit numeric
@@ -975,7 +975,7 @@ inline bool QOpcUaBinaryDataEncoding::encode<QString, QOpcUa::Types::NodeId>(con
 
     if (encodingType == 0x00) {
         // encodingType == 0x00 skips namespace completely, defaults to zero
-        // Part 6, Chapter 5.2.2.9, Section "Two Byte NodeId Binary DataEncoding"
+        // OPC UA 1.05 Part 6, Chapter 5.2.2.9, Section "Two Byte NodeId Binary DataEncoding"
     } else if (encodingType == 0x01) {
         if (!encode<quint8>(index))
             return false;
@@ -1022,7 +1022,7 @@ inline bool QOpcUaBinaryDataEncoding::encode<QOpcUaExpandedNodeId>(const QOpcUaE
 template <>
 inline bool QOpcUaBinaryDataEncoding::encode<QDateTime>(const QDateTime &src)
 {
-    // OPC-UA part 6, 5.2.2.5
+    // OPC UA 1.05 part 6, 5.2.2.5
     if (src >= QDateTime(QDate(9999, 12, 31), QTime(11, 59, 59))) {
         if (!encode<qint64>(upperBound<qint64>()))
             return false;

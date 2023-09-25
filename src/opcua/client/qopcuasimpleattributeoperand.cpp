@@ -11,7 +11,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtOpcUa
     \brief The OPC UA SimpleAttributeOperand type.
 
-    The SimpleAttributeOperand is specified in OPC-UA part 4, 7.4.4.5.
+    The SimpleAttributeOperand is specified in OPC UA 1.05 part 4, 7.7.4.5.
     It is used when a node attribute is required as operand.
 
     For example, the following simple attribute operand represents the value
@@ -57,7 +57,7 @@ QOpcUaSimpleAttributeOperand::QOpcUaSimpleAttributeOperand(const QString &name, 
 
 /*!
     Constructs a simple attribute operand for the attribute \a attributeId of an object or variable of type \a typeId.
-    This can be used for requesting the ConditionId in an event filter as described in OPC-UA part 9, Table 8.
+    This can be used for requesting the ConditionId in an event filter as described in OPC UA 1.05 part 9, 5.5.2.
 */
 QOpcUaSimpleAttributeOperand::QOpcUaSimpleAttributeOperand(QOpcUa::NodeAttribute attributeId, const QString &typeId)
     : data(new QOpcUaSimpleAttributeOperandData)

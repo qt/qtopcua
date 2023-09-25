@@ -10,7 +10,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtOpcUa
     \brief The OPC UA ComplexNumber type.
 
-    The ComplexNumberType defined in OPC-UA part 8, 5.6.4.
+    The ComplexNumberType defined in OPC UA 1.05 part 8, 5.6.4.
     It stores a complex number with float precision.
 */
 

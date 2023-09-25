@@ -53,7 +53,9 @@ QT_BEGIN_NAMESPACE
 
    Attributes of a status
 
-   \value Status.Good Everything is fine.
+   \value Status.Good The operation succeeded.
+   \value Status.Uncertain The operation was uncertain.
+   \value Status.Bad The operation failed.
    \value Status.BadUnexpectedError An unexpected error occurred.
    \value Status.BadInternalError An internal error occurred as a result of a programming or configuration error.
    \value Status.BadOutOfMemory Not enough memory to complete the operation.
@@ -70,21 +72,22 @@ QT_BEGIN_NAMESPACE
    \value Status.BadShutdown The operation was cancelled because the application is shutting down.
    \value Status.BadServerNotConnected The operation could not complete because the client is not connected to the server.
    \value Status.BadServerHalted The server has stopped and cannot process any requests.
-   \value Status.BadNothingToDo There was nothing to do because the client passed a list of operations with no elements.
+   \value Status.BadNothingToDo No processing could be done because there was nothing to do.
    \value Status.BadTooManyOperations The request could not be processed because it specified too many operations.
    \value Status.BadTooManyMonitoredItems The request could not be processed because there are too many monitored items in the subscription.
    \value Status.BadDataTypeIdUnknown The extension object cannot be (de)serialized because the data type id is not recognized.
    \value Status.BadCertificateInvalid The certificate provided as a parameter is not valid.
    \value Status.BadSecurityChecksFailed An error occurred verifying security.
-   \value Status.BadCertificateTimeInvalid The Certificate has expired or is not yet valid.
-   \value Status.BadCertificateIssuerTimeInvalid An Issuer Certificate has expired or is not yet valid.
-   \value Status.BadCertificateHostNameInvalid The HostName used to connect to a Server does not match a HostName in the Certificate.
-   \value Status.BadCertificateUriInvalid The URI specified in the ApplicationDescription does not match the URI in the Certificate.
-   \value Status.BadCertificateUseNotAllowed The Certificate may not be used for the requested operation.
-   \value Status.BadCertificateIssuerUseNotAllowed The Issuer Certificate may not be used for the requested operation.
-   \value Status.BadCertificateUntrusted The Certificate is not trusted.
-   \value Status.BadCertificateRevocationUnknown It was not possible to determine if the Certificate has been revoked.
-   \value Status.BadCertificateIssuerRevocationUnknown It was not possible to determine if the Issuer Certificate has been revoked.
+   \value Status.BadCertificatePolicyCheckFailed The certificate does not meet the requirements of the security policy.
+   \value Status.BadCertificateTimeInvalid The certificate has expired or is not yet valid.
+   \value Status.BadCertificateIssuerTimeInvalid An issuer certificate has expired or is not yet valid.
+   \value Status.BadCertificateHostNameInvalid The HostName used to connect to a server does not match a HostName in the certificate.
+   \value Status.BadCertificateUriInvalid The URI specified in the ApplicationDescription does not match the URI in the certificate.
+   \value Status.BadCertificateUseNotAllowed The certificate may not be used for the requested operation.
+   \value Status.BadCertificateIssuerUseNotAllowed The issuer certificate may not be used for the requested operation.
+   \value Status.BadCertificateUntrusted The certificate is not trusted.
+   \value Status.BadCertificateRevocationUnknown It was not possible to determine if the certificate has been revoked.
+   \value Status.BadCertificateIssuerRevocationUnknown It was not possible to determine if the issuer certificate has been revoked.
    \value Status.BadCertificateRevoked The certificate has been revoked.
    \value Status.BadCertificateIssuerRevoked The issuer certificate has been revoked.
    \value Status.BadCertificateChainIncomplete The certificate chain is incomplete.
@@ -102,6 +105,9 @@ QT_BEGIN_NAMESPACE
    \value Status.BadTimestampsToReturnInvalid The timestamps to return parameter is invalid.
    \value Status.BadRequestCancelledByClient The request was cancelled by the client.
    \value Status.BadTooManyArguments Too many arguments were provided.
+   \value Status.BadLicenseExpired The server requires a license to operate in general or to perform a service or operation, but existing license is expired.
+   \value Status.BadLicenseLimitsExceeded The server has limits on number of allowed operations / objects, based on installed licenses, and these limits where exceeded.
+   \value Status.BadLicenseNotAvailable The server does not have a license which is required to operate in general or to perform a service or operation.
    \value Status.GoodSubscriptionTransferred The subscription was transferred to another session.
    \value Status.GoodCompletesAsynchronously The processing will complete asynchronously.
    \value Status.GoodOverload Sampling has slowed down due to resource limitations.
@@ -130,7 +136,7 @@ QT_BEGIN_NAMESPACE
    \value Status.BadStructureMissing A mandatory structured parameter was missing or null.
    \value Status.BadEventFilterInvalid The event filter is not valid.
    \value Status.BadContentFilterInvalid The content filter is not valid.
-   \value Status.BadFilterOperatorInvalid An unregognized operator was provided in a filter.
+   \value Status.BadFilterOperatorInvalid An unrecognized operator was provided in a filter.
    \value Status.BadFilterOperatorUnsupported A valid operator was provided, but the server does not provide support for this filter operator.
    \value Status.BadFilterOperandCountMismatch The number of operands provided for the filter operator was less then expected for the operand provided.
    \value Status.BadFilterOperandInvalid The operand used in a content filter is not valid.
@@ -138,21 +144,22 @@ QT_BEGIN_NAMESPACE
    \value Status.BadFilterLiteralInvalid The referenced literal is not a valid value.
    \value Status.BadContinuationPointInvalid The continuation point provide is longer valid.
    \value Status.BadNoContinuationPoints The operation could not be processed because all continuation points have been allocated.
-   \value Status.BadReferenceTypeIdInvalid The operation could not be processed because all continuation points have been allocated.
+   \value Status.BadReferenceTypeIdInvalid The reference type id does not refer to a valid reference type node.
    \value Status.BadBrowseDirectionInvalid The browse direction is not valid.
    \value Status.BadNodeNotInView The node is not part of the view.
+   \value Status.BadNumericOverflow The number was not accepted because of a numeric overflow.
    \value Status.BadServerUriInvalid The ServerUri is not a valid URI.
    \value Status.BadServerNameMissing No ServerName was specified.
    \value Status.BadDiscoveryUrlMissing No DiscoveryUrl was specified.
    \value Status.BadSempahoreFileMissing The semaphore file specified by the client is not valid.
    \value Status.BadRequestTypeInvalid The security token request type is not valid.
-   \value Status.BadSecurityModeRejected The security mode does not meet the requirements set by the Server.
-   \value Status.BadSecurityPolicyRejected The security policy does not meet the requirements set by the Server.
+   \value Status.BadSecurityModeRejected The security mode does not meet the requirements set by the server.
+   \value Status.BadSecurityPolicyRejected The security policy does not meet the requirements set by the server.
    \value Status.BadTooManySessions The server has reached its maximum number of sessions.
    \value Status.BadUserSignatureInvalid The user token signature is missing or invalid.
    \value Status.BadApplicationSignatureInvalid The signature generated with the client certificate is missing or invalid.
    \value Status.BadNoValidCertificates The client did not provide at least one software certificate that is valid and meets the profile requirements for the server.
-   \value Status.BadIdentityChangeNotSupported The Server does not support changing the user identity assigned to the session.
+   \value Status.BadIdentityChangeNotSupported The server does not support changing the user identity assigned to the session.
    \value Status.BadRequestCancelledByRequest The request was cancelled by the client with the Cancel service.
    \value Status.BadParentNodeIdInvalid The parent node id does not to refer to a valid node.
    \value Status.BadReferenceNotAllowed The reference could not be created because it violates constraints imposed by the data model.
@@ -165,7 +172,7 @@ QT_BEGIN_NAMESPACE
    \value Status.BadTypeDefinitionInvalid The type definition node id does not reference an appropriate type node.
    \value Status.BadSourceNodeIdInvalid The source node id does not reference a valid node.
    \value Status.BadTargetNodeIdInvalid The target node id does not reference a valid node.
-   \value Status.BadDuplicateReferenceNotAllowed he reference type between the nodes is already defined.
+   \value Status.BadDuplicateReferenceNotAllowed The reference type between the nodes is already defined.
    \value Status.BadInvalidSelfReference The server does not allow this type of self reference on this node.
    \value Status.BadReferenceLocalOnly The reference type is not valid for a reference to a remote server.
    \value Status.BadNoDeleteRights The server will not allow the node to be deleted.
@@ -187,24 +194,27 @@ QT_BEGIN_NAMESPACE
    \value Status.BadHistoryOperationInvalid The history details parameter is not valid.
    \value Status.BadHistoryOperationUnsupported The server does not support the requested operation.
    \value Status.BadInvalidTimestampArgument The defined timestamp to return was invalid.
-   \value Status.BadWriteNotSupported The server not does support writing the combination of value, status and timestamps provided.
+   \value Status.BadWriteNotSupported The server does not support writing the combination of value, status and timestamps provided.
    \value Status.BadTypeMismatch The value supplied for the attribute is not of the same type as the attribute's value.
    \value Status.BadMethodInvalid The method id does not refer to a method for the specified object.
    \value Status.BadArgumentsMissing The client did not specify all of the input arguments for the method.
-   \value Status.BadTooManySubscriptions The server has reached its  maximum number of subscriptions.
+   \value Status.BadNotExecutable The executable attribute does not allow the execution of the method.
+   \value Status.BadTooManySubscriptions The server has reached its maximum number of subscriptions.
    \value Status.BadTooManyPublishRequests The server has reached the maximum number of queued publish requests.
    \value Status.BadNoSubscription There is no subscription available for this session.
    \value Status.BadSequenceNumberUnknown The sequence number is unknown to the server.
+   \value Status.GoodRetransmissionQueueNotSupported The Server does not support retransmission queue and acknowledgement of sequence numbers is not available.
    \value Status.BadMessageNotAvailable The requested notification message is no longer available.
-   \value Status.BadInsufficientClientProfile The Client of the current Session does not support one or more Profiles that are necessary for the Subscription.
+   \value Status.BadInsufficientClientProfile The client of the current session does not support one or more Profiles that are necessary for the subscription.
    \value Status.BadStateNotActive The sub-state machine is not currently active.
+   \value Status.BadAlreadyExists An equivalent rule already exists.
    \value Status.BadTcpServerTooBusy The server cannot process the request because it is too busy.
    \value Status.BadTcpMessageTypeInvalid The type of the message specified in the header invalid.
    \value Status.BadTcpSecureChannelUnknown The SecureChannelId and/or TokenId are not currently in use.
-   \value Status.BadTcpMessageTooLarge The size of the message specified in the header is too large.
+   \value Status.BadTcpMessageTooLarge The size of the message chunk specified in the header is too large.
    \value Status.BadTcpNotEnoughResources There are not enough resources to process the request.
    \value Status.BadTcpInternalError An internal error occurred.
-   \value Status.BadTcpEndpointUrlInvalid The Server does not recognize the QueryString specified.
+   \value Status.BadTcpEndpointUrlInvalid The server does not recognize the QueryString specified.
    \value Status.BadRequestInterrupted The request could not be sent because of a network interruption.
    \value Status.BadRequestTimeout Timeout occurred while processing the request.
    \value Status.BadSecureChannelClosed The secure channel has been closed.
@@ -239,7 +249,7 @@ QT_BEGIN_NAMESPACE
    \value Status.BadConditionNotShelved The condition is not currently shelved.
    \value Status.BadShelvingTimeOutOfRange The shelving time not within an acceptable range.
    \value Status.BadNoData No data exists for the requested time range or event filter.
-   \value Status.BadBoundNotFoundNo data found to provide upper or lower bound value.
+   \value Status.BadBoundNotFound No data found to provide upper or lower bound value.
    \value Status.BadBoundNotSupported The server cannot retrieve a bound for the variable.
    \value Status.BadDataLost Data is missing due to collection started/stopped/lost.
    \value Status.BadDataUnavailable Expected data is unavailable for the requested time range due to an un-mounted volume, an off-line archive or tape, or similar reason for temporary unavailability.
@@ -255,8 +265,11 @@ QT_BEGIN_NAMESPACE
    \value Status.BadAggregateNotSupported The requested Aggregate is not support by the server.
    \value Status.BadAggregateInvalidInputs The aggregate value could not be derived due to invalid data inputs.
    \value Status.BadAggregateConfigurationRejected The aggregate configuration is not valid for specified node.
-   \value Status.GoodDataIgnored The request pecifies fields which are not valid for the EventType or cannot be saved by the historian
+   \value Status.GoodDataIgnored The request specifies fields which are not valid for the EventType or cannot be saved by the historian.
    \value Status.BadRequestNotAllowed The request was rejected by the server because it did not meet the criteria set by the server.
+   \value Status.BadRequestNotComplete The request has not been processed by the server yet.
+   \value Status.BadTicketRequired The device identity needs a ticket before it can be accepted.
+   \value Status.BadTicketInvalid The device identity needs a ticket before it can be accepted.
    \value Status.GoodEdited The value does not come from the real source and has been edited by the server.
    \value Status.GoodPostActionFailed There was an error in execution of these post-actions.
    \value Status.UncertainDominantValueChanged The related EngineeringUnit has been changed but the Variable Value is still provided based on the previous unit.
@@ -264,6 +277,15 @@ QT_BEGIN_NAMESPACE
    \value Status.BadDominantValueChanged The related EngineeringUnit has been changed but this change has not been applied to the device. The Variable Value is still dependent on the previous unit but its status is currently Bad.
    \value Status.UncertainDependentValueChanged A dependent value has been changed but the change has not been applied to the device. The quality of the dominant variable is uncertain.
    \value Status.BadDependentValueChanged A dependent value has been changed but the change has not been applied to the device. The quality of the dominant variable is Bad.
+   \value Status.GoodEdited_DependentValueChanged It is delivered with a dominant Variable value when a dependent Variable has changed but the change has not been applied.
+   \value Status.GoodEdited_DominantValueChanged It is delivered with a dependent Variable value when a dominant Variable has changed but the change has not been applied.
+   \value Status.GoodEdited_DominantValueChanged_DependentValueChanged It is delivered with a dependent Variable value when a dominant or dependent Variable has changed but change has not been applied.
+   \value Status.BadEdited_OutOfRange It is delivered with a Variable value when Variable has changed but the value is not legal.
+   \value Status.BadInitialValue_OutOfRange It is delivered with a Variable value when a source Variable has changed but the value is not legal.
+   \value Status.BadOutOfRange_DominantValueChanged It is delivered with a dependent Variable value when a dominant Variable has changed and the value is not legal.
+   \value Status.BadEdited_OutOfRange_DominantValueChanged It is delivered with a dependent Variable value when a dominant Variable has changed, the value is not legal and the change has not been applied.
+   \value Status.BadOutOfRange_DominantValueChanged_DependentValueChanged It is delivered with a dependent Variable value when a dominant or dependent Variable has changed and the value is not legal.
+   \value Status.BadEdited_OutOfRange_DominantValueChanged_DependentValueChanged It is delivered with a dependent Variable value when a dominant or dependent Variable has changed, the value is not legal and the change has not been applied.
    \value Status.GoodCommunicationEvent The communication layer has raised an event.
    \value Status.GoodShutdownEvent The system is shutting down.
    \value Status.GoodCallAgain The operation is not finished and needs to be called again.
@@ -277,10 +299,22 @@ QT_BEGIN_NAMESPACE
    \value Status.BadNoDataAvailable No data is currently available for reading from a non-blocking stream.
    \value Status.BadWaitingForResponse The asynchronous operation is waiting for a response.
    \value Status.BadOperationAbandoned The asynchronous operation was abandoned by the caller.
-   \value Status.BadExpectedStreamToBlock  The stream did not return all data requested (possibly because it is a non-blocking stream).
-   \value Status.BadWouldBlock Non blocking behavior is required and the operation would block.
+   \value Status.BadExpectedStreamToBlock The stream did not return all data requested (possibly because it is a non-blocking stream).
+   \value Status.BadWouldBlock Non blocking behaviour is required and the operation would block.
    \value Status.BadSyntaxError A value had an invalid syntax.
    \value Status.BadMaxConnectionsReached The operation could not be finished because all available connections are in use.
+   \value Status.UncertainTransducerInManual The value may not be accurate because the transducer is in manual mode.
+   \value Status.UncertainSimulatedValue The value is simulated.
+   \value Status.UncertainSensorCalibration The value may not be accurate due to a sensor calibration fault.
+   \value Status.UncertainConfigurationError The value may not be accurate due to a configuration issue.
+   \value Status.GoodCascadeInitializationAcknowledged The value source supports cascade handshaking and the value has been Initialized based on an initialization request from a cascade secondary.
+   \value Status.GoodCascadeInitializationRequest The value source supports cascade handshaking and is requesting initialization of a cascade primary.
+   \value Status.GoodCascadeNotInvited The value source supports cascade handshaking, however, the source’s current state does not allow for cascade.
+   \value Status.GoodCascadeNotSelected The value source supports cascade handshaking, however, the source has not selected the corresponding cascade primary for use.
+   \value Status.GoodFaultStateActive There is a fault state condition active in the value source.
+   \value Status.GoodInitiateFaultState A fault state condition is being requested of the destination.
+   \value Status.GoodCascade The value is accurate, and the signal source supports cascade handshaking.
+   \value Status.BadDataSetIdInvalid The DataSet specified for the DataSetWriter creation is invalid.
 */
 
 OpcUaStatus::OpcUaStatus() = default;
@@ -312,6 +346,10 @@ OpcUaStatus::Status OpcUaStatus::status() const
     switch (static_cast<QOpcUa::UaStatusCode>(m_statusCode)) {
     case QOpcUa::Good:
         return Status::Good;
+    case QOpcUa::Uncertain:
+        return Status::Uncertain;
+    case QOpcUa::Bad:
+        return Status::Bad;
     case QOpcUa::BadUnexpectedError:
         return Status::BadUnexpectedError;
     case QOpcUa::BadInternalError:
@@ -356,6 +394,8 @@ OpcUaStatus::Status OpcUaStatus::status() const
         return Status::BadCertificateInvalid;
     case QOpcUa::BadSecurityChecksFailed:
         return Status::BadSecurityChecksFailed;
+    case QOpcUa::BadCertificatePolicyCheckFailed:
+        return Status::BadCertificatePolicyCheckFailed;
     case QOpcUa::BadCertificateTimeInvalid:
         return Status::BadCertificateTimeInvalid;
     case QOpcUa::BadCertificateIssuerTimeInvalid:
@@ -408,6 +448,12 @@ OpcUaStatus::Status OpcUaStatus::status() const
         return Status::BadRequestCancelledByClient;
     case QOpcUa::BadTooManyArguments:
         return Status::BadTooManyArguments;
+    case QOpcUa::BadLicenseExpired:
+        return Status::BadLicenseExpired;
+    case QOpcUa::BadLicenseLimitsExceeded:
+        return Status::BadLicenseLimitsExceeded;
+    case QOpcUa::BadLicenseNotAvailable:
+        return Status::BadLicenseNotAvailable;
     case QOpcUa::GoodSubscriptionTransferred:
         return Status::GoodSubscriptionTransferred;
     case QOpcUa::GoodCompletesAsynchronously:
@@ -486,6 +532,8 @@ OpcUaStatus::Status OpcUaStatus::status() const
         return Status::BadBrowseDirectionInvalid;
     case QOpcUa::BadNodeNotInView:
         return Status::BadNodeNotInView;
+    case QOpcUa::BadNumericOverflow:
+        return Status::BadNumericOverflow;
     case QOpcUa::BadServerUriInvalid:
         return Status::BadServerUriInvalid;
     case QOpcUa::BadServerNameMissing:
@@ -586,6 +634,8 @@ OpcUaStatus::Status OpcUaStatus::status() const
         return Status::BadMethodInvalid;
     case QOpcUa::BadArgumentsMissing:
         return Status::BadArgumentsMissing;
+    case QOpcUa::BadNotExecutable:
+        return Status::BadNotExecutable;
     case QOpcUa::BadTooManySubscriptions:
         return Status::BadTooManySubscriptions;
     case QOpcUa::BadTooManyPublishRequests:
@@ -594,12 +644,16 @@ OpcUaStatus::Status OpcUaStatus::status() const
         return Status::BadNoSubscription;
     case QOpcUa::BadSequenceNumberUnknown:
         return Status::BadSequenceNumberUnknown;
+    case QOpcUa::GoodRetransmissionQueueNotSupported:
+        return Status::GoodRetransmissionQueueNotSupported;
     case QOpcUa::BadMessageNotAvailable:
         return Status::BadMessageNotAvailable;
     case QOpcUa::BadInsufficientClientProfile:
         return Status::BadInsufficientClientProfile;
     case QOpcUa::BadStateNotActive:
         return Status::BadStateNotActive;
+    case QOpcUa::BadAlreadyExists:
+        return Status::BadAlreadyExists;
     case QOpcUa::BadTcpServerTooBusy:
         return Status::BadTcpServerTooBusy;
     case QOpcUa::BadTcpMessageTypeInvalid:
@@ -718,6 +772,12 @@ OpcUaStatus::Status OpcUaStatus::status() const
         return Status::GoodDataIgnored;
     case QOpcUa::BadRequestNotAllowed:
         return Status::BadRequestNotAllowed;
+    case QOpcUa::BadRequestNotComplete:
+        return Status::BadRequestNotComplete;
+    case QOpcUa::BadTicketRequired:
+        return Status::BadTicketRequired;
+    case QOpcUa::BadTicketInvalid:
+        return Status::BadTicketInvalid;
     case QOpcUa::GoodEdited:
         return Status::GoodEdited;
     case QOpcUa::GoodPostActionFailed:
@@ -732,6 +792,24 @@ OpcUaStatus::Status OpcUaStatus::status() const
         return Status::UncertainDependentValueChanged;
     case QOpcUa::BadDependentValueChanged:
         return Status::BadDependentValueChanged;
+    case QOpcUa::GoodEdited_DependentValueChanged:
+        return Status::GoodEdited_DependentValueChanged;
+    case QOpcUa::GoodEdited_DominantValueChanged:
+        return Status::GoodEdited_DominantValueChanged;
+    case QOpcUa::GoodEdited_DominantValueChanged_DependentValueChanged:
+        return Status::GoodEdited_DominantValueChanged_DependentValueChanged;
+    case QOpcUa::BadEdited_OutOfRange:
+        return Status::BadEdited_OutOfRange;
+    case QOpcUa::BadInitialValue_OutOfRange:
+        return Status::BadInitialValue_OutOfRange;
+    case QOpcUa::BadOutOfRange_DominantValueChanged:
+        return Status::BadOutOfRange_DominantValueChanged;
+    case QOpcUa::BadEdited_OutOfRange_DominantValueChanged:
+        return Status::BadEdited_OutOfRange_DominantValueChanged;
+    case QOpcUa::BadOutOfRange_DominantValueChanged_DependentValueChanged:
+        return Status::BadOutOfRange_DominantValueChanged_DependentValueChanged;
+    case QOpcUa::BadEdited_OutOfRange_DominantValueChanged_DependentValueChanged:
+        return Status::BadEdited_OutOfRange_DominantValueChanged_DependentValueChanged;
     case QOpcUa::GoodCommunicationEvent:
         return Status::GoodCommunicationEvent;
     case QOpcUa::GoodShutdownEvent:
@@ -766,6 +844,30 @@ OpcUaStatus::Status OpcUaStatus::status() const
         return Status::BadSyntaxError;
     case QOpcUa::BadMaxConnectionsReached:
         return Status::BadMaxConnectionsReached;
+    case QOpcUa::UncertainTransducerInManual:
+        return Status::UncertainTransducerInManual;
+    case QOpcUa::UncertainSimulatedValue:
+        return Status::UncertainSimulatedValue;
+    case QOpcUa::UncertainSensorCalibration:
+        return Status::UncertainSensorCalibration;
+    case QOpcUa::UncertainConfigurationError:
+        return Status::UncertainConfigurationError;
+    case QOpcUa::GoodCascadeInitializationAcknowledged:
+        return Status::GoodCascadeInitializationAcknowledged;
+    case QOpcUa::GoodCascadeInitializationRequest:
+        return Status::GoodCascadeInitializationRequest;
+    case QOpcUa::GoodCascadeNotInvited:
+        return Status::GoodCascadeNotInvited;
+    case QOpcUa::GoodCascadeNotSelected:
+        return Status::GoodCascadeNotSelected;
+    case QOpcUa::GoodFaultStateActive:
+        return Status::GoodFaultStateActive;
+    case QOpcUa::GoodInitiateFaultState:
+        return Status::GoodInitiateFaultState;
+    case QOpcUa::GoodCascade:
+        return Status::GoodCascade;
+    case QOpcUa::BadDataSetIdInvalid:
+        return Status::BadDataSetIdInvalid;
     }
     return Status::BadUnexpectedError;
 }

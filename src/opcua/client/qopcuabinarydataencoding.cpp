@@ -8,7 +8,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QOpcUaBinaryDataEncoding
     \inmodule QtOpcUa
-    \brief QOpcUaBinaryDataEncoding is a partial implementation of the OPC UA binary data encoding described in OPC-UA part 6.
+    \brief QOpcUaBinaryDataEncoding is a partial implementation of the OPC UA binary data encoding described in OPC UA part 6.
 
     It offers template functions for encoding and decoding data for reading and writing extension objects.
 

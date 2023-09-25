@@ -15,7 +15,7 @@ QT_BEGIN_NAMESPACE
     \brief The OPC UA SimpleAttributeOperand type.
     \since QtOpcUa 5.13
 
-    The SimpleAttributeOperand is specified in OPC-UA part 4, 7.4.4.5.
+    The SimpleAttributeOperand is specified in OPC UA 1.05 part 4, 7.7.4.5.
     It is used when a node attribute is required as operand.
 
     For example, the following simple attribute operand represents the value

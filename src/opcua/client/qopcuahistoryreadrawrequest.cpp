@@ -12,7 +12,7 @@ QT_BEGIN_NAMESPACE
     \since 6.3
 
     This is the Qt OPC UA representation for the OPC UA ReadRawModifiedDetails for reading historical data
-    defined in \l {https://reference.opcfoundation.org/Core/docs/Part11/6.4.3/} {OPC-UA part 11, 6.4.3}.
+    defined in \l {https://reference.opcfoundation.org/Core/Part11/v104/docs/6.4.3} {OPC UA 1.04 part 11, 6.4.3}.
 
     When requesting historic data from a server, several values need to be provided to the server
     to know which data to collect. The QOpcUaHistoryReadRawRequest class provides the required values.

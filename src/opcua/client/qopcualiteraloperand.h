@@ -10,7 +10,7 @@
 
 QT_BEGIN_NAMESPACE
 
-// OPC-UA part 4, 7.4.4.3
+// OPC UA 1.05 part 4, 7.7.4.3
 class QOpcUaLiteralOperandData;
 class Q_OPCUA_EXPORT QOpcUaLiteralOperand
 {

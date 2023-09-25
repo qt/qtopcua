@@ -524,7 +524,7 @@ void QOpcUaMonitoringParameters::setSamplingInterval(double samplingInterval)
     \brief Defines a DataChangeFilter for a monitored item.
 
     This class is used to set up filtering for a DataChange monitored item.
-    It is defined in OPC-UA part 4, 7.12.2.
+    It is defined in OPC UA 1.05 part 4, 7.22.2.
 */
 
 /*!

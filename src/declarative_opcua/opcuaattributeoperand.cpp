@@ -15,7 +15,7 @@ QT_BEGIN_NAMESPACE
     \brief The OPC UA AttributeOperand type.
     \since QtOpcUa 5.13
 
-    The AttributeOperand is defined in OPC-UA part 4, 7.4.4.4.
+    The AttributeOperand is defined in OPC UA 1.05 part 4, 7.7.4.4.
     It has the same purpose as \l SimpleAttributeOperand but has more configurable options.
 */
 

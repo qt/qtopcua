@@ -29,7 +29,7 @@ public:
         : mask(0)
     {}
 
-    // Bit positions from OPC-UA part 4, 7.19.1
+    // Bit positions from OPC UA 1.05 part 6, table A.1
     enum class BitMask : quint32 {
         AccessLevel = 0,
         ArrayDimensions = 1,

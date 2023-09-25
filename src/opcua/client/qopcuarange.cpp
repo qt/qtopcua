@@ -10,7 +10,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtOpcUa
     \brief The OPC UA Range type.
 
-    This is the Qt OPC UA representation for the OPC UA Range type defined in OPC-UA part 8, 5.6.2.
+    This is the Qt OPC UA representation for the OPC UA Range type defined in OPC UA 1.05 part 8, 5.6.2.
     It consists of two double values which mark minimum and maximum of the range.
     Ranges are mostly used to store information about acceptable values for a node.
 */

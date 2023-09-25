@@ -369,7 +369,7 @@ QString scalarToQt<QString, UA_NodeId>(const UA_NodeId *data)
 template<>
 QDateTime scalarToQt<QDateTime, UA_DateTime>(const UA_DateTime *data)
 {
-    // OPC-UA part 3, Table C.9
+    // OPC UA 1.05 part 6, 5.1.4
     if (*data == (std::numeric_limits<qint64>::min)() || *data == (std::numeric_limits<qint64>::max)())
         return QDateTime();
 
@@ -698,7 +698,7 @@ QOpcUaMonitoringParameters::EventFilter scalarToQt<QOpcUaMonitoringParameters::E
 template <>
 QVariant scalarToQt<QVariant, UA_ExtensionObject>(const UA_ExtensionObject *data)
 {
-    // OPC-UA part 6, Table 13 states that an extension object can have no body, a ByteString encoded body
+    // OPC UA 1.05 part 6, 5.2.2.15 states that an extension object can have no body, a ByteString encoded body
     // or an XML encoded body.
 
     // Handle extension object without body
@@ -882,7 +882,7 @@ void scalarFromQt<UA_DateTime, QDateTime>(const QDateTime &value, UA_DateTime *p
         return;
     }
 
-    // OPC-UA part 3, Table C.9
+    // OPC UA 1.05 part 6, 5.1.4
     const QDateTime uaEpochStart(QDate(1601, 1, 1), QTime(0, 0), QTimeZone::UTC);
 
     *ptr = UA_DATETIME_MSEC * (value.toMSecsSinceEpoch() - uaEpochStart.toMSecsSinceEpoch());

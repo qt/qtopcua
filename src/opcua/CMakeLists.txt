@@ -116,7 +116,11 @@ if (QT_FEATURE_gds AND QT_FEATURE_ssl)
 endif()
 
 if(MSVC)
-    target_compile_options(OpcUa PRIVATE /constexpr:steps3000000)
+    target_compile_options(OpcUa PRIVATE /constexpr:steps3500000)
+elseif(GCC)
+    target_compile_options(OpcUa PRIVATE -fconstexpr-ops-limit=40000000)
+elseif(CLANG)
+    target_compile_options(OpcUa PRIVATE -fconstexpr-steps=2000000)
 endif()
 
 qt_internal_extend_target(OpcUa CONDITION NOT QT_FEATURE_ns0idnames

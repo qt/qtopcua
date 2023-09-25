@@ -14,7 +14,7 @@ QT_BEGIN_NAMESPACE
     This is the Qt OPC UA representation for an extension object.
     Extension objects are used as a container in OPC UA whenever a non-builtin type is stored
     in a Variant. It contains information about the type and encoding of the data as well as
-    the data itself encoded with one of the encodings specified in OPC-UA part 6.
+    the data itself encoded with one of the encodings specified in OPC UA part 6.
     Decoders are supposed to decode extension objects if they can handle the type. If the type
     is not supported by the decoder, the extension object is not decoded and decoding is left
     to the user.
@@ -156,7 +156,7 @@ void QOpcUaExtensionObject::setXmlEncodedBody(const QByteArray &encodedBody, con
 
 /*!
     Returns the node id of the encoding for the type stored by this extension object, for example ns=0;i=886 for
-    Range_Encoding_DefaultBinary. All encoding ids are listed in \l {https://opcfoundation.org/UA/schemas/1.03/NodeIds.csv}.
+    Range_Encoding_DefaultBinary. All encoding ids are listed in \l {https://opcfoundation.org/UA/schemas/1.05/NodeIds.csv}.
 */
 QString QOpcUaExtensionObject::encodingTypeId() const
 {

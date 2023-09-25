@@ -13,7 +13,7 @@ QT_BEGIN_NAMESPACE
 
 class QOpcUaQualifiedName;
 
-// OPC-UA part 4, 7.4.4.5
+// OPC UA 1.05 part 4, 7.7.4.5
 class QOpcUaSimpleAttributeOperandData;
 class Q_OPCUA_EXPORT QOpcUaSimpleAttributeOperand
 {

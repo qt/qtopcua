@@ -7,7 +7,7 @@ QT_BEGIN_NAMESPACE
 
 /*
     This class has been modelled in the style of the Variant encoding
-    defined in OPC-UA part 6, 5.2.2.16.
+    defined in OPC UA 1.05 part 6, 5.2.2.16.
 
     This solution has been preferred to returning nested QVariantLists
     due to the following reasons:

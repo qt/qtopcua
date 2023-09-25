@@ -41,7 +41,7 @@ QT_BEGIN_NAMESPACE
     The filter operator.
 
     Possible operators for a FilterElement that are specified in
-    OPC-UA part 4, Tables 115 and 116.
+    OPC UA 1.05 part 4, 7.7.3
 
     \value FilterElement.Equals
     \value FilterElement.IsNull

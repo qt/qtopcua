@@ -11,7 +11,7 @@ QT_BEGIN_NAMESPACE
     \brief The OPC UA LiteralOperand type.
     \since QtOpcUa 5.13
 
-    The LiteralOperand is defined in OPC-UA part 4, 7.4.4.3.
+    The LiteralOperand is defined in OPC UA 1.05 part 4, 7.7.4.3.
     It contains a literal value that is to be used as operand for filters.
 
     Setting the type should be done to match the expected types on the server.

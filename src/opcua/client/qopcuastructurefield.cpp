@@ -11,7 +11,7 @@ QT_BEGIN_NAMESPACE
     \since 6.7
     \brief The OPC UA StructureField type.
 
-    This is the Qt OPC UA representation for the OPC UA StructureField type defined in OPC-UA part 3.
+    This is the Qt OPC UA representation for the OPC UA StructureField type defined in OPC UA part 3.
     It describes a field of a structured type.
 */
 

@@ -15,7 +15,7 @@ QT_BEGIN_NAMESPACE
     and functionality provided by the class may be subject to change at any time without
     prior notice.
 
-    This is the Qt OPC UA representation for the OPC UA ApplicationRecordDataType type defined in OPC-UA version 1.04 part 12, 6.3.5.
+    This is the Qt OPC UA representation for the OPC UA ApplicationRecordDataType type defined in OPC UA version 1.05 part 12, 6.6.5.
     It is used to represent a record in the GDS.
 */
 

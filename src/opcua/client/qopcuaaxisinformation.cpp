@@ -13,7 +13,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtOpcUa
     \brief The OPC UA AxisInformation type.
 
-    This is the Qt OPC UA representation for the OPC UA AxisInformation type defined in OPC-UA part 8, 5.6.6.
+    This is the Qt OPC UA representation for the OPC UA AxisInformation type defined in OPC UA 1.05 part 8, 5.6.6.
     It contains information about an axis which can be used for multiple purposes. A common use case could
     involve the plotting of display data. The engineering units and the title are used for the text on the plot,
     range, axisScaleType and axisSteps provide the scaling and the axis ranges of the plot.

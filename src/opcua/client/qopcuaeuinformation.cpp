@@ -11,7 +11,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtOpcUa
     \brief The OPC UA EURange type.
 
-    This is the Qt OPC UA representation for the OPC UA EUInformation type defined in OPC-UA part 8, 5.6.3.
+    This is the Qt OPC UA representation for the OPC UA EUInformation type defined in OPC UA 1.05 part 8, 5.6.3.
     EUInformation values contain information about units and are mostly used as property of a node with a numeric value attribute.
     The information can e. g. be used to add text and tooltips to GUI elements.
 */

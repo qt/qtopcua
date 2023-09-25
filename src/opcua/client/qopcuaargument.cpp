@@ -11,7 +11,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtOpcUa
     \brief The OPC UA Argument type.
 
-    This is the Qt OPC UA representation for the Argument type defined in OPC-UA part 3, 8.6.
+    This is the Qt OPC UA representation for the Argument type defined in OPC UA 1.05 part 3, 8.6.
 
     The Argument type is mainly used for the values of the InputArguments and OutputArguments properties
     which describe the parameters and return values of method nodes.

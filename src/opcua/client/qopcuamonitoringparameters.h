@@ -48,7 +48,7 @@ public:
     Q_ENUM(Parameter)
     Q_DECLARE_FLAGS(Parameters, Parameter)
 
-    // This type and the enums are defined in OPC-UA part 4, 7.12.2
+    // This type and the enums are defined in OPC UA 1.05 part 4, 7.22.2
     class DataChangeFilterData;
     class Q_OPCUA_EXPORT DataChangeFilter
     {

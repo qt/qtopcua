@@ -10,7 +10,7 @@ QT_BEGIN_NAMESPACE
     \inmodule QtOpcUa
     \brief The OPC UA DoubleComplexNumber type.
 
-    The DoubleComplexNumberType defined in OPC-UA part 8, 5.6.5.
+    The DoubleComplexNumberType defined in OPC UA 1.05 part 8, 5.6.5.
     It stores a complex number with double precision.
 */
 

@@ -28,7 +28,7 @@ public:
     operator QVariant() const;
     ~QOpcUaContentFilterElement();
 
-    // Specified in OPC-UA part 4, Tables 115 and 116
+    // Specified in OPC UA 1.05 part 4, 7.7.3
     enum FilterOperator : quint32 {
         Equals = 0,
         IsNull = 1,
