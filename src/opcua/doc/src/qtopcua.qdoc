@@ -359,6 +359,7 @@
     \li X
     \li
     \li QOpcUaDiagnosticInfo
+    \row
     \li SimpleAttributeOperand
     \li X
     \li
@@ -382,12 +383,12 @@
     \li RelativePathElement
     \li X
     \li
-    \row QOpcUaRelativePathElement
+    \li QOpcUaRelativePathElement
     \row
     \li ContentFilterElement
     \li X
     \li
-    \row QOpcUaContentFilterElement
+    \li QOpcUaContentFilterElement
     \row
     \li EventFilter
     \li X
