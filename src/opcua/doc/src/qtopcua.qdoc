@@ -510,7 +510,7 @@
 
     \code
         cmake </path/to/qtopcua> -DINPUT_open62541=no
-    \encode
+    \endcode
 
     In case you want to build a custom version of the Open62541 plugin, Open62541 v1.3.6 built with the same options as above is required.
 
