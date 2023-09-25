@@ -150,6 +150,10 @@
     \li X
     \li X
     \row
+    \li HistoryRead
+    \li Raw
+    \li
+    \row
     \li Write
     \li X
     \li X
