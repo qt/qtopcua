@@ -37,7 +37,7 @@
     Currently, the following implementations are supported:
 
     \list
-    \li Open62541 v1.3.1, MPLv2
+    \li Open62541 v1.3.6, MPLv2
     \li Unified Automation C++ SDK (UACpp), Commercial
     \endlist
 
