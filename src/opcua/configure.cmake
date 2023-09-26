@@ -75,7 +75,7 @@ qt_feature("open62541" PUBLIC PRIVATE
 # special case end
 )
 qt_feature_definition("open62541" "QT_NO_OPEN62541" NEGATE VALUE "1")
-qt_feature("system-open62541" PRIVATE
+qt_feature("system-open62541" PRIVATE SYSTEM_LIBRARY
     LABEL "Using provided Open62541"
     CONDITION Open62541_FOUND AND TEST_open62541 # special case
     ENABLE INPUT_open62541 STREQUAL 'system'
