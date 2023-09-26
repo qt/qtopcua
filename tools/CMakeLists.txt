@@ -5,6 +5,6 @@ if(QT_FEATURE_datatypecodegenerator)
     add_subdirectory(datatypecodegenerator)
 endif()
 
-if(QT_FEATURE_ns0idgenerator)
-    add_subdirectory(defaultnodeidsgenerator)
+if(QT_FEATURE_internalgenerator)
+    add_subdirectory(internalgenerator)
 endif()

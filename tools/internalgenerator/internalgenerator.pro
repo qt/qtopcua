@@ -5,6 +5,6 @@ CONFIG += c++11
 SOURCES += \
         main.cpp
 
-TARGET = qtopcua-defaultnodeidsgenerator
+TARGET = qtopcua-internalgenerator
 
 load(qt_tool)

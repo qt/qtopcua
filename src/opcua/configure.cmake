@@ -121,9 +121,9 @@ qt_feature("ns0idnames" PRIVATE
     LABEL "Support for namespace 0 NodeId names"
     PURPOSE "Provides names for the QOpcUa::NodeIds::Namespace0 enum."
 )
-qt_feature("ns0idgenerator" PRIVATE
-    LABEL "Namespace 0 NodeIds generator"
-    PURPOSE "Build a generator for updating the QOpcUa::NodeIds::Namespace0 enum from the NodeIds.csv file."
+qt_feature("internalgenerator" PRIVATE
+    LABEL "Internal code generator"
+    PURPOSE "Build a generator for updating the status codes and namespace 0 ids from the official schema files."
     AUTODETECT false
 )
 qt_feature("gds" PUBLIC PRIVATE
@@ -147,7 +147,7 @@ qt_configure_add_summary_section(NAME "Qt Opcua")
 qt_configure_add_summary_entry(ARGS "open62541")
 qt_configure_add_summary_entry(ARGS "uacpp")
 qt_configure_add_summary_entry(ARGS "ns0idnames")
-qt_configure_add_summary_entry(ARGS "ns0idgenerator")
+qt_configure_add_summary_entry(ARGS "internalgenerator")
 qt_configure_add_summary_entry(ARGS "open62541-security") # special case
 qt_configure_add_summary_entry(ARGS "gds")
 qt_configure_add_summary_entry(ARGS "datatypecodegenerator")
