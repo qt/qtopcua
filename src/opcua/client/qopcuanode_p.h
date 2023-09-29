@@ -122,12 +122,12 @@ public:
 
         for (auto &entry : std::as_const(attr)) {
             if (serviceResult == QOpcUa::UaStatusCode::Good)
-                m_nodeAttributes[entry.attribute()] = entry;
+                m_nodeAttributes.insert(entry.attribute(), entry);
             else {
                 QOpcUaReadResult temp = entry;
                 temp.setStatusCode(serviceResult);
                 temp.setValue(QVariant());
-                m_nodeAttributes[entry.attribute()] = temp;
+                m_nodeAttributes.insert(entry.attribute(), temp);
             }
 
             updatedAttributes |= entry.attribute();
@@ -162,7 +162,7 @@ public:
     {
         if (subscribe == true) {
             if (status.statusCode() != QOpcUa::UaStatusCode::BadEntryExists) // Don't overwrite a valid entry
-                m_monitoringStatus[attr] = status;
+                m_monitoringStatus.insert(attr, status);
             Q_Q(QOpcUaNode);
             emit q->enableMonitoringFinished(attr, status.statusCode());
         }

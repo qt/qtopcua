@@ -70,17 +70,14 @@ QOpcUaGenericStructValue QOpcUaGenericStructHandlerPrivate::createGenericStructV
     const auto entry = m_structuresByTypeId.constFind(typeId);
 
     if (entry != m_structuresByTypeId.constEnd()) {
-        QOpcUaGenericStructValue value;
-        value.setStructureDefinition(entry.value().structureDefinition);
-        value.setTypeId(typeId);
-        value.setTypeName(entry.value().name);
+        QOpcUaGenericStructValue value(entry.value().name, typeId, entry.value().structureDefinition);
 
         if (entry.value().structureDefinition.structureType() != QOpcUaStructureDefinition::StructureType::Union) {
             for (const auto &field : entry.value().structureDefinition.fields()) {
                 if (field.isOptional())
                     continue;
 
-                value.fieldsRef()[field.name()] = QVariant();
+                value.fieldsRef().insert(field.name(), QVariant());
             }
         }
 
@@ -861,20 +858,16 @@ void QOpcUaGenericStructHandlerPrivate::processStructRecursive(QOpcUaInternalDat
 {
     qCDebug(lcGenericStructHandler) << "Found struct:" << node->name();
 
-    m_typeNamesByTypeId[node->nodeId()] = node->name();
+    m_typeNamesByTypeId.insert(node->nodeId(), node->name());
 
     if (node->isAbstract())
         m_abstractTypeIds.insert(node->nodeId());
 
     const auto structureDefinition = node->definition().value<QOpcUaStructureDefinition>();
     if (!structureDefinition.defaultEncodingId().isEmpty())
-        m_typeNamesByEncodingId[structureDefinition.defaultEncodingId()] = node->name();
+        m_typeNamesByEncodingId.insert(structureDefinition.defaultEncodingId(), node->name());
 
-    StructMapEntry entry;
-    entry.name = node->name();
-    entry.structureDefinition = structureDefinition;
-    entry.nodeId = node->nodeId();
-    entry.isAbstract = node->isAbstract();
+    const StructMapEntry entry{ node->name(), node->nodeId(), node->isAbstract(), structureDefinition };
     m_structuresByEncodingId.insert(structureDefinition.defaultEncodingId(), entry);
     m_structuresByTypeId.insert(node->nodeId(), entry);
 

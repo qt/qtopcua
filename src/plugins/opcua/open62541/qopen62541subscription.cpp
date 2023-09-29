@@ -119,18 +119,17 @@ bool QOpen62541Subscription::removeOnServer()
 
 void QOpen62541Subscription::modifyMonitoring(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameter item, QVariant value)
 {
-    QOpcUaMonitoringParameters p;
-    p.setStatusCode(QOpcUa::UaStatusCode::BadNotImplemented);
-
     MonitoredItem *monItem = getItemForAttribute(handle, attr);
     if (!monItem) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify parameter" << item << "there are no monitored items";
+        QOpcUaMonitoringParameters p;
         p.setStatusCode(QOpcUa::UaStatusCode::BadAttributeIdInvalid);
         emit m_backend->monitoringStatusChanged(handle, attr, item, p);
         return;
     }
 
-    p = monItem->parameters;
+    QOpcUaMonitoringParameters p = monItem->parameters;
+    p.setStatusCode(QOpcUa::UaStatusCode::BadNotImplemented);
 
     // SetPublishingMode service
     if (item == QOpcUaMonitoringParameters::Parameter::PublishingEnabled) {
@@ -451,8 +450,6 @@ QOpcUaEventFilterResult QOpen62541Subscription::convertEventFilterResult(UA_Exte
 
 bool QOpen62541Subscription::modifySubscriptionParameters(quint64 nodeHandle, QOpcUa::NodeAttribute attr, const QOpcUaMonitoringParameters::Parameter &item, const QVariant &value)
 {
-    QOpcUaMonitoringParameters p;
-
     UA_ModifySubscriptionRequest req;
     UA_ModifySubscriptionRequest_init(&req);
     req.subscriptionId = m_subscriptionId;
@@ -469,6 +466,7 @@ bool QOpen62541Subscription::modifySubscriptionParameters(quint64 nodeHandle, QO
         req.requestedPublishingInterval = value.toDouble(&ok);
         if (!ok) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify PublishingInterval, value is not a double";
+            QOpcUaMonitoringParameters p;
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
             return true;
@@ -480,6 +478,7 @@ bool QOpen62541Subscription::modifySubscriptionParameters(quint64 nodeHandle, QO
         req.requestedLifetimeCount = value.toUInt(&ok);
         if (!ok) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify LifetimeCount, value is not an integer";
+            QOpcUaMonitoringParameters p;
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
             return true;
@@ -491,6 +490,7 @@ bool QOpen62541Subscription::modifySubscriptionParameters(quint64 nodeHandle, QO
         req.requestedMaxKeepAliveCount = value.toUInt(&ok);
         if (!ok) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify MaxKeepAliveCount, value is not an integer";
+            QOpcUaMonitoringParameters p;
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
             return true;
@@ -502,6 +502,7 @@ bool QOpen62541Subscription::modifySubscriptionParameters(quint64 nodeHandle, QO
         req.priority = value.toUInt(&ok);
         if (!ok) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify Priority, value is not an integer";
+            QOpcUaMonitoringParameters p;
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
             return true;
@@ -513,6 +514,7 @@ bool QOpen62541Subscription::modifySubscriptionParameters(quint64 nodeHandle, QO
         req.maxNotificationsPerPublish = value.toUInt(&ok);
         if (!ok) {
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify MaxNotificationsPerPublish, value is not an integer";
+            QOpcUaMonitoringParameters p;
             p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
             emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
             return true;
@@ -528,6 +530,7 @@ bool QOpen62541Subscription::modifySubscriptionParameters(quint64 nodeHandle, QO
         UA_ModifySubscriptionResponse res = UA_Client_Subscriptions_modify(m_backend->m_uaclient, req);
 
         if (res.responseHeader.serviceResult != UA_STATUSCODE_GOOD) {
+            QOpcUaMonitoringParameters p;
             p.setStatusCode(static_cast<QOpcUa::UaStatusCode>(res.responseHeader.serviceResult));
             emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
         } else {
@@ -547,6 +550,7 @@ bool QOpen62541Subscription::modifySubscriptionParameters(quint64 nodeHandle, QO
             if (item == QOpcUaMonitoringParameters::Parameter::MaxNotificationsPerPublish)
                 m_maxNotificationsPerPublish = value.toUInt();
 
+            QOpcUaMonitoringParameters p;
             p.setStatusCode(QOpcUa::UaStatusCode::Good);
             p.setPublishingInterval(m_interval);
             p.setLifetimeCount(m_lifetimeCount);

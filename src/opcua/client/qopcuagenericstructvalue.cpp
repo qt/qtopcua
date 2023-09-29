@@ -55,6 +55,14 @@ QT_BEGIN_NAMESPACE
 class QOpcUaGenericStructValueData : public QSharedData
 {
 public:
+    QOpcUaGenericStructValueData() = default;
+    QOpcUaGenericStructValueData(const QString &typeName, const QString &typeId,
+                                 const QOpcUaStructureDefinition &definition, const QHash<QString, QVariant> &fields)
+        : typeName(typeName)
+        , typeId(typeId)
+        , structureDefinition(definition)
+        , fields(fields)
+    {}
     QString typeName;
     QString typeId;
     QOpcUaStructureDefinition structureDefinition;
@@ -83,12 +91,8 @@ QOpcUaGenericStructValue::~QOpcUaGenericStructValue()
 */
 QOpcUaGenericStructValue::QOpcUaGenericStructValue(const QString &typeName, const QString &typeId,
                                                    const QOpcUaStructureDefinition &definition, const QHash<QString, QVariant> &fields)
-    : data(new QOpcUaGenericStructValueData())
+    : data(new QOpcUaGenericStructValueData(typeName, typeId, definition, fields))
 {
-    data->typeName = typeName;
-    data->typeId = typeId;
-    data->structureDefinition = definition;
-    data->fields = fields;
 }
 
 /*!

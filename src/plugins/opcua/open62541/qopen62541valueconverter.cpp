@@ -835,12 +835,12 @@ QVariant arrayToQVariant(const UA_Variant &var, QMetaType::Type type)
     UATYPE *temp = static_cast<UATYPE *>(var.data);
 
     if (var.arrayLength > 0) {
-        QVariantList list;
+        QVariantList list(var.arrayLength);
         for (size_t i = 0; i < var.arrayLength; ++i) {
             QVariant tempVar = QVariant::fromValue(scalarToQt<TARGETTYPE, UATYPE>(&temp[i]));
             if (type != QMetaType::UnknownType && type != static_cast<QMetaType::Type>(tempVar.metaType().id()))
                 tempVar.convert(QMetaType(type));
-            list.append(tempVar);
+            list[i] = tempVar;
         }
 
         if (var.arrayDimensionsSize > 0) {
