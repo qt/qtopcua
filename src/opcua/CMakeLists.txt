@@ -85,7 +85,9 @@ qt_internal_add_module(OpcUa
 ## Scopes:
 #####################################################################
 
-qt_internal_extend_target(OpcUa CONDITION QT_FEATURE_gds AND QT_FEATURE_ssl AND NOT APPLE AND NOT WINRT
+qt_internal_extend_target(OpcUa
+    CONDITION
+        QT_FEATURE_gds AND QT_FEATURE_openssl AND NOT APPLE AND NOT WINRT
     SOURCES
         client/qopcuagdsclient.cpp client/qopcuagdsclient_p.h
         x509/openssl_symbols.cpp
@@ -103,7 +105,7 @@ qt_internal_extend_target(OpcUa CONDITION QT_FEATURE_gds AND QT_FEATURE_ssl AND 
         x509/qopcuax509utils.cpp x509/qopcuax509utils_p.h
 )
 
-if (QT_FEATURE_gds AND QT_FEATURE_ssl)
+if (QT_FEATURE_gds AND QT_FEATURE_openssl)
     qt_internal_extend_target(OpcUa
         LIBRARIES WrapOpenSSL::WrapOpenSSL)
 endif()
