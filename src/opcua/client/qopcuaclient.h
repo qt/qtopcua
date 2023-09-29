@@ -115,6 +115,9 @@ public:
 
     QOpcUaHistoryReadResponse *readHistoryData(const QOpcUaHistoryReadRawRequest &request);
 
+    bool registerNodes(const QStringList &nodesToRegister);
+    bool unregisterNodes(const QStringList &nodesToUnregister);
+
 Q_SIGNALS:
     void connected();
     void disconnected();
@@ -134,6 +137,8 @@ Q_SIGNALS:
     void deleteReferenceFinished(QString sourceNodeId, QString referenceTypeId, QOpcUaExpandedNodeId targetNodeId, bool isForwardReference,
                               QOpcUa::UaStatusCode statusCode);
     void passwordForPrivateKeyRequired(QString keyFilePath, QString *password, bool previousTryWasInvalid);
+    void registerNodesFinished(QStringList nodesToRegister, QStringList registeredNodeIds, QOpcUa::UaStatusCode statusCode);
+    void unregisterNodesFinished(QStringList nodesToUnregister, QOpcUa::UaStatusCode statusCode);
 
 private:
     Q_DISABLE_COPY(QOpcUaClient)

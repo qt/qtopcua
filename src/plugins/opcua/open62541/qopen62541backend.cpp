@@ -1160,6 +1160,66 @@ void Open62541AsyncBackend::cleanupSubscriptions()
     m_minPublishingInterval = 0;
 }
 
+void Open62541AsyncBackend::registerNodes(const QStringList &nodesToRegister)
+{
+    if (!m_uaclient) {
+        emit registerNodesFinished(nodesToRegister, {}, QOpcUa::UaStatusCode::BadNotConnected);
+        return;
+    }
+
+    UA_RegisterNodesRequest req;
+    UA_RegisterNodesRequest_init(&req);
+
+    req.nodesToRegisterSize = nodesToRegister.size();
+    req.nodesToRegister = static_cast<UA_NodeId *>(UA_Array_new(nodesToRegister.size(), &UA_TYPES[UA_TYPES_NODEID]));
+
+    for (int i = 0; i < nodesToRegister.size(); ++i)
+        QOpen62541ValueConverter::scalarFromQt<UA_NodeId, QString>(nodesToRegister.at(i), &req.nodesToRegister[i]);
+
+    quint32 requestId = 0;
+    UA_StatusCode result = __UA_Client_AsyncServiceEx(m_uaclient, &req, &UA_TYPES[UA_TYPES_REGISTERNODESREQUEST],
+                                                      &asyncRegisterNodesCallback,
+                                                      &UA_TYPES[UA_TYPES_REGISTERNODESRESPONSE],
+                                                      this, &requestId, m_asyncRequestTimeout);
+
+    UA_RegisterNodesRequest_clear(&req);
+
+    if (result != UA_STATUSCODE_GOOD)
+        emit registerNodesFinished(nodesToRegister, {}, QOpcUa::UaStatusCode(result));
+    else
+        m_asyncRegisterUnregisterNodesContext[requestId] = { nodesToRegister };
+}
+
+void Open62541AsyncBackend::unregisterNodes(const QStringList &nodesToUnregister)
+{
+    if (!m_uaclient) {
+        emit unregisterNodesFinished(nodesToUnregister, QOpcUa::UaStatusCode::BadNotConnected);
+        return;
+    }
+
+    UA_UnregisterNodesRequest req;
+    UA_UnregisterNodesRequest_init(&req);
+
+    req.nodesToUnregisterSize = nodesToUnregister.size();
+    req.nodesToUnregister = static_cast<UA_NodeId *>(UA_Array_new(nodesToUnregister.size(), &UA_TYPES[UA_TYPES_NODEID]));
+
+    for (int i = 0; i < nodesToUnregister.size(); ++i)
+        QOpen62541ValueConverter::scalarFromQt<UA_NodeId, QString>(nodesToUnregister.at(i), &req.nodesToUnregister[i]);
+
+    quint32 requestId = 0;
+    UA_StatusCode result = __UA_Client_AsyncServiceEx(m_uaclient, &req, &UA_TYPES[UA_TYPES_UNREGISTERNODESREQUEST],
+                                                      &asyncUnregisterNodesCallback,
+                                                      &UA_TYPES[UA_TYPES_UNREGISTERNODESRESPONSE],
+                                                      this, &requestId, m_asyncRequestTimeout);
+
+    UA_UnregisterNodesRequest_clear(&req);
+
+    if (result != UA_STATUSCODE_GOOD)
+        emit unregisterNodesFinished(nodesToUnregister, QOpcUa::UaStatusCode(result));
+    else
+        m_asyncRegisterUnregisterNodesContext[requestId] = { nodesToUnregister };
+}
+
 void Open62541AsyncBackend::asyncMethodCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response)
 {
     Q_UNUSED(client)
@@ -1505,6 +1565,46 @@ void Open62541AsyncBackend::asyncReadHistoryDataCallBack(UA_Client *client, void
     }
 
     emit backend->historyDataAvailable(historyData, continuationPoints, QOpcUa::UaStatusCode(res->responseHeader.serviceResult), context.handle);
+}
+
+void Open62541AsyncBackend::asyncRegisterNodesCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response)
+{
+    Q_UNUSED(client)
+
+    Open62541AsyncBackend *backend = static_cast<Open62541AsyncBackend *>(userdata);
+    const auto context = backend->m_asyncRegisterUnregisterNodesContext.take(requestId);
+
+    const auto res = static_cast<UA_RegisterNodesResponse *>(response);
+
+    const auto serviceResult = QOpcUa::UaStatusCode(res->responseHeader.serviceResult);
+
+    if (serviceResult != QOpcUa::UaStatusCode::Good) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Register nodes failed:" << serviceResult;
+        emit backend->registerNodesFinished(context.nodeIds, {}, serviceResult);
+    } else {
+        QStringList resultIds;
+        for (size_t i = 0; i < res->registeredNodeIdsSize; ++i)
+            resultIds.push_back(QOpen62541ValueConverter::scalarToQt<QString, UA_NodeId>(&res->registeredNodeIds[i]));
+
+        emit backend->registerNodesFinished(context.nodeIds, resultIds, serviceResult);
+    }
+}
+
+void Open62541AsyncBackend::asyncUnregisterNodesCallback(UA_Client *client, void *userdata, UA_UInt32 requestId, void *response)
+{
+    Q_UNUSED(client)
+
+    Open62541AsyncBackend *backend = static_cast<Open62541AsyncBackend *>(userdata);
+    const auto context = backend->m_asyncRegisterUnregisterNodesContext.take(requestId);
+
+    const auto res = static_cast<UA_UnregisterNodesResponse *>(response);
+
+    const auto serviceResult = QOpcUa::UaStatusCode(res->responseHeader.serviceResult);
+
+    if (serviceResult != QOpcUa::UaStatusCode::Good)
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unregister nodes failed:" << serviceResult;
+
+    emit backend->unregisterNodesFinished(context.nodeIds, serviceResult);
 }
 
 bool Open62541AsyncBackend::loadFileToByteString(const QString &location, UA_ByteString *target) const

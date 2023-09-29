@@ -49,6 +49,9 @@ public:
     Q_INVOKABLE bool handleHistoryReadRawRequested(const QOpcUaHistoryReadRawRequest &request, const QList<QByteArray> &continuationPoints,
                                                    bool releaseContinuationPoints, quint64 handle);
 
+    bool registerNodes(const QStringList &nodesToRegister) override;
+    bool unregisterNodes(const QStringList &nodesToUnregister) override;
+
 signals:
     void historyReadRequestError(quint64 handle);
 

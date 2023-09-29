@@ -262,6 +262,29 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
+    \fn void QOpcUaClient::registerNodesFinished(QStringList nodesToRegister, QStringList registeredNodeIds, QOpcUa::UaStatusCode statusCode)
+    \since 6.7
+
+    This signal is emitted after a \l registerNodes() operation has finished.
+    \a nodesToRegister contains the node ids from the request for correlation purposes.
+    The node ids returned by the server are in \a registeredNodeIds and have the same ordering as the ids in the request.
+    \a statusCode indicates if the operation was successful.
+
+    \sa registerNodes()
+*/
+
+/*!
+    \fn void QOpcUaClient::unregisterNodesFinished(QStringList nodesToUnregister, QOpcUa::UaStatusCode statusCode)
+    \since 6.7
+
+    This signal is emitted after a \l unregisterNodes() operation has finished.
+    \a nodesToUnregister contains the node ids from the request for correlation purposes.
+    \a statusCode indicates if the operation was successful.
+
+    \sa unregisterNodes()
+*/
+
+/*!
     \internal QOpcUaClientImpl is an opaque type (as seen from the public API).
     This prevents users of the public API to use this constructor (even though
     it is public).
@@ -311,6 +334,12 @@ QOpcUaClient::QOpcUaClient(QOpcUaClientImpl *impl, QObject *parent)
 
     QObject::connect(impl, &QOpcUaClientImpl::passwordForPrivateKeyRequired,
                      this, &QOpcUaClient::passwordForPrivateKeyRequired);
+
+    QObject::connect(impl, &QOpcUaClientImpl::registerNodesFinished,
+                     this, &QOpcUaClient::registerNodesFinished);
+
+    QObject::connect(impl, &QOpcUaClientImpl::unregisterNodesFinished,
+                     this, &QOpcUaClient::unregisterNodesFinished);
 }
 
 /*!
@@ -1029,6 +1058,48 @@ QOpcUaHistoryReadResponse *QOpcUaClient::readHistoryData(const QOpcUaHistoryRead
 {
     Q_D(const QOpcUaClient);
     return d->m_impl->readHistoryData(request);
+}
+
+/*!
+    \since 6.7
+
+    Registers the node ids in \a nodesToRegister on the server and returns \c true if the request
+    has been successfully dispatched.
+    The results are returned in the \l registerNodesFinished() signal.
+
+    The node registration service is used to let the server know that a node will be accessed frequently
+    so it may perform operations like keeping the connection to an external resource open.
+    The server may also return an alias node id which is recommended to be numeric. This might come in
+    handy if a node with a long string identifier node id is used in many requests.
+    The real performance gain (if any) depends on the server's implementation.
+
+    The registered node ids are only guaranteed to be valid for the current session.
+    Any registrations that are no longer needed should be unregistered as soon as possible so the
+    server may free the associated resources.
+
+    \sa unregisterNodes()
+ */
+bool QOpcUaClient::registerNodes(const QStringList &nodesToRegister)
+{
+    Q_D(const QOpcUaClient);
+    return d->m_impl->registerNodes(nodesToRegister);
+}
+
+/*!
+    \since 6.7
+
+    Unregisters the node ids in \a nodesToUnregister on the server and returns \c true if the request
+    has been successfully dispatched.
+    The results are returned in the \l unregisterNodesFinished() signal.
+
+    The node ids to pass in \a nodesToUnregister must have been obtained via \l registerNodes().
+
+    \sa registerNodes()
+ */
+bool QOpcUaClient::unregisterNodes(const QStringList &nodesToUnregister)
+{
+    Q_D(const QOpcUaClient);
+    return d->m_impl->unregisterNodes(nodesToUnregister);
 }
 
 QT_END_NAMESPACE

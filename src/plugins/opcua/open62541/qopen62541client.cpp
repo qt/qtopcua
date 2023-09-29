@@ -205,4 +205,18 @@ bool QOpen62541Client::handleHistoryReadRawRequested(const QOpcUaHistoryReadRawR
     return success;
 }
 
+bool QOpen62541Client::registerNodes(const QStringList &nodesToRegister)
+{
+    return QMetaObject::invokeMethod(m_backend, "registerNodes",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(QStringList, nodesToRegister));
+}
+
+bool QOpen62541Client::unregisterNodes(const QStringList &nodesToUnregister)
+{
+    return QMetaObject::invokeMethod(m_backend, "unregisterNodes",
+                                     Qt::QueuedConnection,
+                                     Q_ARG(QStringList, nodesToUnregister));
+}
+
 QT_END_NAMESPACE

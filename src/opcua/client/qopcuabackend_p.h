@@ -78,6 +78,9 @@ Q_SIGNALS:
 
     void historyDataAvailable(QList<QOpcUaHistoryData> data, QList<QByteArray> continuationPoints, QOpcUa::UaStatusCode serviceResult, uintptr_t handle);
 
+    void registerNodesFinished(QStringList nodesToRegister, QStringList registeredNodeIds, QOpcUa::UaStatusCode statusCode);
+    void unregisterNodesFinished(QStringList nodesToUnregister, QOpcUa::UaStatusCode statusCode);
+
 private:
     Q_DISABLE_COPY(QOpcUaBackend)
 };

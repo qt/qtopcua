@@ -645,6 +645,9 @@ private slots:
     defineDataMethod(encodeCustomGenericStruct_data)
     void encodeCustomGenericStruct();
 
+    defineDataMethod(registerUnregisterNodes_data)
+    void registerUnregisterNodes();
+
     // This test case restarts the server. It must be run last to avoid
     // destroying state required by other test cases.
     defineDataMethod(connectionLost_data)
@@ -5933,6 +5936,43 @@ void Tst_QOpcUaClient::encodeCustomGenericStruct()
         QCOMPARE(matrix.value(QList<quint32>({1, 0})).value<QOpcUaGenericStructValue>().fields().value("DoubleSubtypeMember"), 3);
         QCOMPARE(matrix.value(QList<quint32>({1, 1})).value<QOpcUaGenericStructValue>().fields().value("DoubleSubtypeMember"), 4);
     }
+}
+
+void Tst_QOpcUaClient::registerUnregisterNodes()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    const QStringList nodesToRegister { "ns=2;s=Demo.Static.Scalar.Boolean", "ns=2;s=Demo.Static.Scalar.Int32" };
+
+    QSignalSpy registerNodesSpy(opcuaClient, &QOpcUaClient::registerNodesFinished);
+    opcuaClient->registerNodes(nodesToRegister);
+    registerNodesSpy.wait(signalSpyTimeout);
+
+    QCOMPARE(registerNodesSpy.size(), 1);
+    QCOMPARE(registerNodesSpy.at(0).at(0), nodesToRegister);
+    const auto registeredIds = registerNodesSpy.at(0).at(1).value<QStringList>();
+    QCOMPARE(registeredIds.size(), 2);
+    QCOMPARE(registerNodesSpy.at(0).at(2), QOpcUa::UaStatusCode::Good);
+
+    QScopedPointer<QOpcUaNode> node1(opcuaClient->node(registeredIds.at(0)));
+    QScopedPointer<QOpcUaNode> node2(opcuaClient->node(registeredIds.at(1)));
+    QVERIFY(node1 != nullptr);
+    QVERIFY(node2 != nullptr);
+
+    READ_MANDATORY_BASE_NODE(node1);
+    READ_MANDATORY_BASE_NODE(node2);
+
+    QCOMPARE(node1->attribute(QOpcUa::NodeAttribute::BrowseName), QOpcUaQualifiedName(2, "BoolScalarTest"));
+    QCOMPARE(node2->attribute(QOpcUa::NodeAttribute::BrowseName), QOpcUaQualifiedName(2, "Int32ScalarTest"));
+
+    QSignalSpy unregisterNodesSpy(opcuaClient, &QOpcUaClient::unregisterNodesFinished);
+    opcuaClient->unregisterNodes(registeredIds);
+    unregisterNodesSpy.wait(signalSpyTimeout);
+
+    QCOMPARE(unregisterNodesSpy.size(), 1);
+    QCOMPARE(unregisterNodesSpy.at(0).at(0), registeredIds);
+    QCOMPARE(unregisterNodesSpy.at(0).at(1), QOpcUa::UaStatusCode::Good);
 }
 
 void Tst_QOpcUaClient::connectionLost()

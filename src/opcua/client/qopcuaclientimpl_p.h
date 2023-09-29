@@ -64,6 +64,9 @@ public:
     virtual QStringList supportedSecurityPolicies() const = 0;
     virtual QList<QOpcUaUserTokenPolicy::TokenType> supportedUserTokenTypes() const = 0;
 
+    virtual bool registerNodes(const QStringList &nodesToRegister);
+    virtual bool unregisterNodes(const QStringList &nodesToUnregister);
+
     QOpcUaClient *m_client;
 
 private Q_SLOTS:
@@ -98,6 +101,8 @@ signals:
                               QOpcUa::UaStatusCode statusCode);
     void connectError(QOpcUaErrorState *errorState);
     void passwordForPrivateKeyRequired(const QString keyFilePath, QString *password, bool previousTryWasInvalid);
+    void registerNodesFinished(QStringList nodesToRegister, QStringList registeredNodeIds, QOpcUa::UaStatusCode statusCode);
+    void unregisterNodesFinished(QStringList nodesToUnregister, QOpcUa::UaStatusCode statusCode);
 
 private:
     Q_DISABLE_COPY(QOpcUaClientImpl)

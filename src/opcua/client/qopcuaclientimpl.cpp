@@ -62,6 +62,20 @@ void QOpcUaClientImpl::connectBackendWithClient(QOpcUaBackend *backend)
     // This needs to be blocking queued because it is called from another thread, which needs to wait for a result.
     connect(backend, &QOpcUaBackend::connectError, this, &QOpcUaClientImpl::connectError, Qt::BlockingQueuedConnection);
     connect(backend, &QOpcUaBackend::passwordForPrivateKeyRequired, this, &QOpcUaClientImpl::passwordForPrivateKeyRequired, Qt::BlockingQueuedConnection);
+    connect(backend, &QOpcUaBackend::registerNodesFinished, this, &QOpcUaClientImpl::registerNodesFinished);
+    connect(backend, &QOpcUaBackend::unregisterNodesFinished, this, &QOpcUaClientImpl::unregisterNodesFinished);
+}
+
+bool QOpcUaClientImpl::registerNodes(const QStringList &nodesToRegister)
+{
+    Q_UNUSED(nodesToRegister);
+    return false;
+}
+
+bool QOpcUaClientImpl::unregisterNodes(const QStringList &nodesToUnregister)
+{
+    Q_UNUSED(nodesToUnregister);
+    return false;
 }
 
 void QOpcUaClientImpl::handleAttributesRead(quint64 handle, QList<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
