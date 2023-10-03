@@ -1,4 +1,5 @@
 version: 2
+alias: qtopcua
 accept_configuration:
   condition: property
   property: features
