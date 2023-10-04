@@ -204,7 +204,7 @@ QOpcUaGenericStructValue QOpcUaGenericStructHandlerPrivate::decodeStructInternal
 
         qCDebug(lcGenericStructHandler) << "Decode union field with switch value" << switchField;
 
-        const auto &field = entry->structureDefinition.fields().at(switchField - 1);
+        auto field = entry->structureDefinition.fields().at(switchField - 1);
 
         fields[field.name()] = decodeKnownTypesInternal(decoder, field.dataType(), field.valueRank() > 0, success, currentDepth + 1);
         if (!success) {
