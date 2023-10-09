@@ -23,6 +23,9 @@ public:
     QList<QOpcUaContentFilterElementResult> whereClauseResults;
 };
 
+/*!
+    Default constructs an event filter result with no parameters set.
+*/
 QOpcUaEventFilterResult::QOpcUaEventFilterResult()
     : data(new QOpcUaEventFilterResultData)
 {

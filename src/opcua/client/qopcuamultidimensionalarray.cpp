@@ -39,6 +39,9 @@ public:
     quint32 expectedArrayLength{0};
 };
 
+/*!
+    Default constructs a multi dimensional array with no parameters set.
+*/
 QOpcUaMultiDimensionalArray::QOpcUaMultiDimensionalArray()
     : data(new QOpcUaMultiDimensionalArrayData)
 {

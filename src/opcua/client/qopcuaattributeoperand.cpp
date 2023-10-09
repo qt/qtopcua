@@ -26,6 +26,9 @@ public:
     QString indexRange;
 };
 
+/*!
+    Default constructs an attribute operand with no parameters set.
+*/
 QOpcUaAttributeOperand::QOpcUaAttributeOperand()
     : data(new QOpcUaAttributeOperandData)
 {

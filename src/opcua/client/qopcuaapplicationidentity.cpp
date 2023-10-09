@@ -56,6 +56,9 @@ public:
     QString m_productUri;
 };
 
+/*!
+    Default constructs an application identity with no parameters set.
+*/
 QOpcUaApplicationIdentity::QOpcUaApplicationIdentity()
     : data(new QOpcUaApplicationIdentityData())
 {}

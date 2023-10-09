@@ -57,6 +57,9 @@ public:
     QList<QVariant> filterOperands;
 };
 
+/*!
+    Default constructs a content filter element with no parameters set.
+*/
 QOpcUaContentFilterElement::QOpcUaContentFilterElement()
     : data(new QOpcUaContentFilterElementData)
 {

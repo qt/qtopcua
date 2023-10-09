@@ -61,6 +61,9 @@ public:
     QString text;
 };
 
+/*!
+    Default constructs a localized text with no parameters set.
+*/
 QOpcUaLocalizedText::QOpcUaLocalizedText()
     : data(new QOpcUaLocalizedTextData)
 {

@@ -31,6 +31,9 @@ public:
     QOpcUa::UaStatusCode statusCode {QOpcUa::UaStatusCode::Good};
 };
 
+/*!
+    Default constructs a write result with no parameters set.
+*/
 QOpcUaWriteResult::QOpcUaWriteResult()
     : data(new QOpcUaWriteResultData)
 {

@@ -21,6 +21,9 @@ public:
     float value{0};
 };
 
+/*!
+    Default constructs a XValue object with no parameters set.
+*/
 QOpcUaXValue::QOpcUaXValue()
     : data(new QOpcUaXValueData)
 {

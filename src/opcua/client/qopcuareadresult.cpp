@@ -35,6 +35,9 @@ public:
     QVariant value;
 };
 
+/*!
+    Default constructs a read result with no parameters set.
+*/
 QOpcUaReadResult::QOpcUaReadResult()
     : data(new QOpcUaReadResultData)
 {

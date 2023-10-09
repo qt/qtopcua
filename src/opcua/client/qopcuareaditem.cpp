@@ -27,6 +27,9 @@ public:
     QString indexRange;
 };
 
+/*!
+    Default constructs a read item with no parameters set.
+*/
 QOpcUaReadItem::QOpcUaReadItem()
     : data(new QOpcUaReadItemData)
 {

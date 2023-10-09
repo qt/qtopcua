@@ -120,6 +120,9 @@ public:
     quint8 securityLevel{0};
 };
 
+/*!
+    Default constructs an endpoint description with no parameters set.
+*/
 QOpcUaEndpointDescription::QOpcUaEndpointDescription()
     : data(new QOpcUaEndpointDescriptionData)
 {

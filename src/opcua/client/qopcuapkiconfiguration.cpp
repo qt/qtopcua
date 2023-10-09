@@ -49,6 +49,9 @@ public:
     QString m_issuerRevocationListDirectory; /**< Folder containing issuer revocation list */
 };
 
+/*!
+    Default constructs a PKI configuration with no parameters set.
+*/
 QOpcUaPkiConfiguration::QOpcUaPkiConfiguration()
     : data(new QOpcUaPkiConfigurationData())
 {}

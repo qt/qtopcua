@@ -50,6 +50,9 @@ public:
     QString securityPolicy;
 };
 
+/*!
+    Default constructs a user token policy with no parameters set.
+*/
 QOpcUaUserTokenPolicy::QOpcUaUserTokenPolicy()
     : data(new QOpcUaUserTokenPolicyData)
 {

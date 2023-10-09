@@ -25,6 +25,9 @@ public:
     QString targetServerUri;
 };
 
+/*!
+    Default constructs an add reference item with no parameters set.
+*/
 QOpcUaAddReferenceItem::QOpcUaAddReferenceItem()
     : data(new QOpcUaAddReferenceItemData)
 {

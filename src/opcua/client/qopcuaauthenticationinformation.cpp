@@ -67,6 +67,9 @@ public:
     QOpcUaUserTokenPolicy::TokenType authenticationType;
 };
 
+/*!
+    Default constructs an authentication information with no parameters set.
+*/
 QOpcUaAuthenticationInformation::QOpcUaAuthenticationInformation()
     : data(new QOpcUaAuthenticationInformationData)
 {

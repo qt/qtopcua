@@ -19,6 +19,9 @@ public:
     quint32 remainingPathIndex{(std::numeric_limits<quint32>::max)()};
 };
 
+/*!
+    Default constructs a browse path target with no parameters set.
+*/
 QOpcUaBrowsePathTarget::QOpcUaBrowsePathTarget()
     : data(new QOpcUaBrowsePathTargetData)
 {

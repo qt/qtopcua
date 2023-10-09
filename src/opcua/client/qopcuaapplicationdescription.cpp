@@ -141,6 +141,9 @@ public:
     QList<QString> discoveryUrls;
 };
 
+/*!
+    Default constructs an application description with no parameters set.
+*/
 QOpcUaApplicationDescription::QOpcUaApplicationDescription()
     : data(new QOpcUaApplicationDescriptionData)
 {
