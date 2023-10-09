@@ -23,6 +23,9 @@ public:
 
 QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QOpcUaEnumDefinitionData);
 
+/*!
+    Default constructs an enum definition with no parameters set.
+*/
 QOpcUaEnumDefinition::QOpcUaEnumDefinition()
     : data(new QOpcUaEnumDefinitionData)
 {

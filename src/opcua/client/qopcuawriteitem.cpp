@@ -32,6 +32,9 @@ public:
     bool hasStatusCode {false};
 };
 
+/*!
+    Default constructs a write item with no parameters set.
+*/
 QOpcUaWriteItem::QOpcUaWriteItem()
     : data(new QOpcUaWriteItemData)
 {

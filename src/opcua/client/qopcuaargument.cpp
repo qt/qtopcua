@@ -26,6 +26,9 @@ public:
     QOpcUaLocalizedText description;
 };
 
+/*!
+    Default constructs an argument with no parameters set.
+*/
 QOpcUaArgument::QOpcUaArgument()
     : data(new QOpcUaArgumentData)
 {

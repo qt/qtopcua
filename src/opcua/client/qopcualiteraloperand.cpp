@@ -21,6 +21,9 @@ public:
     QOpcUa::Types type {QOpcUa::Types::Undefined};
 };
 
+/*!
+    Default constructs a literal operand with no parameters set.
+*/
 QOpcUaLiteralOperand::QOpcUaLiteralOperand()
     : data(new QOpcUaLiteralOperandData)
 {

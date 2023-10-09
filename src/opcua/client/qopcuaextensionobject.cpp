@@ -38,6 +38,9 @@ public:
     QOpcUaExtensionObject::Encoding encoding{QOpcUaExtensionObject::Encoding::NoBody};
 };
 
+/*!
+    Default constructs an extension object with no parameters set.
+*/
 QOpcUaExtensionObject::QOpcUaExtensionObject()
     : data(new QOpcUaExtensionObjectData)
 {

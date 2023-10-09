@@ -23,6 +23,9 @@ public:
     QString nodeId;
 };
 
+/*!
+    Default constructs an expanded node id with no parameters set.
+*/
 QOpcUaExpandedNodeId::QOpcUaExpandedNodeId()
     : data(new QOpcUaExpandedNodeIdData)
 {

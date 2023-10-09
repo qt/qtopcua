@@ -43,6 +43,9 @@ public:
     \value ActivateSession Error happened during session acivation.
 */
 
+/*!
+    Default constructs an error state with no parameters set.
+*/
 QOpcUaErrorState::QOpcUaErrorState()
     : data(new QOpcUaErrorStateData())
 {

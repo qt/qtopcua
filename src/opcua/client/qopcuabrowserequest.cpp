@@ -32,6 +32,9 @@ public:
     QOpcUa::NodeClasses nodeClassMask;
 };
 
+/*!
+    Default constructs a browse request with no parameters set.
+*/
 QOpcUaBrowseRequest::QOpcUaBrowseRequest()
     : data(new QOpcUaBrowseRequestData)
 {

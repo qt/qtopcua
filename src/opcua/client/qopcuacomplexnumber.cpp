@@ -21,6 +21,9 @@ public:
     float imaginary{0};
 };
 
+/*!
+    Default constructs a complex number with no parameters set.
+*/
 QOpcUaComplexNumber::QOpcUaComplexNumber()
     : data(new QOpcUaComplexNumberData)
 {

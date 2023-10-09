@@ -44,6 +44,9 @@ public:
     quint32 index{0};
 };
 
+/*!
+    Default constructs an element operand with no parameters set.
+*/
 QOpcUaElementOperand::QOpcUaElementOperand()
     : data(new QOpcUaElementOperandData)
 {

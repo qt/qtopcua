@@ -25,6 +25,9 @@ public:
     QOpcUaLocalizedText description;
 };
 
+/*!
+    Default constructs an EU information with no parameters set.
+*/
 QOpcUaEUInformation::QOpcUaEUInformation()
     : data(new QOpcUaEUInformationData)
 {

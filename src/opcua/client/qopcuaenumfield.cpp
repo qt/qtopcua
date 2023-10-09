@@ -26,6 +26,9 @@ public:
 
 QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QOpcUaEnumFieldData);
 
+/*!
+    Default constructs an enum field with no parameters set.
+*/
 QOpcUaEnumField::QOpcUaEnumField()
     : data(new QOpcUaEnumFieldData)
 {

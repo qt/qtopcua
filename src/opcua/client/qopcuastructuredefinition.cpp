@@ -26,6 +26,9 @@ public:
 
 QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QOpcUaStructureDefinitionData);
 
+/*!
+    Default constructs a structure definition with no parameters set.
+*/
 QOpcUaStructureDefinition::QOpcUaStructureDefinition()
     : data(new QOpcUaStructureDefinitionData)
 {

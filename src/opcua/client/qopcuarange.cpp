@@ -22,6 +22,9 @@ public:
     double high{0};
 };
 
+/*!
+    Default constructs a range with no parameters set.
+*/
 QOpcUaRange::QOpcUaRange()
     : data(new QOpcUaRangeData)
 {

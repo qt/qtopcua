@@ -131,7 +131,7 @@ int OpcUaEndpointDiscovery::count() const
     \qmlmethod EndpointDescription EndpointDiscovery::at(index)
 
     Returns the endpoint description at given \a index.
-    In case there are no endoints available or the index is invalid, an invalid
+    In case there are no endpoints available or the index is invalid, an invalid
     endpoint description is returned.
     Before using any data from this, you should check \l status if retrieval of the
     information was successful.

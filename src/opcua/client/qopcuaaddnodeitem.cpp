@@ -26,6 +26,9 @@ public:
     QOpcUaExpandedNodeId typeDefinition;
 };
 
+/*!
+    Default constructs an add node item with no parameters set.
+*/
 QOpcUaAddNodeItem::QOpcUaAddNodeItem()
     : data(new QOpcUaAddNodeItemData)
 {

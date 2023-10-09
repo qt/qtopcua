@@ -29,6 +29,9 @@ public:
     QList<double> axisSteps;
 };
 
+/*!
+    Default constructs an axis information with no parameters set.
+*/
 QOpcUaAxisInformation::QOpcUaAxisInformation()
     : data(new QOpcUaAxisInformationData)
 {

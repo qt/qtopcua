@@ -223,6 +223,9 @@ QT_BEGIN_NAMESPACE
     \sa QOpcUaClient::addNode()
 */
 
+/*!
+    Default constructs a node creation attributes object with no parameters set.
+*/
 QOpcUaNodeCreationAttributes::QOpcUaNodeCreationAttributes()
     : data(new QOpcUaNodeCreationAttributesPrivate())
 {}

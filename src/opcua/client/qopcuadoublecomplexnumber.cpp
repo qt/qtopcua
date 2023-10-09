@@ -21,6 +21,9 @@ public:
     double imaginary{0};
 };
 
+/*!
+    Default constructs a double complex number with no parameters set.
+*/
 QOpcUaDoubleComplexNumber::QOpcUaDoubleComplexNumber()
     : data(new QOpcUaDoubleComplexNumberData)
 {

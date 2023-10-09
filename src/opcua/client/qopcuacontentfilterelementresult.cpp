@@ -22,6 +22,9 @@ public:
     QList<QOpcUa::UaStatusCode> operandStatusCodes;
 };
 
+/*!
+    Default constructs a content filter element result with no parameters set.
+*/
 QOpcUaContentFilterElementResult::QOpcUaContentFilterElementResult()
     : data(new QOpcUaContentFilterElementResultData)
 {

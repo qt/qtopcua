@@ -25,6 +25,9 @@ public:
     bool deleteBidirectional {true};
 };
 
+/*!
+    Default constructs a delete reference item with no parameters set.
+*/
 QOpcUaDeleteReferenceItem::QOpcUaDeleteReferenceItem()
     : data(new QOpcUaDeleteReferenceItemData)
 {

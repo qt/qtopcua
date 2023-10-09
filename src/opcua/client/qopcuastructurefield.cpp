@@ -29,6 +29,9 @@ public:
 
 QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QOpcUaStructureFieldData);
 
+/*!
+    Constructs a structure field with \a valueRank.
+*/
 QOpcUaStructureField::QOpcUaStructureField(qint32 valueRank)
     : data(new QOpcUaStructureFieldData)
 {
