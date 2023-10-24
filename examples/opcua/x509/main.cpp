@@ -22,10 +22,6 @@ int main(int argc, char **argv)
     // Save private key to file
     QByteArray keyData = key.privateKeyToByteArray(QOpcUaKeyPair::Cipher::Unencrypted, QString());
 
-    // In order to create a private key file with password for the Unified Automation plugin,
-    // the following invocation can be used:
-    // QByteArray keyData = key.privateKeyToByteArray(QOpcUaKeyPair::Cipher::Aes128Cbc, "password");
-
     QFile keyFile("privateKey.pem");
     keyFile.open(QFile::WriteOnly);
     keyFile.write(keyData);

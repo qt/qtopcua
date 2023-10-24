@@ -1,8 +1,6 @@
 // Copyright (C) 2019 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "backend_environment.h"
-
 #include <QtOpcUa/QOpcUaAuthenticationInformation>
 #include <QtOpcUa/QOpcUaClient>
 #include <QtOpcUa/QOpcUaEndpointDescription>
@@ -390,7 +388,6 @@ void Tst_QOpcUaSecurity::cleanupTestCase()
 
 int main(int argc, char *argv[])
 {
-    updateEnvironment();
     QCoreApplication app(argc, argv);
 
     QTEST_SET_MAIN_SOURCE_PATH

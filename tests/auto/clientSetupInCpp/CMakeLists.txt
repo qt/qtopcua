@@ -11,10 +11,7 @@ qt_internal_add_test(tst_clientSetupInCpp
     QML_IMPORTPATH
         "${CMAKE_CURRENT_SOURCE_DIR}/../../../src/plugins/declarative"
     SOURCES
-        ../../common/backend_environment.h
         tst_clientSetupInCpp.cpp
-    INCLUDE_DIRECTORIES
-        ../../common
     LIBRARIES
         Qt::Gui
         Qt::OpcUaPrivate

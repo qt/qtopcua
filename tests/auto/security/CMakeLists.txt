@@ -7,10 +7,7 @@
 
 qt_internal_add_test(tst_security
     SOURCES
-        ../../common/backend_environment.h
         tst_security.cpp
-    INCLUDE_DIRECTORIES
-        ../../common
     LIBRARIES
         Qt::Network
         Qt::OpcUa

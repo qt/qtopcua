@@ -7,10 +7,7 @@
 
 qt_internal_add_test(tst_qopcuaclient
     SOURCES
-        ../../common/backend_environment.h
         tst_client.cpp
-    INCLUDE_DIRECTORIES
-        ../../common
     LIBRARIES
         Qt::OpcUa
         Qt::OpcUaPrivate

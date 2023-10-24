@@ -1,8 +1,6 @@
 // Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "backend_environment.h"
-
 #include <QtOpcUa/QOpcUaAuthenticationInformation>
 #include <QtOpcUa/QOpcUaClient>
 #include <QtOpcUa/QOpcUaNode>
@@ -343,10 +341,8 @@ void populateEventFilterTestData()
     encoding2.encode<QString>(QStringLiteral("String %1").arg(index)); \
     encoder.encode<QOpcUaExtensionObject>(ext); \
     encoder.encode<QOpcUaArgument>(testArguments.at(index)); \
-    if (opcuaClient->backend() != QLatin1String("uacpp")) { \
-        encoder.encode<QOpcUaStructureDefinition>(testStructureDefinitions.at(index)); \
-        encoder.encode<QOpcUaEnumDefinition>(testEnumDefinitions.at(index)); \
-    } \
+    encoder.encode<QOpcUaStructureDefinition>(testStructureDefinitions.at(index)); \
+    encoder.encode<QOpcUaEnumDefinition>(testEnumDefinitions.at(index)); \
 }
 
 #define VERIFY_EXTENSION_OBJECT(obj, index) \
@@ -422,12 +418,10 @@ void populateEventFilterTestData()
     QVERIFY(success == true); \
     QCOMPARE(decoder.decode<QOpcUaArgument>(success), testArguments.at(index)); \
     QVERIFY(success == true); \
-    if (opcuaClient->backend() != QLatin1String("uacpp")) { \
-        QCOMPARE(decoder.decode<QOpcUaStructureDefinition>(success), testStructureDefinitions.at(index)); \
-        QVERIFY(success == true); \
-        QCOMPARE(decoder.decode<QOpcUaEnumDefinition>(success), testEnumDefinitions.at(index)); \
-        QVERIFY(success == true); \
-    } \
+    QCOMPARE(decoder.decode<QOpcUaStructureDefinition>(success), testStructureDefinitions.at(index)); \
+    QVERIFY(success == true); \
+    QCOMPARE(decoder.decode<QOpcUaEnumDefinition>(success), testEnumDefinitions.at(index)); \
+    QVERIFY(success == true); \
     QCOMPARE(decoder.offset(), obj.encodedBody().size()); \
 }
 
@@ -717,8 +711,6 @@ void Tst_QOpcUaClient::initTestCase()
 
     for (const auto &backend: m_backends) {
         QVariantMap backendOptions;
-        if (backend == QLatin1String("uacpp"))
-            backendOptions.insert(QLatin1String("disableEncryptedPasswordCheck"), true);
 
         QOpcUaClient *client = m_opcUa.createClient(backend, backendOptions);
         QVERIFY2(client != nullptr,
@@ -1163,9 +1155,6 @@ void Tst_QOpcUaClient::readEmptyArrayVariable()
 
     // open62541 indicates an empty array with an array length of 0 and a data pointer with value 0x1.
     // This test makes sure that empty arrays are handled correctly without causing a segfault.
-    if (opcuaClient->backend() == QLatin1String("uacpp"))
-        QSKIP("This test is only necessary for open62541");
-
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
     QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=2;s=EmptyBoolArray"));
@@ -1273,9 +1262,6 @@ void Tst_QOpcUaClient::readNodeAttributes()
 void Tst_QOpcUaClient::readDataTypeDefinition()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
-
-    if (opcuaClient->backend() == QLatin1String("uacpp"))
-        QSKIP("This test is only necessary for open62541");
 
     OpcuaConnector connector(opcuaClient, m_endpoint);
 
@@ -2942,49 +2928,47 @@ void Tst_QOpcUaClient::writeArray()
     QVERIFY(node != nullptr);
     WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::Argument);
 
-    if (opcuaClient->backend() != QLatin1String("uacpp")) {
-        list.clear();
-        list.append(testStructureFields[0]);
-        list.append(testStructureFields[1]);
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.StructureField"));
-        QVERIFY(node != nullptr);
-        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::StructureField);
+    list.clear();
+    list.append(testStructureFields[0]);
+    list.append(testStructureFields[1]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.StructureField"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::StructureField);
 
-        list.clear();
-        list.append(testStructureDefinitions[0]);
-        list.append(testStructureDefinitions[1]);
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.StructureDefinition"));
-        QVERIFY(node != nullptr);
-        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::StructureDefinition);
+    list.clear();
+    list.append(testStructureDefinitions[0]);
+    list.append(testStructureDefinitions[1]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.StructureDefinition"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::StructureDefinition);
 
-        list.clear();
-        list.append(testEnumFields[0]);
-        list.append(testEnumFields[1]);
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EnumField"));
-        QVERIFY(node != nullptr);
-        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::EnumField);
+    list.clear();
+    list.append(testEnumFields[0]);
+    list.append(testEnumFields[1]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EnumField"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::EnumField);
 
-        list.clear();
-        list.append(testEnumDefinitions[0]);
-        list.append(testEnumDefinitions[1]);
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EnumDefinition"));
-        QVERIFY(node != nullptr);
-        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::EnumDefinition);
+    list.clear();
+    list.append(testEnumDefinitions[0]);
+    list.append(testEnumDefinitions[1]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EnumDefinition"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::EnumDefinition);
 
-        list.clear();
-        list.append(testDiagnosticInfos[0]);
-        list.append(testDiagnosticInfos[1]);
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DiagnosticInfo"));
-        QVERIFY(node != nullptr);
-        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::DiagnosticInfo);
+    list.clear();
+    list.append(testDiagnosticInfos[0]);
+    list.append(testDiagnosticInfos[1]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DiagnosticInfo"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::DiagnosticInfo);
 
-        list.clear();
-        list.append(QVariant::fromValue(testEventFilters[0]));
-        list.append(QVariant::fromValue(testEventFilters[1]));
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EventFilter"));
-        QVERIFY(node != nullptr);
-        WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::EventFilter);
-    }
+    list.clear();
+    list.append(QVariant::fromValue(testEventFilters[0]));
+    list.append(QVariant::fromValue(testEventFilters[1]));
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EventFilter"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, list, QOpcUa::EventFilter);
 }
 
 void Tst_QOpcUaClient::readArray()
@@ -3302,61 +3286,59 @@ void Tst_QOpcUaClient::readArray()
     QCOMPARE(argumentArray.toList()[1].value<QOpcUaArgument>(), testArguments[1]);
     QCOMPARE(argumentArray.toList()[2].value<QOpcUaArgument>(), testArguments[2]);
 
-    if (opcuaClient->backend() != QLatin1String("uacpp")) {
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.StructureField"));
-        QVERIFY(node != nullptr);
-        READ_MANDATORY_VARIABLE_NODE(node)
-        const QVariant structureFieldsArray = node->attribute(QOpcUa::NodeAttribute::Value);
-        QCOMPARE(structureFieldsArray.metaType().id(), QMetaType::QVariantList);
-        QCOMPARE(structureFieldsArray.toList().length(), 2);
-        QCOMPARE(structureFieldsArray.toList()[0].value<QOpcUaStructureField>(), testStructureFields[0]);
-        QCOMPARE(structureFieldsArray.toList()[1].value<QOpcUaStructureField>(), testStructureFields[1]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.StructureField"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    const QVariant structureFieldsArray = node->attribute(QOpcUa::NodeAttribute::Value);
+    QCOMPARE(structureFieldsArray.metaType().id(), QMetaType::QVariantList);
+    QCOMPARE(structureFieldsArray.toList().length(), 2);
+    QCOMPARE(structureFieldsArray.toList()[0].value<QOpcUaStructureField>(), testStructureFields[0]);
+    QCOMPARE(structureFieldsArray.toList()[1].value<QOpcUaStructureField>(), testStructureFields[1]);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.StructureDefinition"));
-        QVERIFY(node != nullptr);
-        READ_MANDATORY_VARIABLE_NODE(node)
-        const QVariant structureDefinitionsArray = node->attribute(QOpcUa::NodeAttribute::Value);
-        QCOMPARE(structureDefinitionsArray.metaType().id(), QMetaType::QVariantList);
-        QCOMPARE(structureDefinitionsArray.toList().length(), 2);
-        QCOMPARE(structureDefinitionsArray.toList()[0].value<QOpcUaStructureDefinition>(), testStructureDefinitions[0]);
-        QCOMPARE(structureDefinitionsArray.toList()[1].value<QOpcUaStructureDefinition>(), testStructureDefinitions[1]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.StructureDefinition"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    const QVariant structureDefinitionsArray = node->attribute(QOpcUa::NodeAttribute::Value);
+    QCOMPARE(structureDefinitionsArray.metaType().id(), QMetaType::QVariantList);
+    QCOMPARE(structureDefinitionsArray.toList().length(), 2);
+    QCOMPARE(structureDefinitionsArray.toList()[0].value<QOpcUaStructureDefinition>(), testStructureDefinitions[0]);
+    QCOMPARE(structureDefinitionsArray.toList()[1].value<QOpcUaStructureDefinition>(), testStructureDefinitions[1]);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EnumField"));
-        QVERIFY(node != nullptr);
-        READ_MANDATORY_VARIABLE_NODE(node)
-        const QVariant enumFieldsArray = node->attribute(QOpcUa::NodeAttribute::Value);
-        QCOMPARE(enumFieldsArray.metaType().id(), QMetaType::QVariantList);
-        QCOMPARE(enumFieldsArray.toList().length(), 2);
-        QCOMPARE(enumFieldsArray.toList()[0].value<QOpcUaEnumField>(), testEnumFields[0]);
-        QCOMPARE(enumFieldsArray.toList()[1].value<QOpcUaEnumField>(), testEnumFields[1]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EnumField"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    const QVariant enumFieldsArray = node->attribute(QOpcUa::NodeAttribute::Value);
+    QCOMPARE(enumFieldsArray.metaType().id(), QMetaType::QVariantList);
+    QCOMPARE(enumFieldsArray.toList().length(), 2);
+    QCOMPARE(enumFieldsArray.toList()[0].value<QOpcUaEnumField>(), testEnumFields[0]);
+    QCOMPARE(enumFieldsArray.toList()[1].value<QOpcUaEnumField>(), testEnumFields[1]);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EnumDefinition"));
-        QVERIFY(node != nullptr);
-        READ_MANDATORY_VARIABLE_NODE(node)
-        const QVariant enumDefinitionsArray = node->attribute(QOpcUa::NodeAttribute::Value);
-        QCOMPARE(enumDefinitionsArray.metaType().id(), QMetaType::QVariantList);
-        QCOMPARE(enumDefinitionsArray.toList().length(), 2);
-        QCOMPARE(enumDefinitionsArray.toList()[0].value<QOpcUaEnumDefinition>(), testEnumDefinitions[0]);
-        QCOMPARE(enumDefinitionsArray.toList()[1].value<QOpcUaEnumDefinition>(), testEnumDefinitions[1]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EnumDefinition"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    const QVariant enumDefinitionsArray = node->attribute(QOpcUa::NodeAttribute::Value);
+    QCOMPARE(enumDefinitionsArray.metaType().id(), QMetaType::QVariantList);
+    QCOMPARE(enumDefinitionsArray.toList().length(), 2);
+    QCOMPARE(enumDefinitionsArray.toList()[0].value<QOpcUaEnumDefinition>(), testEnumDefinitions[0]);
+    QCOMPARE(enumDefinitionsArray.toList()[1].value<QOpcUaEnumDefinition>(), testEnumDefinitions[1]);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DiagnosticInfo"));
-        QVERIFY(node != nullptr);
-        READ_MANDATORY_VARIABLE_NODE(node)
-        const QVariant diagnosticInfoArray = node->attribute(QOpcUa::NodeAttribute::Value);
-        QCOMPARE(diagnosticInfoArray.metaType().id(), QMetaType::QVariantList);
-        QCOMPARE(diagnosticInfoArray.toList().length(), 2);
-        QCOMPARE(diagnosticInfoArray.toList()[0].value<QOpcUaDiagnosticInfo>(), testDiagnosticInfos[0]);
-        QCOMPARE(diagnosticInfoArray.toList()[1].value<QOpcUaDiagnosticInfo>(), testDiagnosticInfos[1]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.DiagnosticInfo"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    const QVariant diagnosticInfoArray = node->attribute(QOpcUa::NodeAttribute::Value);
+    QCOMPARE(diagnosticInfoArray.metaType().id(), QMetaType::QVariantList);
+    QCOMPARE(diagnosticInfoArray.toList().length(), 2);
+    QCOMPARE(diagnosticInfoArray.toList()[0].value<QOpcUaDiagnosticInfo>(), testDiagnosticInfos[0]);
+    QCOMPARE(diagnosticInfoArray.toList()[1].value<QOpcUaDiagnosticInfo>(), testDiagnosticInfos[1]);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EventFilter"));
-        QVERIFY(node != nullptr);
-        READ_MANDATORY_VARIABLE_NODE(node)
-        QVariant eventFilterArray = node->attribute(QOpcUa::NodeAttribute::Value);
-        QCOMPARE(eventFilterArray.metaType().id(), QMetaType::QVariantList);
-        QCOMPARE(eventFilterArray.toList().size(), 2);
-        QCOMPARE(eventFilterArray.toList()[0].value<QOpcUaMonitoringParameters::EventFilter>(), testEventFilters[0]);
-        QCOMPARE(eventFilterArray.toList()[1].value<QOpcUaMonitoringParameters::EventFilter>(), testEventFilters[1]);
-    }
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Arrays.EventFilter"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    QVariant eventFilterArray = node->attribute(QOpcUa::NodeAttribute::Value);
+    QCOMPARE(eventFilterArray.metaType().id(), QMetaType::QVariantList);
+    QCOMPARE(eventFilterArray.toList().size(), 2);
+    QCOMPARE(eventFilterArray.toList()[0].value<QOpcUaMonitoringParameters::EventFilter>(), testEventFilters[0]);
+    QCOMPARE(eventFilterArray.toList()[1].value<QOpcUaMonitoringParameters::EventFilter>(), testEventFilters[1]);
 }
 
 void Tst_QOpcUaClient::writeScalar()
@@ -3490,31 +3472,29 @@ void Tst_QOpcUaClient::writeScalar()
     QVERIFY(node != nullptr);
     WRITE_VALUE_ATTRIBUTE(node, testArguments[0], QOpcUa::Argument);
 
-    if (opcuaClient->backend() != QLatin1String("uacpp")) {
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.StructureField"));
-        QVERIFY(node != nullptr);
-        WRITE_VALUE_ATTRIBUTE(node, testStructureFields[0], QOpcUa::StructureField);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.StructureField"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, testStructureFields[0], QOpcUa::StructureField);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.StructureDefinition"));
-        QVERIFY(node != nullptr);
-        WRITE_VALUE_ATTRIBUTE(node, testStructureDefinitions[0], QOpcUa::StructureDefinition);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.StructureDefinition"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, testStructureDefinitions[0], QOpcUa::StructureDefinition);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EnumField"));
-        QVERIFY(node != nullptr);
-        WRITE_VALUE_ATTRIBUTE(node, testEnumFields[0], QOpcUa::EnumField);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EnumField"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, testEnumFields[0], QOpcUa::EnumField);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EnumDefinition"));
-        QVERIFY(node != nullptr);
-        WRITE_VALUE_ATTRIBUTE(node, testEnumDefinitions[0], QOpcUa::EnumDefinition);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EnumDefinition"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, testEnumDefinitions[0], QOpcUa::EnumDefinition);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DiagnosticInfo"));
-        QVERIFY(node != nullptr);
-        WRITE_VALUE_ATTRIBUTE(node, testDiagnosticInfos[0], QOpcUa::DiagnosticInfo);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DiagnosticInfo"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, testDiagnosticInfos[0], QOpcUa::DiagnosticInfo);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EventFilter"));
-        QVERIFY(node != nullptr);
-        WRITE_VALUE_ATTRIBUTE(node, testEventFilters[0], QOpcUa::EventFilter);
-    }
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EventFilter"));
+    QVERIFY(node != nullptr);
+    WRITE_VALUE_ATTRIBUTE(node, testEventFilters[0], QOpcUa::EventFilter);
 }
 
 void Tst_QOpcUaClient::readScalar()
@@ -3732,49 +3712,47 @@ void Tst_QOpcUaClient::readScalar()
     QVERIFY(argumentScalar.isValid());
     QCOMPARE(argumentScalar.value<QOpcUaArgument>(), testArguments[0]);
 
-    if (opcuaClient->backend() != QLatin1String("uacpp")) {
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.StructureField"));
-        QVERIFY(node != nullptr);
-        READ_MANDATORY_VARIABLE_NODE(node)
-        const QVariant structureFieldScalar = node->attribute(QOpcUa::NodeAttribute::Value);
-        QVERIFY(structureFieldScalar.isValid());
-        QCOMPARE(structureFieldScalar.value<QOpcUaStructureField>(), testStructureFields[0]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.StructureField"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    const QVariant structureFieldScalar = node->attribute(QOpcUa::NodeAttribute::Value);
+    QVERIFY(structureFieldScalar.isValid());
+    QCOMPARE(structureFieldScalar.value<QOpcUaStructureField>(), testStructureFields[0]);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.StructureDefinition"));
-        QVERIFY(node != nullptr);
-        READ_MANDATORY_VARIABLE_NODE(node)
-        const QVariant structureDefinitionScalar = node->attribute(QOpcUa::NodeAttribute::Value);
-        QVERIFY(structureDefinitionScalar.isValid());
-        QCOMPARE(structureDefinitionScalar.value<QOpcUaStructureDefinition>(), testStructureDefinitions[0]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.StructureDefinition"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    const QVariant structureDefinitionScalar = node->attribute(QOpcUa::NodeAttribute::Value);
+    QVERIFY(structureDefinitionScalar.isValid());
+    QCOMPARE(structureDefinitionScalar.value<QOpcUaStructureDefinition>(), testStructureDefinitions[0]);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EnumField"));
-        QVERIFY(node != nullptr);
-        READ_MANDATORY_VARIABLE_NODE(node)
-        const QVariant enumFieldScalar = node->attribute(QOpcUa::NodeAttribute::Value);
-        QVERIFY(enumFieldScalar.isValid());
-        QCOMPARE(enumFieldScalar.value<QOpcUaEnumField>(), testEnumFields[0]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EnumField"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    const QVariant enumFieldScalar = node->attribute(QOpcUa::NodeAttribute::Value);
+    QVERIFY(enumFieldScalar.isValid());
+    QCOMPARE(enumFieldScalar.value<QOpcUaEnumField>(), testEnumFields[0]);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EnumDefinition"));
-        QVERIFY(node != nullptr);
-        READ_MANDATORY_VARIABLE_NODE(node)
-        const QVariant enumDefinitionScalar = node->attribute(QOpcUa::NodeAttribute::Value);
-        QVERIFY(enumDefinitionScalar.isValid());
-        QCOMPARE(enumDefinitionScalar.value<QOpcUaEnumDefinition>(), testEnumDefinitions[0]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EnumDefinition"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    const QVariant enumDefinitionScalar = node->attribute(QOpcUa::NodeAttribute::Value);
+    QVERIFY(enumDefinitionScalar.isValid());
+    QCOMPARE(enumDefinitionScalar.value<QOpcUaEnumDefinition>(), testEnumDefinitions[0]);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DiagnosticInfo"));
-        QVERIFY(node != nullptr);
-        READ_MANDATORY_VARIABLE_NODE(node)
-        const QVariant diagnosticInfoScalar = node->attribute(QOpcUa::NodeAttribute::Value);
-        QVERIFY(diagnosticInfoScalar.isValid());
-        QCOMPARE(diagnosticInfoScalar.value<QOpcUaDiagnosticInfo>(), testDiagnosticInfos[0]);
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.DiagnosticInfo"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    const QVariant diagnosticInfoScalar = node->attribute(QOpcUa::NodeAttribute::Value);
+    QVERIFY(diagnosticInfoScalar.isValid());
+    QCOMPARE(diagnosticInfoScalar.value<QOpcUaDiagnosticInfo>(), testDiagnosticInfos[0]);
 
-        node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EventFilter"));
-        QVERIFY(node != nullptr);
-        READ_MANDATORY_VARIABLE_NODE(node)
-        QVariant eventFilterScalar = node->attribute(QOpcUa::NodeAttribute::Value);
-        QVERIFY(eventFilterScalar.isValid());
-        QCOMPARE(eventFilterScalar.value<QOpcUaMonitoringParameters::EventFilter>(), testEventFilters[0]);
-    }
+    node.reset(opcuaClient->node("ns=2;s=Demo.Static.Scalar.EventFilter"));
+    QVERIFY(node != nullptr);
+    READ_MANDATORY_VARIABLE_NODE(node)
+    QVariant eventFilterScalar = node->attribute(QOpcUa::NodeAttribute::Value);
+    QVERIFY(eventFilterScalar.isValid());
+    QCOMPARE(eventFilterScalar.value<QOpcUaMonitoringParameters::EventFilter>(), testEventFilters[0]);
 }
 
 void Tst_QOpcUaClient::readReencodedExtensionObject()
@@ -6001,7 +5979,7 @@ void Tst_QOpcUaClient::connectionLost()
     stringNode->readAttributes(QOpcUa::NodeAttribute::BrowseName);
 
     readSpy.wait(signalSpyTimeout);
-    stateSpy.wait(15000); // uacpp and open62541 use a timeout of 5 seconds for service calls, better be safe.
+    stateSpy.wait(15000); // open62541 uses a timeout of 5 seconds for service calls, better be safe.
     QCOMPARE(readSpy.size(), 1);
     QVERIFY(readSpy.at(0).at(0).value<QOpcUa::NodeAttributes>() & QOpcUa::NodeAttribute::BrowseName);
 
@@ -6040,7 +6018,6 @@ int main(int argc, char *argv[])
     populateDiagnosticInfoTestData();
     populateEventFilterTestData();
 
-    updateEnvironment();
     QCoreApplication app(argc, argv);
 
     QTEST_SET_MAIN_SOURCE_PATH

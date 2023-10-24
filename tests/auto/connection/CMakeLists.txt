@@ -7,10 +7,7 @@
 
 qt_internal_add_test(tst_connection
     SOURCES
-        ../../common/backend_environment.h
         tst_connection.cpp
-    INCLUDE_DIRECTORIES
-        ../../common
     LIBRARIES
         Qt::OpcUa
 )

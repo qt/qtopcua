@@ -1,8 +1,6 @@
 // Copyright (C) 2019 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "backend_environment.h"
-
 #include <QtOpcUa/QOpcUaAuthenticationInformation>
 #include <QtOpcUa/QOpcUaClient>
 #include <QtOpcUa/QOpcUaProvider>
@@ -67,8 +65,6 @@ void Tst_Connection::initTestCase()
 
     for (const auto &backend: m_backends) {
         QVariantMap backendOptions;
-        if (backend == QLatin1String("uacpp"))
-            backendOptions.insert(QLatin1String("disableEncryptedPasswordCheck"), true);
 
         QOpcUaClient *client = m_opcUa.createClient(backend, backendOptions);
         QVERIFY2(client != nullptr,
@@ -199,7 +195,6 @@ void Tst_Connection::cleanupTestCase()
 
 int main(int argc, char *argv[])
 {
-    updateEnvironment();
     QCoreApplication app(argc, argv);
 
     QTEST_SET_MAIN_SOURCE_PATH

@@ -44,9 +44,6 @@ Q_LOGGING_CATEGORY(QT_OPCUA_SECURITY, "qt.opcua.security")
     QOpcUaProvider allows the user to create an instance of QOpcUaClient by
     loading a QOpcUaPlugin using the Qt plugin system.
 
-    For the available plugins and their capabilities please refer to the
-    \l {Qt OPC UA} {introduction}.
-
     \section1 Example
     This code creates a client using the first available backend:
     \code
@@ -197,16 +194,6 @@ static QOpcUaPlugin *loadPlugin(const QString &key)
         \li Setting string
         \li Backend
         \li Description
-    \row
-        \li disableEncryptedPasswordCheck
-        \li Unified Automation
-        \li By default, the backend refuses to connect to endpoints without encryption to avoid
-            sending passwords in clear text. This parameter allows to disable this feature.
-    \row
-        \li enableVerboseDebugOutput
-        \li Unified Automation
-        \li Tells the backend to print additional output to the terminal. The backend specific logging
-            level is set to \c OPCUA_TRACE_OUTPUT_LEVEL_ALL.
     \row
         \li minimumClientIterateIntervalMs
         \li open62541

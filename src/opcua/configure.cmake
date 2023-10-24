@@ -7,7 +7,7 @@
 
 # input open62541
 set(INPUT_open62541 "undefined" CACHE STRING "")
-set_property(CACHE INPUT_open62541 PROPERTY STRINGS undefined no qt system)
+set_property(CACHE INPUT_open62541 PROPERTY STRINGS undefined qt system)
 
 
 
@@ -16,7 +16,6 @@ set_property(CACHE INPUT_open62541 PROPERTY STRINGS undefined no qt system)
 if (INPUT_open62541 STREQUAL "system")
     qt_find_package(Open62541 PROVIDED_TARGETS open62541)
 endif()
-qt_find_package(Uacpp PROVIDED_TARGETS uacpp)
 # special case end
 
 #### Tests
@@ -60,31 +59,6 @@ if (INPUT_open62541 STREQUAL "system")
 endif()
 # special case end
 
-# special case begin
-qt_config_compile_test(uacpp
-    LABEL "uacpp support"
-    LIBRARIES
-        uacpp
-    CODE
-"#include <stdio.h>
-
-#include <uaplatformlayer.h>
-#include <uastring.h>
-#include <uasession.h>
-
-using namespace UaClientSdk;
-
-int main(int /*argc*/, char ** /*argv*/)
-{
-
-    UaPlatformLayer::init();
-    UaSession *session = new UaSession;
-
-    UaPlatformLayer::cleanup();
-    return 0;
-}")
-# special case end
-
 # Find out if the system open62541 is built with encryption support
 include(CheckSymbolExists)
 if (Open62541_FOUND)
@@ -97,7 +71,7 @@ qt_feature("open62541" PUBLIC PRIVATE
     LABEL "Open62541"
 # special case begin
     ENABLE INPUT_open62541 STREQUAL 'qt' OR QT_FEATURE_system_open62541
-    DISABLE INPUT_open62541 STREQUAL 'no' OR (NOT QT_FEATURE_system_open62541 AND INPUT_open62541 STREQUAL 'system')
+    DISABLE NOT QT_FEATURE_system_open62541 AND INPUT_open62541 STREQUAL 'system'
 # special case end
 )
 qt_feature_definition("open62541" "QT_NO_OPEN62541" NEGATE VALUE "1")
@@ -106,10 +80,6 @@ qt_feature("system-open62541" PRIVATE
     CONDITION Open62541_FOUND AND TEST_open62541 # special case
     ENABLE INPUT_open62541 STREQUAL 'system'
     DISABLE INPUT_open62541 STREQUAL 'qt' OR INPUT_open62541 STREQUAL 'no' # special case
-)
-qt_feature("uacpp" PRIVATE
-    LABEL "Unified Automation C++ SDK"
-    CONDITION TEST_uacpp # special case
 )
 # special case begin
 #qt_feature("mbedtls" PRIVATE
@@ -145,7 +115,6 @@ qt_feature("datatypecodegenerator" PRIVATE
 qt_feature_definition("gds" "QT_NO_GDS" NEGATE VALUE "1")
 qt_configure_add_summary_section(NAME "Qt Opcua")
 qt_configure_add_summary_entry(ARGS "open62541")
-qt_configure_add_summary_entry(ARGS "uacpp")
 qt_configure_add_summary_entry(ARGS "ns0idnames")
 qt_configure_add_summary_entry(ARGS "internalgenerator")
 qt_configure_add_summary_entry(ARGS "open62541-security") # special case

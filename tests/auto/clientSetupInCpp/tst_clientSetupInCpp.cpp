@@ -1,7 +1,6 @@
 // Copyright (C) 2019 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include "backend_environment.h"
 #include <QtQuickTest/quicktest.h>
 #include <QObject>
 #include <QProcess>
@@ -82,7 +81,6 @@ public:
 
 public slots:
     void applicationAvailable() {
-        updateEnvironment();
 
         if (qEnvironmentVariableIsEmpty("OPCUA_HOST") && qEnvironmentVariableIsEmpty("OPCUA_PORT")) {
             m_testServerPath = qApp->applicationDirPath()
