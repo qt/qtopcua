@@ -51,6 +51,8 @@ public:
     bool discardOldest;
     QOpcUaMonitoringParameters::MonitoringMode monitoringMode;
     QString indexRange;
+    QSet<quint32> triggeredItemIds;
+    QHash<quint32, QOpcUa::UaStatusCode> addTriggeredItemStatus;
 
     // Subscription
     quint32 subscriptionId;

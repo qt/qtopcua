@@ -86,6 +86,8 @@ QT_BEGIN_NAMESPACE
     \row
     \li MaxNotificationsPerPublish
     \li X
+    \li TriggeringItemId
+    \li X
     \endtable
 */
 
@@ -127,6 +129,7 @@ QT_BEGIN_NAMESPACE
     \value QueueSize
     \value DiscardOldest
     \value MonitoringMode
+    \value TriggeredItemIds
 */
 
 /*!
@@ -202,6 +205,57 @@ QString QOpcUaMonitoringParameters::indexRange() const
 void QOpcUaMonitoringParameters::setIndexRange(const QString &indexRange)
 {
     d_ptr->indexRange = indexRange;
+}
+
+/*!
+    \since 6.7
+
+    Returns the ids of the monitored items triggerd by this monitored item.
+*/
+QSet<quint32> QOpcUaMonitoringParameters::triggeredItemIds() const
+{
+    return d_ptr->triggeredItemIds;
+}
+
+/*!
+    \since 6.7
+
+    Adds triggering links to all monitored items in \a ids as described in OPC UA 1.05, 5.12.1.6.
+
+    The values in \a ids must be the monitored item ids of other monitored item on the same subscription.
+    If the monitoring mode of these items is set to Sampling, their data change notifications will be
+    delivered to the client whenever this monitoring detects a data change.
+
+    Any ids that could not be added will not be included in the monitoring status but will instead show
+    up in \l failedTriggeredItemsStatus().
+
+    Modifying this setting to an empty set will remove all triggering links.
+*/
+void QOpcUaMonitoringParameters::setTriggeredItemIds(const QSet<quint32> &ids)
+{
+    d_ptr->triggeredItemIds = ids;
+}
+
+/*!
+   \since 6.7
+
+    Returns the status codes for all triggered items from \l setTriggeredItemIds() that could not
+    be successfully added.
+*/
+QHash<quint32, QOpcUa::UaStatusCode> QOpcUaMonitoringParameters::failedTriggeredItemsStatus() const
+{
+    return d_ptr->addTriggeredItemStatus;
+}
+
+/*!
+    \since 6.7
+
+    Sets the status codes for all triggered items that could not be successfully added to \a status.
+    Setting this value as a client has no effect.
+*/
+void QOpcUaMonitoringParameters::setFailedTriggeredItemsStatus(const QHash<quint32, QOpcUa::UaStatusCode> &status)
+{
+    d_ptr->addTriggeredItemStatus = status;
 }
 
 /*!

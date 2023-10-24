@@ -201,6 +201,88 @@ void QOpen62541Subscription::modifyMonitoring(quint64 handle, QOpcUa::NodeAttrib
         return;
     }
 
+    // SetTriggering service
+    if (item == QOpcUaMonitoringParameters::Parameter::TriggeredItemIds) {
+        if (!value.canConvert<QSet<quint32>>()) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not modify triggering item id, value is not a set of quint32";
+            p.setStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
+            emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+            return;
+        }
+
+        auto triggeredItemIds = value.value<QSet<quint32>>();
+
+        UA_SetTriggeringRequest triggeringReq;
+        UA_SetTriggeringRequest_init(&triggeringReq);
+        triggeringReq.subscriptionId = m_subscriptionId;
+        triggeringReq.triggeringItemId = monItem->monitoredItemId;
+
+        QList<quint32> itemsToRemove;
+        QList<quint32> itemsToAdd;
+
+        if (triggeredItemIds.isEmpty() && !monItem->parameters.triggeredItemIds().isEmpty()) {
+            itemsToRemove = monItem->parameters.triggeredItemIds().values();
+        } else if (!triggeredItemIds.isEmpty()) {
+            itemsToAdd = triggeredItemIds.values();
+            itemsToRemove = monItem->parameters.triggeredItemIds().subtract(triggeredItemIds).values();
+        }
+
+        if (itemsToAdd.isEmpty() && itemsToRemove.isEmpty()) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Nothing to do for TriggeredItemIds";
+            p.setStatusCode(QOpcUa::UaStatusCode::Good);
+            emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+            return;
+        }
+
+        if (!itemsToAdd.isEmpty()) {
+            triggeringReq.linksToAddSize = itemsToAdd.size();
+            triggeringReq.linksToAdd = itemsToAdd.data();
+        }
+
+        if (!itemsToRemove.isEmpty()) {
+            triggeringReq.linksToRemoveSize = itemsToRemove.size();
+            triggeringReq.linksToRemove = itemsToRemove.data();
+        }
+
+        auto triggeringRes = UA_Client_MonitoredItems_setTriggering(m_backend->m_uaclient, triggeringReq);
+
+        QHash<quint32, QOpcUa::UaStatusCode> failedItems;
+
+        if (triggeringRes.responseHeader.serviceResult != UA_STATUSCODE_GOOD) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Modifying TriggeredItemIds failed with"
+                                                  << UA_StatusCode_name(triggeringRes.responseHeader.serviceResult);
+
+            for (const auto &entry : itemsToAdd)
+                failedItems[entry] = QOpcUa::UaStatusCode(triggeringRes.responseHeader.serviceResult);
+            p.setFailedTriggeredItemsStatus(failedItems);
+            p.setStatusCode(QOpcUa::UaStatusCode(triggeringRes.responseHeader.serviceResult));
+            emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+            UA_SetTriggeringResponse_clear(&triggeringRes);
+            return;
+        }
+
+        for (size_t i = 0; i < triggeringRes.addResultsSize; ++i) {
+            if (triggeringRes.addResults[i] != UA_STATUSCODE_GOOD) {
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to add trigger link" << triggeringReq.triggeringItemId
+                                                      << "->" << itemsToAdd.at(i) << "on subscription" << m_subscriptionId
+                                                      << "with status"
+                                                      << UA_StatusCode_name(triggeringRes.addResults[i]);
+                failedItems.insert(itemsToAdd.at(i), QOpcUa::UaStatusCode(triggeringRes.addResults[i]));
+                triggeredItemIds.remove(itemsToAdd.at(i));
+            }
+        }
+
+        UA_SetTriggeringResponse_clear(&triggeringRes);
+
+        monItem->parameters.setTriggeredItemIds(triggeredItemIds);
+        p.setStatusCode(QOpcUa::UaStatusCode::Good);
+        p.setTriggeredItemIds(triggeredItemIds);
+        p.setFailedTriggeredItemsStatus(failedItems);
+        emit m_backend->monitoringStatusChanged(handle, attr, item, p);
+
+        return;
+    }
+
     if (modifySubscriptionParameters(handle, attr, item, value))
         return;
     if (modifyMonitoredItemParameters(handle, attr, item, value))
@@ -256,6 +338,60 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::N
         return false;
     }
 
+    QSet<quint32> successfulTriggerLinks;
+    QHash<quint32, QOpcUa::UaStatusCode> failedTriggerLinks;
+    if (!settings.triggeredItemIds().isEmpty()) {
+        auto triggeredItems = settings.triggeredItemIds().values();
+
+        UA_SetTriggeringRequest req;
+        UA_SetTriggeringRequest_init(&req);
+        req.subscriptionId = m_subscriptionId;
+        req.triggeringItemId = res.monitoredItemId;
+        req.linksToAddSize = triggeredItems.size();
+        req.linksToAdd = triggeredItems.data();
+
+        auto triggeringRes = UA_Client_MonitoredItems_setTriggering(m_backend->m_uaclient, req);
+
+        if (triggeringRes.responseHeader.serviceResult != UA_STATUSCODE_GOOD) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Could not set triggering item it for" << attr << "of node" << Open62541Utils::nodeIdToQString(id) << ":"
+                                                  << UA_StatusCode_name(triggeringRes.responseHeader.serviceResult);
+
+            // Remove the new monitored item
+            UA_DeleteMonitoredItemsRequest deleteRequest;
+            UA_DeleteMonitoredItemsRequest_init(&deleteRequest);
+            deleteRequest.subscriptionId = m_subscriptionId;
+            deleteRequest.monitoredItemIdsSize = 1;
+            deleteRequest.monitoredItemIds = &res.monitoredItemId;
+            UA_Client_MonitoredItems_delete(m_backend->m_uaclient, deleteRequest);
+
+            for (const auto &entry : triggeredItems)
+                failedTriggerLinks.insert(entry, QOpcUa::UaStatusCode(triggeringRes.responseHeader.serviceResult));
+
+            QOpcUaMonitoringParameters s;
+            s.setStatusCode(static_cast<QOpcUa::UaStatusCode>(triggeringRes.responseHeader.serviceResult));
+            s.setFailedTriggeredItemsStatus(failedTriggerLinks);
+            emit m_backend->monitoringEnableDisable(handle, attr, true, s);
+
+            UA_SetTriggeringResponse_clear(&triggeringRes);
+
+            return false;
+        }
+
+        for (size_t i = 0; i < triggeringRes.addResultsSize; ++i) {
+            if (triggeringRes.addResults[i] == UA_STATUSCODE_GOOD) {
+                successfulTriggerLinks.insert(triggeredItems.at(i));
+            } else {
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to add trigger link" << res.monitoredItemId
+                                                      << "->" << triggeredItems.at(i) << "on subscription" << m_subscriptionId
+                                                      << "with status"
+                                                      << UA_StatusCode_name(triggeringRes.addResults[i]);
+                failedTriggerLinks.insert(triggeredItems.at(i), QOpcUa::UaStatusCode(triggeringRes.addResults[i]));
+            }
+        }
+
+        UA_SetTriggeringResponse_clear(&triggeringRes);
+    }
+
     MonitoredItem *temp = new MonitoredItem(handle, attr, res.monitoredItemId);
     m_nodeHandleToItemMapping[handle][attr] = temp;
     m_itemIdToItemMapping[res.monitoredItemId] = temp;
@@ -269,6 +405,8 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::N
     s.setSamplingInterval(res.revisedSamplingInterval);
     s.setQueueSize(res.revisedQueueSize);
     s.setMonitoredItemId(res.monitoredItemId);
+    s.setTriggeredItemIds(successfulTriggerLinks);
+    s.setFailedTriggeredItemsStatus(failedTriggerLinks);
     temp->parameters = s;
     temp->clientHandle = m_clientHandle;
 

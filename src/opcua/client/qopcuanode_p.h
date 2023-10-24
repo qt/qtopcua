@@ -211,6 +211,10 @@ public:
                 it->setDiscardOldest(param.discardOldest());
             if (items & QOpcUaMonitoringParameters::Parameter::MonitoringMode)
                 it->setMonitoringMode(param.monitoringMode());
+            if (items & QOpcUaMonitoringParameters::Parameter::TriggeredItemIds) {
+                it->setTriggeredItemIds(param.triggeredItemIds());
+                it->setFailedTriggeredItemsStatus(param.failedTriggeredItemsStatus());
+            }
         }
 
         Q_Q(QOpcUaNode);

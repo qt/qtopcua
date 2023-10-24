@@ -554,6 +554,10 @@ private slots:
     defineDataMethod(dataChangeSubscriptionSharing_data)
     void dataChangeSubscriptionSharing();
     defineDataMethod(methodCall_data)
+    void dataChangeSubscriptionTriggering();
+    defineDataMethod(dataChangeSubscriptionTriggering_data);
+    void dataChangeSubscriptionModifyTriggering();
+    defineDataMethod(dataChangeSubscriptionModifyTriggering_data);
     void methodCall();
     defineDataMethod(methodCallInvalid_data)
     void methodCallInvalid();
@@ -2510,6 +2514,170 @@ void Tst_QOpcUaClient::dataChangeSubscriptionSharing()
         attrs.removeOne(temp);
     }
     QCOMPARE(attrs.size(), 0);
+}
+
+void Tst_QOpcUaClient::dataChangeSubscriptionTriggering()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    // Setup triggered node and write node
+    QScopedPointer<QOpcUaNode> writeNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int32"));
+    QScopedPointer<QOpcUaNode> triggeredNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int32"));
+
+    WRITE_VALUE_ATTRIBUTE(writeNode, 1, QOpcUa::Types::Int32);
+
+    QOpcUaMonitoringParameters triggeredParams(50);
+    triggeredParams.setMonitoringMode(QOpcUaMonitoringParameters::MonitoringMode::Sampling);
+    triggeredParams.setQueueSize(10);
+
+    triggeredNode->enableMonitoring(QOpcUa::NodeAttribute::Value, triggeredParams);
+    QSignalSpy monitoringEnabledSpy2(triggeredNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QSignalSpy valueChangedSpy(triggeredNode.data(), &QOpcUaNode::attributeUpdated);
+    monitoringEnabledSpy2.wait(signalSpyTimeout);
+
+    QCOMPARE(monitoringEnabledSpy2.size(), 1);
+    QCOMPARE(monitoringEnabledSpy2.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    const auto triggeredStatus = triggeredNode->monitoringStatus(QOpcUa::NodeAttribute::Value);
+    QCOMPARE(triggeredStatus.statusCode(), QOpcUa::UaStatusCode::Good);
+
+    // Setup trigger
+    QScopedPointer<QOpcUaNode> triggeringNode(opcuaClient->node(readWriteNode));
+    QVERIFY(triggeringNode != nullptr);
+    QSignalSpy monitoringEnabledSpy(triggeringNode.data(), &QOpcUaNode::enableMonitoringFinished);
+
+    QOpcUaMonitoringParameters triggerParameters(50);
+    triggerParameters.setSubscriptionId(triggeredStatus.subscriptionId());
+    triggerParameters.setTriggeredItemIds({ triggeredStatus.monitoredItemId(), 10, 11 });
+    triggeringNode->enableMonitoring(QOpcUa::NodeAttribute::Value, triggerParameters);
+    monitoringEnabledSpy.wait(signalSpyTimeout);
+
+    QCOMPARE(monitoringEnabledSpy.size(), 1);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(triggeringNode->monitoringStatus(QOpcUa::NodeAttribute::Value).statusCode(), QOpcUa::UaStatusCode::Good);
+
+    const auto triggerStatus = triggeringNode->monitoringStatus(QOpcUa::NodeAttribute::Value);
+    QVERIFY(triggerStatus.subscriptionId() != 0);
+    QCOMPARE(triggerStatus.statusCode(), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(triggerStatus.subscriptionId(), triggeredStatus.subscriptionId());
+    QCOMPARE(triggerStatus.triggeredItemIds(), QSet<quint32>{ triggeredStatus.monitoredItemId() });
+    QCOMPARE(triggerStatus.failedTriggeredItemsStatus(),
+             (QHash<quint32, QOpcUa::UaStatusCode>{
+                 { 10, QOpcUa::UaStatusCode::BadMonitoredItemIdInvalid },
+                 { 11, QOpcUa::UaStatusCode::BadMonitoredItemIdInvalid }
+             }));
+
+    // Create value change, trigger and check results
+
+    WRITE_VALUE_ATTRIBUTE(writeNode, 2, QOpcUa::Types::Int32);
+
+    valueChangedSpy.wait(1000);
+    QCOMPARE(valueChangedSpy.size(), 0);
+
+    WRITE_VALUE_ATTRIBUTE(triggeringNode, 1234.0, QOpcUa::Types::Double);
+
+    valueChangedSpy.wait(signalSpyTimeout);
+    QCOMPARE(valueChangedSpy.size(), 1);
+    QCOMPARE(valueChangedSpy.at(0).at(1).value<quint32>(), 2);
+}
+
+void Tst_QOpcUaClient::dataChangeSubscriptionModifyTriggering()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    // Setup triggered and write nodes
+    QScopedPointer<QOpcUaNode> writeNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int32"));
+    QScopedPointer<QOpcUaNode> triggeredNode(opcuaClient->node("ns=2;s=Demo.Static.Scalar.Int32"));
+
+    WRITE_VALUE_ATTRIBUTE(writeNode, 1, QOpcUa::Types::Int32);
+
+    QOpcUaMonitoringParameters triggeredParams(50);
+    triggeredParams.setMonitoringMode(QOpcUaMonitoringParameters::MonitoringMode::Sampling);
+    triggeredParams.setQueueSize(10);
+
+    triggeredNode->enableMonitoring(QOpcUa::NodeAttribute::Value, triggeredParams);
+    QSignalSpy monitoringEnabledSpy2(triggeredNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QSignalSpy valueChangedSpy(triggeredNode.data(), &QOpcUaNode::attributeUpdated);
+    monitoringEnabledSpy2.wait();
+
+    QCOMPARE(monitoringEnabledSpy2.size(), 1);
+    QCOMPARE(monitoringEnabledSpy2.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    const auto triggeredStatus = triggeredNode->monitoringStatus(QOpcUa::NodeAttribute::Value);
+    QCOMPARE(triggeredStatus.statusCode(), QOpcUa::UaStatusCode::Good);
+
+    // Setup triggering node
+    QScopedPointer<QOpcUaNode> triggeringNode(opcuaClient->node(readWriteNode));
+    QVERIFY(triggeringNode != nullptr);
+    QSignalSpy monitoringEnabledSpy(triggeringNode.data(), &QOpcUaNode::enableMonitoringFinished);
+
+    QOpcUaMonitoringParameters triggerSettings(50);
+    triggerSettings.setSubscriptionId(triggeredStatus.subscriptionId());
+    triggeringNode->enableMonitoring(QOpcUa::NodeAttribute::Value, triggerSettings);
+    monitoringEnabledSpy.wait(signalSpyTimeout);
+
+    QCOMPARE(monitoringEnabledSpy.size(), 1);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    auto triggerStatus = triggeringNode->monitoringStatus(QOpcUa::NodeAttribute::Value);
+    QCOMPARE(triggerStatus.statusCode(), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(triggerStatus.subscriptionId(), triggeredStatus.subscriptionId());
+    QCOMPARE(triggerStatus.statusCode(), QOpcUa::UaStatusCode::Good);
+
+    // Write, nothing should happen
+    WRITE_VALUE_ATTRIBUTE(writeNode, 2, QOpcUa::Types::Int32);
+
+    valueChangedSpy.wait(1000);
+    QCOMPARE(valueChangedSpy.size(), 0);
+
+    WRITE_VALUE_ATTRIBUTE(triggeringNode, 1235.0, QOpcUa::Types::Double);
+
+    valueChangedSpy.wait(1000);
+    QCOMPARE(valueChangedSpy.size(), 0);
+
+    // Modify triggering node to actually trigger
+    QSignalSpy modifySpy(triggeringNode.get(), &QOpcUaNode::monitoringStatusChanged);
+    triggeringNode->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::TriggeredItemIds,
+                                     QVariant::fromValue(QSet<quint32>{triggeredStatus.monitoredItemId(), 10, 11}));
+    modifySpy.wait(signalSpyTimeout);
+    QCOMPARE(modifySpy.size(), 1);
+    QCOMPARE(modifySpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(triggeringNode->monitoringStatus(QOpcUa::NodeAttribute::Value).triggeredItemIds(),
+             QSet<quint32>{triggeredStatus.monitoredItemId()});
+    QCOMPARE(triggeringNode->monitoringStatus(QOpcUa::NodeAttribute::Value).failedTriggeredItemsStatus(),
+             (QHash<quint32, QOpcUa::UaStatusCode>{
+                 { 10, QOpcUa::UaStatusCode::BadMonitoredItemIdInvalid },
+                 { 11, QOpcUa::UaStatusCode::BadMonitoredItemIdInvalid }
+             }));
+
+    WRITE_VALUE_ATTRIBUTE(writeNode, 3, QOpcUa::Types::Int32);
+
+    valueChangedSpy.wait(1000);
+    QCOMPARE(valueChangedSpy.size(), 0);
+
+    WRITE_VALUE_ATTRIBUTE(triggeringNode, 1236.0, QOpcUa::Types::Double);
+
+    valueChangedSpy.wait(signalSpyTimeout);
+    QCOMPARE(valueChangedSpy.size(), 1);
+    QCOMPARE(valueChangedSpy.at(0).at(1).value<quint32>(), 3);
+
+    modifySpy.clear();
+    triggeringNode->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::TriggeredItemIds,
+                                     QVariant::fromValue(QSet<quint32>()));
+    modifySpy.wait();
+    QCOMPARE(modifySpy.size(), 1);
+    QCOMPARE(modifySpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(triggeredNode->monitoringStatus(QOpcUa::NodeAttribute::Value).triggeredItemIds(), QSet<quint32>());
+
+    valueChangedSpy.clear();
+    WRITE_VALUE_ATTRIBUTE(writeNode, 4, QOpcUa::Types::Int32);
+
+    valueChangedSpy.wait(1000);
+    QCOMPARE(valueChangedSpy.size(), 0);
+
+    WRITE_VALUE_ATTRIBUTE(triggeringNode, 1237.0, QOpcUa::Types::Double);
+
+    valueChangedSpy.wait(1000);
+    QCOMPARE(valueChangedSpy.size(), 0);
 }
 
 void Tst_QOpcUaClient::methodCall()

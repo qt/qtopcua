@@ -7,6 +7,7 @@
 #include <QtOpcUa/qopcuacontentfilterelement.h>
 #include <QtOpcUa/qopcuasimpleattributeoperand.h>
 
+#include <QtCore/qset.h>
 #include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
@@ -43,7 +44,8 @@ public:
         Filter = (1 << 7),
         QueueSize  = (1 << 8),
         DiscardOldest  = (1 << 9),
-        MonitoringMode = (1 << 10)
+        MonitoringMode = (1 << 10),
+        TriggeredItemIds = (1 << 11)
     };
     Q_ENUM(Parameter)
     Q_DECLARE_FLAGS(Parameters, Parameter)
@@ -154,6 +156,10 @@ public:
     void setSubscriptionType(SubscriptionType subscriptionType);
     QString indexRange() const;
     void setIndexRange(const QString &indexRange);
+    QSet<quint32> triggeredItemIds() const;
+    void setTriggeredItemIds(const QSet<quint32> &id);
+    QHash<quint32, QOpcUa::UaStatusCode> failedTriggeredItemsStatus() const;
+    void setFailedTriggeredItemsStatus(const QHash<quint32, QOpcUa::UaStatusCode> &status);
 
 private:
     QSharedDataPointer<QOpcUaMonitoringParametersPrivate> d_ptr;
