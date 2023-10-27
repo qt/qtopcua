@@ -392,6 +392,11 @@ QOpcUaDataValue scalarToQt<QOpcUaDataValue, UA_DataValue>(const UA_DataValue *da
     } else {
         result.setStatusCode(QOpcUa::UaStatusCode::Good);
     }
+    if (data->hasServerPicoseconds)
+        result.setServerPicoseconds(data->serverPicoseconds);
+    if (data->hasSourcePicoseconds)
+        result.setSourcePicoseconds(data->sourcePicoseconds);
+
     return result;
 }
 

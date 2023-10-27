@@ -77,6 +77,23 @@
         </xs:sequence>
     </xs:complexType>
     <xs:element type="tns:ListOfQtTestStructType" name="ListOfQtTestStructType" nillable="true"/>
+    <xs:complexType name="QtTestStructWithDataValue">
+        <xs:complexContent mixed="false">
+            <xs:extension base="tns:QtAbstractBaseStruct">
+                <xs:sequence>
+                    <xs:element minOccurs="0" maxOccurs="1" type="ua:DataValue" name="DataValueMember"/>
+                    <xs:element minOccurs="0" maxOccurs="1" type="ua:Variant" name="VariantMember"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:element type="tns:QtTestStructWithDataValue" name="QtTestStructWithDataValue"/>
+    <xs:complexType name="ListOfQtTestStructWithDataValue">
+        <xs:sequence>
+            <xs:element minOccurs="0" maxOccurs="unbounded" type="tns:QtTestStructWithDataValue" name="QtTestStructWithDataValue" nillable="true"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:element type="tns:ListOfQtTestStructWithDataValue" name="ListOfQtTestStructWithDataValue" nillable="true"/>
     <xs:complexType name="QtTestStructWithDiagnosticInfo">
         <xs:complexContent mixed="false">
             <xs:extension base="tns:QtAbstractBaseStruct">

@@ -117,6 +117,12 @@ QT_BEGIN_NAMESPACE
         \row
             \li QOpcUaEnumField
             \li EnumField
+        \row
+            \li QOpcUaVariant
+            \li Variant
+        \row
+            \li QOpcUaDataValue
+            \li DataValue
     \endtable
 */
 

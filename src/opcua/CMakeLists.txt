@@ -75,6 +75,7 @@ qt_internal_add_module(OpcUa
         client/qopcuawriteresult.cpp client/qopcuawriteresult.h
         client/qopcuaxvalue.cpp client/qopcuaxvalue.h
         client/qopcuadiagnosticinfo.cpp client/qopcuadiagnosticinfo.h
+        client/qopcuavariant.cpp client/qopcuavariant.h
         core/qopcuaplugin.cpp core/qopcuaplugin.h
         core/qopcuaprovider.cpp core/qopcuaprovider.h
         qopcuaglobal.h

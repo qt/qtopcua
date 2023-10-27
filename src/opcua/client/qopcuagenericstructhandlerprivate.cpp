@@ -337,6 +337,12 @@ QVariant QOpcUaGenericStructHandlerPrivate::decodeKnownTypesInternal(QOpcUaBinar
         return decodeArrayOrScalar<QOpcUaDiagnosticInfo>(decoder, valueRank, success);
     }
 
+    if (dataTypeId == QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::DataValue))
+        return decodeArrayOrScalar<QOpcUaDataValue>(decoder, valueRank, success);
+
+    if (dataTypeId == QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::BaseDataType))
+        return decodeArrayOrScalar<QOpcUaVariant>(decoder, valueRank, success);
+
     // Enumeration
     const auto enumType = m_enumsByTypeId.constFind(dataTypeId);
     if (enumType != m_enumsByTypeId.constEnd()) {
@@ -604,6 +610,12 @@ bool QOpcUaGenericStructHandlerPrivate::encodeKnownTypesInternal(QOpcUaBinaryDat
     if (dataTypeId == QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::DiagnosticInfo)) {
         return encodeArrayOrScalar<QOpcUaDiagnosticInfo>(encoder, valueRank, value);
     }
+
+    if (dataTypeId == QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::DataValue))
+        return encodeArrayOrScalar<QOpcUaDataValue>(encoder, valueRank, value);
+
+    if (dataTypeId == QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::BaseDataType))
+        return encodeArrayOrScalar<QOpcUaVariant>(encoder, valueRank, value);
 
     const auto enumType = m_enumsByTypeId.constFind(dataTypeId);
     if (enumType != m_enumsByTypeId.constEnd()) {

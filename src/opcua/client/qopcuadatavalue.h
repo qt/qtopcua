@@ -17,6 +17,11 @@ public:
     QOpcUaDataValue();
     QOpcUaDataValue(const QOpcUaDataValue &other);
     QOpcUaDataValue &operator=(const QOpcUaDataValue &other);
+    friend Q_OPCUA_EXPORT bool operator==(const QOpcUaDataValue &lhs, const QOpcUaDataValue &rhs) noexcept;
+    friend inline bool operator!=(const QOpcUaDataValue &lhs, const QOpcUaDataValue &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
     ~QOpcUaDataValue();
 
     void swap(QOpcUaDataValue &other) noexcept
@@ -25,14 +30,22 @@ public:
     QDateTime serverTimestamp() const;
     void setServerTimestamp(const QDateTime &serverTimestamp);
 
+    quint16 serverPicoseconds() const;
+    void setServerPicoseconds(quint16 serverPicoseconds);
+
     QDateTime sourceTimestamp() const;
     void setSourceTimestamp(const QDateTime &sourceTimestamp);
+
+    quint16 sourcePicoseconds() const;
+    void setSourcePicoseconds(quint16 sourcePicoseconds);
 
     QOpcUa::UaStatusCode statusCode() const;
     void setStatusCode(QOpcUa::UaStatusCode statusCode);
 
     QVariant value() const;
     void setValue(const QVariant &value);
+
+    operator QVariant() const;
 
 private:
     QExplicitlySharedDataPointer<QOpcUaDataValueData> data;

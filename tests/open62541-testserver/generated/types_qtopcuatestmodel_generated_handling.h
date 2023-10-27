@@ -78,6 +78,37 @@ UA_QtStructWithOptionalFieldType_delete(UA_QtStructWithOptionalFieldType *p) {
     UA_delete(p, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTSTRUCTWITHOPTIONALFIELDTYPE]);
 }
 
+/* QtTestStructWithDataValue */
+static UA_INLINE void
+UA_QtTestStructWithDataValue_init(UA_QtTestStructWithDataValue *p) {
+    memset(p, 0, sizeof(UA_QtTestStructWithDataValue));
+}
+
+static UA_INLINE UA_QtTestStructWithDataValue *
+UA_QtTestStructWithDataValue_new(void) {
+    return (UA_QtTestStructWithDataValue*)UA_new(&UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTWITHDATAVALUE]);
+}
+
+static UA_INLINE UA_StatusCode
+UA_QtTestStructWithDataValue_copy(const UA_QtTestStructWithDataValue *src, UA_QtTestStructWithDataValue *dst) {
+    return UA_copy(src, dst, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTWITHDATAVALUE]);
+}
+
+UA_DEPRECATED static UA_INLINE void
+UA_QtTestStructWithDataValue_deleteMembers(UA_QtTestStructWithDataValue *p) {
+    UA_clear(p, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTWITHDATAVALUE]);
+}
+
+static UA_INLINE void
+UA_QtTestStructWithDataValue_clear(UA_QtTestStructWithDataValue *p) {
+    UA_clear(p, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTWITHDATAVALUE]);
+}
+
+static UA_INLINE void
+UA_QtTestStructWithDataValue_delete(UA_QtTestStructWithDataValue *p) {
+    UA_delete(p, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTWITHDATAVALUE]);
+}
+
 /* QtTestStructWithDiagnosticInfo */
 static UA_INLINE void
 UA_QtTestStructWithDiagnosticInfo_init(UA_QtTestStructWithDiagnosticInfo *p) {

@@ -10,6 +10,7 @@
         <Alias Alias="ByteString">i=15</Alias>
         <Alias Alias="QualifiedName">i=20</Alias>
         <Alias Alias="LocalizedText">i=21</Alias>
+        <Alias Alias="DataValue">i=23</Alias>
         <Alias Alias="DiagnosticInfo">i=25</Alias>
         <Alias Alias="Organizes">i=35</Alias>
         <Alias Alias="HasModellingRule">i=37</Alias>
@@ -26,10 +27,11 @@
         <Alias Alias="QtStructWithOptionalFieldType">ns=1;i=3006</Alias>
         <Alias Alias="MyDoubleSubtype">ns=1;i=3007</Alias>
         <Alias Alias="QtTestStructWithDiagnosticInfo">ns=1;i=3009</Alias>
+        <Alias Alias="QtTestStructWithDataValue">ns=1;i=3010</Alias>
     </Aliases>
     <Extensions>
         <Extension>
-            <ua:ModelInfo Tool="UaModeler" Hash="+meaQ+dmQrll0fzxsafyig==" Version="1.6.5"/>
+            <ua:ModelInfo Tool="UaModeler" Hash="qZsRDNMvSev9uTurYnwSsA==" Version="1.6.5"/>
         </Extension>
     </Extensions>
     <UADataType NodeId="ns=1;i=3002" BrowseName="1:QtTestEnumeration">
@@ -212,6 +214,40 @@
             <uax:String>//xs:element[@name='QtTestStructType']</uax:String>
         </Value>
     </UAVariable>
+    <UADataType NodeId="ns=1;i=3010" BrowseName="1:QtTestStructWithDataValue">
+        <DisplayName>QtTestStructWithDataValue</DisplayName>
+        <References>
+            <Reference ReferenceType="HasEncoding">ns=1;i=5014</Reference>
+            <Reference ReferenceType="HasEncoding">ns=1;i=5015</Reference>
+            <Reference ReferenceType="HasSubtype" IsForward="false">ns=1;i=3008</Reference>
+        </References>
+        <Definition Name="1:QtTestStructWithDataValue">
+            <Field DataType="DataValue" Name="DataValueMember"/>
+            <Field Name="VariantMember"/>
+        </Definition>
+    </UADataType>
+    <UAVariable DataType="String" ParentNodeId="ns=1;i=6012" NodeId="ns=1;i=6007" BrowseName="1:QtTestStructWithDataValue">
+        <DisplayName>QtTestStructWithDataValue</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6012</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=69</Reference>
+            <Reference ReferenceType="HasDescription" IsForward="false">ns=1;i=5014</Reference>
+        </References>
+        <Value>
+            <uax:String>QtTestStructWithDataValue</uax:String>
+        </Value>
+    </UAVariable>
+    <UAVariable DataType="String" ParentNodeId="ns=1;i=6014" NodeId="ns=1;i=6008" BrowseName="1:QtTestStructWithDataValue">
+        <DisplayName>QtTestStructWithDataValue</DisplayName>
+        <References>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6014</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=69</Reference>
+            <Reference ReferenceType="HasDescription" IsForward="false">ns=1;i=5015</Reference>
+        </References>
+        <Value>
+            <uax:String>//xs:element[@name='QtTestStructWithDataValue']</uax:String>
+        </Value>
+    </UAVariable>
     <UADataType NodeId="ns=1;i=3009" BrowseName="1:QtTestStructWithDiagnosticInfo">
         <DisplayName>QtTestStructWithDiagnosticInfo</DisplayName>
         <References>
@@ -227,9 +263,9 @@
     <UAVariable DataType="String" ParentNodeId="ns=1;i=6012" NodeId="ns=1;i=6004" BrowseName="1:QtTestStructWithDiagnosticInfo">
         <DisplayName>QtTestStructWithDiagnosticInfo</DisplayName>
         <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6012</Reference>
             <Reference ReferenceType="HasTypeDefinition">i=69</Reference>
             <Reference ReferenceType="HasDescription" IsForward="false">ns=1;i=5003</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6012</Reference>
         </References>
         <Value>
             <uax:String>QtTestStructWithDiagnosticInfo</uax:String>
@@ -238,9 +274,9 @@
     <UAVariable DataType="String" ParentNodeId="ns=1;i=6014" NodeId="ns=1;i=6005" BrowseName="1:QtTestStructWithDiagnosticInfo">
         <DisplayName>QtTestStructWithDiagnosticInfo</DisplayName>
         <References>
-            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6014</Reference>
             <Reference ReferenceType="HasTypeDefinition">i=69</Reference>
             <Reference ReferenceType="HasDescription" IsForward="false">ns=1;i=5013</Reference>
+            <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=6014</Reference>
         </References>
         <Value>
             <uax:String>//xs:element[@name='QtTestStructWithDiagnosticInfo']</uax:String>
@@ -290,6 +326,7 @@
             <Reference ReferenceType="HasComponent">ns=1;i=6016</Reference>
             <Reference ReferenceType="HasComponent">ns=1;i=6018</Reference>
             <Reference ReferenceType="HasComponent">ns=1;i=6020</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6007</Reference>
             <Reference ReferenceType="HasComponent">ns=1;i=6004</Reference>
             <Reference ReferenceType="HasComponent">ns=1;i=6022</Reference>
             <Reference ReferenceType="HasComponent" IsForward="false">i=93</Reference>
@@ -330,25 +367,29 @@
         XBlTmFtZT0idG5zOlF0SW5uZXJUZXN0U3RydWN0VHlwZSIgTmFtZT0iTmVzdGVkU3RydWN0Q
         XJyYXlNZW1iZXIiLz4KIDwvb3BjOlN0cnVjdHVyZWRUeXBlPgogPG9wYzpTdHJ1Y3R1cmVkV
         HlwZSBCYXNlVHlwZT0idG5zOlF0QWJzdHJhY3RCYXNlU3RydWN0IiBOYW1lPSJRdFRlc3RTd
-        HJ1Y3RXaXRoRGlhZ25vc3RpY0luZm8iPgogIDxvcGM6RmllbGQgVHlwZU5hbWU9InVhOkRpY
-        Wdub3N0aWNJbmZvIiBOYW1lPSJEaWFnbm9zdGljSW5mb01lbWJlciIvPgogIDxvcGM6Rmllb
-        GQgVHlwZU5hbWU9Im9wYzpJbnQzMiIgTmFtZT0iTm9PZkRpYWdub3N0aWNJbmZvQXJyYXlNZ
-        W1iZXIiLz4KICA8b3BjOkZpZWxkIExlbmd0aEZpZWxkPSJOb09mRGlhZ25vc3RpY0luZm9Bc
-        nJheU1lbWJlciIgVHlwZU5hbWU9InVhOkRpYWdub3N0aWNJbmZvIiBOYW1lPSJEaWFnbm9zd
-        GljSW5mb0FycmF5TWVtYmVyIi8+CiA8L29wYzpTdHJ1Y3R1cmVkVHlwZT4KIDxvcGM6U3Ryd
-        WN0dXJlZFR5cGUgQmFzZVR5cGU9InVhOlVuaW9uIiBOYW1lPSJRdFRlc3RVbmlvblR5cGUiP
-        gogIDxvcGM6RmllbGQgVHlwZU5hbWU9Im9wYzpVSW50MzIiIE5hbWU9IlN3aXRjaEZpZWxkI
-        i8+CiAgPG9wYzpGaWVsZCBTd2l0Y2hGaWVsZD0iU3dpdGNoRmllbGQiIFR5cGVOYW1lPSJvc
-        GM6SW50NjQiIFN3aXRjaFZhbHVlPSIxIiBOYW1lPSJNZW1iZXIxIi8+CiAgPG9wYzpGaWVsZ
-        CBTd2l0Y2hGaWVsZD0iU3dpdGNoRmllbGQiIFR5cGVOYW1lPSJ0bnM6UXRJbm5lclRlc3RTd
-        HJ1Y3RUeXBlIiBTd2l0Y2hWYWx1ZT0iMiIgTmFtZT0iTWVtYmVyMiIvPgogPC9vcGM6U3Ryd
-        WN0dXJlZFR5cGU+CiA8b3BjOkVudW1lcmF0ZWRUeXBlIExlbmd0aEluQml0cz0iMzIiIE5hb
-        WU9IlF0VGVzdEVudW1lcmF0aW9uIj4KICA8b3BjOkVudW1lcmF0ZWRWYWx1ZSBOYW1lPSJVb
-        mtub3duIiBWYWx1ZT0iMCIvPgogIDxvcGM6RW51bWVyYXRlZFZhbHVlIE5hbWU9IkZpcnN0T
-        3B0aW9uIiBWYWx1ZT0iMSIvPgogIDxvcGM6RW51bWVyYXRlZFZhbHVlIE5hbWU9IlNlY29uZ
-        E9wdGlvbiIgVmFsdWU9IjIiLz4KICA8b3BjOkVudW1lcmF0ZWRWYWx1ZSBOYW1lPSJUaGlyZ
-        E9wdGlvbiIgVmFsdWU9IjMiLz4KIDwvb3BjOkVudW1lcmF0ZWRUeXBlPgo8L29wYzpUeXBlR
-        GljdGlvbmFyeT4K</uax:ByteString>
+        HJ1Y3RXaXRoRGF0YVZhbHVlIj4KICA8b3BjOkZpZWxkIFR5cGVOYW1lPSJ1YTpEYXRhVmFsd
+        WUiIE5hbWU9IkRhdGFWYWx1ZU1lbWJlciIvPgogIDxvcGM6RmllbGQgVHlwZU5hbWU9InVhO
+        lZhcmlhbnQiIE5hbWU9IlZhcmlhbnRNZW1iZXIiLz4KIDwvb3BjOlN0cnVjdHVyZWRUeXBlP
+        gogPG9wYzpTdHJ1Y3R1cmVkVHlwZSBCYXNlVHlwZT0idG5zOlF0QWJzdHJhY3RCYXNlU3Ryd
+        WN0IiBOYW1lPSJRdFRlc3RTdHJ1Y3RXaXRoRGlhZ25vc3RpY0luZm8iPgogIDxvcGM6Rmllb
+        GQgVHlwZU5hbWU9InVhOkRpYWdub3N0aWNJbmZvIiBOYW1lPSJEaWFnbm9zdGljSW5mb01lb
+        WJlciIvPgogIDxvcGM6RmllbGQgVHlwZU5hbWU9Im9wYzpJbnQzMiIgTmFtZT0iTm9PZkRpY
+        Wdub3N0aWNJbmZvQXJyYXlNZW1iZXIiLz4KICA8b3BjOkZpZWxkIExlbmd0aEZpZWxkPSJOb
+        09mRGlhZ25vc3RpY0luZm9BcnJheU1lbWJlciIgVHlwZU5hbWU9InVhOkRpYWdub3N0aWNJb
+        mZvIiBOYW1lPSJEaWFnbm9zdGljSW5mb0FycmF5TWVtYmVyIi8+CiA8L29wYzpTdHJ1Y3R1c
+        mVkVHlwZT4KIDxvcGM6U3RydWN0dXJlZFR5cGUgQmFzZVR5cGU9InVhOlVuaW9uIiBOYW1lP
+        SJRdFRlc3RVbmlvblR5cGUiPgogIDxvcGM6RmllbGQgVHlwZU5hbWU9Im9wYzpVSW50MzIiI
+        E5hbWU9IlN3aXRjaEZpZWxkIi8+CiAgPG9wYzpGaWVsZCBTd2l0Y2hGaWVsZD0iU3dpdGNoR
+        mllbGQiIFR5cGVOYW1lPSJvcGM6SW50NjQiIFN3aXRjaFZhbHVlPSIxIiBOYW1lPSJNZW1iZ
+        XIxIi8+CiAgPG9wYzpGaWVsZCBTd2l0Y2hGaWVsZD0iU3dpdGNoRmllbGQiIFR5cGVOYW1lP
+        SJ0bnM6UXRJbm5lclRlc3RTdHJ1Y3RUeXBlIiBTd2l0Y2hWYWx1ZT0iMiIgTmFtZT0iTWVtY
+        mVyMiIvPgogPC9vcGM6U3RydWN0dXJlZFR5cGU+CiA8b3BjOkVudW1lcmF0ZWRUeXBlIExlb
+        md0aEluQml0cz0iMzIiIE5hbWU9IlF0VGVzdEVudW1lcmF0aW9uIj4KICA8b3BjOkVudW1lc
+        mF0ZWRWYWx1ZSBOYW1lPSJVbmtub3duIiBWYWx1ZT0iMCIvPgogIDxvcGM6RW51bWVyYXRlZ
+        FZhbHVlIE5hbWU9IkZpcnN0T3B0aW9uIiBWYWx1ZT0iMSIvPgogIDxvcGM6RW51bWVyYXRlZ
+        FZhbHVlIE5hbWU9IlNlY29uZE9wdGlvbiIgVmFsdWU9IjIiLz4KICA8b3BjOkVudW1lcmF0Z
+        WRWYWx1ZSBOYW1lPSJUaGlyZE9wdGlvbiIgVmFsdWU9IjMiLz4KIDwvb3BjOkVudW1lcmF0Z
+        WRUeXBlPgo8L29wYzpUeXBlRGljdGlvbmFyeT4K</uax:ByteString>
         </Value>
     </UAVariable>
     <UAVariable DataType="String" ParentNodeId="ns=1;i=6012" NodeId="ns=1;i=6013" BrowseName="NamespaceUri">
@@ -371,6 +412,7 @@
             <Reference ReferenceType="HasComponent">ns=1;i=6017</Reference>
             <Reference ReferenceType="HasComponent">ns=1;i=6019</Reference>
             <Reference ReferenceType="HasComponent">ns=1;i=6021</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6008</Reference>
             <Reference ReferenceType="HasComponent">ns=1;i=6005</Reference>
             <Reference ReferenceType="HasComponent">ns=1;i=6023</Reference>
             <Reference ReferenceType="HasComponent" IsForward="false">i=92</Reference>
@@ -457,38 +499,54 @@
         FR5cGUiIG5pbGxhYmxlPSJ0cnVlIi8+CiAgPC94czpzZXF1ZW5jZT4KIDwveHM6Y29tcGxle
         FR5cGU+CiA8eHM6ZWxlbWVudCB0eXBlPSJ0bnM6TGlzdE9mUXRUZXN0U3RydWN0VHlwZSIgb
         mFtZT0iTGlzdE9mUXRUZXN0U3RydWN0VHlwZSIgbmlsbGFibGU9InRydWUiLz4KIDx4czpjb
-        21wbGV4VHlwZSBuYW1lPSJRdFRlc3RTdHJ1Y3RXaXRoRGlhZ25vc3RpY0luZm8iPgogIDx4c
-        zpjb21wbGV4Q29udGVudCBtaXhlZD0iZmFsc2UiPgogICA8eHM6ZXh0ZW5zaW9uIGJhc2U9I
-        nRuczpRdEFic3RyYWN0QmFzZVN0cnVjdCI+CiAgICA8eHM6c2VxdWVuY2U+CiAgICAgPHhzO
-        mVsZW1lbnQgbWluT2NjdXJzPSIwIiBtYXhPY2N1cnM9IjEiIHR5cGU9InVhOkRpYWdub3N0a
-        WNJbmZvIiBuYW1lPSJEaWFnbm9zdGljSW5mb01lbWJlciIvPgogICAgIDx4czplbGVtZW50I
-        G1pbk9jY3Vycz0iMCIgbWF4T2NjdXJzPSIxIiB0eXBlPSJ1YTpMaXN0T2ZEaWFnbm9zdGljS
-        W5mbyIgbmFtZT0iRGlhZ25vc3RpY0luZm9BcnJheU1lbWJlciIvPgogICAgPC94czpzZXF1Z
-        W5jZT4KICAgPC94czpleHRlbnNpb24+CiAgPC94czpjb21wbGV4Q29udGVudD4KIDwveHM6Y
-        29tcGxleFR5cGU+CiA8eHM6ZWxlbWVudCB0eXBlPSJ0bnM6UXRUZXN0U3RydWN0V2l0aERpY
-        Wdub3N0aWNJbmZvIiBuYW1lPSJRdFRlc3RTdHJ1Y3RXaXRoRGlhZ25vc3RpY0luZm8iLz4KI
-        Dx4czpjb21wbGV4VHlwZSBuYW1lPSJMaXN0T2ZRdFRlc3RTdHJ1Y3RXaXRoRGlhZ25vc3RpY
-        0luZm8iPgogIDx4czpzZXF1ZW5jZT4KICAgPHhzOmVsZW1lbnQgbWluT2NjdXJzPSIwIiBtY
-        XhPY2N1cnM9InVuYm91bmRlZCIgdHlwZT0idG5zOlF0VGVzdFN0cnVjdFdpdGhEaWFnbm9zd
-        GljSW5mbyIgbmFtZT0iUXRUZXN0U3RydWN0V2l0aERpYWdub3N0aWNJbmZvIiBuaWxsYWJsZ
-        T0idHJ1ZSIvPgogIDwveHM6c2VxdWVuY2U+CiA8L3hzOmNvbXBsZXhUeXBlPgogPHhzOmVsZ
-        W1lbnQgdHlwZT0idG5zOkxpc3RPZlF0VGVzdFN0cnVjdFdpdGhEaWFnbm9zdGljSW5mbyIgb
-        mFtZT0iTGlzdE9mUXRUZXN0U3RydWN0V2l0aERpYWdub3N0aWNJbmZvIiBuaWxsYWJsZT0id
-        HJ1ZSIvPgogPHhzOmNvbXBsZXhUeXBlIG5hbWU9IlF0VGVzdFVuaW9uVHlwZSI+CiAgPHhzO
-        nNlcXVlbmNlPgogICA8eHM6ZWxlbWVudCBtaW5PY2N1cnM9IjAiIG1heE9jY3Vycz0iMSIgd
-        HlwZT0ieHM6dW5zaWduZWRJbnQiIG5hbWU9IlN3aXRjaEZpZWxkIi8+CiAgIDx4czpjaG9pY
-        2U+CiAgICA8eHM6ZWxlbWVudCBtaW5PY2N1cnM9IjAiIG1heE9jY3Vycz0iMSIgdHlwZT0ie
-        HM6bG9uZyIgbmFtZT0iTWVtYmVyMSIvPgogICAgPHhzOmVsZW1lbnQgbWluT2NjdXJzPSIwI
-        iBtYXhPY2N1cnM9IjEiIHR5cGU9InRuczpRdElubmVyVGVzdFN0cnVjdFR5cGUiIG5hbWU9I
-        k1lbWJlcjIiLz4KICAgPC94czpjaG9pY2U+CiAgPC94czpzZXF1ZW5jZT4KIDwveHM6Y29tc
-        GxleFR5cGU+CiA8eHM6ZWxlbWVudCB0eXBlPSJ0bnM6UXRUZXN0VW5pb25UeXBlIiBuYW1lP
-        SJRdFRlc3RVbmlvblR5cGUiLz4KIDx4czpjb21wbGV4VHlwZSBuYW1lPSJMaXN0T2ZRdFRlc
-        3RVbmlvblR5cGUiPgogIDx4czpzZXF1ZW5jZT4KICAgPHhzOmVsZW1lbnQgbWluT2NjdXJzP
-        SIwIiBtYXhPY2N1cnM9InVuYm91bmRlZCIgdHlwZT0idG5zOlF0VGVzdFVuaW9uVHlwZSIgb
-        mFtZT0iUXRUZXN0VW5pb25UeXBlIiBuaWxsYWJsZT0idHJ1ZSIvPgogIDwveHM6c2VxdWVuY
-        2U+CiA8L3hzOmNvbXBsZXhUeXBlPgogPHhzOmVsZW1lbnQgdHlwZT0idG5zOkxpc3RPZlF0V
-        GVzdFVuaW9uVHlwZSIgbmFtZT0iTGlzdE9mUXRUZXN0VW5pb25UeXBlIiBuaWxsYWJsZT0id
-        HJ1ZSIvPgo8L3hzOnNjaGVtYT4K</uax:ByteString>
+        21wbGV4VHlwZSBuYW1lPSJRdFRlc3RTdHJ1Y3RXaXRoRGF0YVZhbHVlIj4KICA8eHM6Y29tc
+        GxleENvbnRlbnQgbWl4ZWQ9ImZhbHNlIj4KICAgPHhzOmV4dGVuc2lvbiBiYXNlPSJ0bnM6U
+        XRBYnN0cmFjdEJhc2VTdHJ1Y3QiPgogICAgPHhzOnNlcXVlbmNlPgogICAgIDx4czplbGVtZ
+        W50IG1pbk9jY3Vycz0iMCIgbWF4T2NjdXJzPSIxIiB0eXBlPSJ1YTpEYXRhVmFsdWUiIG5hb
+        WU9IkRhdGFWYWx1ZU1lbWJlciIvPgogICAgIDx4czplbGVtZW50IG1pbk9jY3Vycz0iMCIgb
+        WF4T2NjdXJzPSIxIiB0eXBlPSJ1YTpWYXJpYW50IiBuYW1lPSJWYXJpYW50TWVtYmVyIi8+C
+        iAgICA8L3hzOnNlcXVlbmNlPgogICA8L3hzOmV4dGVuc2lvbj4KICA8L3hzOmNvbXBsZXhDb
+        250ZW50PgogPC94czpjb21wbGV4VHlwZT4KIDx4czplbGVtZW50IHR5cGU9InRuczpRdFRlc
+        3RTdHJ1Y3RXaXRoRGF0YVZhbHVlIiBuYW1lPSJRdFRlc3RTdHJ1Y3RXaXRoRGF0YVZhbHVlI
+        i8+CiA8eHM6Y29tcGxleFR5cGUgbmFtZT0iTGlzdE9mUXRUZXN0U3RydWN0V2l0aERhdGFWY
+        Wx1ZSI+CiAgPHhzOnNlcXVlbmNlPgogICA8eHM6ZWxlbWVudCBtaW5PY2N1cnM9IjAiIG1he
+        E9jY3Vycz0idW5ib3VuZGVkIiB0eXBlPSJ0bnM6UXRUZXN0U3RydWN0V2l0aERhdGFWYWx1Z
+        SIgbmFtZT0iUXRUZXN0U3RydWN0V2l0aERhdGFWYWx1ZSIgbmlsbGFibGU9InRydWUiLz4KI
+        CA8L3hzOnNlcXVlbmNlPgogPC94czpjb21wbGV4VHlwZT4KIDx4czplbGVtZW50IHR5cGU9I
+        nRuczpMaXN0T2ZRdFRlc3RTdHJ1Y3RXaXRoRGF0YVZhbHVlIiBuYW1lPSJMaXN0T2ZRdFRlc
+        3RTdHJ1Y3RXaXRoRGF0YVZhbHVlIiBuaWxsYWJsZT0idHJ1ZSIvPgogPHhzOmNvbXBsZXhUe
+        XBlIG5hbWU9IlF0VGVzdFN0cnVjdFdpdGhEaWFnbm9zdGljSW5mbyI+CiAgPHhzOmNvbXBsZ
+        XhDb250ZW50IG1peGVkPSJmYWxzZSI+CiAgIDx4czpleHRlbnNpb24gYmFzZT0idG5zOlF0Q
+        WJzdHJhY3RCYXNlU3RydWN0Ij4KICAgIDx4czpzZXF1ZW5jZT4KICAgICA8eHM6ZWxlbWVud
+        CBtaW5PY2N1cnM9IjAiIG1heE9jY3Vycz0iMSIgdHlwZT0idWE6RGlhZ25vc3RpY0luZm8iI
+        G5hbWU9IkRpYWdub3N0aWNJbmZvTWVtYmVyIi8+CiAgICAgPHhzOmVsZW1lbnQgbWluT2Njd
+        XJzPSIwIiBtYXhPY2N1cnM9IjEiIHR5cGU9InVhOkxpc3RPZkRpYWdub3N0aWNJbmZvIiBuY
+        W1lPSJEaWFnbm9zdGljSW5mb0FycmF5TWVtYmVyIi8+CiAgICA8L3hzOnNlcXVlbmNlPgogI
+        CA8L3hzOmV4dGVuc2lvbj4KICA8L3hzOmNvbXBsZXhDb250ZW50PgogPC94czpjb21wbGV4V
+        HlwZT4KIDx4czplbGVtZW50IHR5cGU9InRuczpRdFRlc3RTdHJ1Y3RXaXRoRGlhZ25vc3RpY
+        0luZm8iIG5hbWU9IlF0VGVzdFN0cnVjdFdpdGhEaWFnbm9zdGljSW5mbyIvPgogPHhzOmNvb
+        XBsZXhUeXBlIG5hbWU9Ikxpc3RPZlF0VGVzdFN0cnVjdFdpdGhEaWFnbm9zdGljSW5mbyI+C
+        iAgPHhzOnNlcXVlbmNlPgogICA8eHM6ZWxlbWVudCBtaW5PY2N1cnM9IjAiIG1heE9jY3Vyc
+        z0idW5ib3VuZGVkIiB0eXBlPSJ0bnM6UXRUZXN0U3RydWN0V2l0aERpYWdub3N0aWNJbmZvI
+        iBuYW1lPSJRdFRlc3RTdHJ1Y3RXaXRoRGlhZ25vc3RpY0luZm8iIG5pbGxhYmxlPSJ0cnVlI
+        i8+CiAgPC94czpzZXF1ZW5jZT4KIDwveHM6Y29tcGxleFR5cGU+CiA8eHM6ZWxlbWVudCB0e
+        XBlPSJ0bnM6TGlzdE9mUXRUZXN0U3RydWN0V2l0aERpYWdub3N0aWNJbmZvIiBuYW1lPSJMa
+        XN0T2ZRdFRlc3RTdHJ1Y3RXaXRoRGlhZ25vc3RpY0luZm8iIG5pbGxhYmxlPSJ0cnVlIi8+C
+        iA8eHM6Y29tcGxleFR5cGUgbmFtZT0iUXRUZXN0VW5pb25UeXBlIj4KICA8eHM6c2VxdWVuY
+        2U+CiAgIDx4czplbGVtZW50IG1pbk9jY3Vycz0iMCIgbWF4T2NjdXJzPSIxIiB0eXBlPSJ4c
+        zp1bnNpZ25lZEludCIgbmFtZT0iU3dpdGNoRmllbGQiLz4KICAgPHhzOmNob2ljZT4KICAgI
+        Dx4czplbGVtZW50IG1pbk9jY3Vycz0iMCIgbWF4T2NjdXJzPSIxIiB0eXBlPSJ4czpsb25nI
+        iBuYW1lPSJNZW1iZXIxIi8+CiAgICA8eHM6ZWxlbWVudCBtaW5PY2N1cnM9IjAiIG1heE9jY
+        3Vycz0iMSIgdHlwZT0idG5zOlF0SW5uZXJUZXN0U3RydWN0VHlwZSIgbmFtZT0iTWVtYmVyM
+        iIvPgogICA8L3hzOmNob2ljZT4KICA8L3hzOnNlcXVlbmNlPgogPC94czpjb21wbGV4VHlwZ
+        T4KIDx4czplbGVtZW50IHR5cGU9InRuczpRdFRlc3RVbmlvblR5cGUiIG5hbWU9IlF0VGVzd
+        FVuaW9uVHlwZSIvPgogPHhzOmNvbXBsZXhUeXBlIG5hbWU9Ikxpc3RPZlF0VGVzdFVuaW9uV
+        HlwZSI+CiAgPHhzOnNlcXVlbmNlPgogICA8eHM6ZWxlbWVudCBtaW5PY2N1cnM9IjAiIG1he
+        E9jY3Vycz0idW5ib3VuZGVkIiB0eXBlPSJ0bnM6UXRUZXN0VW5pb25UeXBlIiBuYW1lPSJRd
+        FRlc3RVbmlvblR5cGUiIG5pbGxhYmxlPSJ0cnVlIi8+CiAgPC94czpzZXF1ZW5jZT4KIDwve
+        HM6Y29tcGxleFR5cGU+CiA8eHM6ZWxlbWVudCB0eXBlPSJ0bnM6TGlzdE9mUXRUZXN0VW5pb
+        25UeXBlIiBuYW1lPSJMaXN0T2ZRdFRlc3RVbmlvblR5cGUiIG5pbGxhYmxlPSJ0cnVlIi8+C
+        jwveHM6c2NoZW1hPgo=</uax:ByteString>
         </Value>
     </UAVariable>
     <UAVariable DataType="String" ParentNodeId="ns=1;i=6014" NodeId="ns=1;i=6015" BrowseName="NamespaceUri">
@@ -508,10 +566,11 @@
             <Reference ReferenceType="HasTypeDefinition">i=61</Reference>
             <Reference ReferenceType="HasComponent">ns=1;i=6009</Reference>
             <Reference ReferenceType="HasComponent">ns=1;i=6002</Reference>
+            <Reference ReferenceType="Organizes">ns=1;i=6027</Reference>
             <Reference ReferenceType="HasComponent">ns=1;i=6006</Reference>
             <Reference ReferenceType="HasComponent">ns=1;i=6010</Reference>
-            <Reference ReferenceType="HasComponent">ns=1;i=6003</Reference>
             <Reference ReferenceType="HasComponent">ns=1;i=6011</Reference>
+            <Reference ReferenceType="HasComponent">ns=1;i=6003</Reference>
         </References>
     </UAObject>
     <UAVariable DataType="QtTestStructType" NodeId="ns=1;i=6009" BrowseName="1:NestedStruct" AccessLevel="3">
@@ -521,11 +580,18 @@
             <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5009</Reference>
         </References>
     </UAVariable>
-    <UAVariable DataType="QtStructWithOptionalFieldType" NodeId="ns=1;i=6002" BrowseName="1:StructWihoutOptionalField" AccessLevel="3">
-        <DisplayName>StructWihoutOptionalField</DisplayName>
+    <UAVariable SymbolicName="StructWihoutOptionalField" DataType="QtStructWithOptionalFieldType" NodeId="ns=1;i=6002" BrowseName="1:StructWithoutOptionalField" AccessLevel="3">
+        <DisplayName>StructWithoutOptionalField</DisplayName>
         <References>
             <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5009</Reference>
+        </References>
+    </UAVariable>
+    <UAVariable DataType="QtTestStructWithDataValue" NodeId="ns=1;i=6027" BrowseName="1:StructWithDataValue" AccessLevel="3">
+        <DisplayName>StructWithDataValue</DisplayName>
+        <References>
+            <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
+            <Reference ReferenceType="Organizes" IsForward="false">ns=1;i=5009</Reference>
         </References>
     </UAVariable>
     <UAVariable DataType="QtTestStructWithDiagnosticInfo" NodeId="ns=1;i=6006" BrowseName="1:StructWithDiagnosticInfo" AccessLevel="3">
@@ -542,15 +608,15 @@
             <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5009</Reference>
         </References>
     </UAVariable>
-    <UAVariable DataType="QtTestUnionType" NodeId="ns=1;i=6003" BrowseName="1:UnionWithSecondMember" AccessLevel="3">
-        <DisplayName>UnionWithSecondMember</DisplayName>
+    <UAVariable DataType="QtTestUnionType" NodeId="ns=1;i=6011" BrowseName="1:UnionWithFirstMember" AccessLevel="3">
+        <DisplayName>UnionWithFirstMember</DisplayName>
         <References>
             <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5009</Reference>
         </References>
     </UAVariable>
-    <UAVariable DataType="QtTestUnionType" NodeId="ns=1;i=6011" BrowseName="1:UnionWithFirstMember" AccessLevel="3">
-        <DisplayName>UnionWithFirstMember</DisplayName>
+    <UAVariable DataType="QtTestUnionType" NodeId="ns=1;i=6003" BrowseName="1:UnionWithSecondMember" AccessLevel="3">
+        <DisplayName>UnionWithSecondMember</DisplayName>
         <References>
             <Reference ReferenceType="HasTypeDefinition">i=63</Reference>
             <Reference ReferenceType="HasComponent" IsForward="false">ns=1;i=5009</Reference>
@@ -575,8 +641,8 @@
     <UAObject SymbolicName="DefaultBinary" NodeId="ns=1;i=5003" BrowseName="Default Binary">
         <DisplayName>Default Binary</DisplayName>
         <References>
-            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3009</Reference>
             <Reference ReferenceType="HasTypeDefinition">i=76</Reference>
+            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3009</Reference>
             <Reference ReferenceType="HasDescription">ns=1;i=6004</Reference>
         </References>
     </UAObject>
@@ -647,9 +713,25 @@
     <UAObject SymbolicName="DefaultXml" NodeId="ns=1;i=5013" BrowseName="Default XML">
         <DisplayName>Default XML</DisplayName>
         <References>
-            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3009</Reference>
             <Reference ReferenceType="HasTypeDefinition">i=76</Reference>
+            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3009</Reference>
             <Reference ReferenceType="HasDescription">ns=1;i=6005</Reference>
+        </References>
+    </UAObject>
+    <UAObject SymbolicName="DefaultBinary" NodeId="ns=1;i=5014" BrowseName="Default Binary">
+        <DisplayName>Default Binary</DisplayName>
+        <References>
+            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3010</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=76</Reference>
+            <Reference ReferenceType="HasDescription">ns=1;i=6007</Reference>
+        </References>
+    </UAObject>
+    <UAObject SymbolicName="DefaultXml" NodeId="ns=1;i=5015" BrowseName="Default XML">
+        <DisplayName>Default XML</DisplayName>
+        <References>
+            <Reference ReferenceType="HasEncoding" IsForward="false">ns=1;i=3010</Reference>
+            <Reference ReferenceType="HasTypeDefinition">i=76</Reference>
+            <Reference ReferenceType="HasDescription">ns=1;i=6008</Reference>
         </References>
     </UAObject>
 </UANodeSet>

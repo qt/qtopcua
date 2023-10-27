@@ -178,6 +178,8 @@ QList<QOpcUaStructureDefinition> testStructureDefinitions = {};
 QList<QOpcUaEnumField> testEnumFields = {};
 QList<QOpcUaEnumDefinition> testEnumDefinitions = {};
 QList<QOpcUaDiagnosticInfo> testDiagnosticInfos = {};
+QList<QOpcUaVariant> testVariants = {};
+QList<QOpcUaDataValue> testDataValues = {};
 
 void populateDataTypeDefinitionTestData()
 {
@@ -261,6 +263,30 @@ void populateDiagnosticInfoTestData()
     diagnosticInfo2.setInnerStatusCode(QOpcUa::UaStatusCode::BadTypeMismatch);
 
     testDiagnosticInfos = { diagnosticInfo, diagnosticInfo2 };
+}
+
+void populateVariantTestData()
+{
+    QOpcUaVariant v1;
+    v1.setValue(QList<QString>{ "Test1", "Test2", "Test3", "Test4"}, QOpcUaVariant::ValueType::String, true, { 2, 2 });
+
+    QOpcUaVariant v2;
+    v2.setValue(23, QOpcUaVariant::ValueType::Int16);
+
+    testVariants = { v1, v2 };
+}
+
+void populateDataValuesTestData()
+{
+    QOpcUaDataValue d1;
+    d1.setServerTimestamp(QDateTime::currentDateTime());
+    d1.setServerPicoseconds(23);
+    d1.setSourceTimestamp(QDateTime::currentDateTime());
+    d1.setSourcePicoseconds(42);
+    d1.setStatusCode(QOpcUa::UaStatusCode::BadInternalError);
+    d1.setValue(testVariants.at(0));
+
+    testDataValues = { d1 };
 }
 
 QList<QOpcUaMonitoringParameters::EventFilter> testEventFilters = {};
@@ -5822,12 +5848,13 @@ void Tst_QOpcUaClient::decodeGenericStruct()
     QOpcUaReadItem readStructWithOptField(QStringLiteral("ns=4;i=6010"));
     QOpcUaReadItem readStructWithoutOptField(QStringLiteral("ns=4;i=6002"));
     QOpcUaReadItem readStructWithDiagnosticInfo(QStringLiteral("ns=4;i=6006"));
+    QOpcUaReadItem readStructWithDataValue(QStringLiteral("ns=4;i=6027"));
 
     QSignalSpy readSpy(opcuaClient, &QOpcUaClient::readNodeAttributesFinished);
 
     const auto readDispatch = opcuaClient->readNodeAttributes({readNestedStruct, readUnion1, readUnion2,
                                                                readStructWithOptField, readStructWithoutOptField,
-                                                               readStructWithDiagnosticInfo});
+                                                               readStructWithDiagnosticInfo, readStructWithDataValue});
     QCOMPARE(readDispatch, true);
 
     readSpy.wait();
@@ -5837,13 +5864,14 @@ void Tst_QOpcUaClient::decodeGenericStruct()
     QCOMPARE(readSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
     auto results = readSpy.at(0).at(0).value<QList<QOpcUaReadResult>>();
 
-    QCOMPARE(results.size(), 6);
+    QCOMPARE(results.size(), 7);
     QCOMPARE(results.at(0).statusCode(), QOpcUa::UaStatusCode::Good);
     QCOMPARE(results.at(1).statusCode(), QOpcUa::UaStatusCode::Good);
     QCOMPARE(results.at(2).statusCode(), QOpcUa::UaStatusCode::Good);
     QCOMPARE(results.at(3).statusCode(), QOpcUa::UaStatusCode::Good);
     QCOMPARE(results.at(4).statusCode(), QOpcUa::UaStatusCode::Good);
     QCOMPARE(results.at(5).statusCode(), QOpcUa::UaStatusCode::Good);
+    QCOMPARE(results.at(6).statusCode(), QOpcUa::UaStatusCode::Good);
 
     bool decodeSuccess = false;
 
@@ -5938,6 +5966,30 @@ void Tst_QOpcUaClient::decodeGenericStruct()
         QCOMPARE(decodedData.fields().contains("DiagnosticInfoArrayMember"), true);
         QCOMPARE(decodedData.fields().value("DiagnosticInfoArrayMember").value<QList<QOpcUaDiagnosticInfo>>(), testDiagnosticInfos);
         QCOMPARE(decodeSuccess, true);
+    }
+
+    {
+        auto dataValueExt = results.at(6).value().value<QOpcUaExtensionObject>();
+        auto decodedData = decoder.decode(dataValueExt, decodeSuccess);
+        qDebug() << decodedData;
+        QCOMPARE(decodeSuccess, true);
+
+        QVERIFY(decodedData.fields().contains("DataValueMember"));
+        const auto dv = decodedData.fields().value("DataValueMember").value<QOpcUaDataValue>();
+        QCOMPARE(dv.statusCode(), QOpcUa::UaStatusCode::BadInternalError);
+        QCOMPARE(dv.serverTimestamp(), QDateTime::fromMSecsSinceEpoch(1698655307000));
+        QCOMPARE(dv.sourceTimestamp(), QDateTime::fromMSecsSinceEpoch(1698655306000));
+        QCOMPARE(dv.sourcePicoseconds(), 42);
+        QCOMPARE(dv.serverPicoseconds(), 23);
+        const auto v = dv.value().value<QOpcUaVariant>();
+        QCOMPARE(v.value(), (QList<QString>{"TestString 1", "TestString 2", "TestString 3", "TestString 4"}));
+        QCOMPARE(v.arrayDimensions(), (QList<qint32>{ 2, 2 }));
+
+        QVERIFY(decodedData.fields().contains("VariantMember"));
+        const auto var = decodedData.fields().value("VariantMember").value<QOpcUaVariant>();
+        QVERIFY(var.arrayDimensions().isEmpty());
+        QCOMPARE(var.type(), QOpcUaVariant::ValueType::UInt64);
+        QCOMPARE(var.value(), 42);
     }
 }
 
@@ -6100,6 +6152,25 @@ void Tst_QOpcUaClient::encodeGenericStruct()
         QCOMPARE(decoded.fields().value("DiagnosticInfoArrayMember").value<QList<QOpcUaDiagnosticInfo>>(), testDiagnosticInfos);
 
         QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=4;i=6006"));
+        WRITE_VALUE_ATTRIBUTE(node, ext, QOpcUa::Types::ExtensionObject);
+    }
+
+    {
+        auto value = handler.createGenericStructValueForTypeId("ns=4;i=3010");
+        value.fieldsRef()["DataValueMember"] = testDataValues.at(0);
+        value.fieldsRef()["VariantMember"] = testVariants.at(0);
+
+        QOpcUaExtensionObject ext;
+        success = handler.encode(value, ext);
+        QCOMPARE(success, true);
+        QCOMPARE(ext.encodingTypeId(), value.structureDefinition().defaultEncodingId());
+
+        const auto decoded = handler.decode(ext, success);
+
+        QCOMPARE(decoded.fields().value("DataValueMember"), testDataValues.at(0));
+        QCOMPARE(decoded.fields().value("VariantMember"), testVariants.at(0));
+
+        QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=4;i=6027"));
         WRITE_VALUE_ATTRIBUTE(node, ext, QOpcUa::Types::ExtensionObject);
     }
 }
@@ -6308,6 +6379,8 @@ int main(int argc, char *argv[])
 {
     populateDataTypeDefinitionTestData();
     populateDiagnosticInfoTestData();
+    populateVariantTestData();
+    populateDataValuesTestData();
     populateEventFilterTestData();
 
     QCoreApplication app(argc, argv);

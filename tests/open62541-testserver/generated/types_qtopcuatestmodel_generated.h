@@ -22,7 +22,7 @@ _UA_BEGIN_DECLS
  * Every type is assigned an index in an array containing the type descriptions.
  * These descriptions are used during type handling (copying, deletion,
  * binary encoding, ...). */
-#define UA_TYPES_QTOPCUATESTMODEL_COUNT 6
+#define UA_TYPES_QTOPCUATESTMODEL_COUNT 7
 extern UA_EXPORT const UA_DataType UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_COUNT];
 
 /**
@@ -47,6 +47,17 @@ typedef struct {
 #define UA_TYPES_QTOPCUATESTMODEL_QTSTRUCTWITHOPTIONALFIELDTYPE 1
 
 /**
+ * QtTestStructWithDataValue
+ * ^^^^^^^^^^^^^^^^^^^^^^^^^
+ */
+typedef struct {
+    UA_DataValue dataValueMember;
+    UA_Variant variantMember;
+} UA_QtTestStructWithDataValue;
+
+#define UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTWITHDATAVALUE 2
+
+/**
  * QtTestStructWithDiagnosticInfo
  * ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  */
@@ -56,7 +67,7 @@ typedef struct {
     UA_DiagnosticInfo *diagnosticInfoArrayMember;
 } UA_QtTestStructWithDiagnosticInfo;
 
-#define UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTWITHDIAGNOSTICINFO 2
+#define UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTWITHDIAGNOSTICINFO 3
 
 /**
  * QtTestUnionType
@@ -78,7 +89,7 @@ typedef struct {
     } fields;
 } UA_QtTestUnionType;
 
-#define UA_TYPES_QTOPCUATESTMODEL_QTTESTUNIONTYPE 3
+#define UA_TYPES_QTOPCUATESTMODEL_QTTESTUNIONTYPE 4
 
 /**
  * QtTestEnumeration
@@ -93,7 +104,7 @@ typedef enum {
 } UA_QtTestEnumeration;
 UA_STATIC_ASSERT(sizeof(UA_QtTestEnumeration) == sizeof(UA_Int32), enum_must_be_32bit);
 
-#define UA_TYPES_QTOPCUATESTMODEL_QTTESTENUMERATION 4
+#define UA_TYPES_QTOPCUATESTMODEL_QTTESTENUMERATION 5
 
 /**
  * QtTestStructType
@@ -111,7 +122,7 @@ typedef struct {
     UA_QtInnerTestStructType *nestedStructArrayMember;
 } UA_QtTestStructType;
 
-#define UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTTYPE 5
+#define UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTTYPE 6
 
 
 _UA_END_DECLS

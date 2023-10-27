@@ -1327,6 +1327,50 @@ UA_StatusCode TestServer::addEncoderTestModel()
         }
     }
 
+    {
+        auto data = UA_QtTestStructWithDataValue_new();
+
+        auto stringArray = static_cast<UA_String *>(UA_Array_new(4, &UA_TYPES[UA_TYPES_STRING]));
+        stringArray[0] = UA_STRING_ALLOC("TestString 1");
+        stringArray[1] = UA_STRING_ALLOC("TestString 2");
+        stringArray[2] = UA_STRING_ALLOC("TestString 3");
+        stringArray[3] = UA_STRING_ALLOC("TestString 4");
+        UA_Variant_setArray(&data->dataValueMember.value, stringArray, 4, &UA_TYPES[UA_TYPES_STRING]);
+
+        data->dataValueMember.value.arrayLength = 4;
+        data->dataValueMember.value.arrayDimensions = static_cast<quint32 *>(UA_Array_new(2, &UA_TYPES[UA_TYPES_UINT32]));
+        data->dataValueMember.value.arrayDimensions[0] = 2;
+        data->dataValueMember.value.arrayDimensions[1] = 2;
+        data->dataValueMember.value.arrayDimensionsSize = 2;
+
+        data->dataValueMember.hasValue = true;
+        data->dataValueMember.status = UA_STATUSCODE_BADINTERNALERROR;
+        data->dataValueMember.hasStatus = true;
+        data->dataValueMember.serverTimestamp = UA_DateTime_fromUnixTime(1698655307);
+        data->dataValueMember.hasServerTimestamp = true;
+        data->dataValueMember.sourceTimestamp = UA_DateTime_fromUnixTime(1698655306);
+        data->dataValueMember.hasSourceTimestamp = true;
+        data->dataValueMember.serverPicoseconds = 23;
+        data->dataValueMember.hasServerPicoseconds = true;
+        data->dataValueMember.sourcePicoseconds = 42;
+        data->dataValueMember.hasSourcePicoseconds = true;
+
+        const quint64 num = 42;
+        UA_Variant_setScalarCopy(&data->variantMember, &num, &UA_TYPES[UA_TYPES_UINT64]);
+
+        UA_Variant var;
+        UA_Variant_init(&var);
+        UA_Variant_setScalar(&var, data, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTWITHDATAVALUE]);
+
+        result = UA_Server_writeValue(m_server, UA_NODEID_NUMERIC(4, UA_QTOPCUATESTMODELID_DECODERTESTNODES_STRUCTWITHDATAVALUE), var);
+        UA_Variant_clear(&var);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qWarning() << "Failed to write data value field struct node";
+            return result;
+        }
+    }
+
     return result;
 }
 

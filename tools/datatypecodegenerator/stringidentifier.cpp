@@ -70,13 +70,16 @@ const QList<StringIdentifier::OpcUaPrecodedType> StringIdentifier::opcUaPrecoded
     OpcUaPrecodedType("StructureField", "QOpcUaStructureField", "QOpcUaStructureField"),
     OpcUaPrecodedType("StructureDefinition", "QOpcUaStructureDefinition", "QOpcUaStructureDefinition"),
     OpcUaPrecodedType("EnumField", "QOpcUaEnumField", "QOpcUaEnumField"),
-    OpcUaPrecodedType("EnumDefinition", "QOpcUaEnumDefinition", "QOpcUaEnumDefinition")
+    OpcUaPrecodedType("EnumDefinition", "QOpcUaEnumDefinition", "QOpcUaEnumDefinition"),
+    OpcUaPrecodedType("DataValue", "QOpcUaDataValue", "QOpcUaDataValue"),
+    OpcUaPrecodedType("Variant", "QOpcUaVariant", "QOpcUaVariant")
 };
 
 const QList<QString> StringIdentifier::buildInTypesWithBitMask = {"DiagnosticInfo",
                                                                   "LocalizedText",
                                                                   "Variant",
-                                                                  "DataValue"};
+                                                                  "DataValue",
+                                                                  "Variant"};
 
 const QMap<QString, QString> StringIdentifier::typeNameDataTypeConverter
     = {{"opc:Bit", "bool"},

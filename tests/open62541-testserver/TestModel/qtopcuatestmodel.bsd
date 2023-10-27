@@ -21,6 +21,10 @@
         <opc:Field TypeName="opc:Int32" Name="NoOfNestedStructArrayMember"/>
         <opc:Field LengthField="NoOfNestedStructArrayMember" TypeName="tns:QtInnerTestStructType" Name="NestedStructArrayMember"/>
     </opc:StructuredType>
+    <opc:StructuredType BaseType="tns:QtAbstractBaseStruct" Name="QtTestStructWithDataValue">
+        <opc:Field TypeName="ua:DataValue" Name="DataValueMember"/>
+        <opc:Field TypeName="ua:Variant" Name="VariantMember"/>
+    </opc:StructuredType>
     <opc:StructuredType BaseType="tns:QtAbstractBaseStruct" Name="QtTestStructWithDiagnosticInfo">
         <opc:Field TypeName="ua:DiagnosticInfo" Name="DiagnosticInfoMember"/>
         <opc:Field TypeName="opc:Int32" Name="NoOfDiagnosticInfoArrayMember"/>

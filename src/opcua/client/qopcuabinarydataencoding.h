@@ -20,6 +20,8 @@
 #include <QtOpcUa/qopcuastructuredefinition.h>
 #include <QtOpcUa/qopcuaenumdefinition.h>
 #include <QtOpcUa/qopcuadiagnosticinfo.h>
+#include <QtOpcUa/qopcuadatavalue.h>
+#include <QtOpcUa/qopcuavariant.h>
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qendian.h>
@@ -59,6 +61,18 @@ private:
     bool enoughData(int requiredSize);
     template <typename T>
     T upperBound();
+
+    template <typename T, QOpcUa::Types OVERLAY = QOpcUa::Types::Undefined>
+    inline bool encodeValueArrayOrScalar(const QOpcUaVariant &var) {
+        return var.isArray() ? encodeArray<T, OVERLAY>(var.value().value<QList<T>>())
+                             : encode<T, OVERLAY>(var.value().value<T>());
+    }
+
+    template <typename T, QOpcUa::Types OVERLAY = QOpcUa::Types::Undefined>
+    inline QVariant decodeValueArrayOrScalar(bool isArray, bool &success) {
+        return isArray ? QVariant::fromValue(decodeArray<T, OVERLAY>(success)) :
+                   QVariant::fromValue(decode<T, OVERLAY>(success));
+    }
 
     QByteArray *m_data{nullptr};
     int m_offset{0};
@@ -706,6 +720,174 @@ inline QOpcUaDiagnosticInfo QOpcUaBinaryDataEncoding::decode<QOpcUaDiagnosticInf
     return temp;
 }
 
+template <>
+inline QOpcUaVariant QOpcUaBinaryDataEncoding::decode<QOpcUaVariant>(bool &success);
+
+template <>
+inline QOpcUaDataValue QOpcUaBinaryDataEncoding::decode<QOpcUaDataValue>(bool &success) {
+    QOpcUaDataValue temp;
+
+    const auto encodingMask = decode<quint8>(success);
+    if (!success)
+        return {};
+
+    if (encodingMask & (1 << 0)) {
+        temp.setValue(decode<QOpcUaVariant>(success));
+        if (!success)
+            return {};
+    }
+
+    if (encodingMask & (1 << 1)) {
+        temp.setStatusCode(decode<QOpcUa::UaStatusCode>(success));
+        if (!success)
+            return {};
+    }
+
+    if (encodingMask & (1 << 2)) {
+        temp.setSourceTimestamp(decode<QDateTime>(success));
+        if (!success)
+            return {};
+    }
+
+    if (encodingMask & (1 << 3)) {
+        temp.setSourcePicoseconds(decode<quint16>(success));
+        if (!success)
+            return {};
+    }
+
+    if (encodingMask & (1 << 4)) {
+        temp.setServerTimestamp(decode<QDateTime>(success));
+        if (!success)
+            return {};
+    }
+
+    if (encodingMask & (1 << 5)) {
+        temp.setServerPicoseconds(decode<quint16>(success));
+        if (!success)
+            return {};
+    }
+
+    return temp;
+}
+
+template <>
+inline QOpcUaVariant QOpcUaBinaryDataEncoding::decode<QOpcUaVariant>(bool &success) {
+    QOpcUaVariant temp;
+
+    const auto encodingMask = decode<quint8>(success);
+    if (!success)
+        return {};
+
+    const bool hasArrayDimensions = encodingMask & (1 << 6);
+    const bool isArray = encodingMask & (1 << 7);
+    const auto type = QOpcUaVariant::ValueType(encodingMask & 0x1F);
+
+    // Decode value
+
+    QVariant value;
+
+    switch (type) {
+    case QOpcUaVariant::ValueType::Boolean:
+        value = decodeValueArrayOrScalar<bool>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::SByte:
+        value = decodeValueArrayOrScalar<qint8>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::Byte:
+        value = decodeValueArrayOrScalar<quint8>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::Int16:
+        value = decodeValueArrayOrScalar<qint16>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::UInt16:
+        value = decodeValueArrayOrScalar<quint16>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::Int32:
+        value = decodeValueArrayOrScalar<qint32>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::UInt32:
+        value = decodeValueArrayOrScalar<quint32>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::Int64:
+        value = decodeValueArrayOrScalar<qint64>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::UInt64:
+        value = decodeValueArrayOrScalar<quint64>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::Float:
+        value = decodeValueArrayOrScalar<float>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::Double:
+        value = decodeValueArrayOrScalar<double>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::String:
+        value = decodeValueArrayOrScalar<QString>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::DateTime:
+        value = decodeValueArrayOrScalar<QDateTime>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::Guid:
+        value = decodeValueArrayOrScalar<QUuid>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::ByteString:
+        value = decodeValueArrayOrScalar<QByteArray>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::XmlElement:
+        value = decodeValueArrayOrScalar<QString>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::NodeId:
+        value = decodeValueArrayOrScalar<QString, QOpcUa::Types::NodeId>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::ExpandedNodeId:
+        value = decodeValueArrayOrScalar<QOpcUaExpandedNodeId>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::StatusCode:
+        value = decodeValueArrayOrScalar<QOpcUa::UaStatusCode>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::QualifiedName:
+        value = decodeValueArrayOrScalar<QOpcUaQualifiedName>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::LocalizedText:
+        value = decodeValueArrayOrScalar<QOpcUaLocalizedText>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::ExtensionObject:
+        value = decodeValueArrayOrScalar<QOpcUaExtensionObject>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::DataValue:
+        value = decodeValueArrayOrScalar<QOpcUaDataValue>(isArray, success);
+        break;
+    case QOpcUaVariant::ValueType::Variant:
+        if (!isArray)
+            return {}; // Variant must not contain a scalar variant as value
+        value = QVariant::fromValue(decodeArray<QOpcUaVariant>(success));
+        break;
+    case QOpcUaVariant::ValueType::DiagnosticInfo:
+        value = decodeValueArrayOrScalar<QOpcUaDiagnosticInfo>(isArray, success);
+        break;
+    default:
+        break;
+    }
+
+    // 26-31 are reserved and shall be treated as ByteString when encountered
+    // See OPC UA 1.05, Part 6, 5.2.2.16
+    auto resultType = type;
+    if (static_cast<quint16>(type) >= 26 && static_cast<quint16>(type) <= 31) {
+        value = decodeValueArrayOrScalar<QByteArray>(isArray, success);
+        resultType = QOpcUaVariant::ValueType::ByteString;
+    }
+
+    if (!success)
+        return {};
+
+    QList<qint32> arrayDimensions;
+    if (hasArrayDimensions)
+        arrayDimensions = decodeArray<qint32>(success);
+
+    temp.setValue(value, resultType, isArray, arrayDimensions);
+
+    return temp;
+}
+
 template<typename T, QOpcUa::Types OVERLAY>
 inline bool QOpcUaBinaryDataEncoding::encode(const T &src)
 {
@@ -1289,6 +1471,176 @@ inline bool QOpcUaBinaryDataEncoding::encode<QOpcUaDiagnosticInfo>(const QOpcUaD
 
     if (src.hasInnerDiagnosticInfo()) {
         if (!encode<QOpcUaDiagnosticInfo>(src.innerDiagnosticInfo()))
+            return false;
+    }
+
+    return true;
+}
+
+template <>
+inline bool QOpcUaBinaryDataEncoding::encode<QOpcUaVariant>(const QOpcUaVariant &src);
+
+template <>
+inline bool QOpcUaBinaryDataEncoding::encode<QOpcUaDataValue>(const QOpcUaDataValue &src)
+{
+    if (src.value().isValid() && !src.value().canConvert<QOpcUaVariant>()) {
+        qWarning() << "Unable to convert DataValue value type != QOpcUaVariant";
+        return false;
+    }
+
+    quint8 encodingMask = 0;
+    if (src.value().isValid())
+        encodingMask |= (1 << 0);
+    if (src.statusCode() != QOpcUa::UaStatusCode::Good)
+        encodingMask |= (1 << 1);
+    if (src.sourceTimestamp().isValid())
+        encodingMask |= (1 << 2);
+    if (src.serverTimestamp().isValid())
+        encodingMask |= (1 << 3);
+    if (src.sourcePicoseconds())
+        encodingMask |= (1 << 4);
+    if (src.serverPicoseconds())
+        encodingMask |= (1 << 5);
+
+    if (!encode<quint8>(encodingMask))
+        return false;
+
+    // Encode value
+    if (src.value().isValid()) {
+        if (!encode<QOpcUaVariant>(src.value().value<QOpcUaVariant>()))
+            return false;
+    }
+
+    if (src.statusCode() != QOpcUa::UaStatusCode::Good) {
+        if (!encode<QOpcUa::UaStatusCode>(src.statusCode()))
+            return false;
+    }
+
+    if (src.sourceTimestamp().isValid()) {
+        if (!encode<QDateTime>(src.sourceTimestamp()))
+            return false;
+    }
+
+    if (src.sourcePicoseconds()) {
+        if (!encode<quint16>(src.sourcePicoseconds()))
+            return false;
+    }
+
+    if (src.serverTimestamp().isValid()) {
+        if (!encode<QDateTime>(src.serverTimestamp()))
+            return false;
+    }
+
+    if (src.serverPicoseconds()) {
+        if (!encode<quint16>(src.serverPicoseconds()))
+            return false;
+    }
+
+    return true;
+}
+
+template <>
+inline bool QOpcUaBinaryDataEncoding::encode<QOpcUaVariant>(const QOpcUaVariant &src)
+{
+    quint8 encodingMask = static_cast<quint8>(src.type());
+    if (!src.arrayDimensions().isEmpty())
+        encodingMask |= (1 << 6);
+    if (src.isArray())
+        encodingMask |= (1 << 7);
+
+    if (!encode<quint8>(encodingMask))
+        return false;
+
+    bool success = true;
+    switch (src.type()) {
+    case QOpcUaVariant::ValueType::Boolean:
+        success = encodeValueArrayOrScalar<bool>(src);
+        break;
+    case QOpcUaVariant::ValueType::SByte:
+        success = encodeValueArrayOrScalar<qint8>(src);
+        break;
+    case QOpcUaVariant::ValueType::Byte:
+        success = encodeValueArrayOrScalar<quint8>(src);
+        break;
+    case QOpcUaVariant::ValueType::Int16:
+        success = encodeValueArrayOrScalar<qint16>(src);
+        break;
+    case QOpcUaVariant::ValueType::UInt16:
+        success = encodeValueArrayOrScalar<quint16>(src);
+        break;
+    case QOpcUaVariant::ValueType::Int32:
+        success = encodeValueArrayOrScalar<qint32>(src);
+        break;
+    case QOpcUaVariant::ValueType::UInt32:
+        success = encodeValueArrayOrScalar<quint32>(src);
+        break;
+    case QOpcUaVariant::ValueType::Int64:
+        success = encodeValueArrayOrScalar<qint64>(src);
+        break;
+    case QOpcUaVariant::ValueType::UInt64:
+        success = encodeValueArrayOrScalar<quint32>(src);
+        break;
+    case QOpcUaVariant::ValueType::Float:
+        success = encodeValueArrayOrScalar<float>(src);
+        break;
+    case QOpcUaVariant::ValueType::Double:
+        success = encodeValueArrayOrScalar<double>(src);
+        break;
+    case QOpcUaVariant::ValueType::String:
+        success = encodeValueArrayOrScalar<QString>(src);
+        break;
+    case QOpcUaVariant::ValueType::DateTime:
+        success = encodeValueArrayOrScalar<QDateTime>(src);
+        break;
+    case QOpcUaVariant::ValueType::Guid:
+        success = encodeValueArrayOrScalar<QUuid>(src);
+        break;
+    case QOpcUaVariant::ValueType::ByteString:
+        success = encodeValueArrayOrScalar<QByteArray>(src);
+        break;
+    case QOpcUaVariant::ValueType::XmlElement:
+        success = encodeValueArrayOrScalar<QString>(src);
+        break;
+    case QOpcUaVariant::ValueType::NodeId:
+        success = encodeValueArrayOrScalar<QString, QOpcUa::Types::NodeId>(src);
+        break;
+    case QOpcUaVariant::ValueType::ExpandedNodeId:
+        success = encodeValueArrayOrScalar<QOpcUaExpandedNodeId>(src);
+        break;
+    case QOpcUaVariant::ValueType::StatusCode:
+        success = encodeValueArrayOrScalar<QOpcUa::UaStatusCode>(src);
+        break;
+    case QOpcUaVariant::ValueType::QualifiedName:
+        success = encodeValueArrayOrScalar<QOpcUaQualifiedName>(src);
+        break;
+    case QOpcUaVariant::ValueType::LocalizedText:
+        success = encodeValueArrayOrScalar<QOpcUaLocalizedText>(src);
+        break;
+    case QOpcUaVariant::ValueType::ExtensionObject:
+        success = encodeValueArrayOrScalar<QOpcUaExtensionObject>(src);
+        break;
+    case QOpcUaVariant::ValueType::DataValue:
+        success = encodeValueArrayOrScalar<QOpcUaDataValue>(src);
+        break;
+    case QOpcUaVariant::ValueType::Variant:
+        if (!src.isArray()) {
+            qWarning() << "Unable to convert Variant value, a Variant must not contain a scalar variant";
+            return false;
+        }
+        success = encode<QOpcUaVariant>(src);
+        break;
+    case QOpcUaVariant::ValueType::DiagnosticInfo:
+        success = encodeValueArrayOrScalar<QOpcUaDiagnosticInfo>(src);
+        break;
+    default:
+        break;
+    }
+
+    if (!success)
+        return false;
+
+    if (!src.arrayDimensions().isEmpty()) {
+        if (!encodeArray<qint32>(src.arrayDimensions()))
             return false;
     }
 
