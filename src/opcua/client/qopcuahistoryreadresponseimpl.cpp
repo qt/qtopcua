@@ -132,6 +132,7 @@ QOpcUaHistoryReadRawRequest QOpcUaHistoryReadResponseImpl::createReadRawRequestW
     request.setEndTimestamp(m_readRawRequest.endTimestamp());
     request.setNumValuesPerNode(m_readRawRequest.numValuesPerNode());
     request.setReturnBounds(m_readRawRequest.returnBounds());
+    request.setTimestampsToReturn(m_readRawRequest.timestampsToReturn());
 
     int arrayIndex = 0;
     QList<int> newDataMapping;

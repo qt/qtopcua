@@ -26,6 +26,13 @@ public:
                                          quint32 numValuesPerNode = 0,
                                          bool returnBounds = false);
 
+    explicit QOpcUaHistoryReadRawRequest(const QList<QOpcUaReadItem> &nodesToRead,
+                                         const QDateTime &startTimestamp,
+                                         const QDateTime &endTimestamp,
+                                         quint32 numValuesPerNode,
+                                         bool returnBounds,
+                                         QOpcUa::TimestampsToReturn);
+
     QOpcUaHistoryReadRawRequest(const QOpcUaHistoryReadRawRequest &other);
     ~QOpcUaHistoryReadRawRequest();
 
@@ -43,6 +50,9 @@ public:
 
     bool returnBounds() const;
     void setReturnBounds(bool returnBounds);
+
+    QOpcUa::TimestampsToReturn timestampsToReturn() const;
+    void setTimestampsToReturn(QOpcUa::TimestampsToReturn timestampsToReturn);
 
     QList<QOpcUaReadItem> nodesToRead() const;
     void setNodesToRead(const QList<QOpcUaReadItem> &nodesToRead);

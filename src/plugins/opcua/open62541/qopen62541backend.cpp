@@ -571,7 +571,7 @@ void Open62541AsyncBackend::readHistoryRaw(QOpcUaHistoryReadRawRequest request, 
         if (!continuationPoints.isEmpty())
             QOpen62541ValueConverter::scalarFromQt<UA_ByteString, QByteArray>(continuationPoints.at(i), &uarequest.nodesToRead[i].continuationPoint);
     }
-    uarequest.timestampsToReturn = UA_TIMESTAMPSTORETURN_BOTH;
+    uarequest.timestampsToReturn = static_cast<UA_TimestampsToReturn>(request.timestampsToReturn());
 
     if (releaseContinuationPoints)
         uarequest.releaseContinuationPoints = releaseContinuationPoints;

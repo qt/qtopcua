@@ -119,6 +119,15 @@ enum class EventNotifierBit : quint8 {
 Q_ENUM_NS(EventNotifierBit)
 Q_DECLARE_FLAGS(EventNotifier, EventNotifierBit)
 
+enum class TimestampsToReturn {
+    Source = 0,
+    Server = 1,
+    Both = 2,
+    Neither = 4,
+    Invalid = 5
+};
+Q_ENUM_NS(TimestampsToReturn)
+
 #if QT_VERSION >= 0x060000
 inline size_t qHash(const QOpcUa::NodeAttribute& attr)
 #else

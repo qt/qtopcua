@@ -203,6 +203,20 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QOpcUa::TimestampsToReturn
+    \since 6.7
+
+    This enum contains the options for timestamps to return for service calls.
+    It is specified in OPC UA 1.05, Part 4, 7.40.
+
+    \value Source Return the source timestamp
+    \value Server Return the server timestamp
+    \value Both Return the source and the server timestamp
+    \value Neither Return no timestamps
+    \value Invalid The invalid value specified by OPC UA
+*/
+
+/*!
     \fn inline uint QOpcUa::qHash(const QOpcUa::NodeAttribute& attr)
 
     Returns a \l QHash key for \a attr.

@@ -75,6 +75,7 @@ public:
     bool browse(const QOpcUaBrowseRequest &request);
 
     QOpcUaHistoryReadResponse *readHistoryRaw(const QDateTime &startTime, const QDateTime &endTime, quint32 numValues, bool returnBounds);
+    QOpcUaHistoryReadResponse *readHistoryRaw(const QDateTime &startTime, const QDateTime &endTime, quint32 numValues, bool returnBounds, QOpcUa::TimestampsToReturn timestampsToReturn);
 
 Q_SIGNALS:
     void attributeRead(QOpcUa::NodeAttributes attributes);

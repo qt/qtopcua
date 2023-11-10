@@ -807,7 +807,24 @@ QOpcUaHistoryReadResponse *QOpcUaNode::readHistoryRaw(const QDateTime &startTime
     if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
         return nullptr;
 
-    return d->m_impl->readHistoryRaw(startTime, endTime, numValues, returnBounds);
+    return d->m_impl->readHistoryRaw(startTime, endTime, numValues, returnBounds, QOpcUa::TimestampsToReturn::Both);
+}
+
+/*!
+    Starts a read history request for this node.
+    The additional \a timestampsToReturn parameter determines which timestamps will be
+    returned for each value.
+
+    \since 6.7
+*/
+QOpcUaHistoryReadResponse *QOpcUaNode::readHistoryRaw(const QDateTime &startTime, const QDateTime &endTime, quint32 numValues, bool returnBounds,
+                                                      QOpcUa::TimestampsToReturn timestampsToReturn)
+{
+    Q_D(QOpcUaNode);
+    if (d->m_client.isNull() || d->m_client->state() != QOpcUaClient::Connected)
+        return nullptr;
+
+    return d->m_impl->readHistoryRaw(startTime, endTime, numValues, returnBounds, timestampsToReturn);
 }
 
 QDebug operator<<(QDebug dbg, const QOpcUaNode &node)

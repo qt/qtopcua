@@ -155,13 +155,14 @@ bool QOpen62541Node::callMethod(const QString &methodNodeId, const QList<QOpcUa:
 }
 
 QOpcUaHistoryReadResponse *QOpen62541Node::readHistoryRaw(const QDateTime &startTime, const QDateTime &endTime,
-                                                          quint32 numValues, bool returnBounds)
+                                                          quint32 numValues, bool returnBounds,
+                                                          QOpcUa::TimestampsToReturn timestampsToReturn)
 {
     if (!m_client)
         return nullptr;
 
     return m_client->readHistoryData(QOpcUaHistoryReadRawRequest{{QOpcUaReadItem(m_nodeIdString)},
-                                                                 startTime, endTime, numValues, returnBounds});
+                                                                 startTime, endTime, numValues, returnBounds, timestampsToReturn});
 }
 
 bool QOpen62541Node::resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path)

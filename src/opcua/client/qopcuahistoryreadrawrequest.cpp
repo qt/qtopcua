@@ -29,6 +29,7 @@ public:
     quint32 numValuesPerNode;
     bool returnBounds;
     QList<QOpcUaReadItem> nodesToRead;
+    QOpcUa::TimestampsToReturn timestampsToReturn = QOpcUa::TimestampsToReturn::Both;
 };
 
 /*!
@@ -54,6 +55,26 @@ QOpcUaHistoryReadRawRequest::QOpcUaHistoryReadRawRequest(const QList<QOpcUaReadI
     data->numValuesPerNode = numValuesPerNode;
     data->returnBounds = returnBounds;
     data->nodesToRead = nodesToRead;
+}
+
+/*!
+    Constructs a QOpcUaHistoryReadRawRequest item with the given values.
+    The \a timestampsToReturn parameter determines the timestamps to return for each value.
+
+    \since 6.7
+*/
+QOpcUaHistoryReadRawRequest::QOpcUaHistoryReadRawRequest(const QList<QOpcUaReadItem> &nodesToRead,
+                                                         const QDateTime &startTimestamp, const QDateTime &endTimestamp,
+                                                         quint32 numValuesPerNode, bool returnBounds,
+                                                         QOpcUa::TimestampsToReturn timestampsToReturn)
+    : data(new QOpcUaHistoryReadRawRequestData)
+{
+    data->startTimestamp = startTimestamp;
+    data->endTimestamp = endTimestamp;
+    data->numValuesPerNode = numValuesPerNode;
+    data->returnBounds = returnBounds;
+    data->nodesToRead = nodesToRead;
+    data->timestampsToReturn = timestampsToReturn;
 }
 
 /*!
@@ -150,6 +171,22 @@ bool QOpcUaHistoryReadRawRequest::returnBounds() const
 void QOpcUaHistoryReadRawRequest::setReturnBounds(bool returnBounds)
 {
     data->returnBounds = returnBounds;
+}
+
+/*!
+    Returns the selected timestamps to return for each value.
+*/
+QOpcUa::TimestampsToReturn QOpcUaHistoryReadRawRequest::timestampsToReturn() const
+{
+    return data->timestampsToReturn;
+}
+
+/*!
+    Sets the selected timestamps to return for each value to \a timestampsToReturn.
+*/
+void QOpcUaHistoryReadRawRequest::setTimestampsToReturn(QOpcUa::TimestampsToReturn timestampsToReturn)
+{
+    data->timestampsToReturn = timestampsToReturn;
 }
 
 /*!
