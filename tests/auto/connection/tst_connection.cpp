@@ -113,8 +113,26 @@ void Tst_Connection::initTestCase()
 
         m_serverProcess.start(m_testServerPath);
         QVERIFY2(m_serverProcess.waitForStarted(), qPrintable(m_serverProcess.errorString()));
-        // Let the server come up
-        QTest::qSleep(2000);
+
+        QTest::qSleep(100);
+        socket.connectToHost(defaultHost, defaultPort);
+        if (!socket.waitForConnected(5000))
+        {
+            bool success = false;
+            for (int i = 0; i < 50; ++i) {
+                QTest::qSleep(100);
+                socket.connectToHost(defaultHost, defaultPort);
+                if (socket.waitForConnected(5000)) {
+                    success = true;
+                    break;
+                }
+            }
+
+            if (!success)
+                QFAIL("Server does not run");
+        }
+
+        socket.disconnectFromHost();
     }
     QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
     QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));

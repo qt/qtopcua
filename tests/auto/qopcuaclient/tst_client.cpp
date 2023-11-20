@@ -41,8 +41,6 @@ public:
         QSignalSpy disconnectedSpy(opcuaClient, &QOpcUaClient::disconnected);
         QSignalSpy stateSpy(opcuaClient, &QOpcUaClient::stateChanged);
 
-        QTest::qWait(500);
-
         opcuaClient->connectToEndpoint(endPoint);
         QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
 
@@ -767,10 +765,17 @@ void Tst_QOpcUaClient::initTestCase()
         socket.connectToHost(defaultHost, defaultPort);
         if (!socket.waitForConnected(5000))
         {
-            //Try a second time
-            QTest::qSleep(5000);
-            socket.connectToHost(defaultHost, defaultPort);
-            if (!socket.waitForConnected(5000))
+            bool success = false;
+            for (int i = 0; i < 50; ++i) {
+                QTest::qSleep(100);
+                socket.connectToHost(defaultHost, defaultPort);
+                if (socket.waitForConnected(5000)) {
+                    success = true;
+                    break;
+                }
+            }
+
+            if (!success)
                 QFAIL("Server does not run");
         }
 
@@ -1144,6 +1149,8 @@ void Tst_QOpcUaClient::writeMultipleAttributes()
     QSignalSpy writeSpy2(node.data(), &QOpcUaNode::attributeWritten);
     node->writeAttributes(map, QOpcUa::Types::QualifiedName);
     writeSpy2.wait(signalSpyTimeout);
+    if (writeSpy2.size() < 2)
+        writeSpy2.wait(signalSpyTimeout);
     QCOMPARE(writeSpy2.size(), 2);
     QCOMPARE(writeSpy2.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadNodeIdUnknown);
     QCOMPARE(writeSpy2.at(1).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadNodeIdUnknown);
@@ -3903,7 +3910,7 @@ void Tst_QOpcUaClient::subscriptionIndexRange()
     QCOMPARE(writeSpy.size(), 1);
     QCOMPARE(writeSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
     QCOMPARE(writeSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
-    dataChangeSpy.wait(signalSpyTimeout);
+    dataChangeSpy.wait(1000);
     QCOMPARE(dataChangeSpy.size(), 0);
 
     writeSpy.clear();
@@ -3951,7 +3958,8 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
     QCOMPARE(monitoringEnabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
 
     dataChangeSpy.wait(signalSpyTimeout); // Wait for the initial data change
-    attributeUpdatedSpy.wait(signalSpyTimeout);
+    if (attributeUpdatedSpy.empty())
+        attributeUpdatedSpy.wait(signalSpyTimeout);
     QCOMPARE(dataChangeSpy.size(), 1);
     QCOMPARE(attributeUpdatedSpy.size(), 1);
     dataChangeSpy.clear();
@@ -3960,7 +3968,8 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
     WRITE_VALUE_ATTRIBUTE(doubleWriteNode, 1.5, QOpcUa::Types::Double);
 
     dataChangeSpy.wait(signalSpyTimeout);
-    attributeUpdatedSpy.wait(signalSpyTimeout);
+    if (attributeUpdatedSpy.empty())
+        attributeUpdatedSpy.wait(signalSpyTimeout);
     QCOMPARE(dataChangeSpy.size(), 1); // Data change without filter
     QCOMPARE(attributeUpdatedSpy.size(), 1);
     QCOMPARE(doubleNode->attribute(QOpcUa::NodeAttribute::Value), 1.5);
@@ -3980,8 +3989,9 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
 
     WRITE_VALUE_ATTRIBUTE(doubleWriteNode, 2.0, QOpcUa::Types::Double);
 
-    dataChangeSpy.wait(signalSpyTimeout);
-    attributeUpdatedSpy.wait(signalSpyTimeout);
+    dataChangeSpy.wait(1000);
+    if (attributeUpdatedSpy.empty())
+        attributeUpdatedSpy.wait(100);
     QCOMPARE(dataChangeSpy.size(), 0); // Filter is active and delta is < 1
     QCOMPARE(attributeUpdatedSpy.size(), 0);
     attributeUpdatedSpy.clear();
@@ -3989,7 +3999,8 @@ void Tst_QOpcUaClient::subscriptionDataChangeFilter()
     WRITE_VALUE_ATTRIBUTE(doubleWriteNode, 3.0, QOpcUa::Types::Double);
 
     dataChangeSpy.wait(signalSpyTimeout);
-    attributeUpdatedSpy.wait(signalSpyTimeout);
+    if (attributeUpdatedSpy.empty())
+        attributeUpdatedSpy.wait(signalSpyTimeout);
     QCOMPARE(dataChangeSpy.size(), 1); // delta == 1, a data change is expected
     QCOMPARE(attributeUpdatedSpy.size(), 1);
     QCOMPARE(doubleNode->attribute(QOpcUa::NodeAttribute::Value), 3.0);
@@ -4041,7 +4052,7 @@ void Tst_QOpcUaClient::modifyPublishingMode()
 
     WRITE_VALUE_ATTRIBUTE(doubleNode, 3.0, QOpcUa::Types::Double);
 
-    dataChangeSpy.wait(signalSpyTimeout);
+    dataChangeSpy.wait(1000);
     QCOMPARE(dataChangeSpy.size(), 0);
 
     doubleNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
@@ -4092,7 +4103,7 @@ void Tst_QOpcUaClient::modifyMonitoringMode()
 
     WRITE_VALUE_ATTRIBUTE(doubleNode, 3.0, QOpcUa::Types::Double);
 
-    dataChangeSpy.wait(signalSpyTimeout);
+    dataChangeSpy.wait(1000);
     QCOMPARE(dataChangeSpy.size(), 0);
 
     doubleNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
@@ -4258,12 +4269,24 @@ void Tst_QOpcUaClient::checkMonitoredItemCleanup()
 
     readWriteNode.reset(); // Delete the node object
 
-    methodSpy.wait(signalSpyTimeout); // Give the backend some time to process the deletion request
-    methodSpy.clear();
-    serverNode->callMethod(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::Server_GetMonitoredItems), parameter);
-    methodSpy.wait(signalSpyTimeout);
-    QCOMPARE(methodSpy.size(), 1);
-    QCOMPARE(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
+    bool success = false;
+    for (int i = 0; i < 15; ++i) {
+        methodSpy.clear();
+        serverNode->callMethod(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::Server_GetMonitoredItems), parameter);
+        methodSpy.wait(signalSpyTimeout);
+        QCOMPARE(methodSpy.size(), 1);
+
+        if (methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>() != QOpcUa::UaStatusCode::BadSubscriptionIdInvalid) {
+            QTest::qWait(100);
+            continue;
+        }
+
+        QCOMPARE(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::BadSubscriptionIdInvalid);
+        success = true;
+        break;
+    }
+
+    QVERIFY(success);
 }
 
 void Tst_QOpcUaClient::checkAttributeUpdated()
@@ -4857,7 +4880,8 @@ void Tst_QOpcUaClient::addNamespace()
 
     opcuaClient->updateNamespaceArray();
     namespaceUpdatedSpy.wait(signalSpyTimeout);
-    namespaceChangedSpy.wait(signalSpyTimeout);
+    if (namespaceUpdatedSpy.size() != 2)
+        namespaceUpdatedSpy.wait(signalSpyTimeout);
     QVERIFY(namespaceUpdatedSpy.size() > 0);
     QCOMPARE(namespaceChangedSpy.size(), 1);
 
@@ -4866,7 +4890,10 @@ void Tst_QOpcUaClient::addNamespace()
     namespaceUpdatedSpy.clear();
     opcuaClient->updateNamespaceArray();
     namespaceUpdatedSpy.wait(signalSpyTimeout);
-    namespaceChangedSpy.wait(signalSpyTimeout);
+    // The signal is emitted roughly at the same time
+    // as namespaceArrayUpdated()
+    namespaceChangedSpy.wait(100);
+
     QCOMPARE(namespaceUpdatedSpy.size(), 1);
     QCOMPARE(namespaceChangedSpy.size(), 0);
 
@@ -4899,7 +4926,8 @@ void Tst_QOpcUaClient::addNamespace()
     QCOMPARE(QOpcUa::isSuccessStatus(methodSpy.at(0).at(2).value<QOpcUa::UaStatusCode>()), true);
 
     // Do not call updateNamespaceArray()
-    namespaceChangedSpy.wait(signalSpyTimeout);
+    if (namespaceChangedSpy.isEmpty())
+        namespaceChangedSpy.wait(signalSpyTimeout);
 
     QVERIFY(namespaceUpdatedSpy.size() > 0);
     QCOMPARE(namespaceChangedSpy.size(), 1);
@@ -4990,7 +5018,8 @@ void Tst_QOpcUaClient::eventSubscription()
     if (eventSpy.size() != 2)
         eventSpy.wait();
 
-    eventSpy2.wait();
+    if (eventSpy2.size() < 1)
+        eventSpy2.wait();
     if (eventSpy2.size() < 1)
         eventSpy2.wait();
 
@@ -5979,7 +6008,8 @@ void Tst_QOpcUaClient::connectionLost()
     stringNode->readAttributes(QOpcUa::NodeAttribute::BrowseName);
 
     readSpy.wait(signalSpyTimeout);
-    stateSpy.wait(15000); // open62541 uses a timeout of 5 seconds for service calls, better be safe.
+    if (stateSpy.empty())
+        stateSpy.wait(15000); // open62541 uses a timeout of 5 seconds for service calls, better be safe.
     QCOMPARE(readSpy.size(), 1);
     QVERIFY(readSpy.at(0).at(0).value<QOpcUa::NodeAttributes>() & QOpcUa::NodeAttribute::BrowseName);
 

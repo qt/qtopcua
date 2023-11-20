@@ -188,7 +188,26 @@ void Tst_QOpcUaSecurity::initTestCase()
         m_serverProcess.start(m_testServerPath);
         QVERIFY2(m_serverProcess.waitForStarted(), qPrintable(m_serverProcess.errorString()));
         // Let the server come up
-        QTest::qSleep(2000);
+
+        QTest::qSleep(100);
+        socket.connectToHost(defaultHost, defaultPort);
+        if (!socket.waitForConnected(5000))
+        {
+            bool success = false;
+            for (int i = 0; i < 50; ++i) {
+                QTest::qSleep(100);
+                socket.connectToHost(defaultHost, defaultPort);
+                if (socket.waitForConnected(5000)) {
+                    success = true;
+                    break;
+                }
+            }
+
+            if (!success)
+                QFAIL("Server does not run");
+        }
+
+        socket.disconnectFromHost();
     }
     QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
     QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
@@ -269,12 +288,11 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureUnencryptedKey()
 
     client->connectToEndpoint(endpoint);
     connectSpy.wait(signalSpyTimeout);
-    if (client->state() == QOpcUaClient::Connecting)
+    if (connectSpy.size() != 2)
         connectSpy.wait(signalSpyTimeout);
 
     QCOMPARE(connectSpy.size(), 2);
     QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connecting);
-    connectSpy.wait(signalSpyTimeout);
     QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connected);
 
     QCOMPARE(passwordRequestSpy, 0);
@@ -286,6 +304,8 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureUnencryptedKey()
     connectSpy.clear();
     client->disconnectFromEndpoint();
     connectSpy.wait(signalSpyTimeout);
+    if (connectSpy.size() != 2)
+        connectSpy.wait(signalSpyTimeout);
     QCOMPARE(connectSpy.size(), 2);
     QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Closing);
     QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Disconnected);
@@ -357,7 +377,7 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureEncryptedKey()
 
     client->connectToEndpoint(endpoint);
     connectSpy.wait(signalSpyTimeout);
-    if (client->state() == QOpcUaClient::Connecting)
+    if (connectSpy.size() != 2)
         connectSpy.wait(signalSpyTimeout);
 
     QCOMPARE(connectSpy.size(), 2);
@@ -373,6 +393,11 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureEncryptedKey()
     connectSpy.clear();
     client->disconnectFromEndpoint();
     connectSpy.wait(signalSpyTimeout);
+    // Sometimes, the first wait() only gets the first signal.
+    // Make the wait conditional because an unconditional second
+    // wait() would block for the full time if there is no signal.
+    if (connectSpy.size() != 2)
+        connectSpy.wait(signalSpyTimeout);
     QCOMPARE(connectSpy.size(), 2);
     QCOMPARE(connectSpy.at(0).at(0), QOpcUaClient::Closing);
     QCOMPARE(connectSpy.at(1).at(0), QOpcUaClient::Disconnected);
