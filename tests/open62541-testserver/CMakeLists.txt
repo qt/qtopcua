@@ -84,7 +84,7 @@ qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541 AN
 #)
 
 if (QT_FEATURE_open62541_security AND NOT QT_FEATURE_system_open62541)
-    find_package(WrapOpenSSL 1.1)
+    find_package(WrapOpenSSL 3.0)
 endif()
 
 qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541_security AND WrapOpenSSL_FOUND AND QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541

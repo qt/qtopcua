@@ -5,7 +5,7 @@
 if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows" OR NOT CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64"
         OR NOT CMAKE_SYSTEM_VERSION STREQUAL "10")
 
-    set(_qt_opcua_openssl_version "1.1")
+    set(_qt_opcua_openssl_version "3.0")
 
     # First make the openssl package and its targets available, without using qt_find_package.
     # This is needed because we can't set properties on not yet existing targets.

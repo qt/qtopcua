@@ -599,13 +599,8 @@ static LoadedOpenSsl loadOpenSsl()
 #define QT_SSL_SUFFIX
 #endif // !Q_PROCESSOR_x86_64
 
-#if QT_CONFIG(opensslv11)
-    tryToLoadOpenSslWin32Library(QLatin1String("libssl-1_1" QT_SSL_SUFFIX),
-                                 QLatin1String("libcrypto-1_1" QT_SSL_SUFFIX), result);
-#elif QT_CONFIG(opensslv30)
-    tryToLoadOpenSslWin32Library(QLatin1String("libssl-3" QT_SSL_SUFFIX),
-                                 QLatin1String("libcrypto-3" QT_SSL_SUFFIX), result);
-#endif
+tryToLoadOpenSslWin32Library(QLatin1String("libssl-3" QT_SSL_SUFFIX),
+                             QLatin1String("libcrypto-3" QT_SSL_SUFFIX), result);
 
 #undef QT_SSL_SUFFIX
 
@@ -673,7 +668,7 @@ static LoadedOpenSsl loadOpenSsl()
         libcrypto->unload();
     }
 
-#if !QT_CONFIG(opensslv11) | QT_CONFIG(opensslv30)
+#if QT_CONFIG(opensslv30)
     // first-and-half attempts: for OpenSSL 1.0 try to load some hardcoded sonames:
     // - "1.0.0" is the official upstream one
     // - "1.0.2" is found on some distributions (e.g. Debian) that patch OpenSSL
