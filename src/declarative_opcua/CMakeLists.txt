@@ -44,6 +44,7 @@ qt_internal_add_qml_module(DeclarativeOpcua
         Qt::Gui
         Qt::OpcUa
         Qt::Quick
+    NO_GENERATE_CPP_EXPORTS
 )
 
 # The file contains Q_OBJECT in a comment
