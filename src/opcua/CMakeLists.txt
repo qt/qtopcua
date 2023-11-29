@@ -91,7 +91,6 @@ qt_internal_add_module(OpcUa
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
         Qt::NetworkPrivate
-    GENERATE_CPP_EXPORTS
 )
 
 ## Scopes:
