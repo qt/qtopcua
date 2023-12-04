@@ -64,8 +64,8 @@ public:
     virtual QStringList supportedSecurityPolicies() const = 0;
     virtual QList<QOpcUaUserTokenPolicy::TokenType> supportedUserTokenTypes() const = 0;
 
-    virtual bool registerNodes(const QStringList &nodesToRegister);
-    virtual bool unregisterNodes(const QStringList &nodesToUnregister);
+    virtual bool registerNodes(const QStringList &nodesToRegister) = 0;
+    virtual bool unregisterNodes(const QStringList &nodesToUnregister) = 0;
 
     QOpcUaClient *m_client;
 

@@ -66,18 +66,6 @@ void QOpcUaClientImpl::connectBackendWithClient(QOpcUaBackend *backend)
     connect(backend, &QOpcUaBackend::unregisterNodesFinished, this, &QOpcUaClientImpl::unregisterNodesFinished);
 }
 
-bool QOpcUaClientImpl::registerNodes(const QStringList &nodesToRegister)
-{
-    Q_UNUSED(nodesToRegister);
-    return false;
-}
-
-bool QOpcUaClientImpl::unregisterNodes(const QStringList &nodesToUnregister)
-{
-    Q_UNUSED(nodesToUnregister);
-    return false;
-}
-
 void QOpcUaClientImpl::handleAttributesRead(quint64 handle, QList<QOpcUaReadResult> attr, QOpcUa::UaStatusCode serviceResult)
 {
     auto it = m_handles.constFind(handle);
