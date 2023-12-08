@@ -216,8 +216,6 @@ void MainWindow::findServers()
 
 void MainWindow::findServersComplete(const QList<QOpcUaApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode)
 {
-    QOpcUaApplicationDescription server;
-
     if (isSuccessStatus(statusCode)) {
         ui->servers->clear();
         for (const auto &server : servers) {
@@ -244,25 +242,15 @@ void MainWindow::getEndpoints()
 
 void MainWindow::getEndpointsComplete(const QList<QOpcUaEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode)
 {
-    int index = 0;
-    const std::array<const char *, 4> modes = {
-        "Invalid",
-        "None",
-        "Sign",
-        "SignAndEncrypt"
-    };
-
     if (isSuccessStatus(statusCode)) {
         mEndpointList = endpoints;
-        for (const auto &endpoint : endpoints) {
-            if (endpoint.securityMode() >= modes.size()) {
-                qWarning() << "Invalid security mode";
-                continue;
-            }
 
-            const QString EndpointName = QStringLiteral("%1 (%2)")
-                    .arg(endpoint.securityPolicy(), modes[endpoint.securityMode()]);
-            ui->endpoints->addItem(EndpointName, index++);
+        int index = 0;
+        for (const auto &endpoint : endpoints) {
+            const QString mode = QVariant::fromValue(endpoint.securityMode()).toString();
+            const QString endpointName = QStringLiteral("%1 (%2)")
+                    .arg(endpoint.securityPolicy(), mode);
+            ui->endpoints->addItem(endpointName, index++);
         }
     }
 
@@ -490,7 +478,6 @@ void MainWindow::handleReadHistoryDataFinished(QList<QOpcUaHistoryData> results,
                        << "source timestamp:" << results.at(i).result()[j].sourceTimestamp()
                        << "server timestamp:" <<  results.at(i).result()[j].serverTimestamp()
                        << "value:" << results.at(i).result()[j].value();
-
         }
     }
 }
