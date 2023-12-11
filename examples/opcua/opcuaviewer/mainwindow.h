@@ -4,12 +4,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QItemSelection>
-#include <QMainWindow>
 #include <QOpcUaClient>
-#include <QOpcUaGenericStructHandler>
 #include <QOpcUaHistoryData>
-#include <QOpcUaProvider>
+#include <QMainWindow>
 
 class OpcUaModel;
 
@@ -17,6 +14,8 @@ QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
 }
+class QOpcUaGenericStructHandler;
+class QOpcUaProvider;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow

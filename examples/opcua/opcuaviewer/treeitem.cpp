@@ -3,17 +3,9 @@
 
 #include "treeitem.h"
 #include "opcuamodel.h"
-#include <QOpcUaArgument>
-#include <QOpcUaAxisInformation>
-#include <QOpcUaClient>
-#include <QOpcUaComplexNumber>
-#include <QOpcUaDoubleComplexNumber>
-#include <QOpcUaEUInformation>
-#include <QOpcUaExtensionObject>
-#include <QOpcUaLocalizedText>
-#include <QOpcUaQualifiedName>
-#include <QOpcUaRange>
-#include <QOpcUaXValue>
+
+#include <QOpcUaGenericStructHandler>
+
 #include <QMetaEnum>
 #include <QPixmap>
 
@@ -21,15 +13,17 @@ using namespace Qt::Literals::StringLiterals;
 
 const int numberOfDisplayColumns = 8; // NodeId, Value, NodeClass, DataType, BrowseName, DisplayName, Description, Historizing
 
-TreeItem::TreeItem(OpcUaModel *model) : QObject(nullptr)
-  , mModel(model)
+TreeItem::TreeItem(OpcUaModel *model)
+    : QObject(nullptr)
+    , mModel(model)
 {
 }
 
-TreeItem::TreeItem(QOpcUaNode *node, OpcUaModel *model, TreeItem *parent) : QObject(parent)
-  , mOpcNode(node)
-  , mModel(model)
-  , mParentItem(parent)
+TreeItem::TreeItem(QOpcUaNode *node, OpcUaModel *model, TreeItem *parent)
+    : QObject(parent)
+    , mOpcNode(node)
+    , mModel(model)
+    , mParentItem(parent)
 {
     connect(mOpcNode.get(), &QOpcUaNode::attributeRead, this, &TreeItem::handleAttributes);
     connect(mOpcNode.get(), &QOpcUaNode::attributeUpdated, this, &TreeItem::handleAttributes);
@@ -42,8 +36,9 @@ TreeItem::TreeItem(QOpcUaNode *node, OpcUaModel *model, TreeItem *parent) : QObj
                             | QOpcUa::NodeAttribute::BrowseName
                             | QOpcUa::NodeAttribute::DisplayName
                             | QOpcUa::NodeAttribute::Historizing
-                            ))
+                            )) {
         qWarning() << "Reading attributes" << mOpcNode->nodeId() << "failed";
+    }
 }
 
 TreeItem::TreeItem(QOpcUaNode *node, OpcUaModel *model, const QOpcUaReferenceDescription &browsingData, TreeItem *parent) : TreeItem(node, model, parent)

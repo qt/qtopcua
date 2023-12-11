@@ -2,22 +2,21 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include "mainwindow.h"
-#include "opcuamodel.h"
-#include "certificatedialog.h"
 #include "ui_mainwindow.h"
+#include "certificatedialog.h"
+#include "opcuamodel.h"
+#include "treeitem.h"
+
+#include <QOpcUaAuthenticationInformation>
+#include <QOpcUaErrorState>
+#include <QOpcUaGenericStructHandler>
+#include <QOpcUaHistoryReadResponse>
+#include <QOpcUaProvider>
 
 #include <QApplication>
 #include <QDir>
 #include <QMessageBox>
 #include <QStandardPaths>
-#include <QTextCharFormat>
-#include <QTextBlock>
-#include <QOpcUaProvider>
-#include <QOpcUaAuthenticationInformation>
-#include <QOpcUaErrorState>
-#include <QOpcUaHistoryReadResponse>
-
-#include <QOpcUaHistoryReadRawRequest>
 
 using namespace Qt::Literals::StringLiterals;
 
