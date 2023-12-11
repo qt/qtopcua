@@ -4,14 +4,21 @@
 #ifndef TREEITEM_H
 #define TREEITEM_H
 
+#include <qopcuatype.h>
+#include <qopcuareferencedescription.h>
+
 #include <QObject>
-#include <QOpcUaEUInformation>
-#include <QOpcUaNode>
-#include <QOpcUaRange>
 
 #include <memory>
 
 class OpcUaModel;
+
+QT_BEGIN_NAMESPACE
+class QOpcUaEUInformation;
+class QOpcUaLocalizedText;
+class QOpcUaNode;
+class QOpcUaRange;
+QT_END_NAMESPACE
 
 class TreeItem : public QObject
 {

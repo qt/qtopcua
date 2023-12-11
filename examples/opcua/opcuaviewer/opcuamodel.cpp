@@ -3,11 +3,15 @@
 
 #include "opcuamodel.h"
 #include "treeitem.h"
+
 #include <QOpcUaClient>
-#include <QOpcUaNode>
 #include <QIcon>
 
 OpcUaModel::OpcUaModel(QObject *parent) : QAbstractItemModel(parent)
+{
+}
+
+OpcUaModel::~OpcUaModel()
 {
 }
 

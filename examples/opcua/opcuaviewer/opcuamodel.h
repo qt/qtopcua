@@ -4,22 +4,23 @@
 #ifndef OPCUAMODEL_H
 #define OPCUAMODEL_H
 
-#include "treeitem.h"
-
 #include <QAbstractItemModel>
-#include <QOpcUaClient>
-#include <QOpcUaNode>
-#include <QOpcUaGenericStructHandler>
 
 #include <memory>
 
 class TreeItem;
 
+QT_BEGIN_NAMESPACE
+class QOpcUaClient;
+class QOpcUaGenericStructHandler;
+QT_END_NAMESPACE
+
 class OpcUaModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    OpcUaModel(QObject *parent = nullptr);
+    explicit OpcUaModel(QObject *parent = nullptr);
+    ~OpcUaModel();
 
     void setOpcUaClient(QOpcUaClient *);
     void setGenericStructHandler(QOpcUaGenericStructHandler *handler);
