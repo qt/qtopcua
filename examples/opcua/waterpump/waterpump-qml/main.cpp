@@ -7,6 +7,8 @@
 #include <QDebug>
 #include <QProcess>
 
+using namespace Qt::StringLiterals;
+
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
@@ -40,7 +42,7 @@ int main(int argc, char *argv[])
     }
 
     QQmlApplicationEngine engine;
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+    engine.load(QUrl(u"qrc:/main.qml"_s));
     if (engine.rootObjects().isEmpty())
         return EXIT_FAILURE;
 
