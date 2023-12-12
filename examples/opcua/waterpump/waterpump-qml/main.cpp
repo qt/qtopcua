@@ -17,14 +17,19 @@ int main(int argc, char *argv[])
     QString serverExePath;
 #ifdef Q_OS_WIN
     #ifdef EXAMPLES_CMAKE_SPECIFIC_PATH
-        serverExePath = app.applicationDirPath().append("/../simulationserver/simulationserver.exe");
+        serverExePath = app.applicationDirPath()
+                            .append("/../simulationserver/simulationserver.exe");
     #elif QT_DEBUG
-        serverExePath = app.applicationDirPath().append("/../../simulationserver/debug/simulationserver.exe");
+        serverExePath = app.applicationDirPath()
+                            .append("/../../simulationserver/debug/simulationserver.exe");
     #else
-        serverExePath = app.applicationDirPath().append("/../../simulationserver/release/simulationserver.exe");
+        serverExePath = app.applicationDirPath()
+                            .append("/../../simulationserver/release/simulationserver.exe");
     #endif
 #elif defined(Q_OS_MACOS)
-    serverExePath = app.applicationDirPath().append("/../../../../simulationserver/simulationserver.app/Contents/MacOS/simulationserver");
+    serverExePath = app.applicationDirPath()
+                        .append("/../../../../simulationserver/simulationserver"
+                                    ".app/Contents/MacOS/simulationserver");
 #else
     serverExePath = app.applicationDirPath().append("/../simulationserver/simulationserver");
 #endif
