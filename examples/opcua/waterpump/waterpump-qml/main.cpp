@@ -1,11 +1,14 @@
 // Copyright (C) 2018 basysKom GmbH, opensource@basyskom.com
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QFile>
 #include <QDebug>
+#include <QFile>
+#include <QGuiApplication>
 #include <QProcess>
+#include <QQmlApplicationEngine>
+#include <QString>
+#include <QStringLiteral>
+#include <QUrl>
 
 int main(int argc, char *argv[])
 {
@@ -44,7 +47,7 @@ int main(int argc, char *argv[])
     if (engine.rootObjects().isEmpty())
         return EXIT_FAILURE;
 
-    const int exitCode = QCoreApplication::exec();
+    const int exitCode = app.exec();
     if (serverProcess.state() == QProcess::Running) {
 #ifndef Q_OS_WIN
         serverProcess.terminate();
