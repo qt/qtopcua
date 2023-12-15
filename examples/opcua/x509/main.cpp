@@ -18,18 +18,23 @@ int main(int argc, char **argv)
     Q_UNUSED(argv);
 
     // Generate RSA Key
+    //! [0]
     QOpcUaKeyPair key;
     key.generateRsaKey(QOpcUaKeyPair::RsaKeyStrength::Bits2048);
+    //! [0]
 
     // Save private key to file
+    //! [1]
     QByteArray keyData = key.privateKeyToByteArray(QOpcUaKeyPair::Cipher::Unencrypted, QString());
 
     QFile keyFile(u"privateKey.pem"_s);
     keyFile.open(QFile::WriteOnly);
     keyFile.write(keyData);
     keyFile.close();
+    //! [1]
 
     // Create a certificate signing request
+    //! [2]
     QOpcUaX509CertificateSigningRequest csr;
 
     // Set the subject of the certificate
@@ -40,6 +45,7 @@ int main(int argc, char **argv)
     dn.setEntry(QOpcUaX509DistinguishedName::Type::StateOrProvinceName, u"Berlin"_s);
     dn.setEntry(QOpcUaX509DistinguishedName::Type::OrganizationName, u"The Qt Company"_s);
     csr.setSubject(dn);
+    //! [2]
 
     // The subject alternative name extension is needed for OPC UA
     QOpcUaX509ExtensionSubjectAlternativeName *san = new QOpcUaX509ExtensionSubjectAlternativeName;
@@ -77,10 +83,14 @@ int main(int argc, char **argv)
     // 2. When there is no certificate authority you have to self-sign the request.
 
     // Option 1
+    //! [3]
     QByteArray certificateSigningRequestData = csr.createRequest(key);
+    //! [3]
 
     // Option 2
+    //! [4]
     QByteArray selfSignedCertificateData = csr.createSelfSignedCertificate(key);
+    //! [4]
 
     return 0;
 }

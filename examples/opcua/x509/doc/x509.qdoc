@@ -4,10 +4,32 @@
 /*!
     \example x509
     \ingroup qtopcua-examples
-    \title Qt OPC UA X509 Support Example
+    \title Qt OPC UA X509 Support
     \examplecategory {Data Processing & I/O}
     \brief Shows how to generate keys and certificate signing requests.
 
     This example shows how client applications can generate their own self-signed certificate
     or generate a certificate signing request.
+
+    \section1 Generating RSA key
+    At first, an RSA key is generated:
+    \snippet x509/main.cpp 0
+
+    The private key can be saved to a file for further usage:
+    \snippet x509/main.cpp 1
+
+    \section1 Generating certificate signing requests
+
+    Next, a certificate signing request is created. It is also necessary to set the subject
+    of the certificate and add all the extensions needed for OPC UA.
+    \snippet x509/main.cpp 2
+
+    Now there are two options: \br
+
+    1. When you need to get your certificate signing request signed by a certificate authority,
+    you have to use the request data.
+    \snippet x509/main.cpp 3
+
+    2. When there is no certificate authority, you have to self-sign the request.
+    \snippet x509/main.cpp 4
 */
