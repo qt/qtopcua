@@ -19,6 +19,8 @@
 
 #include <QOpcUaHistoryReadRawRequest>
 
+using namespace Qt::Literals::StringLiterals;
+
 static MainWindow *mainWindowGlobal = nullptr;
 static QtMessageHandler oldMessageHandler = nullptr;
 
@@ -50,11 +52,11 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &context, co
        message = QObject::tr("Debug");
        break;
    }
-   message += QLatin1String(": ");
+   message += ": "_L1;
    message += msg;
 
    const QString contextStr =
-       QStringLiteral(" (%1:%2, %3)").arg(context.file).arg(context.line).arg(context.function);
+       u" (%1:%2, %3)"_s.arg(context.file).arg(context.line).arg(context.function);
 
    // Logging messages from backends are sent from different threads and need to be
    // synchronized with the GUI thread.
@@ -248,8 +250,7 @@ void MainWindow::getEndpointsComplete(const QList<QOpcUaEndpointDescription> &en
         int index = 0;
         for (const auto &endpoint : endpoints) {
             const QString mode = QVariant::fromValue(endpoint.securityMode()).toString();
-            const QString endpointName = QStringLiteral("%1 (%2)")
-                    .arg(endpoint.securityPolicy(), mode);
+            const QString endpointName = u"%1 (%2)"_s.arg(endpoint.securityPolicy(), mode);
             ui->endpoints->addItem(endpointName, index++);
         }
     }
@@ -389,21 +390,21 @@ void MainWindow::showErrorDialog(QOpcUaErrorState *errorState)
     case QOpcUaErrorState::ConnectionStep::CertificateValidation: {
         CertificateDialog dlg(this);
         msg += tr("Server certificate validation failed with error 0x%1 (%2).\nClick 'Abort' to abort the connect, or 'Ignore' to continue connecting.")
-                  .arg(static_cast<ulong>(errorState->errorCode()), 8, 16, QLatin1Char('0')).arg(statuscode);
+                  .arg(static_cast<ulong>(errorState->errorCode()), 8, 16, '0'_L1).arg(statuscode);
         result = dlg.showCertificate(msg, m_endpoint.serverCertificate(), m_pkiConfig.trustListDirectory());
         errorState->setIgnoreError(result == 1);
     }
         break;
     case QOpcUaErrorState::ConnectionStep::OpenSecureChannel:
-        msg += tr("OpenSecureChannel failed with error 0x%1 (%2).").arg(errorState->errorCode(), 8, 16, QLatin1Char('0')).arg(statuscode);
+        msg += tr("OpenSecureChannel failed with error 0x%1 (%2).").arg(errorState->errorCode(), 8, 16, '0'_L1).arg(statuscode);
         QMessageBox::warning(this, tr("Connection Error"), msg);
         break;
     case QOpcUaErrorState::ConnectionStep::CreateSession:
-        msg += tr("CreateSession failed with error 0x%1 (%2).").arg(errorState->errorCode(), 8, 16, QLatin1Char('0')).arg(statuscode);
+        msg += tr("CreateSession failed with error 0x%1 (%2).").arg(errorState->errorCode(), 8, 16, '0'_L1).arg(statuscode);
         QMessageBox::warning(this, tr("Connection Error"), msg);
         break;
     case QOpcUaErrorState::ConnectionStep::ActivateSession:
-        msg += tr("ActivateSession failed with error 0x%1 (%2).").arg(errorState->errorCode(), 8, 16, QLatin1Char('0')).arg(statuscode);
+        msg += tr("ActivateSession failed with error 0x%1 (%2).").arg(errorState->errorCode(), 8, 16, '0'_L1).arg(statuscode);
         QMessageBox::warning(this, tr("Connection Error"), msg);
         break;
     }
