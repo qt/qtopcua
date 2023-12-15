@@ -60,33 +60,35 @@ QVariant OpcUaModel::data(const QModelIndex &index, int role) const
 
 QVariant OpcUaModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
+    using namespace Qt::Literals::StringLiterals;
+
     if (role != Qt::DisplayRole)
         return QVariant();
 
     if (orientation == Qt::Vertical)
-        return QStringLiteral("Row %1").arg(section);
+        return u"Row %1"_s.arg(section);
 
     switch (section) {
     case 0:
-        return QStringLiteral("BrowseName");
+        return u"BrowseName"_s;
     case 1:
-        return QStringLiteral("Value");
+        return u"Value"_s;
     case 2:
-        return QStringLiteral("NodeClass");
+        return u"NodeClass"_s;
     case 3:
-        return QStringLiteral("DataType");
+        return u"DataType"_s;
     case 4:
-        return QStringLiteral("NodeId");
+        return u"NodeId"_s;
     case 5:
-        return QStringLiteral("DisplayName");
+        return u"DisplayName"_s;
     case 6:
-        return QStringLiteral("Description");
+        return u"Description"_s;
     case 7:
-        return QStringLiteral("Historizing");
+        return u"Historizing"_s;
     default:
         break;
     }
-    return QStringLiteral("Column %1").arg(section);
+    return u"Column %1"_s.arg(section);
 }
 
 QModelIndex OpcUaModel::index(int row, int column, const QModelIndex &parent) const

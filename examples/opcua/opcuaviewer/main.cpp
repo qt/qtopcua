@@ -6,22 +6,24 @@
 #include <QCommandLineParser>
 #include <QCommandLineOption>
 
+using namespace Qt::Literals::StringLiterals;
+
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
-    QCoreApplication::setApplicationVersion(QLatin1String(QT_VERSION_STR));
-    QCoreApplication::setApplicationName(QLatin1String("Qt OpcUa Viewer"));
+    QCoreApplication::setApplicationVersion(QLatin1StringView(QT_VERSION_STR));
+    QCoreApplication::setApplicationName("Qt OpcUa Viewer"_L1);
 
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
-    parser.addPositionalArgument(QLatin1String("url"), QLatin1String("The url to open."));
+    parser.addPositionalArgument("url"_L1, "The url to open."_L1);
     parser.process(app);
 
     const auto positionalArguments = parser.positionalArguments();
-    const auto initialUrl = positionalArguments.value(0, QLatin1String("opc.tcp://localhost:48010"));
+    const auto initialUrl = positionalArguments.value(0, "opc.tcp://localhost:48010"_L1);
     MainWindow mainWindow(initialUrl.trimmed());
-    mainWindow.setWindowTitle(QLatin1String("Qt OPC UA viewer"));
+    mainWindow.setWindowTitle("Qt OPC UA viewer"_L1);
     mainWindow.show();
     return QCoreApplication::exec();
 }
