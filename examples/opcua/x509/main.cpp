@@ -1,14 +1,16 @@
 // Copyright (C) 2019 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
-#include <QOpcUaProvider>
 #include <QOpcUaKeyPair>
+#include <QOpcUaProvider>
 #include <QOpcUaX509CertificateSigningRequest>
-#include <QOpcUaX509ExtensionSubjectAlternativeName>
 #include <QOpcUaX509ExtensionBasicConstraints>
-#include <QOpcUaX509ExtensionKeyUsage>
 #include <QOpcUaX509ExtensionExtendedKeyUsage>
+#include <QOpcUaX509ExtensionKeyUsage>
+#include <QOpcUaX509ExtensionSubjectAlternativeName>
 #include <QFile>
+
+using namespace Qt::StringLiterals;
 
 int main(int argc, char **argv)
 {
@@ -22,7 +24,7 @@ int main(int argc, char **argv)
     // Save private key to file
     QByteArray keyData = key.privateKeyToByteArray(QOpcUaKeyPair::Cipher::Unencrypted, QString());
 
-    QFile keyFile("privateKey.pem");
+    QFile keyFile(u"privateKey.pem"_s);
     keyFile.open(QFile::WriteOnly);
     keyFile.write(keyData);
     keyFile.close();
@@ -32,17 +34,17 @@ int main(int argc, char **argv)
 
     // Set the subject of the certificate
     QOpcUaX509DistinguishedName dn;
-    dn.setEntry(QOpcUaX509DistinguishedName::Type::CommonName, "QtOpcUaViewer");
-    dn.setEntry(QOpcUaX509DistinguishedName::Type::CountryName, "DE");
-    dn.setEntry(QOpcUaX509DistinguishedName::Type::LocalityName, "Berlin");
-    dn.setEntry(QOpcUaX509DistinguishedName::Type::StateOrProvinceName, "Berlin");
-    dn.setEntry(QOpcUaX509DistinguishedName::Type::OrganizationName, "The Qt Company");
+    dn.setEntry(QOpcUaX509DistinguishedName::Type::CommonName, u"QtOpcUaViewer"_s);
+    dn.setEntry(QOpcUaX509DistinguishedName::Type::CountryName, u"DE"_s);
+    dn.setEntry(QOpcUaX509DistinguishedName::Type::LocalityName, u"Berlin"_s);
+    dn.setEntry(QOpcUaX509DistinguishedName::Type::StateOrProvinceName, u"Berlin"_s);
+    dn.setEntry(QOpcUaX509DistinguishedName::Type::OrganizationName, u"The Qt Company"_s);
     csr.setSubject(dn);
 
     // The subject alternative name extension is needed for OPC UA
     QOpcUaX509ExtensionSubjectAlternativeName *san = new QOpcUaX509ExtensionSubjectAlternativeName;
-    san->addEntry(QOpcUaX509ExtensionSubjectAlternativeName::Type::DNS, "foo.com");
-    san->addEntry(QOpcUaX509ExtensionSubjectAlternativeName::Type::URI, "urn:foo.com:The%20Qt%20Company:QtOpcUaViewer");
+    san->addEntry(QOpcUaX509ExtensionSubjectAlternativeName::Type::DNS, u"foo.com"_s);
+    san->addEntry(QOpcUaX509ExtensionSubjectAlternativeName::Type::URI, u"urn:foo.com:The%20Qt%20Company:QtOpcUaViewer"_s);
     san->setCritical(true);
     csr.addExtension(san);
 
@@ -75,7 +77,7 @@ int main(int argc, char **argv)
     // 2. When there is no certificate authority you have to self-sign the request.
 
     // Option 1
-    QByteArray certificateSigingRequestData = csr.createRequest(key);
+    QByteArray certificateSigningRequestData = csr.createRequest(key);
 
     // Option 2
     QByteArray selfSignedCertificateData = csr.createSelfSignedCertificate(key);
