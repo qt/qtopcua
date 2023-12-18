@@ -3,7 +3,8 @@
 
 #include "opcuamachinebackend.h"
 
-#include <QtQml>
+#include <QOpcUaProvider>
+#include <QQmlEngine>
 
 using namespace Qt::Literals::StringLiterals;
 

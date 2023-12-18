@@ -4,9 +4,8 @@
 #ifndef OPCUAMACHINEBACKEND_H
 #define OPCUAMACHINEBACKEND_H
 
-#include <QtOpcUa>
-
-#include <QObject>
+#include <QOpcUaClient>
+#include <QOpcUaNode>
 
 class OpcUaMachineBackend : public QObject
 {
