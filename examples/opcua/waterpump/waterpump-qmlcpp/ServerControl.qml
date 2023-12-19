@@ -11,6 +11,7 @@ RowLayout {
         Layout.fillWidth: true
         text: "opc.tcp://127.0.0.1:43344"
     }
+
     ComboBox {
         id: backendSelector
         model: uaBackend.backends
@@ -26,6 +27,7 @@ RowLayout {
                 uaBackend.connectToEndpoint(uaUrl.text, backendSelector.currentIndex)
         }
     }
+
     Button {
         text: "Reset simulation"
         enabled: uaBackend.connected

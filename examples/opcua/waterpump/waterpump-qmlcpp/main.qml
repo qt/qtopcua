@@ -17,10 +17,13 @@ Window {
         anchors.margins: 10
         anchors.fill: parent
         spacing: 45
+
         ServerControl {}
+
         TankSimulation {
             Layout.fillHeight: true
         }
+
         Text {
             id: messageText
             font.pointSize: 10

@@ -6,10 +6,12 @@ import OpcUaMachineBackend
 
 Rectangle {
     id: pump
+
     width: 40
     height: 40
     radius: width / 2
     color: uaBackend.machineState === OpcUaMachineBackend.MachineState.Pumping ? "#00BFFF" : "lightgrey"
+
     Rectangle {
         antialiasing: true
         width: height / 4
@@ -17,6 +19,7 @@ Rectangle {
         anchors.centerIn: parent
         color: "grey"
     }
+
     Rectangle {
         antialiasing: true
         width: pump.width * 0.75
@@ -24,9 +27,11 @@ Rectangle {
         anchors.centerIn: parent
         color: "grey"
     }
+
     Connections {
         target: uaBackend
-        onPercentFilledTank2Changed: {
+
+        function onPercentFilledTank2Changed(value) {
             if (uaBackend.machineState === OpcUaMachineBackend.MachineState.Pumping)
                 rotation += 15
         }
