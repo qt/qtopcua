@@ -9,15 +9,19 @@ import OpcUaMachineBackend
 Item {
     ColumnLayout {
         anchors.fill: parent
+        Layout.fillHeight: true
+
         Button {
             id: flushButton
             text: "Flush"
-            enabled: uaBackend.connected && uaBackend.machineState === OpcUaMachineBackend.MachineState.Idle && uaBackend.percentFilledTank2 > uaBackend.tank2TargetPercent
+            enabled: uaBackend.connected
+                     && uaBackend.machineState === OpcUaMachineBackend.MachineState.Idle
+                     && uaBackend.percentFilledTank2 > uaBackend.tank2TargetPercent
             onClicked: {
                 uaBackend.flushTank2()
             }
         }
-        Layout.fillHeight: true
+
         Tank {
             id: tank2
             Layout.fillHeight: true

@@ -11,21 +11,27 @@ Item {
 
     ColumnLayout {
         anchors.fill: parent
+
         RowLayout {
             Button {
                 id: startButton
                 text: "Start"
-                enabled: uaBackend.connected && uaBackend.machineState === OpcUaMachineBackend.MachineState.Idle &&
-                         uaBackend.percentFilledTank1 > 0 && uaBackend.percentFilledTank2 < uaBackend.tank2TargetPercent
+                enabled: uaBackend.connected
+                         && uaBackend.machineState === OpcUaMachineBackend.MachineState.Idle
+                         && uaBackend.percentFilledTank1 > 0
+                         && uaBackend.percentFilledTank2 < uaBackend.tank2TargetPercent
                 onClicked: uaBackend.startPump()
             }
+
             Button {
                 id: stopButton
                 text: "Stop"
-                enabled: uaBackend.connected && uaBackend.machineState === OpcUaMachineBackend.MachineState.Pumping
+                enabled: uaBackend.connected
+                         && uaBackend.machineState === OpcUaMachineBackend.MachineState.Pumping
                 onClicked: uaBackend.stopPump()
             }
         }
+
         Tank {
             id: tank1
             Layout.fillHeight: true

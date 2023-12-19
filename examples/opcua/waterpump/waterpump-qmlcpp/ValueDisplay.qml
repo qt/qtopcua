@@ -16,8 +16,11 @@ ColumnLayout {
     }
     Text {
         font.pointSize: 10
-        text: "<b>State:</b> " + (uaBackend.machineState === OpcUaMachineBackend.MachineState.Idle ?
-                                      "Idle" : (uaBackend.machineState === OpcUaMachineBackend.MachineState.Pumping ? "Pumping" : "Flushing"))
+        text: "<b>State:</b> "
+              + (uaBackend.machineState === OpcUaMachineBackend.MachineState.Idle
+                ? "Idle"
+                : (uaBackend.machineState === OpcUaMachineBackend.MachineState.Pumping ? "Pumping"
+                                                                                       : "Flushing"))
     }
     Text {
         font.pointSize: 10
