@@ -182,7 +182,8 @@ void OpcUaMethodNode::callMethod()
 
 void OpcUaMethodNode::handleObjectNodeIdChanged()
 {
-    m_objectNode->deleteLater();
+    if (m_objectNode)
+        m_objectNode->deleteLater();
     m_objectNode = new OpcUaNode(this);
     m_objectNode->setNodeId(m_objectNodeId);
     connect(m_objectNode, &OpcUaNode::readyToUseChanged, this, [this](){
