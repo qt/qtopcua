@@ -8,7 +8,6 @@
 
 #include <qopcuatype.h>
 
-#include <QtCore/QDateTime>
 #include <QtCore/QObject>
 #include <QtCore/QTimer>
 #include <QtCore/QVariant>

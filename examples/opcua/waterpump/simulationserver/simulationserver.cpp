@@ -2,15 +2,16 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR BSD-3-Clause
 
 #include "simulationserver.h"
+
 #include <qopen62541utils.h>
 #include <qopen62541valueconverter.h>
-#include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/QDebug>
 #include <QtCore/QLoggingCategory>
-#include <QtCore/QUuid>
 
 #include <cstring>
+
+using namespace Qt::Literals::StringLiterals;
 
 QT_BEGIN_NAMESPACE
 
@@ -70,8 +71,9 @@ void DemoServer::shutdown()
     }
 }
 
-UA_NodeId DemoServer::addObject(const QString &parent, const QString &nodeString, const QString &browseName,
-                                const QString &displayName, const QString &description, quint32 referenceType)
+UA_NodeId DemoServer::addObject(const QString &parent, const QString &nodeString,
+                                const QString &browseName, const QString &displayName,
+                                const QString &description, quint32 referenceType)
 {
     UA_NodeId resultNode;
     UA_ObjectAttributes oAttr = UA_ObjectAttributes_default;
@@ -84,7 +86,8 @@ UA_NodeId DemoServer::addObject(const QString &parent, const QString &nodeString
     UA_NodeId requestedNodeId = Open62541Utils::nodeIdFromQString(nodeString);
     UA_NodeId parentNodeId = Open62541Utils::nodeIdFromQString(parent);
 
-    UA_QualifiedName nodeBrowseName = UA_QUALIFIEDNAME_ALLOC(requestedNodeId.namespaceIndex, browseName.toUtf8().constData());
+    UA_QualifiedName nodeBrowseName = UA_QUALIFIEDNAME_ALLOC(requestedNodeId.namespaceIndex,
+                                                             browseName.toUtf8().constData());
 
     result = UA_Server_addObjectNode(m_server,
                                      requestedNodeId,
@@ -108,9 +111,9 @@ UA_NodeId DemoServer::addObject(const QString &parent, const QString &nodeString
     return resultNode;
 }
 
-UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &browseName,
-                                  const QString &displayName, const QVariant &value, QOpcUa::Types type,
-                                  quint32 referenceType)
+UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variableNode,
+                                  const QString &browseName, const QString &displayName,
+                                  const QVariant &value, QOpcUa::Types type, quint32 referenceType)
 {
     UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
@@ -120,7 +123,8 @@ UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variab
     attr.dataType = attr.value.type ? attr.value.type->typeId : UA_TYPES[UA_TYPES_BOOLEAN].typeId;
     attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
 
-    UA_QualifiedName variableName = UA_QUALIFIEDNAME_ALLOC(variableNodeId.namespaceIndex, browseName.toUtf8().constData());
+    UA_QualifiedName variableName = UA_QUALIFIEDNAME_ALLOC(variableNodeId.namespaceIndex,
+                                                           browseName.toUtf8().constData());
 
     UA_NodeId resultId;
     UA_StatusCode result = UA_Server_addVariableNode(m_server,
@@ -145,7 +149,12 @@ UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variab
     return resultId;
 }
 
-UA_StatusCode DemoServer::startPumpMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle, const UA_NodeId *methodId, void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize, const UA_Variant *input, size_t outputSize, UA_Variant *output)
+UA_StatusCode DemoServer::startPumpMethod(UA_Server *server,
+                                          const UA_NodeId *sessionId, void *sessionHandle,
+                                          const UA_NodeId *methodId, void *methodContext,
+                                          const UA_NodeId *objectId, void *objectContext,
+                                          size_t inputSize, const UA_Variant *input,
+                                          size_t outputSize, UA_Variant *output)
 {
     Q_UNUSED(server);
     Q_UNUSED(sessionId);
@@ -162,7 +171,9 @@ UA_StatusCode DemoServer::startPumpMethod(UA_Server *server, const UA_NodeId *se
 
     double targetValue = data->readTank2TargetValue();
 
-    if (data->m_state == MachineState::Idle && data->m_percentFilledTank1 > 0 && data->m_percentFilledTank2 < targetValue) {
+    if (data->m_state == MachineState::Idle
+        && data->m_percentFilledTank1 > 0
+        && data->m_percentFilledTank2 < targetValue) {
         qDebug() << "Start pumping";
         data->setState(MachineState::Pumping);
         data->m_machineTimer.start();
@@ -174,7 +185,12 @@ UA_StatusCode DemoServer::startPumpMethod(UA_Server *server, const UA_NodeId *se
     }
 }
 
-UA_StatusCode DemoServer::stopPumpMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle, const UA_NodeId *methodId, void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize, const UA_Variant *input, size_t outputSize, UA_Variant *output)
+UA_StatusCode DemoServer::stopPumpMethod(UA_Server *server,
+                                         const UA_NodeId *sessionId, void *sessionHandle,
+                                         const UA_NodeId *methodId, void *methodContext,
+                                         const UA_NodeId *objectId, void *objectContext,
+                                         size_t inputSize, const UA_Variant *input,
+                                         size_t outputSize, UA_Variant *output)
 {
     Q_UNUSED(server);
     Q_UNUSED(sessionId);
@@ -200,7 +216,12 @@ UA_StatusCode DemoServer::stopPumpMethod(UA_Server *server, const UA_NodeId *ses
     }
 }
 
-UA_StatusCode DemoServer::flushTank2Method(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle, const UA_NodeId *methodId, void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize, const UA_Variant *input, size_t outputSize, UA_Variant *output)
+UA_StatusCode DemoServer::flushTank2Method(UA_Server *server,
+                                           const UA_NodeId *sessionId, void *sessionHandle,
+                                           const UA_NodeId *methodId, void *methodContext,
+                                           const UA_NodeId *objectId, void *objectContext,
+                                           size_t inputSize, const UA_Variant *input,
+                                           size_t outputSize, UA_Variant *output)
 {
     Q_UNUSED(server);
     Q_UNUSED(sessionId);
@@ -230,7 +251,12 @@ UA_StatusCode DemoServer::flushTank2Method(UA_Server *server, const UA_NodeId *s
     }
 }
 
-UA_StatusCode DemoServer::resetMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle, const UA_NodeId *methodId, void *methodContext, const UA_NodeId *objectId, void *objectContext, size_t inputSize, const UA_Variant *input, size_t outputSize, UA_Variant *output)
+UA_StatusCode DemoServer::resetMethod(UA_Server *server,
+                                      const UA_NodeId *sessionId, void *sessionHandle,
+                                      const UA_NodeId *methodId, void *methodContext,
+                                      const UA_NodeId *objectId, void *objectContext,
+                                      size_t inputSize, const UA_Variant *input,
+                                      size_t outputSize, UA_Variant *output)
 {
     Q_UNUSED(server);
     Q_UNUSED(sessionId);
@@ -292,8 +318,9 @@ double DemoServer::readTank2TargetValue()
     return static_cast<double *>(var.data)[0];
 }
 
-UA_NodeId DemoServer::addMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description,
-                                const QString &browseName, const QString &displayName, UA_MethodCallback cb,
+UA_NodeId DemoServer::addMethod(const UA_NodeId &folder, const QString &variableNode,
+                                const QString &description, const QString &browseName,
+                                const QString &displayName, UA_MethodCallback cb,
                                 quint32 referenceType)
 {
     UA_NodeId methodNodeId = Open62541Utils::nodeIdFromQString(variableNode);
@@ -303,7 +330,8 @@ UA_NodeId DemoServer::addMethod(const UA_NodeId &folder, const QString &variable
     attr.description = UA_LOCALIZEDTEXT_ALLOC("en-US", description.toUtf8().constData());
     attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", displayName.toUtf8().constData());
     attr.executable = true;
-    UA_QualifiedName methodBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.namespaceIndex, browseName.toUtf8().constData());
+    UA_QualifiedName methodBrowseName = UA_QUALIFIEDNAME_ALLOC(methodNodeId.namespaceIndex,
+                                                               browseName.toUtf8().constData());
 
     UA_NodeId resultId;
     UA_StatusCode result = UA_Server_addMethodNode(m_server, methodNodeId, folder,
@@ -338,27 +366,97 @@ void DemoServer::launch()
          qFatal("Unexpected namespace index for Demo namespace");
      }
 
-     UA_NodeId machineObject = addObject(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::ObjectsFolder), "ns=2;s=Machine",
-                                         "Machine", "Machine", "The machine simulator", UA_NS0ID_ORGANIZES);
-     UA_NodeId tank1Object = addObject("ns=2;s=Machine", "ns=2;s=Machine.Tank1", "Tank1", "Tank 1");
-     UA_NodeId tank2Object = addObject("ns=2;s=Machine", "ns=2;s=Machine.Tank2", "Tank2", "Tank 2");
+     UA_NodeId machineObject = addObject(QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::ObjectsFolder),
+                                         u"ns=2;s=Machine"_s,
+                                         u"Machine"_s,
+                                         u"Machine"_s,
+                                         u"The machine simulator"_s,
+                                         UA_NS0ID_ORGANIZES);
 
-     m_percentFilledTank1Node = addVariable(tank1Object, "ns=2;s=Machine.Tank1.PercentFilled", "PercentFilled", "Tank 1 Fill Level", 100.0, QOpcUa::Types::Double);
-     m_percentFilledTank2Node = addVariable(tank2Object, "ns=2;s=Machine.Tank2.PercentFilled", "PercentFilled", "Tank 2 Fill Level", 0.0, QOpcUa::Types::Double);
-     m_tank2TargetPercentNode = addVariable(tank2Object, "ns=2;s=Machine.Tank2.TargetPercent", "TargetPercent", "Tank 2 Target Level", 0.0, QOpcUa::Types::Double);
-     m_tank2ValveStateNode = addVariable(tank2Object, "ns=2;s=Machine.Tank2.ValveState", "ValveState", "Tank 2 Valve State", false, QOpcUa::Types::Boolean);
-     m_machineStateNode = addVariable(machineObject, "ns=2;s=Machine.State", "State", "Machine State", static_cast<quint32>(MachineState::Idle), QOpcUa::Types::UInt32);
+     UA_NodeId tank1Object = addObject(u"ns=2;s=Machine"_s,
+                                       u"ns=2;s=Machine.Tank1"_s,
+                                       u"Tank1"_s,
+                                       u"Tank 1"_s);
+
+     UA_NodeId tank2Object = addObject(u"ns=2;s=Machine"_s,
+                                       u"ns=2;s=Machine.Tank2"_s,
+                                       u"Tank2"_s,
+                                       u"Tank 2"_s);
+
+     m_percentFilledTank1Node = addVariable(tank1Object,
+                                            u"ns=2;s=Machine.Tank1.PercentFilled"_s,
+                                            u"PercentFilled"_s,
+                                            u"Tank 1 Fill Level"_s,
+                                            100.0,
+                                            QOpcUa::Types::Double);
+
+     m_percentFilledTank2Node = addVariable(tank2Object,
+                                            u"ns=2;s=Machine.Tank2.PercentFilled"_s,
+                                            u"PercentFilled"_s,
+                                            u"Tank 2 Fill Level"_s,
+                                            0.0,
+                                            QOpcUa::Types::Double);
+
+     m_tank2TargetPercentNode = addVariable(tank2Object,
+                                            u"ns=2;s=Machine.Tank2.TargetPercent"_s,
+                                            u"TargetPercent"_s,
+                                            u"Tank 2 Target Level"_s,
+                                            0.0,
+                                            QOpcUa::Types::Double);
+
+     m_tank2ValveStateNode = addVariable(tank2Object,
+                                         u"ns=2;s=Machine.Tank2.ValveState"_s,
+                                         u"ValveState"_s,
+                                         u"Tank 2 Valve State"_s,
+                                         false,
+                                         QOpcUa::Types::Boolean);
+
+     m_machineStateNode = addVariable(machineObject,
+                                      u"ns=2;s=Machine.State"_s,
+                                      u"State"_s,
+                                      u"Machine State"_s,
+                                      static_cast<quint32>(MachineState::Idle),
+                                      QOpcUa::Types::UInt32);
+
      UA_NodeId tempId;
-     tempId = addVariable(machineObject, "ns=2;s=Machine.Designation", "Designation", "Machine Designation", "TankExample", QOpcUa::Types::String);
+     tempId = addVariable(machineObject,
+                          u"ns=2;s=Machine.Designation"_s,
+                          u"Designation"_s,
+                          u"Machine Designation"_s,
+                          u"TankExample"_s,
+                          QOpcUa::Types::String);
      UA_NodeId_clear(&tempId);
 
-     tempId = addMethod(machineObject, "ns=2;s=Machine.Start", "Starts the pump", "Start", "Start Pump", &startPumpMethod);
+     tempId = addMethod(machineObject,
+                        u"ns=2;s=Machine.Start"_s,
+                        u"Starts the pump"_s,
+                        u"Start"_s,
+                        u"Start Pump"_s,
+                        &startPumpMethod);
      UA_NodeId_clear(&tempId);
-     tempId = addMethod(machineObject, "ns=2;s=Machine.Stop", "Stops the pump", "Stop", "Stop Pump", &stopPumpMethod);
+
+     tempId = addMethod(machineObject,
+                        u"ns=2;s=Machine.Stop"_s,
+                        u"Stops the pump"_s,
+                        u"Stop"_s,
+                        u"Stop Pump"_s,
+                        &stopPumpMethod);
      UA_NodeId_clear(&tempId);
-     tempId = addMethod(machineObject, "ns=2;s=Machine.FlushTank2", "Flushes tank 2", "FlushTank2", "Flush Tank 2", &flushTank2Method);
+
+     tempId = addMethod(machineObject,
+                        u"ns=2;s=Machine.FlushTank2"_s,
+                        u"Flushes tank 2"_s,
+                        u"FlushTank2"_s,
+                        u"Flush Tank 2"_s,
+                        &flushTank2Method);
      UA_NodeId_clear(&tempId);
-     tempId = addMethod(machineObject, "ns=2;s=Machine.Reset", "Resets the simulation", "Reset", "Reset Simulation", &resetMethod);
+
+     tempId = addMethod(machineObject,
+                        u"ns=2;s=Machine.Reset"_s,
+                        u"Resets the simulation"_s,
+                        u"Reset"_s,
+                        u"Reset Simulation"_s,
+                        &resetMethod);
      UA_NodeId_clear(&tempId);
 
      UA_NodeId_clear(&machineObject);
@@ -368,7 +466,9 @@ void DemoServer::launch()
      QObject::connect(&m_machineTimer, &QTimer::timeout, this, [this]() {
 
          double targetValue = readTank2TargetValue();
-         if (m_state == MachineState::Pumping && m_percentFilledTank1 > 0 && m_percentFilledTank2 < targetValue) {
+         if (m_state == MachineState::Pumping
+             && m_percentFilledTank1 > 0
+             && m_percentFilledTank2 < targetValue) {
             setPercentFillTank1(m_percentFilledTank1 - 1);
             setPercentFillTank2(m_percentFilledTank2 + 1);
             if (qFuzzyIsNull(m_percentFilledTank1) || m_percentFilledTank2 >= targetValue) {
