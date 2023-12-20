@@ -49,7 +49,8 @@ navigation.qmltypespage = "Qt OPC UA QML Types"
 examplesinstallpath = opcua
 
 # Add a generic thumbnail to an example that has none
-manifestmeta.thumbnail.names += "QtOpcUa/Qt OPC UA X509 Support"
+manifestmeta.thumbnail.names += "QtOpcUa/Qt OPC UA X509 Support" \
+                                "QtOpcUa/Water Pump Simulation Server"
 
 # Highlighted examples in Data Processing & IO category
 manifestmeta.highlighted.names = "QtOpcUa/Water Pump"

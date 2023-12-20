@@ -1,0 +1,66 @@
+// Copyright (C) 2023 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \example waterpump/simulationserver
+    \ingroup qtopcua-examples
+    \title Water Pump Simulation Server
+    \examplecategory {Data Processing & I/O}
+    \brief An OPC UA server that implements a simple water pump machine simulation.
+
+    \e {Water Pump Simulation Server} is created using OPC UA for the \l{Water Pump} and \l {Qt Quick Water Pump} examples.
+
+    \section1 The Simulation
+    The OPC UA server runs a simulation of a machine
+    containing two tanks, a water pump, and a valve. Water can be pumped from the
+    first tank into the second tank and then be flushed from the second tank
+    by opening the valve. Both operations have a user-configurable setpoint,
+    allowing control over the amount of water pumped into or flushed from the second tank.
+
+    The following nodes exist on the server:
+
+    \table
+     \header
+         \li NodeId
+         \li Function
+     \row
+         \li ns=2;s=Machine
+         \li The folder containing the method and variable nodes for the machine
+     \row
+         \li ns=2;s=Machine.State
+         \li The state of the machine
+     \row
+         \li ns=2;s=Machine.Tank1.PercentFilled
+         \li The current fill status of the first tank
+     \row
+         \li ns=2;s=Machine.Tank2.PercentFilled
+         \li The current fill status of the second tank
+     \row
+         \li ns=2;s=Machine.Tank2.TargetPercent
+         \li The setpoint for pumping and flushing
+     \row
+         \li ns=2;s=Machine.Tank2.ValveState
+         \li The state of the valve of the second tank
+     \row
+         \li ns=2;s=Machine.Designation
+         \li A human readable designation of the machine for display purposes
+     \row
+         \li ns=2;s=Machine.Start
+         \li Call this method to start the pump
+     \row
+         \li ns=2;s=Machine.Stop
+         \li Call this method to stop the pump
+     \row
+         \li ns=2;s=Machine.FlushTank2
+         \li Call this method to flush tank 2
+     \row
+         \li ns=2;s=Machine.Reset
+         \li Call this method to reset the simulation
+    \endtable
+
+    All methods return \l {QOpcUa::UaStatusCode} {Good} in case of success and
+    \l {QOpcUa::UaStatusCode} {BadUserAccessDenied} if the operation is illegal
+    (for example, trying to start the pump if the first tank is empty).
+
+    \sa {Qt Quick Water Pump}, {Water Pump}
+*/
