@@ -17,10 +17,7 @@
     \image tankexample.png
 
     \section1 Building the Server
-    Before you can use the Water Pump examples, you need to build the \l
-    {https://code.qt.io/cgit/qt/qtopcua.git/tree/examples/opcua/waterpump/simulationserver}
-    {simulation server}.
-    The simulation server project resides next to the Water Pump examples.
+    Before you can use the Water Pump examples, you need to build the \l {Water Pump Simulation Server}.
     You can open and build it in QtCreator or from the terminal as usual.
 
     \section1 The Simulation
