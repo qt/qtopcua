@@ -10,10 +10,10 @@ QT_BEGIN_NAMESPACE
     \inmodule QtOpcUa
     \since 6.7
 
-    \brief This class models the OPC UA built-in type DiagnosticInfo.
+    \brief The QOpcUaDiagnosticInfo class models the OPC UA built-in type DiagnosticInfo.
 
     The DiagnosticInfo type is used to convey diagnostics for some operations
-    on the server. The qint32 type members refer to an index in the stringTable
+    on the server. The \l qint32 type members refer to an index in the stringTable
     field of the OPC UA response header which is currently not supported by
     Qt OPC UA.
 */
