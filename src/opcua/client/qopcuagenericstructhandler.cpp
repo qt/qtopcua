@@ -28,7 +28,7 @@ QT_BEGIN_NAMESPACE
     QOpcUaGenericStructHandler traverses the type hierarchy of a server by following the HasSubtype
     references starting from BaseDataType and reads the DataTypeDefinition attribute of the nodes.
 
-    For structured types where a \c QOpcUaStructureDefinition value is present in the DataTypeDefinition
+    For structured types where a \l QOpcUaStructureDefinition value is present in the DataTypeDefinition
     attribute, automatic decoding of extension objects containing them is available. Fields with a built-in
     type or a type where a C++ data class exists are deserialized to the corresponding Qt OPC UA type,
     other generic structs are serialized to a nested \l QOpcUaGenericStructValue.
