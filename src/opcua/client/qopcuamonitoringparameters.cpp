@@ -129,7 +129,7 @@ QT_BEGIN_NAMESPACE
     \value QueueSize
     \value DiscardOldest
     \value MonitoringMode
-    \value TriggeredItemIds
+    \value [since 6.7] TriggeredItemIds
 */
 
 /*!
