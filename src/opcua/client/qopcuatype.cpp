@@ -140,7 +140,7 @@ QT_BEGIN_NAMESPACE
     \value Historizing True if historical data is collected.
     \value Executable True if the node is currently executable. Only relevant for Method nodes.
     \value UserExecutable Same as Executable, but for the current user.
-    \value DataTypeDefinition The data type definition attribute of a data type node.
+    \value [since 6.7] DataTypeDefinition The data type definition attribute of a data type node.
 */
 
 /*!
