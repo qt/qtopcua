@@ -175,6 +175,8 @@ void QOpcUaHistoryReadRawRequest::setReturnBounds(bool returnBounds)
 
 /*!
     Returns the selected timestamps to return for each value.
+
+    \since 6.7
 */
 QOpcUa::TimestampsToReturn QOpcUaHistoryReadRawRequest::timestampsToReturn() const
 {
@@ -183,6 +185,8 @@ QOpcUa::TimestampsToReturn QOpcUaHistoryReadRawRequest::timestampsToReturn() con
 
 /*!
     Sets the selected timestamps to return for each value to \a timestampsToReturn.
+
+    \since 6.7
 */
 void QOpcUaHistoryReadRawRequest::setTimestampsToReturn(QOpcUa::TimestampsToReturn timestampsToReturn)
 {
