@@ -100,28 +100,28 @@ QT_BEGIN_NAMESPACE
             \li QOpcUaArgument
             \li Argument
         \row
-            \li QOpcUaDiagnosticInfo
+            \li QOpcUaDiagnosticInfo (since Qt 6.7)
             \li DiagnosticInfo
         \row
             \li QOpcUaApplicationRecordDataType
             \li ApplicationRecordDataType
         \row
-            \li QOpcUaStructureDefinition
+            \li QOpcUaStructureDefinition (since Qt 6.7)
             \li StructureDefintion
         \row
-            \li QOpcUaStructureField
+            \li QOpcUaStructureField (since Qt 6.7)
             \li StructureField
         \row
-            \li QOpcUaEnumDefinition
+            \li QOpcUaEnumDefinition (since Qt 6.7)
             \li EnumDefintion
         \row
-            \li QOpcUaEnumField
+            \li QOpcUaEnumField (since Qt 6.7)
             \li EnumField
         \row
-            \li QOpcUaVariant
+            \li QOpcUaVariant (since Qt 6.7)
             \li Variant
         \row
-            \li QOpcUaDataValue
+            \li QOpcUaDataValue (since Qt 6.7)
             \li DataValue
     \endtable
 */
