@@ -86,6 +86,8 @@ void QOpcUaDataValue::setValue(const QVariant &value)
 
 /*!
     Returns a QVariant containing this data value.
+
+    \since 6.7
 */
 QOpcUaDataValue::operator QVariant() const
 {
@@ -186,12 +188,14 @@ void QOpcUaDataValue::setServerPicoseconds(quint16 serverPicoseconds)
 
 /*!
     \fn bool QOpcUaDataValue::operator!=(const QOpcUaDataValue &lhs, const QOpcUaDataValue &rhs) noexcept
+    \since 6.7
 
     Returns \c true if \a lhs is not equal to \a rhs.
 */
 
 /*!
     \fn bool QOpcUaDataValue::operator==(const QOpcUaDataValue &lhs, const QOpcUaDataValue &rhs) noexcept
+    \since 6.7
 
     Returns \c true if \a lhs is equal to \a rhs.
 */
