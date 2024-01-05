@@ -8,7 +8,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QOpcUaGenericStructValue
     \inmodule QtOpcUa
-    \since 6.6
+    \since 6.7
 
     \brief Holds the value of a generic OPC UA structured type.
 
