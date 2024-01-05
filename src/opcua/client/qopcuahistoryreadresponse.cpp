@@ -45,7 +45,8 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QOpcUaHistoryReadResponse::readHistoryEventsFinished(const QList<QOpcUaHistoryEvent> &results, QOpcUa::UaStatusCode serviceResult);
+    \fn QOpcUaHistoryReadResponse::readHistoryEventsFinished(const QList<QOpcUaHistoryEvent> &results, QOpcUa::UaStatusCode serviceResult)
+    \since 6.7
 
     This signal is emitted when a historical event request is finished.
     The new history data and any previous data is returned in \a results and \a serviceResult indicates the state of the result.
