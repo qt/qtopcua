@@ -698,14 +698,14 @@ static LoadedOpenSsl loadOpenSsl()
     //    attempt, _after_ <bundle>/Contents/Frameworks has been searched.
     //  iOS does not ship a system libssl.dylib, libcrypto.dylib in the first place.
 # if defined(Q_OS_ANDROID)
-    // OpenSSL 1.1.x must be suffixed otherwise it will use the system libcrypto.so libssl.so which on API-21 are OpenSSL 1.0 not 1.1
+    // OpenSSL 3.x.x must be suffixed in order to be able to find the right OpenSSL libraries
     auto openSSLSuffix = [](const QByteArray &defaultSuffix = {}) {
         auto suffix = qgetenv("ANDROID_OPENSSL_SUFFIX");
         if (suffix.isEmpty())
             return defaultSuffix;
         return suffix;
     };
-    static QString suffix = QString::fromLatin1(openSSLSuffix("_1_1"));
+    static QString suffix = QString::fromLatin1(openSSLSuffix("_3"));
     libssl->setFileNameAndVersion(QLatin1String("ssl") + suffix, -1);
     libcrypto->setFileNameAndVersion(QLatin1String("crypto") + suffix, -1);
 # else
