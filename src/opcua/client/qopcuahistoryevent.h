@@ -13,7 +13,7 @@
 QT_BEGIN_NAMESPACE
 
 class QOpcUaHistoryEventData;
-QT_DECLARE_QSDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaHistoryEventData, Q_OPCUA_EXPORT)
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaHistoryEventData, Q_OPCUA_EXPORT)
 class QOpcUaHistoryEvent
 {
 public:
@@ -43,7 +43,7 @@ public:
         return !(lhs == rhs);
     }
 private:
-    QSharedDataPointer<QOpcUaHistoryEventData> data;
+    QExplicitlySharedDataPointer<QOpcUaHistoryEventData> data;
 };
 
 Q_DECLARE_SHARED(QOpcUaHistoryEvent)

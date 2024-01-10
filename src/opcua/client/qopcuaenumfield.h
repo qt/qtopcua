@@ -14,7 +14,7 @@ QT_BEGIN_NAMESPACE
 
 class QOpcUaEnumFieldData;
 
-QT_DECLARE_QSDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaEnumFieldData, Q_OPCUA_EXPORT)
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaEnumFieldData, Q_OPCUA_EXPORT)
 
 class QOpcUaEnumField
 {
@@ -48,11 +48,11 @@ public:
     Q_OPCUA_EXPORT void setName(const QString &name);
 
 private:
-    QSharedDataPointer<QOpcUaEnumFieldData> data;
+    QExplicitlySharedDataPointer<QOpcUaEnumFieldData> data;
 };
 
-QT_END_NAMESPACE
+Q_DECLARE_SHARED(QOpcUaEnumField)
 
-Q_DECLARE_METATYPE(QOpcUaEnumField)
+QT_END_NAMESPACE
 
 #endif // QOPCUAENUMFIELD_H

@@ -14,7 +14,7 @@ QT_BEGIN_NAMESPACE
 
 class QOpcUaVariantData;
 
-QT_DECLARE_QSDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaVariantData, Q_OPCUA_EXPORT)
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaVariantData, Q_OPCUA_EXPORT)
 
 class QOpcUaVariant
 {
@@ -75,13 +75,11 @@ public:
     Q_OPCUA_EXPORT operator QVariant() const;
 
 private:
-    QSharedDataPointer<QOpcUaVariantData> data;
+    QExplicitlySharedDataPointer<QOpcUaVariantData> data;
 };
 
 Q_DECLARE_SHARED(QOpcUaVariant)
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QOpcUaVariant)
 
 #endif // QOPCUAVARIANT_H

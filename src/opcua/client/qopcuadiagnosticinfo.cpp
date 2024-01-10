@@ -37,7 +37,7 @@ public:
     bool hasInnerDiagnosticInfo = false;
 };
 
-QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QOpcUaDiagnosticInfoData)
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QOpcUaDiagnosticInfoData)
 
 /*!
    Constructs a diagnostic info.
@@ -166,7 +166,10 @@ qint32 QOpcUaDiagnosticInfo::symbolicId() const
  */
 void QOpcUaDiagnosticInfo::setSymbolicId(qint32 newSymbolicId)
 {
-    data->symbolicId = newSymbolicId;
+    if (newSymbolicId != data->symbolicId) {
+        data.detach();
+        data->symbolicId = newSymbolicId;
+    }
 }
 
 /*!
@@ -182,7 +185,10 @@ bool QOpcUaDiagnosticInfo::hasSymbolicId() const
  */
 void QOpcUaDiagnosticInfo::setHasSymbolicId(bool newHasSymbolicId)
 {
-    data->hasSymbolicId = newHasSymbolicId;
+    if (newHasSymbolicId != data->hasSymbolicId) {
+        data.detach();
+        data->hasSymbolicId = newHasSymbolicId;
+    }
 }
 
 /*!
@@ -198,7 +204,10 @@ qint32 QOpcUaDiagnosticInfo::namespaceUri() const
  */
 void QOpcUaDiagnosticInfo::setNamespaceUri(qint32 newNamespaceUri)
 {
-    data->namespaceUri = newNamespaceUri;
+    if (newNamespaceUri != data->namespaceUri) {
+        data.detach();
+        data->namespaceUri = newNamespaceUri;
+    }
 }
 
 /*!
@@ -214,7 +223,10 @@ bool QOpcUaDiagnosticInfo::hasNamespaceUri() const
  */
 void QOpcUaDiagnosticInfo::setHasNamespaceUri(bool newHasNamespaceUri)
 {
-    data->hasNamespaceUri = newHasNamespaceUri;
+    if (newHasNamespaceUri != data->hasNamespaceUri) {
+        data.detach();
+        data->hasNamespaceUri = newHasNamespaceUri;
+    }
 }
 
 /*!
@@ -230,7 +242,10 @@ qint32 QOpcUaDiagnosticInfo::locale() const
  */
 void QOpcUaDiagnosticInfo::setLocale(qint32 newLocale)
 {
-    data->locale = newLocale;
+    if (newLocale != data->locale) {
+        data.detach();
+        data->locale = newLocale;
+    }
 }
 
 /*!
@@ -246,7 +261,10 @@ bool QOpcUaDiagnosticInfo::hasLocale() const
  */
 void QOpcUaDiagnosticInfo::setHasLocale(bool newHasLocale)
 {
-    data->hasLocale = newHasLocale;
+    if (newHasLocale != data->hasLocale) {
+        data.detach();
+        data->hasLocale = newHasLocale;
+    }
 }
 
 /*!
@@ -262,7 +280,10 @@ qint32 QOpcUaDiagnosticInfo::localizedText() const
  */
 void QOpcUaDiagnosticInfo::setLocalizedText(qint32 newLocalizedText)
 {
-    data->localizedText = newLocalizedText;
+    if (newLocalizedText != data->localizedText) {
+        data.detach();
+        data->localizedText = newLocalizedText;
+    }
 }
 
 /*!
@@ -278,7 +299,10 @@ bool QOpcUaDiagnosticInfo::hasLocalizedText() const
  */
 void QOpcUaDiagnosticInfo::setHasLocalizedText(bool newHasLocalizedText)
 {
-    data->hasLocalizedText = newHasLocalizedText;
+    if (newHasLocalizedText != data->hasLocalizedText) {
+        data.detach();
+        data->hasLocalizedText = newHasLocalizedText;
+    }
 }
 
 /*!
@@ -294,7 +318,10 @@ QString QOpcUaDiagnosticInfo::additionalInfo() const
  */
 void QOpcUaDiagnosticInfo::setAdditionalInfo(const QString &newAdditionalInfo)
 {
-    data->additionalInfo = newAdditionalInfo;
+    if (newAdditionalInfo != data->additionalInfo) {
+        data.detach();
+        data->additionalInfo = newAdditionalInfo;
+    }
 }
 
 /*!
@@ -310,7 +337,10 @@ bool QOpcUaDiagnosticInfo::hasAdditionalInfo() const
  */
 void QOpcUaDiagnosticInfo::setHasAdditionalInfo(bool newHasAdditionalInfo)
 {
-    data->hasAdditionalInfo = newHasAdditionalInfo;
+    if (newHasAdditionalInfo != data->hasAdditionalInfo) {
+        data.detach();
+        data->hasAdditionalInfo = newHasAdditionalInfo;
+    }
 }
 
 /*!
@@ -326,7 +356,10 @@ QOpcUa::UaStatusCode QOpcUaDiagnosticInfo::innerStatusCode() const
  */
 void QOpcUaDiagnosticInfo::setInnerStatusCode(QOpcUa::UaStatusCode newInnerStatusCode)
 {
-    data->innerStatusCode = newInnerStatusCode;
+    if (newInnerStatusCode != data->innerStatusCode) {
+        data.detach();
+        data->innerStatusCode = newInnerStatusCode;
+    }
 }
 
 /*!
@@ -342,7 +375,10 @@ bool QOpcUaDiagnosticInfo::hasInnerStatusCode() const
  */
 void QOpcUaDiagnosticInfo::setHasInnerStatusCode(bool newHasInnerStatusCode)
 {
-    data->hasInnerStatusCode = newHasInnerStatusCode;
+    if (newHasInnerStatusCode != data->hasInnerStatusCode) {
+        data.detach();
+        data->hasInnerStatusCode = newHasInnerStatusCode;
+    }
 }
 
 /*!
@@ -358,8 +394,10 @@ QOpcUaDiagnosticInfo QOpcUaDiagnosticInfo::innerDiagnosticInfo() const
  */
 QOpcUaDiagnosticInfo &QOpcUaDiagnosticInfo::innerDiagnosticInfoRef()
 {
-    if (!data->innerDiagnosticInfo.has_value())
+    if (!data->innerDiagnosticInfo.has_value()) {
+        data.detach();
         data->innerDiagnosticInfo = QOpcUaDiagnosticInfo();
+    }
 
     return data->innerDiagnosticInfo.value();
 }
@@ -369,7 +407,10 @@ QOpcUaDiagnosticInfo &QOpcUaDiagnosticInfo::innerDiagnosticInfoRef()
  */
 void QOpcUaDiagnosticInfo::setInnerDiagnosticInfo(const QOpcUaDiagnosticInfo &newInnerDiagnosticInfo)
 {
-    data->innerDiagnosticInfo = newInnerDiagnosticInfo;
+    if (newInnerDiagnosticInfo != data->innerDiagnosticInfo) {
+        data.detach();
+        data->innerDiagnosticInfo = newInnerDiagnosticInfo;
+    }
 }
 
 /*!
@@ -385,7 +426,10 @@ bool QOpcUaDiagnosticInfo::hasInnerDiagnosticInfo() const
  */
 void QOpcUaDiagnosticInfo::setHasInnerDiagnosticInfo(bool newHasInnerDiagnosticInfo)
 {
-    data->hasInnerDiagnosticInfo = newHasInnerDiagnosticInfo;
+    if (newHasInnerDiagnosticInfo != data->hasInnerDiagnosticInfo) {
+        data.detach();
+        data->hasInnerDiagnosticInfo = newHasInnerDiagnosticInfo;
+    }
 }
 
 QT_END_NAMESPACE

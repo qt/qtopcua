@@ -21,7 +21,7 @@ public:
     QList<QOpcUaEnumField> fields;
 };
 
-QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QOpcUaEnumDefinitionData);
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QOpcUaEnumDefinitionData);
 
 /*!
     Default constructs an enum definition with no parameters set.
@@ -120,7 +120,10 @@ QList<QOpcUaEnumField> QOpcUaEnumDefinition::fields() const
 */
 void QOpcUaEnumDefinition::setFields(const QList<QOpcUaEnumField> &fields)
 {
-    data->fields = fields;
+    if (fields != data->fields) {
+        data.detach();
+        data->fields = fields;
+    }
 }
 
 QT_END_NAMESPACE

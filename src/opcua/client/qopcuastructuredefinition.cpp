@@ -24,7 +24,7 @@ public:
     QList<QOpcUaStructureField> fields;
 };
 
-QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QOpcUaStructureDefinitionData);
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QOpcUaStructureDefinitionData);
 
 /*!
     Default constructs a structure definition with no parameters set.
@@ -126,7 +126,10 @@ QString QOpcUaStructureDefinition::defaultEncodingId() const
 */
 void QOpcUaStructureDefinition::setDefaultEncodingId(const QString &defaultEncodingId)
 {
-    data->defaultEncodingId = defaultEncodingId;
+    if (defaultEncodingId != data->defaultEncodingId) {
+        data.detach();
+        data->defaultEncodingId = defaultEncodingId;
+    }
 }
 
 /*!
@@ -142,7 +145,10 @@ QString QOpcUaStructureDefinition::baseDataType() const
 */
 void QOpcUaStructureDefinition::setBaseDataType(const QString &baseDataType)
 {
-    data->baseDataType = baseDataType;
+    if (baseDataType != data->baseDataType) {
+        data.detach();
+        data->baseDataType = baseDataType;
+    }
 }
 
 /*!
@@ -158,7 +164,10 @@ QOpcUaStructureDefinition::StructureType QOpcUaStructureDefinition::structureTyp
 */
 void QOpcUaStructureDefinition::setStructureType(const QOpcUaStructureDefinition::StructureType &structureType)
 {
-    data->structureType = structureType;
+    if (structureType != data->structureType) {
+        data.detach();
+        data->structureType = structureType;
+    }
 }
 
 /*!
@@ -174,7 +183,10 @@ QList<QOpcUaStructureField> QOpcUaStructureDefinition::fields() const
 */
 void QOpcUaStructureDefinition::setFields(const QList<QOpcUaStructureField> &fields)
 {
-    data->fields = fields;
+    if (fields != data->fields) {
+        data.detach();
+        data->fields = fields;
+    }
 }
 
 QT_END_NAMESPACE

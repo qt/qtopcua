@@ -12,7 +12,7 @@
 QT_BEGIN_NAMESPACE
 
 class QOpcUaGenericStructValueData;
-QT_DECLARE_QSDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaGenericStructValueData, Q_OPCUA_EXPORT)
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaGenericStructValueData, Q_OPCUA_EXPORT)
 class QOpcUaGenericStructValue {
 public:
     Q_OPCUA_EXPORT QOpcUaGenericStructValue();
@@ -51,11 +51,11 @@ public:
     friend QDebug Q_OPCUA_EXPORT operator<<(QDebug debug, const QOpcUaGenericStructValue &s);
 
 private:
-    QSharedDataPointer<QOpcUaGenericStructValueData> data;
+    QExplicitlySharedDataPointer<QOpcUaGenericStructValueData> data;
 };
 
-QT_END_NAMESPACE
+Q_DECLARE_SHARED(QOpcUaGenericStructValue)
 
-Q_DECLARE_METATYPE(QOpcUaGenericStructValue)
+QT_END_NAMESPACE
 
 #endif // QOPCUAGENERICSTRUCTVALUE_H
