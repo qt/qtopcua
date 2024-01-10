@@ -3,6 +3,7 @@
 
 
 if(NOT ANDROID)
+    add_subdirectory(cmake)
     add_subdirectory(qopcuaclient)
     add_subdirectory(connection)
     add_subdirectory(security)
