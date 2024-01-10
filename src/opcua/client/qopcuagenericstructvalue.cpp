@@ -69,7 +69,7 @@ public:
     QHash<QString, QVariant> fields;
 };
 
-QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QOpcUaGenericStructValueData)
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QOpcUaGenericStructValueData)
 
 /*!
    Constructs a generic struct value.
@@ -179,7 +179,10 @@ QString QOpcUaGenericStructValue::typeName() const
 */
 void QOpcUaGenericStructValue::setTypeName(const QString &typeName)
 {
-    data->typeName = typeName;
+    if (typeName != data->typeName) {
+        data.detach();
+        data->typeName = typeName;
+    }
 }
 
 /*!
@@ -195,7 +198,10 @@ QString QOpcUaGenericStructValue::typeId() const
 */
 void QOpcUaGenericStructValue::setTypeId(const QString &typeId)
 {
-    data->typeId = typeId;
+    if (typeId != data->typeId) {
+        data.detach();
+        data->typeId = typeId;
+    }
 }
 
 /*!
@@ -211,7 +217,10 @@ QOpcUaStructureDefinition QOpcUaGenericStructValue::structureDefinition() const
 */
 void QOpcUaGenericStructValue::setStructureDefinition(const QOpcUaStructureDefinition &structureDefinition)
 {
-    data->structureDefinition = structureDefinition;
+    if (structureDefinition != data->structureDefinition) {
+        data.detach();
+        data->structureDefinition = structureDefinition;
+    }
 }
 
 /*!
@@ -235,7 +244,10 @@ QHash<QString, QVariant> &QOpcUaGenericStructValue::fieldsRef()
 */
 void QOpcUaGenericStructValue::setFields(const QHash<QString, QVariant> &fields)
 {
-    data->fields = fields;
+    if (fields != data->fields) {
+        data.detach();
+        data->fields = fields;
+    }
 }
 
 /*!

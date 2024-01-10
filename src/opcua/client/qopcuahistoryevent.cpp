@@ -26,7 +26,7 @@ public:
     QString nodeId;
 };
 
-QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QOpcUaHistoryEventData)
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QOpcUaHistoryEventData)
 
 /*!
     Constructs an invalid  history event item.
@@ -102,8 +102,10 @@ QOpcUa::UaStatusCode QOpcUaHistoryEvent::statusCode() const
 */
 void QOpcUaHistoryEvent::setStatusCode(QOpcUa::UaStatusCode statusCode)
 {
-    data.detach();
-    data->statusCode = statusCode;
+    if (statusCode != data->statusCode) {
+        data.detach();
+        data->statusCode = statusCode;
+    }
 }
 
 /*!
@@ -144,8 +146,10 @@ QString QOpcUaHistoryEvent::nodeId() const
 */
 void QOpcUaHistoryEvent::setNodeId(const QString &nodeId)
 {
-    data.detach();
-    data->nodeId = nodeId;
+    if (nodeId != data->nodeId) {
+        data.detach();
+        data->nodeId = nodeId;
+    }
 }
 
 /*!

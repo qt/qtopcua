@@ -16,7 +16,7 @@ public:
     bool isArray = false;
 };
 
-QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QOpcUaVariantData)
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QOpcUaVariantData)
 
 /*!
     \class QOpcUaVariant
@@ -123,12 +123,8 @@ QOpcUaVariant::QOpcUaVariant(const QVariant &value, ValueType type, bool isArray
     Constructs a new OPC UA variant from \a other.
 */
 QOpcUaVariant::QOpcUaVariant(const QOpcUaVariant &other)
-    : data(new QOpcUaVariantData)
+    : data(other.data)
 {
-    data->value = other.data->value;
-    data->valueType = other.data->valueType;
-    data->arrayDimensions = other.data->arrayDimensions;
-    data->isArray = other.data->isArray;
 }
 
 /*!
@@ -173,10 +169,14 @@ QVariant QOpcUaVariant::value() const
 */
 void QOpcUaVariant::setValue(const QVariant &value, ValueType type, bool isArray, const QList<qint32> &arrayDimensions)
 {
-    data->value = value;
-    data->valueType = type;
-    data->isArray = isArray;
-    data->arrayDimensions = arrayDimensions;
+    if (value != data->value || type != data->valueType || isArray != data->isArray ||
+        arrayDimensions != data->arrayDimensions) {
+        data.detach();
+        data->value = value;
+        data->valueType = type;
+        data->isArray = isArray;
+        data->arrayDimensions = arrayDimensions;
+    }
 }
 
 /*!

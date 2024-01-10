@@ -11,7 +11,7 @@
 QT_BEGIN_NAMESPACE
 
 class QOpcUaDiagnosticInfoData;
-QT_DECLARE_QSDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaDiagnosticInfoData, Q_OPCUA_EXPORT)
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaDiagnosticInfoData, Q_OPCUA_EXPORT)
 class QOpcUaDiagnosticInfo {
 public:
     Q_OPCUA_EXPORT QOpcUaDiagnosticInfo();
@@ -74,11 +74,11 @@ public:
     Q_OPCUA_EXPORT void setHasInnerDiagnosticInfo(bool newHasInnerDiagnosticInfo);
 
 private:
-    QSharedDataPointer<QOpcUaDiagnosticInfoData> data;
+    QExplicitlySharedDataPointer<QOpcUaDiagnosticInfoData> data;
 };
 
-QT_END_NAMESPACE
+Q_DECLARE_SHARED(QOpcUaDiagnosticInfo)
 
-Q_DECLARE_METATYPE(QOpcUaDiagnosticInfo)
+QT_END_NAMESPACE
 
 #endif // QOPCUADIAGNOSTICINFO_H

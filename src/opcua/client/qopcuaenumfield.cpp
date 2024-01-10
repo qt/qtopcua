@@ -24,7 +24,7 @@ public:
     QString name;
 };
 
-QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QOpcUaEnumFieldData);
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QOpcUaEnumFieldData);
 
 /*!
     Default constructs an enum field with no parameters set.
@@ -123,7 +123,10 @@ qint64 QOpcUaEnumField::value() const
 */
 void QOpcUaEnumField::setValue(qint64 value)
 {
-    data->value = value;
+    if (value != data->value) {
+        data.detach();
+        data->value = value;
+    }
 }
 
 /*!
@@ -139,7 +142,10 @@ QOpcUaLocalizedText QOpcUaEnumField::displayName() const
 */
 void QOpcUaEnumField::setDisplayName(const QOpcUaLocalizedText &displayName)
 {
-    data->displayName = displayName;
+    if (!(displayName == data->displayName)) {
+        data.detach();
+        data->displayName = displayName;
+    }
 }
 
 /*!
@@ -155,7 +161,10 @@ QOpcUaLocalizedText QOpcUaEnumField::description() const
 */
 void QOpcUaEnumField::setDescription(const QOpcUaLocalizedText &description)
 {
-    data->description = description;
+    if (!(description == data->description)) {
+        data.detach();
+        data->description = description;
+    }
 }
 
 /*!
@@ -171,7 +180,10 @@ QString QOpcUaEnumField::name() const
 */
 void QOpcUaEnumField::setName(const QString &name)
 {
-    data->name = name;
+    if (name != data->name) {
+        data.detach();
+        data->name = name;
+    }
 }
 
 QT_END_NAMESPACE
