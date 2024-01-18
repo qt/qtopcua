@@ -102,6 +102,19 @@
         \li \l{Qt OPC UA C++ Classes}{C++ Classes}
         \li \l{Qt OPC UA QML Types}{QML Types}
     \endlist
+
+    \section1 Licenses and Attributions
+
+    Qt OPC UA is available under commercial licenses from \l{The Qt Company}.
+    In addition, it is available under free software licenses:
+    The \l{GNU Lesser General Public License, version 3}, or
+    the \l{GNU General Public License, version 2}.
+    See \l{Qt Licensing} for further details.
+
+    Furthermore, Qt OPC UA in Qt \QtVersion may contain third-party
+    modules under following permissive licenses:
+
+    \annotatedlist attributions-qtopcua
 */
 
 /*!
