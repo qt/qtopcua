@@ -34,61 +34,6 @@ QT_BEGIN_NAMESPACE
     \endcode
 
     If other parameters are required, they must be set using the setter methods.
-
-    \section1 Backend support
-    Not all parameters in this class are supported by all backends.
-    \table
-    \header
-    \li Parameter
-    \li Open62541 plugin
-    \row
-    \li PublishingInterval
-    \li X
-    \row
-    \li SamplingInterval
-    \li X
-    \row
-    \li LifetimeCount
-    \li X
-    \row
-    \li MaxKeepAliveCount
-    \li X
-    \row
-    \li Priority
-    \li X
-    \row
-    \li IndexRange
-    \li X
-    \row
-    \li Shared
-    \li X
-    \row
-    \li SubscriptionId
-    \li X
-    \row
-    \li PublishingEnabled
-    \li X
-    \row
-    \li Filter
-    \li X
-    \row
-    \li QueueSize
-    \li X
-    \row
-    \li DiscardOldest
-    \li X
-    \row
-    \li MonitoringMode
-    \li X
-    \row
-    \li IndexRange
-    \li X
-    \row
-    \li MaxNotificationsPerPublish
-    \li X
-    \li TriggeringItemId
-    \li X
-    \endtable
 */
 
 /*!
