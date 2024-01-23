@@ -29,6 +29,7 @@ class Tst_Connection: public QObject
 
 public:
     Tst_Connection();
+    ~Tst_Connection();
 
 private slots:
     void initTestCase();
@@ -56,6 +57,11 @@ private:
 Tst_Connection::Tst_Connection()
 {
     m_backends = QOpcUaProvider::availableBackends();
+}
+
+Tst_Connection::~Tst_Connection()
+{
+    qDeleteAll(m_clients);
 }
 
 void Tst_Connection::initTestCase()
@@ -209,6 +215,9 @@ void Tst_Connection::cleanupTestCase()
         m_serverProcess.kill();
         m_serverProcess.waitForFinished(2000);
     }
+
+    qDeleteAll(m_clients);
+    m_clients.clear();
 }
 
 int main(int argc, char *argv[])

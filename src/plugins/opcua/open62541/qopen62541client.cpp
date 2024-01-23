@@ -57,6 +57,8 @@ QOpen62541Client::~QOpen62541Client()
 {
     if (m_thread->isRunning())
         m_thread->quit();
+
+    m_thread->wait();
 }
 
 void QOpen62541Client::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
