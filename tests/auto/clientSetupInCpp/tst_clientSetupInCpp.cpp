@@ -31,6 +31,11 @@ public:
     MyClass (QObject* parent = nullptr) : QObject(parent) {
     }
 
+    ~MyClass() {
+        if (m_client)
+            delete m_client;
+    }
+
     QOpcUaClient *connection() const {
         return m_client;
     }
