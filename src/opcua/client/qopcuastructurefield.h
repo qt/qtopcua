@@ -14,7 +14,7 @@ QT_BEGIN_NAMESPACE
 
 class QOpcUaStructureFieldData;
 
-QT_DECLARE_QSDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaStructureFieldData, Q_OPCUA_EXPORT)
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaStructureFieldData, Q_OPCUA_EXPORT)
 
 class QOpcUaStructureField
 {
@@ -56,11 +56,11 @@ public:
     Q_OPCUA_EXPORT void setIsOptional(bool isOptional);
 
 private:
-    QSharedDataPointer<QOpcUaStructureFieldData> data;
+    QExplicitlySharedDataPointer<QOpcUaStructureFieldData> data;
 };
 
-QT_END_NAMESPACE
+Q_DECLARE_SHARED(QOpcUaStructureField)
 
-Q_DECLARE_METATYPE(QOpcUaStructureField)
+QT_END_NAMESPACE
 
 #endif // QOPCUASTRUCTUREFIELD_H

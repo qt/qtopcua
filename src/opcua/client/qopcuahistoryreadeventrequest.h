@@ -17,7 +17,7 @@
 QT_BEGIN_NAMESPACE
 
 class QOpcUaHistoryReadEventRequestData;
-QT_DECLARE_QSDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaHistoryReadEventRequestData, Q_OPCUA_EXPORT)
+QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaHistoryReadEventRequestData, Q_OPCUA_EXPORT)
 class QOpcUaHistoryReadEventRequest
 {
 public:
@@ -63,13 +63,11 @@ public:
     }
 
 private:
-    QSharedDataPointer<QOpcUaHistoryReadEventRequestData> data;
+    QExplicitlySharedDataPointer<QOpcUaHistoryReadEventRequestData> data;
 };
 
 Q_DECLARE_SHARED(QOpcUaHistoryReadEventRequest)
 
 QT_END_NAMESPACE
-
-Q_DECLARE_METATYPE(QOpcUaHistoryReadEventRequest)
 
 #endif // QHISTORYREADEVENTREQUEST_H
