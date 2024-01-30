@@ -27,7 +27,7 @@ public:
     bool isOptional = false;
 };
 
-QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QOpcUaStructureFieldData);
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QOpcUaStructureFieldData);
 
 /*!
     Constructs a structure field with \a valueRank.
@@ -133,7 +133,10 @@ QString QOpcUaStructureField::name() const
 */
 void QOpcUaStructureField::setName(const QString &name)
 {
-    data->name = name;
+    if (name != data->name) {
+        data.detach();
+        data->name = name;
+    }
 }
 
 /*!
@@ -149,7 +152,10 @@ QOpcUaLocalizedText QOpcUaStructureField::description() const
 */
 void QOpcUaStructureField::setDescription(const QOpcUaLocalizedText &description)
 {
-    data->description = description;
+    if (!(description == data->description)) {
+        data.detach();
+        data->description = description;
+    }
 }
 
 /*!
@@ -165,7 +171,10 @@ QString QOpcUaStructureField::dataType() const
 */
 void QOpcUaStructureField::setDataType(const QString &dataTypeId)
 {
-    data->dataType = dataTypeId;
+    if (dataTypeId != data->dataType) {
+        data.detach();
+        data->dataType = dataTypeId;
+    }
 }
 
 /*!
@@ -181,7 +190,10 @@ qint32 QOpcUaStructureField::valueRank() const
 */
 void QOpcUaStructureField::setValueRank(qint32 valueRank)
 {
-    data->valueRank = valueRank;
+    if (valueRank != data->valueRank) {
+        data.detach();
+        data->valueRank = valueRank;
+    }
 }
 
 /*!
@@ -197,7 +209,10 @@ QList<quint32> QOpcUaStructureField::arrayDimensions() const
 */
 void QOpcUaStructureField::setArrayDimensions(const QList<quint32> &arrayDimensions)
 {
-    data->arrayDimensions = arrayDimensions;
+    if (arrayDimensions != data->arrayDimensions) {
+        data.detach();
+        data->arrayDimensions = arrayDimensions;
+    }
 }
 
 /*!
@@ -213,7 +228,10 @@ quint32 QOpcUaStructureField::maxStringLength() const
 */
 void QOpcUaStructureField::setMaxStringLength(quint32 maxStringLength)
 {
-    data->maxStringLength = maxStringLength;
+    if (maxStringLength != data->maxStringLength) {
+        data.detach();
+        data->maxStringLength = maxStringLength;
+    }
 }
 
 /*!
@@ -229,7 +247,10 @@ bool QOpcUaStructureField::isOptional() const
 */
 void QOpcUaStructureField::setIsOptional(bool isOptional)
 {
-    data->isOptional = isOptional;
+    if (isOptional != data->isOptional) {
+        data.detach();
+        data->isOptional = isOptional;
+    }
 }
 
 QT_END_NAMESPACE

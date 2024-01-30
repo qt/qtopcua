@@ -31,7 +31,7 @@ public:
     QOpcUaMonitoringParameters::EventFilter filter;
 };
 
-QT_DEFINE_QSDP_SPECIALIZATION_DTOR(QOpcUaHistoryReadEventRequestData)
+QT_DEFINE_QESDP_SPECIALIZATION_DTOR(QOpcUaHistoryReadEventRequestData)
 
 /*!
     Constructs an invalid QOpcUaHistoryReadEventRequest.
@@ -113,10 +113,10 @@ QDateTime QOpcUaHistoryReadEventRequest::startTimestamp() const
 */
 void QOpcUaHistoryReadEventRequest::setStartTimestamp(const QDateTime &startTimestamp)
 {
-    if (data->startTimestamp == startTimestamp)
-        return;
-
-    data->startTimestamp = startTimestamp;
+    if (!(data->startTimestamp == startTimestamp)) {
+        data.detach();
+        data->startTimestamp = startTimestamp;
+    }
 }
 
 /*!
@@ -132,10 +132,10 @@ QDateTime QOpcUaHistoryReadEventRequest::endTimestamp() const
 */
 void QOpcUaHistoryReadEventRequest::setEndTimestamp(const QDateTime &endTimestamp)
 {
-    if (data->endTimestamp == endTimestamp)
-        return;
-
-    data->endTimestamp = endTimestamp;
+    if (!(data->endTimestamp == endTimestamp)) {
+        data.detach();
+        data->endTimestamp = endTimestamp;
+    }
 }
 
 /*!
@@ -152,10 +152,10 @@ quint32 QOpcUaHistoryReadEventRequest::numValuesPerNode() const
 */
 void QOpcUaHistoryReadEventRequest::setNumValuesPerNode(quint32 numValuesPerNode)
 {
-    if (data->numValuesPerNode == numValuesPerNode)
-        return;
-
-    data->numValuesPerNode = numValuesPerNode;
+    if (!(data->numValuesPerNode == numValuesPerNode)) {
+        data.detach();
+        data->numValuesPerNode = numValuesPerNode;
+    }
 }
 
 /*!
@@ -171,7 +171,10 @@ QOpcUaMonitoringParameters::EventFilter QOpcUaHistoryReadEventRequest::filter() 
 */
 void QOpcUaHistoryReadEventRequest::setFilter(const QOpcUaMonitoringParameters::EventFilter &filter)
 {
-    data->filter = filter;
+    if (!(filter == data->filter)) {
+        data.detach();
+        data->filter = filter;
+    }
 }
 
 /*!
@@ -187,7 +190,10 @@ QList<QOpcUaReadItem> QOpcUaHistoryReadEventRequest::nodesToRead() const
 */
 void QOpcUaHistoryReadEventRequest::setNodesToRead(const QList<QOpcUaReadItem> &nodesToRead)
 {
-    data->nodesToRead = nodesToRead;
+    if (nodesToRead != data->nodesToRead) {
+        data.detach();
+        data->nodesToRead = nodesToRead;
+    }
 }
 
 /*!
