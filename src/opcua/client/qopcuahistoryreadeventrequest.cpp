@@ -201,6 +201,7 @@ void QOpcUaHistoryReadEventRequest::setNodesToRead(const QList<QOpcUaReadItem> &
 */
 void QOpcUaHistoryReadEventRequest::addNodeToRead(const QOpcUaReadItem &nodeToRead)
 {
+    data.detach();
     data->nodesToRead.append(nodeToRead);
 }
 
