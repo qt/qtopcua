@@ -15,6 +15,36 @@
 
 QT_BEGIN_NAMESPACE
 
+class ManagedUaNodeId {
+private:
+    struct NodeIdDeleter {
+        void operator()(UA_NodeId* nodeId) const {
+            if (nodeId)
+                UA_NodeId_delete(nodeId);
+        }
+    };
+
+public:
+
+    ManagedUaNodeId(UA_NodeId nodeId)
+        : m_nodeId(std::shared_ptr<UA_NodeId>(UA_NodeId_new(), NodeIdDeleter()))
+    {
+        *m_nodeId = nodeId;
+    }
+
+    ManagedUaNodeId(const ManagedUaNodeId &other)
+        : m_nodeId(other.m_nodeId)
+    {}
+
+    operator const UA_NodeId() const
+    {
+        return *m_nodeId.get();
+    }
+
+private:
+    std::shared_ptr<UA_NodeId> m_nodeId;
+};
+
 class TestServer : public QObject
 {
     Q_OBJECT
@@ -28,20 +58,20 @@ public:
 #endif
 
     int registerNamespace(const QString &ns);
-    UA_NodeId addFolder(const QString &nodeString, const QString &displayName, const QString &description = QString());
-    UA_NodeId addObject(const UA_NodeId &folderId, int namespaceIndex, const QString &objectName = QString());
+    ManagedUaNodeId addFolder(const QString &nodeString, const QString &displayName, const QString &description = QString());
+    ManagedUaNodeId addObject(const UA_NodeId &folderId, int namespaceIndex, const QString &objectName = QString());
 
-    UA_NodeId addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
+    ManagedUaNodeId addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
                           QOpcUa::Types type, QList<quint32> arrayDimensions = QList<quint32>(), int valueRank = UA_VALUERANK_ANY,
                           bool enableHistorizing = false, quint32 historyNumValuesPerNode = 100);
-    UA_NodeId addVariableWithWriteMask(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
+    ManagedUaNodeId addVariableWithWriteMask(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
                           QOpcUa::Types type, quint32 writeMask);
-    UA_NodeId addEmptyArrayVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name);
+    ManagedUaNodeId addEmptyArrayVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name);
 
-    UA_NodeId addMultiplyMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
-    UA_NodeId addMultipleOutputArgumentsMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
-    UA_NodeId addAddNamespaceMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
-    UA_NodeId addNodeWithFixedTimestamp(const UA_NodeId &folder, const QString &nodeId, const QString &displayName);
+    ManagedUaNodeId addMultiplyMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
+    ManagedUaNodeId addMultipleOutputArgumentsMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
+    ManagedUaNodeId addAddNamespaceMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description);
+    ManagedUaNodeId addNodeWithFixedTimestamp(const UA_NodeId &folder, const QString &nodeId, const QString &displayName);
 
     UA_StatusCode addServerStatusTypeTestNodes(const UA_NodeId &parent);
 
@@ -92,7 +122,7 @@ public:
     UA_ServerConfig *m_config{nullptr};
     UA_Server *m_server{nullptr};
     UA_HistoryDataGathering m_gathering;
-
+    UA_HistoryDataBackend m_historyDataBackend;
 public slots:
     UA_StatusCode run(volatile bool *running);
 };

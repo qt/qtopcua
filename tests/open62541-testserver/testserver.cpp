@@ -36,10 +36,12 @@ Q_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541, "qt.opcua.testserver")
 
 TestServer::TestServer(QObject *parent) : QObject(parent)
 {
+    m_historyDataBackend = UA_HistoryDataBackend_Memory(1, 10);
 }
 
 TestServer::~TestServer()
 {
+    m_historyDataBackend.deleteMembers(&m_historyDataBackend);
     UA_Server_delete(m_server);
 }
 
@@ -79,9 +81,9 @@ static UA_ByteString loadFile(const QString &filePath) {
     if (!file.open(QFile::ReadOnly))
         return fileContents;
 
-    fileContents.length = file.size();
-    fileContents.data = (UA_Byte *)UA_malloc(fileContents.length * sizeof(UA_Byte));
-    if (!fileContents.data)
+    const auto allocResult = UA_ByteString_allocBuffer(&fileContents, file.size());
+
+    if (allocResult != UA_STATUSCODE_GOOD)
         return fileContents;
 
     if (file.read(reinterpret_cast<char*>(fileContents.data), fileContents.length) != static_cast<qint64>(fileContents.length)) {
@@ -124,8 +126,9 @@ bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
     const size_t trustListSize = trustedCerts.size();
     int i = 0;
 
-    UA_STACKARRAY(UA_ByteString, trustList, trustListSize);
-    UaArrayDeleter<UA_TYPES_BYTESTRING> trustListDeleter(&trustList, trustListSize);
+    // UA_STACKARRAY(UA_ByteString, trustList, trustListSize);
+    auto trustList = static_cast<UA_ByteString *>(UA_Array_new(trustListSize, &UA_TYPES[UA_TYPES_BYTESTRING]));
+    UaArrayDeleter<UA_TYPES_BYTESTRING> trustListDeleter(trustList, trustListSize);
 
     for (const auto &entry : trustedCerts) {
         trustList[i] = loadFile(trustDir.filePath(entry));
@@ -174,12 +177,6 @@ bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
         return false;
     }
 
-    // Do not delete items on success.
-    // They will be used by the server.
-    trustListDeleter.release();
-
-    // result = UA_ServerConfig_addAllSecurityPolicies(config, &certificate, &privateKey);
-
     // Add the security policies manually because we need to skip Basic128Rsa15 and Basic256
     // if OpenSSL doesn't support SHA-1 signatures (e.g. RHEL 9).
 
@@ -220,11 +217,6 @@ bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
         qWarning() << "Failed to add security policy Aes128Sha256RsaOaep";
         return false;
     }
-
-    // Do not delete items on success.
-    // They will be used by the server.
-    certificateDeleter.release();
-    privateKeyDeleter.release();
 
     result = UA_AccessControl_default(config, true, nullptr, usernamePasswordsSize, usernamePasswords);
 
@@ -280,7 +272,7 @@ int TestServer::registerNamespace(const QString &ns)
     return UA_Server_addNamespace(m_server, ns.toUtf8().constData());
 }
 
-UA_NodeId TestServer::addFolder(const QString &nodeString, const QString &displayName, const QString &description)
+ManagedUaNodeId TestServer::addFolder(const QString &nodeString, const QString &displayName, const QString &description)
 {
     UA_NodeId resultNode;
     UA_ObjectAttributes oAttr = UA_ObjectAttributes_default;
@@ -315,7 +307,7 @@ UA_NodeId TestServer::addFolder(const QString &nodeString, const QString &displa
     return resultNode;
 }
 
-UA_NodeId TestServer::addObject(const UA_NodeId &parentFolder, int namespaceIndex, const QString &objectName)
+ManagedUaNodeId TestServer::addObject(const UA_NodeId &parentFolder, int namespaceIndex, const QString &objectName)
 {
     UA_NodeId resultNode;
     UA_ObjectAttributes oAttr = UA_ObjectAttributes_default;
@@ -345,7 +337,7 @@ UA_NodeId TestServer::addObject(const UA_NodeId &parentFolder, int namespaceInde
     return resultNode;
 }
 
-UA_NodeId TestServer::addVariableWithWriteMask(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
+ManagedUaNodeId TestServer::addVariableWithWriteMask(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
                                   QOpcUa::Types type, quint32 writeMask)
 {
     UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
@@ -387,7 +379,7 @@ UA_NodeId TestServer::addVariableWithWriteMask(const UA_NodeId &folder, const QS
     return resultId;
 }
 
-UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
+ManagedUaNodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name, const QVariant &value,
                                   QOpcUa::Types type, QList<quint32> arrayDimensions, int valueRank, bool enableHistorizing, quint32 historyNumValuesPerNode)
 {
     UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
@@ -433,7 +425,7 @@ UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variab
 
     if (enableHistorizing) {
         UA_HistorizingNodeIdSettings setting;
-        setting.historizingBackend = UA_HistoryDataBackend_Memory(1, 10);
+        setting.historizingBackend = m_historyDataBackend;
         setting.maxHistoryDataResponseSize = historyNumValuesPerNode;
         setting.historizingUpdateStrategy = UA_HISTORIZINGUPDATESTRATEGY_VALUESET;
         result = m_gathering.registerNodeId(m_server, m_gathering.context, &resultId, setting);
@@ -454,7 +446,7 @@ UA_NodeId TestServer::addVariable(const UA_NodeId &folder, const QString &variab
     return resultId;
 }
 
-UA_NodeId TestServer::addEmptyArrayVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name)
+ManagedUaNodeId TestServer::addEmptyArrayVariable(const UA_NodeId &folder, const QString &variableNode, const QString &name)
 {
     UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
@@ -525,7 +517,7 @@ UA_StatusCode TestServer::multiplyMethod(UA_Server *server, const UA_NodeId *ses
     return UA_STATUSCODE_GOOD;
 }
 
-UA_NodeId TestServer::addMultiplyMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description)
+ManagedUaNodeId TestServer::addMultiplyMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description)
 {
     UA_NodeId methodNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
@@ -610,7 +602,7 @@ UA_StatusCode TestServer::multipleOutputArgumentsMethod(UA_Server *server, const
     return UA_STATUSCODE_GOOD;
 }
 
-UA_NodeId TestServer::addMultipleOutputArgumentsMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description)
+ManagedUaNodeId TestServer::addMultipleOutputArgumentsMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description)
 {
     UA_NodeId methodNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
@@ -674,7 +666,7 @@ UA_NodeId TestServer::addMultipleOutputArgumentsMethod(const UA_NodeId &folder, 
     return resultId;
 }
 
-UA_NodeId TestServer::addAddNamespaceMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description)
+ManagedUaNodeId TestServer::addAddNamespaceMethod(const UA_NodeId &folder, const QString &variableNode, const QString &description)
 {
     UA_NodeId methodNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
@@ -749,7 +741,7 @@ UA_StatusCode TestServer::addNamespaceMethod(UA_Server *server, const UA_NodeId 
     return UA_STATUSCODE_GOOD;
 }
 
-UA_NodeId TestServer::addNodeWithFixedTimestamp(const UA_NodeId &folder, const QString &nodeId, const QString &displayName)
+ManagedUaNodeId TestServer::addNodeWithFixedTimestamp(const UA_NodeId &folder, const QString &nodeId, const QString &displayName)
 {
     UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(nodeId);
 
@@ -773,6 +765,9 @@ UA_NodeId TestServer::addNodeWithFixedTimestamp(const UA_NodeId &folder, const Q
                                                      attr,
                                                      NULL,
                                                      &resultId);
+
+    UA_VariableAttributes_clear(&attr);
+    UA_NodeId_clear(&variableNodeId);
 
     if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Could not add variable:" << result;
@@ -825,7 +820,6 @@ UA_StatusCode TestServer::addServerStatusTypeTestNodes(const UA_NodeId &parent)
         variableName.namespaceIndex = variableNodeId.namespaceIndex;
         variableName.name = UA_STRING_STATIC("ServerStatusScalar");
 
-        UA_NodeId resultId;
         UA_StatusCode result = UA_Server_addVariableNode(m_server,
                                                          variableNodeId,
                                                          parent,
@@ -834,7 +828,7 @@ UA_StatusCode TestServer::addServerStatusTypeTestNodes(const UA_NodeId &parent)
                                                          UA_NODEID_NULL,
                                                          attr,
                                                          nullptr,
-                                                         &resultId);
+                                                         nullptr);
 
         UA_NodeId_clear(&variableNodeId);
         UA_VariableAttributes_clear(&attr);
@@ -869,7 +863,6 @@ UA_StatusCode TestServer::addServerStatusTypeTestNodes(const UA_NodeId &parent)
         variableName.namespaceIndex = variableNodeId.namespaceIndex;
         variableName.name = UA_STRING_STATIC("ServerStatusArray");
 
-        UA_NodeId resultId;
         UA_StatusCode result = UA_Server_addVariableNode(m_server,
                                                          variableNodeId,
                                                          parent,
@@ -878,7 +871,7 @@ UA_StatusCode TestServer::addServerStatusTypeTestNodes(const UA_NodeId &parent)
                                                          UA_NODEID_NULL,
                                                          attr,
                                                          nullptr,
-                                                         &resultId);
+                                                         nullptr);
 
         attr.arrayDimensionsSize = 0;
         attr.arrayDimensions = nullptr;
@@ -920,7 +913,6 @@ UA_StatusCode TestServer::addServerStatusTypeTestNodes(const UA_NodeId &parent)
         variableName.namespaceIndex = variableNodeId.namespaceIndex;
         variableName.name = UA_STRING_STATIC("ServerStatusMultiDimensionalArray");
 
-        UA_NodeId resultId;
         UA_StatusCode result = UA_Server_addVariableNode(m_server,
                                                          variableNodeId,
                                                          parent,
@@ -929,7 +921,7 @@ UA_StatusCode TestServer::addServerStatusTypeTestNodes(const UA_NodeId &parent)
                                                          UA_NODEID_NULL,
                                                          attr,
                                                          nullptr,
-                                                         &resultId);
+                                                         nullptr);
 
         attr.arrayDimensionsSize = 0;
         attr.arrayDimensions = nullptr;
@@ -1164,6 +1156,7 @@ UA_StatusCode TestServer::addEventTrigger(const UA_NodeId &parent)
                                      methodAttr, &generateEventCallback,
                                      1, &severityArgument, 0, nullptr, nullptr, nullptr);
 
+    UA_NodeId_clear(&eventTriggerMethodId);
     UA_QualifiedName_clear(&browseName);
     UA_MethodAttributes_clear(&methodAttr);
     UA_Argument_clear(&severityArgument);
@@ -1191,32 +1184,31 @@ UA_StatusCode TestServer::addEncoderTestModel()
     config->customDataTypes = &customTypes;
 
     {
-        UA_QtTestStructType data;
-        UA_QtTestStructType_init(&data);
+        auto data = UA_QtTestStructType_new();
 
-        data.enumMember = UA_QTTESTENUMERATION_FIRSTOPTION;
-        data.int64ArrayMemberSize = 3;
-        data.int64ArrayMember = static_cast<UA_Int64 *>(UA_Array_new(3, &UA_TYPES[UA_TYPES_INT64]));
-        data.int64ArrayMember[0] = std::numeric_limits<qint64>::max();
-        data.int64ArrayMember[1] = std::numeric_limits<qint64>::max() - 1;
-        data.int64ArrayMember[2] = std::numeric_limits<qint64>::min();
+        data->enumMember = UA_QTTESTENUMERATION_FIRSTOPTION;
+        data->int64ArrayMemberSize = 3;
+        data->int64ArrayMember = static_cast<UA_Int64 *>(UA_Array_new(3, &UA_TYPES[UA_TYPES_INT64]));
+        data->int64ArrayMember[0] = std::numeric_limits<qint64>::max();
+        data->int64ArrayMember[1] = std::numeric_limits<qint64>::max() - 1;
+        data->int64ArrayMember[2] = std::numeric_limits<qint64>::min();
 
-        data.stringMember = UA_STRING_ALLOC("TestString");
-        data.localizedTextMember = UA_LOCALIZEDTEXT_ALLOC("en", "TestText");
-        data.qualifiedNameMember = UA_QUALIFIEDNAME_ALLOC(1, "TestName");
+        data->stringMember = UA_STRING_ALLOC("TestString");
+        data->localizedTextMember = UA_LOCALIZEDTEXT_ALLOC("en", "TestText");
+        data->qualifiedNameMember = UA_QUALIFIEDNAME_ALLOC(1, "TestName");
 
-        data.nestedStructMember.doubleSubtypeMember = 42;
+        data->nestedStructMember.doubleSubtypeMember = 42;
 
-        data.nestedStructArrayMemberSize = 2;
-        data.nestedStructArrayMember = static_cast<UA_QtInnerTestStructType *>(
+        data->nestedStructArrayMemberSize = 2;
+        data->nestedStructArrayMember = static_cast<UA_QtInnerTestStructType *>(
             UA_Array_new(2, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTINNERTESTSTRUCTTYPE]));
 
-        data.nestedStructArrayMember[0].doubleSubtypeMember = 23.0;
-        data.nestedStructArrayMember[1].doubleSubtypeMember = 42.0;
+        data->nestedStructArrayMember[0].doubleSubtypeMember = 23.0;
+        data->nestedStructArrayMember[1].doubleSubtypeMember = 42.0;
 
         UA_Variant var;
         UA_Variant_init(&var);
-        UA_Variant_setScalarCopy(&var, &data, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTTYPE]);
+        UA_Variant_setScalar(&var, data, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTTESTSTRUCTTYPE]);
 
         result = UA_Server_writeValue(m_server, UA_NODEID_NUMERIC(4, UA_QTOPCUATESTMODELID_DECODERTESTNODES_NESTEDSTRUCT), var);
         UA_Variant_clear(&var);
@@ -1268,16 +1260,15 @@ UA_StatusCode TestServer::addEncoderTestModel()
     }
 
     {
-        UA_QtStructWithOptionalFieldType data;
-        UA_QtStructWithOptionalFieldType_init(&data);
+        auto data = UA_QtStructWithOptionalFieldType_new();
 
-        data.mandatoryMember =  42.0;
-        data.optionalMember = UA_Double_new();
-        *data.optionalMember = 23.0;
+        data->mandatoryMember =  42.0;
+        data->optionalMember = UA_Double_new();
+        *data->optionalMember = 23.0;
 
         UA_Variant var;
         UA_Variant_init(&var);
-        UA_Variant_setScalarCopy(&var, &data, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTSTRUCTWITHOPTIONALFIELDTYPE]);
+        UA_Variant_setScalar(&var, data, &UA_TYPES_QTOPCUATESTMODEL[UA_TYPES_QTOPCUATESTMODEL_QTSTRUCTWITHOPTIONALFIELDTYPE]);
 
         result = UA_Server_writeValue(m_server, UA_NODEID_NUMERIC(4, UA_QTOPCUATESTMODELID_DECODERTESTNODES_STRUCTWITHOPTIONALFIELD), var);
         UA_Variant_clear(&var);
@@ -1437,6 +1428,8 @@ UA_StatusCode TestServer::addEventHistorian(const UA_NodeId &parent)
     auto result = UA_Server_addObjectNode(m_server, objectId, parent, UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
                                           UA_QualifiedName{2, UA_STRING_STATIC("EventHistorian")},
                                           UA_NODEID_NUMERIC(0, UA_NS0ID_BASEOBJECTTYPE), attr, this, nullptr);
+
+    UA_NodeId_clear(&objectId);
 
     if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Failed to add event historian object:" << UA_StatusCode_name(result);
