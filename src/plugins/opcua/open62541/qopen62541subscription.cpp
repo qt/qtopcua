@@ -470,7 +470,7 @@ void QOpen62541Subscription::monitoredValueUpdated(UA_UInt32 monId, UA_DataValue
         res.setServerTimestamp(QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&value->serverTimestamp));
     if (value->hasSourceTimestamp)
         res.setSourceTimestamp(QOpen62541ValueConverter::scalarToQt<QDateTime, UA_DateTime>(&value->sourceTimestamp));
-    res.setStatusCode(QOpcUa::UaStatusCode::Good);
+    res.setStatusCode(value->hasStatus ? QOpcUa::UaStatusCode(value->status) : QOpcUa::UaStatusCode::Good);
     emit m_backend->dataChangeOccurred(item.value()->handle, res);
 }
 

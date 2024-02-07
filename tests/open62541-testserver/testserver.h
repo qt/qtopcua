@@ -50,6 +50,8 @@ public:
 
     UA_StatusCode addEncoderTestModel();
 
+    UA_StatusCode addUnreadableVariableNode(const UA_NodeId &parent);
+
     static UA_StatusCode multiplyMethod(UA_Server *server, const UA_NodeId *sessionId, void *sessionHandle,
                                             const UA_NodeId *methodId, void *methodContext,
                                             const UA_NodeId *objectId, void *objectContext,

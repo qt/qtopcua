@@ -1374,6 +1374,33 @@ UA_StatusCode TestServer::addEncoderTestModel()
     return result;
 }
 
+UA_StatusCode TestServer::addUnreadableVariableNode(const UA_NodeId &parent)
+{
+    UA_VariableAttributes attr = UA_VariableAttributes_default;
+    attr.value = QOpen62541ValueConverter::toOpen62541Variant(42, QOpcUa::Int32);
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", "VariableWithoutReadPermission");
+    attr.dataType = attr.value.type->typeId;
+    attr.accessLevel = UA_ACCESSLEVELMASK_WRITE; // Write only
+
+    UA_QualifiedName variableName;
+    variableName.namespaceIndex = parent.namespaceIndex;
+    variableName.name = attr.displayName.text;
+
+    auto nodeId = UA_NODEID_STRING_ALLOC(parent.namespaceIndex, "VariableWithoutReadPermission");
+    UA_StatusCode result = UA_Server_addVariableNode(m_server,
+                                                     nodeId,
+                                                     parent,
+                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                     variableName,
+                                                     UA_NODEID_NULL,
+                                                     attr,
+                                                     nullptr,
+                                                     nullptr);
+    UA_NodeId_clear(&nodeId);
+    UA_VariableAttributes_clear(&attr);
+    return result;
+}
+
 UA_StatusCode TestServer::addEventHistorian(const UA_NodeId &parent)
 {
     UA_ObjectAttributes attr = UA_ObjectAttributes_default;
