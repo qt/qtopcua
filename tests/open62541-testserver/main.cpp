@@ -229,6 +229,8 @@ int main()
 
     server.addEventTrigger(testFolder);
 
+    server.addUnreadableVariableNode(testFolder);
+
     const auto result = server.run(&running);
 
     if (result != UA_STATUSCODE_GOOD)
