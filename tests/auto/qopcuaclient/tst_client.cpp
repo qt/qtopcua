@@ -606,6 +606,8 @@ private slots:
     void modifyMonitoredItem();
     defineDataMethod(addDuplicateMonitoredItem_data)
     void addDuplicateMonitoredItem();
+    defineDataMethod(subscriptionUnreadableNode_data);
+    void subscriptionUnreadableNode();
     defineDataMethod(checkMonitoredItemCleanup_data);
     void checkMonitoredItemCleanup();
     defineDataMethod(checkAttributeUpdated_data);
@@ -4431,6 +4433,39 @@ void Tst_QOpcUaClient::addDuplicateMonitoredItem()
     QCOMPARE(monitoringDisabledSpy.size(), 1);
     QCOMPARE(monitoringDisabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
     QCOMPARE(monitoringDisabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+}
+
+void Tst_QOpcUaClient::subscriptionUnreadableNode()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> unreadableNode(opcuaClient->node("ns=3;s=VariableWithoutReadPermission"));
+    QVERIFY(unreadableNode != nullptr);
+
+    QOpcUaMonitoringParameters p(100);
+    p.setIndexRange(QStringLiteral("1"));
+    QSignalSpy monitoringEnabledSpy(unreadableNode.data(), &QOpcUaNode::enableMonitoringFinished);
+    QSignalSpy monitoringDisabledSpy(unreadableNode.data(), &QOpcUaNode::disableMonitoringFinished);
+    QSignalSpy dataChangeSpy(unreadableNode.data(), &QOpcUaNode::dataChangeOccurred);
+
+    unreadableNode->enableMonitoring(QOpcUa::NodeAttribute::Value, p);
+    monitoringEnabledSpy.wait(signalSpyTimeout);
+    QCOMPARE(monitoringEnabledSpy.size(), 1);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(monitoringEnabledSpy.at(0).at(1).value<QOpcUa::UaStatusCode>(), QOpcUa::UaStatusCode::Good);
+
+     // Wait for the initial data change
+    dataChangeSpy.wait(signalSpyTimeout);
+    QCOMPARE(dataChangeSpy.size(), 1);
+    QCOMPARE(dataChangeSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
+    QCOMPARE(dataChangeSpy.at(0).at(1), QVariant());
+    QCOMPARE(unreadableNode->valueAttribute(), QVariant());
+    QCOMPARE(unreadableNode->valueAttributeError(), QOpcUa::UaStatusCode::BadNotReadable);
+
+    unreadableNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
+    monitoringDisabledSpy.wait(signalSpyTimeout);
+    QCOMPARE(monitoringDisabledSpy.size(), 1);
 }
 
 void Tst_QOpcUaClient::checkMonitoredItemCleanup()
