@@ -1,6 +1,6 @@
 /* THIS IS A SINGLE-FILE DISTRIBUTION CONCATENATED FROM THE OPEN62541 SOURCES
  * visit http://open62541.org/ for information about this software
- * Git-Revision: v1.3.6
+ * Git-Revision: v1.3.9
  */
 
 /*
@@ -5082,6 +5082,7 @@ struct UA_Client {
 #endif
 };
 
+UA_StatusCode connectSync(UA_Client *client); /* Only exposed for unit tests */
 void notifyClientState(UA_Client *client);
 void processERRResponse(UA_Client *client, const UA_ByteString *chunk);
 void processACKResponse(UA_Client *client, const UA_ByteString *chunk);
@@ -7720,9 +7721,13 @@ Array_decodeBinary(void *UA_RESTRICT *UA_RESTRICT dst, size_t *out_length,
 
     /* Filter out arrays that can obviously not be decoded, because the message
      * is too small for the array length. This prevents the allocation of very
-     * long arrays for bogus messages.*/
+     * long arrays for bogus messages.
+     *
+     * The worst known case (so far) is UA_DataValue. It has
+     * sizeof(UA_DataValue) == 80 and an empty DataValue is encoded with just
+     * one byte. We use 128 as the smallest power of 2 larger than 80. */
     size_t length = (size_t)signed_length;
-    UA_CHECK(ctx->pos + ((type->memSize * length) / 32) <= ctx->end,
+    UA_CHECK(ctx->pos + ((type->memSize * length) / 128) <= ctx->end,
              return UA_STATUSCODE_BADDECODINGERROR);
 
     /* Allocate memory */
@@ -22464,7 +22469,7 @@ UA_Server_createNS0_base(UA_Server *server) {
     hassubtype_attr.displayName = UA_LOCALIZEDTEXT("", "HasSubtype");
     hassubtype_attr.isAbstract = false;
     hassubtype_attr.symmetric = false;
-    hassubtype_attr.inverseName = UA_LOCALIZEDTEXT("", "HasSupertype");
+    hassubtype_attr.inverseName = UA_LOCALIZEDTEXT("", "SubtypeOf");
     ret |= addNode_raw(server, UA_NODECLASS_REFERENCETYPE, UA_NS0ID_HASSUBTYPE, "HasSubtype",
                        &hassubtype_attr, &UA_TYPES[UA_TYPES_REFERENCETYPEATTRIBUTES]);
 
@@ -26964,13 +26969,13 @@ UA_NetworkMessage_decodeHeaders(const UA_ByteString *src, size_t *offset, UA_Net
         UA_CHECK_STATUS(rv, return rv);
     }
 
+    rv = UA_ExtendedNetworkMessageHeader_decodeBinary(src, offset, dst);
+    UA_CHECK_STATUS(rv, return rv);
+
     if (dst->securityEnabled) {
         rv = UA_SecurityHeader_decodeBinary(src, offset, dst);
         UA_CHECK_STATUS(rv, return rv);
     }
-
-    rv = UA_ExtendedNetworkMessageHeader_decodeBinary(src, offset, dst);
-    UA_CHECK_STATUS(rv, return rv);
 
     return UA_STATUSCODE_GOOD;
 }
@@ -41009,7 +41014,7 @@ void Service_TransferSubscriptions(UA_Server *server, UA_Session *session,
 
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at http://mozilla.org/MPL/2.0/. 
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *    Copyright 2014-2018 (c) Fraunhofer IOSB (Author: Julius Pfrommer)
  *    Copyright 2016-2017 (c) Florian Palm
@@ -41102,7 +41107,7 @@ Service_SetTriggering(UA_Server *server, UA_Session *session,
         response->responseHeader.serviceResult = UA_STATUSCODE_BADSUBSCRIPTIONIDINVALID;
         return;
     }
-    
+
     /* Get the MonitoredItem */
     UA_MonitoredItem *mon = UA_Subscription_getMonitoredItem(sub, request->triggeringItemId);
     if(!mon) {
@@ -41229,7 +41234,7 @@ checkAdjustMonitoredItemParams(UA_Server *server, UA_Session *session,
             UA_NODESTORE_RELEASE(server, node);
         }
     }
-        
+
     /* Adjust sampling interval */
     if(params->samplingInterval < 0.0) {
         /* A negative number indicates that the sampling interval is the
@@ -41244,8 +41249,10 @@ checkAdjustMonitoredItemParams(UA_Server *server, UA_Session *session,
                                        mon->subscription->publishingInterval,
                                        params->samplingInterval);
             if(params->samplingInterval == mon->subscription->publishingInterval) {
-                /* The publishing interval is valid also for sampling. The
-                 * standard says any negative number is interpreted as -1.*/
+               /* The publishing interval is valid also for sampling. Set sampling
+                * interval to -1 to sample the monitored item in the publish
+                * callback. The revised sampling interval of the response will be
+                * set to the publishing interval.*/
                 params->samplingInterval = -1.0;
             }
         }
@@ -41286,7 +41293,8 @@ checkAdjustMonitoredItemParams(UA_Server *server, UA_Session *session,
 static UA_StatusCode
 checkEventFilterParam(UA_Server *server, UA_Session *session,
                       const UA_MonitoredItem *mon,
-                      UA_MonitoringParameters *params){
+                      UA_MonitoringParameters *params,
+                      UA_MonitoredItemCreateResult *result) {
     if(mon->itemToMonitor.attributeId != UA_ATTRIBUTEID_EVENTNOTIFIER)
         return UA_STATUSCODE_GOOD;
 
@@ -41300,36 +41308,66 @@ checkEventFilterParam(UA_Server *server, UA_Session *session,
     if(eventFilter->selectClausesSize > 128)
         return UA_STATUSCODE_BADCONFIGURATIONERROR;
 
-    //check the where clause for logical consistency
-    if(eventFilter->whereClause.elementsSize != 0) {
-        UA_ContentFilterResult contentFilterResult;
-        UA_Event_staticWhereClauseValidation(server, &eventFilter->whereClause,
-                                             &contentFilterResult);
-        for(size_t i = 0; i < contentFilterResult.elementResultsSize; ++i) {
-            if(contentFilterResult.elementResults[i].statusCode != UA_STATUSCODE_GOOD){
-                //ToDo currently we return the first non good status code, check if
-                //we can use the detailed contentFilterResult later
-                UA_StatusCode whereResult =
-                    contentFilterResult.elementResults[i].statusCode;
-                UA_ContentFilterResult_clear(&contentFilterResult);
-                return whereResult;
-            }
-        }
-        UA_ContentFilterResult_clear(&contentFilterResult);
-    }
-    //check the select clause for logical consistency
+    UA_ContentFilterResult contentFilterResult;
+    UA_Event_staticWhereClauseValidation(server, &eventFilter->whereClause,
+                                         &contentFilterResult);
+
     UA_StatusCode selectClauseValidationResult[128];
     UA_Event_staticSelectClauseValidation(server,eventFilter,
                                           selectClauseValidationResult);
+
+    //check the where clause for logical consistency
+    UA_StatusCode res = UA_STATUSCODE_GOOD;
+    for(size_t i = 0; i < contentFilterResult.elementResultsSize; ++i) {
+        if(contentFilterResult.elementResults[i].statusCode != UA_STATUSCODE_GOOD){
+            //ToDo currently we return the first non good status code, check if
+            //we can use the detailed contentFilterResult later
+            res = contentFilterResult.elementResults[i].statusCode;
+            break;
+        }
+    }
+
+    //check the select clause for logical consistency
     for(size_t i = 0; i < eventFilter->selectClausesSize; ++i){
         //ToDo currently we return the first non good status code, check if
         //we can use the detailed status code list later
         if(selectClauseValidationResult[i] != UA_STATUSCODE_GOOD){
-            return selectClauseValidationResult[i];
+            res = selectClauseValidationResult[i];
+            break;
         }
     }
 
-    return UA_STATUSCODE_GOOD;
+    if(res == UA_STATUSCODE_GOOD) {
+        UA_ContentFilterResult_clear(&contentFilterResult);
+        return res;
+    }
+
+    /* Create the EventFilterResult output */
+    UA_EventFilterResult *efr = UA_EventFilterResult_new();
+    if(!efr) {
+        UA_ContentFilterResult_clear(&contentFilterResult);
+        return UA_STATUSCODE_BADOUTOFMEMORY;
+    }
+
+    efr->whereClauseResult = contentFilterResult;
+    /* UA_ContentFilterResult_init(&contentFilterResult); */
+
+    efr->selectClauseResults = (UA_StatusCode*)
+        UA_Array_new(eventFilter->selectClausesSize,
+                     &UA_TYPES[UA_TYPES_STATUSCODE]);
+    if(!efr->selectClauseResults) {
+        UA_EventFilterResult_delete(efr);
+        return UA_STATUSCODE_BADOUTOFMEMORY;
+    }
+
+    efr->selectClauseResultsSize = eventFilter->selectClausesSize;
+    memcpy(efr->selectClauseResults, selectClauseValidationResult,
+           sizeof(UA_StatusCode) * efr->selectClauseResultsSize);
+
+    UA_ExtensionObject_setValue(&result->filterResult, efr,
+                                &UA_TYPES[UA_TYPES_EVENTFILTERRESULT]);
+
+    return res;
 }
 #endif
 
@@ -41475,7 +41513,7 @@ Operation_CreateMonitoredItem(UA_Server *server, UA_Session *session,
                                                          valueType, &newMon->parameters);
 #ifdef UA_ENABLE_SUBSCRIPTIONS_EVENTS
     result->statusCode |= checkEventFilterParam(server, session, newMon,
-                                                         &newMon->parameters);
+                                                &newMon->parameters, result);
 #endif
     if(result->statusCode != UA_STATUSCODE_GOOD) {
         UA_LOG_INFO_SUBSCRIPTION(&server->config.logger, cmc->sub,
@@ -41505,6 +41543,14 @@ Operation_CreateMonitoredItem(UA_Server *server, UA_Session *session,
     result->revisedSamplingInterval = newMon->parameters.samplingInterval;
     result->revisedQueueSize = newMon->parameters.queueSize;
     result->monitoredItemId = newMon->monitoredItemId;
+
+    /* If the sampling interval is negative (the sampling callback is called
+     * from within the publishing callback), return the publishing interval of
+     * the Subscription. Note that we only use the cyclic callback of the
+     * Subscription. So if the Subscription publishing interval is modified,
+     * this also impacts this MonitoredItem. */
+    if(result->revisedSamplingInterval < 0.0 && cmc->sub)
+        result->revisedSamplingInterval = cmc->sub->publishingInterval;
 
     UA_LOG_INFO_SUBSCRIPTION(&server->config.logger, cmc->sub,
                              "MonitoredItem %" PRIi32 " | "
@@ -41633,6 +41679,14 @@ Operation_ModifyMonitoredItem(UA_Server *server, UA_Session *session, UA_Subscri
 
     /* Remove the overflow bits if the queue has now a size of 1 */
     UA_MonitoredItem_removeOverflowInfoBits(mon);
+
+    /* If the sampling interval is negative (the sampling callback is called
+     * from within the publishing callback), return the publishing interval of
+     * the Subscription. Note that we only use the cyclic callback of the
+     * Subscription. So if the Subscription publishing interval is modified,
+     * this also impacts this MonitoredItem. */
+    if(result->revisedSamplingInterval < 0.0 && mon->subscription)
+        result->revisedSamplingInterval = mon->subscription->publishingInterval;
 
     UA_LOG_INFO_SUBSCRIPTION(&server->config.logger, sub,
                              "MonitoredItem %" PRIi32 " | "
@@ -41804,6 +41858,7 @@ UA_Server_deleteMonitoredItem(UA_Server *server, UA_UInt32 monitoredItemId) {
  *    Copyright 2015 (c) Oleksiy Vasylyev
  *    Copyright 2017 (c) Stefan Profanter, fortiss GmbH
  *    Copyright 2017 (c) Mark Giraud, Fraunhofer IOSB
+ *    Copyright 2023 (c) Hilscher Gesellschaft für Systemautomation mbH (Author: Phuong Nguyen)
  */
 
 
@@ -41978,6 +42033,34 @@ UA_Server_createSecureChannel(UA_Server *server, UA_Connection *connection) {
     return UA_STATUSCODE_GOOD;
 }
 
+/* Get pointer to leaf certificate of a specified valid chain of DER encoded
+ * certificates */
+static void
+getLeafCertificate(const UA_ByteString *chain, UA_ByteString *leaf) {
+    /* Detect DER encoded X.509 v3 certificate. If the DER detection fails,
+     * return the entire chain.
+     *
+     * The OPC UA standard requires this to be DER. But we also allow other
+     * formats like PEM. Afterwards it depends on the crypto backend to parse
+     * it. mbedTLS and OpenSSL detect the format automatically. */
+    if(chain->length < 4 || chain->data[0] != 0x30 || chain->data[1] != 0x82) {
+        *leaf = *chain;
+        return;
+    }
+
+    /* The certificate length is encoded in the next 2 bytes. */
+    size_t leafLen = 4; /* Magic numbers + length bytes */
+    leafLen += (size_t)(((uint16_t)chain->data[2]) << 8);
+    leafLen += chain->data[3];
+
+    /* Length consistency check */
+    if(leafLen > chain->length)
+        return;
+
+    leaf->data = chain->data;
+    leaf->length = leafLen;
+}
+
 UA_StatusCode
 UA_Server_configSecureChannel(void *application, UA_SecureChannel *channel,
                               const UA_AsymmetricAlgorithmSecurityHeader *asymHeader) {
@@ -42004,11 +42087,18 @@ UA_Server_configSecureChannel(void *application, UA_SecureChannel *channel,
     if(!securityPolicy)
         return UA_STATUSCODE_BADSECURITYPOLICYREJECTED;
 
+    /* If the sender provides a chain of certificates then we shall extract the
+     * ApplicationInstanceCertificate. and ignore the extra bytes. See also: OPC
+     * UA Part 6, V1.04, 6.7.2.3 Security Header, Table 42 - Asymmetric
+     * algorithm Security header */
+    UA_ByteString appInstanceCertificate = UA_BYTESTRING_NULL;
+    getLeafCertificate(&asymHeader->senderCertificate, &appInstanceCertificate);
+
     /* Create the channel context and parse the sender (remote) certificate used for the
      * secureChannel. */
     UA_StatusCode retval =
         UA_SecureChannel_setSecurityPolicy(channel, securityPolicy,
-                                           &asymHeader->senderCertificate);
+                                           &appInstanceCertificate);
     if(retval != UA_STATUSCODE_GOOD)
         return retval;
 
@@ -46878,7 +46968,7 @@ responseGetEndpoints(UA_Client *client, void *userdata, UA_UInt32 requestId,
     client->endpointsHandshake = false;
 
     UA_LOG_DEBUG(&client->config.logger, UA_LOGCATEGORY_CLIENT,
-                 "Received FindServersResponse");
+                 "Received GetEndpointsResponse");
 
     UA_GetEndpointsResponse *resp = (UA_GetEndpointsResponse*)response;
     /* GetEndpoints not possible. Fail the connection */
@@ -47133,13 +47223,11 @@ responseFindServers(UA_Client *client, void *userdata,
         }
     }
 
-    /* The current EndpointURL is not usable. Pick the first DiscoveryUrl of a
+    /* The current EndpointURL is not usable. Pick the first "opc.tcp" DiscoveryUrl of a
      * returned server. */
     for(size_t i = 0; i < fsr->serversSize; i++) {
         UA_ApplicationDescription *server = &fsr->servers[i];
         if(server->applicationType != UA_APPLICATIONTYPE_SERVER)
-            continue;
-        if(server->discoveryUrlsSize == 0)
             continue;
 
         /* Filter by the ApplicationURI if defined */
@@ -47148,23 +47236,35 @@ responseFindServers(UA_Client *client, void *userdata,
                             &server->applicationUri))
             continue;
 
-        /* Use this DiscoveryUrl in the client */
-        UA_String_clear(&client->discoveryUrl);
-        client->discoveryUrl = server->discoveryUrls[0];
-        UA_String_init(&server->discoveryUrls[0]);
+        for(size_t j = 0; j < server->discoveryUrlsSize; j++) {
+            /* Try to parse the DiscoveryUrl. This weeds out http schemas (etc.)
+             * and invalid DiscoveryUrls in general. */
+            UA_String hostname, path;
+            UA_UInt16 port;
+            UA_StatusCode res =
+                UA_parseEndpointUrl(&server->discoveryUrls[j], &hostname,
+                                    &port, &path);
+            if(res != UA_STATUSCODE_GOOD)
+                continue;
 
-        UA_LOG_INFO(&client->config.logger, UA_LOGCATEGORY_CLIENT,
-                    "Use the EndpointURL %.*s returned from FindServers",
-                    (int)client->discoveryUrl.length,
-                    client->discoveryUrl.data);
+            /* Use this DiscoveryUrl in the client */
+            UA_String_clear(&client->discoveryUrl);
+            client->discoveryUrl = server->discoveryUrls[j];
+            UA_String_init(&server->discoveryUrls[j]);
 
-        /* Close the SecureChannel to build it up new with the correct
-         * EndpointURL in the HEL/ACK handshake */
-        closeSecureChannel(client);
-        return;
+            UA_LOG_INFO(&client->config.logger, UA_LOGCATEGORY_CLIENT,
+                        "Use the EndpointURL %.*s returned from FindServers",
+                        (int)client->discoveryUrl.length, client->discoveryUrl.data);
+
+            /* Close the SecureChannel to build it up new with the correct
+             * EndpointURL in the HEL/ACK handshake */
+            closeSecureChannel(client);
+            return;
+        }
     }
 
-    /* Could not find a suitable server. Try to continue. */
+    /* Could not find a suitable server. Try to continue with the
+     * original EndpointURL. */
     UA_LOG_WARNING(&client->config.logger, UA_LOGCATEGORY_CLIENT,
                    "FindServers did not returned a suitable DiscoveryURL. "
                    "Continue with the EndpointURL %.*s.",
@@ -47292,6 +47392,27 @@ createSessionAsync(UA_Client *client) {
 static UA_StatusCode
 initConnect(UA_Client *client);
 
+/* A workaround if the DiscoveryUrl returned by the FindServers service doesn't work.
+ * Then default back to the initial EndpointUrl and pretend that was returned
+ * by FindServers. */
+static void
+fixBadDiscoveryUrl(UA_Client* client) {
+    if(client->connectStatus == UA_STATUSCODE_GOOD)
+        return;
+    if(client->discoveryUrl.length == 0 ||
+       UA_String_equal(&client->discoveryUrl, &client->endpointUrl))
+        return;
+
+    UA_LOG_WARNING(&client->config.logger, UA_LOGCATEGORY_CLIENT,
+                   "The DiscoveryUrl returned by the FindServers service (%.*s) could not be "
+                   "connected. Trying with the original EndpointUrl.",
+                   (int)client->discoveryUrl.length, client->discoveryUrl.data);
+
+    UA_String_clear(&client->discoveryUrl);
+    UA_String_copy(&client->endpointUrl, &client->discoveryUrl);
+    client->connectStatus = UA_STATUSCODE_GOOD;
+}
+
 UA_StatusCode
 connectIterate(UA_Client *client, UA_UInt32 timeout) {
     UA_LOG_TRACE(&client->config.logger, UA_LOGCATEGORY_CLIENT,
@@ -47363,13 +47484,16 @@ connectIterate(UA_Client *client, UA_UInt32 timeout) {
             client->connection.close(&client->connection);
             client->connection.free(&client->connection);
         }
+        fixBadDiscoveryUrl(client);
         return client->connectStatus;
     case UA_SECURECHANNELSTATE_ACK_RECEIVED:
         client->connectStatus = sendOPNAsync(client, false);
+        fixBadDiscoveryUrl(client);
         return client->connectStatus;
     case UA_SECURECHANNELSTATE_HEL_SENT:
     case UA_SECURECHANNELSTATE_OPN_SENT:
         client->connectStatus = receiveResponseAsync(client, timeout);
+        fixBadDiscoveryUrl(client);
         return client->connectStatus;
     default:
         break;
@@ -47522,7 +47646,7 @@ UA_Client_connectSecureChannelAsync(UA_Client *client, const char *endpointUrl) 
     return initConnect(client);
 }
 
-static UA_StatusCode
+UA_StatusCode
 connectSync(UA_Client *client) {
     UA_DateTime now = UA_DateTime_nowMonotonic();
     UA_DateTime maxDate = now + ((UA_DateTime)client->config.timeout * UA_DATETIME_MSEC);
@@ -48768,8 +48892,6 @@ AttributeReadCallback(UA_Client *client, void *userdata,
     UA_LOG_DEBUG(&UA_Client_getConfig(client)->logger, UA_LOGCATEGORY_CLIENT,
                 "Async read response for request %" PRIu32, requestId);
 
-    UA_DataValue *dv = NULL;
-
     /* Check the ServiceResult */
     UA_StatusCode res = rr->responseHeader.serviceResult;
     if(res != UA_STATUSCODE_GOOD)
@@ -48782,7 +48904,7 @@ AttributeReadCallback(UA_Client *client, void *userdata,
     }
 
     /* A Value attribute */
-    dv = &rr->results[0];
+    UA_DataValue *dv = &rr->results[0];
     if(ctx->resultType == &UA_TYPES[UA_TYPES_DATAVALUE]) {
         ctx->userCallback(client, ctx->userContext, requestId,
                           UA_STATUSCODE_GOOD, dv);
@@ -49800,7 +49922,6 @@ ua_MonitoredItems_delete(UA_Client *client, UA_Client_Subscription *sub,
 static void
 ua_MonitoredItems_delete_handler(UA_Client *client, void *d, UA_UInt32 requestId,
                                  void *r) {
-    UA_Client_Subscription *sub = NULL;
     CustomCallback *cc = (CustomCallback *)d;
     UA_DeleteMonitoredItemsResponse *response = (UA_DeleteMonitoredItemsResponse *)r;
     UA_DeleteMonitoredItemsRequest *request =
@@ -49808,7 +49929,7 @@ ua_MonitoredItems_delete_handler(UA_Client *client, void *d, UA_UInt32 requestId
     if(response->responseHeader.serviceResult != UA_STATUSCODE_GOOD)
         goto cleanup;
 
-    sub = findSubscription(client, request->subscriptionId);
+    UA_Client_Subscription *sub = findSubscription(client, request->subscriptionId);
     if(!sub) {
         UA_LOG_INFO(&client->config.logger, UA_LOGCATEGORY_CLIENT,
                     "No internal representation of subscription %" PRIu32,
@@ -56656,20 +56777,20 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Optional"),
 UA_NODEID_NUMERIC(ns[0], 77LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11574LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 3190LU), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2367LU), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11571LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2371LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11569LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11572LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11551LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2370LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11570LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11567LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11573LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 3190LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2366LU), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11565LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2370LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11572LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11569LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11570LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2371LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11567LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11551LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2366LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11573LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 80LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11574LU), false);
 return retVal;
 }
 
@@ -56726,25 +56847,25 @@ UA_NODEID_NUMERIC(ns[0], 0LU),
 UA_QUALIFIEDNAME(ns[0], "Mandatory"),
 UA_NODEID_NUMERIC(ns[0], 77LU),
 (const UA_NodeAttributes*)&attr, &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES],NULL, NULL);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11461LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 7611LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2046LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2045LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11241LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2051LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 12078LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2044LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2050LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2369LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2375LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 12169LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2047LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2011LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2035LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2374LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2377LU), false);
-retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2042LU), false);
 retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2043LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2011LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11241LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2046LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 12169LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2051LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2044LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2047LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2374LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 7611LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2050LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2042LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 11461LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 12078LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2035LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2375LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2045LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2369LU), false);
+retVal |= UA_Server_addReference(server, UA_NODEID_NUMERIC(ns[0], 78LU), UA_NODEID_NUMERIC(ns[0], 37LU), UA_EXPANDEDNODEID_NUMERIC(ns[0], 2377LU), false);
 return retVal;
 }
 
@@ -62309,17 +62430,20 @@ UA_Event_staticWhereClauseValidation(UA_Server *server,
                         UA_STATUSCODE_BADFILTEROPERANDINVALID;
                     break;
                 }
-                UA_LiteralOperand *literalOperand =
-                    (UA_LiteralOperand *)ef.filterOperands[0]
-                        .content.decoded.data;
+
+                const UA_LiteralOperand *lit = (const UA_LiteralOperand *)
+                    ef.filterOperands[0].content.decoded.data;
+                if(!UA_Variant_hasScalarType(&lit->value, &UA_TYPES[UA_TYPES_NODEID])) {
+                    er->statusCode = UA_STATUSCODE_BADFILTEROPERANDINVALID;
+                    break;
+                }
+                const UA_NodeId *ofTypeId = (const UA_NodeId*)lit->value.data;
 
                 /* Make sure the &pOperand->nodeId is a subtype of BaseEventType */
                 UA_NodeId baseEventTypeId = UA_NODEID_NUMERIC(0, UA_NS0ID_BASEEVENTTYPE);
-                if(!isNodeInTree_singleRef(
-                    server, (UA_NodeId *)literalOperand->value.data, &baseEventTypeId,
-                    UA_REFERENCETYPEINDEX_HASSUBTYPE)) {
-                    er->statusCode =
-                        UA_STATUSCODE_BADNODEIDINVALID;
+                if(!isNodeInTree_singleRef(server, ofTypeId, &baseEventTypeId,
+                                           UA_REFERENCETYPEINDEX_HASSUBTYPE)) {
+                    er->statusCode = UA_STATUSCODE_BADNODEIDINVALID;
                     break;
                 }
                 er->statusCode = UA_STATUSCODE_GOOD;
@@ -64872,6 +64996,7 @@ UA_ChannelModule_New_Context(const UA_SecurityPolicy * securityPolicy,
     if(context->remoteCertificateX509 == NULL) {
         UA_ByteString_clear(&context->remoteCertificate); 
         UA_free(context);
+        return UA_STATUSCODE_BADINTERNALERROR;
     }
 
     context->policyContext =
@@ -66935,7 +67060,7 @@ UA_CertificateVerification_VerifyApplicationURI (void *                verificat
 
     const unsigned char * pData;
     X509 *                certificateX509;
-    UA_String             subjectURI;
+    UA_String             subjectURI = UA_STRING_NULL;
     GENERAL_NAMES *       pNames;
     int                   i;
     UA_StatusCode         ret;
@@ -66956,6 +67081,9 @@ UA_CertificateVerification_VerifyApplicationURI (void *                verificat
         X509_free (certificateX509);
         return UA_STATUSCODE_BADSECURITYCHECKSFAILED;
     }
+    
+    UA_String_init(&subjectURI);
+    
     for (i = 0; i < sk_GENERAL_NAME_num (pNames); i++) {
          GENERAL_NAME * value = sk_GENERAL_NAME_value (pNames, i);
          if (value->type == GEN_URI) {
@@ -71458,11 +71586,6 @@ UA_mbedTLS_CopyDataFormatAware(const UA_ByteString *data) {
 
 #include <stdio.h>
 
-#if UA_MULTITHREADING >= 100
-#include <pthread.h>
-static pthread_mutex_t printf_mutex = PTHREAD_MUTEX_INITIALIZER;
-#endif
-
 /* ANSI escape sequences for color output taken from here:
  * https://stackoverflow.com/questions/3219393/stdlib-and-colored-output-in-c*/
 
@@ -71484,59 +71607,72 @@ static pthread_mutex_t printf_mutex = PTHREAD_MUTEX_INITIALIZER;
 # define ANSI_COLOR_RESET   ""
 #endif
 
+static
 const char *logLevelNames[6] = {"trace", "debug",
                                 ANSI_COLOR_GREEN "info",
                                 ANSI_COLOR_YELLOW "warn",
                                 ANSI_COLOR_RED "error",
                                 ANSI_COLOR_MAGENTA "fatal"};
+static
 const char *logCategoryNames[7] = {"network", "channel", "session", "server",
                                    "client", "userland", "securitypolicy"};
+
+typedef struct {
+    UA_LogLevel minlevel;
+#if UA_MULTITHREADING >= 100
+    UA_Lock lock;
+#endif
+} LogContext;
 
 #ifdef __clang__
 __attribute__((__format__(__printf__, 4 , 0)))
 #endif
-void
+static void
 UA_Log_Stdout_log(void *context, UA_LogLevel level, UA_LogCategory category,
                   const char *msg, va_list args) {
-
-    /* Assume that context is casted to UA_LogLevel */
-    /* TODO we may later change this to a struct with bitfields to filter on category */
-    if ( context != NULL && (UA_LogLevel)(uintptr_t)context > level )
-        return;
+    LogContext *logContext = (LogContext*)context;
+    if(logContext) {
+        if(logContext->minlevel > level)
+            return;
+        UA_LOCK(&logContext->lock);
+    }
 
     UA_Int64 tOffset = UA_DateTime_localTimeUtcOffset();
     UA_DateTimeStruct dts = UA_DateTime_toStruct(UA_DateTime_now() + tOffset);
 
-#if UA_MULTITHREADING >= 100
-    pthread_mutex_lock(&printf_mutex);
-#endif
-
     printf("[%04u-%02u-%02u %02u:%02u:%02u.%03u (UTC%+05d)] %s/%s" ANSI_COLOR_RESET "\t",
            dts.year, dts.month, dts.day, dts.hour, dts.min, dts.sec, dts.milliSec,
-           (int)(tOffset / UA_DATETIME_SEC / 36), logLevelNames[level], logCategoryNames[category]);
+           (int)(tOffset / UA_DATETIME_SEC / 36), logLevelNames[level],
+           logCategoryNames[category]);
     vprintf(msg, args);
     printf("\n");
     fflush(stdout);
 
-#if UA_MULTITHREADING >= 100
-    pthread_mutex_unlock(&printf_mutex);
-#endif
+    if(logContext) {
+        UA_UNLOCK(&logContext->lock);
+    }
 }
 
-void
-UA_Log_Stdout_clear(void *logContext) {
-
+static void
+UA_Log_Stdout_clear(void *context) {
+    if(!context)
+        return;
+    UA_LOCK_DESTROY(&((LogContext*)context)->lock);
+    UA_free(context);
 }
 
 const UA_Logger UA_Log_Stdout_ = {UA_Log_Stdout_log, NULL, UA_Log_Stdout_clear};
 const UA_Logger *UA_Log_Stdout = &UA_Log_Stdout_;
 
-/* By default the client and server is configured with UA_Log_Stdout
-   This constructs a logger with a configurable max log level */
+UA_Logger
+UA_Log_Stdout_withLevel(UA_LogLevel minlevel) {
+    LogContext *context = (LogContext*)UA_calloc(1, sizeof(LogContext));
+    if(context) {
+        UA_LOCK_INIT(&context->lock);
+        context->minlevel = minlevel;
+    }
 
-UA_Logger UA_Log_Stdout_withLevel(UA_LogLevel minlevel)
-{
-    UA_Logger logger = {UA_Log_Stdout_log, (void*)minlevel, UA_Log_Stdout_clear};
+    UA_Logger logger = {UA_Log_Stdout_log, (void*)context, UA_Log_Stdout_clear};
     return logger;
 }
 
@@ -71564,6 +71700,8 @@ typedef struct {
     UA_Boolean allowAnonymous;
     size_t usernamePasswordLoginSize;
     UA_UsernamePasswordLogin *usernamePasswordLogin;
+    UA_UsernamePasswordLoginCallback loginCallback;
+    void *loginContext;
     UA_CertificateVerification verifyX509;
 } AccessControlContext;
 
@@ -71638,11 +71776,18 @@ activateSession_default(UA_Server *server, UA_AccessControl *ac,
 
         /* Try to match username/pw */
         UA_Boolean match = false;
-        for(size_t i = 0; i < context->usernamePasswordLoginSize; i++) {
-            if(UA_String_equal(&userToken->userName, &context->usernamePasswordLogin[i].username) &&
-               UA_String_equal(&userToken->password, &context->usernamePasswordLogin[i].password)) {
+        if(context->loginCallback) {
+            if(context->loginCallback(&userToken->userName, &userToken->password,
+               context->usernamePasswordLoginSize, context->usernamePasswordLogin,
+               sessionContext, context->loginContext) == UA_STATUSCODE_GOOD)
                 match = true;
-                break;
+        } else {
+            for(size_t i = 0; i < context->usernamePasswordLoginSize; i++) {
+                if(UA_String_equal(&userToken->userName, &context->usernamePasswordLogin[i].username) &&
+                   UA_String_equal(&userToken->password, &context->usernamePasswordLogin[i].password)) {
+                    match = true;
+                    break;
+                }
             }
         }
         if(!match)
@@ -71942,6 +72087,27 @@ UA_AccessControl_default(UA_ServerConfig *config,
     return UA_STATUSCODE_GOOD;
 }
 
+UA_StatusCode
+UA_AccessControl_defaultWithLoginCallback(UA_ServerConfig *config,
+    UA_Boolean allowAnonymous, UA_CertificateVerification *verifyX509,
+    const UA_ByteString *userTokenPolicyUri, size_t usernamePasswordLoginSize,
+    const UA_UsernamePasswordLogin *usernamePasswordLogin,
+    UA_UsernamePasswordLoginCallback loginCallback, void *loginContext)
+{
+    AccessControlContext *context;
+    UA_StatusCode sc;
+
+    sc = UA_AccessControl_default(config, allowAnonymous, verifyX509,
+        userTokenPolicyUri, usernamePasswordLoginSize, usernamePasswordLogin);
+    if (sc != UA_STATUSCODE_GOOD)
+        return sc;
+
+    context = (AccessControlContext *)config->accessControl.context;
+    context->loginCallback = loginCallback;
+    context->loginContext = loginContext;
+
+    return UA_STATUSCODE_GOOD;
+}
 
 /**** amalgamated original file "/plugins/ua_nodestore_ziptree.c" ****/
 
@@ -72977,7 +73143,7 @@ setDefaultConfig(UA_ServerConfig *conf) {
     /* --> Start setting the default static config <-- */
     /* Allow user to set his own logger */
     if(!conf->logger.log)
-        conf->logger = UA_Log_Stdout_;
+        conf->logger = UA_Log_Stdout_withLevel(UA_LOGLEVEL_INFO);
 
     conf->shutdownDelay = 0.0;
 
@@ -73581,9 +73747,7 @@ UA_ServerConfig_setDefaultWithSecurityPolicies(UA_ServerConfig *conf,
 UA_Client * UA_Client_new(void) {
     UA_ClientConfig config;
     memset(&config, 0, sizeof(UA_ClientConfig));
-    config.logger.log = UA_Log_Stdout_log;
-    config.logger.context = NULL;
-    config.logger.clear = UA_Log_Stdout_clear;
+    config.logger = UA_Log_Stdout_withLevel(UA_LOGLEVEL_INFO);
     return UA_Client_newWithConfig(&config);
 }
 
@@ -73593,9 +73757,7 @@ UA_ClientConfig_setDefault(UA_ClientConfig *config) {
     config->secureChannelLifeTime = 10 * 60 * 1000; /* 10 minutes */
 
     if(!config->logger.log) {
-       config->logger.log = UA_Log_Stdout_log;
-       config->logger.context = NULL;
-       config->logger.clear = UA_Log_Stdout_clear;
+        config->logger = UA_Log_Stdout_withLevel(UA_LOGLEVEL_INFO);
     }
 
     if (config->sessionLocaleIdsSize > 0 && config->sessionLocaleIds) {

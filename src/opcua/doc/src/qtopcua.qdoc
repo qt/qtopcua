@@ -388,7 +388,7 @@
     The Open62541 plugin is built by default from the included 3rd party sources and has no external dependencies.
     The open62541 library uses OpenSSL for security. If the OpenSSL library is detected during configuration,
     security is enabled for the tests and the open62541 backend.
-    The Open62541 source and header files bundled with Qt OPC UA have been generated from the open62541 v1.3.6
+    The Open62541 source and header files bundled with Qt OPC UA have been generated from the open62541 v1.3.9
     tag using the following commands:
 
     \code
@@ -396,7 +396,7 @@
         make
     \endcode
 
-    In case you want to build a custom version of the Open62541 plugin, Open62541 v1.3.6 built with the same options as above is required.
+    In case you want to build a custom version of the Open62541 plugin, Open62541 v1.3.9 built with the same options as above is required.
 
     The following options must be passed to cmake when building with open62541 installed to a custom location:
 
