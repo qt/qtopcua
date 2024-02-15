@@ -1,7 +1,8 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#pragma once
+#ifndef OPCUACONNECTION_P_H
+#define OPCUACONNECTION_P_H
 
 #include <private/opcuareaditem_p.h>
 #include <private/opcuaserverdiscovery_p.h>
@@ -106,3 +107,5 @@ friend class OpcUaServerDiscovery;
 };
 
 QT_END_NAMESPACE
+
+#endif // OPCUACONNECTION_P_H
