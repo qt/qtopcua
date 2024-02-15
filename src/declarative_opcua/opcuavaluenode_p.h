@@ -1,7 +1,8 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#pragma once
+#ifndef OPCUAVALUENODE_P_H
+#define OPCUAVALUENODE_P_H
 
 #include <private/opcuanode_p.h>
 #include <private/opcuadatachangefilter_p.h>
@@ -78,3 +79,5 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif // OPCUAVALUENODE_P_H
