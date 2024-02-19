@@ -6041,35 +6041,33 @@ void Tst_QOpcUaClient::decodeGenericStruct()
     QCOMPARE(results.at(5).statusCode(), QOpcUa::UaStatusCode::Good);
     QCOMPARE(results.at(6).statusCode(), QOpcUa::UaStatusCode::Good);
 
-    bool decodeSuccess = false;
-
     {
         auto nestedStructExt = results.at(0).value().value<QOpcUaExtensionObject>();
-        auto decodedData = decoder.decode(nestedStructExt, decodeSuccess);
-        QCOMPARE(decodeSuccess, true);
-        qDebug() << decodedData;
+        auto decodedData = decoder.decode(nestedStructExt);
+        QVERIFY(decodedData);
+        qDebug() << *decodedData;
 
-        QCOMPARE(decodedData.typeName(), "QtTestStructType");
+        QCOMPARE(decodedData->typeName(), "QtTestStructType");
 
-        QCOMPARE(decodedData.fields().value("EnumMember").toInt(), 1);
-        QCOMPARE(decodedData.fields().value("Int64ArrayMember").value<QList<qint64>>(),
+        QCOMPARE(decodedData->fields().value("EnumMember").toInt(), 1);
+        QCOMPARE(decodedData->fields().value("Int64ArrayMember").value<QList<qint64>>(),
                  QList<qint64>({std::numeric_limits<qint64>::max(),
                                 std::numeric_limits<qint64>::max() - 1,
                                 std::numeric_limits<qint64>::min()}));
 
-        QCOMPARE(decodedData.fields().value("LocalizedTextMember").value<QOpcUaLocalizedText>().locale(), "en");
-        QCOMPARE(decodedData.fields().value("LocalizedTextMember").value<QOpcUaLocalizedText>().text(), "TestText");
+        QCOMPARE(decodedData->fields().value("LocalizedTextMember").value<QOpcUaLocalizedText>().locale(), "en");
+        QCOMPARE(decodedData->fields().value("LocalizedTextMember").value<QOpcUaLocalizedText>().text(), "TestText");
 
-        QCOMPARE(decodedData.fields().value("QualifiedNameMember").value<QOpcUaQualifiedName>().namespaceIndex(), 1);
-        QCOMPARE(decodedData.fields().value("QualifiedNameMember").value<QOpcUaQualifiedName>().name(), "TestName");
+        QCOMPARE(decodedData->fields().value("QualifiedNameMember").value<QOpcUaQualifiedName>().namespaceIndex(), 1);
+        QCOMPARE(decodedData->fields().value("QualifiedNameMember").value<QOpcUaQualifiedName>().name(), "TestName");
 
-        QCOMPARE(decodedData.fields().value("StringMember").value<QString>(), "TestString");
+        QCOMPARE(decodedData->fields().value("StringMember").value<QString>(), "TestString");
 
-        auto nestedStructValue = decodedData.fields().value("NestedStructMember").value<QOpcUaGenericStructValue>();
+        auto nestedStructValue = decodedData->fields().value("NestedStructMember").value<QOpcUaGenericStructValue>();
         QCOMPARE(nestedStructValue.typeName(), "QtInnerTestStructType");
         QCOMPARE(nestedStructValue.fields().value("DoubleSubtypeMember").toDouble(), 42.0);
 
-        auto nestedStructArrayValue = decodedData.fields().value("NestedStructArrayMember").value<QList<QOpcUaGenericStructValue>>();
+        auto nestedStructArrayValue = decodedData->fields().value("NestedStructArrayMember").value<QList<QOpcUaGenericStructValue>>();
         QCOMPARE(nestedStructArrayValue.size(), 2);
         QCOMPARE(nestedStructArrayValue.at(0).typeName(), "QtInnerTestStructType");
         QCOMPARE(nestedStructArrayValue.at(0).fields().value("DoubleSubtypeMember").toDouble(), 23.0);
@@ -6079,71 +6077,71 @@ void Tst_QOpcUaClient::decodeGenericStruct()
 
     {
         auto unionExt = results.at(1).value().value<QOpcUaExtensionObject>();
-        auto decodedData = decoder.decode(unionExt, decodeSuccess);
-        QCOMPARE(decodeSuccess, true);
-        qDebug() << decodedData;
+        auto decodedData = decoder.decode(unionExt);
+        QVERIFY(decodedData);
+        qDebug() << *decodedData;
 
-        QCOMPARE(decodedData.typeName(), "QtTestUnionType");
-        QCOMPARE(decodedData.fields().value("Member1"), 42);
+        QCOMPARE(decodedData->typeName(), "QtTestUnionType");
+        QCOMPARE(decodedData->fields().value("Member1"), 42);
     }
 
     {
         auto unionExt = results.at(2).value().value<QOpcUaExtensionObject>();
-        auto decodedData = decoder.decode(unionExt, decodeSuccess);
-        QCOMPARE(decodeSuccess, true);
-        qDebug() << decodedData;
+        auto decodedData = decoder.decode(unionExt);
+        QVERIFY(decodedData);
+        qDebug() << *decodedData;
 
-        QCOMPARE(decodedData.typeName(), "QtTestUnionType");
+        QCOMPARE(decodedData->typeName(), "QtTestUnionType");
 
-        auto unionFieldValue = decodedData.fields().value("Member2").value<QOpcUaGenericStructValue>();
+        auto unionFieldValue = decodedData->fields().value("Member2").value<QOpcUaGenericStructValue>();
         QCOMPARE(unionFieldValue.fields().value("DoubleSubtypeMember").toDouble(), 23.0);
     }
 
     // Struct type with optional field with optional field set
     {
         auto optionalFieldExt = results.at(3).value().value<QOpcUaExtensionObject>();
-        auto decodedData = decoder.decode(optionalFieldExt, decodeSuccess);
-        QCOMPARE(decodeSuccess, true);
-        qDebug() << decodedData;
+        auto decodedData = decoder.decode(optionalFieldExt);
+        QVERIFY(decodedData);
+        qDebug() << *decodedData;
 
-        QCOMPARE(decodedData.typeName(), "QtStructWithOptionalFieldType");
+        QCOMPARE(decodedData->typeName(), "QtStructWithOptionalFieldType");
 
-        QCOMPARE(decodedData.fields().value("MandatoryMember").toDouble(), 42.0);
-        QCOMPARE(decodedData.fields().value("OptionalMember").toDouble(), 23.0);
+        QCOMPARE(decodedData->fields().value("MandatoryMember").toDouble(), 42.0);
+        QCOMPARE(decodedData->fields().value("OptionalMember").toDouble(), 23.0);
     }
 
     // Struct type with optional field without optional field set
     {
         auto optionalFieldExt = results.at(4).value().value<QOpcUaExtensionObject>();
-        auto decodedData = decoder.decode(optionalFieldExt, decodeSuccess);
-        QCOMPARE(decodeSuccess, true);
-        qDebug() << decodedData;
+        auto decodedData = decoder.decode(optionalFieldExt);
+        QVERIFY(decodedData);
+        qDebug() << *decodedData;
 
-        QCOMPARE(decodedData.typeName(), "QtStructWithOptionalFieldType");
+        QCOMPARE(decodedData->typeName(), "QtStructWithOptionalFieldType");
 
-        QCOMPARE(decodedData.fields().value("MandatoryMember").toDouble(), 42.0);
-        QCOMPARE(decodedData.fields().contains("OptionalMember"), false);
+        QCOMPARE(decodedData->fields().value("MandatoryMember").toDouble(), 42.0);
+        QCOMPARE(decodedData->fields().contains("OptionalMember"), false);
     }
 
     {
         auto diagnosticInfoExt = results.at(5).value().value<QOpcUaExtensionObject>();
-        auto decodedData = decoder.decode(diagnosticInfoExt, decodeSuccess);
-        qDebug() << decodedData;
-        QCOMPARE(decodedData.fields().contains("DiagnosticInfoMember"), true);
-        QCOMPARE(decodedData.fields().value("DiagnosticInfoMember").value<QOpcUaDiagnosticInfo>(), testDiagnosticInfos.at(0));
-        QCOMPARE(decodedData.fields().contains("DiagnosticInfoArrayMember"), true);
-        QCOMPARE(decodedData.fields().value("DiagnosticInfoArrayMember").value<QList<QOpcUaDiagnosticInfo>>(), testDiagnosticInfos);
-        QCOMPARE(decodeSuccess, true);
+        auto decodedData = decoder.decode(diagnosticInfoExt);
+        QVERIFY(decodedData);
+        qDebug() << *decodedData;
+        QCOMPARE(decodedData->fields().contains("DiagnosticInfoMember"), true);
+        QCOMPARE(decodedData->fields().value("DiagnosticInfoMember").value<QOpcUaDiagnosticInfo>(), testDiagnosticInfos.at(0));
+        QCOMPARE(decodedData->fields().contains("DiagnosticInfoArrayMember"), true);
+        QCOMPARE(decodedData->fields().value("DiagnosticInfoArrayMember").value<QList<QOpcUaDiagnosticInfo>>(), testDiagnosticInfos);
     }
 
     {
         auto dataValueExt = results.at(6).value().value<QOpcUaExtensionObject>();
-        auto decodedData = decoder.decode(dataValueExt, decodeSuccess);
-        qDebug() << decodedData;
-        QCOMPARE(decodeSuccess, true);
+        auto decodedData = decoder.decode(dataValueExt);
+        QVERIFY(decodedData);
+        qDebug() << *decodedData;
 
-        QVERIFY(decodedData.fields().contains("DataValueMember"));
-        const auto dv = decodedData.fields().value("DataValueMember").value<QOpcUaDataValue>();
+        QVERIFY(decodedData->fields().contains("DataValueMember"));
+        const auto dv = decodedData->fields().value("DataValueMember").value<QOpcUaDataValue>();
         QCOMPARE(dv.statusCode(), QOpcUa::UaStatusCode::BadInternalError);
         QCOMPARE(dv.serverTimestamp(), QDateTime::fromMSecsSinceEpoch(1698655307000));
         QCOMPARE(dv.sourceTimestamp(), QDateTime::fromMSecsSinceEpoch(1698655306000));
@@ -6153,8 +6151,8 @@ void Tst_QOpcUaClient::decodeGenericStruct()
         QCOMPARE(v.value(), (QList<QString>{"TestString 1", "TestString 2", "TestString 3", "TestString 4"}));
         QCOMPARE(v.arrayDimensions(), (QList<qint32>{ 2, 2 }));
 
-        QVERIFY(decodedData.fields().contains("VariantMember"));
-        const auto var = decodedData.fields().value("VariantMember").value<QOpcUaVariant>();
+        QVERIFY(decodedData->fields().contains("VariantMember"));
+        const auto var = decodedData->fields().value("VariantMember").value<QOpcUaVariant>();
         QVERIFY(var.arrayDimensions().isEmpty());
         QCOMPARE(var.type(), QOpcUaVariant::ValueType::UInt64);
         QCOMPARE(var.value(), 42);
@@ -6200,22 +6198,22 @@ void Tst_QOpcUaClient::encodeGenericStruct()
         value.fieldsRef()["NestedStructArrayMember"] =
             QVariant::fromValue(QList<QOpcUaGenericStructValue>({innerValue1, innerValue2}));
 
-        QOpcUaExtensionObject ext;
-        success = handler.encode(value, ext);
-        QCOMPARE(success, true);
+        auto ext = handler.encode(value);
+        QVERIFY(ext);
 
-        const auto decoded = handler.decode(ext, success);
+        const auto decoded = handler.decode(*ext);
+        QVERIFY(decoded);
 
-        QCOMPARE(decoded.fields().value("StringMember"), "StringMember");
-        QCOMPARE(decoded.fields().value("LocalizedTextMember"), QOpcUaLocalizedText("en", "Localized text"));
-        QCOMPARE(decoded.fields().value("QualifiedNameMember"), QOpcUaQualifiedName(1, "Qualified name"));
-        QCOMPARE(decoded.fields().value("Int64ArrayMember"), QVariant::fromValue(QList<qint64>({1, 2, 3, 4})));
-        QCOMPARE(decoded.fields().value("EnumMember"), 42);
+        QCOMPARE(decoded->fields().value("StringMember"), "StringMember");
+        QCOMPARE(decoded->fields().value("LocalizedTextMember"), QOpcUaLocalizedText("en", "Localized text"));
+        QCOMPARE(decoded->fields().value("QualifiedNameMember"), QOpcUaQualifiedName(1, "Qualified name"));
+        QCOMPARE(decoded->fields().value("Int64ArrayMember"), QVariant::fromValue(QList<qint64>({1, 2, 3, 4})));
+        QCOMPARE(decoded->fields().value("EnumMember"), 42);
 
-        const auto innerDecoded = decoded.fields().value("NestedStructMember").value<QOpcUaGenericStructValue>();
+        const auto innerDecoded = decoded->fields().value("NestedStructMember").value<QOpcUaGenericStructValue>();
         QCOMPARE(innerDecoded.fields().value("DoubleSubtypeMember"), 42.0);
 
-        auto nestedStructArrayValue = decoded.fields().value("NestedStructArrayMember").value<QList<QOpcUaGenericStructValue>>();
+        auto nestedStructArrayValue = decoded->fields().value("NestedStructArrayMember").value<QList<QOpcUaGenericStructValue>>();
         QCOMPARE(nestedStructArrayValue.size(), 2);
         QCOMPARE(nestedStructArrayValue.at(0).typeName(), "QtInnerTestStructType");
         QCOMPARE(nestedStructArrayValue.at(0).fields().value("DoubleSubtypeMember").toDouble(), 23.0);
@@ -6223,25 +6221,24 @@ void Tst_QOpcUaClient::encodeGenericStruct()
         QCOMPARE(nestedStructArrayValue.at(1).fields().value("DoubleSubtypeMember").toDouble(), 42.0);
 
         QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=4;i=6009"));
-        WRITE_VALUE_ATTRIBUTE(node, ext, QOpcUa::Types::ExtensionObject);
+        WRITE_VALUE_ATTRIBUTE(node, *ext, QOpcUa::Types::ExtensionObject);
     }
 
     {
         auto unionValue = handler.createGenericStructValueForTypeId("ns=4;i=3005");
         unionValue.fieldsRef()["Member1"] = 23;
 
-        QOpcUaExtensionObject ext;
-        success = handler.encode(unionValue, ext);
-        QCOMPARE(success, true);
-        QCOMPARE(ext.encodingTypeId(), unionValue.structureDefinition().defaultEncodingId());
+        auto ext = handler.encode(unionValue);
+        QVERIFY(ext);
+        QCOMPARE(ext->encodingTypeId(), unionValue.structureDefinition().defaultEncodingId());
 
-        const auto decoded = handler.decode(ext, success);
-        QCOMPARE(success, true);
+        const auto decoded = handler.decode(*ext);
+        QVERIFY(decoded);
 
-        QCOMPARE(decoded.fields().value("Member1"), 23);
+        QCOMPARE(decoded->fields().value("Member1"), 23);
 
         QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=4;i=6011"));
-        WRITE_VALUE_ATTRIBUTE(node, ext, QOpcUa::Types::ExtensionObject);
+        WRITE_VALUE_ATTRIBUTE(node, *ext, QOpcUa::Types::ExtensionObject);
     }
 
     {
@@ -6250,22 +6247,20 @@ void Tst_QOpcUaClient::encodeGenericStruct()
         innerValue.fieldsRef()["DoubleSubtypeMember"] = 42.0;
         unionValue.fieldsRef()["Member2"] = innerValue;
 
-        QOpcUaExtensionObject ext;
-        success = handler.encode(unionValue, ext);
-        QCOMPARE(success, true);
-        QCOMPARE(ext.encodingTypeId(), unionValue.structureDefinition().defaultEncodingId());
+        auto ext = handler.encode(unionValue);
+        QVERIFY(ext);
+        QCOMPARE(ext->encodingTypeId(), unionValue.structureDefinition().defaultEncodingId());
 
-        const auto decoded = handler.decode(ext, success);
-        QCOMPARE(success, true);
+        const auto decoded = handler.decode(*ext);
+        QVERIFY(decoded);
 
+        QVERIFY(decoded->fields().contains("Member2"));
 
-        QVERIFY(decoded.fields().contains("Member2"));
-
-        const auto innerDecoded = decoded.fields().value("Member2").value<QOpcUaGenericStructValue>();
+        const auto innerDecoded = decoded->fields().value("Member2").value<QOpcUaGenericStructValue>();
         QCOMPARE(innerDecoded.fields().value("DoubleSubtypeMember"), 42.0);
 
         QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=4;i=6003"));
-        WRITE_VALUE_ATTRIBUTE(node, ext, QOpcUa::Types::ExtensionObject);
+        WRITE_VALUE_ATTRIBUTE(node, *ext, QOpcUa::Types::ExtensionObject);
     }
 
     {
@@ -6273,36 +6268,34 @@ void Tst_QOpcUaClient::encodeGenericStruct()
         value.fieldsRef()["MandatoryMember"] = 23.0;
         value.fieldsRef()["OptionalMember"] = 42.0;
 
-        QOpcUaExtensionObject ext;
-        success = handler.encode(value, ext);
-        QCOMPARE(success, true);
-        QCOMPARE(ext.encodingTypeId(), value.structureDefinition().defaultEncodingId());
+        auto ext = handler.encode(value);
+        QVERIFY(ext);
+        QCOMPARE(ext->encodingTypeId(), value.structureDefinition().defaultEncodingId());
 
-        const auto decoded = handler.decode(ext, success);
+        const auto decoded = handler.decode(*ext);
 
-        QCOMPARE(decoded.fields().value("MandatoryMember"), 23.0);
-        QCOMPARE(decoded.fields().value("OptionalMember"), 42.0);
+        QCOMPARE(decoded->fields().value("MandatoryMember"), 23.0);
+        QCOMPARE(decoded->fields().value("OptionalMember"), 42.0);
 
         QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=4;i=6010"));
-        WRITE_VALUE_ATTRIBUTE(node, ext, QOpcUa::Types::ExtensionObject);
+        WRITE_VALUE_ATTRIBUTE(node, *ext, QOpcUa::Types::ExtensionObject);
     }
 
     {
         auto value = handler.createGenericStructValueForTypeId("ns=4;i=3006");
         value.fieldsRef()["MandatoryMember"] = 23.0;
 
-        QOpcUaExtensionObject ext;
-        success = handler.encode(value, ext);
-        QCOMPARE(success, true);
-        QCOMPARE(ext.encodingTypeId(), value.structureDefinition().defaultEncodingId());
+        auto ext = handler.encode(value);
+        QVERIFY(ext);
+        QCOMPARE(ext->encodingTypeId(), value.structureDefinition().defaultEncodingId());
 
-        const auto decoded = handler.decode(ext, success);
+        const auto decoded = handler.decode(*ext);
 
-        QCOMPARE(decoded.fields().value("MandatoryMember"), 23.0);
-        QCOMPARE(decoded.fields().contains("OptionalMember"), false);
+        QCOMPARE(decoded->fields().value("MandatoryMember"), 23.0);
+        QCOMPARE(decoded->fields().contains("OptionalMember"), false);
 
         QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=4;i=6002"));
-        WRITE_VALUE_ATTRIBUTE(node, ext, QOpcUa::Types::ExtensionObject);
+        WRITE_VALUE_ATTRIBUTE(node, *ext, QOpcUa::Types::ExtensionObject);
     }
 
     {
@@ -6310,17 +6303,16 @@ void Tst_QOpcUaClient::encodeGenericStruct()
         value.fieldsRef()["DiagnosticInfoMember"] = testDiagnosticInfos.at(0);
         value.fieldsRef()["DiagnosticInfoArrayMember"] = QVariant::fromValue(testDiagnosticInfos);
 
-        QOpcUaExtensionObject ext;
-        success = handler.encode(value, ext);
-        QCOMPARE(success, true);
-        QCOMPARE(ext.encodingTypeId(), value.structureDefinition().defaultEncodingId());
+        auto ext = handler.encode(value);
+        QVERIFY(ext);
+        QCOMPARE(ext->encodingTypeId(), value.structureDefinition().defaultEncodingId());
 
-        const auto decoded = handler.decode(ext, success);
-        QCOMPARE(decoded.fields().value("DiagnosticInfoMember"), testDiagnosticInfos.at(0));
-        QCOMPARE(decoded.fields().value("DiagnosticInfoArrayMember").value<QList<QOpcUaDiagnosticInfo>>(), testDiagnosticInfos);
+        const auto decoded = handler.decode(*ext);
+        QCOMPARE(decoded->fields().value("DiagnosticInfoMember"), testDiagnosticInfos.at(0));
+        QCOMPARE(decoded->fields().value("DiagnosticInfoArrayMember").value<QList<QOpcUaDiagnosticInfo>>(), testDiagnosticInfos);
 
         QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=4;i=6006"));
-        WRITE_VALUE_ATTRIBUTE(node, ext, QOpcUa::Types::ExtensionObject);
+        WRITE_VALUE_ATTRIBUTE(node, *ext, QOpcUa::Types::ExtensionObject);
     }
 
     {
@@ -6328,18 +6320,17 @@ void Tst_QOpcUaClient::encodeGenericStruct()
         value.fieldsRef()["DataValueMember"] = testDataValues.at(0);
         value.fieldsRef()["VariantMember"] = testVariants.at(0);
 
-        QOpcUaExtensionObject ext;
-        success = handler.encode(value, ext);
-        QCOMPARE(success, true);
-        QCOMPARE(ext.encodingTypeId(), value.structureDefinition().defaultEncodingId());
+        auto ext = handler.encode(value);
+        QVERIFY(ext);
+        QCOMPARE(ext->encodingTypeId(), value.structureDefinition().defaultEncodingId());
 
-        const auto decoded = handler.decode(ext, success);
+        const auto decoded = handler.decode(*ext);
 
-        QCOMPARE(decoded.fields().value("DataValueMember"), testDataValues.at(0));
-        QCOMPARE(decoded.fields().value("VariantMember"), testVariants.at(0));
+        QCOMPARE(decoded->fields().value("DataValueMember"), testDataValues.at(0));
+        QCOMPARE(decoded->fields().value("VariantMember"), testVariants.at(0));
 
         QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=4;i=6027"));
-        WRITE_VALUE_ATTRIBUTE(node, ext, QOpcUa::Types::ExtensionObject);
+        WRITE_VALUE_ATTRIBUTE(node, *ext, QOpcUa::Types::ExtensionObject);
     }
 }
 
@@ -6381,15 +6372,14 @@ void Tst_QOpcUaClient::encodeCustomGenericStruct()
         auto value = handler.createGenericStructValueForTypeId("ns=5;i=23");
         value.fieldsRef()["MatrixMember"] = QOpcUaMultiDimensionalArray({1, 2, 3, 4}, {2, 2});
 
-        QOpcUaExtensionObject ext;
-        success = handler.encode(value, ext);
-        QVERIFY(success);
-        QCOMPARE(ext.encodingTypeId(), value.structureDefinition().defaultEncodingId());
+        auto ext = handler.encode(value);
+        QVERIFY(ext);
+        QCOMPARE(ext->encodingTypeId(), value.structureDefinition().defaultEncodingId());
 
-        const auto decoded = handler.decode(ext, success);
+        const auto decoded = handler.decode(*ext);
         QVERIFY(success);
 
-        const auto matrix = decoded.fields().value("MatrixMember").value<QOpcUaMultiDimensionalArray>();
+        const auto matrix = decoded->fields().value("MatrixMember").value<QOpcUaMultiDimensionalArray>();
         QCOMPARE(matrix.arrayDimensions(), QList<quint32>({2, 2}));
         QCOMPARE(matrix.value(QList<quint32>({0, 0})), 1);
         QCOMPARE(matrix.value(QList<quint32>({0, 1})), 2);
@@ -6429,15 +6419,14 @@ void Tst_QOpcUaClient::encodeCustomGenericStruct()
         value.fieldsRef()["StructMatrixMember"] =
             QOpcUaMultiDimensionalArray(QVariantList({innerValue1, innerValue2, innerValue3, innerValue4}), {2, 2});
 
-        QOpcUaExtensionObject ext;
-        success = handler.encode(value, ext);
-        QVERIFY(success);
-        QCOMPARE(ext.encodingTypeId(), value.structureDefinition().defaultEncodingId());
+        auto ext = handler.encode(value);
+        QVERIFY(ext);
+        QCOMPARE(ext->encodingTypeId(), value.structureDefinition().defaultEncodingId());
 
-        const auto decoded = handler.decode(ext, success);
-        QVERIFY(success);
+        const auto decoded = handler.decode(*ext);
+        QVERIFY(decoded);
 
-        const auto matrix = decoded.fields().value("StructMatrixMember").value<QOpcUaMultiDimensionalArray>();
+        const auto matrix = decoded->fields().value("StructMatrixMember").value<QOpcUaMultiDimensionalArray>();
         QCOMPARE(matrix.arrayDimensions(), QList<quint32>({2, 2}));
         QCOMPARE(matrix.value(QList<quint32>({0, 0})).value<QOpcUaGenericStructValue>().fields().value("DoubleSubtypeMember"), 1);
         QCOMPARE(matrix.value(QList<quint32>({0, 1})).value<QOpcUaGenericStructValue>().fields().value("DoubleSubtypeMember"), 2);
