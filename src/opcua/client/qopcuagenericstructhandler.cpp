@@ -56,13 +56,12 @@ QT_BEGIN_NAMESPACE
             auto extObj = node->valueAttribute().value<QOpcUaExtensionObject>();
             qDebug() << "Got object of type" << handler.typeNameForBinaryEncodingId(extObj.encodingTypeId());
 
-            bool success = false;
-            auto result = handler.decode(extObj, success);
+            const auto result = handler.decode(extObj);
 
-            if (!success)
+            if (!result)
                 return;
 
-            qDebug() << result;
+            qDebug() << *result;
         });
     });
     \endcode
@@ -81,10 +80,9 @@ QT_BEGIN_NAMESPACE
         value.fieldsRef()["MandatoryMember"] = 23.0;
         value.fieldsRef()["OptionalMember"] = 42.0;
 
-        QOpcUaExtensionObject ext;
-        bool success = handler.encode(value, ext);
+        const auto ext = handler.encode(value);
 
-        if (!success)
+        if (!ext)
             return;
 
         // Use the extension object to write a node's value attribute, in a method parameter, etc...
@@ -136,20 +134,26 @@ bool QOpcUaGenericStructHandler::initialize()
 }
 
 /*!
-    Decodes \a extensionObject to a \l QOpcUaGenericStructValue. If the decoder fails, a default constructed value is returned.
-    \a success indicates if the decoding was successful after the method has returned.
+    Decodes \a extensionObject to a \l QOpcUaGenericStructValue. If the decoder fails, \c std::nullopt is returned.
 */
-QOpcUaGenericStructValue QOpcUaGenericStructHandler::decode(const QOpcUaExtensionObject &extensionObject, bool &success) const
+std::optional<QOpcUaGenericStructValue> QOpcUaGenericStructHandler::decode(const QOpcUaExtensionObject &extensionObject) const
 {
-    return d_func()->decode(extensionObject, success);
+    bool success = false;
+    auto result = d_func()->decode(extensionObject, success);
+    if (!success)
+        return std::nullopt;
+    return result;
 }
 
 /*!
-    Encodes \a value into the extension object \a output. Returns \c true if the value was successfully encoded.
+    Returns \a value encoded as a \l QOpcUaExtensionObject, or \c std::nullopt if the value could not be encoded.
  */
-bool QOpcUaGenericStructHandler::encode(const QOpcUaGenericStructValue &value, QOpcUaExtensionObject &output)
+std::optional<QOpcUaExtensionObject> QOpcUaGenericStructHandler::encode(const QOpcUaGenericStructValue &value)
 {
-    return d_func()->encode(value, output);
+    QOpcUaExtensionObject output;
+    if (!d_func()->encode(value, output))
+        return std::nullopt;
+    return output;
 }
 
 /*!

@@ -9,6 +9,8 @@
 
 #include <QtCore/qobject.h>
 
+#include <optional>
+
 #ifndef QOPCUAGENERICSTRUCTHANDLER_H
 #define QOPCUAGENERICSTRUCTHANDLER_H
 
@@ -25,8 +27,8 @@ public:
 
     bool initialize();
 
-    QOpcUaGenericStructValue decode(const QOpcUaExtensionObject &extensionObject, bool &success) const;
-    bool encode(const QOpcUaGenericStructValue &value, QOpcUaExtensionObject &output);
+    std::optional<QOpcUaGenericStructValue> decode(const QOpcUaExtensionObject &extensionObject) const;
+    std::optional<QOpcUaExtensionObject> encode(const QOpcUaGenericStructValue &value);
 
     QOpcUaGenericStructValue createGenericStructValueForTypeId(const QString &typeId);
 

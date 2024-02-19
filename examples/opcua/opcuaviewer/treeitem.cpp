@@ -343,10 +343,9 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
         if (mModel->genericStructHandler() &&
             mModel->genericStructHandler()->dataTypeKindForTypeId(mModel->genericStructHandler()->typeIdForBinaryEncodingId(obj.encodingTypeId()))
                                                   == QOpcUaGenericStructHandler::DataTypeKind::Struct) {
-            bool decodeSuccess = false;
-            const auto decodedValue = mModel->genericStructHandler()->decode(obj, decodeSuccess);
-            if (decodeSuccess)
-                return decodedValue.toString();
+            const auto decodedValue = mModel->genericStructHandler()->decode(obj);
+            if (decodedValue)
+                return decodedValue->toString();
         }
 
         return u"[TypeId: \"%1\", Encoding: %2, Body: 0x%3]"_s.arg(obj.encodingTypeId(),
