@@ -2578,7 +2578,7 @@ void Tst_QOpcUaClient::dataChangeSubscriptionTriggering()
 
     valueChangedSpy.wait(signalSpyTimeout);
     QCOMPARE(valueChangedSpy.size(), 1);
-    QCOMPARE(valueChangedSpy.at(0).at(1).value<quint32>(), 2);
+    QCOMPARE(valueChangedSpy.at(0).at(1).value<quint32>(), 2U);
 }
 
 void Tst_QOpcUaClient::dataChangeSubscriptionModifyTriggering()
@@ -2658,7 +2658,7 @@ void Tst_QOpcUaClient::dataChangeSubscriptionModifyTriggering()
 
     valueChangedSpy.wait(signalSpyTimeout);
     QCOMPARE(valueChangedSpy.size(), 1);
-    QCOMPARE(valueChangedSpy.at(0).at(1).value<quint32>(), 3);
+    QCOMPARE(valueChangedSpy.at(0).at(1).value<quint32>(), 3U);
 
     modifySpy.clear();
     triggeringNode->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::TriggeredItemIds,
