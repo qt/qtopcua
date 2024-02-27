@@ -10,9 +10,21 @@
 #include "qopcuastructuredefinition.h"
 #include "qopcuaenumdefinition.h"
 
-#include <QtOpcUa/qopcualiteraloperand.h>
-#include <QtOpcUa/qopcuaelementoperand.h>
+#include <QtOpcUa/qopcuaargument.h>
 #include <QtOpcUa/qopcuaattributeoperand.h>
+#include <QtOpcUa/qopcuaaxisinformation.h>
+#include <QtOpcUa/qopcuacomplexnumber.h>
+#include <QtOpcUa/qopcuadiagnosticinfo.h>
+#include <QtOpcUa/qopcuadoublecomplexnumber.h>
+#include <QtOpcUa/qopcuaelementoperand.h>
+#include <QtOpcUa/qopcuaenumfield.h>
+#include <QtOpcUa/qopcuaeuinformation.h>
+#include <QtOpcUa/qopcualiteraloperand.h>
+#include <QtOpcUa/qopcualocalizedtext.h>
+#include <QtOpcUa/qopcuaqualifiedname.h>
+#include <QtOpcUa/qopcuarange.h>
+#include <QtOpcUa/qopcuastructurefield.h>
+#include <QtOpcUa/qopcuaxvalue.h>
 
 #include <QtCore/qdatetime.h>
 #include <QtCore/qloggingcategory.h>

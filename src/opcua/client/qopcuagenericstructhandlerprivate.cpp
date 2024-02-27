@@ -3,10 +3,24 @@
 
 #include "private/qopcuagenericstructhandler_p.h"
 
+#include <QtOpcUa/qopcuaargument.h>
+#include <QtOpcUa/qopcuaaxisinformation.h>
+#include <QtOpcUa/qopcuabinarydataencoding.h>
+#include <QtOpcUa/qopcuacomplexnumber.h>
+#include <QtOpcUa/qopcuadatavalue.h>
+#include <QtOpcUa/qopcuadiagnosticinfo.h>
+#include <QtOpcUa/qopcuadoublecomplexnumber.h>
+#include <QtOpcUa/qopcuaenumfield.h>
+#include <QtOpcUa/qopcuaeuinformation.h>
 #include <QtOpcUa/qopcuagenericstructhandler.h>
 #include <QtOpcUa/qopcuagenericstructvalue.h>
-#include <QtOpcUa/qopcuabinarydataencoding.h>
+#include <QtOpcUa/qopcuarange.h>
+#include <QtOpcUa/qopcuastructurefield.h>
+#include <QtOpcUa/qopcuaxvalue.h>
+
 #include "qopcuainternaldatatypenode_p.h"
+
+#include <QtCore/quuid.h>
 
 QT_BEGIN_NAMESPACE
 
