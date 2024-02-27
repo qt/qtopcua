@@ -154,7 +154,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QOpcUaNode::valueAttributeUpdated(QVariant value)
+    \fn void QOpcUaNode::valueAttributeUpdated(const QVariant &value)
     \since 6.7
 
     This signal is emitted after the value attribute in the attribute cache has been updated by a

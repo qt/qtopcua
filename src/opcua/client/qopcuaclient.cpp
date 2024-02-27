@@ -262,7 +262,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
-    \fn void QOpcUaClient::registerNodesFinished(QStringList nodesToRegister, QStringList registeredNodeIds, QOpcUa::UaStatusCode statusCode)
+    \fn void QOpcUaClient::registerNodesFinished(const QStringList &nodesToRegister, const QStringList &registeredNodeIds, QOpcUa::UaStatusCode statusCode)
     \since 6.7
 
     This signal is emitted after a \l registerNodes() operation has finished.
@@ -274,7 +274,7 @@ Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA)
 */
 
 /*!
-    \fn void QOpcUaClient::unregisterNodesFinished(QStringList nodesToUnregister, QOpcUa::UaStatusCode statusCode)
+    \fn void QOpcUaClient::unregisterNodesFinished(const QStringList &nodesToUnregister, QOpcUa::UaStatusCode statusCode)
     \since 6.7
 
     This signal is emitted after a \l unregisterNodes() operation has finished.
