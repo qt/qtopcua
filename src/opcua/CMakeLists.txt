@@ -76,10 +76,12 @@ qt_internal_add_module(OpcUa
         client/qopcuaxvalue.cpp client/qopcuaxvalue.h
         client/qopcuadiagnosticinfo.cpp client/qopcuadiagnosticinfo.h
         client/qopcuavariant.cpp client/qopcuavariant.h
+        compat/removed_api.cpp
         core/qopcuaplugin.cpp core/qopcuaplugin.h
         core/qopcuaprovider.cpp core/qopcuaprovider.h
         qopcuaglobal.h
-
+    NO_PCH_SOURCES
+        compat/removed_api.cpp
     LIBRARIES
         Qt::CorePrivate
         Qt::NetworkPrivate

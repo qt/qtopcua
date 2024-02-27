@@ -71,14 +71,18 @@ QOpcUaRelativePathElement &QOpcUaRelativePathElement::operator=(const QOpcUaRela
 }
 
 /*!
-    Returns \c true if this relative path element has the same value as \a rhs.
+    \fn bool QOpcUaRelativePathElement::operator==(const QOpcUaRelativePathElement &lhs,
+                                                   const QOpcUaRelativePathElement &rhs)
+
+    Returns \c true if \a lhs has the same value as \a rhs.
 */
-bool QOpcUaRelativePathElement::operator==(const QOpcUaRelativePathElement &rhs) const
+bool comparesEqual(const QOpcUaRelativePathElement &lhs,
+                   const QOpcUaRelativePathElement &rhs) noexcept
 {
-    return data->includeSubtypes == rhs.includeSubtypes() &&
-            data->isInverse == rhs.isInverse() &&
-            data->referenceTypeId == rhs.referenceTypeId() &&
-            data->targetName == rhs.targetName();
+    return lhs.includeSubtypes() == rhs.includeSubtypes() &&
+            lhs.isInverse() == rhs.isInverse() &&
+            lhs.referenceTypeId() == rhs.referenceTypeId() &&
+            lhs.targetName() == rhs.targetName();
 }
 
 QOpcUaRelativePathElement::~QOpcUaRelativePathElement()

@@ -86,11 +86,16 @@ QOpcUaContentFilterElement &QOpcUaContentFilterElement::operator=(const QOpcUaCo
 }
 
 /*!
-    Returns \c true if this content filter element has the same value as \a rhs.
+    \fn bool QOpcUaContentFilterElement::operator==(const QOpcUaContentFilterElement &lhs,
+                                                    const QOpcUaContentFilterElement &rhs)
+
+    Returns \c true if \a lhs has the same value as \a rhs.
 */
-bool QOpcUaContentFilterElement::operator==(const QOpcUaContentFilterElement &rhs) const
+bool comparesEqual(const QOpcUaContentFilterElement &lhs,
+                   const QOpcUaContentFilterElement &rhs) noexcept
 {
-    return filterOperator() == rhs.filterOperator() && filterOperands() == rhs.filterOperands();
+    return lhs.filterOperator() == rhs.filterOperator()
+            && lhs.filterOperands() == rhs.filterOperands();
 }
 
 /*!
