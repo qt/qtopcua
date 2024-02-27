@@ -300,7 +300,7 @@ void MainWindow::namespacesArrayUpdated(const QStringList &namespaceArray)
     disconnect(mOpcUaClient, &QOpcUaClient::namespaceArrayUpdated, this, &MainWindow::namespacesArrayUpdated);
 
     mGenericStructHandler.reset(new QOpcUaGenericStructHandler(mOpcUaClient));
-    connect(mGenericStructHandler.get(), &QOpcUaGenericStructHandler::initializeFinished, this, &MainWindow::handleGenericStructHandlerInitFinished);
+    connect(mGenericStructHandler.get(), &QOpcUaGenericStructHandler::initializedChanged, this, &MainWindow::handleGenericStructHandlerInitFinished);
     mGenericStructHandler->initialize();
 }
 

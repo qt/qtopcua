@@ -44,6 +44,8 @@ public:
     bool addCustomEnumDefinition(const QOpcUaEnumDefinition &definition, const QString &typeId,
                                  const QString &name, bool isAbstract = false);
 
+    bool initialized() const;
+
     enum class DataTypeKind {
         Unknown = 0,
         Struct = 1,
@@ -57,7 +59,7 @@ public:
     QString typeIdForBinaryEncodingId(const QString &id) const;
 
 Q_SIGNALS:
-    void initializeFinished(bool success);
+    void initializedChanged(bool initialized);
 };
 
 QT_END_NAMESPACE

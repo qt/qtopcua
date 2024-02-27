@@ -71,6 +71,8 @@ protected:
     bool addCustomStructureDefinition(const QOpcUaStructureDefinition &definition, const QString &typeId, const QString &name, bool isAbstract);
     bool addCustomEnumDefinition(const QOpcUaEnumDefinition &definition, const QString &typeId, const QString &name, bool isAbstract);
 
+    bool initialized() const;
+
     template <typename T, QOpcUa::Types OVERLAY = QOpcUa::Types::Undefined>
     QVariant decodeArrayOrScalar(QOpcUaBinaryDataEncoding &decoder, qint32 valueRank, bool &success) const
     {
@@ -168,6 +170,8 @@ private:
     QHash<QString, QString> m_knownSubtypes;
 
     const int m_maxNestingLevel = 500;
+
+    bool m_initialized = false;
 };
 
 QT_END_NAMESPACE

@@ -42,8 +42,8 @@ QT_BEGIN_NAMESPACE
     QOpcUaGenericStructHandler handler(opcuaClient);
     handler.initialize();
 
-    QObject::connect(&handler, &QOpcUaGenericStructHandler::initializeFinished, [opcuaClient, &handler](bool success) {
-        if (!success)
+    QObject::connect(&handler, &QOpcUaGenericStructHandler::initializedChanged, [opcuaClient, &handler](bool initialized) {
+        if (!initialized)
             return;
 
         auto node = opcuaClient->node("ns=4;i=3003"); // A custom struct test node in the open62541-testserver
@@ -72,8 +72,8 @@ QT_BEGIN_NAMESPACE
     QOpcUaGenericStructHandler handler(opcuaClient);
     handler.initialize();
 
-    QObject::connect(&handler, &QOpcUaGenericStructHandler::initializeFinished, [opcuaClient, &handler](bool success) {
-        if (!success)
+    QObject::connect(&handler, &QOpcUaGenericStructHandler::initializedChanged, [opcuaClient, &handler](bool initialized) {
+        if (!initialized)
             return;
 
         QOpcUaGenericStructValue value = handler.createGenericStructValueForTypeId("ns=4;i=3006");
@@ -106,10 +106,10 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QOpcUaGenericStructHandler::initializeFinished(bool success)
+    \fn QOpcUaGenericStructHandler::initializedChanged(bool initialized)
 
-    This signal is emitted when the initialization has finished.
-    \a success indicates if the initialization was successful.
+    This signal is emitted when the initialization process has finished.
+    \a initialized indicates if the initialization was successful.
 */
 
 /*!
@@ -123,7 +123,7 @@ QOpcUaGenericStructHandler::QOpcUaGenericStructHandler(QOpcUaClient *client, QOb
 
 /*!
     Starts the data type hierarchy traversal.
-    Success or failure is reported in the \l initializeFinished signal.
+    Success or failure is reported in the \l initializedChanged signal.
 
     Returns \c false if the operation can't be started.
 */
@@ -245,6 +245,16 @@ bool QOpcUaGenericStructHandler::addCustomEnumDefinition(const QOpcUaEnumDefinit
                                                          const QString &name, bool isAbstract)
 {
     return d_func()->addCustomEnumDefinition(definition, typeId, name, isAbstract);
+}
+
+/*!
+    \since 6.7
+
+    Returns \c true if the generic struct handler is initialized.
+*/
+bool QOpcUaGenericStructHandler::initialized() const
+{
+    return d_func()->initialized();
 }
 
 /*!

@@ -21,6 +21,8 @@ bool QOpcUaGenericStructHandlerPrivate::initialize()
     if (!m_client)
         return false;
 
+    m_initialized = false;
+
     m_baseDataType.reset(new QOpcUaInternalDataTypeNode(m_client));
 
     QObjectPrivate::connect(m_baseDataType.get(), &QOpcUaInternalDataTypeNode::initializeFinished,
@@ -730,8 +732,10 @@ void QOpcUaGenericStructHandlerPrivate::handleFinished(bool success)
 
     Q_Q(QOpcUaGenericStructHandler);
 
-    if (m_finishedCount == 1 || m_hasError)
-        emit q->initializeFinished(!m_hasError);
+    if (m_finishedCount == 1 || m_hasError) {
+        m_initialized = !m_hasError;
+        emit q->initializedChanged(m_initialized);
+    }
 }
 
 bool QOpcUaGenericStructHandlerPrivate::addCustomStructureDefinition(const QOpcUaStructureDefinition &definition,
@@ -792,6 +796,11 @@ bool QOpcUaGenericStructHandlerPrivate::addCustomEnumDefinition(const QOpcUaEnum
     m_typeNamesByTypeId[typeId] = name;
 
     return true;
+}
+
+bool QOpcUaGenericStructHandlerPrivate::initialized() const
+{
+    return m_initialized;
 }
 
 void QOpcUaGenericStructHandlerPrivate::handleInitializeFinished(bool success)
