@@ -1,9 +1,11 @@
 // Copyright (C) 2023 basysKom GmbH, opensource@basyskom.com
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QtOpcUa/qopcuastructuredefinition.h>
+#include <QtOpcUa/qtopcuaexports.h>
 
 #include <QtCore/qhash.h>
+#include <QtCore/qvariant.h>
+#include <QtCore/qstring.h>
 #include <QtCore/qshareddata.h>
 
 #ifndef QOPCUAGENERICSTRUCTVALUE_H
@@ -15,7 +17,9 @@ QT_BEGIN_NAMESPACE
 class QDebug;
 #endif
 
+class QOpcUaStructureDefinition;
 class QOpcUaGenericStructValueData;
+
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaGenericStructValueData, Q_OPCUA_EXPORT)
 class QOpcUaGenericStructValue {
 public:

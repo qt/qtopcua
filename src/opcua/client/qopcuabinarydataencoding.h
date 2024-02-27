@@ -18,7 +18,9 @@
 #include <QtOpcUa/qopcuatype.h>
 #include <QtOpcUa/qopcuaxvalue.h>
 #include <QtOpcUa/qopcuastructuredefinition.h>
+#include <QtOpcUa/qopcuastructurefield.h>
 #include <QtOpcUa/qopcuaenumdefinition.h>
+#include <QtOpcUa/qopcuaenumfield.h>
 #include <QtOpcUa/qopcuadiagnosticinfo.h>
 #include <QtOpcUa/qopcuadatavalue.h>
 #include <QtOpcUa/qopcuavariant.h>

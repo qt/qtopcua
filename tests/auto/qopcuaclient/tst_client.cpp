@@ -13,6 +13,7 @@
 #include <QtOpcUa/QOpcUaEnumDefinition>
 #include <QtOpcUa/qopcuadiagnosticinfo.h>
 #include <QtOpcUa/qopcuagenericstructhandler.h>
+#include <QtOpcUa/qopcuagenericstructvalue.h>
 #include <QtOpcUa/qopcuaattributeoperand.h>
 #include <QtOpcUa/qopcuaelementoperand.h>
 

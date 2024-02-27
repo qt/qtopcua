@@ -3,6 +3,11 @@
 
 #include "qopcuaenumdefinition.h"
 
+#include <QtCore/qlist.h>
+#include <QtCore/qvariant.h>
+
+#include <QtOpcUa/qopcuaenumfield.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!

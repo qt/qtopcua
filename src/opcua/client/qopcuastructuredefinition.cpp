@@ -3,6 +3,11 @@
 
 #include "qopcuastructuredefinition.h"
 
+#include <QtOpcUa/qopcuastructurefield.h>
+
+#include <QtCore/qlist.h>
+#include <QtCore/qvariant.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!

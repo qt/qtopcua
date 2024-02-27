@@ -5,14 +5,14 @@
 #define QOPCUAENUMDEFINITION_H
 
 #include <QtOpcUa/qopcuaglobal.h>
-#include <QtOpcUa/qopcuaenumfield.h>
 
+#include <QtCore/qcontainerfwd.h>
 #include <QtCore/qshareddata.h>
-#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
 class QOpcUaEnumDefinitionData;
+class QOpcUaEnumField;
 
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaEnumDefinitionData, Q_OPCUA_EXPORT)
 

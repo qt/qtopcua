@@ -4,11 +4,14 @@
 #include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/qshareddata.h>
+#include <QtCore/qstringfwd.h>
 
 #ifndef QOPCUADIAGNOSTICINFO_H
 #define QOPCUADIAGNOSTICINFO_H
 
 QT_BEGIN_NAMESPACE
+
+class QVariant;
 
 class QOpcUaDiagnosticInfoData;
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaDiagnosticInfoData, Q_OPCUA_EXPORT)

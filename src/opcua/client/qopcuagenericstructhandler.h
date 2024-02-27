@@ -1,13 +1,10 @@
 // Copyright (C) 2023 basysKom GmbH, opensource@basyskom.com
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#include <QtOpcUa/qopcuaclient.h>
-#include <QtOpcUa/qopcuaextensionobject.h>
-#include <QtOpcUa/qopcuastructuredefinition.h>
-#include <QtOpcUa/qopcuabinarydataencoding.h>
-#include <QtOpcUa/qopcuagenericstructvalue.h>
+#include <QtOpcUa/qopcuaglobal.h>
 
 #include <QtCore/qobject.h>
+#include <QtCore/qstringfwd.h>
 
 #include <optional>
 
@@ -15,6 +12,13 @@
 #define QOPCUAGENERICSTRUCTHANDLER_H
 
 QT_BEGIN_NAMESPACE
+
+
+class QOpcUaClient;
+class QOpcUaEnumDefinition;
+class QOpcUaExtensionObject;
+class QOpcUaStructureDefinition;
+class QOpcUaGenericStructValue;
 
 class QOpcUaGenericStructHandlerPrivate;
 

@@ -5,14 +5,15 @@
 #define QOPCUASTRUCTUREDEFINITION_H
 
 #include <QtOpcUa/qopcuaglobal.h>
-#include <QtOpcUa/qopcuastructurefield.h>
 
+#include <QtCore/qcontainerfwd.h>
 #include <QtCore/qshareddata.h>
-#include <QtCore/qvariant.h>
+#include <QtCore/qstringfwd.h>
 
 QT_BEGIN_NAMESPACE
 
 class QOpcUaStructureDefinitionData;
+class QOpcUaStructureField;
 
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaStructureDefinitionData, Q_OPCUA_EXPORT)
 

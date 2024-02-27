@@ -4,17 +4,18 @@
 #ifndef QHISTORYREADEVENTREQUEST_H
 #define QHISTORYREADEVENTREQUEST_H
 
+#include <QtOpcUa/qopcuaglobal.h>
+#include <QtOpcUa/qopcuamonitoringparameters.h>
+
+#include <QtCore/qcontainerfwd.h>
 #include <QtCore/qobject.h>
-#include <QtCore/qdatetime.h>
 #include <QtCore/qshareddata.h>
 
-#include <QtOpcUa/qopcuareaditem.h>
-#include <QtOpcUa/qopcuahistorydata.h>
-
-#include <QtOpcUa/qopcuaglobal.h>
-#include <QtOpcUa/QOpcUaMonitoringParameters>
-
 QT_BEGIN_NAMESPACE
+
+class QOpcUaReadItem;
+
+class QDateTime;
 
 class QOpcUaHistoryReadEventRequestData;
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaHistoryReadEventRequestData, Q_OPCUA_EXPORT)

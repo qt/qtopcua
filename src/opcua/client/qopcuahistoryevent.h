@@ -5,10 +5,12 @@
 #define QOPCUAHISTORYEVENT_H
 
 #include <QtOpcUa/qopcuatype.h>
-#include <QtOpcUa/qopcuadatavalue.h>
 
 #include <QtOpcUa/qopcuaglobal.h>
-#include <QtCore/qlist.h>
+
+#include <QtCore/qcontainerfwd.h>
+#include <QtCore/qstringfwd.h>
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
 

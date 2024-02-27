@@ -23,7 +23,9 @@
 #include <QtOpcUa/qopcuarelativepathelement.h>
 #include <QtOpcUa/qopcuabrowsepathtarget.h>
 #include <QtOpcUa/qopcuaenumdefinition.h>
+#include <QtOpcUa/qopcuaenumfield.h>
 #include <QtOpcUa/qopcuastructuredefinition.h>
+#include <QtOpcUa/qopcuastructurefield.h>
 
 #include <QtCore/qcborarray.h>
 #include <private/qfactoryloader_p.h>

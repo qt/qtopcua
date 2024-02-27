@@ -3,6 +3,10 @@
 
 #include "qopcuahistoryreadeventrequest.h"
 
+#include <QtOpcUa/qopcuareaditem.h>
+
+#include <QtCore/qdatetime.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!

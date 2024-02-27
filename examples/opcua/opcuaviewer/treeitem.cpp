@@ -4,7 +4,20 @@
 #include "treeitem.h"
 #include "opcuamodel.h"
 
+#include <QOpcUaArgument>
+#include <QOpcUaAxisInformation>
+#include <QOpcUaClient>
+#include <QOpcUaComplexNumber>
+#include <QOpcUaDoubleComplexNumber>
+#include <QOpcUaEUInformation>
+#include <QOpcUaExtensionObject>
 #include <QOpcUaGenericStructHandler>
+#include <QOpcUaGenericStructValue>
+#include <QOpcUaLocalizedText>
+#include <QOpcUaNode>
+#include <QOpcUaQualifiedName>
+#include <QOpcUaRange>
+#include <QOpcUaXValue>
 
 #include <QMetaEnum>
 #include <QPixmap>
