@@ -162,7 +162,7 @@ void QOpcUaAttributeOperand::setNodeId(const QString &nodeId)
 
     Returns \c true if \a lhs has the same value as \a rhs.
 */
-bool operator==(const QOpcUaAttributeOperand &lhs, const QOpcUaAttributeOperand &rhs) noexcept
+bool comparesEqual(const QOpcUaAttributeOperand &lhs, const QOpcUaAttributeOperand &rhs) noexcept
 {
     return lhs.nodeId() == rhs.nodeId() && lhs.attributeId() == rhs.attributeId() &&
            lhs.alias() == rhs.alias() && lhs.browsePath() == rhs.browsePath() &&

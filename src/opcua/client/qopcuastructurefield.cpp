@@ -98,7 +98,7 @@ QOpcUaStructureField &QOpcUaStructureField::operator=(const QOpcUaStructureField
 
     Returns \c true \a lhs is equal to \a rhs.
 */
-bool operator==(const QOpcUaStructureField &lhs, const QOpcUaStructureField &rhs) noexcept
+bool comparesEqual(const QOpcUaStructureField &lhs, const QOpcUaStructureField &rhs) noexcept
 {
     return lhs.data->name == rhs.name() &&
            lhs.data->description == rhs.description() &&

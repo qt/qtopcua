@@ -155,7 +155,7 @@ QOpcUaGenericStructValue &QOpcUaGenericStructValue::operator=(const QOpcUaGeneri
 
     Returns \c true if \a lhs is equal to \a rhs.
 */
-bool operator==(const QOpcUaGenericStructValue &lhs, const QOpcUaGenericStructValue &rhs) noexcept
+bool comparesEqual(const QOpcUaGenericStructValue &lhs, const QOpcUaGenericStructValue &rhs) noexcept
 {
     return lhs.typeName() == rhs.typeName() && lhs.typeId() == rhs.typeId() &&
             lhs.structureDefinition() == rhs.structureDefinition() && lhs.fields() == rhs.fields();

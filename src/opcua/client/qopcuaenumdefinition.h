@@ -26,11 +26,6 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QOpcUaEnumDefinition)
     QOpcUaEnumDefinition(QOpcUaEnumDefinition &&other) noexcept = default;
     Q_OPCUA_EXPORT QOpcUaEnumDefinition &operator=(const QOpcUaEnumDefinition &rhs);
-    friend Q_OPCUA_EXPORT bool operator==(const QOpcUaEnumDefinition &lhs, const QOpcUaEnumDefinition &rhs) noexcept;
-    friend inline bool operator!=(const QOpcUaEnumDefinition &lhs, const QOpcUaEnumDefinition &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
     Q_OPCUA_EXPORT operator QVariant() const;
     Q_OPCUA_EXPORT ~QOpcUaEnumDefinition();
 
@@ -39,6 +34,16 @@ public:
 
 private:
     QExplicitlySharedDataPointer<QOpcUaEnumDefinitionData> data;
+
+    friend Q_OPCUA_EXPORT bool comparesEqual(const QOpcUaEnumDefinition &lhs,
+                                             const QOpcUaEnumDefinition &rhs) noexcept;
+    friend bool operator==(const QOpcUaEnumDefinition &lhs,
+                           const QOpcUaEnumDefinition &rhs) noexcept
+    { return comparesEqual(lhs, rhs); }
+    friend inline bool operator!=(const QOpcUaEnumDefinition &lhs, const QOpcUaEnumDefinition &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
 };
 
 Q_DECLARE_SHARED(QOpcUaEnumDefinition)

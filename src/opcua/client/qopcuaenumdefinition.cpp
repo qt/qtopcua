@@ -92,7 +92,7 @@ QOpcUaEnumDefinition &QOpcUaEnumDefinition::operator=(const QOpcUaEnumDefinition
 
     Returns \c true if \a lhs is equal to \a rhs.
 */
-bool operator==(const QOpcUaEnumDefinition &lhs, const QOpcUaEnumDefinition &rhs) noexcept
+bool comparesEqual(const QOpcUaEnumDefinition &lhs, const QOpcUaEnumDefinition &rhs) noexcept
 {
     return lhs.data->fields == rhs.fields();
 }

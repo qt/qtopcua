@@ -27,11 +27,6 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QOpcUaStructureField)
     QOpcUaStructureField(QOpcUaStructureField &&other) noexcept = default;
     Q_OPCUA_EXPORT QOpcUaStructureField &operator=(const QOpcUaStructureField &rhs);
-    friend Q_OPCUA_EXPORT bool operator==(const QOpcUaStructureField &lhs, const QOpcUaStructureField &rhs) noexcept;
-    friend inline bool operator!=(const QOpcUaStructureField &lhs, const QOpcUaStructureField &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
     Q_OPCUA_EXPORT operator QVariant() const;
     Q_OPCUA_EXPORT ~QOpcUaStructureField();
 
@@ -58,6 +53,17 @@ public:
 
 private:
     QExplicitlySharedDataPointer<QOpcUaStructureFieldData> data;
+
+    friend Q_OPCUA_EXPORT bool comparesEqual(const QOpcUaStructureField &lhs,
+                                             const QOpcUaStructureField &rhs) noexcept;
+    friend bool operator==(const QOpcUaStructureField &lhs,
+                           const QOpcUaStructureField &rhs) noexcept
+    { return comparesEqual(lhs, rhs); }
+    friend inline bool operator!=(const QOpcUaStructureField &lhs,
+                                  const QOpcUaStructureField &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
 };
 
 Q_DECLARE_SHARED(QOpcUaStructureField)

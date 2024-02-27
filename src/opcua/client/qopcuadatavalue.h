@@ -17,11 +17,6 @@ public:
     QOpcUaDataValue();
     QOpcUaDataValue(const QOpcUaDataValue &other);
     QOpcUaDataValue &operator=(const QOpcUaDataValue &other);
-    friend Q_OPCUA_EXPORT bool operator==(const QOpcUaDataValue &lhs, const QOpcUaDataValue &rhs) noexcept;
-    friend inline bool operator!=(const QOpcUaDataValue &lhs, const QOpcUaDataValue &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
     ~QOpcUaDataValue();
 
     void swap(QOpcUaDataValue &other) noexcept
@@ -49,6 +44,15 @@ public:
 
 private:
     QExplicitlySharedDataPointer<QOpcUaDataValueData> data;
+
+    friend Q_OPCUA_EXPORT bool comparesEqual(const QOpcUaDataValue &lhs,
+                                             const QOpcUaDataValue &rhs) noexcept;
+    friend bool operator==(const QOpcUaDataValue &lhs, const QOpcUaDataValue &rhs) noexcept
+    { return comparesEqual(lhs, rhs); }
+    friend bool operator!=(const QOpcUaDataValue &lhs, const QOpcUaDataValue &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
 };
 
 Q_DECLARE_SHARED(QOpcUaDataValue)

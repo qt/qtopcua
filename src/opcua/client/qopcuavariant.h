@@ -59,11 +59,6 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QOpcUaVariant)
     QOpcUaVariant(QOpcUaVariant &&other) noexcept = default;
     Q_OPCUA_EXPORT QOpcUaVariant &operator=(const QOpcUaVariant &rhs);
-    friend Q_OPCUA_EXPORT bool operator==(const QOpcUaVariant &lhs, const QOpcUaVariant &rhs) noexcept;
-    friend inline bool operator!=(const QOpcUaVariant &lhs, const QOpcUaVariant &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
 
     Q_OPCUA_EXPORT QVariant value() const;
     Q_OPCUA_EXPORT void setValue(ValueType type, const QVariant &value, bool isArray = false,
@@ -77,6 +72,15 @@ public:
 
 private:
     QExplicitlySharedDataPointer<QOpcUaVariantData> data;
+
+    friend Q_OPCUA_EXPORT bool comparesEqual(const QOpcUaVariant &lhs,
+                                             const QOpcUaVariant &rhs) noexcept;
+    friend bool operator==(const QOpcUaVariant &lhs, const QOpcUaVariant &rhs) noexcept
+    { return comparesEqual(lhs, rhs); }
+    friend bool operator!=(const QOpcUaVariant &lhs, const QOpcUaVariant &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
 };
 
 Q_DECLARE_SHARED(QOpcUaVariant)

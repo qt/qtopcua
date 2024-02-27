@@ -199,7 +199,7 @@ void QOpcUaDataValue::setServerPicoseconds(quint16 serverPicoseconds)
 
     Returns \c true if \a lhs is equal to \a rhs.
 */
-bool operator==(const QOpcUaDataValue &lhs, const QOpcUaDataValue &rhs) noexcept
+bool comparesEqual(const QOpcUaDataValue &lhs, const QOpcUaDataValue &rhs) noexcept
 {
     return lhs.data->serverTimestamp == rhs.data->serverTimestamp &&
            lhs.data->serverPicoseconds == rhs.data->serverPicoseconds &&

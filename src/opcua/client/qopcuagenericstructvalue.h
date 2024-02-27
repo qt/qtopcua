@@ -34,11 +34,6 @@ public:
     { data.swap(other.data); }
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QOpcUaGenericStructValue)
 
-    friend Q_OPCUA_EXPORT bool operator==(const QOpcUaGenericStructValue &lhs, const QOpcUaGenericStructValue &rhs) noexcept;
-    friend inline bool operator!=(const QOpcUaGenericStructValue &lhs, const QOpcUaGenericStructValue &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
     Q_OPCUA_EXPORT operator QVariant() const;
 
     Q_OPCUA_EXPORT QString typeName() const;
@@ -62,6 +57,17 @@ public:
 
 private:
     QExplicitlySharedDataPointer<QOpcUaGenericStructValueData> data;
+
+    friend Q_OPCUA_EXPORT bool comparesEqual(const QOpcUaGenericStructValue &lhs,
+                                             const QOpcUaGenericStructValue &rhs) noexcept;
+    friend bool operator==(const QOpcUaGenericStructValue &lhs,
+                           const QOpcUaGenericStructValue &rhs) noexcept
+    { return comparesEqual(lhs, rhs); }
+    friend bool operator!=(const QOpcUaGenericStructValue &lhs,
+                           const QOpcUaGenericStructValue &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
 };
 
 Q_DECLARE_SHARED(QOpcUaGenericStructValue)

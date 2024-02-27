@@ -38,13 +38,16 @@ public:
     Q_OPCUA_EXPORT QString nodeId() const;
     Q_OPCUA_EXPORT void setNodeId(const QString &nodeId);
 
-
-    friend Q_OPCUA_EXPORT bool operator==(const QOpcUaHistoryEvent &lhs, const QOpcUaHistoryEvent &rhs) noexcept;
-    friend inline bool operator!=(const QOpcUaHistoryEvent &lhs, const QOpcUaHistoryEvent &rhs) noexcept
+private:
+    friend Q_OPCUA_EXPORT bool comparesEqual(const QOpcUaHistoryEvent &lhs,
+                                             const QOpcUaHistoryEvent &rhs) noexcept;
+    friend bool operator==(const QOpcUaHistoryEvent &lhs, const QOpcUaHistoryEvent &rhs) noexcept
+    { return comparesEqual(lhs, rhs); }
+    friend bool operator!=(const QOpcUaHistoryEvent &lhs, const QOpcUaHistoryEvent &rhs) noexcept
     {
         return !(lhs == rhs);
     }
-private:
+
     QExplicitlySharedDataPointer<QOpcUaHistoryEventData> data;
 };
 

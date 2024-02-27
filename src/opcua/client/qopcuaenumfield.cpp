@@ -94,7 +94,7 @@ QOpcUaEnumField &QOpcUaEnumField::operator=(const QOpcUaEnumField &rhs)
 
     Returns \c true if \a lhs is equal to \a rhs.
 */
-bool operator==(const QOpcUaEnumField &lhs, const QOpcUaEnumField &rhs) noexcept
+bool comparesEqual(const QOpcUaEnumField &lhs, const QOpcUaEnumField &rhs) noexcept
 {
     return lhs.data->name == rhs.name();
 }

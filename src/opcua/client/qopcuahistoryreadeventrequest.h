@@ -55,15 +55,18 @@ public:
 
     Q_OPCUA_EXPORT void addNodeToRead(const QOpcUaReadItem &nodeToRead);
 
-    friend Q_OPCUA_EXPORT bool operator==(const QOpcUaHistoryReadEventRequest &lhs,
-                                                         const QOpcUaHistoryReadEventRequest &rhs) noexcept;
-    friend inline bool operator!=(const QOpcUaHistoryReadEventRequest &lhs,
-                                  const QOpcUaHistoryReadEventRequest &rhs) noexcept
+private:
+    friend Q_OPCUA_EXPORT bool comparesEqual(const QOpcUaHistoryReadEventRequest &lhs,
+                                             const QOpcUaHistoryReadEventRequest &rhs) noexcept;
+    friend bool operator==(const QOpcUaHistoryReadEventRequest &lhs,
+                           const QOpcUaHistoryReadEventRequest &rhs) noexcept
+    { return comparesEqual(lhs, rhs); }
+    friend bool operator!=(const QOpcUaHistoryReadEventRequest &lhs,
+                           const QOpcUaHistoryReadEventRequest &rhs) noexcept
     {
         return !(lhs == rhs);
     }
 
-private:
     QExplicitlySharedDataPointer<QOpcUaHistoryReadEventRequestData> data;
 };
 

@@ -146,7 +146,7 @@ QOpcUaVariant &QOpcUaVariant::operator=(const QOpcUaVariant &rhs)
 }
 
 
-bool operator==(const QOpcUaVariant &lhs, const QOpcUaVariant &rhs) noexcept
+bool comparesEqual(const QOpcUaVariant &lhs, const QOpcUaVariant &rhs) noexcept
 {
     return lhs.data->value == rhs.data->value &&
            lhs.data->valueType == rhs.data->valueType &&

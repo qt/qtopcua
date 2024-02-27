@@ -113,7 +113,7 @@ QOpcUaDiagnosticInfo &QOpcUaDiagnosticInfo::operator=(const QOpcUaDiagnosticInfo
 
     Returns \c true if \a lhs is equal to \a rhs.
 */
-bool operator==(const QOpcUaDiagnosticInfo &lhs, const QOpcUaDiagnosticInfo &rhs) noexcept
+bool comparesEqual(const QOpcUaDiagnosticInfo &lhs, const QOpcUaDiagnosticInfo &rhs) noexcept
 {
     if (lhs.hasSymbolicId() != rhs.hasSymbolicId() ||
         (lhs.hasSymbolicId() && lhs.symbolicId() != rhs.symbolicId()))
