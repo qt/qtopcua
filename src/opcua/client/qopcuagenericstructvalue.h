@@ -11,6 +11,10 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_DEBUG_STREAM
+class QDebug;
+#endif
+
 class QOpcUaGenericStructValueData;
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaGenericStructValueData, Q_OPCUA_EXPORT)
 class QOpcUaGenericStructValue {
@@ -46,9 +50,11 @@ public:
     Q_OPCUA_EXPORT QHash<QString, QVariant> &fieldsRef();
     Q_OPCUA_EXPORT void setFields(const QHash<QString, QVariant> &fields);
 
+#ifndef QT_NO_DEBUG_STREAM
     Q_OPCUA_EXPORT QString toString() const;
 
     friend QDebug Q_OPCUA_EXPORT operator<<(QDebug debug, const QOpcUaGenericStructValue &s);
+#endif
 
 private:
     QExplicitlySharedDataPointer<QOpcUaGenericStructValueData> data;

@@ -3,6 +3,8 @@
 
 #include <QtOpcUa/qopcuagenericstructvalue.h>
 
+#include <QtCore/qdebug.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -250,6 +252,7 @@ void QOpcUaGenericStructValue::setFields(const QHash<QString, QVariant> &fields)
     }
 }
 
+#ifndef QT_NO_DEBUG_STREAM
 /*!
     Returns a string representation for this generic struct value.
  */
@@ -282,5 +285,6 @@ QDebug operator<<(QDebug debug, const QOpcUaGenericStructValue &s)
     debug << ")";
     return debug;
 }
+#endif
 
 QT_END_NAMESPACE
