@@ -68,7 +68,7 @@ public:
         FailedToSetupMonitoring,
         FailedToWriteAttribute,
         FailedToModifyMonitoring,
-        FailedToDisableMonitoring
+        FailedToDisableMonitoring,
     };
    Q_ENUM(Status);
 

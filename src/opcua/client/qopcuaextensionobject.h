@@ -18,7 +18,7 @@ public:
     enum Encoding {
         NoBody = 0,
         ByteString = 1,
-        Xml = 2
+        Xml = 2,
     };
 
     QOpcUaExtensionObject();

@@ -35,7 +35,7 @@ public:
     enum class DataChangeTrigger {
         Status = 0,
         StatusOrValue = 1,
-        StatusOrValueOrTimestamp = 2
+        StatusOrValueOrTimestamp = 2,
     };
     Q_ENUM(DataChangeTrigger)
 
@@ -43,7 +43,7 @@ public:
     enum class DeadbandType {
         None = 0,
         Absolute = 1,
-        Percent = 2
+        Percent = 2,
     };
     Q_ENUM(DeadbandType)
 

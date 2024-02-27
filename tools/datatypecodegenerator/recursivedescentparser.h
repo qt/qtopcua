@@ -27,7 +27,7 @@ public:
         MissingDependency,
         CannotFullyGenerateNamespaceZero,
         UnableToWriteFile,
-        UnableToResolveDependency
+        UnableToResolveDependency,
     };
     Q_ENUM(ParsingError)
 

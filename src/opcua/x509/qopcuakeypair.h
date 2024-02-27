@@ -22,18 +22,18 @@ public:
     enum class RsaKeyStrength {
         Bits1024 = 1024,
         Bits2048 = 2048,
-        Bits4096 = 4096
+        Bits4096 = 4096,
     };
 
     enum class KeyType {
         Rsa,
         Empty,
-        Unknown
+        Unknown,
     };
 
     enum class Cipher {
         Aes128Cbc,
-        Unencrypted
+        Unencrypted,
     };
 
     QOpcUaKeyPair(QObject *parent = nullptr);

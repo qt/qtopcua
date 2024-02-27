@@ -25,12 +25,12 @@ public:
     enum class MonitoringMode {
         Disabled = 0,
         Sampling = 1,
-        Reporting = 2
+        Reporting = 2,
     };
 
     enum class SubscriptionType {
         Shared,
-        Exclusive
+        Exclusive,
     };
 
     enum class Parameter {
@@ -45,7 +45,7 @@ public:
         QueueSize  = (1 << 8),
         DiscardOldest  = (1 << 9),
         MonitoringMode = (1 << 10),
-        TriggeredItemIds = (1 << 11)
+        TriggeredItemIds = (1 << 11),
     };
     Q_ENUM(Parameter)
     Q_DECLARE_FLAGS(Parameters, Parameter)
@@ -58,13 +58,13 @@ public:
         enum class DataChangeTrigger {
             Status = 0,
             StatusOrValue = 1,
-            StatusOrValueOrTimestamp = 2
+            StatusOrValueOrTimestamp = 2,
         };
 
         enum class DeadbandType {
             None = 0,
             Absolute = 1,
-            Percent = 2
+            Percent = 2,
         };
 
         DataChangeFilter();

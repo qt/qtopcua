@@ -16,7 +16,7 @@ public:
     enum class MachineState : quint32 {
         Idle,
         Pumping,
-        Flushing
+        Flushing,
     };
     Q_ENUM(MachineState)
 

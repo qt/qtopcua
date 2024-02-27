@@ -45,7 +45,7 @@ public:
         ExtensionObject = 22,
         DataValue = 23,
         Variant = 24,
-        DiagnosticInfo = 25
+        DiagnosticInfo = 25,
     };
 
     Q_OPCUA_EXPORT QOpcUaVariant();

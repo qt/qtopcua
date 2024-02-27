@@ -34,7 +34,7 @@ public:
         Server = 0,
         Client = 1,
         ClientAndServer = 2,
-        DiscoveryServer = 3
+        DiscoveryServer = 3,
     };
     Q_ENUM(ApplicationType)
 

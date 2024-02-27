@@ -114,7 +114,7 @@ enum class EventNotifierBit : quint8 {
     None = 0,
     SubscribeToEvents = (1 << 0),
     HistoryRead = (1 << 2),
-    HistoryWrite = (1 << 3)
+    HistoryWrite = (1 << 3),
 };
 Q_ENUM_NS(EventNotifierBit)
 Q_DECLARE_FLAGS(EventNotifier, EventNotifierBit)
@@ -124,7 +124,7 @@ enum class TimestampsToReturn {
     Server = 1,
     Both = 2,
     Neither = 4,
-    Invalid = 5
+    Invalid = 5,
 };
 Q_ENUM_NS(TimestampsToReturn)
 
@@ -205,7 +205,7 @@ enum class ReferenceTypeId : quint32 {
     HasContainedComponent = 25263,
     HasAttachedComponent = 25264,
     IsExecutingOn = 25265,
-    HasPushedSecurityGroup = 25345
+    HasPushedSecurityGroup = 25345,
 };
 Q_ENUM_NS(ReferenceTypeId)
 
@@ -252,7 +252,7 @@ enum Types
     RelativePathElement = 38,
     ContentFilterElement = 39,
     EventFilter =     40,
-    Undefined       = 0xFFFFFFFF
+    Undefined       = 0xFFFFFFFF,
 };
 Q_ENUM_NS(Types)
 
@@ -533,7 +533,7 @@ enum class ErrorCategory {
     ArgumentError,
     TypeError,
     ConnectionError,
-    UnspecifiedError
+    UnspecifiedError,
 };
 Q_ENUM_NS(ErrorCategory)
 
@@ -560,7 +560,7 @@ typedef QPair<QVariant, QOpcUa::Types> TypedVariant;
 enum class AxisScale : quint32 {
     Linear = 0,
     Log = 1,
-    Ln = 2
+    Ln = 2,
 };
 
 Q_OPCUA_EXPORT QOpcUa::Types metaTypeToQOpcUaType(QMetaType::Type type);

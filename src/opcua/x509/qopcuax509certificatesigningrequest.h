@@ -20,11 +20,11 @@ class Q_OPCUA_EXPORT QOpcUaX509CertificateSigningRequest
 
 public:
     enum class MessageDigest {
-        SHA256
+        SHA256,
     };
     enum class Encoding {
         PEM,
-        DER
+        DER,
     };
 
     QOpcUaX509CertificateSigningRequest();

@@ -46,7 +46,7 @@ public:
         Disconnected,
         Connecting,
         Connected,
-        Closing
+        Closing,
     };
     Q_ENUM(ClientState)
 
@@ -56,7 +56,7 @@ public:
         AccessDenied,
         ConnectionError,
         UnknownError,
-        UnsupportedAuthenticationInformation
+        UnsupportedAuthenticationInformation,
     };
     Q_ENUM(ClientError)
 

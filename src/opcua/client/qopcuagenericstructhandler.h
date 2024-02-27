@@ -50,7 +50,7 @@ public:
         Unknown = 0,
         Struct = 1,
         Enum = 2,
-        Other = 3
+        Other = 3,
     };
     Q_ENUM(DataTypeKind)
 

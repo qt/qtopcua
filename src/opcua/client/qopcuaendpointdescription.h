@@ -33,7 +33,7 @@ public:
         Invalid = 0,
         None = 1,
         Sign = 2,
-        SignAndEncrypt = 3
+        SignAndEncrypt = 3,
     };
     Q_ENUM(MessageSecurityMode)
 
