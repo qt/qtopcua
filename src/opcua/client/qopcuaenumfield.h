@@ -5,14 +5,16 @@
 #define QOPCUAENUMFIELD_H
 
 #include <QtOpcUa/qopcuaglobal.h>
-#include <QtOpcUa/qopcualocalizedtext.h>
 
 #include <QtCore/qshareddata.h>
-#include <QtCore/qvariant.h>
+#include <QtCore/qstringfwd.h>
 
 QT_BEGIN_NAMESPACE
 
 class QOpcUaEnumFieldData;
+class QOpcUaLocalizedText;
+
+class QVariant;
 
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaEnumFieldData, Q_OPCUA_EXPORT)
 

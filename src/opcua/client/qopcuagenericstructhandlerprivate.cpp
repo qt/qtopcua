@@ -4,6 +4,7 @@
 #include "private/qopcuagenericstructhandler_p.h"
 
 #include <QtOpcUa/qopcuagenericstructhandler.h>
+#include <QtOpcUa/qopcuagenericstructvalue.h>
 #include <QtOpcUa/qopcuabinarydataencoding.h>
 #include "qopcuainternaldatatypenode_p.h"
 

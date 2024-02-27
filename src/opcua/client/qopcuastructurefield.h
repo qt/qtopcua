@@ -5,14 +5,15 @@
 #define QOPCUASTRUCTUREFIELD_H
 
 #include <QtOpcUa/qopcuaglobal.h>
-#include <QtOpcUa/qopcualocalizedtext.h>
 
+#include <QtCore/qcontainerfwd.h>
 #include <QtCore/qshareddata.h>
-#include <QtCore/qvariant.h>
+#include <QtCore/qstringfwd.h>
 
 QT_BEGIN_NAMESPACE
 
 class QOpcUaStructureFieldData;
+class QOpcUaLocalizedText;
 
 QT_DECLARE_QESDP_SPECIALIZATION_DTOR_WITH_EXPORT(QOpcUaStructureFieldData, Q_OPCUA_EXPORT)
 

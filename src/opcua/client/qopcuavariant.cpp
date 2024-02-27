@@ -4,6 +4,7 @@
 #include "qopcuavariant.h"
 #include <QtCore/qdatetime.h>
 #include <QtCore/quuid.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 

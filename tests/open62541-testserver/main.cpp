@@ -24,7 +24,9 @@
 #include <QtOpcUa/QOpcUaRange>
 #include <QtOpcUa/QOpcUaXValue>
 #include <QtOpcUa/QOpcUaStructureDefinition>
+#include <QtOpcUa/QOpcUaStructureField>
 #include <QtOpcUa/QOpcUaEnumDefinition>
+#include <QtOpcUa/QOpcUaEnumField>
 #include <QtOpcUa/QOpcUaDiagnosticInfo>
 
 #include <csignal>

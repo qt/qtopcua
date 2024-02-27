@@ -3,6 +3,10 @@
 
 #include "qopcuaenumfield.h"
 
+#include <QtOpcUa/qopcualocalizedtext.h>
+
+#include <QtCore/qvariant.h>
+
 QT_BEGIN_NAMESPACE
 
 /*!

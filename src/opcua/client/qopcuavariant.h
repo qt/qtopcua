@@ -8,9 +8,10 @@
 
 #include <QtCore/qlist.h>
 #include <QtCore/qshareddata.h>
-#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
+
+class QVariant;
 
 class QOpcUaVariantData;
 
