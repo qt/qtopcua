@@ -23,7 +23,8 @@ class Q_OPCUA_EXPORT QOpcUaGenericStructHandler : public QObject {
     Q_DISABLE_COPY(QOpcUaGenericStructHandler)
     Q_DECLARE_PRIVATE(QOpcUaGenericStructHandler)
 public:
-    QOpcUaGenericStructHandler(QOpcUaClient *client, QObject *parent = nullptr);
+    explicit QOpcUaGenericStructHandler(QOpcUaClient *client, QObject *parent = nullptr);
+    ~QOpcUaGenericStructHandler() override;
 
     bool initialize();
 
