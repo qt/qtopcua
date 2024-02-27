@@ -268,10 +268,10 @@ void populateDiagnosticInfoTestData()
 void populateVariantTestData()
 {
     QOpcUaVariant v1;
-    v1.setValue(QList<QString>{ "Test1", "Test2", "Test3", "Test4"}, QOpcUaVariant::ValueType::String, true, { 2, 2 });
+    v1.setValue(QOpcUaVariant::ValueType::String, QList<QString>{ "Test1", "Test2", "Test3", "Test4"}, true, { 2, 2 });
 
     QOpcUaVariant v2;
-    v2.setValue(23, QOpcUaVariant::ValueType::Int16);
+    v2.setValue(QOpcUaVariant::ValueType::Int16, 23);
 
     testVariants = { v1, v2 };
 }
