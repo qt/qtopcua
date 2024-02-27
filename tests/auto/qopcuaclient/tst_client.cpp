@@ -5972,7 +5972,7 @@ void Tst_QOpcUaClient::decodeGenericStruct()
 
     QOpcUaGenericStructHandler decoder(opcuaClient);
 
-    QSignalSpy spy(&decoder, &QOpcUaGenericStructHandler::initializeFinished);
+    QSignalSpy spy(&decoder, &QOpcUaGenericStructHandler::initializedChanged);
 
     auto success = decoder.initialize();
     QCOMPARE(success, true);
@@ -6166,7 +6166,7 @@ void Tst_QOpcUaClient::encodeGenericStruct()
 
     QOpcUaGenericStructHandler handler(opcuaClient);
 
-    QSignalSpy spy(&handler, &QOpcUaGenericStructHandler::initializeFinished);
+    QSignalSpy spy(&handler, &QOpcUaGenericStructHandler::initializedChanged);
 
     auto success = handler.initialize();
     QCOMPARE(success, true);
@@ -6341,7 +6341,7 @@ void Tst_QOpcUaClient::encodeCustomGenericStruct()
 
     QOpcUaGenericStructHandler handler(opcuaClient);
 
-    QSignalSpy spy(&handler, &QOpcUaGenericStructHandler::initializeFinished);
+    QSignalSpy spy(&handler, &QOpcUaGenericStructHandler::initializedChanged);
 
     auto success = handler.initialize();
     QCOMPARE(success, true);
