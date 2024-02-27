@@ -85,7 +85,7 @@ Q_SIGNALS:
     void attributeWritten(QOpcUa::NodeAttribute attribute, QOpcUa::UaStatusCode statusCode);
     void dataChangeOccurred(QOpcUa::NodeAttribute attr, QVariant value);
     void attributeUpdated(QOpcUa::NodeAttribute attr, QVariant value);
-    void valueAttributeUpdated(QVariant value);
+    void valueAttributeUpdated(const QVariant &value);
     void eventOccurred(QVariantList eventFields);
 
     void monitoringStatusChanged(QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items,
