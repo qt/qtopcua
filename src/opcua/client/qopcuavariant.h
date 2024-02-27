@@ -49,7 +49,7 @@ public:
     };
 
     Q_OPCUA_EXPORT QOpcUaVariant();
-    Q_OPCUA_EXPORT QOpcUaVariant(const QVariant &value, ValueType type, bool isArray = false,
+    Q_OPCUA_EXPORT QOpcUaVariant(ValueType type, const QVariant &value, bool isArray = false,
                                  const QList<qint32> &arrayDimensions = {});
     Q_OPCUA_EXPORT QOpcUaVariant(const QOpcUaVariant &other);
     Q_OPCUA_EXPORT ~QOpcUaVariant();
@@ -65,7 +65,7 @@ public:
     }
 
     Q_OPCUA_EXPORT QVariant value() const;
-    Q_OPCUA_EXPORT void setValue(const QVariant &value, ValueType type, bool isArray = false,
+    Q_OPCUA_EXPORT void setValue(ValueType type, const QVariant &value, bool isArray = false,
                                  const QList<qint32> &arrayDimensions = {});
 
     Q_OPCUA_EXPORT ValueType type() const;
