@@ -13,7 +13,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 class QOpcUaClient;
 class QOpcUaEnumDefinition;
 class QOpcUaExtensionObject;

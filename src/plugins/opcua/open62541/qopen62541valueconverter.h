@@ -8,6 +8,7 @@
 #include <QtOpcUa/qopcuanode.h>
 #include <QtOpcUa/qopcuatype.h>
 #include <QtOpcUa/qopcuabinarydataencoding.h>
+#include <QtOpcUa/qopcuaextensionobject.h>
 
 #include <QtCore/qvariant.h>
 

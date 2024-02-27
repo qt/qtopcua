@@ -1,7 +1,9 @@
 // Copyright (C) 2015 basysKom GmbH, opensource@basyskom.com
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
+#include <QtOpcUa/qopcuaargument.h>
 #include <QtOpcUa/QOpcUaAuthenticationInformation>
+#include <QtOpcUa/qopcuaaxisinformation.h>
 #include <QtOpcUa/QOpcUaClient>
 #include <QtOpcUa/QOpcUaNode>
 #include <QtOpcUa/QOpcUaProvider>
@@ -11,11 +13,20 @@
 #include <QtOpcUa/qopcuamultidimensionalarray.h>
 #include <QtOpcUa/QOpcUaStructureDefinition>
 #include <QtOpcUa/QOpcUaEnumDefinition>
+#include <QtOpcUa/qopcuaenumfield.h>
+#include <QtOpcUa/qopcuaextensionobject.h>
+#include <QtOpcUa/qopcuacomplexnumber.h>
 #include <QtOpcUa/qopcuadiagnosticinfo.h>
+#include <QtOpcUa/qopcuadoublecomplexnumber.h>
+#include <QtOpcUa/qopcuaeuinformation.h>
 #include <QtOpcUa/qopcuagenericstructhandler.h>
 #include <QtOpcUa/qopcuagenericstructvalue.h>
 #include <QtOpcUa/qopcuaattributeoperand.h>
 #include <QtOpcUa/qopcuaelementoperand.h>
+#include <QtOpcUa/qopcuarange.h>
+#include <QtOpcUa/qopcuastructuredefinition.h>
+#include <QtOpcUa/qopcuastructurefield.h>
+#include <QtOpcUa/qopcuaxvalue.h>
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QProcess>
