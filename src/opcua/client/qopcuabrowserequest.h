@@ -18,7 +18,7 @@ public:
     enum class BrowseDirection : quint32 {
         Forward = 0,
         Inverse = 1,
-        Both = 2
+        Both = 2,
     };
 
     QOpcUaBrowseRequest();

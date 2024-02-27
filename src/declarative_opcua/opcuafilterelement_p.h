@@ -56,7 +56,7 @@ public:
         OfType = 14,
         RelatedTo = 15,
         BitwiseAnd = 16,
-        BitwiseOr = 17
+        BitwiseOr = 17,
     };
     Q_ENUM(FilterOperator);
 

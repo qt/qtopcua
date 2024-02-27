@@ -20,7 +20,7 @@ public:
         CertificateValidation,
         OpenSecureChannel,
         CreateSession,
-        ActivateSession
+        ActivateSession,
     };
 
     QOpcUaErrorState();

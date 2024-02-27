@@ -17,7 +17,7 @@ public:
         Email,
         URI,
         DNS,
-        IP
+        IP,
     };
 
     QOpcUaX509ExtensionSubjectAlternativeName();

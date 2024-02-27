@@ -30,7 +30,7 @@ public:
         Reading,
         Finished,
         MoreDataAvailable,
-        Error
+        Error,
     };
     Q_ENUM(State)
 

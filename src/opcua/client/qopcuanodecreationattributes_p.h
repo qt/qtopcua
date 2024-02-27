@@ -49,7 +49,7 @@ public:
         UserWriteMask = 18,
         ValueRank = 19,
         WriteMask = 20,
-        Value = 21
+        Value = 21,
     };
 
     void setAttributeInMask(QOpcUaNodeCreationAttributesPrivate::BitMask attribute)

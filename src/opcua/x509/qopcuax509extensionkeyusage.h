@@ -21,7 +21,7 @@ public:
         CertificateSigning,
         CrlSigning,
         EnciptherOnly,
-        DecipherOnly
+        DecipherOnly,
     };
 
     QOpcUaX509ExtensionKeyUsage();

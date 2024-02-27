@@ -26,7 +26,7 @@ public:
         Anonymous = 0,
         Username = 1,
         Certificate = 2,
-        IssuedToken = 3
+        IssuedToken = 3,
     };
     Q_ENUMS(TokenType)
 
