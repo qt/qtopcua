@@ -26,7 +26,9 @@ public:
     QOpcUaSimpleAttributeOperand(QOpcUa::NodeAttribute attributeId,
                             const QString &typeId = QStringLiteral("ns=0;i=2041")); // BaseEventType
     QOpcUaSimpleAttributeOperand &operator=(const QOpcUaSimpleAttributeOperand &);
+#if QT_OPCUA_REMOVED_SINCE(6, 7)
     bool operator==(const QOpcUaSimpleAttributeOperand &rhs) const;
+#endif
     operator QVariant() const;
     ~QOpcUaSimpleAttributeOperand();
 
@@ -43,13 +45,17 @@ public:
     QString indexRange() const;
     void setIndexRange(const QString &indexRange);
 
-    friend inline bool operator!=(const QOpcUaSimpleAttributeOperand &lhs, const QOpcUaSimpleAttributeOperand &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
-
 private:
     QSharedDataPointer<QOpcUaSimpleAttributeOperandData> data;
+
+    friend Q_OPCUA_EXPORT bool comparesEqual(const QOpcUaSimpleAttributeOperand &lhs,
+                                             const QOpcUaSimpleAttributeOperand &rhs) noexcept;
+    friend bool operator==(const QOpcUaSimpleAttributeOperand &lhs,
+                           const QOpcUaSimpleAttributeOperand &rhs) noexcept
+    { return comparesEqual(lhs, rhs); }
+    friend bool operator!=(const QOpcUaSimpleAttributeOperand &lhs,
+                           const QOpcUaSimpleAttributeOperand &rhs) noexcept
+    { return !comparesEqual(lhs, rhs); }
 };
 
 QT_END_NAMESPACE

@@ -80,12 +80,16 @@ QOpcUaSimpleAttributeOperand &QOpcUaSimpleAttributeOperand::operator=(const QOpc
 }
 
 /*!
-    Returns \c true if this simple attribute operand has the same value as \a rhs.
+    \fn bool QOpcUaSimpleAttributeOperand::operator==(const QOpcUaSimpleAttributeOperand &lhs,
+                                                      const QOpcUaSimpleAttributeOperand &rhs)
+
+    Returns \c true if \a lhs has the same value as \a rhs.
 */
-bool QOpcUaSimpleAttributeOperand::operator==(const QOpcUaSimpleAttributeOperand &rhs) const
+bool comparesEqual(const QOpcUaSimpleAttributeOperand &lhs,
+                   const QOpcUaSimpleAttributeOperand &rhs) noexcept
 {
-    return attributeId() == rhs.attributeId() && browsePath() == rhs.browsePath() &&
-            indexRange() == rhs.indexRange() && typeId() == rhs.typeId();
+    return lhs.attributeId() == rhs.attributeId() && rhs.browsePath() == rhs.browsePath() &&
+            lhs.indexRange() == rhs.indexRange() && lhs.typeId() == rhs.typeId();
 }
 
 /*!

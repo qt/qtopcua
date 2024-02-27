@@ -21,7 +21,9 @@ public:
     QOpcUaRelativePathElement(const QOpcUaQualifiedName &target, QOpcUa::ReferenceTypeId refType);
     QOpcUaRelativePathElement(const QOpcUaRelativePathElement &);
     QOpcUaRelativePathElement &operator=(const QOpcUaRelativePathElement &);
+#if QT_OPCUA_REMOVED_SINCE(6, 7)
     bool operator==(const QOpcUaRelativePathElement &rhs) const;
+#endif
     ~QOpcUaRelativePathElement();
 
     QString referenceTypeId() const;
@@ -39,13 +41,17 @@ public:
     QOpcUaQualifiedName targetName() const;
     void setTargetName(const QOpcUaQualifiedName &targetName);
 
-    friend inline bool operator!=(const QOpcUaRelativePathElement &lhs, const QOpcUaRelativePathElement &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
-
 private:
     QSharedDataPointer<QOpcUaRelativePathElementData> data;
+
+    friend Q_OPCUA_EXPORT bool comparesEqual(const QOpcUaRelativePathElement &lhs,
+                                             const QOpcUaRelativePathElement &rhs) noexcept;
+    friend bool operator==(const QOpcUaRelativePathElement &lhs,
+                           const QOpcUaRelativePathElement &rhs) noexcept
+    { return comparesEqual(lhs, rhs); }
+    friend inline bool operator!=(const QOpcUaRelativePathElement &lhs,
+                                  const QOpcUaRelativePathElement &rhs) noexcept
+    { return !comparesEqual(lhs, rhs); }
 };
 
 QT_END_NAMESPACE
