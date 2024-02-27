@@ -95,7 +95,7 @@ QOpcUaStructureDefinition &QOpcUaStructureDefinition::operator=(const QOpcUaStru
 
     Returns \c true if \a lhs is equal to \a rhs.
 */
-bool operator==(const QOpcUaStructureDefinition &lhs, const QOpcUaStructureDefinition &rhs) noexcept
+bool comparesEqual(const QOpcUaStructureDefinition &lhs, const QOpcUaStructureDefinition &rhs) noexcept
 {
     return lhs.data->defaultEncodingId == rhs.defaultEncodingId() &&
             lhs.data->baseDataType == rhs.baseDataType() &&

@@ -114,7 +114,7 @@ void QOpcUaElementOperand::setIndex(quint32 index)
 
     Returns \c true if \a lhs has the same value as \a rhs.
 */
-bool operator==(const QOpcUaElementOperand &lhs, const QOpcUaElementOperand &rhs) noexcept
+bool comparesEqual(const QOpcUaElementOperand &lhs, const QOpcUaElementOperand &rhs) noexcept
 {
     return lhs.index() == rhs.index();
 }

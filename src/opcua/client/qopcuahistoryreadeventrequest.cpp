@@ -228,8 +228,8 @@ QOpcUaHistoryReadEventRequest &QOpcUaHistoryReadEventRequest::operator=(const QO
     Two QOpcUaHistoryReadEventRequest items are considered equal if their \c startTimestamp,
     \c endTimestamp, \c numValuesPerNode, \c filter and \c nodesToRead are equal.
 */
-bool operator==(const QOpcUaHistoryReadEventRequest &lhs,
-                const QOpcUaHistoryReadEventRequest &rhs) noexcept
+bool comparesEqual(const QOpcUaHistoryReadEventRequest &lhs,
+                   const QOpcUaHistoryReadEventRequest &rhs) noexcept
 {
     return (lhs.data->startTimestamp == rhs.data->startTimestamp &&
             lhs.data->endTimestamp == rhs.data->endTimestamp &&

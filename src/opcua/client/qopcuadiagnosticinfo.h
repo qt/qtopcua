@@ -26,11 +26,6 @@ public:
     { data.swap(other.data); }
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QOpcUaDiagnosticInfo)
 
-    friend Q_OPCUA_EXPORT bool operator==(const QOpcUaDiagnosticInfo &lhs, const QOpcUaDiagnosticInfo &rhs) noexcept;
-    friend inline bool operator!=(const QOpcUaDiagnosticInfo &lhs, const QOpcUaDiagnosticInfo &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
     Q_OPCUA_EXPORT operator QVariant() const;
 
     Q_OPCUA_EXPORT qint32 symbolicId() const;
@@ -78,6 +73,17 @@ public:
 
 private:
     QExplicitlySharedDataPointer<QOpcUaDiagnosticInfoData> data;
+
+    friend Q_OPCUA_EXPORT bool comparesEqual(const QOpcUaDiagnosticInfo &lhs,
+                                             const QOpcUaDiagnosticInfo &rhs) noexcept;
+    friend bool operator==(const QOpcUaDiagnosticInfo &lhs,
+                           const QOpcUaDiagnosticInfo &rhs) noexcept
+    { return comparesEqual(lhs, rhs); }
+    friend bool operator!=(const QOpcUaDiagnosticInfo &lhs,
+                           const QOpcUaDiagnosticInfo &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
 };
 
 Q_DECLARE_SHARED(QOpcUaDiagnosticInfo)

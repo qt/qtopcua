@@ -109,7 +109,7 @@ void QOpcUaLiteralOperand::setValue(const QVariant &value)
 
     Returns \c true if \a lhs has the same value as \a rhs.
 */
-bool operator==(const QOpcUaLiteralOperand &lhs, const QOpcUaLiteralOperand &rhs) noexcept
+bool comparesEqual(const QOpcUaLiteralOperand &lhs, const QOpcUaLiteralOperand &rhs) noexcept
 {
     return lhs.value() == rhs.value() && lhs.type() == rhs.type();
 }

@@ -43,13 +43,18 @@ public:
     QString indexRange() const;
     void setIndexRange(const QString &indexRange);
 
-    friend Q_OPCUA_EXPORT bool operator==(const QOpcUaAttributeOperand &lhs, const QOpcUaAttributeOperand &rhs) noexcept;
-    friend inline bool operator!=(const QOpcUaAttributeOperand &lhs, const QOpcUaAttributeOperand &rhs) noexcept
+private:
+    friend Q_OPCUA_EXPORT bool comparesEqual(const QOpcUaAttributeOperand &lhs,
+                                             const QOpcUaAttributeOperand &rhs) noexcept;
+    friend bool operator==(const QOpcUaAttributeOperand &lhs,
+                           const QOpcUaAttributeOperand &rhs) noexcept
+    { return comparesEqual(lhs, rhs); }
+    friend bool operator!=(const QOpcUaAttributeOperand &lhs,
+                           const QOpcUaAttributeOperand &rhs) noexcept
     {
         return !(lhs == rhs);
     }
 
-private:
     QSharedDataPointer<QOpcUaAttributeOperandData> data;
 };
 

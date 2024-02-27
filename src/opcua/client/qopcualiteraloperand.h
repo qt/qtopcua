@@ -28,14 +28,18 @@ public:
     QOpcUa::Types type() const;
     void setType(QOpcUa::Types type);
 
-    friend Q_OPCUA_EXPORT bool operator==(const QOpcUaLiteralOperand &lhs, const QOpcUaLiteralOperand &rhs) noexcept;
-    friend inline bool operator!=(const QOpcUaLiteralOperand &lhs, const QOpcUaLiteralOperand &rhs) noexcept
+private:
+    friend Q_OPCUA_EXPORT bool comparesEqual(const QOpcUaLiteralOperand &lhs,
+                                             const QOpcUaLiteralOperand &rhs) noexcept;
+    friend bool operator==(const QOpcUaLiteralOperand &lhs,
+                           const QOpcUaLiteralOperand &rhs) noexcept
+    { return comparesEqual(lhs, rhs); }
+    friend bool operator!=(const QOpcUaLiteralOperand &lhs,
+                           const QOpcUaLiteralOperand &rhs) noexcept
     {
         return !(lhs == rhs);
     }
 
-
-private:
     QSharedDataPointer<QOpcUaLiteralOperandData> data;
 };
 

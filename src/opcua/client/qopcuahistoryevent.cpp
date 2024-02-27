@@ -175,7 +175,7 @@ QOpcUaHistoryEvent &QOpcUaHistoryEvent::operator=(const QOpcUaHistoryEvent &othe
 
     Returns \c true if \a rhs and \a lhs contain the same values.
 */
-bool operator==(const QOpcUaHistoryEvent &lhs, const QOpcUaHistoryEvent &rhs) noexcept
+bool comparesEqual(const QOpcUaHistoryEvent &lhs, const QOpcUaHistoryEvent &rhs) noexcept
 {
     return lhs.events() == rhs.events() && lhs.statusCode() == rhs.statusCode() && lhs.nodeId() == rhs.nodeId();
 }

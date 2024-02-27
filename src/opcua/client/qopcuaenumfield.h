@@ -28,11 +28,6 @@ public:
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QOpcUaEnumField)
     QOpcUaEnumField(QOpcUaEnumField &&other) noexcept = default;
     Q_OPCUA_EXPORT QOpcUaEnumField &operator=(const QOpcUaEnumField &rhs);
-    friend Q_OPCUA_EXPORT bool operator==(const QOpcUaEnumField &lhs, const QOpcUaEnumField &rhs) noexcept;
-    friend inline bool operator!=(const QOpcUaEnumField &lhs, const QOpcUaEnumField &rhs) noexcept
-    {
-        return !(lhs == rhs);
-    }
     Q_OPCUA_EXPORT operator QVariant() const;
     Q_OPCUA_EXPORT ~QOpcUaEnumField();
 
@@ -51,6 +46,15 @@ public:
 
 private:
     QExplicitlySharedDataPointer<QOpcUaEnumFieldData> data;
+
+    friend Q_OPCUA_EXPORT bool comparesEqual(const QOpcUaEnumField &lhs,
+                                             const QOpcUaEnumField &rhs) noexcept;
+    friend bool operator==(const QOpcUaEnumField &lhs, const QOpcUaEnumField &rhs) noexcept
+    { return comparesEqual(lhs, rhs); }
+    friend bool operator!=(const QOpcUaEnumField &lhs, const QOpcUaEnumField &rhs) noexcept
+    {
+        return !(lhs == rhs);
+    }
 };
 
 Q_DECLARE_SHARED(QOpcUaEnumField)
