@@ -121,6 +121,8 @@ QOpcUaGenericStructHandler::QOpcUaGenericStructHandler(QOpcUaClient *client, QOb
 
 }
 
+QOpcUaGenericStructHandler::~QOpcUaGenericStructHandler() = default;
+
 /*!
     Starts the data type hierarchy traversal.
     Success or failure is reported in the \l initializedChanged signal.
