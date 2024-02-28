@@ -1,8 +1,8 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef OPCUAPATHRESOLVER_P_H
-#define OPCUAPATHRESOLVER_P_H
+#ifndef QOPCUA_OPCUAPATHRESOLVER_P_H
+#define QOPCUA_OPCUAPATHRESOLVER_P_H
 
 #include <private/universalnode_p.h>
 
@@ -59,4 +59,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // OPCUAPATHRESOLVER_P_H
+#endif // QOPCUA_OPCUAPATHRESOLVER_P_H

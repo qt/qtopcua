@@ -1,8 +1,8 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef UNIVERSALNODE_P_H
-#define UNIVERSALNODE_P_H
+#ifndef QOPCUA_UNIVERSALNODE_P_H
+#define QOPCUA_UNIVERSALNODE_P_H
 
 #include <QObject>
 #include <private/qglobal_p.h>
@@ -101,4 +101,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // UNIVERSALNODE_P_H
+#endif // QOPCUA_UNIVERSALNODE_P_H
