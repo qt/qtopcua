@@ -29,8 +29,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#pragma once
-
 Q_DECLARE_LOGGING_CATEGORY(lcGenericStructHandler);
 
 class QOpcUaInternalDataTypeNode;
