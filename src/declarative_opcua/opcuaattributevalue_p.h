@@ -1,8 +1,8 @@
 // Copyright (C) 2021 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef OPCUAATTRIBUTEVALUE_P_H
-#define OPCUAATTRIBUTEVALUE_P_H
+#ifndef QOPCUA_OPCUAATTRIBUTEVALUE_P_H
+#define QOPCUA_OPCUAATTRIBUTEVALUE_P_H
 
 #include <QObject>
 #include <QVariant>
@@ -41,4 +41,4 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // OPCUAATTRIBUTEVALUE_P_H
+#endif // QOPCUA_OPCUAATTRIBUTEVALUE_P_H

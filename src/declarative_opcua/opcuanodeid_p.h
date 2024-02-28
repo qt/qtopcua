@@ -1,8 +1,8 @@
 // Copyright (C) 2018 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
-#ifndef OPCUANODEID_P_H
-#define OPCUANODEID_P_H
+#ifndef QOPCUA_OPCUANODEID_P_H
+#define QOPCUA_OPCUANODEID_P_H
 
 #include <private/opcuanodeidtype_p.h>
 
@@ -41,4 +41,4 @@ signals:
 
 QT_END_NAMESPACE
 
-#endif // OPCUANODEID_P_H
+#endif // QOPCUA_OPCUANODEID_P_H
