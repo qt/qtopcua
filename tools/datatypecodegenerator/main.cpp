@@ -74,6 +74,7 @@ bool generateBsdFiles(RecursiveDescentParser &recursiveDescentParser,
         return false;
     case RecursiveDescentParser::UnableToResolveDependency:
         qCritical() << "Error: Unresolvable mapping occurred.";
+        return false;
     default:
         qCritical() << "Error: Unknown file generating error occurred.";
         return false;
