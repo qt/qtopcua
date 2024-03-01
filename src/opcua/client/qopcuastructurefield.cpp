@@ -51,12 +51,12 @@ QOpcUaStructureField::QOpcUaStructureField(const QOpcUaStructureField &other)
 }
 
 /*!
-    Sets the values from \a rhs in this structure field.
+    Sets the values from \a other in this structure field.
 */
-QOpcUaStructureField &QOpcUaStructureField::operator=(const QOpcUaStructureField &rhs)
+QOpcUaStructureField &QOpcUaStructureField::operator=(const QOpcUaStructureField &other)
 {
-    if (this != &rhs)
-        data.operator=(rhs.data);
+    if (this != &other)
+        data.operator=(other.data);
     return *this;
 }
 
