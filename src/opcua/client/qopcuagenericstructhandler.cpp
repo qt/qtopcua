@@ -231,7 +231,7 @@ bool QOpcUaGenericStructHandler::isAbstractTypeId(const QString &id) const
     Returns \c true if the structure definition was successfully added.
  */
 bool QOpcUaGenericStructHandler::addCustomStructureDefinition(const QOpcUaStructureDefinition &definition, const QString &typeId,
-                                                              const QString &name, bool isAbstract)
+                                                              const QString &name, QOpcUa::IsAbstract isAbstract)
 {
     return d_func()->addCustomStructureDefinition(definition, typeId, name, isAbstract);
 }
@@ -245,7 +245,7 @@ bool QOpcUaGenericStructHandler::addCustomStructureDefinition(const QOpcUaStruct
     Returns \c true if the enum definition was successfully added.
  */
 bool QOpcUaGenericStructHandler::addCustomEnumDefinition(const QOpcUaEnumDefinition &definition, const QString &typeId,
-                                                         const QString &name, bool isAbstract)
+                                                         const QString &name, QOpcUa::IsAbstract isAbstract)
 {
     return d_func()->addCustomEnumDefinition(definition, typeId, name, isAbstract);
 }

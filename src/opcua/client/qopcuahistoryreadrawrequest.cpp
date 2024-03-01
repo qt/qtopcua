@@ -26,8 +26,8 @@ class QOpcUaHistoryReadRawRequestData : public QSharedData
 public:
     QDateTime startTimestamp;
     QDateTime endTimestamp;
-    quint32 numValuesPerNode;
-    bool returnBounds;
+    quint32 numValuesPerNode = 0;
+    bool returnBounds = false;
     QList<QOpcUaReadItem> nodesToRead;
     QOpcUa::TimestampsToReturn timestampsToReturn = QOpcUa::TimestampsToReturn::Both;
 };
@@ -65,14 +65,11 @@ QOpcUaHistoryReadRawRequest::QOpcUaHistoryReadRawRequest(const QList<QOpcUaReadI
 */
 QOpcUaHistoryReadRawRequest::QOpcUaHistoryReadRawRequest(const QList<QOpcUaReadItem> &nodesToRead,
                                                          const QDateTime &startTimestamp, const QDateTime &endTimestamp,
-                                                         quint32 numValuesPerNode, bool returnBounds,
                                                          QOpcUa::TimestampsToReturn timestampsToReturn)
     : data(new QOpcUaHistoryReadRawRequestData)
 {
     data->startTimestamp = startTimestamp;
     data->endTimestamp = endTimestamp;
-    data->numValuesPerNode = numValuesPerNode;
-    data->returnBounds = returnBounds;
     data->nodesToRead = nodesToRead;
     data->timestampsToReturn = timestampsToReturn;
 }

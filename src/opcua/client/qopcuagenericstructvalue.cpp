@@ -5,6 +5,9 @@
 #include <QtOpcUa/qopcuagenericstructvalue.h>
 
 #include <QtCore/qdebug.h>
+#include <QtCore/qhash.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -86,6 +89,15 @@ QOpcUaGenericStructValue::QOpcUaGenericStructValue()
     Destroys this generic struct value object.
 */
 QOpcUaGenericStructValue::~QOpcUaGenericStructValue()
+{
+}
+
+/*!
+    Constructs a generic struct value from \a typeName, \a typeId and \a definition.
+*/
+QOpcUaGenericStructValue::QOpcUaGenericStructValue(const QString &typeName, const QString &typeId,
+                                                   const QOpcUaStructureDefinition &definition)
+    : data(new QOpcUaGenericStructValueData(typeName, typeId, definition, {}))
 {
 }
 

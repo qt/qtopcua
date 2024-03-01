@@ -29,9 +29,7 @@ public:
     explicit QOpcUaHistoryReadRawRequest(const QList<QOpcUaReadItem> &nodesToRead,
                                          const QDateTime &startTimestamp,
                                          const QDateTime &endTimestamp,
-                                         quint32 numValuesPerNode,
-                                         bool returnBounds,
-                                         QOpcUa::TimestampsToReturn);
+                                         QOpcUa::TimestampsToReturn timestampsToReturn);
 
     QOpcUaHistoryReadRawRequest(const QOpcUaHistoryReadRawRequest &other);
     ~QOpcUaHistoryReadRawRequest();

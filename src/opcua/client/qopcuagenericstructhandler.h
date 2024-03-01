@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include <QtOpcUa/qopcuaglobal.h>
+#include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/qobject.h>
 #include <QtCore/qstringfwd.h>
@@ -44,9 +45,9 @@ public:
     bool isAbstractTypeId(const QString &id) const;
 
     bool addCustomStructureDefinition(const QOpcUaStructureDefinition &definition, const QString &typeId,
-                                      const QString &name, bool isAbstract = false);
+                                      const QString &name, QOpcUa::IsAbstract isAbstract = QOpcUa::IsAbstract::NotAbstract);
     bool addCustomEnumDefinition(const QOpcUaEnumDefinition &definition, const QString &typeId,
-                                 const QString &name, bool isAbstract = false);
+                                 const QString &name, QOpcUa::IsAbstract isAbstract = QOpcUa::IsAbstract::NotAbstract);
 
     bool initialized() const;
 

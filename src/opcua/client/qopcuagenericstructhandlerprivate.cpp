@@ -754,7 +754,7 @@ void QOpcUaGenericStructHandlerPrivate::handleFinished(bool success)
 }
 
 bool QOpcUaGenericStructHandlerPrivate::addCustomStructureDefinition(const QOpcUaStructureDefinition &definition,
-                                                                     const QString &typeId, const QString &name, bool isAbstract)
+                                                                     const QString &typeId, const QString &name, QOpcUa::IsAbstract isAbstract)
 {
     if (typeId.isEmpty()) {
         qCWarning(lcGenericStructHandler) << "Failed to add custom structure definition, typeId must not be empty";
@@ -772,7 +772,7 @@ bool QOpcUaGenericStructHandlerPrivate::addCustomStructureDefinition(const QOpcU
     }
 
     StructMapEntry entry;
-    entry.isAbstract = isAbstract;
+    entry.isAbstract = isAbstract == QOpcUa::IsAbstract::Abstract;
     entry.name = name;
     entry.nodeId = typeId;
     entry.structureDefinition = definition;
@@ -782,14 +782,15 @@ bool QOpcUaGenericStructHandlerPrivate::addCustomStructureDefinition(const QOpcU
     m_typeNamesByEncodingId[definition.defaultEncodingId()] = name;
     m_typeNamesByTypeId[typeId] = name;
 
-    if (isAbstract)
+    if (entry.isAbstract)
         m_abstractTypeIds.insert(typeId);
 
     return true;
 }
 
 bool QOpcUaGenericStructHandlerPrivate::addCustomEnumDefinition(const QOpcUaEnumDefinition &definition,
-                                                                const QString &typeId, const QString &name, bool isAbstract)
+                                                                const QString &typeId, const QString &name,
+                                                                QOpcUa::IsAbstract isAbstract)
 {
     if (typeId.isEmpty()) {
         qCWarning(lcGenericStructHandler) << "Failed to add custom enum definition, typeId must not be empty";
@@ -802,7 +803,7 @@ bool QOpcUaGenericStructHandlerPrivate::addCustomEnumDefinition(const QOpcUaEnum
     }
 
     EnumMapEntry entry;
-    entry.isAbstract = isAbstract;
+    entry.isAbstract = isAbstract == QOpcUa::IsAbstract::Abstract;
     entry.name = name;
     entry.nodeId = typeId;
     entry.enumDefinition = definition;

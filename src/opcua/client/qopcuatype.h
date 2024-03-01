@@ -563,6 +563,12 @@ enum class AxisScale : quint32 {
     Ln = 2,
 };
 
+enum class IsAbstract {
+    NotAbstract = 0,
+    Abstract = 1,
+};
+Q_ENUM_NS(IsAbstract)
+
 Q_OPCUA_EXPORT QOpcUa::Types metaTypeToQOpcUaType(QMetaType::Type type);
 Q_OPCUA_EXPORT QOpcUa::Types opcUaDataTypeToQOpcUaType(const QString &type);
 }

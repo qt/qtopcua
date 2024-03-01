@@ -26,9 +26,7 @@ public:
     Q_OPCUA_EXPORT explicit QOpcUaHistoryReadEventRequest(const QList<QOpcUaReadItem> &nodesToRead,
                                                           const QDateTime &startTimestamp,
                                                           const QDateTime &endTimestamp,
-                                                          const QOpcUaMonitoringParameters::EventFilter &filter,
-                                                          quint32 numValuesPerNode = 0);
-
+                                                          const QOpcUaMonitoringParameters::EventFilter &filter);
     Q_OPCUA_EXPORT QOpcUaHistoryReadEventRequest(const QOpcUaHistoryReadEventRequest &other);
     QOpcUaHistoryReadEventRequest(QOpcUaHistoryReadEventRequest &&other) noexcept = default;
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QOpcUaHistoryReadEventRequest)
