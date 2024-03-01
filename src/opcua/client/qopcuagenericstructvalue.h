@@ -3,10 +3,9 @@
 
 #include <QtOpcUa/qtopcuaexports.h>
 
-#include <QtCore/qhash.h>
-#include <QtCore/qvariant.h>
-#include <QtCore/qstring.h>
+#include <QtCore/qcontainerfwd.h>
 #include <QtCore/qshareddata.h>
+#include <QtCore/qstringfwd.h>
 
 #ifndef QOPCUAGENERICSTRUCTVALUE_H
 #define QOPCUAGENERICSTRUCTVALUE_H
@@ -25,8 +24,9 @@ class QOpcUaGenericStructValue {
 public:
     Q_OPCUA_EXPORT QOpcUaGenericStructValue();
     Q_OPCUA_EXPORT ~QOpcUaGenericStructValue();
+    Q_OPCUA_EXPORT QOpcUaGenericStructValue(const QString &typeName, const QString &typeId, const QOpcUaStructureDefinition &definition);
     Q_OPCUA_EXPORT QOpcUaGenericStructValue(const QString &typeName, const QString &typeId, const QOpcUaStructureDefinition &definition,
-                                            const QHash<QString, QVariant> &fields = QHash<QString, QVariant>());
+                                            const QHash<QString, QVariant> &fields);
     Q_OPCUA_EXPORT QOpcUaGenericStructValue(const QOpcUaGenericStructValue &other);
     QOpcUaGenericStructValue(QOpcUaGenericStructValue &&other) noexcept = default;
     Q_OPCUA_EXPORT QOpcUaGenericStructValue &operator=(const QOpcUaGenericStructValue &rhs);

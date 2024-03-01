@@ -69,8 +69,10 @@ protected:
     bool encodeKnownTypesInternal(QOpcUaBinaryDataEncoding &encoder, const QVariant &value, qint32 valueRank, const QString &dataTypeId);
     void handleFinished(bool success);
 
-    bool addCustomStructureDefinition(const QOpcUaStructureDefinition &definition, const QString &typeId, const QString &name, bool isAbstract);
-    bool addCustomEnumDefinition(const QOpcUaEnumDefinition &definition, const QString &typeId, const QString &name, bool isAbstract);
+    bool addCustomStructureDefinition(const QOpcUaStructureDefinition &definition, const QString &typeId, const QString &name,
+                                      QOpcUa::IsAbstract isAbstract);
+    bool addCustomEnumDefinition(const QOpcUaEnumDefinition &definition, const QString &typeId, const QString &name,
+                                 QOpcUa::IsAbstract isAbstract);
 
     bool initialized() const;
 

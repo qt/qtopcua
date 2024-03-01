@@ -1025,7 +1025,7 @@ QOpcUaVariant QOpcUaBinaryDataEncoding::decode<QOpcUaVariant>(bool &success) {
     if (hasArrayDimensions)
         arrayDimensions = decodeArray<qint32>(success);
 
-    temp.setValue(resultType, value, isArray, arrayDimensions);
+    temp.setValue(resultType, value, arrayDimensions);
 
     return temp;
 }

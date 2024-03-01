@@ -30,7 +30,7 @@ class QOpcUaHistoryReadEventRequestData : public QSharedData
 public:
     QDateTime startTimestamp;
     QDateTime endTimestamp;
-    quint32 numValuesPerNode;
+    quint32 numValuesPerNode = 0;
     QList<QOpcUaReadItem> nodesToRead;
     QOpcUaMonitoringParameters::EventFilter filter;
 };
@@ -51,13 +51,11 @@ QOpcUaHistoryReadEventRequest::QOpcUaHistoryReadEventRequest()
 QOpcUaHistoryReadEventRequest::QOpcUaHistoryReadEventRequest(const QList<QOpcUaReadItem> &nodesToRead,
                                                              const QDateTime &startTimestamp,
                                                              const QDateTime &endTimestamp,
-                                                             const QOpcUaMonitoringParameters::EventFilter &filter,
-                                                             quint32 numValuesPerNode)
+                                                             const QOpcUaMonitoringParameters::EventFilter &filter)
     : data(new QOpcUaHistoryReadEventRequestData)
 {
     data->startTimestamp = startTimestamp;
     data->endTimestamp = endTimestamp;
-    data->numValuesPerNode = numValuesPerNode;
     data->nodesToRead = nodesToRead;
     data->filter = filter;
 }

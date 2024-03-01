@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #include "qopcuavariant.h"
+
 #include <QtCore/qdatetime.h>
+#include <QtCore/qlist.h>
 #include <QtCore/quuid.h>
 #include <QtCore/qvariant.h>
 
@@ -11,6 +13,15 @@ QT_BEGIN_NAMESPACE
 class QOpcUaVariantData : public QSharedData
 {
 public:
+    void updateIsArray()
+    {
+        const QMetaType metaType = value.metaType();
+        const auto name = QUtf8StringView(metaType.name());
+        isArray = (name.size() > 6 && name.first(6) == QUtf8StringView("QList<"))
+                  || name == QUtf8StringView("QStringList")
+                  || name == QUtf8StringView("QVariantList");
+    }
+
     QVariant value;
     QOpcUaVariant::ValueType valueType = QOpcUaVariant::ValueType::Unknown;
     QList<qint32> arrayDimensions;
@@ -112,20 +123,35 @@ QOpcUaVariant::QOpcUaVariant()
 }
 
 /*!
-    Constructs a new OPC UA variant and sets \a type, \a value, \a isArray and \a arrayDimensions
-*/
-QOpcUaVariant::QOpcUaVariant(ValueType type, const QVariant &value, bool isArray, const QList<qint32> &arrayDimensions)
-    : data(new QOpcUaVariantData)
-{
-    setValue(type, value, isArray, arrayDimensions);
-}
-
-/*!
     Constructs a new OPC UA variant from \a other.
 */
 QOpcUaVariant::QOpcUaVariant(const QOpcUaVariant &other)
     : data(other.data)
 {
+}
+
+/*!
+    Constructs a new OPC UA variant of type \a type with value \a value.
+
+    Scalar values must be passed as a \l QVariant containing a value of \a type.
+    Array values must be passed as a \l QVariant containing a \l QList of \a type.
+*/
+QOpcUaVariant::QOpcUaVariant(ValueType type, const QVariant &value)
+    : data(new QOpcUaVariantData)
+{
+    setValue(type, value);
+}
+
+/*!
+    Constructs a new OPC UA variant of type \a type with value \a value and array dimensions \a arrayDimensions.
+
+    Scalar values must be passed as a \l QVariant containing a value of \a type.
+    Array values must be passed as a \l QVariant containing a \l QList of \a type.
+*/
+QOpcUaVariant::QOpcUaVariant(ValueType type, const QVariant &value, const QList<qint32> arrayDimensions)
+    : data(new QOpcUaVariantData)
+{
+    setValue(type, value, arrayDimensions);
 }
 
 /*!
@@ -150,8 +176,7 @@ bool comparesEqual(const QOpcUaVariant &lhs, const QOpcUaVariant &rhs) noexcept
 {
     return lhs.data->value == rhs.data->value &&
            lhs.data->valueType == rhs.data->valueType &&
-           lhs.data->arrayDimensions == rhs.data->arrayDimensions &&
-           lhs.data->isArray == rhs.data->isArray;
+           lhs.data->arrayDimensions == rhs.data->arrayDimensions;
 }
 
 /*!
@@ -163,20 +188,35 @@ QVariant QOpcUaVariant::value() const
 }
 
 /*!
-    Sets the value of this OPC UA variant to \a value, the type to \a type, isArray to \a isArray and the
-    array dimensions to \a arrayDimensions.
+    Sets the value of this OPC UA variant to \a value and the type to \a type.
 
-    Array values must be passed as a \l QList of \a type.
+    Scalar values must be passed as a \l QVariant containing a value of \a type.
+    Array values must be passed as a \l QVariant containing a \l QList of \a type.
 */
-void QOpcUaVariant::setValue(ValueType type, const QVariant &value, bool isArray, const QList<qint32> &arrayDimensions)
+void QOpcUaVariant::setValue(ValueType type, const QVariant &value)
 {
-    if (type != data->valueType || value != data->value || isArray != data->isArray ||
-        arrayDimensions != data->arrayDimensions) {
+    if (type != data->valueType || value != data->value || !data->arrayDimensions.isEmpty()) {
         data.detach();
         data->valueType = type;
         data->value = value;
-        data->isArray = isArray;
+        data->updateIsArray();
+    }
+}
+
+/*!
+    Sets the value of this OPC UA variant to \a value, the type to \a type and the array dimensions to \a arrayDimensions.
+
+    Scalar values must be passed as a \l QVariant containing a value of \a type.
+    Array values must be passed as a \l QVariant containing a \l QList of \a type.
+*/
+void QOpcUaVariant::setValue(ValueType type, const QVariant &value, const QList<qint32> &arrayDimensions)
+{
+    if (type != data->valueType || value != data->value || arrayDimensions != data->arrayDimensions) {
+        data.detach();
+        data->valueType = type;
+        data->value = value;
         data->arrayDimensions = arrayDimensions;
+        data->updateIsArray();
     }
 }
 
@@ -202,6 +242,17 @@ bool QOpcUaVariant::isArray() const
 QList<qint32> QOpcUaVariant::arrayDimensions() const
 {
     return data->arrayDimensions;
+}
+
+/*!
+    Sets the array dimensions to \a arrayDimensions.
+*/
+void QOpcUaVariant::setArrayDimensions(const QList<qint32> &arrayDimensions)
+{
+    if (data->arrayDimensions != arrayDimensions) {
+        data.detach();
+        data->arrayDimensions = arrayDimensions;
+    }
 }
 
 /*!

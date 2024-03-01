@@ -161,8 +161,10 @@ QOpcUaHistoryReadResponse *QOpen62541Node::readHistoryRaw(const QDateTime &start
     if (!m_client)
         return nullptr;
 
-    return m_client->readHistoryData(QOpcUaHistoryReadRawRequest{{QOpcUaReadItem(m_nodeIdString)},
-                                                                 startTime, endTime, numValues, returnBounds, timestampsToReturn});
+    QOpcUaHistoryReadRawRequest request({ QOpcUaReadItem(m_nodeIdString) }, startTime, endTime, timestampsToReturn);
+    request.setNumValuesPerNode(numValues);
+    request.setReturnBounds(returnBounds);
+    return m_client->readHistoryData(request);
 }
 
 QOpcUaHistoryReadResponse *QOpen62541Node::readHistoryEvents(const QDateTime &startTime, const QDateTime &endTime,
@@ -171,8 +173,10 @@ QOpcUaHistoryReadResponse *QOpen62541Node::readHistoryEvents(const QDateTime &st
     if (!m_client)
         return nullptr;
 
-    return m_client->readHistoryEvents(QOpcUaHistoryReadEventRequest{{QOpcUaReadItem(m_nodeIdString)},
-                                                                     startTime, endTime, filter, numValues});
+    QOpcUaHistoryReadEventRequest request({QOpcUaReadItem(m_nodeIdString)},
+                                          startTime, endTime, filter);
+    request.setNumValuesPerNode(numValues);
+    return m_client->readHistoryEvents(request);
 }
 
 bool QOpen62541Node::resolveBrowsePath(const QList<QOpcUaRelativePathElement> &path)

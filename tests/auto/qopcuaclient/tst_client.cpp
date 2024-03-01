@@ -279,13 +279,9 @@ void populateDiagnosticInfoTestData()
 
 void populateVariantTestData()
 {
-    QOpcUaVariant v1;
-    v1.setValue(QOpcUaVariant::ValueType::String, QList<QString>{ "Test1", "Test2", "Test3", "Test4"}, true, { 2, 2 });
+    testVariants = { {QOpcUaVariant::ValueType::String, QList<QString>{ "Test1", "Test2", "Test3", "Test4"}, { 2, 2 }},
+                     {QOpcUaVariant::ValueType::Int16, 23}};
 
-    QOpcUaVariant v2;
-    v2.setValue(QOpcUaVariant::ValueType::Int16, 23);
-
-    testVariants = { v1, v2 };
 }
 
 void populateDataValuesTestData()
@@ -5821,8 +5817,10 @@ void Tst_QOpcUaClient::readHistoryEventsFromClient()
 
     // Read all at once
     {
-        const QOpcUaHistoryReadEventRequest request({ QOpcUaReadItem("ns=2;s=EventHistorian"), QOpcUaReadItem("ns=2;s=EventHistorian2") },
-                                                    firstAvailableEventTime, lastAvailableEventTime, filter, 10);
+        QOpcUaHistoryReadEventRequest request({ QOpcUaReadItem("ns=2;s=EventHistorian"), QOpcUaReadItem("ns=2;s=EventHistorian2") },
+                                                    firstAvailableEventTime, lastAvailableEventTime, filter);
+        request.setNumValuesPerNode(10);
+
         QScopedPointer<QOpcUaHistoryReadResponse> response(opcuaClient->readHistoryEvents(request));
         QVERIFY(response != nullptr);
 
@@ -5859,8 +5857,9 @@ void Tst_QOpcUaClient::readHistoryEventsFromClient()
 
     // Test continuation points
     {
-        const QOpcUaHistoryReadEventRequest request({ QOpcUaReadItem("ns=2;s=EventHistorian"), QOpcUaReadItem("ns=2;s=EventHistorian2") },
-                                                    firstAvailableEventTime, lastAvailableEventTime, filter, 1);
+        QOpcUaHistoryReadEventRequest request({ QOpcUaReadItem("ns=2;s=EventHistorian"), QOpcUaReadItem("ns=2;s=EventHistorian2") },
+                                                    firstAvailableEventTime, lastAvailableEventTime, filter);
+        request.setNumValuesPerNode(1);
 
         QScopedPointer<QOpcUaHistoryReadResponse> response(opcuaClient->readHistoryEvents(request));
         QVERIFY(response != nullptr);
@@ -5912,8 +5911,9 @@ void Tst_QOpcUaClient::readHistoryEventsFromClient()
 
     // Test continuation points release
     {
-        const QOpcUaHistoryReadEventRequest request({ QOpcUaReadItem("ns=2;s=EventHistorian"), QOpcUaReadItem("ns=2;s=EventHistorian2") },
-                                                    firstAvailableEventTime, lastAvailableEventTime, filter, 1);
+        QOpcUaHistoryReadEventRequest request({ QOpcUaReadItem("ns=2;s=EventHistorian"), QOpcUaReadItem("ns=2;s=EventHistorian2") },
+                                                    firstAvailableEventTime, lastAvailableEventTime, filter);
+        request.setNumValuesPerNode(1);
 
         QScopedPointer<QOpcUaHistoryReadResponse> response(opcuaClient->readHistoryEvents(request));
         QVERIFY(response != nullptr);
@@ -5947,8 +5947,9 @@ void Tst_QOpcUaClient::readHistoryEventsFromClient()
 
     // Check invalid node id
     {
-        const QOpcUaHistoryReadEventRequest request({ QOpcUaReadItem("ns=2;s=EventHistorian"), QOpcUaReadItem("ns=2;s=EventHistorian3") },
-                                                    firstAvailableEventTime, lastAvailableEventTime, filter, 10);
+        QOpcUaHistoryReadEventRequest request({ QOpcUaReadItem("ns=2;s=EventHistorian"), QOpcUaReadItem("ns=2;s=EventHistorian3") },
+                                                    firstAvailableEventTime, lastAvailableEventTime, filter);
+        request.setNumValuesPerNode(10);
         QScopedPointer<QOpcUaHistoryReadResponse> response(opcuaClient->readHistoryEvents(request));
         QVERIFY(response != nullptr);
 

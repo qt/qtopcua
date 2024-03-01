@@ -6,7 +6,7 @@
 
 #include <QtOpcUa/qopcuaglobal.h>
 
-#include <QtCore/qlist.h>
+#include <QtCore/qcontainerfwd.h>
 #include <QtCore/qshareddata.h>
 
 QT_BEGIN_NAMESPACE
@@ -50,8 +50,9 @@ public:
     };
 
     Q_OPCUA_EXPORT QOpcUaVariant();
-    Q_OPCUA_EXPORT QOpcUaVariant(ValueType type, const QVariant &value, bool isArray = false,
-                                 const QList<qint32> &arrayDimensions = {});
+    Q_OPCUA_EXPORT QOpcUaVariant(ValueType type, const QVariant &value);
+    Q_OPCUA_EXPORT QOpcUaVariant(ValueType type, const QVariant &value,
+                                                  const QList<qint32> arrayDimensions);
     Q_OPCUA_EXPORT QOpcUaVariant(const QOpcUaVariant &other);
     Q_OPCUA_EXPORT ~QOpcUaVariant();
     void swap(QOpcUaVariant &other) noexcept
@@ -61,12 +62,15 @@ public:
     Q_OPCUA_EXPORT QOpcUaVariant &operator=(const QOpcUaVariant &rhs);
 
     Q_OPCUA_EXPORT QVariant value() const;
-    Q_OPCUA_EXPORT void setValue(ValueType type, const QVariant &value, bool isArray = false,
-                                 const QList<qint32> &arrayDimensions = {});
+    Q_OPCUA_EXPORT void setValue(ValueType type, const QVariant &value);
+    Q_OPCUA_EXPORT void setValue(ValueType type, const QVariant &value,
+                                      const QList<qint32> &arrayDimensions);
 
     Q_OPCUA_EXPORT ValueType type() const;
     Q_OPCUA_EXPORT bool isArray() const;
+
     Q_OPCUA_EXPORT QList<qint32> arrayDimensions() const;
+    Q_OPCUA_EXPORT void setArrayDimensions(const QList<qint32> &arrayDimensions);
 
     Q_OPCUA_EXPORT operator QVariant() const;
 
