@@ -26,7 +26,7 @@ public:
     { data.swap(other.data); }
     QT_MOVE_ASSIGNMENT_OPERATOR_IMPL_VIA_PURE_SWAP(QOpcUaStructureField)
     QOpcUaStructureField(QOpcUaStructureField &&other) noexcept = default;
-    Q_OPCUA_EXPORT QOpcUaStructureField &operator=(const QOpcUaStructureField &rhs);
+    Q_OPCUA_EXPORT QOpcUaStructureField &operator=(const QOpcUaStructureField &other);
     Q_OPCUA_EXPORT operator QVariant() const;
     Q_OPCUA_EXPORT ~QOpcUaStructureField();
 
