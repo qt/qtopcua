@@ -556,7 +556,7 @@ static QStringList libraryPathList()
     QStringList paths;
 #  ifdef Q_OS_DARWIN
     paths = QString::fromLatin1(qgetenv("DYLD_LIBRARY_PATH"))
-            .split(QLatin1Char(':'), QString::SkipEmptyParts);
+            .split(QLatin1Char(':'), Qt::SkipEmptyParts);
 
     // search in .app/Contents/Frameworks
     UInt32 packageType;
