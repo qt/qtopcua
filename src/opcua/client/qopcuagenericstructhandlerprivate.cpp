@@ -302,6 +302,9 @@ QVariant QOpcUaGenericStructHandlerPrivate::decodeKnownTypesInternal(QOpcUaBinar
     if (dataTypeId == QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::NodeId))
         return decodeArrayOrScalar<QString, QOpcUa::Types::NodeId>(decoder, valueRank, success);
 
+    if (dataTypeId == QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::ByteString))
+        return decodeArrayOrScalar<QByteArray>(decoder, valueRank, success);
+
     if (dataTypeId == QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::XmlElement))
         return decodeArrayOrScalar<QByteArray>(decoder, valueRank, success);
 
@@ -575,6 +578,9 @@ bool QOpcUaGenericStructHandlerPrivate::encodeKnownTypesInternal(QOpcUaBinaryDat
 
     if (dataTypeId == QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::NodeId))
         return encodeArrayOrScalar<QString, QOpcUa::Types::NodeId>(encoder, valueRank, value);
+
+    if (dataTypeId == QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::ByteString))
+        return encodeArrayOrScalar<QByteArray>(encoder, valueRank, value);
 
     if (dataTypeId == QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0::XmlElement))
         return encodeArrayOrScalar<QByteArray>(encoder, valueRank, value);
