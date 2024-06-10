@@ -34,6 +34,8 @@ qt_internal_extend_target(QOpen62541Plugin CONDITION QT_FEATURE_open62541 AND NO
     ../../../3rdparty/open62541/open62541.c
     INCLUDE_DIRECTORIES
         ../../../3rdparty/open62541
+    ATTRIBUTION_FILE_DIR_PATHS
+        ../../../3rdparty/open62541
 )
 
 set_source_files_properties(QOpen62541Plugin
