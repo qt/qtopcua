@@ -131,7 +131,8 @@ Certificate:
           \snippet ../../examples/opcua/opcuaviewer/mainwindow.cpp Application Identity
         \li Configure PKI locations so that the SDK can find the certificate, private key, trust list etc.
 
-          See for instance the code from the \l{Qt OPC UA Viewer Example}:
+          See, for example, the code from the
+          \l {Qt OPC UA Viewer} {Qt OPC UA Viewer Example}:
           \snippet ../../examples/opcua/opcuaviewer/mainwindow.cpp PKI Configuration
 
           In the example, we extract pre-configured own and trusted certificates
@@ -192,7 +193,7 @@ Certificate:
     When connecting for the first time, the client needs to trust the server certificate.
 
     The client should display a certificate warning (with cert details) and offer the possibility to save the certificate in its trust list.
-    For an example, see \l{Qt OPC UA Viewer Example}.
+    For an example, see \l {Qt OPC UA Viewer} {Qt OPC UA Viewer Example}.
 
     When the client has accepted the server certificate, you can try to connect again. Now the server may reject the client's certificate.
     This is indicated by the generic error code \c BadSecurityChecksFailed. Server normally store rejected certificates in a special \c rejected folder.
