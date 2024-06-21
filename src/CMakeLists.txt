@@ -11,17 +11,24 @@ if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows" OR NOT CMAKE_SYSTEM_PROCESSOR STREQ
     # This is needed because we can't set properties on not yet existing targets.
     if(NOT TARGET WrapOpenSSL::WrapOpenSSL)
         find_package(WrapOpenSSL ${_qt_opcua_openssl_version})
+        set(_qt_opcua_openssl_already_found "FALSE")
+    else()
+        set(_qt_opcua_openssl_already_found "TRUE")
     endif()
 
     # Then make sure not to promote the imported targets to global when we call qt_find_package,
     # if the targets were created in the root scope when looking for the Network package
     # in a static build.
-    foreach(_qt_ssl_target WrapOpenSSLHeaders::WrapOpenSSLHeaders
-                           WrapOpenSSL::WrapOpenSSL)
-        if(TARGET ${_qt_ssl_target})
-            qt_internal_disable_find_package_global_promotion(${_qt_ssl_target})
-        endif()
-    endforeach()
+    # But if the imported targets don't exist, make sure we do promote the targets, to ensure
+    # SBOM generation can access the target in the project root directory scope.
+    if(_qt_opcua_openssl_already_found)
+        foreach(_qt_ssl_target WrapOpenSSLHeaders::WrapOpenSSLHeaders
+                               WrapOpenSSL::WrapOpenSSL)
+            if(TARGET ${_qt_ssl_target})
+                qt_internal_disable_find_package_global_promotion(${_qt_ssl_target})
+            endif()
+        endforeach()
+    endif()
 
     # Finally call qt_find_package with PROVIDED_TARGETS to ensure the package dependency
     # is recorded for static builds.
