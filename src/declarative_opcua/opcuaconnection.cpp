@@ -232,7 +232,10 @@ OpcUaConnection::OpcUaConnection(QObject *parent):
 OpcUaConnection::~OpcUaConnection()
 {
     setDefaultConnection(false);
-    removeConnection();
+    if (m_client) {
+        m_client->disconnect(this);
+        delete m_client;
+    }
 }
 
 QStringList OpcUaConnection::availableBackends() const
@@ -372,6 +375,7 @@ void OpcUaConnection::setConnection(QOpcUaClient *client)
         return;
     removeConnection();
     m_client = client;
+    m_client->setParent(nullptr);
     setupConnection();
 }
 
@@ -613,9 +617,7 @@ void OpcUaConnection::removeConnection()
     if (m_client) {
         m_client->disconnect(this);
         m_client->disconnectFromEndpoint();
-        if (!m_client->parent()) {
-            m_client->deleteLater();
-        }
+        m_client->deleteLater();
         m_client = nullptr;
     }
 }

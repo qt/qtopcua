@@ -18,7 +18,6 @@ QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
     , m_state(QOpcUaClient::Disconnected)
     , m_error(QOpcUaClient::NoError)
     , m_enableNamespaceArrayAutoupdate(false)
-    , m_authenticationInformation(QOpcUaAuthenticationInformation())
     , m_namespaceArrayAutoupdateEnabled(false)
     , m_namespaceArrayUpdateInterval(1000)
 {

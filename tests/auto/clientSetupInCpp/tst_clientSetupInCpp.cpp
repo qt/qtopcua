@@ -31,7 +31,7 @@ public:
     }
 
     ~MyClass() {
-        if (m_client)
+        if (m_client && m_client->parent() == this)
             delete m_client;
     }
 
@@ -72,7 +72,7 @@ public slots:
     }
 
 private:
-    QOpcUaClient *m_client = nullptr;
+    QPointer<QOpcUaClient> m_client;
 };
 
 class SetupClass : public QObject
