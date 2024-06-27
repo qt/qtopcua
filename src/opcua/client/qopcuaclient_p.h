@@ -39,13 +39,18 @@ public:
     void connectToEndpoint(const QOpcUaEndpointDescription &endpoint);
     void disconnectFromEndpoint();
 
+    // The following members are read by the backend and must be available
+    // until m_impl has been destroyed.
+    QOpcUaConnectionSettings m_connectionSettings;
+    QOpcUaAuthenticationInformation m_authenticationInformation;
+    QOpcUaApplicationIdentity m_applicationIdentity;
+    QOpcUaPkiConfiguration m_pkiConfig;
+
     QScopedPointer<QOpcUaClientImpl> m_impl;
     QOpcUaClient::ClientState m_state;
     QOpcUaClient::ClientError m_error;
     QOpcUaEndpointDescription m_endpoint;
     bool m_enableNamespaceArrayAutoupdate;
-    QOpcUaAuthenticationInformation m_authenticationInformation;
-    QOpcUaConnectionSettings m_connectionSettings;
 
     bool checkAndSetUrl(const QUrl &url);
     void setStateAndError(QOpcUaClient::ClientState state,
@@ -67,8 +72,6 @@ private:
     QScopedPointer<QOpcUaNode> m_namespaceArrayNode;
     bool m_namespaceArrayAutoupdateEnabled;
     unsigned int m_namespaceArrayUpdateInterval;
-    QOpcUaApplicationIdentity m_applicationIdentity;
-    QOpcUaPkiConfiguration m_pkiConfig;
 };
 
 QT_END_NAMESPACE
