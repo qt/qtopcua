@@ -42,6 +42,11 @@ int main()
 {
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
+#ifdef Q_OS_MACOS
+    // If SIGPIPE is not handled, the server exits from time to time
+    // on some versions of macOS shortly after a client disconnects
+    signal(SIGPIPE, SIG_IGN);
+#endif
 
     TestServer server;
     if (!server.init()) {

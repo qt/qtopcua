@@ -8,6 +8,12 @@
 
 int main(int argc, char **argv)
 {
+#ifdef Q_OS_MACOS
+    // If SIGPIPE is not handled, the server exits from time to time
+    // on some versions of macOS shortly after a client disconnects
+    signal(SIGPIPE, SIG_IGN);
+#endif
+
     QCoreApplication app(argc, argv);
 
     DemoServer server;

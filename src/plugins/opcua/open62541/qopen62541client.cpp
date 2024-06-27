@@ -55,6 +55,12 @@ QOpen62541Client::QOpen62541Client(const QVariantMap &backendProperties)
 
 QOpen62541Client::~QOpen62541Client()
 {
+    // The connectError() and passwordForPrivateKeyRequired() signals use a blocking queued connection.
+    // They must be disconnected before waiting for the thread to avoid a deadlock.
+    QObject::disconnect(m_backend, &Open62541AsyncBackend::connectError, this, &QOpcUaClientImpl::connectError);
+    QObject::disconnect(m_backend, &Open62541AsyncBackend::passwordForPrivateKeyRequired,
+                        this, &QOpcUaClientImpl::passwordForPrivateKeyRequired);
+
     if (m_thread->isRunning())
         m_thread->quit();
 
