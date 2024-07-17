@@ -24,7 +24,7 @@ qhp.QtOpcUa.virtualFolder = qtopcua
 qhp.QtOpcUa.indexTitle = Qt OPC UA
 qhp.QtOpcUa.indexRoot =
 
-qhp.QtOpcUa.subprojects = classes examples
+qhp.QtOpcUa.subprojects = manual examples classes qmltypes
 
 qhp.QtOpcUa.subprojects.classes.title = C++ Classes
 qhp.QtOpcUa.subprojects.classes.indexTitle = Qt OPC UA C++ Classes
@@ -38,13 +38,20 @@ qhp.QtOpcUa.subprojects.qmltypes.sortPages = true
 
 qhp.QtOpcUa.subprojects.examples.title = Examples
 qhp.QtOpcUa.subprojects.examples.indexTitle = Qt OPC UA Examples
-qhp.QtOpcUa.subprojects.examples.selectors = fake:example
+qhp.QtOpcUa.subprojects.examples.selectors = example
+
+qhp.QtOpcUa.subprojects.manual.title = Qt OPC UA
+qhp.QtOpcUa.subprojects.manual.indexTitle = Qt OPC UA module topics
+qhp.QtOpcUa.subprojects.manual.type = manual
 
 examples.fileextensions = "*.cpp"
 
 navigation.landingpage = "Qt OPC UA"
 navigation.cppclassespage = "Qt OPC UA C++ Classes"
 navigation.qmltypespage = "Qt OPC UA QML Types"
+# Auto-generate navigation linking based on "Qt OPC UA module topics":
+navigation.toctitles = "Qt OPC UA module topics"
+navigation.toctitles.inclusive = false
 
 examplesinstallpath = opcua
 

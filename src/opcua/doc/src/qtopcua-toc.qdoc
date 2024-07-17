@@ -1,0 +1,19 @@
+// Copyright (C) 2024 The Qt Company Ltd.
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only
+
+/*!
+    \page qtopcua-toc.html
+    \title Qt OPC UA module topics
+
+    The following list has links to all the individual topics (HTML files)
+    in the Qt OPC UA module.
+
+    \list
+    \li \l {Qt OPC UA Overview}{Overview}
+    \li \l {Using the OpenSSL Dependency for Security Support and GDS}
+    \li \l {Building Qt OPC UA Open62541 Plugin}
+    \li \l {The Qt OPC UA data type generator}
+    \li \l {Creating OPC UA Clients with security support}
+    \endlist
+
+*/
