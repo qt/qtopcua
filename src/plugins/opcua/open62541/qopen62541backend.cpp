@@ -477,12 +477,10 @@ void Open62541AsyncBackend::open62541LogHandler (void *logContext, UA_LogLevel l
 
 void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris)
 {
-    UA_Client *tmpClient = UA_Client_new();
-    auto conf = UA_Client_getConfig(tmpClient);
-
-    conf->logger = m_open62541Logger;
-
-    UA_ClientConfig_setDefault(UA_Client_getConfig(tmpClient));
+    UA_ClientConfig initialConfig {};
+    initialConfig.logger = m_open62541Logger;
+    UA_ClientConfig_setDefault(&initialConfig);
+    UA_Client *tmpClient = UA_Client_newWithConfig(&initialConfig);
 
     UaDeleter<UA_Client> clientDeleter(tmpClient, UA_Client_delete);
 
@@ -1008,10 +1006,11 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
 
     emit stateAndOrErrorChanged(QOpcUaClient::Connecting, QOpcUaClient::NoError);
 
-    m_uaclient = UA_Client_new();
-    auto conf = UA_Client_getConfig(m_uaclient);
+    UA_ClientConfig initialConfig {};
+    initialConfig.logger = m_open62541Logger;
+    m_uaclient = UA_Client_newWithConfig(&initialConfig);
 
-    conf->logger = m_open62541Logger;
+    auto conf = UA_Client_getConfig(m_uaclient);
 
     const auto identity = m_clientImpl->m_client->applicationIdentity();
     const auto authInfo = m_clientImpl->m_client->authenticationInformation();
@@ -1196,12 +1195,10 @@ void Open62541AsyncBackend::disconnectFromEndpoint()
 
 void Open62541AsyncBackend::requestEndpoints(const QUrl &url)
 {
-    UA_Client *tmpClient = UA_Client_new();
-    auto conf = UA_Client_getConfig(tmpClient);
-
-    conf->logger = m_open62541Logger;
-
-    UA_ClientConfig_setDefault(conf);
+    UA_ClientConfig initialConfig {};
+    initialConfig.logger = m_open62541Logger;
+    UA_ClientConfig_setDefault(&initialConfig);
+    UA_Client *tmpClient = UA_Client_newWithConfig(&initialConfig);
 
     size_t numEndpoints = 0;
     UA_EndpointDescription *endpoints = nullptr;
