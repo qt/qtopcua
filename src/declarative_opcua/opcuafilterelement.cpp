@@ -80,8 +80,6 @@ QT_BEGIN_NAMESPACE
 */
 
 
-Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_QML)
-
 OpcUaFilterElement::OpcUaFilterElement(QObject *parent)
     : QObject(parent)
 {
