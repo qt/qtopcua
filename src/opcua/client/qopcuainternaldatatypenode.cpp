@@ -19,6 +19,10 @@ bool QOpcUaInternalDataTypeNode::initialize(const QString &nodeId)
     m_nodeId = nodeId;
 
     m_node.reset(m_client->node(nodeId));
+
+    if (!m_node)
+        return false;
+
     QObject::connect(m_node.get(), &QOpcUaNode::browseFinished, this,
                      [this](const QList<QOpcUaReferenceDescription> &results, QOpcUa::UaStatusCode result) {
                          Q_UNUSED(result);
