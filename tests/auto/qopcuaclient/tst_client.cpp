@@ -6016,13 +6016,19 @@ void Tst_QOpcUaClient::readHistoryEventsFromClient()
 void Tst_QOpcUaClient::decodeGenericStruct()
 {
     QFETCH(QOpcUaClient *, opcuaClient);
-    OpcuaConnector connector(opcuaClient, m_endpoint);
 
+    // Initialization should fail if the client is not connected
     QOpcUaGenericStructHandler decoder(opcuaClient);
 
+    auto success = decoder.initialize();
+    QCOMPARE(success, false);
+
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    // After the connection was established, initialization should work
     QSignalSpy spy(&decoder, &QOpcUaGenericStructHandler::initializedChanged);
 
-    auto success = decoder.initialize();
+    success = decoder.initialize();
     QCOMPARE(success, true);
 
     spy.wait();
