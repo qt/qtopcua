@@ -19,7 +19,7 @@
 
 QT_BEGIN_NAMESPACE
 
-Q_LOGGING_CATEGORY(QT_OPCUA_GDSCLIENT, "qt.opcua.gdsclient")
+Q_STATIC_LOGGING_CATEGORY(QT_OPCUA_GDSCLIENT, "qt.opcua.gdsclient")
 
 static const QStringList elementsToResolve {
     QLatin1String("GetApplication"),
@@ -1376,7 +1376,7 @@ void QOpcUaGdsClientPrivate::handleGetCertificateStatusFinished(const QVariant &
     }
 
     if (result.toBool()) {
-        qInfo(QT_OPCUA_GDSCLIENT) << "Certificate needs update";
+        qCInfo(QT_OPCUA_GDSCLIENT) << "Certificate needs update";
         emit q->certificateUpdateRequired();
         startCertificateRequest();
     }
