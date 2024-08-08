@@ -593,11 +593,15 @@ static LoadedOpenSsl loadOpenSsl()
 {
     LoadedOpenSsl result;
 
-#ifdef Q_PROCESSOR_X86_64
+#if defined(Q_PROCESSOR_X86_64)
 #define QT_SSL_SUFFIX "-x64"
-#else // !Q_PROCESSOFR_X86_64
+#elif defined(Q_PROCESSOR_ARM_64)
+#define QT_SSL_SUFFIX "-arm64"
+#elif defined(Q_PROCESSOR_ARM_32)
+#define QT_SSL_SUFFIX "-arm"
+#else
 #define QT_SSL_SUFFIX
-#endif // !Q_PROCESSOR_x86_64
+#endif
 
 tryToLoadOpenSslWin32Library(QLatin1String("libssl-3" QT_SSL_SUFFIX),
                              QLatin1String("libcrypto-3" QT_SSL_SUFFIX), result);
