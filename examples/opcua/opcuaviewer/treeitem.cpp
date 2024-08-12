@@ -300,7 +300,7 @@ QString TreeItem::variantToString(const QVariant &value, const QString &typeNode
     if (typeNodeId == "ns=0;i=5"_L1) // UInt16
         return QString::number(value.toUInt());
     if (value.metaType().id() == QMetaType::QByteArray)
-        return "0x"_L1.arg(QString::fromLatin1(value.toByteArray().toHex()));
+        return "0x%1"_L1.arg(QString::fromLatin1(value.toByteArray().toHex()));
     if (value.metaType().id() == QMetaType::QDateTime)
         return value.toDateTime().toString(Qt::ISODate);
     if (value.canConvert<QOpcUaQualifiedName>()) {
