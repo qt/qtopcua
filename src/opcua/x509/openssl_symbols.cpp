@@ -106,270 +106,59 @@ void qsslSocketCannotResolveSymbolWarning(const char *functionName)
 
 #endif // QT_LINKED_OPENSSL
 
-// Below are the functions first introduced in version 1.1:
-
-DEFINEFUNC(const unsigned char *, ASN1_STRING_get0_data, const ASN1_STRING *a, a, return nullptr, return)
-DEFINEFUNC2(int, OPENSSL_init_ssl, uint64_t opts, opts, const OPENSSL_INIT_SETTINGS *settings, settings, return 0, return)
 DEFINEFUNC2(int, OPENSSL_init_crypto, uint64_t opts, opts, const OPENSSL_INIT_SETTINGS *settings, settings, return 0, return)
 DEFINEFUNC(BIO *, BIO_new, const BIO_METHOD *a, a, return nullptr, return)
 DEFINEFUNC(const BIO_METHOD *, BIO_s_mem, void, DUMMYARG, return nullptr, return)
-DEFINEFUNC2(int, BN_is_word, BIGNUM *a, a, BN_ULONG w, w, return 0, return)
-DEFINEFUNC(int, EVP_CIPHER_CTX_reset, EVP_CIPHER_CTX *c, c, return 0, return)
-#if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
 DEFINEFUNC(int, EVP_PKEY_get_base_id, const EVP_PKEY *pkey, pkey, return -1, return)
-#else
-DEFINEFUNC(int, EVP_PKEY_base_id, EVP_PKEY *a, a, return NID_undef, return)
-#endif // OPENSSL_VERSION_MAJOR >= 3
-
-DEFINEFUNC(int, OPENSSL_sk_num, OPENSSL_STACK *a, a, return -1, return)
 DEFINEFUNC2(void, OPENSSL_sk_pop_free, OPENSSL_STACK *a, a, void (*b)(void*), b, return, DUMMYARG)
 DEFINEFUNC(OPENSSL_STACK *, OPENSSL_sk_new_null, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC2(void, OPENSSL_sk_push, OPENSSL_STACK *a, a, void *b, b, return, DUMMYARG)
-DEFINEFUNC(void, OPENSSL_sk_free, OPENSSL_STACK *a, a, return, DUMMYARG)
-DEFINEFUNC2(void *, OPENSSL_sk_value, OPENSSL_STACK *a, a, int b, b, return nullptr, return)
-DEFINEFUNC(int, SSL_session_reused, SSL *a, a, return 0, return)
-DEFINEFUNC2(unsigned long, SSL_CTX_set_options, SSL_CTX *ctx, ctx, unsigned long op, op, return 0, return)
-#ifdef TLS1_3_VERSION
-DEFINEFUNC2(int, SSL_CTX_set_ciphersuites, SSL_CTX *ctx, ctx, const char *str, str, return 0, return)
-#endif
-DEFINEFUNC3(size_t, SSL_get_client_random, SSL *a, a, unsigned char *out, out, size_t outlen, outlen, return 0, return)
-DEFINEFUNC3(size_t, SSL_SESSION_get_master_key, const SSL_SESSION *ses, ses, unsigned char *out, out, size_t outlen, outlen, return 0, return)
-DEFINEFUNC6(int, CRYPTO_get_ex_new_index, int class_index, class_index, long argl, argl, void *argp, argp, CRYPTO_EX_new *new_func, new_func, CRYPTO_EX_dup *dup_func, dup_func, CRYPTO_EX_free *free_func, free_func, return -1, return)
-DEFINEFUNC2(unsigned long, SSL_set_options, SSL *ssl, ssl, unsigned long op, op, return 0, return)
-
-DEFINEFUNC(const SSL_METHOD *, TLS_method, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC(const SSL_METHOD *, TLS_client_method, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC(const SSL_METHOD *, TLS_server_method, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC(void, X509_up_ref, X509 *a, a, return, DUMMYARG)
 DEFINEFUNC(ASN1_TIME *, X509_getm_notBefore, X509 *a, a, return nullptr, return)
 DEFINEFUNC(ASN1_TIME *, X509_getm_notAfter, X509 *a, a, return nullptr, return)
-DEFINEFUNC(long, X509_get_version, X509 *a, a, return -1, return)
-DEFINEFUNC(EVP_PKEY *, X509_get_pubkey, X509 *a, a, return nullptr, return)
-DEFINEFUNC2(void, X509_STORE_set_verify_cb, X509_STORE *a, a, X509_STORE_CTX_verify_cb verify_cb, verify_cb, return, DUMMYARG)
-DEFINEFUNC(STACK_OF(X509) *, X509_STORE_CTX_get0_chain, X509_STORE_CTX *a, a, return nullptr, return)
-DEFINEFUNC3(void, CRYPTO_free, void *str, str, const char *file, file, int line, line, return, DUMMYARG)
-DEFINEFUNC(long, OpenSSL_version_num, void, DUMMYARG, return 0, return)
-DEFINEFUNC(const char *, OpenSSL_version, int a, a, return nullptr, return)
-DEFINEFUNC(unsigned long, SSL_SESSION_get_ticket_lifetime_hint, const SSL_SESSION *session, session, return 0, return)
-DEFINEFUNC4(void, DH_get0_pqg, const DH *dh, dh, const BIGNUM **p, p, const BIGNUM **q, q, const BIGNUM **g, g, return, DUMMYARG)
-
-DEFINEFUNC2(void, BIO_set_data, BIO *a, a, void *ptr, ptr, return, DUMMYARG)
-DEFINEFUNC(void *, BIO_get_data, BIO *a, a, return nullptr, return)
-DEFINEFUNC2(void, BIO_set_init, BIO *a, a, int init, init, return, DUMMYARG)
-DEFINEFUNC(int, BIO_get_shutdown, BIO *a, a, return -1, return)
-DEFINEFUNC2(void, BIO_set_shutdown, BIO *a, a, int shut, shut, return, DUMMYARG)
-
-DEFINEFUNC(long, ASN1_INTEGER_get, ASN1_INTEGER *a, a, return 0, return)
-DEFINEFUNC2(int, ASN1_INTEGER_cmp, const ASN1_INTEGER *a, a, const ASN1_INTEGER *b, b, return 1, return)
-DEFINEFUNC(int, ASN1_STRING_length, ASN1_STRING *a, a, return 0, return)
-DEFINEFUNC2(int, ASN1_STRING_to_UTF8, unsigned char **a, a, ASN1_STRING *b, b, return 0, return)
 DEFINEFUNC4(long, BIO_ctrl, BIO *a, a, int b, b, long c, c, void *d, d, return -1, return)
-DEFINEFUNC(int, BIO_free, BIO *a, a, return 0, return)
 DEFINEFUNC(void, BIO_free_all, BIO *a, a, return, return)
 DEFINEFUNC2(BIO *, BIO_new_mem_buf, void *a, a, int b, b, return nullptr, return)
-DEFINEFUNC3(int, BIO_read, BIO *a, a, void *b, b, int c, c, return -1, return)
-
-DEFINEFUNC3(int, BIO_write, BIO *a, a, const void *b, b, int c, c, return -1, return)
-DEFINEFUNC(int, BN_num_bits, const BIGNUM *a, a, return 0, return)
-DEFINEFUNC2(BN_ULONG, BN_mod_word, const BIGNUM *a, a, BN_ULONG w, w, return static_cast<BN_ULONG>(-1), return)
-DEFINEFUNC2(int, BN_set_word, BIGNUM *a, a, BN_ULONG w, w, return 0, return)
-DEFINEFUNC(BIGNUM *, BN_new, void, DUMMYARG, return nullptr, return)
-DEFINEFUNC(void, BN_clear, BIGNUM *bignum, bignum, return, return)
-DEFINEFUNC(void, BN_free, BIGNUM *bignum, bignum, return, return)
-DEFINEFUNC(void, BN_clear_free, BIGNUM *bignum, bignum, return, return)
-
-#ifndef OPENSSL_NO_DEPRECATED_3_0
-DEFINEFUNC(DSA *, DSA_new, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC(void, DSA_free, DSA *a, a, return, DUMMYARG)
-#endif
-
-DEFINEFUNC3(X509 *, d2i_X509, X509 **a, a, const unsigned char **b, b, long c, c, return nullptr, return)
-DEFINEFUNC2(char *, ERR_error_string, unsigned long a, a, char *b, b, return nullptr, return)
 DEFINEFUNC3(void, ERR_error_string_n, unsigned long e, e, char *b, b, size_t len, len, return, DUMMYARG)
 DEFINEFUNC(unsigned long, ERR_get_error, DUMMYARG, DUMMYARG, return 0, return)
-DEFINEFUNC(EVP_CIPHER_CTX *, EVP_CIPHER_CTX_new, void, DUMMYARG, return nullptr, return)
-DEFINEFUNC(void, EVP_CIPHER_CTX_free, EVP_CIPHER_CTX *a, a, return, DUMMYARG)
-DEFINEFUNC4(int, EVP_CIPHER_CTX_ctrl, EVP_CIPHER_CTX *ctx, ctx, int type, type, int arg, arg, void *ptr, ptr, return 0, return)
-DEFINEFUNC2(int, EVP_CIPHER_CTX_set_key_length, EVP_CIPHER_CTX *ctx, ctx, int keylen, keylen, return 0, return)
-DEFINEFUNC5(int, EVP_CipherInit, EVP_CIPHER_CTX *ctx, ctx, const EVP_CIPHER *type, type, const unsigned char *key, key, const unsigned char *iv, iv, int enc, enc, return 0, return)
-DEFINEFUNC6(int, EVP_CipherInit_ex, EVP_CIPHER_CTX *ctx, ctx, const EVP_CIPHER *cipher, cipher, ENGINE *impl, impl, const unsigned char *key, key, const unsigned char *iv, iv, int enc, enc, return 0, return)
-DEFINEFUNC5(int, EVP_CipherUpdate, EVP_CIPHER_CTX *ctx, ctx, unsigned char *out, out, int *outl, outl, const unsigned char *in, in, int inl, inl, return 0, return)
-DEFINEFUNC3(int, EVP_CipherFinal, EVP_CIPHER_CTX *ctx, ctx, unsigned char *out, out, int *outl, outl, return 0, return)
-DEFINEFUNC(const EVP_MD *, EVP_get_digestbyname, const char *name, name, return nullptr, return)
 DEFINEFUNC(const EVP_MD *, EVP_sha1, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC(const EVP_MD *, EVP_sha256, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC(const EVP_CIPHER *, EVP_aes_256_gcm, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC(const EVP_CIPHER *, EVP_aes_128_cbc, DUMMYARG, DUMMYARG, return nullptr, return)
 DEFINEFUNC(void, EVP_PKEY_free, EVP_PKEY *a, a, return, DUMMYARG)
-DEFINEFUNC(EVP_PKEY *, EVP_PKEY_new, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC(int, EVP_PKEY_type, int a, a, return NID_undef, return)
-DEFINEFUNC2(int, i2d_X509, X509 *a, a, unsigned char **b, b, return -1, return)
-DEFINEFUNC(const char *, OBJ_nid2sn, int a, a, return nullptr, return)
-DEFINEFUNC(const char *, OBJ_nid2ln, int a, a, return nullptr, return)
-DEFINEFUNC(int, OBJ_sn2nid, const char *s, s, return 0, return)
-DEFINEFUNC(int, OBJ_ln2nid, const char *s, s, return 0, return)
-DEFINEFUNC3(int, i2t_ASN1_OBJECT, char *a, a, int b, b, ASN1_OBJECT *c, c, return -1, return)
-DEFINEFUNC4(int, OBJ_obj2txt, char *a, a, int b, b, ASN1_OBJECT *c, c, int d, d, return -1, return)
-
-DEFINEFUNC(int, OBJ_obj2nid, const ASN1_OBJECT *a, a, return NID_undef, return)
 DEFINEFUNC4(X509_EXTENSION* , X509V3_EXT_conf_nid, LHASH_OF(CONF_VALUE) *conf, conf, X509V3_CTX *ctx, ctx, int ext_nid, ext_nid, char *value, value, return NULL, return)
-
-#ifndef SSLEAY_MACROS
 DEFINEFUNC4(EVP_PKEY *, PEM_read_bio_PrivateKey, BIO *a, a, EVP_PKEY **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
-DEFINEFUNC4(DH *, PEM_read_bio_DHparams, BIO *a, a, DH **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
-DEFINEFUNC7(int, PEM_write_bio_PrivateKey, BIO *a, a, EVP_PKEY *b, b, const EVP_CIPHER *c, c, unsigned char *d, d, int e, e, pem_password_cb *f, f, void *g, g, return 0, return)
 DEFINEFUNC7(int, PEM_write_bio_PKCS8PrivateKey, BIO *a, a, EVP_PKEY *b, b, const EVP_CIPHER *c, c, char *d, d, int e, e, pem_password_cb *f, f, void *g, g, return 0, return)
-#endif // !SSLEAY_MACROS
 DEFINEFUNC4(EVP_PKEY *, PEM_read_bio_PUBKEY, BIO *a, a, EVP_PKEY **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
 DEFINEFUNC2(int, PEM_write_bio_PUBKEY, BIO *a, a, EVP_PKEY *b, b, return 0, return)
-DEFINEFUNC2(void, RAND_seed, const void *a, a, int b, b, return, DUMMYARG)
-DEFINEFUNC(int, RAND_status, void, DUMMYARG, return -1, return)
-DEFINEFUNC2(int, RAND_bytes, unsigned char *b, b, int n, n, return 0, return)
-
-#ifndef OPENSSL_NO_DEPRECATED_3_0
-DEFINEFUNC(RSA *, RSA_new, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC4(int, RSA_generate_key_ex, RSA *rsa, rsa, int bits, bits, BIGNUM *e, e, BN_GENCB *cb, cb, return 0, return)
-DEFINEFUNC(void, RSA_free, RSA *a, a, return, DUMMYARG)
-#endif
-
-DEFINEFUNC(X509_STORE *, SSL_CTX_get_cert_store, const SSL_CTX *a, a, return nullptr, return)
-DEFINEFUNC2(int, X509_cmp, X509 *a, a, X509 *b, b, return -1, return)
-DEFINEFUNC4(int, X509_digest, const X509 *x509, x509, const EVP_MD *type, type, unsigned char *md, md, unsigned int *len, len, return -1, return)
-#ifndef SSLEAY_MACROS
-DEFINEFUNC(X509 *, X509_dup, X509 *a, a, return nullptr, return)
-#endif
-DEFINEFUNC2(void, X509_print, BIO *a, a, X509 *b, b, return, DUMMYARG);
-DEFINEFUNC(ASN1_OBJECT *, X509_EXTENSION_get_object, X509_EXTENSION *a, a, return nullptr, return)
 DEFINEFUNC(void, X509_free, X509 *a, a, return, DUMMYARG)
-//Q_AUTOTEST_EXPORT ASN1_TIME *q_X509_gmtime_adj(ASN1_TIME *s, long adj);
 DEFINEFUNC2(ASN1_TIME *, X509_gmtime_adj, ASN1_TIME *s, s, long adj, adj, return nullptr, return)
-DEFINEFUNC(void, ASN1_TIME_free, ASN1_TIME *t, t, return, DUMMYARG)
-DEFINEFUNC2(X509_EXTENSION *, X509_get_ext, X509 *a, a, int b, b, return nullptr, return)
-DEFINEFUNC(int, X509_get_ext_count, X509 *a, a, return 0, return)
 DEFINEFUNC4(void *, X509_get_ext_d2i, X509 *a, a, int b, b, int *c, c, int *d, d, return nullptr, return)
-DEFINEFUNC(const X509V3_EXT_METHOD *, X509V3_EXT_get, X509_EXTENSION *a, a, return nullptr, return)
-DEFINEFUNC(void *, X509V3_EXT_d2i, X509_EXTENSION *a, a, return nullptr, return)
-DEFINEFUNC(int, X509_EXTENSION_get_critical, X509_EXTENSION *a, a, return 0, return)
-DEFINEFUNC(ASN1_OCTET_STRING *, X509_EXTENSION_get_data, X509_EXTENSION *a, a, return nullptr, return)
-DEFINEFUNC(void, BASIC_CONSTRAINTS_free, BASIC_CONSTRAINTS *a, a, return, DUMMYARG)
 DEFINEFUNC(void, AUTHORITY_KEYID_free, AUTHORITY_KEYID *a, a, return, DUMMYARG)
-DEFINEFUNC(void, GENERAL_NAME_free, GENERAL_NAME *a, a, return, DUMMYARG)
-DEFINEFUNC2(int, ASN1_STRING_print, BIO *a, a, const ASN1_STRING *b, b, return 0, return)
-DEFINEFUNC2(int, X509_check_issued, X509 *a, a, X509 *b, b, return -1, return)
 DEFINEFUNC(X509_NAME *, X509_get_issuer_name, X509 *a, a, return nullptr, return)
 DEFINEFUNC(X509_NAME *, X509_get_subject_name, X509 *a, a, return nullptr, return)
 DEFINEFUNC(ASN1_INTEGER *, X509_get_serialNumber, X509 *a, a, return nullptr, return)
-DEFINEFUNC(int, X509_verify_cert, X509_STORE_CTX *a, a, return -1, return)
-DEFINEFUNC(int, X509_NAME_entry_count, X509_NAME *a, a, return 0, return)
-DEFINEFUNC2(X509_NAME_ENTRY *, X509_NAME_get_entry, X509_NAME *a, a, int b, b, return nullptr, return)
-DEFINEFUNC(ASN1_STRING *, X509_NAME_ENTRY_get_data, X509_NAME_ENTRY *a, a, return nullptr, return)
-DEFINEFUNC(ASN1_OBJECT *, X509_NAME_ENTRY_get_object, X509_NAME_ENTRY *a, a, return nullptr, return)
-DEFINEFUNC(EVP_PKEY *, X509_PUBKEY_get, X509_PUBKEY *a, a, return nullptr, return)
-DEFINEFUNC(void, X509_STORE_free, X509_STORE *a, a, return, DUMMYARG)
-DEFINEFUNC(X509_STORE *, X509_STORE_new, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC2(int, X509_STORE_add_cert, X509_STORE *a, a, X509 *b, b, return 0, return)
-DEFINEFUNC(void, X509_STORE_CTX_free, X509_STORE_CTX *a, a, return, DUMMYARG)
-DEFINEFUNC4(int, X509_STORE_CTX_init, X509_STORE_CTX *a, a, X509_STORE *b, b, X509 *c, c, STACK_OF(X509) *d, d, return -1, return)
-DEFINEFUNC2(int, X509_STORE_CTX_set_purpose, X509_STORE_CTX *a, a, int b, b, return -1, return)
-DEFINEFUNC(int, X509_STORE_CTX_get_error, X509_STORE_CTX *a, a, return -1, return)
-DEFINEFUNC(int, X509_STORE_CTX_get_error_depth, X509_STORE_CTX *a, a, return -1, return)
-DEFINEFUNC(X509 *, X509_STORE_CTX_get_current_cert, X509_STORE_CTX *a, a, return nullptr, return)
-DEFINEFUNC(X509_STORE_CTX *, X509_STORE_CTX_new, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC2(void *, X509_STORE_CTX_get_ex_data, X509_STORE_CTX *ctx, ctx, int idx, idx, return nullptr, return)
-DEFINEFUNC(int, SSL_get_ex_data_X509_STORE_CTX_idx, DUMMYARG, DUMMYARG, return -1, return)
-DEFINEFUNC3(int, SSL_CTX_load_verify_locations, SSL_CTX *ctx, ctx, const char *CAfile, CAfile, const char *CApath, CApath, return 0, return)
-DEFINEFUNC2(int, i2d_SSL_SESSION, SSL_SESSION *in, in, unsigned char **pp, pp, return 0, return)
-DEFINEFUNC3(SSL_SESSION *, d2i_SSL_SESSION, SSL_SESSION **a, a, const unsigned char **pp, pp, long length, length, return nullptr, return)
-#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_NEXTPROTONEG)
-DEFINEFUNC6(int, SSL_select_next_proto, unsigned char **out, out, unsigned char *outlen, outlen,
-            const unsigned char *in, in, unsigned int inlen, inlen,
-            const unsigned char *client, client, unsigned int client_len, client_len,
-            return -1, return)
-DEFINEFUNC3(void, SSL_CTX_set_next_proto_select_cb, SSL_CTX *s, s,
-            int (*cb) (SSL *ssl, unsigned char **out,
-                       unsigned char *outlen,
-                       const unsigned char *in,
-                       unsigned int inlen, void *arg), cb,
-            void *arg, arg, return, DUMMYARG)
-DEFINEFUNC3(void, SSL_get0_next_proto_negotiated, const SSL *s, s,
-            const unsigned char **data, data, unsigned *len, len, return, DUMMYARG)
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
-DEFINEFUNC3(int, SSL_set_alpn_protos, SSL *s, s, const unsigned char *protos, protos,
-            unsigned protos_len, protos_len, return -1, return)
-DEFINEFUNC3(void, SSL_CTX_set_alpn_select_cb, SSL_CTX *s, s,
-            int (*cb) (SSL *ssl, const unsigned char **out,
-                       unsigned char *outlen,
-                       const unsigned char *in,
-                       unsigned int inlen, void *arg), cb,
-            void *arg, arg, return, DUMMYARG)
-DEFINEFUNC3(void, SSL_get0_alpn_selected, const SSL *s, s, const unsigned char **data, data,
-            unsigned *len, len, return, DUMMYARG)
-#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L ...
-#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
-
-DEFINEFUNC2(void, BIO_set_flags, BIO *b, b, int flags, flags, return, DUMMYARG)
-DEFINEFUNC2(void, BIO_clear_flags, BIO *b, b, int flags, flags, return, DUMMYARG)
-DEFINEFUNC2(void *, BIO_get_ex_data, BIO *b, b, int idx, idx, return nullptr, return)
-DEFINEFUNC3(int, BIO_set_ex_data, BIO *b, b, int idx, idx, void *data, data, return -1, return)
-
-DEFINEFUNC3(void *, CRYPTO_malloc, size_t num, num, const char *file, file, int line, line, return nullptr, return)
-DEFINEFUNC(DH *, DH_new, DUMMYARG, DUMMYARG, return nullptr, return)
-DEFINEFUNC(void, DH_free, DH *dh, dh, return, DUMMYARG)
-DEFINEFUNC3(DH *, d2i_DHparams, DH**a, a, const unsigned char **pp, pp, long length, length, return nullptr, return)
-DEFINEFUNC2(int, i2d_DHparams, DH *a, a, unsigned char **p, p, return -1, return)
-DEFINEFUNC2(int, DH_check, DH *dh, dh, int *codes, codes, return 0, return)
-DEFINEFUNC3(BIGNUM *, BN_bin2bn, const unsigned char *s, s, int len, len, BIGNUM *ret, ret, return nullptr, return)
-#ifndef OPENSSL_NO_EC
-
-#ifndef OPENSSL_NO_DEPRECATED_3_0
-DEFINEFUNC(EC_KEY *, EC_KEY_dup, const EC_KEY *ec, ec, return nullptr, return)
-DEFINEFUNC(EC_KEY *, EC_KEY_new_by_curve_name, int nid, nid, return nullptr, return)
-DEFINEFUNC(void, EC_KEY_free, EC_KEY *ecdh, ecdh, return, DUMMYARG)
-#endif
-
-DEFINEFUNC2(size_t, EC_get_builtin_curves, EC_builtin_curve * r, r, size_t nitems, nitems, return 0, return)
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
-DEFINEFUNC(int, EC_curve_nist2nid, const char *name, name, return 0, return)
-#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L
-#endif // OPENSSL_NO_EC
-
-DEFINEFUNC5(int, PKCS12_parse, PKCS12 *p12, p12, const char *pass, pass, EVP_PKEY **pkey, pkey, \
-            X509 **cert, cert, STACK_OF(X509) **ca, ca, return 1, return);
-DEFINEFUNC2(PKCS12 *, d2i_PKCS12_bio, BIO *bio, bio, PKCS12 **pkcs12, pkcs12, return nullptr, return);
-DEFINEFUNC(void, PKCS12_free, PKCS12 *pkcs12, pkcs12, return, DUMMYARG)
-
 DEFINEFUNC(X509_REQ*, X509_REQ_new, void, DUMMYARG, return NULL, return);
 DEFINEFUNC(void, X509_REQ_free, X509_REQ *req, req, return, return);
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
 DEFINEFUNC(X509_NAME*, X509_REQ_get_subject_name, X509_REQ *req, req, return NULL, return);
 DEFINEFUNC2(EVP_PKEY_CTX*, EVP_PKEY_CTX_new_id, int id, id, ENGINE *e, e, return NULL, return);
 DEFINEFUNC(void, EVP_PKEY_CTX_free, EVP_PKEY_CTX *ctx, ctx, return, return);
 DEFINEFUNC(int, EVP_PKEY_keygen_init, EVP_PKEY_CTX *ctx, ctx, return 0, return);
 DEFINEFUNC2(int, EVP_PKEY_keygen, EVP_PKEY_CTX *ctx, ctx, EVP_PKEY **pkey, pkey, return 0, return);
 DEFINEFUNC5(int, RSA_pkey_ctx_ctrl, EVP_PKEY_CTX *ctx, ctx, int optype, optype, int cmd, cmd, int p1, p1, void *p2, p2, return 0, return)
-
-#endif
-DEFINEFUNC7(int, X509_NAME_add_entry_by_txt, X509_NAME *name, name, const char *field, field, int type, type, const unsigned char *bytes, bytes, int len, len, int loc, loc, int set, set, return 0, return);
 DEFINEFUNC7(int, X509_NAME_add_entry_by_OBJ, X509_NAME *name, name, const ASN1_OBJECT *obj, obj, int type, type, const unsigned char *bytes, bytes, int len, len, int loc, loc, int set, set, return 0, return);
 DEFINEFUNC2(ASN1_OBJECT *, OBJ_txt2obj, const char *s, s, int no_name, no_name, return NULL, return);
 DEFINEFUNC2(int, X509_REQ_set_pubkey, X509_REQ *x, x, EVP_PKEY *pkey, pkey, return 0, return);
 DEFINEFUNC3(int, X509_REQ_sign, X509_REQ *x, x, EVP_PKEY *pkey, pkey, const EVP_MD *md, md, return 0, return);
 DEFINEFUNC2(int, PEM_write_bio_X509_REQ, BIO *bp, bp, X509_REQ *x, x, return 0, return);
-DEFINEFUNC2(int, PEM_write_bio_X509_REQ_NEW, BIO *bp, bp, X509_REQ *x, x, return 0, return);
 DEFINEFUNC2(int, X509_REQ_set_version, X509_REQ *x, x, long version, version, return 0, return);
 DEFINEFUNC2(int, X509_REQ_add_extensions, X509_REQ *req, req, STACK_OF(X509_EXTENSION) *exts, exts, return 0, return)
 DEFINEFUNC(void, X509_EXTENSION_free, X509_EXTENSION *ext, ext, return, return)
 DEFINEFUNC2(int, X509_EXTENSION_set_critical, X509_EXTENSION *ex, ex, int crit, crit, return 0, return)
-DEFINEFUNC3(X509*, X509_REQ_to_X509, X509_REQ *r, r, int days, days, EVP_PKEY *pkey, pkey, return NULL, return)
 DEFINEFUNC2(int, PEM_write_bio_X509, BIO *bp, bp, X509 *x, x, return 0, return)
 DEFINEFUNC(X509*, X509_new, void, DUMMYARG, return NULL, return)
-DEFINEFUNC2(int, ASN1_INTEGER_set, ASN1_INTEGER *a, a, long v, v, return 0, return)
 DEFINEFUNC2(int, X509_set_pubkey,X509 *x, x, EVP_PKEY *key, key, return 0, return)
-DEFINEFUNC2(int, X509_set_issuer_name, X509 *x, x, X509_NAME *name, name, return 0, return)
 DEFINEFUNC3(int, X509_sign, X509 *x, x, EVP_PKEY *key, key, const EVP_MD *md, md, return 0, return)
 DEFINEFUNC3(int, X509_add_ext, X509 *x, x, X509_EXTENSION *ex, ex, int loc, loc, return 0, return)
 DEFINEFUNC2(int, X509_set_version, X509 *x, x, long version, version, return 0, return)
-DEFINEFUNC2(int, X509_set_subject_name, X509 *x, x, X509_NAME *name, name, return 0, return)
 DEFINEFUNC(ASN1_OCTET_STRING *, ASN1_OCTET_STRING_new, void, DUMMYARG, return NULL, return)
 DEFINEFUNC4(int, X509_pubkey_digest, const X509 *data, data, const EVP_MD *type, type, unsigned char *md, md, unsigned int *len, len, return 0, return)
 DEFINEFUNC3(int, ASN1_OCTET_STRING_set, ASN1_OCTET_STRING *str, str, const unsigned char *data, data, int len, len, return 0, return)
@@ -386,48 +175,6 @@ DEFINEFUNC4(int, X509_NAME_digest, const X509_NAME *data, data, const EVP_MD *ty
 DEFINEFUNC(void, ASN1_INTEGER_free, ASN1_INTEGER *a, a, return, return)
 DEFINEFUNC2(int, i2d_X509_REQ_bio, BIO *bp, bp, X509_REQ *req, req, return 0, return)
 DEFINEFUNC2(int, i2d_X509_bio, BIO *bp, bp, X509 *x509, x509, return 0, return)
-
-#ifndef OPENSSL_NO_DEPRECATED_3_0
-
-DEFINEFUNC(int, RSA_bits, RSA *a, a, return 0, return)
-DEFINEFUNC(int, DSA_bits, DSA *a, a, return 0, return)
-DEFINEFUNC(int, DH_bits, DH *dh, dh, return 0, return)
-
-DEFINEFUNC3(int, EVP_PKEY_assign, EVP_PKEY *a, a, int b, b, char *c, c, return -1, return)
-DEFINEFUNC2(int, EVP_PKEY_set1_RSA, EVP_PKEY *a, a, RSA *b, b, return -1, return)
-DEFINEFUNC2(int, EVP_PKEY_set1_DSA, EVP_PKEY *a, a, DSA *b, b, return -1, return)
-DEFINEFUNC2(int, EVP_PKEY_set1_DH, EVP_PKEY *a, a, DH *b, b, return -1, return)
-
-DEFINEFUNC(DSA *, EVP_PKEY_get1_DSA, EVP_PKEY *a, a, return nullptr, return)
-DEFINEFUNC(RSA *, EVP_PKEY_get1_RSA, EVP_PKEY *a, a, return nullptr, return)
-DEFINEFUNC(DH *, EVP_PKEY_get1_DH, EVP_PKEY *a, a, return nullptr, return)
-
-DEFINEFUNC4(DSA *, PEM_read_bio_DSA_PUBKEY, BIO *a, a, DSA **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
-DEFINEFUNC4(RSA *, PEM_read_bio_RSA_PUBKEY, BIO *a, a, RSA **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
-DEFINEFUNC2(int, PEM_write_bio_DSA_PUBKEY, BIO *a, a, DSA *b, b, return 0, return)
-DEFINEFUNC2(int, PEM_write_bio_RSA_PUBKEY, BIO *a, a, RSA *b, b, return 0, return)
-
-#ifndef SSLEAY_MACROS
-DEFINEFUNC4(DSA *, PEM_read_bio_DSAPrivateKey, BIO *a, a, DSA **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
-DEFINEFUNC4(RSA *, PEM_read_bio_RSAPrivateKey, BIO *a, a, RSA **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
-DEFINEFUNC7(int, PEM_write_bio_DSAPrivateKey, BIO *a, a, DSA *b, b, const EVP_CIPHER *c, c, unsigned char *d, d, int e, e, pem_password_cb *f, f, void *g, g, return 0, return)
-DEFINEFUNC7(int, PEM_write_bio_RSAPrivateKey, BIO *a, a, RSA *b, b, const EVP_CIPHER *c, c, unsigned char *d, d, int e, e, pem_password_cb *f, f, void *g, g, return 0, return)
-#ifndef OPENSSL_NO_EC
-DEFINEFUNC4(EC_KEY *, PEM_read_bio_ECPrivateKey, BIO *a, a, EC_KEY **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
-DEFINEFUNC7(int, PEM_write_bio_ECPrivateKey, BIO *a, a, EC_KEY *b, b, const EVP_CIPHER *c, c, unsigned char *d, d, int e, e, pem_password_cb *f, f, void *g, g, return 0, return)
-#endif // OPENSSL_NO_EC
-#endif // SSLEAY_MACROS
-
-#ifndef OPENSSL_NO_EC
-DEFINEFUNC(const EC_GROUP*, EC_KEY_get0_group, const EC_KEY* k, k, return nullptr, return)
-DEFINEFUNC(int, EC_GROUP_get_degree, const EC_GROUP* g, g, return 0, return)
-DEFINEFUNC2(int, EVP_PKEY_set1_EC_KEY, EVP_PKEY *a, a, EC_KEY *b, b, return -1, return)
-DEFINEFUNC(EC_KEY *, EVP_PKEY_get1_EC_KEY, EVP_PKEY *a, a, return nullptr, return)
-DEFINEFUNC4(EC_KEY *, PEM_read_bio_EC_PUBKEY, BIO *a, a, EC_KEY **b, b, pem_password_cb *c, c, void *d, d, return nullptr, return)
-DEFINEFUNC2(int, PEM_write_bio_EC_PUBKEY, BIO *a, a, EC_KEY *b, b, return 0, return)
-
-#endif // OPENSSL_NO_EC
-#endif // OPENSSL_NO_DEPRECATED_3_0
 
 #define RESOLVEFUNC(func) \
     if (!(_q_##func = _q_PTR_##func(libs.ssl->resolve(#func)))     \
@@ -783,46 +530,14 @@ bool q_resolveOpenSslSymbols()
         // failed to load them
         return false;
 
-    RESOLVEFUNC(X509_REQ_get_subject_name) // v1.1.0
-    RESOLVEFUNC(OPENSSL_init_ssl)
+    RESOLVEFUNC(X509_REQ_get_subject_name)
     RESOLVEFUNC(OPENSSL_init_crypto)
-    RESOLVEFUNC(ASN1_STRING_get0_data)
-    RESOLVEFUNC(EVP_CIPHER_CTX_reset)
-#if defined(OPENSSL_VERSION_MAJOR) && OPENSSL_VERSION_MAJOR >= 3
     RESOLVEFUNC(EVP_PKEY_get_base_id)
-#else
-    RESOLVEFUNC(EVP_PKEY_base_id)
-#endif // OPENSSL_VERSION_MAJOR >= 3
     RESOLVEFUNC(OPENSSL_sk_new_null)
     RESOLVEFUNC(OPENSSL_sk_push)
-    RESOLVEFUNC(OPENSSL_sk_free)
-    RESOLVEFUNC(OPENSSL_sk_num)
     RESOLVEFUNC(OPENSSL_sk_pop_free)
-    RESOLVEFUNC(OPENSSL_sk_value)
-    RESOLVEFUNC(DH_get0_pqg)
-    RESOLVEFUNC(CRYPTO_get_ex_new_index)
-    RESOLVEFUNC(X509_up_ref)
-    RESOLVEFUNC(X509_STORE_CTX_get0_chain)
     RESOLVEFUNC(X509_getm_notBefore)
     RESOLVEFUNC(X509_getm_notAfter)
-    RESOLVEFUNC(X509_get_version)
-    RESOLVEFUNC(X509_get_pubkey)
-    RESOLVEFUNC(X509_STORE_set_verify_cb)
-    RESOLVEFUNC(CRYPTO_free)
-    RESOLVEFUNC(OpenSSL_version_num)
-    RESOLVEFUNC(OpenSSL_version)
-    if (!_q_OpenSSL_version) {
-        // Apparently, we were built with OpenSSL 1.1 enabled but are now using
-        // a wrong library.
-        qCWarning(lcSsl, "Incompatible version of OpenSSL");
-        return false;
-    }
-
-    RESOLVEFUNC(BIO_set_data)
-    RESOLVEFUNC(BIO_get_data)
-    RESOLVEFUNC(BIO_set_init)
-    RESOLVEFUNC(BIO_get_shutdown)
-    RESOLVEFUNC(BIO_set_shutdown)
     RESOLVEFUNC(EVP_PKEY_CTX_new_id)
     RESOLVEFUNC(EVP_PKEY_CTX_free)
     RESOLVEFUNC(EVP_PKEY_keygen_init)
@@ -839,165 +554,35 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(X509_REQ_sign)
     RESOLVEFUNC(PEM_write_bio_X509_REQ)
     RESOLVEFUNC(X509_REQ_free)
-
-    RESOLVEFUNC(ASN1_INTEGER_get)
-    RESOLVEFUNC(ASN1_INTEGER_cmp)
-    RESOLVEFUNC(ASN1_STRING_length)
-    RESOLVEFUNC(ASN1_STRING_to_UTF8)
     RESOLVEFUNC(BIO_ctrl)
-    RESOLVEFUNC(BIO_free)
     RESOLVEFUNC(BIO_new)
     RESOLVEFUNC(BIO_new_mem_buf)
-    RESOLVEFUNC(BIO_read)
     RESOLVEFUNC(BIO_s_mem)
-    RESOLVEFUNC(BIO_write)
-    RESOLVEFUNC(BIO_set_flags)
-    RESOLVEFUNC(BIO_clear_flags)
-    RESOLVEFUNC(BIO_set_ex_data)
-    RESOLVEFUNC(BIO_get_ex_data)
     RESOLVEFUNC(X509V3_EXT_conf_nid)
     RESOLVEFUNC(X509_EXTENSION_set_critical)
-    RESOLVEFUNC(BN_num_bits)
-    RESOLVEFUNC(BN_is_word)
-    RESOLVEFUNC(BN_mod_word)
-    RESOLVEFUNC(BN_set_word)
-    RESOLVEFUNC(BN_new)
-    RESOLVEFUNC(BN_free)
-    RESOLVEFUNC(BN_clear)
-    RESOLVEFUNC(BN_clear_free)
-    RESOLVEFUNC(ERR_error_string)
     RESOLVEFUNC(ERR_error_string_n)
     RESOLVEFUNC(ERR_get_error)
-    RESOLVEFUNC(EVP_CIPHER_CTX_new)
-    RESOLVEFUNC(EVP_CIPHER_CTX_free)
-    RESOLVEFUNC(EVP_CIPHER_CTX_ctrl)
-    RESOLVEFUNC(EVP_CIPHER_CTX_set_key_length)
-    RESOLVEFUNC(EVP_CipherInit)
-    RESOLVEFUNC(EVP_CipherInit_ex)
-    RESOLVEFUNC(EVP_CipherUpdate)
-    RESOLVEFUNC(EVP_CipherFinal)
-    RESOLVEFUNC(EVP_get_digestbyname)
     RESOLVEFUNC(EVP_sha1)
     RESOLVEFUNC(EVP_sha256)
-    RESOLVEFUNC(EVP_aes_256_gcm)
     RESOLVEFUNC(EVP_aes_128_cbc)
     RESOLVEFUNC(EVP_PKEY_free)
-    RESOLVEFUNC(EVP_PKEY_new)
-    RESOLVEFUNC(EVP_PKEY_type)
-    RESOLVEFUNC(OBJ_nid2sn)
-    RESOLVEFUNC(OBJ_nid2ln)
-    RESOLVEFUNC(OBJ_sn2nid)
-    RESOLVEFUNC(OBJ_ln2nid)
-    RESOLVEFUNC(i2t_ASN1_OBJECT)
-    RESOLVEFUNC(OBJ_obj2txt)
-    RESOLVEFUNC(OBJ_obj2nid)
-
-#ifndef SSLEAY_MACROS
     RESOLVEFUNC(PEM_read_bio_PrivateKey)
     RESOLVEFUNC(PEM_write_bio_PKCS8PrivateKey)
-    RESOLVEFUNC(PEM_read_bio_DHparams)
-    RESOLVEFUNC(PEM_write_bio_PrivateKey)
-#endif // !SSLEAY_MACROS
-
     RESOLVEFUNC(PEM_read_bio_PUBKEY)
     RESOLVEFUNC(PEM_write_bio_PUBKEY)
-    RESOLVEFUNC(RAND_seed)
-    RESOLVEFUNC(RAND_status)
-    RESOLVEFUNC(RAND_bytes)
-
-#ifndef OPENSSL_NO_DEPRECATED_3_0
-    RESOLVEFUNC(RSA_new)
-    RESOLVEFUNC(RSA_generate_key_ex);
-    RESOLVEFUNC(RSA_free)
-#endif
-    RESOLVEFUNC(X509_NAME_entry_count)
-    RESOLVEFUNC(X509_NAME_get_entry)
-    RESOLVEFUNC(X509_NAME_ENTRY_get_data)
-    RESOLVEFUNC(X509_NAME_ENTRY_get_object)
-    RESOLVEFUNC(X509_PUBKEY_get)
-    RESOLVEFUNC(X509_STORE_free)
-    RESOLVEFUNC(X509_STORE_new)
-    RESOLVEFUNC(X509_STORE_add_cert)
-    RESOLVEFUNC(X509_STORE_CTX_free)
-    RESOLVEFUNC(X509_STORE_CTX_init)
-    RESOLVEFUNC(X509_STORE_CTX_new)
-    RESOLVEFUNC(X509_STORE_CTX_set_purpose)
-    RESOLVEFUNC(X509_STORE_CTX_get_error)
-    RESOLVEFUNC(X509_STORE_CTX_get_error_depth)
-    RESOLVEFUNC(X509_STORE_CTX_get_current_cert)
-    RESOLVEFUNC(X509_cmp)
-    RESOLVEFUNC(X509_STORE_CTX_get_ex_data)
-
-#ifndef SSLEAY_MACROS
-    RESOLVEFUNC(X509_dup)
-#endif
-    RESOLVEFUNC(X509_print)
-    RESOLVEFUNC(X509_digest)
-    RESOLVEFUNC(X509_EXTENSION_get_object)
     RESOLVEFUNC(X509_free)
     RESOLVEFUNC(X509_gmtime_adj)
-    RESOLVEFUNC(ASN1_TIME_free)
-    RESOLVEFUNC(X509_get_ext)
-    RESOLVEFUNC(X509_get_ext_count)
     RESOLVEFUNC(X509_get_ext_d2i)
-    RESOLVEFUNC(X509V3_EXT_get)
-    RESOLVEFUNC(X509V3_EXT_d2i)
-    RESOLVEFUNC(X509_EXTENSION_get_critical)
-    RESOLVEFUNC(X509_EXTENSION_get_data)
-    RESOLVEFUNC(BASIC_CONSTRAINTS_free)
     RESOLVEFUNC(AUTHORITY_KEYID_free)
-    RESOLVEFUNC(GENERAL_NAME_free)
-    RESOLVEFUNC(ASN1_STRING_print)
-    RESOLVEFUNC(X509_check_issued)
     RESOLVEFUNC(X509_get_issuer_name)
     RESOLVEFUNC(X509_get_subject_name)
     RESOLVEFUNC(X509_get_serialNumber)
-    RESOLVEFUNC(X509_verify_cert)
-    RESOLVEFUNC(d2i_X509)
-    RESOLVEFUNC(i2d_X509)
-    RESOLVEFUNC(SSL_CTX_load_verify_locations)
-    RESOLVEFUNC(i2d_SSL_SESSION)
-    RESOLVEFUNC(d2i_SSL_SESSION)
-#if OPENSSL_VERSION_NUMBER >= 0x1000100fL && !defined(OPENSSL_NO_NEXTPROTONEG)
-    RESOLVEFUNC(SSL_select_next_proto)
-    RESOLVEFUNC(SSL_CTX_set_next_proto_select_cb)
-    RESOLVEFUNC(SSL_get0_next_proto_negotiated)
-#endif // OPENSSL_VERSION_NUMBER >= 0x1000100fL ...
-#if OPENSSL_VERSION_NUMBER >= 0x10002000L
-    RESOLVEFUNC(SSL_set_alpn_protos)
-    RESOLVEFUNC(SSL_CTX_set_alpn_select_cb)
-    RESOLVEFUNC(SSL_get0_alpn_selected)
-#endif // OPENSSL_VERSION_NUMBER >= 0x10002000L ...
-    RESOLVEFUNC(CRYPTO_malloc)
-    RESOLVEFUNC(DH_new)
-    RESOLVEFUNC(DH_free)
-    RESOLVEFUNC(d2i_DHparams)
-    RESOLVEFUNC(i2d_DHparams)
-    RESOLVEFUNC(DH_check)
-    RESOLVEFUNC(BN_bin2bn)
-#ifndef OPENSSL_NO_EC
-
-#ifndef OPENSSL_NO_DEPRECATED_3_0
-    RESOLVEFUNC(EC_KEY_dup)
-    RESOLVEFUNC(EC_KEY_new_by_curve_name)
-    RESOLVEFUNC(EC_KEY_free)
-#endif
-
-    RESOLVEFUNC(EC_get_builtin_curves)
-#endif // OPENSSL_NO_EC
-    RESOLVEFUNC(PKCS12_parse)
-    RESOLVEFUNC(d2i_PKCS12_bio)
-    RESOLVEFUNC(PKCS12_free)
-    RESOLVEFUNC(X509_REQ_to_X509)
     RESOLVEFUNC(PEM_write_bio_X509)
     RESOLVEFUNC(X509_new)
-    RESOLVEFUNC(ASN1_INTEGER_set)
     RESOLVEFUNC(X509_set_pubkey)
-    RESOLVEFUNC(X509_set_issuer_name)
     RESOLVEFUNC(X509_sign)
     RESOLVEFUNC(X509_add_ext)
     RESOLVEFUNC(X509_set_version)
-    RESOLVEFUNC(X509_set_subject_name)
     RESOLVEFUNC(ASN1_OCTET_STRING_new)
     RESOLVEFUNC(X509_pubkey_digest)
     RESOLVEFUNC(ASN1_OCTET_STRING_set)
@@ -1015,53 +600,10 @@ bool q_resolveOpenSslSymbols()
     RESOLVEFUNC(i2d_X509_REQ_bio)
     RESOLVEFUNC(i2d_X509_bio)
 
-    #ifndef OPENSSL_NO_DEPRECATED_3_0
-
-    RESOLVEFUNC(RSA_bits)
-    RESOLVEFUNC(DSA_bits)
-    RESOLVEFUNC(DH_bits)
-
-    RESOLVEFUNC(EVP_PKEY_assign)
-    RESOLVEFUNC(EVP_PKEY_set1_RSA)
-    RESOLVEFUNC(EVP_PKEY_set1_DSA)
-    RESOLVEFUNC(EVP_PKEY_set1_DH)
-
-    RESOLVEFUNC(EVP_PKEY_get1_DSA)
-    RESOLVEFUNC(EVP_PKEY_get1_RSA)
-    RESOLVEFUNC(EVP_PKEY_get1_DH)
-
-    RESOLVEFUNC(PEM_read_bio_DSA_PUBKEY)
-    RESOLVEFUNC(PEM_read_bio_RSA_PUBKEY)
-    RESOLVEFUNC(PEM_write_bio_DSA_PUBKEY)
-    RESOLVEFUNC(PEM_write_bio_RSA_PUBKEY)
-
-    #ifndef SSLEAY_MACROS
-    RESOLVEFUNC(PEM_read_bio_DSAPrivateKey)
-    RESOLVEFUNC(PEM_read_bio_RSAPrivateKey)
-    RESOLVEFUNC(PEM_write_bio_DSAPrivateKey)
-    RESOLVEFUNC(PEM_write_bio_RSAPrivateKey)
-    #ifndef OPENSSL_NO_EC
-    RESOLVEFUNC(PEM_read_bio_ECPrivateKey)
-    RESOLVEFUNC(PEM_write_bio_ECPrivateKey)
-    #endif // OPENSSL_NO_EC
-    #endif // SSLEAY_MACROS
-
-    #ifndef OPENSSL_NO_EC
-    RESOLVEFUNC(EC_KEY_get0_group)
-    RESOLVEFUNC(EC_GROUP_get_degree)
-    RESOLVEFUNC(EVP_PKEY_set1_EC_KEY)
-    RESOLVEFUNC(EVP_PKEY_get1_EC_KEY)
-    RESOLVEFUNC(PEM_read_bio_EC_PUBKEY)
-    RESOLVEFUNC(PEM_write_bio_EC_PUBKEY)
-
-    #endif // OPENSSL_NO_EC
-    #endif // OPENSSL_NO_DEPRECATED_3_0
-
-    symbolsResolved.storeRelease(true);
-    return true;
+     symbolsResolved.storeRelease(true);
+     return true;
 }
 #endif // QT_CONFIG(library)
-
 #else // !defined QT_LINKED_OPENSSL
 
 bool q_resolveOpenSslSymbols()

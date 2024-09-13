@@ -419,12 +419,7 @@ QByteArray QOpcUaX509CertificateSigningRequestPrivate::createSelfSignedCertifica
     }
     generalName->type = GEN_DIRNAME;
     generalName->d.directoryName = q_X509_NAME_dup(q_X509_get_subject_name(x509));
-
-#if QT_CONFIG(opensslv30)
     q_sk_GENERAL_NAME_push((OPENSSL_STACK*)akid->issuer, generalName);
-#else
-    q_sk_GENERAL_NAME_push(akid->issuer, generalName);
-#endif
     akid->keyid = (ASN1_OCTET_STRING*)q_X509_get_ext_d2i(x509, NID_subject_key_identifier, NULL, NULL);
     akid->serial = q_ASN1_INTEGER_dup(q_X509_get_serialNumber(x509));
 
