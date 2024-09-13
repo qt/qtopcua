@@ -14,9 +14,6 @@ QOpcUaKeyPairPrivate::QOpcUaKeyPairPrivate()
         qFatal("Failed to resolve symbols");
 
     q_ERR_load_crypto_strings();
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-    q_OPENSSL_add_all_algorithms_noconf();
-#endif
 }
 
 QOpcUaKeyPairPrivate::~QOpcUaKeyPairPrivate()
@@ -103,7 +100,6 @@ bool QOpcUaKeyPairPrivate::generateRsaKey(QOpcUaKeyPair::RsaKeyStrength strength
         m_keyData = nullptr;
     }
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
     EVP_PKEY_CTX *ctx = q_EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, nullptr);
     if (!ctx) {
         qCWarning(lcSsl) << "Failed to allocate context:" << getOpenSslError();
@@ -126,46 +122,6 @@ bool QOpcUaKeyPairPrivate::generateRsaKey(QOpcUaKeyPair::RsaKeyStrength strength
         return false;
     }
 
-#else
-    RSA *rsa;
-    BIGNUM *publicExponent;
-
-    publicExponent = q_BN_new();
-    if (publicExponent == NULL) {
-        qCWarning(lcSsl) << "Failed to allocate public exponent:" << getOpenSslError();
-        return false;
-    }
-    Deleter<BIGNUM> publicExponentDeleter(publicExponent, q_BN_free);
-
-    if (q_BN_set_word(publicExponent, RSA_F4) == 0) {
-        qCWarning(lcSsl) << "Failed to set public exponent:" << getOpenSslError();
-        return false;
-    }
-
-    rsa = q_RSA_new();
-    if (rsa == NULL) {
-        qCWarning(lcSsl) << "Failed to allocate RSA:" << getOpenSslError();
-        return false;
-    }
-    Deleter<RSA> rsaDeleter(rsa, q_RSA_free);
-
-    int result = q_RSA_generate_key_ex(rsa, static_cast<int>(strength), publicExponent, nullptr /* progress callback */);
-    if (result == 0) {
-        qCWarning(lcSsl) << "Failed to generate key:" << getOpenSslError();
-        return false;
-    }
-
-    m_keyData = q_EVP_PKEY_new();
-    if (!m_keyData) {
-        qCWarning(lcSsl) << "Failed to allocate key data:" << getOpenSslError();
-        return false;
-    }
-
-    if (!q_EVP_PKEY_set1_RSA(m_keyData, rsa)) {
-        qCWarning(lcSsl) << "Failed to transfer key data:" << getOpenSslError();
-        return false;
-    }
-#endif
     m_hasPrivateKey = true;
     return true;
 }
