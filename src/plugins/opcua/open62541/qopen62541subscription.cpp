@@ -522,7 +522,7 @@ bool QOpen62541Subscription::convertWhereClause(const QOpcUaMonitoringParameters
             for (int j = 0; j < filter.whereClause().at(i).filterOperands().size(); ++j) {
                 UA_ExtensionObject_init(&result->elements[i].filterOperands[j]);
                 result->elements[i].filterOperands[j].encoding = UA_EXTENSIONOBJECT_DECODED;
-                const QVariant &currentOperand = filter.whereClause().at(i).filterOperands().at(j);
+                const QVariant currentOperand = filter.whereClause().at(i).filterOperands().at(j);
                 if (currentOperand.canConvert<QOpcUaElementOperand>()) {
                     UA_ElementOperand *op = UA_ElementOperand_new();
                     UA_ElementOperand_init(op);
