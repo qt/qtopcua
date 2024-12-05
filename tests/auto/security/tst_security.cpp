@@ -18,68 +18,6 @@
 
 const int signalSpyTimeout = 10000;
 
-class OpcuaConnector
-{
-public:
-    OpcuaConnector(QOpcUaClient *client, const QOpcUaEndpointDescription &endPoint)
-        : opcuaClient(client)
-    {
-        QVERIFY(opcuaClient != nullptr);
-        QSignalSpy connectedSpy(opcuaClient, &QOpcUaClient::connected);
-        QSignalSpy disconnectedSpy(opcuaClient, &QOpcUaClient::disconnected);
-        QSignalSpy stateSpy(opcuaClient, &QOpcUaClient::stateChanged);
-
-        QTest::qWait(500);
-
-        opcuaClient->connectToEndpoint(endPoint);
-        QTRY_VERIFY2(opcuaClient->state() == QOpcUaClient::Connected, "Could not connect to server");
-
-        QCOMPARE(connectedSpy.size(), 1); // one connected signal fired
-        QCOMPARE(disconnectedSpy.size(), 0); // zero disconnected signals fired
-        QCOMPARE(stateSpy.size(), 2);
-
-        QCOMPARE(stateSpy.at(0).at(0).value<QOpcUaClient::ClientState>(),
-                 QOpcUaClient::ClientState::Connecting);
-        QCOMPARE(stateSpy.at(1).at(0).value<QOpcUaClient::ClientState>(),
-                 QOpcUaClient::ClientState::Connected);
-
-        stateSpy.clear();
-        connectedSpy.clear();
-        disconnectedSpy.clear();
-
-        QVERIFY(opcuaClient->endpoint() == endPoint);
-    }
-
-    ~OpcuaConnector()
-    {
-        QSignalSpy connectedSpy(opcuaClient, &QOpcUaClient::connected);
-        QSignalSpy disconnectedSpy(opcuaClient, &QOpcUaClient::disconnected);
-        QSignalSpy stateSpy(opcuaClient, &QOpcUaClient::stateChanged);
-        QSignalSpy errorSpy(opcuaClient, &QOpcUaClient::errorChanged);
-
-        QVERIFY(opcuaClient != nullptr);
-        if (opcuaClient->state() == QOpcUaClient::Connected) {
-
-            opcuaClient->disconnectFromEndpoint();
-
-            QTRY_VERIFY(opcuaClient->state() == QOpcUaClient::Disconnected);
-
-            QCOMPARE(connectedSpy.size(), 0);
-            QCOMPARE(disconnectedSpy.size(), 1);
-            QCOMPARE(stateSpy.size(), 2);
-            QCOMPARE(stateSpy.at(0).at(0).value<QOpcUaClient::ClientState>(),
-                     QOpcUaClient::ClientState::Closing);
-            QCOMPARE(stateSpy.at(1).at(0).value<QOpcUaClient::ClientState>(),
-                     QOpcUaClient::ClientState::Disconnected);
-            QCOMPARE(errorSpy.size(), 0);
-        }
-
-        opcuaClient = nullptr;
-    }
-
-    QOpcUaClient *opcuaClient;
-};
-
 static QString messageSecurityModeToString(QOpcUaEndpointDescription::MessageSecurityMode msm)
 {
     if (msm == QOpcUaEndpointDescription::None)

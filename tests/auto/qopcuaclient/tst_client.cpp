@@ -92,6 +92,17 @@ public:
             opcuaClient->disconnectFromEndpoint();
             stateSpy.wait(signalSpyTimeout);
 
+            // Once the test has failed, QSignalSpy::wait() returns right away without actually waiting for anything.
+            // Processing events manually satisfies the checks below and prevents all following tests from failing
+            // because of an unexpected initial client state.
+            if (stateSpy.size() < 2) {
+                QElapsedTimer t;
+                t.start();
+                do {
+                    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+                } while (t.elapsed() < signalSpyTimeout && stateSpy.size() < 2);
+            }
+
             QVERIFY(opcuaClient->state() == QOpcUaClient::Disconnected);
 
             QCOMPARE(connectedSpy.size(), 0);
