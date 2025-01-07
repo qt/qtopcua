@@ -23,7 +23,7 @@ public:
 
     QOpcUaExtensionObject();
     QOpcUaExtensionObject(const QOpcUaExtensionObject &);
-    QOpcUaExtensionObject(const QString &typeId, Encoding encoding = Encoding::ByteString);
+    explicit QOpcUaExtensionObject(const QString &typeId, Encoding encoding = Encoding::ByteString);
     ~QOpcUaExtensionObject();
     QOpcUaExtensionObject &operator=(const QOpcUaExtensionObject &);
     bool operator==(const QOpcUaExtensionObject &rhs) const;
