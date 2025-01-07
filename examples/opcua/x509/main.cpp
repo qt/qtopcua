@@ -28,7 +28,9 @@ int main(int argc, char **argv)
     QByteArray keyData = key.privateKeyToByteArray(QOpcUaKeyPair::Cipher::Unencrypted, QString());
 
     QFile keyFile(u"privateKey.pem"_s);
-    keyFile.open(QFile::WriteOnly);
+    if (!keyFile.open(QFile::WriteOnly))
+        return EXIT_FAILURE;
+
     keyFile.write(keyData);
     keyFile.close();
     //! [1]
