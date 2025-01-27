@@ -1,6 +1,6 @@
 /* THIS IS A SINGLE-FILE DISTRIBUTION CONCATENATED FROM THE OPEN62541 SOURCES
  * visit http://open62541.org/ for information about this software
- * Git-Revision: v1.4.8
+ * Git-Revision: v1.4.9
  */
 
 /*
@@ -30,10 +30,10 @@
  * ----------------- */
 #define UA_OPEN62541_VER_MAJOR 1
 #define UA_OPEN62541_VER_MINOR 4
-#define UA_OPEN62541_VER_PATCH 8
+#define UA_OPEN62541_VER_PATCH 9
 #define UA_OPEN62541_VER_LABEL "" /* Release candidate label, etc. */
-#define UA_OPEN62541_VER_COMMIT "v1.4.8"
-#define UA_OPEN62541_VERSION "v1.4.8"
+#define UA_OPEN62541_VER_COMMIT "v1.4.9"
+#define UA_OPEN62541_VERSION "v1.4.9"
 
 /**
  * Architecture
@@ -90,7 +90,7 @@
 
 /* Multithreading */
 /* #undef UA_ENABLE_IMMUTABLE_NODES */
-#define UA_MULTITHREADING 100
+#define UA_MULTITHREADING 0
 
 /* Advanced Options */
 #define UA_ENABLE_STATUSCODE_DESCRIPTIONS
@@ -361,7 +361,12 @@ extern UA_THREAD_LOCAL void * (*UA_reallocSingleton)(void *ptr, size_t size);
 
 /**
  * Locking for Multithreading
- * -------------------------- */
+ * --------------------------
+ * If locking is enabled, the locks must be reentrant. That is, the same thread
+ * must be able to take the same lock several times. This is required because we
+ * sometimes call a user-defined callback when the server-lock is still held.
+ * The user-defined code then should be able to call (public) methods which
+ * again take the server-lock. */
 
 #if UA_MULTITHREADING < 100
 
@@ -374,6 +379,7 @@ extern UA_THREAD_LOCAL void * (*UA_reallocSingleton)(void *ptr, size_t size);
 #elif defined(UA_ARCHITECTURE_WIN32)
 
 typedef struct {
+    /* Critical sections on win32 are always recursive */
     CRITICAL_SECTION mutex;
     int mutexCounter;
 } UA_Lock;
@@ -392,18 +398,18 @@ UA_LOCK_DESTROY(UA_Lock *lock) {
 static UA_INLINE void
 UA_LOCK(UA_Lock *lock) {
     EnterCriticalSection(&lock->mutex);
-    UA_assert(++(lock->mutexCounter) == 1);
+    ++lock->mutexCounter;
 }
 
 static UA_INLINE void
 UA_UNLOCK(UA_Lock *lock) {
-    UA_assert(--(lock->mutexCounter) == 0);
+    --lock->mutexCounter;
     LeaveCriticalSection(&lock->mutex);
 }
 
 static UA_INLINE void
 UA_LOCK_ASSERT(UA_Lock *lock, int num) {
-    UA_assert(lock->mutexCounter == num);
+    UA_assert(num <= 0 || lock->mutexCounter > 0);
 }
 
 #elif defined(UA_ARCHITECTURE_POSIX)
@@ -415,11 +421,14 @@ typedef struct {
     int mutexCounter;
 } UA_Lock;
 
-#define UA_LOCK_STATIC_INIT {PTHREAD_MUTEX_INITIALIZER, 0}
+#define UA_LOCK_STATIC_INIT {PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP, 0}
 
 static UA_INLINE void
 UA_LOCK_INIT(UA_Lock *lock) {
-    pthread_mutex_init(&lock->mutex, NULL);
+    pthread_mutexattr_t mattr;
+    pthread_mutexattr_init(&mattr);
+    pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&lock->mutex, &mattr);
     lock->mutexCounter = 0;
 }
 
@@ -431,20 +440,18 @@ UA_LOCK_DESTROY(UA_Lock *lock) {
 static UA_INLINE void
 UA_LOCK(UA_Lock *lock) {
     pthread_mutex_lock(&lock->mutex);
-    UA_assert(lock->mutexCounter == 0);
     lock->mutexCounter++;
 }
 
 static UA_INLINE void
 UA_UNLOCK(UA_Lock *lock) {
-    UA_assert(lock->mutexCounter == 1);
     lock->mutexCounter--;
     pthread_mutex_unlock(&lock->mutex);
 }
 
 static UA_INLINE void
 UA_LOCK_ASSERT(UA_Lock *lock, int num) {
-    UA_assert(lock->mutexCounter == num);
+    UA_assert(num <= 0 || lock->mutexCounter > 0);
 }
 
 #endif
@@ -43492,6 +43499,7 @@ UA_ConnectionManager_new_POSIX_TCP(const UA_String eventSourceName);
 UA_EXPORT UA_ConnectionManager *
 UA_ConnectionManager_new_POSIX_UDP(const UA_String eventSourceName);
 
+#if defined(__linux__) /* Linux only so far */
 /**
  * Ethernet Connection Manager
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -43540,6 +43548,7 @@ UA_ConnectionManager_new_POSIX_UDP(const UA_String eventSourceName);
  * No additional parameters for sending over an Ethernet connection defined. */
 UA_EXPORT UA_ConnectionManager *
 UA_ConnectionManager_new_POSIX_Ethernet(const UA_String eventSourceName);
+#endif
 
 /**
  * MQTT Connection Manager
