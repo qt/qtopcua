@@ -72,6 +72,11 @@
                 "file type" : "documentation",
                 "spdx"      : ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
             },
+            "(examples|.*)/doc/images/" : {
+                "comment" : "Default",
+                "file type" : "documentation",
+                "spdx"      : ["LicenseRef-Qt-Commercial OR GFDL-1.3-no-invariants-only"]
+            },
             "src/" : {
                 "comment" : "Default",
                 "file type" : "module and plugin",
