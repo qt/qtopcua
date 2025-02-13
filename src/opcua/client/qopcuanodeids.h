@@ -13,7 +13,12 @@ QT_BEGIN_NAMESPACE
 namespace QOpcUa {
     namespace NodeIds {
 #ifndef QT_OPCUA_NO_NS0IDNAMES
-        Q_NAMESPACE_EXPORT(Q_OPCUA_EXPORT)
+#ifdef USE_CUSTOM_NODEIDS_METAOBJECT
+    extern Q_OPCUA_EXPORT const QMetaObject staticMetaObject;
+    QT_ANNOTATE_CLASS(qt_qnamespace, "")
+#else
+    Q_NAMESPACE_EXPORT(Q_OPCUA_EXPORT)
+#endif
 #endif
 
         enum class Namespace0 : quint32 {
@@ -20577,7 +20582,12 @@ namespace QOpcUa {
             OptionSetLength = 32750,
         };
 #ifndef QT_OPCUA_NO_NS0IDNAMES
+#ifdef USE_CUSTOM_NODEIDS_METAOBJECT
+        inline constexpr const QMetaObject *qt_getEnumMetaObject(Namespace0) noexcept { return &staticMetaObject; }
+        inline constexpr const char *qt_getEnumName(Namespace0) noexcept { return "Namespace0"; }
+#else
         Q_ENUM_NS(Namespace0)
+#endif
 #endif
     }
 }

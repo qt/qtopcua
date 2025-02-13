@@ -156,6 +156,90 @@ bool patchNodeIdsSource(const QList<NodeId> &nodeIds, const QString &path)
     return patchFile(path, startMarker, endMarker, newContent);
 }
 
+bool generateNodeIdsMetaObject(const QList<NodeId> &nodeIds, const QString &path)
+{
+    const auto startMarker = QStringLiteral("// Begin generated QMetaObject assembly");
+    const auto endMarker = QStringLiteral("// End generated QMetaObject assembly");
+
+    QString newContent;
+    QTextStream out(&newContent);
+
+    const QStringList additionalEntries = {
+        QStringLiteral("QOpcUa::NodeIds"),
+        QStringLiteral("Namespace0"),
+    };
+
+    int totalStringLength = 0;
+    const int offsetCount = (nodeIds.length() + additionalEntries.length()) * 2;
+
+    for (const auto &name : additionalEntries)
+        totalStringLength += name.length() + 1;
+    for (const auto &id : nodeIds)
+        totalStringLength += id.name.length() + 1;
+
+    out << "\nstatic constexpr CustomStringData<" << offsetCount << ", " << totalStringLength << "> customStringData {\n";
+
+    int offset = 0;
+    int currentLineCount = 0;
+    out << "{\n";
+
+    for (const auto &name : additionalEntries) {
+        out << "O(" << offset <<"," << name.length() << ")";
+        offset += name.length() + 1;
+        ++currentLineCount;
+    }
+
+    for (const auto &id : nodeIds) {
+        out << "O(" << offset << "," <<  id.name.length() << ")" << (currentLineCount == 10 ? "\n" : "");
+        offset += id.name.length() + 1;
+        currentLineCount = ++currentLineCount % 11;
+    }
+
+    out << "},\n";
+
+    QString concat;
+
+    for (const auto &name : additionalEntries)
+        concat += name + QStringLiteral("\\0");
+
+    for (const auto &entry : nodeIds)
+        concat += entry.name + (entry.value == nodeIds.back().value ? QString() : QStringLiteral("\\0"));
+
+    out << "\"";
+
+    for (int i = 0; i < concat.size(); ++i) {
+        out << concat.at(i);
+        if (i != 0 && i % 150 == 0) {
+            if (concat.at(i) == QChar::fromLatin1('\\'))
+                out << concat.at(++i);
+
+            out << "\"\n\"";
+        }
+    }
+
+    out << "\"\n";
+
+    out << "};\n\n";
+
+    out << "static constexpr auto buildMetaObjectData()\n";
+    out << "{\n";
+    out << "    const QtMocHelpers::UintData methodsData {};\n";
+    out << "    const QtMocHelpers::UintData propertiesData {};\n";
+    out << "    const QtMocHelpers::StringRefStorage dummyStringData {\n";
+    out << "        \"\",\n";
+    out << "    };\n";
+    out << "    const QtMocHelpers::UintData enumData {\n";
+    out <<"        QtMocHelpers::EnumData<Namespace0>(1, 1, QtMocConstants::EnumIsScoped).add({\n";
+
+    for (int i = 0; i < nodeIds.size(); ++i)
+        out << "E(" << i + 2 << "," << nodeIds.at(i).value << ")" << (i != 0 && i % 10 == 0 ? "\n" : "");
+
+    out << "})\n";
+    out << "};\n";
+
+    return patchFile(path, startMarker, endMarker, newContent);
+}
+
 QList<StatusCode> parseStatusCodes(const QString &path)
 {
     QList<StatusCode> result;
@@ -290,6 +374,7 @@ int main(int argc, char *argv[])
     if (parser.isSet(nOption)) {
         const auto nodeIdsHeaderPath = QStringLiteral("%1/src/opcua/client/qopcuanodeids.h").arg(parser.value(oOption));
         const auto nodeIdsSourcePath = QStringLiteral("%1/src/opcua/client/qopcuanodeids.cpp").arg(parser.value(oOption));
+        const auto nodeIdsMetaObjectPath = QStringLiteral("%1/src/opcua/client/qopcuanodeidsmetaobject.cpp").arg(parser.value(oOption));
 
         const auto existingNodeIds = parseExistingNodeIds(nodeIdsHeaderPath);
         const auto newNodeIds = parseNodeIds(parser.value(nOption));
@@ -323,9 +408,11 @@ int main(int argc, char *argv[])
 
         success = patchNodeIdsHeader(mergedIds, nodeIdsHeaderPath);
         if (success)
-            patchNodeIdsSource(mergedIds, nodeIdsSourcePath);
-        else
-            return EXIT_FAILURE;
+            success = patchNodeIdsSource(mergedIds, nodeIdsSourcePath);
+        if (success)
+            success = generateNodeIdsMetaObject(mergedIds, nodeIdsMetaObjectPath);
+
+        return success ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 
     if (parser.isSet(sOption)) {

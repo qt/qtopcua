@@ -123,6 +123,7 @@ endif()
 
 if(MSVC)
     target_compile_options(OpcUa PRIVATE /constexpr:steps4600000)
+    target_compile_definitions(OpcUa PRIVATE USE_CUSTOM_NODEIDS_METAOBJECT)
 elseif(GCC)
     target_compile_options(OpcUa PRIVATE -fconstexpr-ops-limit=70000000)
 elseif(CLANG)

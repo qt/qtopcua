@@ -20589,4 +20589,10 @@ QT_BEGIN_NAMESPACE
 
 QT_END_NAMESPACE
 
+#ifndef QT_OPCUA_NO_NS0IDNAMES
+#ifdef USE_CUSTOM_NODEIDS_METAOBJECT
+#include "qopcuanodeidsmetaobject.cpp"
+#else
 #include "moc_qopcuanodeids.cpp"
+#endif
+#endif
