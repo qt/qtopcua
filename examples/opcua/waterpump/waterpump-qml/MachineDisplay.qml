@@ -14,8 +14,9 @@ RowLayout {
 
     opacity: connection.connected ? 1.0 : 0.25
     Tank1Unit {
-        startButtonEnabled: connection.connected && machine.state === Machine.MachineState.Idle &&
-                            machine.tank1.percentFilled > 0 && machine.tank2.percentFilled < machine.tank2.targetPercent
+        startButtonEnabled: connection.connected && machine.state === Machine.MachineState.Idle
+                            && machine.tank1.percentFilled > 0
+                            && machine.tank2.percentFilled < machine.tank2.targetPercent
         stopButtonEnabled: connection.connected && machine.state === Machine.MachineState.Pumping
         percentFilled: machine.tank1.percentFilled
         startButtonText: machine.startMethod.displayName.text
@@ -38,7 +39,8 @@ RowLayout {
         }
     }
     Tank2Unit {
-        flushButtonEnabled: connection.connected && machine.state === Machine.MachineState.Idle && machine.tank2.percentFilled > machine.tank2.targetPercent
+        flushButtonEnabled: connection.connected && machine.state === Machine.MachineState.Idle
+                            && machine.tank2.percentFilled > machine.tank2.targetPercent
         percentFilled: machine.tank2.percentFilled
         valveState: machine.tank2valveState
         flushButtonText: machine.flushMethod.displayName.text
@@ -73,8 +75,9 @@ RowLayout {
         percentFilledTank1: machine.tank1.percentFilled
         percentFilledTank2: machine.tank2.percentFilled
         targetPercentTank2: machine.tank2.targetPercent
-        machineState: machine.state === Machine.MachineState.Idle ?
-                          "Idle" : (machine.state === Machine.MachineState.Pumping ? "Pumping" : "Flushing")
+        machineState: machine.state === Machine.MachineState.Idle
+                      ? "Idle"
+                      : (machine.state === Machine.MachineState.Pumping ? "Pumping" : "Flushing")
         valveState: machine.tank2valveState
     }
 }
