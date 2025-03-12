@@ -105,7 +105,6 @@ function(qt_opcua_generate_datatypes target)
             ${GENERATED_NODEIDS_HEADER}
             ${GENERATED_DATATYPES_HEADERS}
             ${GENERATED_DATATYPES_SOURCES}
-        PRE_BUILD
         COMMAND ${QT_CMAKE_EXPORT_NAMESPACE}::qopcuaxmldatatypes2cpp -b ${INPUT_BSD_ARGS} ${DEPENDENCY_BSD_ARGS} ${INPUT_CSV_ARGS} -p ${GEN_OPT_PREFIX} -o ${GEN_OPT_OUTPUT_DIR}
         DEPENDS ${GEN_OPT_INPUT_BSD} ${GEN_OPT_DEPENDENCY_BSD} ${INPUT_CSV_FILES}
     )
