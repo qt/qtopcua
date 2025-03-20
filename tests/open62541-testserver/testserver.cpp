@@ -1517,6 +1517,39 @@ UA_StatusCode TestServer::addUnreadableVariableNode(const UA_NodeId &parent)
     return result;
 }
 
+UA_StatusCode TestServer::addByteStringNodeIdWithNullIdVariableNode(const UA_NodeId &parent)
+{
+    UA_VariableAttributes attr = UA_VariableAttributes_default;
+    attr.value = QOpen62541ValueConverter::toOpen62541Variant(42, QOpcUa::Int32);
+    attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", "VariableWithByteStringWithNullByteId");
+    attr.dataType = attr.value.type->typeId;
+    attr.accessLevel = UA_ACCESSLEVELMASK_READ;
+
+    UA_QualifiedName variableName;
+    variableName.namespaceIndex = parent.namespaceIndex;
+    variableName.name = attr.displayName.text;
+
+    UA_NodeId nodeId = UA_NODEID_NULL;
+    nodeId.namespaceIndex = 1;
+    nodeId.identifierType = UA_NODEIDTYPE_BYTESTRING;
+    const auto bytes = QByteArray::fromBase64(QStringLiteral("AAABAAIADoo=").toLatin1());
+    UA_ByteString_allocBuffer(&nodeId.identifier.byteString, bytes.length());
+    memcpy(nodeId.identifier.byteString.data, bytes.constData(), bytes.length());
+
+    UA_StatusCode result = UA_Server_addVariableNode(m_server,
+                                                     nodeId,
+                                                     parent,
+                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                     variableName,
+                                                     UA_NODEID_NULL,
+                                                     attr,
+                                                     nullptr,
+                                                     nullptr);
+    UA_NodeId_clear(&nodeId);
+    UA_VariableAttributes_clear(&attr);
+    return result;
+}
+
 UA_StatusCode TestServer::addEventHistorian(const UA_NodeId &parent)
 {
     UA_ObjectAttributes attr = UA_ObjectAttributes_default;
