@@ -524,6 +524,8 @@ private slots:
     void compareNodeIds();
     defineDataMethod(getNodeForIdTypes_data)
     void getNodeForIdTypes();
+    defineDataMethod(readNodeWithByteStringIdWithNullByte_data)
+    void readNodeWithByteStringIdWithNullByte();
     defineDataMethod(readNS0OmitNode_data)
     void readNS0OmitNode();
     defineDataMethod(readInvalidNode_data)
@@ -1233,6 +1235,17 @@ void Tst_QOpcUaClient::getNodeForIdTypes()
 
     node.reset(opcuaClient->node("xxxxxxxxxxxxx"));
     QVERIFY(node == nullptr);
+}
+
+void Tst_QOpcUaClient::readNodeWithByteStringIdWithNullByte()
+{
+    QFETCH(QOpcUaClient*, opcuaClient);
+    OpcuaConnector connector(opcuaClient, m_endpoint);
+
+    QScopedPointer<QOpcUaNode> node(opcuaClient->node("ns=1;b=AAABAAIADoo="));
+    QVERIFY(node);
+
+    READ_MANDATORY_VARIABLE_NODE(node);
 }
 
 void Tst_QOpcUaClient::readNS0OmitNode()
