@@ -312,6 +312,7 @@ int main()
     server.addServerStatusTypeTestNodes(testFolder);
 
     server.addUnreadableVariableNode(testFolder);
+    server.addByteStringNodeIdWithNullIdVariableNode(testFolder);
 
     // Add test nodes for the generic type decoder
     auto result = server.addEncoderTestModel();

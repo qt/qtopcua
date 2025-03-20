@@ -67,7 +67,11 @@ UA_NodeId Open62541Utils::nodeIdFromQString(const QString &name)
     case 'b': {
         const QByteArray temp = QByteArray::fromBase64(identifierString.toLatin1());
         if (temp.size() > 0) {
-            return UA_NODEID_BYTESTRING_ALLOC(namespaceIndex, temp.constData());
+            UA_NodeId byteStringId = UA_NODEID_NULL;
+            byteStringId.namespaceIndex = namespaceIndex;
+            byteStringId.identifierType = UA_NODEIDTYPE_BYTESTRING;
+            QOpen62541ValueConverter::scalarFromQt<UA_ByteString, QByteArray>(temp, &byteStringId.identifier.byteString);
+            return byteStringId;
         }
         else
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << name << "does not contain a valid byte string identifier";
