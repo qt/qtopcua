@@ -2275,9 +2275,8 @@ UA_StatusCode Open62541AsyncBackend::setAuthSecurityPolicyInClientConfig(UA_Clie
                                                                          const QOpcUaEndpointDescription &desc,
                                                                          QOpcUaUserTokenPolicy::TokenType tokenType)
 {
-    // Nothing to do
-    if (tokenType == QOpcUaUserTokenPolicy::TokenType::Anonymous)
-        return UA_STATUSCODE_GOOD;
+    // Open62541 now also demands the endpoint's security policy for anonymous tokens
+    // if the policy uri in the token is empty.
 
     // No None policy for auth, but all encrypting policies
     const size_t numPolicies = 1;
