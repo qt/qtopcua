@@ -34,6 +34,8 @@ qt_internal_add_executable(open62541-testserver
         generated/
     OUTPUT_DIRECTORY
         "${CMAKE_CURRENT_BINARY_DIR}"
+    NO_UNITY_BUILD_SOURCES
+        ../../src/plugins/opcua/open62541/qopen62541valueconverter.cpp
     LIBRARIES
         Qt::Core
         Qt::OpcUaPrivate
