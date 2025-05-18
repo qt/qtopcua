@@ -32,6 +32,9 @@ qt_add_executable(simulationserver
     simulationserver.cpp simulationserver.h
 )
 
+set_source_files_properties(${MODULE_SOURCE}/src/plugins/opcua/open62541/qopen62541valueconverter.cpp
+                            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
+
 set_target_properties(simulationserver PROPERTIES
     WIN32_EXECUTABLE FALSE
     MACOSX_BUNDLE TRUE
