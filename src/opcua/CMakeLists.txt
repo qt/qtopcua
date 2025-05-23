@@ -100,7 +100,7 @@ qt_internal_extend_target(OpcUa
     CONDITION
         QT_FEATURE_gds AND QT_FEATURE_openssl AND NOT APPLE AND NOT WINRT
     SOURCES
-        client/qopcuagdsclient.cpp client/qopcuagdsclient_p.h
+        client/qopcuagdsclient.cpp client/qopcuagdsclient.h client/qopcuagdsclient_p.h
         x509/openssl_symbols.cpp
         x509/qopcuakeypair.cpp x509/qopcuakeypair.h
         x509/qopcuakeypair_openssl.cpp
