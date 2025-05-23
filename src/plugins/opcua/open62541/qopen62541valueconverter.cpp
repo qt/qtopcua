@@ -1147,6 +1147,8 @@ void scalarFromQt<UA_SimpleAttributeOperand, QOpcUaSimpleAttributeOperand>(const
         ptr->browsePath = static_cast<UA_QualifiedName *>(UA_Array_new(value.browsePath().size(), &UA_TYPES[UA_TYPES_QUALIFIEDNAME]));
         for (size_t i = 0; i < ptr->browsePathSize; ++i)
             scalarFromQt<UA_QualifiedName, QOpcUaQualifiedName>(value.browsePath().at(i), &ptr->browsePath[i]);
+    } else {
+        ptr->browsePath = static_cast<UA_QualifiedName *>(UA_EMPTY_ARRAY_SENTINEL);
     }
 }
 
