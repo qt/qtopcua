@@ -77,7 +77,7 @@ static void provideCredentials(QOpcUaAuthenticationInformation &authInfo)
 
 static void commonGdsClientSetup(QOpcUaGdsClient &gc, const QString &backend, const QOpcUaEndpointDescription endpoint)
 {
-    QObject::connect(&gc, &QOpcUaGdsClient::authenticationRequired, provideCredentials);
+    QObject::connect(&gc, &QOpcUaGdsClient::authenticationRequired, &gc, provideCredentials);
 
     gc.setBackend(backend);
     gc.setEndpoint(endpoint);
