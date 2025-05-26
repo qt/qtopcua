@@ -18,11 +18,18 @@ find_package(Qt6 REQUIRED COMPONENTS Core OpcUaPrivate)
 
 qt_standard_project_setup()
 
-if (EXISTS ../../../../../${Qt6_VERSION}/Src/qtopcua/)
-    set(MODULE_SOURCE ../../../../../${Qt6_VERSION}/Src/qtopcua/)
-else()
+if (EXISTS ../../../../../${Qt6_VERSION}/Src/qtopcua/src/plugins/opcua/open62541/qopen62541utils.cpp)
+    # Installed sources
+    set(MODULE_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../${Qt6_VERSION}/Src/qtopcua/)
+elseif (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../../../src/plugins/opcua/open62541/qopen62541utils.cpp)
     # Build from source tree
-    set(MODULE_SOURCE ../../../../)
+    set(MODULE_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/../../../../)
+elseif (NOT "${QTOPCUA_SOURCE_DIR}" STREQUAL "" AND EXISTS ${QTOPCUA_SOURCE_DIR}/src/plugins/opcua/open62541/qopen62541utils.cpp)
+    # Build from custom directory
+    set(MODULE_SOURCE ${QTOPCUA_SOURCE_DIR})
+else()
+    message(FATAL_ERROR "Unable to build the server, the Qt OPC UA module source is not available."
+        "Set QTOPCUA_SOURCE_DIR to the location of the Qt OPC UA sources.")
 endif()
 
 qt_add_executable(simulationserver
