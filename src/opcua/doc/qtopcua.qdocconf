@@ -44,8 +44,6 @@ qhp.QtOpcUa.subprojects.manual.title = Qt OPC UA
 qhp.QtOpcUa.subprojects.manual.indexTitle = Qt OPC UA module topics
 qhp.QtOpcUa.subprojects.manual.type = manual
 
-examples.fileextensions = "*.cpp"
-
 navigation.landingpage = "Qt OPC UA"
 navigation.cppclassespage = "Qt OPC UA C++ Classes"
 navigation.qmltypespage = "Qt OPC UA QML Types"
