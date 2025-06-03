@@ -66,6 +66,7 @@ qt_internal_add_module(OpcUa
         client/qopcuareadresult.cpp client/qopcuareadresult.h
         client/qopcuareferencedescription.cpp client/qopcuareferencedescription.h
         client/qopcuarelativepathelement.cpp client/qopcuarelativepathelement.h
+        client/qopcuasecuritypolicyuris_p.h
         client/qopcuasimpleattributeoperand.cpp client/qopcuasimpleattributeoperand.h
         client/qopcuastructuredefinition.cpp client/qopcuastructuredefinition.h
         client/qopcuastructurefield.cpp client/qopcuastructurefield.h

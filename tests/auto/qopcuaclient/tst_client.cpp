@@ -29,6 +29,8 @@
 #include <QtOpcUa/qopcuastructurefield.h>
 #include <QtOpcUa/qopcuaxvalue.h>
 
+#include <private/qopcuasecuritypolicyuris_p.h>
+
 #include <QtCore/QCoreApplication>
 #include <QtCore/QProcess>
 #include <QtCore/QScopedPointer>
@@ -40,6 +42,8 @@
 #include <QTcpSocket>
 #include <QTcpServer>
 #include <QVariantMap>
+
+using namespace Qt::Literals::StringLiterals;
 
 const int signalSpyTimeout = 10000;
 
@@ -496,9 +500,27 @@ private slots:
 
     void loadInvalidPlugin();
 
-    // connect & disconnect
+    // connect with invalid configuration
     defineDataMethod(connectToInvalid_data)
     void connectToInvalid();
+    defineDataMethod(connectWithEmptyUrl_data)
+    void connectWithEmptyUrl();
+    defineDataMethod(connectWithMalformedUrl_data)
+    void connectWithMalformedUrl();
+    defineDataMethod(connectWithoutTokens_data);
+    void connectWithoutTokens();
+    defineDataMethod(connectWithInvalidSecurityMode_data);
+    void connectWithInvalidSecurityMode();
+    defineDataMethod(connectWithInvalidSecurityPolicyUri_data);
+    void connectWithInvalidSecurityPolicyUri();
+    defineDataMethod(connectSecureEndpointWithoutPki_data);
+    void connectSecureEndpointWithoutPki();
+    defineDataMethod(connectEncryptedTokenWithoutPki_data);
+    void connectEncryptedTokenWithoutPki();
+    defineDataMethod(connectCertificateAuthWithoutPki_data);
+    void connectCertificateAuthWithoutPki();
+
+    // connect & disconnect
     defineDataMethod(connectAndDisconnect_data)
     void connectAndDisconnect();
     defineDataMethod(checkSessionLocaleIds_data)
@@ -898,6 +920,253 @@ void Tst_QOpcUaClient::connectToInvalid()
     QCOMPARE(opcuaClient->state(), QOpcUaClient::Disconnected);
 
     QCOMPARE(opcuaClient->endpoint(), invalidEndpoint);
+}
+
+void Tst_QOpcUaClient::connectWithEmptyUrl()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    auto endpoint = m_endpoint;
+    endpoint.setEndpointUrl({});
+
+    QSignalSpy connectSpy(opcuaClient, &QOpcUaClient::stateChanged);
+    QSignalSpy errorSpy(opcuaClient, &QOpcUaClient::errorChanged);
+
+    opcuaClient->connectToEndpoint(endpoint);
+
+    connectSpy.wait();
+    if (connectSpy.size() < 2)
+        connectSpy.wait();
+    QCOMPARE(connectSpy.size(), 2);
+
+    if (errorSpy.isEmpty())
+        errorSpy.wait();
+
+    QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connecting);
+    QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Disconnected);
+
+    QCOMPARE(errorSpy.size(), 1);
+    QCOMPARE(errorSpy.at(0).at(0), QOpcUaClient::ClientError::InvalidUrl);
+
+    QCOMPARE(opcuaClient->state(), QOpcUaClient::Disconnected);
+    QCOMPARE(opcuaClient->error(), QOpcUaClient::ClientError::InvalidUrl);
+}
+
+void Tst_QOpcUaClient::connectWithMalformedUrl()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    auto endpoint = m_endpoint;
+    endpoint.setEndpointUrl(u"asdf://127.0.0.1"_s);
+
+    QSignalSpy connectSpy(opcuaClient, &QOpcUaClient::stateChanged);
+    QSignalSpy errorSpy(opcuaClient, &QOpcUaClient::errorChanged);
+
+    opcuaClient->connectToEndpoint(endpoint);
+
+    connectSpy.wait();
+    if (connectSpy.size() < 2)
+        connectSpy.wait();
+    QCOMPARE(connectSpy.size(), 2);
+
+    if (errorSpy.isEmpty())
+        errorSpy.wait();
+
+    QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connecting);
+    QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Disconnected);
+
+    QCOMPARE(errorSpy.size(), 1);
+    QCOMPARE(errorSpy.at(0).at(0), QOpcUaClient::ClientError::InvalidUrl);
+
+    QCOMPARE(opcuaClient->state(), QOpcUaClient::Disconnected);
+    QCOMPARE(opcuaClient->error(), QOpcUaClient::ClientError::InvalidUrl);
+}
+
+void Tst_QOpcUaClient::connectWithoutTokens()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    auto endpoint = m_endpoint;
+    endpoint.setUserIdentityTokens({});
+
+    QSignalSpy connectSpy(opcuaClient, &QOpcUaClient::stateChanged);
+    QSignalSpy errorSpy(opcuaClient, &QOpcUaClient::errorChanged);
+
+    opcuaClient->connectToEndpoint(endpoint);
+
+    connectSpy.wait();
+    if (connectSpy.size() < 2)
+        connectSpy.wait();
+    QCOMPARE(connectSpy.size(), 2);
+
+    if (errorSpy.isEmpty())
+        errorSpy.wait();
+
+    QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connecting);
+    QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Disconnected);
+
+    QCOMPARE(errorSpy.size(), 1);
+    QCOMPARE(errorSpy.at(0).at(0), QOpcUaClient::ClientError::NoMatchingUserIdentityTokenFound);
+
+    QCOMPARE(opcuaClient->state(), QOpcUaClient::Disconnected);
+    QCOMPARE(opcuaClient->error(), QOpcUaClient::ClientError::NoMatchingUserIdentityTokenFound);
+}
+
+void Tst_QOpcUaClient::connectWithInvalidSecurityMode()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    auto endpoint = m_endpoint;
+    endpoint.setSecurityMode(QOpcUaEndpointDescription::MessageSecurityMode::Invalid);
+
+    QSignalSpy connectSpy(opcuaClient, &QOpcUaClient::stateChanged);
+    QSignalSpy errorSpy(opcuaClient, &QOpcUaClient::errorChanged);
+
+    opcuaClient->connectToEndpoint(endpoint);
+
+    connectSpy.wait();
+    if (connectSpy.size() < 2)
+        connectSpy.wait();
+    QCOMPARE(connectSpy.size(), 2);
+
+    if (errorSpy.isEmpty())
+        errorSpy.wait();
+
+    QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connecting);
+    QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Disconnected);
+
+    QCOMPARE(errorSpy.size(), 1);
+    QCOMPARE(errorSpy.at(0).at(0), QOpcUaClient::ClientError::InvalidEndpointDescription);
+
+    QCOMPARE(opcuaClient->state(), QOpcUaClient::Disconnected);
+    QCOMPARE(opcuaClient->error(), QOpcUaClient::ClientError::InvalidEndpointDescription);
+}
+
+void Tst_QOpcUaClient::connectWithInvalidSecurityPolicyUri()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    auto endpoint = m_endpoint;
+    endpoint.setSecurityPolicy("http://notavalidsecuritypolicyuri"_L1);
+
+    QSignalSpy connectSpy(opcuaClient, &QOpcUaClient::stateChanged);
+    QSignalSpy errorSpy(opcuaClient, &QOpcUaClient::errorChanged);
+
+    opcuaClient->connectToEndpoint(endpoint);
+
+    connectSpy.wait();
+    if (connectSpy.size() < 2)
+        connectSpy.wait();
+    QCOMPARE(connectSpy.size(), 2);
+
+    if (errorSpy.isEmpty())
+        errorSpy.wait();
+
+    QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connecting);
+    QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Disconnected);
+
+    QCOMPARE(errorSpy.size(), 1);
+    QCOMPARE(errorSpy.at(0).at(0), QOpcUaClient::ClientError::UnsupportedSecurityPolicy);
+
+    QCOMPARE(opcuaClient->state(), QOpcUaClient::Disconnected);
+    QCOMPARE(opcuaClient->error(), QOpcUaClient::ClientError::UnsupportedSecurityPolicy);
+}
+
+void Tst_QOpcUaClient::connectSecureEndpointWithoutPki()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    auto endpoint = m_endpoint;
+    endpoint.setSecurityPolicy(QOpcUa::Basic256Sha256Policy);
+
+    QSignalSpy connectSpy(opcuaClient, &QOpcUaClient::stateChanged);
+    QSignalSpy errorSpy(opcuaClient, &QOpcUaClient::errorChanged);
+
+    opcuaClient->connectToEndpoint(endpoint);
+
+    connectSpy.wait();
+    if (connectSpy.size() < 2)
+        connectSpy.wait();
+    QCOMPARE(connectSpy.size(), 2);
+
+    if (errorSpy.isEmpty())
+        errorSpy.wait();
+
+    QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connecting);
+    QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Disconnected);
+
+    QCOMPARE(errorSpy.size(), 1);
+    QCOMPARE(errorSpy.at(0).at(0), QOpcUaClient::ClientError::UnsupportedSecurityPolicy);
+
+    QCOMPARE(opcuaClient->state(), QOpcUaClient::Disconnected);
+    QCOMPARE(opcuaClient->error(), QOpcUaClient::ClientError::UnsupportedSecurityPolicy);
+}
+
+void Tst_QOpcUaClient::connectEncryptedTokenWithoutPki()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+    auto endpoint = m_endpoint;
+    auto tokens = endpoint.userIdentityTokens();
+    for (auto &entry : tokens)
+        entry.setSecurityPolicy(QOpcUa::Basic256Sha256Policy);
+    endpoint.setUserIdentityTokens(tokens);
+
+    QSignalSpy connectSpy(opcuaClient, &QOpcUaClient::stateChanged);
+    QSignalSpy errorSpy(opcuaClient, &QOpcUaClient::errorChanged);
+
+    opcuaClient->connectToEndpoint(endpoint);
+
+    connectSpy.wait();
+    if (connectSpy.size() < 2)
+        connectSpy.wait();
+    QCOMPARE(connectSpy.size(), 2);
+
+    if (errorSpy.isEmpty())
+        errorSpy.wait();
+
+    QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connecting);
+    QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Disconnected);
+
+    QCOMPARE(errorSpy.size(), 1);
+    QCOMPARE(errorSpy.at(0).at(0), QOpcUaClient::ClientError::NoMatchingUserIdentityTokenFound);
+
+    QCOMPARE(opcuaClient->state(), QOpcUaClient::Disconnected);
+    QCOMPARE(opcuaClient->error(), QOpcUaClient::ClientError::NoMatchingUserIdentityTokenFound);
+}
+
+void Tst_QOpcUaClient::connectCertificateAuthWithoutPki()
+{
+    QFETCH(QOpcUaClient *, opcuaClient);
+
+    // Use a new client for the test to avoid keeping the auth information
+    QScopedPointer<QOpcUaClient> tempClient(m_opcUa.createClient(opcuaClient->backend()));
+    QVERIFY(tempClient);
+
+    auto endpoint = m_endpoint;
+    QOpcUaAuthenticationInformation authInfo;
+    authInfo.setCertificateAuthentication();
+    tempClient->setAuthenticationInformation(authInfo);
+
+    QSignalSpy connectSpy(tempClient.get(), &QOpcUaClient::stateChanged);
+    QSignalSpy errorSpy(tempClient.get(), &QOpcUaClient::errorChanged);
+
+    tempClient->connectToEndpoint(endpoint);
+
+    connectSpy.wait();
+    if (connectSpy.size() < 2)
+        connectSpy.wait();
+    QCOMPARE(connectSpy.size(), 2);
+
+    if (errorSpy.isEmpty())
+        errorSpy.wait();
+
+    QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connecting);
+    QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Disconnected);
+
+    QCOMPARE(tempClient->state(), QOpcUaClient::Disconnected);
+
+    QCOMPARE(errorSpy.size(), 1);
+#ifdef SERVER_SUPPORTS_SECURITY
+    QCOMPARE(errorSpy.at(0).at(0), QOpcUaClient::ClientError::InvalidAuthenticationInformation);
+    QCOMPARE(tempClient->error(), QOpcUaClient::ClientError::InvalidAuthenticationInformation);
+#else
+    QCOMPARE(errorSpy.at(0).at(0), QOpcUaClient::ClientError::UnsupportedAuthenticationInformation);
+    QCOMPARE(tempClient->error(), QOpcUaClient::ClientError::UnsupportedAuthenticationInformation);
+#endif
 }
 
 void Tst_QOpcUaClient::connectAndDisconnect()

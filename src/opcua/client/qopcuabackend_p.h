@@ -44,7 +44,7 @@ public:
     QOpcUa::Types attributeIdToTypeId(QOpcUa::NodeAttribute attr);
 
     double revisePublishingInterval(double requestedValue, double minimumValue);
-    static bool verifyEndpointDescription(const QOpcUaEndpointDescription &endpoint, QString *message = nullptr);
+    static QOpcUaClient::ClientError verifyEndpointDescription(const QOpcUaEndpointDescription &endpoint, QString *message = nullptr);
 
 Q_SIGNALS:
     void stateAndOrErrorChanged(QOpcUaClient::ClientState state,

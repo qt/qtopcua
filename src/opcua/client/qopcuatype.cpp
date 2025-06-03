@@ -3,6 +3,8 @@
 
 #include "qopcuatype.h"
 
+#include <private/qopcuasecuritypolicyuris_p.h>
+
 #include <QMetaEnum>
 #include <QRegularExpression>
 #include <QUuid>
@@ -989,11 +991,11 @@ QOpcUa::Types QOpcUa::opcUaDataTypeToQOpcUaType(const QString &type)
 */
 bool QOpcUa::isSecurePolicy(const QString &securityPolicy)
 {
-    return securityPolicy == QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#Basic128Rsa15") ||
-           securityPolicy == QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#Basic256") ||
-           securityPolicy == QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#Basic256Sha256") ||
-           securityPolicy == QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#Aes128_Sha256_RsaOaep") ||
-           securityPolicy == QLatin1String("http://opcfoundation.org/UA/SecurityPolicy#Aes256_Sha256_RsaPss");
+    return securityPolicy == Basic128Rsa15Policy ||
+           securityPolicy == Basic256Policy ||
+           securityPolicy == Basic256Sha256Policy ||
+           securityPolicy == Aes128Sha256RsaOaepPolicy ||
+           securityPolicy == Aes256Sha256RsaPssPolicy;
 }
 
 QT_END_NAMESPACE

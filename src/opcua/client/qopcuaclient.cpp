@@ -102,6 +102,18 @@ QT_BEGIN_NAMESPACE
            An unknown error occurred.
     \value UnsupportedAuthenticationInformation
            The given type or data of authentication information is not supported.
+    \value InvalidAuthenticationInformation
+           The provided authentication information is invalid
+    \value InvalidEndpointDescription
+           The endpoint description is invalid, e. g. because of an empty URL or no user identity tokens.
+    \value NoMatchingUserIdentityTokenFound
+           The selected endpoint doesn't support the requested token type or supported policies.
+    \value UnsupportedSecurityPolicy
+           The security policy for the endpoint is not supported.
+    \value InvalidPki
+           A certificate or key of the PKI could not be loaded or is invalid
+    \value CertificateUntrusted
+           The server certificate is untrusted
 */
 
 /*!
