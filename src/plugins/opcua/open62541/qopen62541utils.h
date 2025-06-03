@@ -71,8 +71,6 @@ namespace Open62541Utils {
     UA_NodeId nodeIdFromQString(const QString &name);
     QString nodeIdToQString(UA_NodeId id);
 
-    void createEventFilter(const QOpcUaMonitoringParameters::EventFilter &filter, UA_ExtensionObject *out);
-
 #ifdef UA_ENABLE_ENCRYPTION
     bool checkSha1SignatureSupport();
 #endif

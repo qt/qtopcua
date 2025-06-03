@@ -102,10 +102,6 @@ private:
                                     const char *msg, va_list args);
 
     QOpen62541Subscription *getSubscriptionForItem(quint64 handle, QOpcUa::NodeAttribute attr);
-    QOpcUaApplicationDescription convertApplicationDescription(UA_ApplicationDescription &desc);
-
-    UA_ExtensionObject assembleNodeAttributes(const QOpcUaNodeCreationAttributes &nodeAttributes, QOpcUa::NodeClass nodeClass);
-    UA_UInt32 *copyArrayDimensions(const QList<quint32> &arrayDimensions, size_t *outputSize);
 
     // Helper
     bool loadFileToByteString(const QString &location, UA_ByteString *target) const;
