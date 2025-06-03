@@ -5,6 +5,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 QOpcUaBackend::QOpcUaBackend()
     : QObject()
 {}
@@ -57,22 +59,35 @@ double QOpcUaBackend::revisePublishingInterval(double requestedValue, double min
 }
 
 /*!
-   This function returns if a given endpoint description is valid.
+   This function returns \l QOpcUaClient::ClientError::NoError if the given endpoint description is valid.
    If \a message is not \nullptr, an error message will be assigned to it, in case
    the endpoint description is invalid.
  */
-bool QOpcUaBackend::verifyEndpointDescription(const QOpcUaEndpointDescription &endpoint, QString *message)
+QOpcUaClient::ClientError QOpcUaBackend::verifyEndpointDescription(const QOpcUaEndpointDescription &endpoint, QString *message)
 {
     if (endpoint.endpointUrl().isEmpty()) {
         if (message)
             *message = QLatin1String("Endpoint description is invalid because endpoint URL is empty");
-        return false;
+        return QOpcUaClient::ClientError::InvalidUrl;
+    }
+
+    const QUrl url(endpoint.endpointUrl());
+    if (!url.isValid() || url.scheme() != "opc.tcp"_L1) {
+        if (message)
+            *message = QLatin1String("Endpoint description is invalid because the URL is invalid or malformed");
+        return QOpcUaClient::ClientError::InvalidUrl;
     }
 
     if (endpoint.securityPolicy().isEmpty()) {
         if (message)
             *message = QLatin1String("Endpoint description is invalid because security policy is empty");
-        return false;
+        return QOpcUaClient::ClientError::InvalidEndpointDescription;
+    }
+
+    if (endpoint.userIdentityTokens().isEmpty()) {
+        if (message)
+            *message = QLatin1String("Endpoint description is invalid because there are no user identity tokens");
+        return QOpcUaClient::ClientError::NoMatchingUserIdentityTokenFound;
     }
 
     if (endpoint.securityMode() != QOpcUaEndpointDescription::MessageSecurityMode::None &&
@@ -81,10 +96,10 @@ bool QOpcUaBackend::verifyEndpointDescription(const QOpcUaEndpointDescription &e
     {
         if (message)
             *message = QLatin1String("Endpoint description contains an invalid message security mode");
-        return false;
+        return QOpcUaClient::ClientError::InvalidEndpointDescription;
     }
 
-    return true;
+    return QOpcUaClient::ClientError::NoError;
 }
 
 QT_END_NAMESPACE

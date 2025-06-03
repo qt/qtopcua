@@ -12,6 +12,7 @@
 #include "qopen62541utils.h"
 #include "qopen62541valueconverter.h"
 #include <private/qopcuaclient_p.h>
+#include <private/qopcuasecuritypolicyuris_p.h>
 
 #include "qopcuaauthenticationinformation.h"
 #include <qopcuaerrorstate.h>
@@ -29,16 +30,6 @@
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541)
-
-#ifdef UA_ENABLE_ENCRYPTION
-using namespace Qt::Literals::StringLiterals;
-static constexpr QLatin1StringView NonePolicy = "http://opcfoundation.org/UA/SecurityPolicy#None"_L1;
-static constexpr QLatin1StringView Basic128Rsa15Policy = "http://opcfoundation.org/UA/SecurityPolicy#Basic128Rsa15"_L1;
-static constexpr QLatin1StringView Basic256Policy = "http://opcfoundation.org/UA/SecurityPolicy#Basic256"_L1;
-static constexpr QLatin1StringView Aes256Sha256RsaPssPolicy = "http://opcfoundation.org/UA/SecurityPolicy#Aes256_Sha256_RsaPss"_L1;
-static constexpr QLatin1StringView Basic256Sha256Policy = "http://opcfoundation.org/UA/SecurityPolicy#Basic256Sha256"_L1;
-static constexpr QLatin1StringView Aes128Sha256RsaOaepPolicy = "http://opcfoundation.org/UA/SecurityPolicy#Aes128_Sha256_RsaOaep"_L1;
-#endif
 
 Open62541AsyncBackend::Open62541AsyncBackend(QOpen62541Client *parent)
     : QOpcUaBackend()
@@ -1043,165 +1034,112 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
     emit stateAndOrErrorChanged(QOpcUaClient::Connecting, QOpcUaClient::NoError);
 
     QString errorMessage;
-    if (!verifyEndpointDescription(endpoint, &errorMessage)) {
+    const auto endpointError = verifyEndpointDescription(endpoint, &errorMessage);
+    if (endpointError != QOpcUaClient::ClientError::NoError) {
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << errorMessage;
-        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::InvalidUrl);
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, endpointError);
         return;
     }
 
-    if (!m_clientImpl->supportedSecurityPolicies().contains(endpoint.securityPolicy())) {
+#ifdef UA_ENABLE_ENCRYPTION
+    const auto pkiConfig = m_clientImpl->m_client->pkiConfiguration();
+#endif
+
+    if (!m_clientImpl->supportedSecurityPolicies().contains(endpoint.securityPolicy())
+#ifdef UA_ENABLE_ENCRYPTION
+        || (!pkiConfig.isKeyAndCertificateFileSet() && endpoint.securityPolicy() != QOpcUa::NonePolicy)
+#endif
+        ) {
 #ifndef UA_ENABLE_ENCRYPTION
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "The open62541 plugin has been built without encryption support";
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "The open62541 plugin has been built without encryption support, only the"
+                                              << QOpcUa::NonePolicy << "security policy is supported";
 #endif
         qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unsupported security policy:" << endpoint.securityPolicy();
-        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::InvalidUrl);
+
+#ifdef UA_ENABLE_ENCRYPTION
+        if (!pkiConfig.isKeyAndCertificateFileSet()) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541)
+                << "No certificate and private key is set, only the" << QOpcUa::NonePolicy << "security policy is supported";
+        }
+#endif
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::UnsupportedSecurityPolicy);
         return;
     }
 
-    emit stateAndOrErrorChanged(QOpcUaClient::Connecting, QOpcUaClient::NoError);
+    const auto identity = m_clientImpl->m_client->applicationIdentity();
+    const auto authInfo = m_clientImpl->m_client->authenticationInformation();
+
+    if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Certificate) {
+#ifndef UA_ENABLE_ENCRYPTION
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "The open62541 plugin has been built without encryption support, "
+                                                 "certificate auth is not supported";
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected,
+                                    QOpcUaClient::ClientError::UnsupportedAuthenticationInformation);
+        return;
+#else
+        if (!authInfo.authenticationData().isValid() && !pkiConfig.isKeyAndCertificateFileSet()) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unable to do certificate auth when no certificate is set";
+            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected,
+                                        QOpcUaClient::ClientError::InvalidAuthenticationInformation);
+            return;
+        }
+#endif
+    }
+
+    // Possible early out if no token matching the configuration and the client's capabilities is available
+    // If the token's security policy URI is not None, at least a certificate and a private key must be set
+    bool suitableTokenFound = false;
+    const auto userIdentityTokens = endpoint.userIdentityTokens();
+    for (const auto &token : userIdentityTokens) {
+        // An empty security policy URI means that the endpoint's policy is to be used
+        const auto tokenPolicy = token.securityPolicy().isEmpty() ? endpoint.securityPolicy() : token.securityPolicy();
+
+        if (token.tokenType() == authInfo.authenticationType() &&
+            m_clientImpl->supportedSecurityPolicies().contains(tokenPolicy) &&
+#ifdef UA_ENABLE_ENCRYPTION
+            (tokenPolicy == QOpcUa::NonePolicy || pkiConfig.isKeyAndCertificateFileSet())
+#else
+            tokenPolicy == QOpcUa::NonePolicy
+#endif
+            ) {
+            suitableTokenFound = true;
+            break;
+        }
+    }
+
+    if (!suitableTokenFound) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "No suitable identity token found in the endpoint";
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Availabe tokens in the endpoint:";
+        for (const auto &token : userIdentityTokens) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "    Type:" << token.tokenType()
+                                                  << "SecurityPolicyUri:" << token.securityPolicy();
+        }
+
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected,
+                                    QOpcUaClient::ClientError::NoMatchingUserIdentityTokenFound);
+        return;
+    }
 
     UA_ClientConfig initialConfig {};
     initialConfig.logging = &m_open62541Logger;
     m_uaclient = UA_Client_newWithConfig(&initialConfig);
 
     auto conf = UA_Client_getConfig(m_uaclient);
-
-    const auto identity = m_clientImpl->m_client->applicationIdentity();
-    const auto authInfo = m_clientImpl->m_client->authenticationInformation();
     m_currentConnectionSettings = m_clientImpl->m_client->connectionSettings();
-#ifdef UA_ENABLE_ENCRYPTION
-    const auto pkiConfig = m_clientImpl->m_client->pkiConfiguration();
-#endif
 
-#ifndef UA_ENABLE_ENCRYPTION
-    if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Certificate) {
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "The open62541 plugin has been built without encryption support,"
-                                                 "certificate auth is not supported";
-        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected,
-                                    QOpcUaClient::ClientError::UnsupportedAuthenticationInformation);
+#ifdef UA_ENABLE_ENCRYPTION
+    if (!setupClientConfigSecurity(authInfo, pkiConfig, endpoint))
+        return;
+#else
+    const auto setDefaultResult = UA_ClientConfig_setDefault(conf);
+    if (setDefaultResult != UA_STATUSCODE_GOOD) {
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set client config defaults:" << static_cast<QOpcUa::UaStatusCode>(setDefaultResult);
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
+        UA_Client_delete(m_uaclient);
+        m_uaclient = nullptr;
         return;
     }
-#else
-    if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Certificate) {
-        if (!authInfo.authenticationData().isValid() && !pkiConfig.isKeyAndCertificateFileSet()) {
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Unable to do certificate auth when no certificate is set";
-            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected,
-                                        QOpcUaClient::ClientError::UnsupportedAuthenticationInformation);
-            return;
-        }
-    }
 #endif
-
-#ifdef UA_ENABLE_ENCRYPTION
-    UA_ByteString privateKey = UA_BYTESTRING_NULL;
-    UaDeleter<UA_ByteString> privateKeyDeleter(&privateKey, &UA_ByteString_clear);
-
-    if (pkiConfig.isPkiValid()) {
-        UA_ByteString localCertificate;
-        UA_ByteString *trustList = nullptr;
-        qsizetype trustListSize = 0;
-        UA_ByteString *revocationList = nullptr;
-        qsizetype revocationListSize = 0;
-
-        bool success = loadFileToByteString(pkiConfig.clientCertificateFile(), &localCertificate);
-
-        if (!success) {
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load client certificate";
-            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
-            UA_Client_delete(m_uaclient);
-            m_uaclient = nullptr;
-            return;
-        }
-
-        UaDeleter<UA_ByteString> clientCertDeleter(&localCertificate, &UA_ByteString_clear);
-
-        success = loadPrivateKeyWithPotentialPassword(pkiConfig.privateKeyFile(), privateKey);
-
-        if (!success) {
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load private key";
-            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
-            UA_Client_delete(m_uaclient);
-            m_uaclient = nullptr;
-            return;
-        }
-
-        success = loadAllFilesInDirectory(pkiConfig.trustListDirectory(), &trustList, &trustListSize);
-
-        if (!success) {
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load trust list";
-            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
-            UA_Client_delete(m_uaclient);
-            m_uaclient = nullptr;
-            return;
-        }
-
-        UaArrayDeleter<UA_TYPES_BYTESTRING> trustListDeleter(trustList, trustListSize);
-
-        success = loadAllFilesInDirectory(pkiConfig.revocationListDirectory(), &revocationList, &revocationListSize);
-
-        if (!success) {
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load revocation list";
-            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
-            UA_Client_delete(m_uaclient);
-            m_uaclient = nullptr;
-            return;
-        }
-
-        UaArrayDeleter<UA_TYPES_BYTESTRING> revocationListDeleter(revocationList, revocationListSize);
-
-        // UA_ClientConfig_setDefaultEncryption() no longer adds Basic128Rsa15 and Basic256 to the security policies in v1.4.7
-        // This must be done manually (for now).
-        UA_StatusCode result = UA_ClientConfig_setDefault(conf);
-
-        if (result != UA_STATUSCODE_GOOD) {
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set client config defaults:" << static_cast<QOpcUa::UaStatusCode>(result);
-            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
-            UA_Client_delete(m_uaclient);
-            m_uaclient = nullptr;
-            return;
-        }
-
-        if (conf->certificateVerification.clear)
-            conf->certificateVerification.clear(&conf->certificateVerification);
-        result = UA_CertificateVerification_Trustlist(&conf->certificateVerification,
-                                                      trustList, trustListSize,
-                                                      nullptr, 0,
-                                                      revocationList, revocationListSize);
-
-        if (result != UA_STATUSCODE_GOOD) {
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set up certificate verification:" << static_cast<QOpcUa::UaStatusCode>(result);
-            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
-            UA_Client_delete(m_uaclient);
-            m_uaclient = nullptr;
-            return;
-        }
-
-        QString usedAuthSecurityPolicy;
-        result = setAuthSecurityPolicyInClientConfig(conf, localCertificate, privateKey, endpoint, authInfo.authenticationType(), &usedAuthSecurityPolicy);
-
-        if (result != UA_STATUSCODE_GOOD) {
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set up auth security policies:" << static_cast<QOpcUa::UaStatusCode>(result);
-            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
-            UA_Client_delete(m_uaclient);
-            m_uaclient = nullptr;
-            return;
-        }
-
-        result = setSecurityPolicyInClientConfig(conf, localCertificate, privateKey, endpoint, usedAuthSecurityPolicy);
-
-        if (result != UA_STATUSCODE_GOOD) {
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set up security policies:" << static_cast<QOpcUa::UaStatusCode>(result);
-            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
-            UA_Client_delete(m_uaclient);
-            m_uaclient = nullptr;
-            return;
-        }
-    } else {
-#else
-    {
-#endif
-        UA_ClientConfig_setDefault(conf);
-    }
 
     using Timeout_t = decltype(conf->timeout);
     conf->timeout = qt_saturate<Timeout_t>(m_currentConnectionSettings.connectTimeout().count());
@@ -1234,164 +1172,11 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
     conf->securityPolicyUri = UA_STRING_ALLOC(endpoint.securityPolicy().toUtf8().constData());
     conf->securityMode = static_cast<UA_MessageSecurityMode>(endpoint.securityMode());
 
-    UA_StatusCode ret = UA_STATUSCODE_BADINTERNALERROR;
-    bool retry = false;
-
-    do {
-        retry = false;
-
-        if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Anonymous) {
-            ret = UA_Client_connect(m_uaclient, endpoint.endpointUrl().toUtf8().constData());
-        } else if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Username) {
-
-            bool suitableTokenFound = false;
-            const auto userIdentityTokens = endpoint.userIdentityTokens();
-            for (const auto &token : userIdentityTokens) {
-                if (token.tokenType() == QOpcUaUserTokenPolicy::Username &&
-                    (token.securityPolicy().isEmpty() || m_clientImpl->supportedSecurityPolicies().contains(token.securityPolicy()))) {
-                    suitableTokenFound = true;
-                    break;
-                }
-            }
-
-            if (!suitableTokenFound) {
-                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "No suitable user token policy found";
-                emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::NoError);
-                UA_Client_delete(m_uaclient);
-                m_uaclient = nullptr;
-                return;
-            }
-
-            const auto credentials = authInfo.authenticationData().value<QPair<QString, QString>>();
-            ret = UA_Client_connectUsername(m_uaclient, endpoint.endpointUrl().toUtf8().constData(),
-                                             credentials.first.toUtf8().constData(), credentials.second.toUtf8().constData());
-        } else if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Certificate) {
+    establishConnectionInternal(authInfo,
 #ifdef UA_ENABLE_ENCRYPTION
-            QString certPath;
-            QString keyPath;
-
-            if (authInfo.authenticationData().canConvert<QPair<QString, QString>>()) {
-                const auto authPaths = authInfo.authenticationData().value<QPair<QString, QString>>();
-
-                if (authPaths.first.isEmpty() || authPaths.second.isEmpty()) {
-                    qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Certificate and private key path must be set for certificate auth";
-                    emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::UnsupportedAuthenticationInformation);
-                    UA_Client_delete(m_uaclient);
-                    m_uaclient = nullptr;
-                    return;
-                }
-
-                certPath = authPaths.first;
-                keyPath = authPaths.second;
-            } else {
-                certPath = pkiConfig.clientCertificateFile();
-                keyPath = pkiConfig.privateKeyFile();
-            }
-
-            UA_ByteString cert = UA_BYTESTRING_NULL;
-            UA_ByteString key = UA_BYTESTRING_NULL;
-
-            if (!loadFileToByteString(certPath, &cert)) {
-                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load certificate for certificate auth";
-                emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::UnsupportedAuthenticationInformation);
-                UA_Client_delete(m_uaclient);
-                m_uaclient = nullptr;
-                return;
-            }
-
-            UaDeleter<UA_ByteString> certDeleter(&cert, &UA_ByteString_clear);
-
-            if (keyPath == pkiConfig.privateKeyFile()) {
-                UA_ByteString_copy(&privateKey, &key);
-            } else if (!loadPrivateKeyWithPotentialPassword(keyPath, key)) {
-                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load private key for certificate auth";
-                emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::UnsupportedAuthenticationInformation);
-                UA_Client_delete(m_uaclient);
-                m_uaclient = nullptr;
-                return;
-            }
-
-            UaDeleter<UA_ByteString> keyDeleter(&key, &UA_ByteString_clear);
-
-
-            // UA_ClientConfig_setAuthenticationCert() overwrites the auth security policies,
-            // so we must call our custom implementation
-
-            UA_X509IdentityToken *token = UA_X509IdentityToken_new();
-            UA_StatusCode result = UA_ByteString_copy(&cert, &token->certificateData);
-            UA_ExtensionObject_clear(&conf->userIdentityToken);
-            conf->userIdentityToken.encoding = UA_EXTENSIONOBJECT_DECODED;
-            conf->userIdentityToken.content.decoded.type = &UA_TYPES[UA_TYPES_X509IDENTITYTOKEN];
-            conf->userIdentityToken.content.decoded.data = token;
-
-            if (result == UA_STATUSCODE_GOOD)
-                result = setAuthSecurityPolicyInClientConfig(conf, cert, key, endpoint, authInfo.authenticationType(), nullptr);
-
-            if (result != UA_STATUSCODE_GOOD) {
-                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to initialize certificate auth:" << UA_StatusCode_name(result);
-                emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::UnsupportedAuthenticationInformation);
-                UA_Client_delete(m_uaclient);
-                m_uaclient = nullptr;
-                return;
-            }
-
-            ret = UA_Client_connect(m_uaclient, endpoint.endpointUrl().toUtf8().constData());
+                                pkiConfig,
 #endif
-        } else {
-            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnsupportedAuthenticationInformation);
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to connect: Selected authentication type"
-                                              << authInfo.authenticationType() << "is not supported.";
-            UA_Client_delete(m_uaclient);
-            m_uaclient = nullptr;
-            return;
-        }
-
-#ifdef UA_ENABLE_ENCRYPTION
-        if (ret == UA_STATUSCODE_BADCERTIFICATEUNTRUSTED) {
-            QOpcUaErrorState errorState;
-            errorState.setClientSideError(true);
-            errorState.setConnectionStep(QOpcUaErrorState::ConnectionStep::CertificateValidation);
-            errorState.setErrorCode(QOpcUa::UaStatusCode::BadCertificateUntrusted);
-
-            emit QOpcUaBackend::connectError(&errorState);
-
-            if (errorState.ignoreError()) {
-                // Use the AcceptAll certificate verification
-                UA_CertificateVerification_AcceptAll(&conf->certificateVerification);
-                retry = true;
-            }
-        }
-#endif
-    } while (retry);
-
-    if (ret != UA_STATUSCODE_GOOD) {
-        UA_Client_delete(m_uaclient);
-        m_uaclient = nullptr;
-        QOpcUaClient::ClientError error = ret == UA_STATUSCODE_BADUSERACCESSDENIED || ret == UA_STATUSCODE_BADIDENTITYTOKENINVALID ? QOpcUaClient::AccessDenied : QOpcUaClient::UnknownError;
-
-        QOpcUaErrorState errorState;
-        errorState.setConnectionStep(QOpcUaErrorState::ConnectionStep::Unknown);
-        errorState.setErrorCode(static_cast<QOpcUa::UaStatusCode>(ret));
-        errorState.setClientSideError(false);
-        errorState.setIgnoreError(false);
-
-        // This signal is connected using Qt::BlockingQueuedConnection. It will place a metacall to a different thread and waits
-        // until this metacall is fully handled before returning.
-        emit QOpcUaBackend::connectError(&errorState);
-
-        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
-        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to connect";
-        return;
-    }
-
-    conf->timeout = qt_saturate<Timeout_t>(m_currentConnectionSettings.requestTimeout().count());
-
-    // Attach the client state callback after the successful connect
-    conf->stateCallback = clientStateCallback;
-    conf->noReconnect = true;
-
-    m_clientIterateTimer.start(m_clientIterateInterval);
-    emit stateAndOrErrorChanged(QOpcUaClient::Connected, QOpcUaClient::NoError);
+                                endpoint);
 }
 
 void Open62541AsyncBackend::disconnectFromEndpoint()
@@ -2199,6 +1984,287 @@ void Open62541AsyncBackend::disconnectInternal(QOpcUaClient::ClientError error)
 }
 
 #ifdef UA_ENABLE_ENCRYPTION
+bool Open62541AsyncBackend::setupClientConfigSecurity(const QOpcUaAuthenticationInformation &authInfo,
+                                                      const QOpcUaPkiConfiguration &pkiConfig,
+                                                      const QOpcUaEndpointDescription &endpoint)
+{
+    const auto conf = UA_Client_getConfig(m_uaclient);
+    if (!conf)
+        return false;
+
+    UA_ByteString privateKey = UA_BYTESTRING_NULL;
+    UaDeleter<UA_ByteString> privateKeyDeleter(&privateKey, &UA_ByteString_clear);
+
+    if (pkiConfig.isKeyAndCertificateFileSet()) {
+        UA_ByteString localCertificate;
+        UA_ByteString *trustList = nullptr;
+        qsizetype trustListSize = 0;
+        UA_ByteString *revocationList = nullptr;
+        qsizetype revocationListSize = 0;
+
+        bool success = loadFileToByteString(pkiConfig.clientCertificateFile(), &localCertificate);
+
+        if (!success) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load client certificate";
+            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::InvalidPki);
+            UA_Client_delete(m_uaclient);
+            m_uaclient = nullptr;
+            return false;
+        }
+
+        UaDeleter<UA_ByteString> clientCertDeleter(&localCertificate, &UA_ByteString_clear);
+
+        success = loadPrivateKeyWithPotentialPassword(pkiConfig.privateKeyFile(), privateKey);
+
+        if (!success) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load private key";
+            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::InvalidPki);
+            UA_Client_delete(m_uaclient);
+            m_uaclient = nullptr;
+            return false;
+        }
+
+        if (!pkiConfig.trustListDirectory().isEmpty()) {
+            success = loadAllFilesInDirectory(pkiConfig.trustListDirectory(), &trustList, &trustListSize);
+
+            if (!success) {
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load trust list";
+                emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::InvalidPki);
+                UA_Client_delete(m_uaclient);
+                m_uaclient = nullptr;
+                return false;
+            }
+        }
+
+        UaArrayDeleter<UA_TYPES_BYTESTRING> trustListDeleter(trustList, trustListSize);
+
+        if (!pkiConfig.revocationListDirectory().isEmpty()) {
+            success = loadAllFilesInDirectory(pkiConfig.revocationListDirectory(), &revocationList, &revocationListSize);
+
+            if (!success) {
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load revocation list";
+                emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::InvalidPki);
+                UA_Client_delete(m_uaclient);
+                m_uaclient = nullptr;
+                return false;
+            }
+        }
+
+        UaArrayDeleter<UA_TYPES_BYTESTRING> revocationListDeleter(revocationList, revocationListSize);
+
+        // UA_ClientConfig_setDefaultEncryption() no longer adds Basic128Rsa15 and Basic256 to the security policies in v1.4.7
+        // This must be done manually (for now).
+        UA_StatusCode result = UA_ClientConfig_setDefault(conf);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set client config defaults:" << static_cast<QOpcUa::UaStatusCode>(result);
+            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnknownError);
+            UA_Client_delete(m_uaclient);
+            m_uaclient = nullptr;
+            return false;
+        }
+
+        if (conf->certificateVerification.clear)
+            conf->certificateVerification.clear(&conf->certificateVerification);
+        result = UA_CertificateVerification_Trustlist(&conf->certificateVerification,
+                                                      trustList, trustListSize,
+                                                      nullptr, 0,
+                                                      revocationList, revocationListSize);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set up certificate verification:" << static_cast<QOpcUa::UaStatusCode>(result);
+            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::InvalidPki);
+            UA_Client_delete(m_uaclient);
+            m_uaclient = nullptr;
+            return false;
+        }
+
+        QString usedAuthSecurityPolicy;
+        result = setAuthSecurityPolicyInClientConfig(conf, localCertificate, privateKey, endpoint, authInfo.authenticationType(), &usedAuthSecurityPolicy);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set up auth security policies:" << static_cast<QOpcUa::UaStatusCode>(result);
+            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::InvalidPki);
+            UA_Client_delete(m_uaclient);
+            m_uaclient = nullptr;
+            return false;
+        }
+
+        result = setSecurityPolicyInClientConfig(conf, localCertificate, privateKey, endpoint, usedAuthSecurityPolicy);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set up security policies:" << static_cast<QOpcUa::UaStatusCode>(result);
+            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::InvalidPki);
+            UA_Client_delete(m_uaclient);
+            m_uaclient = nullptr;
+            return false;
+        }
+    } else {
+        return UA_ClientConfig_setDefault(conf) == UA_STATUSCODE_GOOD;
+    }
+
+    return true;
+}
+#endif
+
+void Open62541AsyncBackend::establishConnectionInternal(const QOpcUaAuthenticationInformation &authInfo,
+#ifdef UA_ENABLE_ENCRYPTION
+                                            const QOpcUaPkiConfiguration &pkiConfig,
+#endif
+                                            const QOpcUaEndpointDescription &endpoint)
+{
+    const auto conf = UA_Client_getConfig(m_uaclient);
+    if (!conf)
+        return;
+
+    UA_StatusCode ret = UA_STATUSCODE_BADINTERNALERROR;
+    bool retry = false;
+
+    do {
+        retry = false;
+
+        if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Anonymous) {
+            // Nothing to do, Anonymous is default
+        } else if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Username) {
+            const auto credentials = authInfo.authenticationData().value<QPair<QString, QString>>();
+            UA_ClientConfig_setAuthenticationUsername(conf, credentials.first.toUtf8().constData(),
+                                                      credentials.second.toUtf8().constData());
+        } else if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Certificate) {
+#ifdef UA_ENABLE_ENCRYPTION
+            QString certPath;
+            QString keyPath;
+
+            if (authInfo.authenticationData().canConvert<QPair<QString, QString>>()) {
+                const auto authPaths = authInfo.authenticationData().value<QPair<QString, QString>>();
+
+                if (authPaths.first.isEmpty() || authPaths.second.isEmpty()) {
+                    qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Certificate and private key path must be set for certificate auth";
+                    emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::InvalidAuthenticationInformation);
+                    UA_Client_delete(m_uaclient);
+                    m_uaclient = nullptr;
+                    return;
+                }
+
+                certPath = authPaths.first;
+                keyPath = authPaths.second;
+            } else {
+                certPath = pkiConfig.clientCertificateFile();
+                keyPath = pkiConfig.privateKeyFile();
+            }
+
+            UA_ByteString cert = UA_BYTESTRING_NULL;
+            UA_ByteString key = UA_BYTESTRING_NULL;
+
+            if (!loadFileToByteString(certPath, &cert)) {
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load certificate for certificate auth";
+                emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::InvalidAuthenticationInformation);
+                UA_Client_delete(m_uaclient);
+                m_uaclient = nullptr;
+                return;
+            }
+
+            UaDeleter<UA_ByteString> certDeleter(&cert, &UA_ByteString_clear);
+
+            if (!loadPrivateKeyWithPotentialPassword(keyPath, key)) {
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load private key for certificate auth";
+                emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::InvalidAuthenticationInformation);
+                UA_Client_delete(m_uaclient);
+                m_uaclient = nullptr;
+                return;
+            }
+
+            UaDeleter<UA_ByteString> keyDeleter(&key, &UA_ByteString_clear);
+
+            // UA_ClientConfig_setAuthenticationCert() overwrites the auth security policies,
+            // so we must call our custom implementation
+
+            UA_X509IdentityToken *token = UA_X509IdentityToken_new();
+            UA_StatusCode result = UA_ByteString_copy(&cert, &token->certificateData);
+            UA_ExtensionObject_clear(&conf->userIdentityToken);
+            conf->userIdentityToken.encoding = UA_EXTENSIONOBJECT_DECODED;
+            conf->userIdentityToken.content.decoded.type = &UA_TYPES[UA_TYPES_X509IDENTITYTOKEN];
+            conf->userIdentityToken.content.decoded.data = token;
+
+            if (result != UA_STATUSCODE_GOOD) {
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to initialize certificate auth:" << UA_StatusCode_name(result);
+                emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::ClientError::UnsupportedAuthenticationInformation);
+                UA_Client_delete(m_uaclient);
+                m_uaclient = nullptr;
+                return;
+            }
+#endif
+        } else {
+            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::UnsupportedAuthenticationInformation);
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to connect: Selected authentication type"
+                                                  << authInfo.authenticationType() << "is not supported.";
+            UA_Client_delete(m_uaclient);
+            m_uaclient = nullptr;
+            return;
+        }
+
+        ret = UA_Client_connect(m_uaclient, endpoint.endpointUrl().toUtf8().constData());
+
+#ifdef UA_ENABLE_ENCRYPTION
+        if (ret == UA_STATUSCODE_BADCERTIFICATEUNTRUSTED) {
+            QOpcUaErrorState errorState;
+            errorState.setClientSideError(true);
+            errorState.setConnectionStep(QOpcUaErrorState::ConnectionStep::CertificateValidation);
+            errorState.setErrorCode(QOpcUa::UaStatusCode::BadCertificateUntrusted);
+
+            emit QOpcUaBackend::connectError(&errorState);
+
+            if (errorState.ignoreError()) {
+                // Use the AcceptAll certificate verification
+                UA_CertificateVerification_AcceptAll(&conf->certificateVerification);
+                retry = true;
+            }
+        }
+#endif
+    } while (retry);
+
+    if (ret != UA_STATUSCODE_GOOD) {
+        UA_Client_delete(m_uaclient);
+        m_uaclient = nullptr;
+        QOpcUaClient::ClientError error = QOpcUaClient::UnknownError;
+        switch (ret) {
+        case UA_STATUSCODE_BADUSERACCESSDENIED:
+        case UA_STATUSCODE_BADIDENTITYTOKENINVALID: // Intentional fall through
+            error = QOpcUaClient::AccessDenied;
+            break;
+        case UA_STATUSCODE_BADCERTIFICATEUNTRUSTED:
+            error = QOpcUaClient::CertificateUntrusted;
+            break;
+        default:
+            break;
+        }
+
+        QOpcUaErrorState errorState;
+        errorState.setConnectionStep(QOpcUaErrorState::ConnectionStep::Unknown);
+        errorState.setErrorCode(static_cast<QOpcUa::UaStatusCode>(ret));
+        errorState.setClientSideError(false);
+        errorState.setIgnoreError(false);
+
+        // This signal is connected using Qt::BlockingQueuedConnection. It will place a metacall to a different thread and waits
+        // until this metacall is fully handled before returning.
+        emit QOpcUaBackend::connectError(&errorState);
+
+        emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, error);
+        qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Open62541: Failed to connect";
+        return;
+    }
+
+    using Timeout_t = decltype(conf->timeout);
+    conf->timeout = qt_saturate<Timeout_t>(m_currentConnectionSettings.requestTimeout().count());
+
+    // Attach the client state callback after the successful connect
+    conf->stateCallback = clientStateCallback;
+    conf->noReconnect = true;
+
+    m_clientIterateTimer.start(m_clientIterateInterval);
+    emit stateAndOrErrorChanged(QOpcUaClient::Connected, QOpcUaClient::NoError);
+}
+
+#ifdef UA_ENABLE_ENCRYPTION
 bool Open62541AsyncBackend::loadPrivateKeyWithPotentialPassword(const QString &privateKeyPath, UA_ByteString &privateKey)
 {
     UA_ByteString privateKeyData = UA_BYTESTRING_NULL;
@@ -2243,7 +2309,7 @@ UA_StatusCode Open62541AsyncBackend::setSecurityPolicyInClientConfig(UA_ClientCo
                                                                      const QOpcUaEndpointDescription &desc, const QString &additionalAuthSecurityPolicy)
 {
     QStringList policiesToAdd;
-    if (desc.securityPolicy() != NonePolicy)
+    if (desc.securityPolicy() != QOpcUa::NonePolicy)
         policiesToAdd.push_back(desc.securityPolicy());
 
     if (!policiesToAdd.contains(additionalAuthSecurityPolicy))
@@ -2258,19 +2324,19 @@ UA_StatusCode Open62541AsyncBackend::setSecurityPolicyInClientConfig(UA_ClientCo
     UA_StatusCode result = UA_STATUSCODE_GOOD;
 
     for (const auto &policy : policiesToAdd) {
-        if (policy == Basic128Rsa15Policy)
+        if (policy == QOpcUa::Basic128Rsa15Policy)
             result = UA_SecurityPolicy_Basic128Rsa15(&conf->securityPolicies[conf->securityPoliciesSize++],
                                                      cert, key, conf->logging);
-        else if (policy == Basic256Policy)
+        else if (policy == QOpcUa::Basic256Policy)
             result = UA_SecurityPolicy_Basic256(&conf->securityPolicies[conf->securityPoliciesSize++],
                                                 cert, key, conf->logging);
-        else if (policy == Aes256Sha256RsaPssPolicy)
+        else if (policy == QOpcUa::Aes256Sha256RsaPssPolicy)
             result = UA_SecurityPolicy_Aes256Sha256RsaPss(&conf->securityPolicies[conf->securityPoliciesSize++],
                                                           cert, key, conf->logging);
-        else if (policy == Basic256Sha256Policy)
+        else if (policy == QOpcUa::Basic256Sha256Policy)
             result = UA_SecurityPolicy_Basic256Sha256(&conf->securityPolicies[conf->securityPoliciesSize++],
                                                       cert, key, conf->logging);
-        else if (policy == Aes128Sha256RsaOaepPolicy)
+        else if (policy == QOpcUa::Aes128Sha256RsaOaepPolicy)
             result = UA_SecurityPolicy_Aes128Sha256RsaOaep(&conf->securityPolicies[conf->securityPoliciesSize++],
                                                            cert, key, conf->logging);
 
@@ -2335,26 +2401,26 @@ UA_StatusCode Open62541AsyncBackend::setAuthSecurityPolicyInClientConfig(UA_Clie
     }
 
     if (!selectedPolicy.isEmpty()) {
-        if (selectedPolicy == NonePolicy)
+        if (selectedPolicy == QOpcUa::NonePolicy)
             return UA_STATUSCODE_GOOD;
 
         conf->authSecurityPolicies = static_cast<UA_SecurityPolicy*>(UA_realloc(conf->authSecurityPolicies,
                                                                                 sizeof(UA_SecurityPolicy) * numPolicies));
         conf->authSecurityPoliciesSize = numPolicies;
 
-        if (selectedPolicy == Basic128Rsa15Policy)
+        if (selectedPolicy == QOpcUa::Basic128Rsa15Policy)
             result = UA_SecurityPolicy_Basic128Rsa15(&conf->authSecurityPolicies[0],
                                                      cert, key, conf->logging);
-        else if (selectedPolicy == Basic256Policy)
+        else if (selectedPolicy == QOpcUa::Basic256Policy)
             result = UA_SecurityPolicy_Basic256(&conf->authSecurityPolicies[0],
                                                 cert, key, conf->logging);
-        else if (selectedPolicy == Aes256Sha256RsaPssPolicy)
+        else if (selectedPolicy == QOpcUa::Aes256Sha256RsaPssPolicy)
             result = UA_SecurityPolicy_Aes256Sha256RsaPss(&conf->authSecurityPolicies[0],
                                                           cert, key, conf->logging);
-        else if (selectedPolicy == Basic256Sha256Policy)
+        else if (selectedPolicy == QOpcUa::Basic256Sha256Policy)
             result = UA_SecurityPolicy_Basic256Sha256(&conf->authSecurityPolicies[0],
                                                       cert, key, conf->logging);
-        else if (selectedPolicy == Aes128Sha256RsaOaepPolicy)
+        else if (selectedPolicy == QOpcUa::Aes128Sha256RsaOaepPolicy)
             result = UA_SecurityPolicy_Aes128Sha256RsaOaep(&conf->authSecurityPolicies[0],
                                                            cert, key, conf->logging);
 

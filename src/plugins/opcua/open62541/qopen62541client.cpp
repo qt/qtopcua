@@ -16,6 +16,7 @@
 #include "qopen62541valueconverter.h"
 #include <private/qopcuaclient_p.h>
 #include <private/qopcuahistoryreadresponseimpl_p.h>
+#include <private/qopcuasecuritypolicyuris_p.h>
 
 #include <QtCore/qloggingcategory.h>
 #include <QtCore/qstringlist.h>
@@ -203,18 +204,25 @@ bool QOpen62541Client::deleteReference(const QOpcUaDeleteReferenceItem &referenc
 
 QStringList QOpen62541Client::supportedSecurityPolicies() const
 {
-    auto result = QStringList {
-        "http://opcfoundation.org/UA/SecurityPolicy#None"
-    };
+#ifdef UA_ENABLE_ENCRYPTION
+    size_t numPolicies = m_hasSha1SignatureSupport ? 6 : 4;
+#else
+    size_t numPolicies = 1;
+#endif
+
+    QStringList result;
+    result.reserve(numPolicies);
+    result.append(QOpcUa::NonePolicy);
+
 #ifdef UA_ENABLE_ENCRYPTION
     // Sort by strength
     if (m_hasSha1SignatureSupport) {
-        result.append("http://opcfoundation.org/UA/SecurityPolicy#Basic128Rsa15");
-        result.append("http://opcfoundation.org/UA/SecurityPolicy#Basic256");
+        result.append(QOpcUa::Basic128Rsa15Policy);
+        result.append(QOpcUa::Basic256Policy);
     }
-    result.append("http://opcfoundation.org/UA/SecurityPolicy#Aes128_Sha256_RsaOaep");
-    result.append("http://opcfoundation.org/UA/SecurityPolicy#Basic256Sha256");
-    result.append("http://opcfoundation.org/UA/SecurityPolicy#Aes256_Sha256_RsaPss");
+    result.append(QOpcUa::Aes128Sha256RsaOaepPolicy);
+    result.append(QOpcUa::Basic256Sha256Policy);
+    result.append(QOpcUa::Aes256Sha256RsaPssPolicy);
 #endif
 
     return result;

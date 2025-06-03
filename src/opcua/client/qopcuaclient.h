@@ -57,6 +57,12 @@ public:
         ConnectionError,
         UnknownError,
         UnsupportedAuthenticationInformation,
+        InvalidAuthenticationInformation,
+        InvalidEndpointDescription,
+        NoMatchingUserIdentityTokenFound,
+        UnsupportedSecurityPolicy,
+        InvalidPki,
+        CertificateUntrusted
     };
     Q_ENUM(ClientError)
 
