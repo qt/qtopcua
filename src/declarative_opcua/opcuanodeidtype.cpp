@@ -19,10 +19,14 @@ QT_BEGIN_NAMESPACE
 
 OpcUaNodeIdType::OpcUaNodeIdType(QObject *parent) : QObject(parent)
 {
-    connect(&m_universalNode, SIGNAL(namespaceNameChanged(const QString &)), this, SIGNAL(nodeNamespaceChanged(const QString &)));
-    connect(&m_universalNode, SIGNAL(nodeIdentifierChanged(const QString &)), this, SIGNAL(identifierChanged(const QString &)));
-    connect(&m_universalNode, SIGNAL(namespaceNameChanged(const QString &)), this, SIGNAL(nodeChanged()));
-    connect(&m_universalNode, SIGNAL(nodeIdentifierChanged(const QString &)), this, SIGNAL(nodeChanged()));
+    connect(&m_universalNode, SIGNAL(namespaceNameChanged(QString)),
+            this, SIGNAL(nodeNamespaceChanged(QString)));
+    connect(&m_universalNode, SIGNAL(nodeIdentifierChanged(QString)),
+            this, SIGNAL(identifierChanged(QString)));
+    connect(&m_universalNode, SIGNAL(namespaceNameChanged(QString)),
+            this, SIGNAL(nodeChanged()));
+    connect(&m_universalNode, SIGNAL(nodeIdentifierChanged(QString)),
+            this, SIGNAL(nodeChanged()));
 }
 
 void OpcUaNodeIdType::setNodeNamespace(const QString &name)
