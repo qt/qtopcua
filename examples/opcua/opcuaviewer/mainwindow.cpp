@@ -59,10 +59,9 @@ static void messageHandler(QtMsgType type, const QMessageLogContext &context, co
 
    // Logging messages from backends are sent from different threads and need to be
    // synchronized with the GUI thread.
-   QMetaObject::invokeMethod(mainWindowGlobal, "log", Qt::QueuedConnection,
-                             Q_ARG(QString, message),
-                             Q_ARG(QString, contextStr),
-                             Q_ARG(QColor, color));
+   QMetaObject::invokeMethod(mainWindowGlobal,
+                             QOverload<const QString &, const QString &, const QColor &>::of(&MainWindow::log),
+                             Qt::QueuedConnection, message, contextStr, color);
 
    if (oldMessageHandler)
        oldMessageHandler(type, context, msg);

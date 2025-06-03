@@ -77,13 +77,12 @@ QOpen62541Client::~QOpen62541Client()
 
 void QOpen62541Client::connectToEndpoint(const QOpcUaEndpointDescription &endpoint)
 {
-    QMetaObject::invokeMethod(m_backend, "connectToEndpoint", Qt::QueuedConnection,
-                                     Q_ARG(QOpcUaEndpointDescription, endpoint));
+    QMetaObject::invokeMethod(m_backend, &Open62541AsyncBackend::connectToEndpoint, Qt::QueuedConnection, endpoint);
 }
 
 void QOpen62541Client::disconnectFromEndpoint()
 {
-    QMetaObject::invokeMethod(m_backend, "disconnectFromEndpoint", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(m_backend, &Open62541AsyncBackend::disconnectFromEndpoint, Qt::QueuedConnection);
 }
 
 QOpcUaNode *QOpen62541Client::node(const QString &nodeId)
@@ -108,27 +107,26 @@ QString QOpen62541Client::backend() const
 
 bool QOpen62541Client::requestEndpoints(const QUrl &url)
 {
-    return QMetaObject::invokeMethod(m_backend, "requestEndpoints", Qt::QueuedConnection, Q_ARG(QUrl, url));
+    return QMetaObject::invokeMethod(m_backend, &Open62541AsyncBackend::requestEndpoints,
+                                     Qt::QueuedConnection, url);
 }
 
 bool QOpen62541Client::findServers(const QUrl &url, const QStringList &localeIds, const QStringList &serverUris)
 {
-   return QMetaObject::invokeMethod(m_backend, "findServers", Qt::QueuedConnection,
-                                    Q_ARG(QUrl, url),
-                                    Q_ARG(QStringList, localeIds),
-                                    Q_ARG(QStringList, serverUris));
+   return QMetaObject::invokeMethod(m_backend, &Open62541AsyncBackend::findServers,
+                                    Qt::QueuedConnection, url, localeIds, serverUris);
 }
 
 bool QOpen62541Client::readNodeAttributes(const QList<QOpcUaReadItem> &nodesToRead)
 {
-    return QMetaObject::invokeMethod(m_backend, "readNodeAttributes", Qt::QueuedConnection,
-                                     Q_ARG(QList<QOpcUaReadItem>, nodesToRead));
+    return QMetaObject::invokeMethod(m_backend, &Open62541AsyncBackend::readNodeAttributes,
+                                     Qt::QueuedConnection, nodesToRead);
 }
 
 bool QOpen62541Client::writeNodeAttributes(const QList<QOpcUaWriteItem> &nodesToWrite)
 {
-    return QMetaObject::invokeMethod(m_backend, "writeNodeAttributes", Qt::QueuedConnection,
-                                     Q_ARG(QList<QOpcUaWriteItem>, nodesToWrite));
+    return QMetaObject::invokeMethod(m_backend, &Open62541AsyncBackend::writeNodeAttributes,
+                                     Qt::QueuedConnection, nodesToWrite);
 }
 
 QOpcUaHistoryReadResponse *QOpen62541Client::readHistoryData(const QOpcUaHistoryReadRawRequest &request)
@@ -179,27 +177,26 @@ QOpcUaHistoryReadResponse *QOpen62541Client::readHistoryEvents(const QOpcUaHisto
 
 bool QOpen62541Client::addNode(const QOpcUaAddNodeItem &nodeToAdd)
 {
-    return QMetaObject::invokeMethod(m_backend, "addNode", Qt::QueuedConnection,
-                                     Q_ARG(QOpcUaAddNodeItem, nodeToAdd));
+    return QMetaObject::invokeMethod(m_backend, &Open62541AsyncBackend::addNode,
+                                     Qt::QueuedConnection, nodeToAdd);
 }
 
 bool QOpen62541Client::deleteNode(const QString &nodeId, bool deleteTargetReferences)
 {
-    return QMetaObject::invokeMethod(m_backend, "deleteNode", Qt::QueuedConnection,
-                                     Q_ARG(QString, nodeId),
-                                     Q_ARG(bool, deleteTargetReferences));
+    return QMetaObject::invokeMethod(m_backend, &Open62541AsyncBackend::deleteNode, Qt::QueuedConnection,
+                                     nodeId, deleteTargetReferences);
 }
 
 bool QOpen62541Client::addReference(const QOpcUaAddReferenceItem &referenceToAdd)
 {
-    return QMetaObject::invokeMethod(m_backend, "addReference", Qt::QueuedConnection,
-                                     Q_ARG(QOpcUaAddReferenceItem, referenceToAdd));
+    return QMetaObject::invokeMethod(m_backend, &Open62541AsyncBackend::addReference,
+                                     Qt::QueuedConnection, referenceToAdd);
 }
 
 bool QOpen62541Client::deleteReference(const QOpcUaDeleteReferenceItem &referenceToDelete)
 {
-    return QMetaObject::invokeMethod(m_backend, "deleteReference", Qt::QueuedConnection,
-                                     Q_ARG(QOpcUaDeleteReferenceItem, referenceToDelete));
+    return QMetaObject::invokeMethod(m_backend, &Open62541AsyncBackend::deleteReference,
+                                     Qt::QueuedConnection, referenceToDelete);
 }
 
 QStringList QOpen62541Client::supportedSecurityPolicies() const
@@ -239,12 +236,9 @@ QList<QOpcUaUserTokenPolicy::TokenType> QOpen62541Client::supportedUserTokenType
 bool QOpen62541Client::handleHistoryReadRawRequested(const QOpcUaHistoryReadRawRequest &request, const QList<QByteArray> &continuationPoints,
                                                      bool releaseContinuationPoints, quint64 handle)
 {
-    const auto success = QMetaObject::invokeMethod(m_backend, "readHistoryRaw",
-                                                   Qt::QueuedConnection,
-                                                   Q_ARG(QOpcUaHistoryReadRawRequest, request),
-                                                   Q_ARG(QList<QByteArray>, continuationPoints),
-                                                   Q_ARG(bool, releaseContinuationPoints),
-                                                   Q_ARG(quint64, handle));
+    const auto success = QMetaObject::invokeMethod(m_backend, &Open62541AsyncBackend::readHistoryRaw,
+                                                   Qt::QueuedConnection, request, continuationPoints,
+                                                   releaseContinuationPoints, handle);
 
     if (!success)
         emit historyReadRequestError(handle);
@@ -254,27 +248,22 @@ bool QOpen62541Client::handleHistoryReadRawRequested(const QOpcUaHistoryReadRawR
 
 bool QOpen62541Client::registerNodes(const QStringList &nodesToRegister)
 {
-    return QMetaObject::invokeMethod(m_backend, "registerNodes",
-                                     Qt::QueuedConnection,
-                                     Q_ARG(QStringList, nodesToRegister));
+    return QMetaObject::invokeMethod(m_backend, &Open62541AsyncBackend::registerNodes,
+                                     Qt::QueuedConnection, nodesToRegister);
 }
 
 bool QOpen62541Client::unregisterNodes(const QStringList &nodesToUnregister)
 {
-    return QMetaObject::invokeMethod(m_backend, "unregisterNodes",
-                                     Qt::QueuedConnection,
-                                     Q_ARG(QStringList, nodesToUnregister));
+    return QMetaObject::invokeMethod(m_backend, &Open62541AsyncBackend::unregisterNodes,
+                                     Qt::QueuedConnection, nodesToUnregister);
 }
 
 bool QOpen62541Client::handleHistoryReadEventsRequested(const QOpcUaHistoryReadEventRequest &request, const QList<QByteArray> &continuationPoints,
                                                      bool releaseContinuationPoints, quint64 handle)
 {
-    const auto success = QMetaObject::invokeMethod(m_backend, "readHistoryEvents",
-                                                   Qt::QueuedConnection,
-                                                   Q_ARG(QOpcUaHistoryReadEventRequest, request),
-                                                   Q_ARG(QList<QByteArray>, continuationPoints),
-                                                   Q_ARG(bool, releaseContinuationPoints),
-                                                   Q_ARG(quint64, handle));
+    const auto success = QMetaObject::invokeMethod(m_backend, &Open62541AsyncBackend::readHistoryEvents,
+                                                   Qt::QueuedConnection, request, continuationPoints,
+                                                   releaseContinuationPoints, handle);
 
     if (!success)
         emit historyReadRequestError(handle);
