@@ -536,7 +536,7 @@ void Open62541AsyncBackend::findServers(const QUrl &url, const QStringList &loca
     QList<QOpcUaApplicationDescription> ret;
 
     for (size_t i = 0; i < serversSize; ++i)
-        ret.append(convertApplicationDescription(servers[i]));
+        ret.append(QOpen62541ValueConverter::scalarToQt<QOpcUaApplicationDescription>(&servers[i]));
 
     if (result != UA_STATUSCODE_GOOD) {
         qCDebug(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to get servers:" << static_cast<QOpcUa::UaStatusCode>(result);
@@ -791,8 +791,9 @@ void Open62541AsyncBackend::addNode(const QOpcUaAddNodeItem &nodeToAdd)
 
     req.nodesToAdd->nodeClass = static_cast<UA_NodeClass>(nodeToAdd.nodeClass());
 
-    req.nodesToAdd->nodeAttributes = assembleNodeAttributes(nodeToAdd.nodeAttributes(),
-                                                            nodeToAdd.nodeClass());
+    req.nodesToAdd->nodeAttributes = QOpen62541ValueConverter::nodeCreationAttributesToUa(
+        nodeToAdd.nodeAttributes(),
+        nodeToAdd.nodeClass());
 
     if (!nodeToAdd.typeDefinition().nodeId().isEmpty())
         QOpen62541ValueConverter::scalarFromQt<UA_ExpandedNodeId, QOpcUaExpandedNodeId>(
@@ -943,24 +944,6 @@ void Open62541AsyncBackend::deleteReference(const QOpcUaDeleteReferenceItem &ref
     m_asyncDeleteReferenceContext[requestId] = { referenceToDelete.sourceNodeId(), referenceToDelete.referenceTypeId(),
                                                referenceToDelete.targetNodeId(), referenceToDelete.isForwardReference()};
     triggerIterateClient();
-}
-
-static void convertBrowseResult(UA_BrowseResult *src, size_t referencesSize, QList<QOpcUaReferenceDescription> &dst)
-{
-    if (!src)
-        return;
-
-    for (size_t i = 0; i < referencesSize; ++i) {
-        QOpcUaReferenceDescription temp;
-        temp.setTargetNodeId(QOpen62541ValueConverter::scalarToQt<QOpcUaExpandedNodeId>(&src->references[i].nodeId));
-        temp.setTypeDefinition(QOpen62541ValueConverter::scalarToQt<QOpcUaExpandedNodeId>(&src->references[i].typeDefinition));
-        temp.setRefTypeId(Open62541Utils::nodeIdToQString(src->references[i].referenceTypeId));
-        temp.setNodeClass(static_cast<QOpcUa::NodeClass>(src->references[i].nodeClass));
-        temp.setBrowseName(QOpen62541ValueConverter::scalarToQt<QOpcUaQualifiedName, UA_QualifiedName>(&src->references[i].browseName));
-        temp.setDisplayName(QOpen62541ValueConverter::scalarToQt<QOpcUaLocalizedText, UA_LocalizedText>(&src->references[i].displayName));
-        temp.setIsForwardReference(src->references[i].isForward);
-        dst.push_back(temp);
-    }
 }
 
 void Open62541AsyncBackend::browse(quint64 handle, UA_NodeId id, const QOpcUaBrowseRequest &request)
@@ -1199,41 +1182,10 @@ void Open62541AsyncBackend::requestEndpoints(const QUrl &url)
     UaArrayDeleter<UA_TYPES_ENDPOINTDESCRIPTION> endpointDescriptionDeleter(endpoints, numEndpoints);
     QList<QOpcUaEndpointDescription> ret;
 
-    namespace vc = QOpen62541ValueConverter;
     using namespace QOpcUa;
     if (res == UA_STATUSCODE_GOOD && numEndpoints) {
-        for (size_t i = 0; i < numEndpoints ; ++i) {
-            QOpcUaEndpointDescription epd;
-            QOpcUaApplicationDescription &apd = epd.serverRef();
-
-            apd.setApplicationUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].server.applicationUri));
-            apd.setProductUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].server.productUri));
-            apd.setApplicationName(vc::scalarToQt<QOpcUaLocalizedText, UA_LocalizedText>(&endpoints[i].server.applicationName));
-            apd.setApplicationType(static_cast<QOpcUaApplicationDescription::ApplicationType>(endpoints[i].server.applicationType));
-            apd.setGatewayServerUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].server.gatewayServerUri));
-            apd.setDiscoveryProfileUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].server.discoveryProfileUri));
-            for (size_t j = 0; j < endpoints[i].server.discoveryUrlsSize; ++j)
-                apd.discoveryUrlsRef().append(vc::scalarToQt<QString, UA_String>(&endpoints[i].server.discoveryUrls[j]));
-
-            epd.setEndpointUrl(vc::scalarToQt<QString, UA_String>(&endpoints[i].endpointUrl));
-            epd.setServerCertificate(vc::scalarToQt<QByteArray, UA_ByteString>(&endpoints[i].serverCertificate));
-            epd.setSecurityMode(static_cast<QOpcUaEndpointDescription::MessageSecurityMode>(endpoints[i].securityMode));
-            epd.setSecurityPolicy(vc::scalarToQt<QString, UA_String>(&endpoints[i].securityPolicyUri));
-            for (size_t j = 0; j < endpoints[i].userIdentityTokensSize; ++j) {
-                QOpcUaUserTokenPolicy policy;
-                UA_UserTokenPolicy *policySrc = &endpoints[i].userIdentityTokens[j];
-                policy.setPolicyId(vc::scalarToQt<QString, UA_String>(&policySrc->policyId));
-                policy.setTokenType(static_cast<QOpcUaUserTokenPolicy::TokenType>(endpoints[i].userIdentityTokens[j].tokenType));
-                policy.setIssuedTokenType(vc::scalarToQt<QString, UA_String>(&endpoints[i].userIdentityTokens[j].issuedTokenType));
-                policy.setIssuerEndpointUrl(vc::scalarToQt<QString, UA_String>(&endpoints[i].userIdentityTokens[j].issuerEndpointUrl));
-                policy.setSecurityPolicy(vc::scalarToQt<QString, UA_String>(&endpoints[i].userIdentityTokens[j].securityPolicyUri));
-                epd.userIdentityTokensRef().append(policy);
-            }
-
-            epd.setTransportProfileUri(vc::scalarToQt<QString, UA_String>(&endpoints[i].transportProfileUri));
-            epd.setSecurityLevel(endpoints[i].securityLevel);
-            ret.append(epd);
-        }
+        for (size_t i = 0; i < numEndpoints ; ++i)
+            ret.append(QOpen62541ValueConverter::scalarToQt<QOpcUaEndpointDescription>(&endpoints[i]));
     } else {
         if (res == UA_STATUSCODE_GOOD)
             qWarning() << "Server returned an empty endpoint list";
@@ -1348,24 +1300,6 @@ QOpen62541Subscription *Open62541AsyncBackend::getSubscriptionForItem(quint64 ha
     }
 
     return subscription.value();
-}
-
-QOpcUaApplicationDescription Open62541AsyncBackend::convertApplicationDescription(UA_ApplicationDescription &desc)
-{
-    QOpcUaApplicationDescription temp;
-
-    temp.setApplicationUri(QOpen62541ValueConverter::scalarToQt<QString, UA_String>(&desc.applicationUri));
-    temp.setProductUri(QOpen62541ValueConverter::scalarToQt<QString, UA_String>(&desc.productUri));
-    temp.setApplicationName(QOpen62541ValueConverter::scalarToQt<QOpcUaLocalizedText, UA_LocalizedText>(&desc.applicationName));
-    temp.setApplicationType(static_cast<QOpcUaApplicationDescription::ApplicationType>(desc.applicationType));
-    temp.setGatewayServerUri(QOpen62541ValueConverter::scalarToQt<QString, UA_String>(&desc.gatewayServerUri));
-    temp.setDiscoveryProfileUri(QOpen62541ValueConverter::scalarToQt<QString, UA_String>(&desc.discoveryProfileUri));
-
-
-    for (size_t i = 0; i < desc.discoveryUrlsSize; ++i)
-        temp.discoveryUrlsRef().append(QOpen62541ValueConverter::scalarToQt<QString, UA_String>(&desc.discoveryUrls[i]));
-
-    return temp;
 }
 
 void Open62541AsyncBackend::cleanupSubscriptions()
@@ -1486,14 +1420,8 @@ void Open62541AsyncBackend::asyncTranslateBrowsePathCallback(UA_Client *client, 
     }
 
     QList<QOpcUaBrowsePathTarget> ret;
-    for (size_t i = 0; i < res->results->targetsSize ; ++i) {
-        QOpcUaBrowsePathTarget temp;
-        temp.setRemainingPathIndex(res->results->targets[i].remainingPathIndex);
-        temp.targetIdRef().setNamespaceUri(QString::fromUtf8(reinterpret_cast<char *>(res->results->targets[i].targetId.namespaceUri.data)));
-        temp.targetIdRef().setServerIndex(res->results->targets[i].targetId.serverIndex);
-        temp.targetIdRef().setNodeId(Open62541Utils::nodeIdToQString(res->results->targets[i].targetId.nodeId));
-        ret.append(temp);
-    }
+    for (size_t i = 0; i < res->results->targetsSize ; ++i)
+        ret.append(QOpen62541ValueConverter::scalarToQt<QOpcUaBrowsePathTarget>(&res->results->targets[i]));
 
     emit backend->resolveBrowsePathFinished(context.handle, ret, context.path, static_cast<QOpcUa::UaStatusCode>(res->results->statusCode));
 }
@@ -1643,7 +1571,10 @@ void Open62541AsyncBackend::asyncBrowseCallback(UA_Client *client, void *userdat
         continuationPoint = res->resultsSize ? &res->results->continuationPoint : nullptr;
     }
 
-    convertBrowseResult(references, referencesSize, context.results);
+    if (references && referencesSize) {
+        for (size_t i = 0; i < referencesSize; ++i)
+            context.results.push_back(QOpen62541ValueConverter::scalarToQt<QOpcUaReferenceDescription>(&references->references[i]));
+    }
 
     if (statusCode == UA_STATUSCODE_GOOD && continuationPoint && continuationPoint->length) {
         UA_BrowseNextRequest request;
@@ -2418,215 +2349,5 @@ UA_StatusCode Open62541AsyncBackend::setAuthSecurityPolicyInClientConfig(UA_Clie
     return result;
 }
 #endif
-
-UA_ExtensionObject Open62541AsyncBackend::assembleNodeAttributes(const QOpcUaNodeCreationAttributes &nodeAttributes,
-                                                                 QOpcUa::NodeClass nodeClass)
-{
-    UA_ExtensionObject obj;
-    UA_ExtensionObject_init(&obj);
-    obj.encoding = UA_EXTENSIONOBJECT_DECODED;
-
-    switch (nodeClass) {
-    case QOpcUa::NodeClass::Object: {
-        UA_ObjectAttributes *attr = UA_ObjectAttributes_new();
-        *attr = UA_ObjectAttributes_default;
-        obj.content.decoded.data = attr;
-        obj.content.decoded.type = &UA_TYPES[UA_TYPES_OBJECTATTRIBUTES];
-
-        if (nodeAttributes.hasEventNotifier()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_EVENTNOTIFIER;
-            attr->eventNotifier = nodeAttributes.eventNotifier();
-        }
-        break;
-    }
-    case QOpcUa::NodeClass::Variable: {
-        UA_VariableAttributes *attr = UA_VariableAttributes_new();
-        *attr = UA_VariableAttributes_default;
-        obj.content.decoded.data = attr;
-        obj.content.decoded.type = &UA_TYPES[UA_TYPES_VARIABLEATTRIBUTES];
-
-        if (nodeAttributes.hasValue()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_VALUE;
-            attr->value = QOpen62541ValueConverter::toOpen62541Variant(nodeAttributes.value(),
-                                                                       nodeAttributes.valueType());
-        }
-        if (nodeAttributes.hasDataTypeId()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_DATATYPE;
-            attr->dataType = Open62541Utils::nodeIdFromQString(nodeAttributes.dataTypeId());
-        }
-        if (nodeAttributes.hasValueRank()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_VALUERANK;
-            attr->valueRank = nodeAttributes.valueRank();
-        }
-        if (nodeAttributes.hasArrayDimensions()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_ARRAYDIMENSIONS;
-            attr->arrayDimensions = copyArrayDimensions(nodeAttributes.arrayDimensions(), &attr->arrayDimensionsSize);
-        }
-        if (nodeAttributes.hasAccessLevel()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_ACCESSLEVEL;
-            attr->accessLevel = nodeAttributes.accessLevel();
-        }
-        if (nodeAttributes.hasUserAccessLevel()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_USERACCESSLEVEL;
-            attr->userAccessLevel = nodeAttributes.userAccessLevel();
-        }
-        if (nodeAttributes.hasMinimumSamplingInterval()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_MINIMUMSAMPLINGINTERVAL;
-            attr->minimumSamplingInterval = nodeAttributes.minimumSamplingInterval();
-        }
-        if (nodeAttributes.hasHistorizing()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_HISTORIZING;
-            attr->historizing = nodeAttributes.historizing();
-        }
-        break;
-    }
-    case QOpcUa::NodeClass::Method: {
-        UA_MethodAttributes *attr = UA_MethodAttributes_new();
-        *attr = UA_MethodAttributes_default;
-        obj.content.decoded.data = attr;
-        obj.content.decoded.type = &UA_TYPES[UA_TYPES_METHODATTRIBUTES];
-
-        if (nodeAttributes.hasExecutable()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_EXECUTABLE;
-            attr->executable = nodeAttributes.executable();
-        }
-        if (nodeAttributes.hasUserExecutable()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_USEREXECUTABLE;
-            attr->userExecutable = nodeAttributes.userExecutable();
-        }
-        break;
-    }
-    case QOpcUa::NodeClass::ObjectType: {
-        UA_ObjectTypeAttributes *attr = UA_ObjectTypeAttributes_new();
-        *attr = UA_ObjectTypeAttributes_default;
-        obj.content.decoded.data = attr;
-        obj.content.decoded.type = &UA_TYPES[UA_TYPES_OBJECTTYPEATTRIBUTES];
-
-        if (nodeAttributes.hasIsAbstract()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_ISABSTRACT;
-            attr->isAbstract = nodeAttributes.isAbstract();
-        }
-        break;
-    }
-    case QOpcUa::NodeClass::VariableType: {
-        UA_VariableTypeAttributes *attr = UA_VariableTypeAttributes_new();
-        *attr = UA_VariableTypeAttributes_default;
-        obj.content.decoded.data = attr;
-        obj.content.decoded.type = &UA_TYPES[UA_TYPES_VARIABLETYPEATTRIBUTES];
-
-        if (nodeAttributes.hasValue()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_VALUE;
-            attr->value = QOpen62541ValueConverter::toOpen62541Variant(nodeAttributes.value(),
-                                                                       nodeAttributes.valueType());
-        }
-        if (nodeAttributes.hasDataTypeId()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_DATATYPE;
-            attr->dataType = Open62541Utils::nodeIdFromQString(nodeAttributes.dataTypeId());
-        }
-        if (nodeAttributes.hasValueRank()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_VALUERANK;
-            attr->valueRank = nodeAttributes.valueRank();
-        }
-        if (nodeAttributes.hasArrayDimensions()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_ARRAYDIMENSIONS;
-            attr->arrayDimensions = copyArrayDimensions(nodeAttributes.arrayDimensions(), &attr->arrayDimensionsSize);
-        }
-        if (nodeAttributes.hasIsAbstract()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_ISABSTRACT;
-            attr->isAbstract = nodeAttributes.isAbstract();
-        }
-        break;
-    }
-    case QOpcUa::NodeClass::ReferenceType: {
-        UA_ReferenceTypeAttributes *attr = UA_ReferenceTypeAttributes_new();
-        *attr = UA_ReferenceTypeAttributes_default;
-        obj.content.decoded.data = attr;
-        obj.content.decoded.type = &UA_TYPES[UA_TYPES_REFERENCETYPEATTRIBUTES];
-
-        if (nodeAttributes.hasIsAbstract()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_ISABSTRACT;
-            attr->isAbstract = nodeAttributes.isAbstract();
-        }
-        if (nodeAttributes.hasSymmetric()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_SYMMETRIC;
-            attr->symmetric = nodeAttributes.symmetric();
-        }
-        if (nodeAttributes.hasInverseName()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_INVERSENAME;
-            QOpen62541ValueConverter::scalarFromQt<UA_LocalizedText, QOpcUaLocalizedText>(
-                        nodeAttributes.inverseName(), &attr->inverseName);
-        }
-        break;
-    }
-    case QOpcUa::NodeClass::DataType: {
-        UA_DataTypeAttributes *attr = UA_DataTypeAttributes_new();
-        *attr = UA_DataTypeAttributes_default;
-        obj.content.decoded.data = attr;
-        obj.content.decoded.type = &UA_TYPES[UA_TYPES_DATATYPEATTRIBUTES];
-
-        if (nodeAttributes.hasIsAbstract()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_ISABSTRACT;
-            attr->isAbstract = nodeAttributes.isAbstract();
-        }
-        break;
-    }
-    case QOpcUa::NodeClass::View: {
-        UA_ViewAttributes *attr = UA_ViewAttributes_new();
-        *attr = UA_ViewAttributes_default;
-        obj.content.decoded.data = attr;
-        obj.content.decoded.type = &UA_TYPES[UA_TYPES_VIEWATTRIBUTES];
-
-        if (nodeAttributes.hasContainsNoLoops()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_CONTAINSNOLOOPS;
-            attr->containsNoLoops = nodeAttributes.containsNoLoops();
-        }
-        if (nodeAttributes.hasEventNotifier()) {
-            attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_EVENTNOTIFIER;
-            attr->eventNotifier = nodeAttributes.eventNotifier();
-        }
-        break;
-    }
-    default:
-        qCDebug(QT_OPCUA_PLUGINS_OPEN62541) << "Could not convert node attributes, unknown node class";
-        UA_ExtensionObject_init(&obj);
-        return obj;
-    }
-
-    UA_ObjectAttributes *attr = reinterpret_cast<UA_ObjectAttributes *>(obj.content.decoded.data);
-    if (nodeAttributes.hasDisplayName()) {
-        attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_DISPLAYNAME;
-        QOpen62541ValueConverter::scalarFromQt<UA_LocalizedText, QOpcUaLocalizedText>(
-                    nodeAttributes.displayName(), &attr->displayName);
-    }
-    if (nodeAttributes.hasDescription()) {
-        attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_DESCRIPTION;
-        QOpen62541ValueConverter::scalarFromQt<UA_LocalizedText, QOpcUaLocalizedText>(
-                    nodeAttributes.description(), &attr->description);
-    }
-    if (nodeAttributes.hasWriteMask()) {
-        attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_WRITEMASK;
-        attr->writeMask = nodeAttributes.writeMask();
-    }
-    if (nodeAttributes.hasUserWriteMask()) {
-        attr->specifiedAttributes |= UA_NODEATTRIBUTESMASK_USERWRITEMASK;
-        attr->userWriteMask = nodeAttributes.userWriteMask();
-    }
-
-    return obj;
-}
-
-UA_UInt32 *Open62541AsyncBackend::copyArrayDimensions(const QList<quint32> &arrayDimensions, size_t *outputSize)
-{
-    if (outputSize)
-        *outputSize = arrayDimensions.size();
-
-    if (!outputSize)
-        return nullptr;
-
-    UA_UInt32 *data = nullptr;
-    UA_StatusCode res = UA_Array_copy(arrayDimensions.constData(), arrayDimensions.size(),
-                                      reinterpret_cast<void **>(&data), &UA_TYPES[UA_TYPES_UINT32]);
-    return res == UA_STATUSCODE_GOOD ? data : nullptr;
-}
 
 QT_END_NAMESPACE

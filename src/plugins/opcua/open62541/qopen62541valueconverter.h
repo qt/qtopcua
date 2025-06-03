@@ -20,6 +20,8 @@
 
 QT_BEGIN_NAMESPACE
 
+class QOpcUaNodeCreationAttributes;
+
 namespace QOpen62541ValueConverter {
 
     inline UA_AttributeId toUaAttributeId(QOpcUa::NodeAttribute attr)
@@ -63,6 +65,12 @@ namespace QOpen62541ValueConverter {
 
     QVariant uaVariantToQtExtensionObject(const UA_Variant &var);
     QOpcUaExtensionObject encodeAsBinaryExtensionObject(const void *data, const UA_DataType *type, bool *success = nullptr);
+
+    UA_UInt32 *arrayDimensionsToUa(const QList<quint32> &arrayDimensions, size_t *outputSize);
+    UA_ExtensionObject nodeCreationAttributesToUa(const QOpcUaNodeCreationAttributes &nodeAttributes,
+                                                  QOpcUa::NodeClass nodeClass);
+
+    void eventFilterToUa(const QOpcUaMonitoringParameters::EventFilter &filter, UA_ExtensionObject *out);
 }
 
 QT_END_NAMESPACE

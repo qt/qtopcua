@@ -540,7 +540,7 @@ UA_ExtensionObject QOpen62541Subscription::createFilter(const QVariant &filterDa
     }
 
     if (filterData.canConvert<QOpcUaMonitoringParameters::EventFilter>()) {
-        Open62541Utils::createEventFilter(filterData.value<QOpcUaMonitoringParameters::EventFilter>(), &obj);
+        QOpen62541ValueConverter::eventFilterToUa(filterData.value<QOpcUaMonitoringParameters::EventFilter>(), &obj);
         return obj;
     }
 
