@@ -80,6 +80,7 @@ class SetupClass : public QObject
     Q_OBJECT
 public:
     SetupClass() {
+        qputenv("QT_QPA_PLATFORM", "offscreen");
     };
     ~SetupClass() {
     }
