@@ -1,6 +1,6 @@
 /* THIS IS A SINGLE-FILE DISTRIBUTION CONCATENATED FROM THE OPEN62541 SOURCES
  * visit http://open62541.org/ for information about this software
- * Git-Revision: v1.4.9
+ * Git-Revision: v1.4.13
  */
 
 /*
@@ -1008,17 +1008,22 @@ uint32_t pcg32_random_r(pcg32_random_t* rng);
 /**** amalgamated original file "/deps/libc_time.h" ****/
 
 
-struct mytm {
+struct musl_tm {
     int tm_sec;
     int tm_min;
     int tm_hour;
     int tm_mday;
     int tm_mon;
     int tm_year;
+    int tm_wday;
+    int tm_yday;
+    /* int tm_isdst; */
+    /* long __tm_gmtoff; */
+    /* const char *__tm_zone; */
 };
 
-int __secs_to_tm(long long t, struct mytm *tm);
-long long __tm_to_secs(const struct mytm *tm);
+int musl_secs_to_tm(long long t, struct musl_tm *tm);
+long long musl_tm_to_secs(const struct musl_tm *tm);
 
 
 /**** amalgamated original file "/deps/base64.h" ****/
@@ -5453,6 +5458,16 @@ UA_Server_processServiceOperations(UA_Server *server, UA_Session *session,
                                    const UA_DataType *responseOperationsType)
     UA_FUNC_ATTR_WARN_UNUSED_RESULT;
 
+/*********************/
+/* Locking/Unlocking */
+/*********************/
+
+/* In order to prevent deadlocks between the EventLoop mutex and the
+ * server-mutex, we always take the EventLoop mutex first. */
+
+void lockServer(UA_Server *server);
+void unlockServer(UA_Server *server);
+
 /******************************************/
 /* Internal function calls, without locks */
 /******************************************/
@@ -6294,6 +6309,12 @@ struct UA_Client {
 #endif
 };
 
+/* In order to prevent deadlocks between the EventLoop mutex and the
+ * client-mutex, we always take the EventLoop mutex first. */
+
+void lockClient(UA_Client *client);
+void unlockClient(UA_Client *client);
+
 UA_StatusCode
 __Client_AsyncService(UA_Client *client, const void *request,
                       const UA_DataType *requestType,
@@ -7118,9 +7139,9 @@ UA_DateTime_toStruct(UA_DateTime t) {
         frac += UA_DATETIME_SEC;
     }
 
-    struct mytm ts;
-    memset(&ts, 0, sizeof(struct mytm));
-    __secs_to_tm(secSinceUnixEpoch, &ts);
+    struct musl_tm ts;
+    memset(&ts, 0, sizeof(struct musl_tm));
+    musl_secs_to_tm(secSinceUnixEpoch, &ts);
 
     UA_DateTimeStruct dateTimeStruct;
     dateTimeStruct.year   = (i16)(ts.tm_year + 1900);
@@ -7138,15 +7159,15 @@ UA_DateTime_toStruct(UA_DateTime t) {
 UA_DateTime
 UA_DateTime_fromStruct(UA_DateTimeStruct ts) {
     /* Seconds since the Unix epoch */
-    struct mytm tm;
-    memset(&tm, 0, sizeof(struct mytm));
+    struct musl_tm tm;
+    memset(&tm, 0, sizeof(struct musl_tm));
     tm.tm_year = ts.year - 1900;
     tm.tm_mon = ts.month - 1;
     tm.tm_mday = ts.day;
     tm.tm_hour = ts.hour;
     tm.tm_min = ts.min;
     tm.tm_sec = ts.sec;
-    long long sec_epoch = __tm_to_secs(&tm);
+    long long sec_epoch = musl_tm_to_secs(&tm);
 
     UA_DateTime t = UA_DATETIME_UNIX_EPOCH;
     t += sec_epoch * UA_DATETIME_SEC;
@@ -26802,7 +26823,7 @@ unpackPayloadOPN(UA_SecureChannel *channel, UA_Chunk *chunk) {
     UA_CHECK_STATUS(res, return res);
 
     if(asymHeader.senderCertificate.length > 0) {
-        if(channel->certificateVerification)
+        if(channel->certificateVerification && channel->certificateVerification->verifyCertificate)
             res = channel->certificateVerification->
                 verifyCertificate(channel->certificateVerification,
                                   &asymHeader.senderCertificate);
@@ -28005,7 +28026,7 @@ UA_Session_queuePublishReq(UA_Session *session, UA_PublishResponseEntry* entry,
 
 UA_StatusCode
 UA_Server_closeSession(UA_Server *server, const UA_NodeId *sessionId) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     session_list_entry *entry;
     UA_StatusCode res = UA_STATUSCODE_BADSESSIONIDINVALID;
     LIST_FOREACH(entry, &server->sessions, pointers) {
@@ -28015,7 +28036,7 @@ UA_Server_closeSession(UA_Server *server, const UA_NodeId *sessionId) {
             break;
         }
     }
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -28043,13 +28064,13 @@ UA_Server_setSessionAttribute(UA_Server *server, const UA_NodeId *sessionId,
                               const UA_QualifiedName key, const UA_Variant *value) {
     if(protectedAttribute(key))
         return UA_STATUSCODE_BADNOTWRITABLE;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_Session *session = getSessionById(server, sessionId);
     UA_StatusCode res = UA_STATUSCODE_BADSESSIONIDINVALID;
     if(session)
         res = UA_KeyValueMap_set(session->attributes,
                                  key, value);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -28058,15 +28079,15 @@ UA_Server_deleteSessionAttribute(UA_Server *server, const UA_NodeId *sessionId,
                                  const UA_QualifiedName key) {
     if(protectedAttribute(key))
         return UA_STATUSCODE_BADNOTWRITABLE;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_Session *session = getSessionById(server, sessionId);
     if(!session) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADSESSIONIDINVALID;
     }
     UA_StatusCode res =
         UA_KeyValueMap_remove(session->attributes, key);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -28122,18 +28143,18 @@ getSessionAttribute(UA_Server *server, const UA_NodeId *sessionId,
 UA_StatusCode
 UA_Server_getSessionAttribute(UA_Server *server, const UA_NodeId *sessionId,
                               const UA_QualifiedName key, UA_Variant *outValue) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = getSessionAttribute(server, sessionId, key, outValue, false);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
 UA_StatusCode
 UA_Server_getSessionAttributeCopy(UA_Server *server, const UA_NodeId *sessionId,
                                   const UA_QualifiedName key, UA_Variant *outValue) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = getSessionAttribute(server, sessionId, key, outValue, true);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -28143,23 +28164,23 @@ UA_Server_getSessionAttribute_scalar(UA_Server *server,
                                      const UA_QualifiedName key,
                                      const UA_DataType *type,
                                      void *outValue) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     UA_Variant attr;
     UA_StatusCode res = getSessionAttribute(server, sessionId, key, &attr, false);
     if(res != UA_STATUSCODE_GOOD) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return res;
     }
 
     if(!UA_Variant_hasScalarType(&attr, type)) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNOTFOUND;
     }
 
     memcpy(outValue, attr.data, type->memSize);
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -29456,9 +29477,9 @@ UA_UInt16 UA_Server_addNamespace(UA_Server *server, const char* name) {
     UA_String nameString;
     nameString.length = strlen(name);
     nameString.data = (UA_Byte*)(uintptr_t)name;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_UInt16 retVal = addNamespace(server, nameString);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retVal;
 }
 
@@ -29499,18 +29520,18 @@ getNamespaceByIndex(UA_Server *server, const size_t namespaceIndex,
 UA_StatusCode
 UA_Server_getNamespaceByName(UA_Server *server, const UA_String namespaceUri,
                              size_t *foundIndex) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = getNamespaceByName(server, namespaceUri, foundIndex);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
 UA_StatusCode
 UA_Server_getNamespaceByIndex(UA_Server *server, const size_t namespaceIndex,
                               UA_String *foundUri) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = getNamespaceByIndex(server, namespaceIndex, foundUri);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -29622,7 +29643,7 @@ UA_Server_delete(UA_Server *server) {
         return UA_STATUSCODE_BADINTERNALERROR;
     }
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     session_list_entry *current, *temp;
     LIST_FOREACH_SAFE(current, &server->sessions, pointers, temp) {
@@ -29666,7 +29687,7 @@ UA_Server_delete(UA_Server *server) {
     ZIP_ITER(UA_ServerComponentTree, &server->serverComponents,
              removeServerComponent, server);
 
-    UA_UNLOCK(&server->serviceMutex); /* The timer has its own mutex */
+    unlockServer(server); /* The timer has its own mutex */
 
     /* Clean up the config */
     UA_ServerConfig_clean(&server->config);
@@ -29684,10 +29705,10 @@ UA_Server_delete(UA_Server *server) {
  * sessions. */
 static void
 serverHouseKeeping(UA_Server *server, void *_) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_DateTime nowMonotonic = UA_DateTime_nowMonotonic();
     UA_Server_cleanupSessions(server, nowMonotonic);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 }
 
 /********************/
@@ -29717,7 +29738,7 @@ UA_Server_init(UA_Server *server) {
 #endif
 
     UA_LOCK_INIT(&server->serviceMutex);
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     /* Initialize the adminSession */
     UA_Session_init(&server->adminSession);
@@ -29776,11 +29797,11 @@ UA_Server_init(UA_Server *server) {
 #endif /* UA_ENABLE_PUBSUB_MONITORING */
 #endif /* UA_ENABLE_PUBSUB */
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return server;
 
  cleanup:
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     UA_Server_delete(server);
     return NULL;
 }
@@ -29828,11 +29849,11 @@ setServerShutdown(UA_Server *server) {
 UA_StatusCode
 UA_Server_addTimedCallback(UA_Server *server, UA_ServerCallback callback,
                            void *data, UA_DateTime date, UA_UInt64 *callbackId) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode retval = server->config.eventLoop->
         addTimedCallback(server->config.eventLoop, (UA_Callback)callback,
                          server, data, date, callbackId);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -29850,9 +29871,9 @@ UA_StatusCode
 UA_Server_addRepeatedCallback(UA_Server *server, UA_ServerCallback callback,
                               void *data, UA_Double interval_ms,
                               UA_UInt64 *callbackId) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = addRepeatedCallback(server, callback, data, interval_ms, callbackId);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -29868,10 +29889,10 @@ changeRepeatedCallbackInterval(UA_Server *server, UA_UInt64 callbackId,
 UA_StatusCode
 UA_Server_changeRepeatedCallbackInterval(UA_Server *server, UA_UInt64 callbackId,
                                          UA_Double interval_ms) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode retval =
         changeRepeatedCallbackInterval(server, callbackId, interval_ms);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -29886,9 +29907,9 @@ removeCallback(UA_Server *server, UA_UInt64 callbackId) {
 
 void
 UA_Server_removeCallback(UA_Server *server, UA_UInt64 callbackId) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     removeCallback(server, callbackId);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 }
 
 static void
@@ -29911,7 +29932,7 @@ UA_Server_updateCertificate(UA_Server *server,
     UA_CHECK(server && oldCertificate && newCertificate && newPrivateKey,
              return UA_STATUSCODE_BADINTERNALERROR);
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     if(closeSessions) {
         session_list_entry *current;
@@ -29952,7 +29973,7 @@ UA_Server_updateCertificate(UA_Server *server,
         i++;
     }
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 
     return res;
 }
@@ -30001,6 +30022,7 @@ verifyServerApplicationURI(const UA_Server *server) {
 UA_ServerStatistics
 UA_Server_getStatistics(UA_Server *server) {
     UA_ServerStatistics stat;
+    lockServer(server);
     stat.scs = server->secureChannelStatistics;
     UA_ServerDiagnosticsSummaryDataType *sds = &server->serverDiagnosticsSummary;
     stat.ss.currentSessionCount = server->activeSessionCount;
@@ -30009,6 +30031,7 @@ UA_Server_getStatistics(UA_Server *server) {
     stat.ss.rejectedSessionCount = sds->rejectedSessionCount;
     stat.ss.sessionTimeoutCount = sds->sessionTimeoutCount;
     stat.ss.sessionAbortCount = sds->sessionAbortCount;
+    unlockServer(server);
     return stat;
 }
 
@@ -30016,7 +30039,7 @@ UA_Server_getStatistics(UA_Server *server) {
 /* Main Server Loop */
 /********************/
 
-#define UA_MAXTIMEOUT 200 /* Max timeout in ms between main-loop iterations */
+#define UA_MAXTIMEOUT 500 /* Max timeout in ms between main-loop iterations */
 
 void
 setServerLifecycleState(UA_Server *server, UA_LifecycleState state) {
@@ -30090,12 +30113,12 @@ UA_Server_run_startup(UA_Server *server) {
     }
 
     /* Take the server lock */
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     /* Does the ApplicationURI match the local certificates? */
 #ifdef UA_ENABLE_ENCRYPTION
     retVal = verifyServerApplicationURI(server);
-    UA_CHECK_STATUS(retVal, UA_UNLOCK(&server->serviceMutex); return retVal);
+    UA_CHECK_STATUS(retVal, unlockServer(server); return retVal);
 #endif
 
     /* Are there enough SecureChannels possible for the max number of sessions? */
@@ -30109,7 +30132,7 @@ UA_Server_run_startup(UA_Server *server) {
     /* Add a regular callback for housekeeping tasks. With a 1s interval. */
     retVal = addRepeatedCallback(server, serverHouseKeeping,
                                  NULL, 1000.0, &server->houseKeepingCallbackId);
-    UA_CHECK_STATUS_ERROR(retVal, UA_UNLOCK(&server->serviceMutex); return retVal,
+    UA_CHECK_STATUS_ERROR(retVal, unlockServer(server); return retVal,
                           config->logging, UA_LOGCATEGORY_SERVER,
                           "Could not create the server housekeeping task");
 
@@ -30159,7 +30182,7 @@ UA_Server_run_startup(UA_Server *server) {
         /* Stop all server components that have already been started */
         ZIP_ITER(UA_ServerComponentTree, &server->serverComponents,
                  stopServerComponent, server);
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADINTERNALERROR;
     }
 
@@ -30167,7 +30190,7 @@ UA_Server_run_startup(UA_Server *server) {
      * UA_Server_run_shutdown(server) to stop the server. */
     setServerLifecycleState(server, UA_LIFECYCLESTATE_STARTED);
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -30214,12 +30237,12 @@ UA_Server_run_shutdown(UA_Server *server) {
     if(server == NULL)
         return UA_STATUSCODE_BADINVALIDARGUMENT;
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     if(server->state != UA_LIFECYCLESTATE_STARTED) {
         UA_LOG_ERROR(server->config.logging, UA_LOGCATEGORY_SERVER,
                      "The server is not started, cannot be shut down");
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADINTERNALERROR;
     }
 
@@ -30248,7 +30271,7 @@ UA_Server_run_shutdown(UA_Server *server) {
 
     /* Only stop the EventLoop if it is coupled to the server lifecycle  */
     if(server->config.externalEventLoop) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_GOOD;
     }
 
@@ -30271,7 +30294,7 @@ UA_Server_run_shutdown(UA_Server *server) {
     /* Set server lifecycle state to stopped if not already the case */
     setServerLifecycleState(server, UA_LIFECYCLESTATE_STOPPED);
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -30290,6 +30313,17 @@ UA_Server_run(UA_Server *server, const volatile UA_Boolean *running) {
     return UA_Server_run_shutdown(server);
 }
 
+void lockServer(UA_Server *server) {
+    if(UA_LIKELY(server->config.eventLoop && server->config.eventLoop->lock))
+        server->config.eventLoop->lock(server->config.eventLoop);
+    UA_LOCK(&server->serviceMutex);
+}
+
+void unlockServer(UA_Server *server) {
+    if(UA_LIKELY(server->config.eventLoop && server->config.eventLoop->unlock))
+        server->config.eventLoop->unlock(server->config.eventLoop);
+    UA_UNLOCK(&server->serviceMutex);
+}
 
 /**** amalgamated original file "/src/server/ua_server_ns0.c" ****/
 
@@ -30940,29 +30974,29 @@ resendData(UA_Server *server, const UA_NodeId *sessionId, void *sessionContext,
     UA_UInt32 subscriptionId = *((UA_UInt32*)(input[0].data));
 
     /* Get the Session */
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_Session *session = getSessionById(server, sessionId);
     if(!session) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADINTERNALERROR;
     }
 
     /* Get the Subscription */
     UA_Subscription *subscription = getSubscriptionById(server, subscriptionId);
     if(!subscription) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADSUBSCRIPTIONIDINVALID;
     }
 
     /* The Subscription is not attached to this Session */
     if(subscription->session != session) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADUSERACCESSDENIED;
     }
 
     UA_Subscription_resendData(server, subscription);
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return UA_STATUSCODE_GOOD;
 }
 static UA_StatusCode
@@ -30976,15 +31010,16 @@ readMonitoredItems(UA_Server *server, const UA_NodeId *sessionId, void *sessionC
     UA_Variant_setArray(&output[1], UA_Array_new(0, &UA_TYPES[UA_TYPES_UINT32]),
                         0, &UA_TYPES[UA_TYPES_UINT32]);
 
+    lockServer(server);
+
     /* Get the Session */
-    UA_LOCK(&server->serviceMutex);
     UA_Session *session = getSessionById(server, sessionId);
     if(!session) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADINTERNALERROR;
     }
     if(inputSize == 0 || !input[0].data) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADSUBSCRIPTIONIDINVALID;
     }
 
@@ -30992,13 +31027,13 @@ readMonitoredItems(UA_Server *server, const UA_NodeId *sessionId, void *sessionC
     UA_UInt32 subscriptionId = *((UA_UInt32*)(input[0].data));
     UA_Subscription *subscription = getSubscriptionById(server, subscriptionId);
     if(!subscription) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADSUBSCRIPTIONIDINVALID;
     }
 
     /* The Subscription is not attached to this Session */
     if(subscription->session != session) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADUSERACCESSDENIED;
     }
 
@@ -31009,7 +31044,7 @@ readMonitoredItems(UA_Server *server, const UA_NodeId *sessionId, void *sessionC
         ++sizeOfOutput;
     }
     if(sizeOfOutput == 0) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_GOOD;
     }
 
@@ -31017,13 +31052,13 @@ readMonitoredItems(UA_Server *server, const UA_NodeId *sessionId, void *sessionC
     UA_UInt32 *clientHandles = (UA_UInt32*)
         UA_Array_new(sizeOfOutput, &UA_TYPES[UA_TYPES_UINT32]);
     if(!clientHandles) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADOUTOFMEMORY;
     }
     UA_UInt32 *serverHandles = (UA_UInt32*)
         UA_Array_new(sizeOfOutput, &UA_TYPES[UA_TYPES_UINT32]);
     if(!serverHandles) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         UA_free(clientHandles);
         return UA_STATUSCODE_BADOUTOFMEMORY;
     }
@@ -31038,7 +31073,7 @@ readMonitoredItems(UA_Server *server, const UA_NodeId *sessionId, void *sessionC
     UA_Variant_setArray(&output[0], serverHandles, sizeOfOutput, &UA_TYPES[UA_TYPES_UINT32]);
     UA_Variant_setArray(&output[1], clientHandles, sizeOfOutput, &UA_TYPES[UA_TYPES_UINT32]);
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return UA_STATUSCODE_GOOD;
 }
 #endif /* defined(UA_ENABLE_METHODCALLS) && defined(UA_ENABLE_SUBSCRIPTIONS) */
@@ -31206,10 +31241,8 @@ initNS0(UA_Server *server) {
     UA_StatusCode retVal = createNS0_base(server);
 
 #ifdef UA_GENERATED_NAMESPACE_ZERO
-    UA_UNLOCK(&server->serviceMutex);
     /* Load nodes and references generated from the XML ns0 definition */
     retVal |= namespace0_generated(server);
-    UA_LOCK(&server->serviceMutex);
 #else
     /* Create a minimal server object */
     retVal |= minimalServerObject(server);
@@ -31738,7 +31771,7 @@ readSubscriptionDiagnosticsArray(UA_Server *server,
                                  const UA_NodeId *nodeId, void *nodeContext,
                                  UA_Boolean sourceTimestamp,
                                  const UA_NumericRange *range, UA_DataValue *value) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     /* Get the current session */
     size_t sdSize = 0;
@@ -31751,7 +31784,7 @@ readSubscriptionDiagnosticsArray(UA_Server *server,
     UA_SubscriptionDiagnosticsDataType *sd = (UA_SubscriptionDiagnosticsDataType*)
         UA_Array_new(sdSize, &UA_TYPES[UA_TYPES_SUBSCRIPTIONDIAGNOSTICSDATATYPE]);
     if(!sd) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADOUTOFMEMORY;
     }
 
@@ -31770,7 +31803,7 @@ readSubscriptionDiagnosticsArray(UA_Server *server,
     UA_Variant_setArray(&value->value, sd, sdSize,
                         &UA_TYPES[UA_TYPES_SUBSCRIPTIONDIAGNOSTICSDATATYPE]);
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -31928,7 +31961,7 @@ readSessionDiagnosticsArray(UA_Server *server,
     if(!sd)
         return UA_STATUSCODE_BADOUTOFMEMORY;
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     /* Collect the statistics */
     size_t i = 0;
@@ -31943,7 +31976,7 @@ readSessionDiagnosticsArray(UA_Server *server,
     UA_Variant_setArray(&value->value, sd, server->sessionCount,
                         &UA_TYPES[UA_TYPES_SESSIONDIAGNOSTICSDATATYPE]);
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -31969,12 +32002,12 @@ readSessionDiagnostics(UA_Server *server,
                        const UA_NodeId *nodeId, void *nodeContext,
                        UA_Boolean sourceTimestamp,
                        const UA_NumericRange *range, UA_DataValue *value) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     /* Get the Session */
     UA_Session *session = getSessionById(server, sessionId);
     if(!session) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADINTERNALERROR;
     }
 
@@ -31982,7 +32015,7 @@ readSessionDiagnostics(UA_Server *server,
     UA_QualifiedName bn;
     UA_StatusCode res = readWithReadValue(server, nodeId, UA_ATTRIBUTEID_BROWSENAME, &bn);
     if(res != UA_STATUSCODE_GOOD) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return res;
     }
 
@@ -32056,7 +32089,7 @@ readSessionDiagnostics(UA_Server *server,
 
  cleanup:
     UA_QualifiedName_clear(&bn);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -32073,7 +32106,7 @@ readSessionSecurityDiagnostics(UA_Server *server,
     if(!sd)
         return UA_STATUSCODE_BADOUTOFMEMORY;
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     /* Collect the statistics */
     size_t i = 0;
@@ -32088,7 +32121,7 @@ readSessionSecurityDiagnostics(UA_Server *server,
     UA_Variant_setArray(&value->value, sd, server->sessionCount,
                         &UA_TYPES[UA_TYPES_SESSIONSECURITYDIAGNOSTICSDATATYPE]);
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -32162,7 +32195,7 @@ readDiagnostics(UA_Server *server, const UA_NodeId *sessionId, void *sessionCont
     void *data = NULL;
     const UA_DataType *type = &UA_TYPES[UA_TYPES_UINT32]; /* Default */
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     switch(nodeId->identifier.numeric) {
     case UA_NS0ID_SERVER_SERVERDIAGNOSTICS_SERVERDIAGNOSTICSSUMMARY:
@@ -32208,7 +32241,7 @@ readDiagnostics(UA_Server *server, const UA_NodeId *sessionId, void *sessionCont
         data = &server->serverDiagnosticsSummary.rejectedRequestsCount;
         break;
     default:
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADINTERNALERROR;
     }
 
@@ -32216,7 +32249,7 @@ readDiagnostics(UA_Server *server, const UA_NodeId *sessionId, void *sessionCont
     if(res == UA_STATUSCODE_GOOD)
         value->hasValue = true;
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -32472,6 +32505,8 @@ setBinaryProtocolManagerState(UA_Server *server,
 static void
 deleteServerSecureChannel(UA_BinaryProtocolManager *bpm,
                           UA_SecureChannel *channel) {
+    UA_LOCK_ASSERT(&bpm->server->serviceMutex, 1);
+
     /* Detach the channel from the server list */
     TAILQ_REMOVE(&bpm->channels, (channel_entry*)channel, pointers);
 
@@ -32797,6 +32832,8 @@ getServicePointers(UA_UInt32 requestTypeId, const UA_DataType **requestType,
 /* HEL -> Open up the connection */
 static UA_StatusCode
 processHEL(UA_Server *server, UA_SecureChannel *channel, const UA_ByteString *msg) {
+    UA_LOCK_ASSERT(&server->serviceMutex, 1);
+
     UA_ConnectionManager *cm = channel->connectionManager;
     if(!cm || (channel->state != UA_SECURECHANNELSTATE_CONNECTED &&
                channel->state != UA_SECURECHANNELSTATE_RHE_SENT))
@@ -32869,6 +32906,8 @@ processHEL(UA_Server *server, UA_SecureChannel *channel, const UA_ByteString *ms
 static UA_StatusCode
 processOPN(UA_Server *server, UA_SecureChannel *channel,
            const UA_UInt32 requestId, const UA_ByteString *msg) {
+    UA_LOCK_ASSERT(&server->serviceMutex, 1);
+
     if(channel->state != UA_SECURECHANNELSTATE_ACK_SENT &&
        channel->state != UA_SECURECHANNELSTATE_OPEN)
         return UA_STATUSCODE_BADINTERNALERROR;
@@ -33000,6 +33039,8 @@ sendResponse(UA_Server *server, UA_Session *session, UA_SecureChannel *channel,
 UA_StatusCode
 getBoundSession(UA_Server *server, const UA_SecureChannel *channel,
                 const UA_NodeId *token, UA_Session **session) {
+    UA_LOCK_ASSERT(&server->serviceMutex, 1);
+
     UA_DateTime now = UA_DateTime_nowMonotonic();
     UA_SessionHeader *sh;
     SLIST_FOREACH(sh, &channel->sessions, next) {
@@ -33040,12 +33081,12 @@ processMSGDecoded(UA_Server *server, UA_SecureChannel *channel, UA_UInt32 reques
                   const UA_DataType *requestType, UA_Response *response,
                   const UA_DataType *responseType, UA_Boolean sessionRequired,
                   size_t counterOffset) {
+    UA_LOCK_ASSERT(&server->serviceMutex, 1);
+
     UA_Session anonymousSession;
     UA_Session *session = NULL;
     UA_StatusCode channelRes = UA_STATUSCODE_GOOD;
     UA_ResponseHeader *rh = &response->responseHeader;
-
-    UA_LOCK(&server->serviceMutex);
 
     /* If it is an unencrypted (#None) channel, only allow the discovery services */
     if(server->config.securityPolicyNoneDiscoveryOnly &&
@@ -33079,7 +33120,8 @@ processMSGDecoded(UA_Server *server, UA_SecureChannel *channel, UA_UInt32 reques
     /* Get the Session bound to the SecureChannel (not necessarily activated) */
     if(!UA_NodeId_isNull(&request->requestHeader.authenticationToken)) {
         rh->serviceResult = getBoundSession(server, channel,
-                      &request->requestHeader.authenticationToken, &session);
+                                            &request->requestHeader.authenticationToken,
+                                            &session);
         if(rh->serviceResult != UA_STATUSCODE_GOOD)
             goto send_response;
     }
@@ -33137,7 +33179,6 @@ processMSGDecoded(UA_Server *server, UA_SecureChannel *channel, UA_UInt32 reques
             Service_Publish(server, session, &request->publishRequest, requestId);
 
         /* Don't send a response */
-        UA_UNLOCK(&server->serviceMutex);
         goto update_statistics;
     }
 #endif
@@ -33154,7 +33195,6 @@ processMSGDecoded(UA_Server *server, UA_SecureChannel *channel, UA_UInt32 reques
          * statistic. */
         if(UA_LIKELY(finished))
             goto send_response;
-        UA_UNLOCK(&server->serviceMutex);
         goto update_statistics;
     }
 #endif
@@ -33164,7 +33204,6 @@ processMSGDecoded(UA_Server *server, UA_SecureChannel *channel, UA_UInt32 reques
 
     /* Upon success, send the response. Otherwise a ServiceFault. */
  send_response:
-    UA_UNLOCK(&server->serviceMutex);
     channelRes = sendResponse(server, session, channel,
                               requestId, response, responseType);
 
@@ -33191,6 +33230,8 @@ processMSGDecoded(UA_Server *server, UA_SecureChannel *channel, UA_UInt32 reques
 static UA_StatusCode
 processMSG(UA_Server *server, UA_SecureChannel *channel,
            UA_UInt32 requestId, const UA_ByteString *msg) {
+    UA_LOCK_ASSERT(&server->serviceMutex, 1);
+
     if(channel->state != UA_SECURECHANNELSTATE_OPEN)
         return UA_STATUSCODE_BADINTERNALERROR;
     /* Decode the nodeid */
@@ -33285,6 +33326,8 @@ static UA_StatusCode
 processSecureChannelMessage(UA_Server *server, UA_SecureChannel *channel,
                             UA_MessageType messagetype, UA_UInt32 requestId,
                             UA_ByteString *message) {
+    UA_LOCK_ASSERT(&server->serviceMutex, 1);
+
     UA_StatusCode retval = UA_STATUSCODE_GOOD;
     switch(messagetype) {
     case UA_MESSAGETYPE_HEL:
@@ -33402,6 +33445,8 @@ configServerSecureChannel(void *application, UA_SecureChannel *channel,
 static UA_StatusCode
 createServerSecureChannel(UA_BinaryProtocolManager *bpm, UA_ConnectionManager *cm,
                           uintptr_t connectionId, UA_SecureChannel **outChannel) {
+    UA_LOCK_ASSERT(&bpm->server->serviceMutex, 1);
+
     UA_Server *server = bpm->server;
     UA_ServerConfig *config = &server->config;
 
@@ -33497,13 +33542,14 @@ addDiscoveryUrl(UA_Server *server, const UA_String hostname, UA_UInt16 port) {
 }
 
 /* Callback of a TCP socket (server socket or an active connection) */
-void
-serverNetworkCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
-                      void *application, void **connectionContext,
-                      UA_ConnectionState state,
-                      const UA_KeyValueMap *params,
-                      UA_ByteString msg) {
+static void
+serverNetworkCallbackLocked(UA_ConnectionManager *cm, uintptr_t connectionId,
+                            void *application, void **connectionContext,
+                            UA_ConnectionState state,
+                            const UA_KeyValueMap *params,
+                            UA_ByteString msg) {
     UA_BinaryProtocolManager *bpm = (UA_BinaryProtocolManager*)application;
+    UA_LOCK_ASSERT(&bpm->server->serviceMutex, 1);
 
     /* A server socket that is not yet registered in the server. Register it and
      * set the connection context to the pointer in the
@@ -33639,6 +33685,19 @@ serverNetworkCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
     }
 }
 
+void
+serverNetworkCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
+                      void *application, void **connectionContext,
+                      UA_ConnectionState state,
+                      const UA_KeyValueMap *params,
+                      UA_ByteString msg) {
+    UA_BinaryProtocolManager *bpm = (UA_BinaryProtocolManager*)application;
+    lockServer(bpm->server);
+    serverNetworkCallbackLocked(cm, connectionId, application, connectionContext,
+                                state, params, msg);
+    unlockServer(bpm->server);
+}
+
 static UA_StatusCode
 createServerConnection(UA_BinaryProtocolManager *bpm, const UA_String *serverUrl) {
     UA_Server *server = bpm->server;
@@ -33703,7 +33762,7 @@ createServerConnection(UA_BinaryProtocolManager *bpm, const UA_String *serverUrl
 static void
 secureChannelHouseKeeping(UA_Server *server, void *context) {
     UA_BinaryProtocolManager *bpm = (UA_BinaryProtocolManager*)context;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     UA_DateTime nowMonotonic = UA_DateTime_nowMonotonic();
     channel_entry *entry;
@@ -33739,7 +33798,7 @@ secureChannelHouseKeeping(UA_Server *server, void *context) {
             UA_SecureChannel_shutdown(&entry->channel, UA_SHUTDOWNREASON_TIMEOUT);
         }
     }
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 }
 
 /**********************/
@@ -33799,7 +33858,7 @@ sendRHEMessage(UA_Server *server, uintptr_t connectionId,
 
 static void
 retryReverseConnectCallback(UA_Server *server, void *context) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     UA_BinaryProtocolManager *bpm = (UA_BinaryProtocolManager*)context;
 
@@ -33813,7 +33872,7 @@ retryReverseConnectCallback(UA_Server *server, void *context) {
         attemptReverseConnect(bpm, rc);
     }
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 }
 
 UA_StatusCode
@@ -33937,7 +33996,7 @@ UA_Server_addReverseConnect(UA_Server *server, UA_String url,
     newContext->stateCallback = stateCallback;
     newContext->callbackContext = callbackContext;
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     /* Register the retry callback */
     setReverseConnectRetryCallback(bpm, true);
@@ -33951,7 +34010,7 @@ UA_Server_addReverseConnect(UA_Server *server, UA_String url,
     /* Attempt to connect right away */
     res = attemptReverseConnect(bpm, newContext);
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -33959,7 +34018,7 @@ UA_StatusCode
 UA_Server_removeReverseConnect(UA_Server *server, UA_UInt64 handle) {
     UA_StatusCode result = UA_STATUSCODE_BADNOTFOUND;
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     UA_ServerComponent *sc =
         getServerComponentByName(server, UA_STRING("binary"));
@@ -33967,7 +34026,7 @@ UA_Server_removeReverseConnect(UA_Server *server, UA_UInt64 handle) {
     if(!bpm) {
         UA_LOG_ERROR(server->config.logging, UA_LOGCATEGORY_SERVER,
                      "No BinaryProtocolManager configured");
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADINTERNALERROR;
     }
 
@@ -33995,18 +34054,19 @@ UA_Server_removeReverseConnect(UA_Server *server, UA_UInt64 handle) {
     if(LIST_EMPTY(&bpm->reverseConnects))
         setReverseConnectRetryCallback(bpm, false);
 
-    UA_UNLOCK(&server->serviceMutex);
-
+    unlockServer(server);
     return result;
 }
 
-void
-serverReverseConnectCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
-                             void *application, void **connectionContext,
-                             UA_ConnectionState state, const UA_KeyValueMap *params,
-                             UA_ByteString msg) {
+static void
+serverReverseConnectCallbackLocked(UA_ConnectionManager *cm, uintptr_t connectionId,
+                                   void *application, void **connectionContext,
+                                   UA_ConnectionState state, const UA_KeyValueMap *params,
+                                   UA_ByteString msg) {
     (void)params;
     UA_BinaryProtocolManager *bpm = (UA_BinaryProtocolManager*)application;
+    UA_LOCK_ASSERT(&bpm->server->serviceMutex, 1);
+
     UA_LOG_DEBUG(bpm->logging, UA_LOGCATEGORY_SERVER,
                  "Activity for reverse connect %lu with state %d",
                  (long unsigned)connectionId, state);
@@ -34125,6 +34185,18 @@ serverReverseConnectCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
 
     /* Update the state with the current SecureChannel state */
     setReverseConnectState(bpm->server, context, context->channel->state);
+}
+
+void
+serverReverseConnectCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
+                             void *application, void **connectionContext,
+                             UA_ConnectionState state, const UA_KeyValueMap *params,
+                             UA_ByteString msg) {
+    UA_BinaryProtocolManager *bpm = (UA_BinaryProtocolManager*)application;
+    lockServer(bpm->server);
+    serverReverseConnectCallbackLocked(cm, connectionId, application, connectionContext,
+                                       state, params, msg);
+    unlockServer(bpm->server);
 }
 
 /***************************/
@@ -34880,9 +34952,9 @@ checkTimeouts(UA_Server *server, void *_) {
     UA_UNLOCK(&am->queueLock);
 
     /* Integrate async results and send out complete responses */
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     processAsyncResults(server);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 }
 
 void
@@ -34895,9 +34967,9 @@ UA_AsyncManager_init(UA_AsyncManager *am, UA_Server *server) {
     UA_LOCK_INIT(&am->queueLock);
 
     /* Add a regular callback for cleanup and sending finished responses at a
-     * 100s interval. */
+     * 1s interval. */
     addRepeatedCallback(server, (UA_ServerCallback)checkTimeouts,
-                        NULL, 100.0, &am->checkTimeoutCallbackId);
+                        NULL, 1000.0, &am->checkTimeoutCallbackId);
 }
 
 void
@@ -35114,11 +35186,11 @@ setMethodNodeAsync(UA_Server *server, UA_Session *session,
 UA_StatusCode
 UA_Server_setMethodNodeAsync(UA_Server *server, const UA_NodeId id,
                              UA_Boolean isAsync) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res =
         UA_Server_editNode(server, &server->adminSession, &id,
                            (UA_EditNodeCallback)setMethodNodeAsync, &isAsync);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -35635,14 +35707,14 @@ browseRecursive(UA_Server *server, size_t startNodesSize, const UA_NodeId *start
 UA_StatusCode
 UA_Server_browseRecursive(UA_Server *server, const UA_BrowseDescription *bd,
                           size_t *resultsSize, UA_ExpandedNodeId **results) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     /* Set the list of relevant reference types */
     UA_ReferenceTypeSet refTypes;
     UA_StatusCode retval = referenceTypeIndices(server, &bd->referenceTypeId,
                                                 &refTypes, bd->includeSubtypes);
     if(retval != UA_STATUSCODE_GOOD) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return retval;
     }
 
@@ -35650,7 +35722,7 @@ UA_Server_browseRecursive(UA_Server *server, const UA_BrowseDescription *bd,
     retval = browseRecursive(server, 1, &bd->nodeId, bd->browseDirection,
                              &refTypes, bd->nodeClassMask, false, resultsSize, results);
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -36190,9 +36262,9 @@ UA_Server_browse(UA_Server *server, UA_UInt32 maxReferences,
                  const UA_BrowseDescription *bd) {
     UA_BrowseResult result;
     UA_BrowseResult_init(&result);
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     Operation_Browse(server, &server->adminSession, &maxReferences, bd, &result);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return result;
 }
 
@@ -36299,10 +36371,10 @@ UA_Server_browseNext(UA_Server *server, UA_Boolean releaseContinuationPoint,
                      const UA_ByteString *continuationPoint) {
     UA_BrowseResult result;
     UA_BrowseResult_init(&result);
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     Operation_BrowseNext(server, &server->adminSession, &releaseContinuationPoint,
                          continuationPoint, &result);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return result;
 }
 
@@ -36575,9 +36647,9 @@ translateBrowsePathToNodeIds(UA_Server *server,
 UA_BrowsePathResult
 UA_Server_translateBrowsePathToNodeIds(UA_Server *server,
                                        const UA_BrowsePath *browsePath) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_BrowsePathResult result = translateBrowsePathToNodeIds(server, browsePath);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return result;
 }
 
@@ -36644,9 +36716,9 @@ browseSimplifiedBrowsePath(UA_Server *server, const UA_NodeId origin,
 UA_BrowsePathResult
 UA_Server_browseSimplifiedBrowsePath(UA_Server *server, const UA_NodeId origin,
                            size_t browsePathSize, const UA_QualifiedName *browsePath) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_BrowsePathResult bpr = browseSimplifiedBrowsePath(server, origin, browsePathSize, browsePath);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return bpr;
 }
 
@@ -37048,12 +37120,22 @@ callWithMethodAndObject(UA_Server *server, UA_Session *session,
     /* Release the output arguments node */
     UA_NODESTORE_RELEASE(server, (const UA_Node*)outputArguments);
 
-    /* Call the method */
+    /* Call the method. If this is an async method, unlock the server lock for
+     * the duration of the (long-running) call. */
+#if UA_MULTITHREADING >= 100
+    if(method->async)
+        unlockServer(server);
+#endif
     result->statusCode = method->method(server, &session->sessionId, session->sessionHandle,
                                         &method->head.nodeId, method->head.context,
                                         &object->head.nodeId, object->head.context,
                                         request->inputArgumentsSize, mutableInputArgs,
                                         result->outputArgumentsSize, result->outputArguments);
+#if UA_MULTITHREADING >= 100
+    if(method->async)
+        lockServer(server);
+#endif
+
     /* TODO: Verify Output matches the argument definition */
 }
 
@@ -37221,9 +37303,9 @@ UA_CallMethodResult
 UA_Server_call(UA_Server *server, const UA_CallMethodRequest *request) {
     UA_CallMethodResult result;
     UA_CallMethodResult_init(&result);
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     Operation_CallMethod(server, &server->adminSession, NULL, request, &result);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return result;
 }
 
@@ -37250,9 +37332,9 @@ UA_Server_call(UA_Server *server, const UA_CallMethodRequest *request) {
 /* Delayed callback to free the session memory */
 static void
 removeSessionCallback(UA_Server *server, session_list_entry *entry) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_Session_clear(&entry->session, server);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     UA_free(entry);
 }
 
@@ -38949,9 +39031,9 @@ readWithReadValue(UA_Server *server, const UA_NodeId *nodeId,
 UA_DataValue
 UA_Server_read(UA_Server *server, const UA_ReadValueId *item,
                UA_TimestampsToReturn timestamps) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_DataValue dv = readWithSession(server, &server->adminSession, item, timestamps);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return dv;
 }
 
@@ -38960,9 +39042,9 @@ UA_Server_read(UA_Server *server, const UA_ReadValueId *item,
 UA_StatusCode
 __UA_Server_read(UA_Server *server, const UA_NodeId *nodeId,
                  const UA_AttributeId attributeId, void *v) {
-   UA_LOCK(&server->serviceMutex);
+   lockServer(server);
    UA_StatusCode retval = readWithReadValue(server, nodeId, attributeId, v);
-   UA_UNLOCK(&server->serviceMutex);
+   unlockServer(server);
    return retval;
 }
 
@@ -39007,9 +39089,9 @@ UA_StatusCode
 UA_Server_readObjectProperty(UA_Server *server, const UA_NodeId objectId,
                              const UA_QualifiedName propertyName,
                              UA_Variant *value) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode retval = readObjectProperty(server, objectId, propertyName, value);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -40063,9 +40145,9 @@ Service_Write(UA_Server *server, UA_Session *session,
 UA_StatusCode
 UA_Server_write(UA_Server *server, const UA_WriteValue *value) {
     UA_StatusCode res = UA_STATUSCODE_GOOD;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     Operation_Write(server, &server->adminSession, NULL, value, &res);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -40074,10 +40156,10 @@ UA_StatusCode
 __UA_Server_write(UA_Server *server, const UA_NodeId *nodeId,
                   const UA_AttributeId attributeId,
                   const UA_DataType *attr_type, const void *attr) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = writeAttribute(server, &server->adminSession,
                                        nodeId, attributeId, attr, attr_type);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -40292,9 +40374,9 @@ UA_StatusCode
 UA_Server_writeObjectProperty(UA_Server *server, const UA_NodeId objectId,
                               const UA_QualifiedName propertyName,
                               const UA_Variant value) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode retVal = writeObjectProperty(server, objectId, propertyName, value);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retVal;
 }
 
@@ -40344,10 +40426,10 @@ UA_StatusCode UA_EXPORT
 UA_Server_writeObjectProperty_scalar(UA_Server *server, const UA_NodeId objectId,
                                      const UA_QualifiedName propertyName,
                                      const void *value, const UA_DataType *type) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode retval = 
         writeObjectProperty_scalar(server, objectId, propertyName, value, type);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -40867,9 +40949,18 @@ setCurrentEndPointsArray(UA_Server *server, const UA_String endpointUrl,
                 /* Mirror back the requested EndpointUrl and also add it to the
                  * array of discovery urls */
                 retval |= UA_String_copy(&endpointUrl, &ed->endpointUrl);
-                retval |= UA_Array_appendCopy((void**)&ed->server.discoveryUrls,
-                                              &ed->server.discoveryUrlsSize,
-                                              &endpointUrl, &UA_TYPES[UA_TYPES_STRING]);
+
+                /* Check if the ServerUrl is already present in the DiscoveryUrl array */
+                size_t k = 0;
+                for(; k < ed->server.discoveryUrlsSize; k++) {
+                    if(UA_String_equal(&ed->endpointUrl, &ed->server.discoveryUrls[k]))
+                        break;
+                }
+                if(k == ed->server.discoveryUrlsSize) {
+                    retval |= UA_Array_appendCopy(
+                        (void **)&ed->server.discoveryUrls, &ed->server.discoveryUrlsSize,
+                        &endpointUrl, &UA_TYPES[UA_TYPES_STRING]);
+                }
             }
             if(retval != UA_STATUSCODE_GOOD)
                 goto error;
@@ -42005,8 +42096,8 @@ checkAdjustMonitoredItemParams(UA_Server *server, UA_Session *session,
 static UA_StatusCode
 checkEventFilterParam(UA_Server *server, UA_Session *session,
                       const UA_MonitoredItem *mon,
-                      UA_MonitoringParameters *params,
-                      UA_MonitoredItemCreateResult *result) {
+                      const UA_MonitoringParameters *params,
+                      UA_ExtensionObject *filterResult) {
     /* Is an Event MonitoredItem? */
     if(mon->itemToMonitor.attributeId != UA_ATTRIBUTEID_EVENTNOTIFIER)
         return UA_STATUSCODE_GOOD;
@@ -42062,7 +42153,7 @@ checkEventFilterParam(UA_Server *server, UA_Session *session,
             tmp_efr.whereClauseResult.elementResultsSize = cf->elementsSize;
             tmp_efr.whereClauseResult.elementResults = whereRes;
             UA_EventFilterResult_copy(&tmp_efr, efr);
-            UA_ExtensionObject_setValue(&result->filterResult, efr,
+            UA_ExtensionObject_setValue(filterResult, efr,
                                         &UA_TYPES[UA_TYPES_EVENTFILTERRESULT]);
         }
     }
@@ -42214,8 +42305,13 @@ Operation_CreateMonitoredItem(UA_Server *server, UA_Session *session,
     result->statusCode |= checkAdjustMonitoredItemParams(server, session, newMon,
                                                          valueType, &newMon->parameters);
 #ifdef UA_ENABLE_SUBSCRIPTIONS_EVENTS
-    result->statusCode |= checkEventFilterParam(server, session, newMon,
-                                                &newMon->parameters, result);
+    const UA_StatusCode eventFilterStatus = checkEventFilterParam(server, session, newMon,
+                                                                  &newMon->parameters,
+                                                                  &result->filterResult);
+
+    if(eventFilterStatus != UA_STATUSCODE_GOOD) {
+        result->statusCode = UA_STATUSCODE_BADEVENTFILTERINVALID;
+    }
 #endif
     if(result->statusCode != UA_STATUSCODE_GOOD) {
         UA_LOG_INFO_SUBSCRIPTION(server->config.logging, cmc->sub,
@@ -42318,9 +42414,9 @@ UA_Server_createDataChangeMonitoredItem(UA_Server *server,
 
     UA_MonitoredItemCreateResult result;
     UA_MonitoredItemCreateResult_init(&result);
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     Operation_CreateMonitoredItem(server, &server->adminSession, &cmc, &item, &result);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return result;
 }
 
@@ -42357,6 +42453,17 @@ Operation_ModifyMonitoredItem(UA_Server *server, UA_Session *session, UA_Subscri
         UA_MonitoringParameters_clear(&params);
         return;
     }
+
+#ifdef UA_ENABLE_SUBSCRIPTIONS_EVENTS
+    const UA_StatusCode eventFilterStatus = checkEventFilterParam(server, session, mon,
+                                                                  &request->requestedParameters,
+                                                                  &result->filterResult);
+    if(eventFilterStatus != UA_STATUSCODE_GOOD) {
+        result->statusCode = UA_STATUSCODE_BADEVENTFILTERINVALID;
+        UA_MonitoringParameters_clear(&params);
+        return;
+    }
+#endif
 
     /* Store the old sampling interval */
     UA_Double oldSamplingInterval = mon->parameters.samplingInterval;
@@ -42543,16 +42650,16 @@ Service_DeleteMonitoredItems(UA_Server *server, UA_Session *session,
 
 UA_StatusCode
 UA_Server_deleteMonitoredItem(UA_Server *server, UA_UInt32 monitoredItemId) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_MonitoredItem *mon, *mon_tmp;
     LIST_FOREACH_SAFE(mon, &server->localMonitoredItems, listEntry, mon_tmp) {
         if(mon->monitoredItemId != monitoredItemId)
             continue;
         UA_MonitoredItem_delete(server, mon);
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_GOOD;
     }
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return UA_STATUSCODE_BADMONITOREDITEMIDINVALID;
 }
 
@@ -42724,9 +42831,9 @@ Service_CloseSecureChannel(UA_Server *server, UA_SecureChannel *channel) {
 UA_StatusCode
 UA_Server_getNodeContext(UA_Server *server, UA_NodeId nodeId,
                          void **nodeContext) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode retval = getNodeContext(server, nodeId, nodeContext);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -42773,9 +42880,9 @@ setNodeContext(UA_Server *server, UA_NodeId nodeId,
 UA_StatusCode
 UA_Server_setNodeContext(UA_Server *server, UA_NodeId nodeId,
                          void *nodeContext) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode retval = setNodeContext(server, nodeId, nodeContext);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -44118,11 +44225,11 @@ checkSetIsDynamicVariable(UA_Server *server, UA_Session *session,
 UA_StatusCode
 UA_Server_setVariableNodeDynamic(UA_Server *server, const UA_NodeId nodeId,
                                  UA_Boolean isDynamic) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res =
         UA_Server_editNode(server, &server->adminSession, &nodeId,
                            (UA_EditNodeCallback)setVariableNodeDynamic, &isDynamic);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -44358,12 +44465,12 @@ __UA_Server_addNode(UA_Server *server, const UA_NodeClass nodeClass,
                     const UA_NodeAttributes *attr,
                     const UA_DataType *attributeType,
                     void *nodeContext, UA_NodeId *outNewNodeId) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode reval =
         addNode(server, nodeClass, *requestedNewNodeId, *parentNodeId,
                 *referenceTypeId, browseName, *typeDefinition, attr,
                 attributeType, nodeContext, outNewNodeId);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return reval;
 }
 
@@ -44393,20 +44500,20 @@ UA_Server_addNode_begin(UA_Server *server, const UA_NodeClass nodeClass,
                         const UA_NodeId typeDefinition, const void *attr,
                         const UA_DataType *attributeType, void *nodeContext,
                         UA_NodeId *outNewNodeId) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res =
         addNode_begin(server, nodeClass, requestedNewNodeId, parentNodeId,
                       referenceTypeId, browseName, typeDefinition, attr,
                       attributeType, nodeContext, outNewNodeId);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
 UA_StatusCode
 UA_Server_addNode_finish(UA_Server *server, const UA_NodeId nodeId) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode retval = addNode_finish(server, &server->adminSession, &nodeId);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -44733,9 +44840,9 @@ Service_DeleteNodes(UA_Server *server, UA_Session *session,
 UA_StatusCode
 UA_Server_deleteNode(UA_Server *server, const UA_NodeId nodeId,
                      UA_Boolean deleteReferences) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode retval = deleteNode(server, nodeId, deleteReferences);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -44944,9 +45051,9 @@ UA_Server_addReference(UA_Server *server, const UA_NodeId sourceId,
     item.targetNodeId = targetId;
 
     UA_StatusCode retval = UA_STATUSCODE_GOOD;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     Operation_addReference(server, &server->adminSession, NULL, &item, &retval);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -45037,10 +45144,10 @@ UA_Server_deleteReference(UA_Server *server, const UA_NodeId sourceNodeId,
                           const UA_NodeId referenceTypeId, UA_Boolean isForward,
                           const UA_ExpandedNodeId targetNodeId,
                           UA_Boolean deleteBidirectional) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = deleteReference(server, sourceNodeId, referenceTypeId,
                                         isForward, targetNodeId, deleteBidirectional);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -45071,13 +45178,13 @@ UA_StatusCode
 UA_Server_setVariableNode_valueCallback(UA_Server *server,
                                         const UA_NodeId nodeId,
                                         const UA_ValueCallback callback) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode retval = UA_Server_editNode(server, &server->adminSession, &nodeId,
                                               (UA_EditNodeCallback)setValueCallback,
                                               /* cast away const because
                                                * callback uses const anyway */
                                               (UA_ValueCallback *)(uintptr_t) &callback);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -45111,7 +45218,8 @@ UA_Server_addDataSourceVariableNode(UA_Server *server, const UA_NodeId requested
         outNewNodeId = &newNodeId;
     }
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
+
     /* Create the node and add it to the nodestore */
     UA_StatusCode retval = addNode_raw(server, &server->adminSession, nodeContext,
                                        &item, outNewNodeId);
@@ -45133,7 +45241,7 @@ UA_Server_addDataSourceVariableNode(UA_Server *server, const UA_NodeId requested
     retval = addNode_finish(server, &server->adminSession, outNewNodeId);
 
  cleanup:
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     if(outNewNodeId == &newNodeId)
         UA_NodeId_clear(&newNodeId);
 
@@ -45165,9 +45273,9 @@ setVariableNode_dataSource(UA_Server *server, const UA_NodeId nodeId,
 UA_StatusCode
 UA_Server_setVariableNode_dataSource(UA_Server *server, const UA_NodeId nodeId,
                                      const UA_DataSource dataSource) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode retval = setVariableNode_dataSource(server, nodeId, dataSource);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -45211,10 +45319,10 @@ UA_StatusCode
 UA_Server_setVariableNode_valueBackend(UA_Server *server, const UA_NodeId nodeId,
                                        const UA_ValueBackend valueBackend){
     UA_StatusCode retval = UA_STATUSCODE_GOOD;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     switch(valueBackend.backendType){
         case UA_VALUEBACKENDTYPE_NONE:
-            UA_UNLOCK(&server->serviceMutex);
+            unlockServer(server);
             return UA_STATUSCODE_BADCONFIGURATIONERROR;
         case UA_VALUEBACKENDTYPE_DATA_SOURCE_CALLBACK:
             retval = UA_Server_editNode(server, &server->adminSession, &nodeId,
@@ -45238,7 +45346,7 @@ UA_Server_setVariableNode_valueBackend(UA_Server *server, const UA_NodeId nodeId
     // (UA_ValueCallback *)(uintptr_t) &callback);
 
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -45373,14 +45481,14 @@ UA_Server_addMethodNode_finish(UA_Server *server, const UA_NodeId nodeId,
                                const UA_Argument* inputArguments,
                                size_t outputArgumentsSize,
                                const UA_Argument* outputArguments) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode retval =
         UA_Server_addMethodNodeEx_finish(server, nodeId, method,
                                          inputArgumentsSize, inputArguments,
                                          UA_NODEID_NULL, NULL,
                                          outputArgumentsSize, outputArguments,
                                          UA_NODEID_NULL, NULL);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -45439,7 +45547,7 @@ UA_Server_addMethodNodeEx(UA_Server *server, const UA_NodeId requestedNewNodeId,
                           const UA_NodeId outputArgumentsRequestedNewNodeId,
                           UA_NodeId *outputArgumentsOutNewNodeId,
                           void *nodeContext, UA_NodeId *outNewNodeId) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = addMethodNode(server, requestedNewNodeId,
                                       parentNodeId, referenceTypeId,
                                       browseName, &attr, method,
@@ -45451,7 +45559,7 @@ UA_Server_addMethodNodeEx(UA_Server *server, const UA_NodeId requestedNewNodeId,
                                       outputArgumentsRequestedNewNodeId,
                                       outputArgumentsOutNewNodeId,
                                       nodeContext, outNewNodeId);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -45478,9 +45586,9 @@ UA_StatusCode
 UA_Server_setMethodNodeCallback(UA_Server *server,
                                 const UA_NodeId methodNodeId,
                                 UA_MethodCallback methodCallback) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode retVal = setMethodNode_callback(server, methodNodeId, methodCallback);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retVal;
 }
 
@@ -45488,22 +45596,22 @@ UA_StatusCode
 UA_Server_getMethodNodeCallback(UA_Server *server,
                                 const UA_NodeId methodNodeId,
                                 UA_MethodCallback *outMethodCallback) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     const UA_Node *node = UA_NODESTORE_GET(server, &methodNodeId);
     if(!node) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNODEIDUNKNOWN;
     }
 
     if(node->head.nodeClass != UA_NODECLASS_METHOD) {
         UA_NODESTORE_RELEASE(server, node);
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNODECLASSINVALID;
     }
 
     *outMethodCallback = node->methodNode.method;
     UA_NODESTORE_RELEASE(server, node);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -45543,9 +45651,9 @@ setNodeTypeLifecycle(UA_Server *server, UA_NodeId nodeId,
 UA_StatusCode
 UA_Server_setNodeTypeLifecycle(UA_Server *server, UA_NodeId nodeId,
                                UA_NodeTypeLifecycle lifecycle) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode retval = setNodeTypeLifecycle(server, nodeId, lifecycle);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -47463,7 +47571,7 @@ PubSubChannelCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
     UA_Server *server = (UA_Server*)application;
     UA_PubSubConnection *psc = (UA_PubSubConnection*)*connectionContext;
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     /* The connection is closing in the EventLoop. This is the last callback
      * from that connection. Clean up the SecureChannel in the client. */
@@ -47474,7 +47582,7 @@ PubSubChannelCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
         /* PSC marked for deletion and the last EventLoop connection has closed */
         if(psc->deleteFlag && psc->recvChannelsSize == 0 && psc->sendChannel == 0) {
             UA_PubSubConnection_delete(server, psc);
-            UA_UNLOCK(&server->serviceMutex);
+            unlockServer(server);
             return;
         }
 
@@ -47485,7 +47593,7 @@ PubSubChannelCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
         if(psc->state == UA_PUBSUBSTATE_OPERATIONAL)
             UA_PubSubConnection_connect(server, psc, false);
 
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return;
     }
 
@@ -47498,13 +47606,13 @@ PubSubChannelCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
                                   "No more space for an additional EventLoop connection");
         if(psc->cm)
             psc->cm->closeConnection(psc->cm, connectionId);
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return;
     }
 
     /* No message received */
     if(!recv || msg.length == 0) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return;
     }
 
@@ -47575,7 +47683,7 @@ PubSubChannelCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
         }
     }
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 }
 
 static void
@@ -47838,7 +47946,7 @@ WriterGroupChannelCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
     UA_Server *server = (UA_Server*)application;
     UA_WriterGroup *wg = (UA_WriterGroup*)*connectionContext;
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     /* The connection is closing in the EventLoop. This is the last callback
      * from that connection. Clean up the SecureChannel in the client. */
@@ -47850,7 +47958,7 @@ WriterGroupChannelCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
             /* PSC marked for deletion and the last EventLoop connection has closed */
             if(wg->deleteFlag) {
                 UA_WriterGroup_remove(server, wg);
-                UA_UNLOCK(&server->serviceMutex);
+                unlockServer(server);
                 return;
             }
         }
@@ -47862,7 +47970,7 @@ WriterGroupChannelCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
         if(wg->state == UA_PUBSUBSTATE_OPERATIONAL)
             UA_WriterGroup_connect(server, wg, false);
 
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return;
     }
 
@@ -47870,7 +47978,7 @@ WriterGroupChannelCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
     if(wg->sendChannel && wg->sendChannel != connectionId) {
         UA_LOG_WARNING_WRITERGROUP(server->config.logging, wg,
                                   "WriterGroup is already bound to a different channel");
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return;
     }
     wg->sendChannel = connectionId;
@@ -47881,7 +47989,7 @@ WriterGroupChannelCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
                                       UA_STATUSCODE_GOOD);
     
     /* Send-channels don't receive messages */
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 }
 
 static UA_StatusCode
@@ -48138,7 +48246,7 @@ ReaderGroupChannelCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
     UA_Server *server = (UA_Server*)application;
     UA_ReaderGroup *rg = (UA_ReaderGroup*)*connectionContext;
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     /* The connection is closing in the EventLoop. This is the last callback
      * from that connection. Clean up the SecureChannel in the client. */
@@ -48149,13 +48257,13 @@ ReaderGroupChannelCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
         /* PSC marked for deletion and the last EventLoop connection has closed */
         if(rg->deleteFlag && rg->recvChannelsSize == 0) {
             UA_ReaderGroup_remove(server, rg);
-            UA_UNLOCK(&server->serviceMutex);
+            unlockServer(server);
             return;
         }
 
         /* Reconnect if still operational */
         UA_ReaderGroup_setPubSubState(server, rg, rg->state, UA_STATUSCODE_GOOD);
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return;
     }
 
@@ -48167,13 +48275,13 @@ ReaderGroupChannelCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
         UA_PubSubConnection *c = rg->linkedConnection;
         if(c && c->cm)
             c->cm->closeConnection(c->cm, connectionId);
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return;
     }
 
     /* No message received */
     if(msg.length == 0) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return;
     }
 
@@ -48190,14 +48298,14 @@ ReaderGroupChannelCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
     if(rg->state != UA_PUBSUBSTATE_OPERATIONAL) {
         UA_LOG_WARNING_READERGROUP(server->config.logging, rg,
                                    "Received a messaage for a non-operational ReaderGroup");
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return;
     }
 
     /* ReaderGroup with realtime processing */
     if(rg->config.rtLevel & UA_PUBSUB_RT_FIXED_SIZE) {
         UA_ReaderGroup_decodeAndProcessRT(server, rg, &msg);
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return;
     }
 
@@ -48218,14 +48326,14 @@ ReaderGroupChannelCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
     if(res != UA_STATUSCODE_GOOD) {
         UA_LOG_WARNING_READERGROUP(server->config.logging, rg,
                                   "Verify, decrypt and decode network message failed");
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return;
     }
 
     /* Process the decoded message */
     UA_ReaderGroup_process(server, rg, &nm);
     UA_NetworkMessage_clear(&nm);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 }
 
 static UA_StatusCode
@@ -48477,13 +48585,13 @@ UA_Server_getPubSubConnectionConfig(UA_Server *server, const UA_NodeId connectio
                                     UA_PubSubConnectionConfig *config) {
     if(!config)
         return UA_STATUSCODE_BADINVALIDARGUMENT;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_PubSubConnection *currentPubSubConnection =
         UA_PubSubConnection_findConnectionbyId(server, connection);
     UA_StatusCode res = UA_STATUSCODE_BADNOTFOUND;
     if(currentPubSubConnection)
         res = UA_PubSubConnectionConfig_copy(&currentPubSubConnection->config, config);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -48571,9 +48679,9 @@ UA_PubSubConnection_create(UA_Server *server, const UA_PubSubConnectionConfig *c
 UA_StatusCode
 UA_Server_addPubSubConnection(UA_Server *server, const UA_PubSubConnectionConfig *cc,
                               UA_NodeId *cId) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = UA_PubSubConnection_create(server, cc, cId);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -48581,9 +48689,9 @@ static void
 delayedPubSubConnection_delete(void *application, void *context) {
     UA_Server *server = (UA_Server*)application;
     UA_PubSubConnection *c = (UA_PubSubConnection*)context;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_PubSubConnection_delete(server, c);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 }
 
 /* Clean up the PubSubConnection. If no EventLoop connection is attached we can
@@ -48656,15 +48764,15 @@ UA_PubSubConnection_delete(UA_Server *server, UA_PubSubConnection *c) {
 
 UA_StatusCode
 UA_Server_removePubSubConnection(UA_Server *server, const UA_NodeId connection) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_PubSubConnection *psc =
         UA_PubSubConnection_findConnectionbyId(server, connection);
     if(!psc) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNOTFOUND;
     }
     UA_PubSubConnection_delete(server, psc);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return UA_STATUSCODE_GOOD;
 }
 
@@ -48824,9 +48932,9 @@ getPublishedDataSetConfig(UA_Server *server, const UA_NodeId pds,
 UA_StatusCode
 UA_Server_getPublishedDataSetConfig(UA_Server *server, const UA_NodeId pds,
                                     UA_PublishedDataSetConfig *config) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = getPublishedDataSetConfig(server, pds, config);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -48835,12 +48943,12 @@ UA_Server_getPublishedDataSetMetaData(UA_Server *server, const UA_NodeId pds,
                                       UA_DataSetMetaDataType *metaData) {
     if(!metaData)
         return UA_STATUSCODE_BADINVALIDARGUMENT;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_PublishedDataSet *currentPDS = UA_PublishedDataSet_findPDSbyId(server, pds);
     UA_StatusCode res = UA_STATUSCODE_BADNOTFOUND;
     if(currentPDS)
         res = UA_DataSetMetaDataType_copy(&currentPDS->dataSetMetaData, metaData);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -49157,10 +49265,10 @@ UA_DataSetFieldResult
 UA_Server_addDataSetField(UA_Server *server, const UA_NodeId publishedDataSet,
                           const UA_DataSetFieldConfig *fieldConfig,
                           UA_NodeId *fieldIdentifier) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_DataSetFieldResult res =
         UA_DataSetField_create(server, publishedDataSet, fieldConfig, fieldIdentifier);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -49253,17 +49361,17 @@ UA_DataSetField_remove(UA_Server *server, UA_DataSetField *currentField) {
 
 UA_DataSetFieldResult
 UA_Server_removeDataSetField(UA_Server *server, const UA_NodeId dsf) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_DataSetFieldResult res;
     memset(&res, 0, sizeof(UA_DataSetFieldResult));
     UA_DataSetField *field = UA_DataSetField_findDSFbyId(server, dsf);
     if(!field) {
         res.result = UA_STATUSCODE_BADNOTFOUND;
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return res;
     }
     res = UA_DataSetField_remove(server, field);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -49288,12 +49396,12 @@ UA_Server_getDataSetFieldConfig(UA_Server *server, const UA_NodeId dsf,
                                 UA_DataSetFieldConfig *config) {
     if(!config)
         return UA_STATUSCODE_BADINVALIDARGUMENT;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_DataSetField *currentDataSetField = UA_DataSetField_findDSFbyId(server, dsf);
     UA_StatusCode res = UA_STATUSCODE_BADNOTFOUND;
     if(currentDataSetField)
         res = UA_DataSetFieldConfig_copy(&currentDataSetField->config, config);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -49461,10 +49569,10 @@ UA_AddPublishedDataSetResult
 UA_Server_addPublishedDataSet(UA_Server *server,
                               const UA_PublishedDataSetConfig *publishedDataSetConfig,
                               UA_NodeId *pdsIdentifier) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_AddPublishedDataSetResult res =
         UA_PublishedDataSet_create(server, publishedDataSetConfig, pdsIdentifier);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -49505,14 +49613,14 @@ UA_PublishedDataSet_remove(UA_Server *server, UA_PublishedDataSet *publishedData
 
 UA_StatusCode
 UA_Server_removePublishedDataSet(UA_Server *server, const UA_NodeId pds) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_PublishedDataSet *currentPDS = UA_PublishedDataSet_findPDSbyId(server, pds);
     if(!currentPDS) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNOTFOUND;
     }
     UA_StatusCode res = UA_PublishedDataSet_remove(server, currentPDS);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -49614,12 +49722,12 @@ UA_Server_getDataSetWriterConfig(UA_Server *server, const UA_NodeId dsw,
                                  UA_DataSetWriterConfig *config) {
     if(!config)
         return UA_STATUSCODE_BADINVALIDARGUMENT;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_DataSetWriter *currentDataSetWriter = UA_DataSetWriter_findDSWbyId(server, dsw);
     UA_StatusCode res = UA_STATUSCODE_BADNOTFOUND;
     if(currentDataSetWriter)
         res = UA_DataSetWriterConfig_copy(&currentDataSetWriter->config, config);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -49628,7 +49736,7 @@ UA_Server_DataSetWriter_getState(UA_Server *server, UA_NodeId dataSetWriterIdent
                                UA_PubSubState *state) {
     if((server == NULL) || (state == NULL))
         return UA_STATUSCODE_BADINVALIDARGUMENT;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_DataSetWriter *currentDataSetWriter =
         UA_DataSetWriter_findDSWbyId(server, dataSetWriterIdentifier);
     UA_StatusCode res = UA_STATUSCODE_GOOD;
@@ -49637,7 +49745,7 @@ UA_Server_DataSetWriter_getState(UA_Server *server, UA_NodeId dataSetWriterIdent
     } else {
         res = UA_STATUSCODE_BADNOTFOUND;
     }
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -49866,8 +49974,16 @@ UA_DataSetWriter_create(UA_Server *server,
 
     newDataSetWriter->linkedWriterGroup = wg->identifier;
 
-    /* Add the new writer to the group */
-    LIST_INSERT_HEAD(&wg->writers, newDataSetWriter, listEntry);
+    /* Add the new writer to the group. Add to the end of the linked list to
+     * ensure the order in the generated NetworkMessage is as expected. */
+    UA_DataSetWriter *after = LIST_FIRST(&wg->writers);
+    if(!after) {
+        LIST_INSERT_HEAD(&wg->writers, newDataSetWriter, listEntry);
+    } else {
+        while(LIST_NEXT(after, listEntry))
+            after = LIST_NEXT(after, listEntry);
+        LIST_INSERT_AFTER(after, newDataSetWriter, listEntry);
+    }
     wg->writersCount++;
 
 #ifdef UA_ENABLE_PUBSUB_INFORMATIONMODEL
@@ -49886,12 +50002,12 @@ UA_Server_addDataSetWriter(UA_Server *server,
                            const UA_NodeId writerGroup, const UA_NodeId dataSet,
                            const UA_DataSetWriterConfig *dataSetWriterConfig,
                            UA_NodeId *writerIdentifier) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     /* Delete the reserved IDs if the related session no longer exists. */
     UA_PubSubManager_freeIds(server);
     UA_StatusCode res = UA_DataSetWriter_create(server, writerGroup, dataSet,
                                                 dataSetWriterConfig, writerIdentifier);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -50072,14 +50188,14 @@ UA_DataSetWriter_remove(UA_Server *server, UA_DataSetWriter *dataSetWriter) {
 
 UA_StatusCode
 UA_Server_removeDataSetWriter(UA_Server *server, const UA_NodeId dsw) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_DataSetWriter *dataSetWriter = UA_DataSetWriter_findDSWbyId(server, dsw);
     if(!dataSetWriter) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNOTFOUND;
     }
     UA_StatusCode res = UA_DataSetWriter_remove(server, dataSetWriter);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -50732,10 +50848,10 @@ UA_StatusCode
 UA_Server_addWriterGroup(UA_Server *server, const UA_NodeId connection,
                          const UA_WriterGroupConfig *writerGroupConfig,
                          UA_NodeId *writerGroupIdentifier) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = UA_WriterGroup_create(server, connection, writerGroupConfig,
                                               writerGroupIdentifier);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -50809,14 +50925,14 @@ UA_WriterGroup_remove(UA_Server *server, UA_WriterGroup *wg) {
 
 UA_StatusCode
 UA_Server_removeWriterGroup(UA_Server *server, const UA_NodeId writerGroup) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_WriterGroup *wg = UA_WriterGroup_findWGbyId(server, writerGroup);
     if(!wg) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNOTFOUND;
     }
     UA_StatusCode res = UA_WriterGroup_remove(server, wg);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -50971,14 +51087,14 @@ UA_WriterGroup_freezeConfiguration(UA_Server *server, UA_WriterGroup *wg) {
 UA_StatusCode
 UA_Server_freezeWriterGroupConfiguration(UA_Server *server,
                                          const UA_NodeId writerGroup) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_WriterGroup *wg = UA_WriterGroup_findWGbyId(server, writerGroup);
     if(!wg) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNOTFOUND;
     }
     UA_StatusCode res = UA_WriterGroup_freezeConfiguration(server, wg);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -51008,21 +51124,21 @@ UA_WriterGroup_unfreezeConfiguration(UA_Server *server, UA_WriterGroup *wg) {
 UA_StatusCode
 UA_Server_unfreezeWriterGroupConfiguration(UA_Server *server,
                                            const UA_NodeId writerGroup) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_WriterGroup *wg = UA_WriterGroup_findWGbyId(server, writerGroup);
     if(!wg) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNOTFOUND;
     }
     UA_StatusCode res = UA_WriterGroup_unfreezeConfiguration(server, wg);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
 UA_StatusCode
 UA_Server_setWriterGroupOperational(UA_Server *server,
                                     const UA_NodeId writerGroup) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = UA_STATUSCODE_BADNOTFOUND;
     UA_WriterGroup *wg = UA_WriterGroup_findWGbyId(server, writerGroup);
     if(wg) {
@@ -51031,7 +51147,7 @@ UA_Server_setWriterGroupOperational(UA_Server *server,
             res = UA_PubSubKeyStorage_activateKeyToChannelContext(
                 server, wg->identifier, wg->config.securityGroupId);
             if(res != UA_STATUSCODE_GOOD) {
-                UA_UNLOCK(&server->serviceMutex);
+                unlockServer(server);
                 return res;
             }
         }
@@ -51040,20 +51156,20 @@ UA_Server_setWriterGroupOperational(UA_Server *server,
         res = UA_WriterGroup_setPubSubState(server, wg, UA_PUBSUBSTATE_OPERATIONAL,
                                             UA_STATUSCODE_GOOD);
     }
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
 UA_StatusCode
 UA_Server_setWriterGroupDisabled(UA_Server *server,
                                  const UA_NodeId writerGroup) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = UA_STATUSCODE_BADNOTFOUND;
     UA_WriterGroup *wg = UA_WriterGroup_findWGbyId(server, writerGroup);
     if(wg)
         res = UA_WriterGroup_setPubSubState(server, wg, UA_PUBSUBSTATE_DISABLED,
                                             UA_STATUSCODE_BADRESOURCEUNAVAILABLE);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -51079,12 +51195,12 @@ UA_Server_getWriterGroupConfig(UA_Server *server, const UA_NodeId writerGroup,
                                UA_WriterGroupConfig *config) {
     if(!config)
         return UA_STATUSCODE_BADINVALIDARGUMENT;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_WriterGroup *currentWG = UA_WriterGroup_findWGbyId(server, writerGroup);
     UA_StatusCode res = UA_STATUSCODE_BADNOTFOUND;
     if(currentWG)
         res = UA_WriterGroupConfig_copy(&currentWG->config, config);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -51139,15 +51255,15 @@ UA_WriterGroup_updateConfig(UA_Server *server, UA_WriterGroup *wg,
 UA_StatusCode
 UA_Server_updateWriterGroupConfig(UA_Server *server, UA_NodeId writerGroupIdentifier,
                                   const UA_WriterGroupConfig *config) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_WriterGroup *wg = UA_WriterGroup_findWGbyId(server, writerGroupIdentifier);
     if(!wg) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNOTFOUND;
     }
 
     UA_StatusCode res = UA_WriterGroup_updateConfig(server, wg, config);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -51156,7 +51272,7 @@ UA_Server_WriterGroup_getState(UA_Server *server, UA_NodeId writerGroupIdentifie
                                UA_PubSubState *state) {
     if((server == NULL) || (state == NULL))
         return UA_STATUSCODE_BADINVALIDARGUMENT;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_WriterGroup *currentWriterGroup =
         UA_WriterGroup_findWGbyId(server, writerGroupIdentifier);
     UA_StatusCode res = UA_STATUSCODE_GOOD;
@@ -51165,22 +51281,22 @@ UA_Server_WriterGroup_getState(UA_Server *server, UA_NodeId writerGroupIdentifie
     } else {
         res = UA_STATUSCODE_BADNOTFOUND;
     }
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
 UA_StatusCode
 UA_Server_WriterGroup_publish(UA_Server *server, const UA_NodeId writerGroupIdentifier){
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     //search WriterGroup ToDo create lookup table for more efficiency
     UA_WriterGroup *writerGroup;
     writerGroup = UA_WriterGroup_findWGbyId(server, writerGroupIdentifier);
     if(writerGroup == NULL){
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNOTFOUND;
     }
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     UA_WriterGroup_publishCallback(server, writerGroup);
     return UA_STATUSCODE_GOOD;
 }
@@ -51188,16 +51304,16 @@ UA_Server_WriterGroup_publish(UA_Server *server, const UA_NodeId writerGroupIden
 UA_StatusCode
 UA_WriterGroup_lastPublishTimestamp(UA_Server *server, const UA_NodeId writerGroupId,
                                     UA_DateTime *timestamp){
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     //search WriterGroup ToDo create lookup table for more efficiency
     UA_WriterGroup *writerGroup;
     writerGroup = UA_WriterGroup_findWGbyId(server, writerGroupId);
     if(writerGroup == NULL){
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNOTFOUND;
     }
     *timestamp = writerGroup->lastPublishTimeStamp;
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return UA_STATUSCODE_BADNOTFOUND;
 }
 
@@ -51259,10 +51375,10 @@ UA_Server_setWriterGroupEncryptionKeys(UA_Server *server, const UA_NodeId writer
                                        const UA_ByteString signingKey,
                                        const UA_ByteString encryptingKey,
                                        const UA_ByteString keyNonce) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = setWriterGroupEncryptionKeys(server, writerGroup, securityTokenId,
                                                      signingKey, encryptingKey, keyNonce);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 #endif
@@ -51729,7 +51845,7 @@ sendNetworkMessageBinary(UA_Server *server, UA_PubSubConnection *connection, UA_
 
 static void
 sampleOffsetPublishingValues(UA_Server *server, UA_WriterGroup *wg) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     size_t fieldPos = 0;
     UA_DataSetWriter *dsw;
@@ -51768,7 +51884,7 @@ sampleOffsetPublishingValues(UA_Server *server, UA_WriterGroup *wg) {
         }
     }
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 }
 
 static void
@@ -51880,7 +51996,7 @@ UA_WriterGroup_publishCallback(UA_Server *server, UA_WriterGroup *writerGroup) {
     UA_assert(writerGroup != NULL);
     UA_assert(server != NULL);
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     UA_LOG_DEBUG_WRITERGROUP(server->config.logging, writerGroup, "Publish Callback");
 
@@ -51891,20 +52007,20 @@ UA_WriterGroup_publishCallback(UA_Server *server, UA_WriterGroup *writerGroup) {
                                  "Publish failed. PubSubConnection invalid");
         UA_WriterGroup_setPubSubState(server, writerGroup, UA_PUBSUBSTATE_ERROR,
                                       UA_STATUSCODE_BADNOTCONNECTED);
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return;
     }
 
     /* Realtime path - update the buffer message and send directly */
     if(writerGroup->config.rtLevel & UA_PUBSUB_RT_FIXED_SIZE) {
         publishWithOffsets(server, writerGroup, connection);
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return;
     }
 
     /* Nothing to do? */
     if(writerGroup->writersCount == 0) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return;
     }
 
@@ -51995,7 +52111,7 @@ UA_WriterGroup_publishCallback(UA_Server *server, UA_WriterGroup *writerGroup) {
         UA_DataSetMessage_clear(&dsmStore[i]);
     }
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 }
 
 #endif /* UA_ENABLE_PUBSUB */
@@ -52169,8 +52285,18 @@ UA_DataSetReader_create(UA_Server *server, UA_NodeId readerGroupIdentifier,
     }
 #endif /* UA_ENABLE_PUBSUB_MONITORING */
 
-    /* Add the new reader to the group */
-    LIST_INSERT_HEAD(&readerGroup->readers, newDataSetReader, listEntry);
+    /* Add the new reader to the group. Add to the end of the linked list to
+     * ensure the order for the realtime offsets is as expected. The received
+     * DataSetMessages are matched via UA_DataSetReader_checkIdentifier for the
+     * non-RT path. */
+    UA_DataSetReader *after = LIST_FIRST(&readerGroup->readers);
+    if(!after) {
+        LIST_INSERT_HEAD(&readerGroup->readers, newDataSetReader, listEntry);
+    } else {
+        while(LIST_NEXT(after, listEntry))
+            after = LIST_NEXT(after, listEntry);
+        LIST_INSERT_AFTER(after, newDataSetReader, listEntry);
+    }
     readerGroup->readersCount++;
 
     if(!UA_String_isEmpty(&newDataSetReader->config.linkedStandaloneSubscribedDataSetName)) {
@@ -52254,10 +52380,10 @@ UA_StatusCode
 UA_Server_addDataSetReader(UA_Server *server, UA_NodeId readerGroupIdentifier,
                            const UA_DataSetReaderConfig *dataSetReaderConfig,
                            UA_NodeId *readerIdentifier) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = UA_DataSetReader_create(server, readerGroupIdentifier,
                                                 dataSetReaderConfig, readerIdentifier);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -52335,14 +52461,14 @@ UA_DataSetReader_remove(UA_Server *server, UA_DataSetReader *dsr) {
 
 UA_StatusCode
 UA_Server_removeDataSetReader(UA_Server *server, UA_NodeId readerIdentifier) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_DataSetReader *dsr = UA_ReaderGroup_findDSRbyId(server, readerIdentifier);
     if(!dsr) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNOTFOUND;
     }
     UA_StatusCode res = UA_DataSetReader_remove(server, dsr);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -52421,15 +52547,15 @@ UA_Server_DataSetReader_updateConfig(UA_Server *server, UA_NodeId dataSetReaderI
     if(config == NULL)
        return UA_STATUSCODE_BADINVALIDARGUMENT;
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_DataSetReader *dsr = UA_ReaderGroup_findDSRbyId(server, dataSetReaderIdentifier);
     UA_ReaderGroup *rg = UA_ReaderGroup_findRGbyId(server, readerGroupIdentifier);
     if(!dsr || !rg) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNOTFOUND;
     }
     UA_StatusCode res = DataSetReader_updateConfig(server, rg, dsr, config);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -52438,12 +52564,12 @@ UA_Server_DataSetReader_getConfig(UA_Server *server, UA_NodeId dataSetReaderIden
                                  UA_DataSetReaderConfig *config) {
     if(!config)
         return UA_STATUSCODE_BADINVALIDARGUMENT;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = UA_STATUSCODE_BADNOTFOUND;
     UA_DataSetReader *dsr = UA_ReaderGroup_findDSRbyId(server, dataSetReaderIdentifier);
     if(dsr)
         res = UA_DataSetReaderConfig_copy(&dsr->config, config);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -52509,14 +52635,14 @@ UA_Server_DataSetReader_getState(UA_Server *server, UA_NodeId dataSetReaderIdent
     if(!server || !state)
         return UA_STATUSCODE_BADINVALIDARGUMENT;
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = UA_STATUSCODE_BADNOTFOUND;
     UA_DataSetReader *dsr = UA_ReaderGroup_findDSRbyId(server, dataSetReaderIdentifier);
     if(dsr) {
         res = UA_STATUSCODE_GOOD;
         *state = dsr->state;
     }
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -52660,15 +52786,15 @@ UA_Server_DataSetReader_createTargetVariables(UA_Server *server,
                                               UA_NodeId dataSetReaderIdentifier,
                                               size_t targetVariablesSize,
                                               const UA_FieldTargetVariable *targetVariables) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_DataSetReader *dataSetReader = UA_ReaderGroup_findDSRbyId(server, dataSetReaderIdentifier);
     if(!dataSetReader) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADINVALIDARGUMENT;
     }
     UA_StatusCode res = DataSetReader_createTargetVariables(server, dataSetReader,
                                                             targetVariablesSize, targetVariables);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -53429,11 +53555,11 @@ UA_StatusCode
 UA_Server_addReaderGroup(UA_Server *server, UA_NodeId connectionIdentifier,
                          const UA_ReaderGroupConfig *readerGroupConfig,
                          UA_NodeId *readerGroupIdentifier) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res =
         UA_ReaderGroup_create(server, connectionIdentifier,
                               readerGroupConfig, readerGroupIdentifier);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -53506,15 +53632,15 @@ UA_ReaderGroup_remove(UA_Server *server, UA_ReaderGroup *rg) {
 
 UA_StatusCode
 UA_Server_removeReaderGroup(UA_Server *server, UA_NodeId groupIdentifier) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_ReaderGroup* readerGroup =
         UA_ReaderGroup_findRGbyId(server, groupIdentifier);
     if(!readerGroup) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNOTFOUND;
     }
     UA_StatusCode res = UA_ReaderGroup_remove(server, readerGroup);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -53524,20 +53650,20 @@ UA_Server_ReaderGroup_getConfig(UA_Server *server, UA_NodeId readerGroupIdentifi
     if(!config)
         return UA_STATUSCODE_BADINVALIDARGUMENT;
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
 
     /* Identify the readergroup through the readerGroupIdentifier */
     UA_ReaderGroup *currentReaderGroup =
         UA_ReaderGroup_findRGbyId(server, readerGroupIdentifier);
     if(!currentReaderGroup) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNOTFOUND;
     }
 
     UA_StatusCode ret =
         UA_ReaderGroupConfig_copy(&currentReaderGroup->config, config);
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return ret;
 }
 
@@ -53546,7 +53672,7 @@ UA_Server_ReaderGroup_getState(UA_Server *server, UA_NodeId readerGroupIdentifie
                                UA_PubSubState *state) {
     if((server == NULL) || (state == NULL))
         return UA_STATUSCODE_BADINVALIDARGUMENT;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode ret = UA_STATUSCODE_BADNOTFOUND;
     UA_ReaderGroup *rg =
         UA_ReaderGroup_findRGbyId(server, readerGroupIdentifier);
@@ -53554,7 +53680,7 @@ UA_Server_ReaderGroup_getState(UA_Server *server, UA_NodeId readerGroupIdentifie
         *state = rg->state;
         ret = UA_STATUSCODE_GOOD;
     }
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return ret;
 }
 
@@ -53731,7 +53857,7 @@ UA_ReaderGroup_setPubSubState(UA_Server *server,
 UA_StatusCode
 UA_Server_setReaderGroupOperational(UA_Server *server,
                                     const UA_NodeId readerGroupId) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode ret = UA_STATUSCODE_BADNOTFOUND;
     UA_ReaderGroup *rg = UA_ReaderGroup_findRGbyId(server, readerGroupId);
     if(rg) {
@@ -53740,7 +53866,7 @@ UA_Server_setReaderGroupOperational(UA_Server *server,
             UA_StatusCode retval = UA_PubSubKeyStorage_activateKeyToChannelContext(
                 server, rg->identifier, rg->config.securityGroupId);
             if(retval != UA_STATUSCODE_GOOD) {
-                UA_UNLOCK(&server->serviceMutex);
+                unlockServer(server);
                 return retval;
             }
         }
@@ -53748,20 +53874,20 @@ UA_Server_setReaderGroupOperational(UA_Server *server,
         ret = UA_ReaderGroup_setPubSubState(server, rg, UA_PUBSUBSTATE_OPERATIONAL,
                                             UA_STATUSCODE_GOOD);
     }
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return ret;
 }
 
 UA_StatusCode
 UA_Server_setReaderGroupDisabled(UA_Server *server,
                                  const UA_NodeId readerGroupId) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode ret = UA_STATUSCODE_BADNOTFOUND;
     UA_ReaderGroup *rg = UA_ReaderGroup_findRGbyId(server, readerGroupId);
     if(rg)
         ret = UA_ReaderGroup_setPubSubState(server, rg, UA_PUBSUBSTATE_DISABLED,
                                             UA_STATUSCODE_BADRESOURCEUNAVAILABLE);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return ret;
 }
 
@@ -53812,11 +53938,11 @@ UA_Server_setReaderGroupEncryptionKeys(UA_Server *server,
                                        const UA_ByteString signingKey,
                                        const UA_ByteString encryptingKey,
                                        const UA_ByteString keyNonce) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = setReaderGroupEncryptionKeys(server, readerGroup,
                                                      securityTokenId, signingKey,
                                                      encryptingKey, keyNonce);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 #endif
@@ -53929,14 +54055,14 @@ UA_ReaderGroup_freezeConfiguration(UA_Server *server, UA_ReaderGroup *rg) {
 UA_StatusCode
 UA_Server_freezeReaderGroupConfiguration(UA_Server *server,
                                          const UA_NodeId readerGroupId) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_ReaderGroup *rg = UA_ReaderGroup_findRGbyId(server, readerGroupId);
     if(!rg) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNOTFOUND;
     }
     UA_StatusCode res = UA_ReaderGroup_freezeConfiguration(server, rg);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -53968,14 +54094,14 @@ UA_ReaderGroup_unfreezeConfiguration(UA_Server *server, UA_ReaderGroup *rg) {
 UA_StatusCode
 UA_Server_unfreezeReaderGroupConfiguration(UA_Server *server,
                                            const UA_NodeId readerGroupId) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_ReaderGroup *rg = UA_ReaderGroup_findRGbyId(server, readerGroupId);
     if(!rg) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return UA_STATUSCODE_BADNOTFOUND;
     }
     UA_StatusCode res = UA_ReaderGroup_unfreezeConfiguration(server, rg);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -54284,9 +54410,9 @@ UA_StatusCode
 UA_Server_addStandaloneSubscribedDataSet(UA_Server *server,
                                          const UA_StandaloneSubscribedDataSetConfig *sdsConfig,
                                          UA_NodeId *sdsIdentifier) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = addStandaloneSubscribedDataSet(server, sdsConfig, sdsIdentifier);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -54331,9 +54457,9 @@ removeStandaloneSubscribedDataSet(UA_Server *server, const UA_NodeId sds) {
 
 UA_StatusCode
 UA_Server_removeStandaloneSubscribedDataSet(UA_Server *server, const UA_NodeId sds) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = removeStandaloneSubscribedDataSet(server, sds);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -57619,7 +57745,7 @@ nextGetSecuritykeysCallback(UA_Server *server, UA_PubSubKeyStorage *keyStorage) 
 void
 UA_PubSubKeyStorage_keyRolloverCallback(UA_Server *server, UA_PubSubKeyStorage *keyStorage) {
     /* Callbacks from the EventLoop are initially unlocked */
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode retval =
         UA_PubSubKeyStorage_addKeyRolloverCallback(server, keyStorage,
                                      (UA_ServerCallback)UA_PubSubKeyStorage_keyRolloverCallback,
@@ -57652,7 +57778,7 @@ UA_PubSubKeyStorage_keyRolloverCallback(UA_Server *server, UA_PubSubKeyStorage *
             server->config.eventLoop, (UA_Callback)nextGetSecuritykeysCallback, server,
             keyStorage, dateTimeToNextGetSecurityKeys, NULL);
     }
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 }
 
 UA_StatusCode
@@ -57773,7 +57899,7 @@ storeFetchedKeys(UA_Client *client, void *userdata, UA_UInt32 requestId,
     UA_Server *server = ctx->server;
     UA_StatusCode retval = response->responseHeader.serviceResult;
 
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     /* check if the call to getSecurityKeys was a success */
     if(response->resultsSize != 0)
         retval = response->results->statusCode;
@@ -57844,7 +57970,7 @@ cleanup:
     UA_Client_disconnectAsync(client);
     addDelayedSksClientCleanupCb(client, ctx);
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 }
 
 static UA_StatusCode
@@ -57973,10 +58099,10 @@ UA_Server_setSksClient(UA_Server *server, UA_String securityGroupId,
         return UA_STATUSCODE_BADINVALIDARGUMENT;
 
     UA_StatusCode retval = UA_STATUSCODE_BADNOTFOUND;
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_PubSubKeyStorage *ks = UA_PubSubKeyStorage_findKeyStorage(server, securityGroupId);
     if(!ks) {
-        UA_UNLOCK(&server->serviceMutex);
+        unlockServer(server);
         return retval;
     }
 
@@ -57996,7 +58122,7 @@ UA_Server_setSksClient(UA_Server *server, UA_String securityGroupId,
     if(ks->keyListSize == 0) {
         retval = getSecurityKeysAndStoreFetchedKeys(server, ks);
     }
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -58280,10 +58406,10 @@ UA_StatusCode
 UA_Server_addSecurityGroup(UA_Server *server, UA_NodeId securityGroupFolderNodeId,
                            const UA_SecurityGroupConfig *securityGroupConfig,
                            UA_NodeId *securityGroupNodeId) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode retval = addSecurityGroup(server, securityGroupFolderNodeId,
                                             securityGroupConfig, securityGroupNodeId);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return retval;
 }
 
@@ -58343,7 +58469,7 @@ removeSecurityGroup(UA_Server *server, UA_SecurityGroup *securityGroup) {
 
 UA_StatusCode
 UA_Server_removeSecurityGroup(UA_Server *server, const UA_NodeId securityGroup) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_SecurityGroup *sg = UA_SecurityGroup_findSGbyId(server, securityGroup);
     UA_StatusCode res = UA_STATUSCODE_GOOD;
     if(sg) {
@@ -58351,7 +58477,7 @@ UA_Server_removeSecurityGroup(UA_Server *server, const UA_NodeId securityGroup) 
     } else {
         res = UA_STATUSCODE_BADBOUNDNOTFOUND;
     }
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -59825,14 +59951,14 @@ UA_Client_delete(UA_Client* client) {
 void
 UA_Client_getState(UA_Client *client, UA_SecureChannelState *channelState,
                    UA_SessionState *sessionState, UA_StatusCode *connectStatus) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     if(channelState)
         *channelState = client->channel.state;
     if(sessionState)
         *sessionState = client->sessionState;
     if(connectStatus)
         *connectStatus = client->connectStatus;
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
 }
 
 UA_ClientConfig *
@@ -60249,9 +60375,9 @@ void
 __UA_Client_Service(UA_Client *client, const void *request,
                     const UA_DataType *requestType, void *response,
                     const UA_DataType *responseType) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     __Client_Service(client, request, requestType, response, responseType);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
 }
 
 /***********************************/
@@ -60304,7 +60430,7 @@ __Client_AsyncService_removeAll(UA_Client *client, UA_StatusCode statusCode) {
 UA_StatusCode
 UA_Client_modifyAsyncCallback(UA_Client *client, UA_UInt32 requestId,
                               void *userdata, UA_ClientAsyncServiceCallback callback) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     AsyncServiceCall *ac;
     UA_StatusCode res = UA_STATUSCODE_BADNOTFOUND;
     LIST_FOREACH(ac, &client->asyncServiceCalls, pointers) {
@@ -60315,7 +60441,7 @@ UA_Client_modifyAsyncCallback(UA_Client *client, UA_UInt32 requestId,
             break;
         }
     }
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res;
 }
 
@@ -60381,11 +60507,11 @@ __UA_Client_AsyncService(UA_Client *client, const void *request,
                          UA_ClientAsyncServiceCallback callback,
                          const UA_DataType *responseType,
                          void *userdata, UA_UInt32 *requestId) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_StatusCode res =
         __Client_AsyncService(client, request, requestType, callback, responseType,
                               userdata, requestId);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res;
 }
 
@@ -60408,16 +60534,16 @@ cancelByRequestHandle(UA_Client *client, UA_UInt32 requestHandle, UA_UInt32 *can
 UA_StatusCode
 UA_Client_cancelByRequestHandle(UA_Client *client, UA_UInt32 requestHandle,
                                 UA_UInt32 *cancelCount) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_StatusCode res = cancelByRequestHandle(client, requestHandle, cancelCount);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res;
 }
 
 UA_StatusCode
 UA_Client_cancelByRequestId(UA_Client *client, UA_UInt32 requestId,
                             UA_UInt32 *cancelCount) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_StatusCode res = UA_STATUSCODE_BADNOTFOUND;
     AsyncServiceCall *ac;
     LIST_FOREACH(ac, &client->asyncServiceCalls, pointers) {
@@ -60426,7 +60552,7 @@ UA_Client_cancelByRequestId(UA_Client *client, UA_UInt32 requestId,
         res = cancelByRequestHandle(client, ac->requestHandle, cancelCount);
         break;
     }
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res;
 }
 
@@ -60439,11 +60565,11 @@ UA_Client_addTimedCallback(UA_Client *client, UA_ClientCallback callback,
                            void *data, UA_DateTime date, UA_UInt64 *callbackId) {
     if(!client->config.eventLoop)
         return UA_STATUSCODE_BADINTERNALERROR;
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_StatusCode res = client->config.eventLoop->
         addTimedCallback(client->config.eventLoop, (UA_Callback)callback,
                          client, data, date, callbackId);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res;
 }
 
@@ -60452,12 +60578,12 @@ UA_Client_addRepeatedCallback(UA_Client *client, UA_ClientCallback callback,
                               void *data, UA_Double interval_ms, UA_UInt64 *callbackId) {
     if(!client->config.eventLoop)
         return UA_STATUSCODE_BADINTERNALERROR;
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_StatusCode res = client->config.eventLoop->
         addCyclicCallback(client->config.eventLoop, (UA_Callback)callback,
                           client, data, interval_ms, NULL,
                           UA_TIMER_HANDLE_CYCLEMISS_WITH_CURRENTTIME, callbackId);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res;
 }
 
@@ -60466,11 +60592,11 @@ UA_Client_changeRepeatedCallbackInterval(UA_Client *client, UA_UInt64 callbackId
                                          UA_Double interval_ms) {
     if(!client->config.eventLoop)
         return UA_STATUSCODE_BADINTERNALERROR;
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_StatusCode res = client->config.eventLoop->
         modifyCyclicCallback(client->config.eventLoop, callbackId, interval_ms,
                              NULL, UA_TIMER_HANDLE_CYCLEMISS_WITH_CURRENTTIME);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res;
 }
 
@@ -60478,10 +60604,10 @@ void
 UA_Client_removeCallback(UA_Client *client, UA_UInt64 callbackId) {
     if(!client->config.eventLoop)
         return;
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     client->config.eventLoop->
         removeCyclicCallback(client->config.eventLoop, callbackId);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
 }
 
 /**********************/
@@ -60516,14 +60642,14 @@ asyncServiceTimeoutCheck(UA_Client *client) {
 static void
 backgroundConnectivityCallback(UA_Client *client, void *userdata,
                                UA_UInt32 requestId, const UA_ReadResponse *response) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     if(response->responseHeader.serviceResult == UA_STATUSCODE_BADTIMEOUT) {
         if(client->config.inactivityCallback)
             client->config.inactivityCallback(client);
     }
     client->pendingConnectivityCheck = false;
     client->lastConnectivityCheck = UA_DateTime_nowMonotonic();
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
 }
 
 static void
@@ -60560,7 +60686,7 @@ __Client_backgroundConnectivity(UA_Client *client) {
 /* Regular housekeeping activities in the client -- called via a cyclic callback */
 static void
 clientHouseKeeping(UA_Client *client, void *_) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
 
     UA_LOG_DEBUG(client->config.logging, UA_LOGCATEGORY_CLIENT,
                  "Internally check the the client state and "
@@ -60586,7 +60712,7 @@ clientHouseKeeping(UA_Client *client, void *_) {
     /* Log and notify user if the client state has changed */
     notifyClientState(client);
 
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
 }
 
 UA_StatusCode
@@ -60623,9 +60749,9 @@ __UA_Client_startup(UA_Client *client) {
 UA_StatusCode
 UA_Client_run_iterate(UA_Client *client, UA_UInt32 timeout) {
     /* Make sure the EventLoop has been started */
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_StatusCode rv = __UA_Client_startup(client);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     UA_CHECK_STATUS(rv, return rv);
 
     /* All timers and network events are triggered in the EventLoop. Release the
@@ -60691,18 +60817,18 @@ getConnectionttribute(UA_Client *client, const UA_QualifiedName key,
 UA_StatusCode
 UA_Client_getConnectionAttribute(UA_Client *client, const UA_QualifiedName key,
                                  UA_Variant *outValue) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_StatusCode res = getConnectionttribute(client, key, outValue, false);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res;
 }
 
 UA_StatusCode
 UA_Client_getConnectionAttributeCopy(UA_Client *client, const UA_QualifiedName key,
                                      UA_Variant *outValue) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_StatusCode res = getConnectionttribute(client, key, outValue, true);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res;
 }
 
@@ -60711,24 +60837,36 @@ UA_Client_getConnectionAttribute_scalar(UA_Client *client,
                                         const UA_QualifiedName key,
                                         const UA_DataType *type,
                                         void *outValue) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
 
     UA_Variant attr;
     UA_StatusCode res = getConnectionttribute(client, key, &attr, false);
     if(res != UA_STATUSCODE_GOOD) {
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return res;
     }
 
     if(!UA_Variant_hasScalarType(&attr, type)) {
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return UA_STATUSCODE_BADNOTFOUND;
     }
 
     memcpy(outValue, attr.data, type->memSize);
 
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return UA_STATUSCODE_GOOD;
+}
+
+void lockClient(UA_Client *client) {
+    if(UA_LIKELY(client->config.eventLoop && client->config.eventLoop->lock))
+        client->config.eventLoop->lock(client->config.eventLoop);
+    UA_LOCK(&client->clientMutex);
+}
+
+void unlockClient(UA_Client *client) {
+    if(UA_LIKELY(client->config.eventLoop && client->config.eventLoop->unlock))
+        client->config.eventLoop->unlock(client->config.eventLoop);
+    UA_UNLOCK(&client->clientMutex);
 }
 
 /**** amalgamated original file "/src/client/ua_client_connect.c" ****/
@@ -60832,7 +60970,6 @@ getSecurityPolicy(UA_Client *client, UA_String policyUri) {
     return NULL;
 }
 
-#ifdef UA_ENABLE_ENCRYPTION
 static UA_SecurityPolicy *
 getAuthSecurityPolicy(UA_Client *client, UA_String policyUri) {
     for(size_t i = 0; i < client->config.authSecurityPoliciesSize; i++) {
@@ -60841,7 +60978,6 @@ getAuthSecurityPolicy(UA_Client *client, UA_String policyUri) {
     }
     return NULL;
 }
-#endif
 
 /* The endpoint is unconfigured if the description is all zeroed-out */
 static UA_Boolean
@@ -61262,13 +61398,6 @@ processOPNResponse(UA_Client *client, const UA_ByteString *message) {
         return;
     }
 
-    /* Response.securityToken.revisedLifetime is UInt32 we need to cast it to
-     * DateTime=Int64 we take 75% of lifetime to start renewing as described in
-     * standard */
-    client->nextChannelRenewal = UA_DateTime_nowMonotonic()
-            + (UA_DateTime) (response.securityToken.revisedLifetime
-                    * (UA_Double) UA_DATETIME_MSEC * 0.75);
-
     /* Move the nonce out of the response */
     UA_ByteString_clear(&client->channel.remoteNonce);
     client->channel.remoteNonce = response.serverNonce;
@@ -61280,6 +61409,29 @@ processOPNResponse(UA_Client *client, const UA_ByteString *message) {
     client->channel.altSecurityToken = client->channel.securityToken;
     client->channel.securityToken = response.securityToken;
     client->channel.renewState = UA_SECURECHANNELRENEWSTATE_NEWTOKEN_CLIENT;
+
+    /* Log a warning if the SecurityToken is not "fresh". Use the normal system
+     * clock to do the comparison. */
+    UA_EventLoop *el = client->config.eventLoop;
+    UA_DateTime wallClockNow = el->dateTime_now(el);
+    if(wallClockNow - client->channel.securityToken.createdAt >= UA_DATETIME_SEC * 10 ||
+       wallClockNow - client->channel.securityToken.createdAt <= -UA_DATETIME_SEC * 10)
+        UA_LOG_WARNING_CHANNEL(client->config.logging, &client->channel, "The \"CreatedAt\" "
+                               "timestamp of the received ChannelSecurityToken does not match "
+                               "with the local system clock");
+
+    /* The internal "monotonic" clock is used by the SecureChannel to validate
+     * that the SecurityToken is still valid. The monotonic clock is independent
+     * from the system clock getting changed or synchronized to a master clock
+     * during runtime. */
+    client->channel.securityToken.createdAt = el->dateTime_nowMonotonic(el);
+
+    /* Response.securityToken.revisedLifetime is UInt32, we need to cast it to
+     * DateTime=Int64. After 75% of the lifetime the renewal takes place as
+     * described in standard */
+    client->nextChannelRenewal = client->channel.securityToken.createdAt +
+        (UA_DateTime) (response.securityToken.revisedLifetime *
+                       (UA_Double) UA_DATETIME_MSEC * 0.75);
 
     /* Compute the new local keys. The remote keys are updated when a message
      * with the new SecurityToken is received. */
@@ -61379,9 +61531,9 @@ __Client_renewSecureChannel(UA_Client *client) {
 
 UA_StatusCode
 UA_Client_renewSecureChannel(UA_Client *client) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_StatusCode res = __Client_renewSecureChannel(client);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res;
 }
 
@@ -61497,6 +61649,10 @@ activateSessionAsync(UA_Client *client) {
     UA_SecurityPolicy *utsp = NULL;
     UA_SecureChannel *channel = &client->channel;
 
+    if(request.userIdentityToken.content.decoded.type ==
+       &UA_TYPES[UA_TYPES_ANONYMOUSIDENTITYTOKEN])
+        goto utp_done;
+
     /* Does the UserTokenPolicy have encryption? If not specifically defined in
      * the UserTokenPolicy, then the SecurityPolicy of the underlying endpoint
      * (SecureChannel) is used. */
@@ -61504,9 +61660,7 @@ activateSessionAsync(UA_Client *client) {
         utp->securityPolicyUri : client->endpoint.securityPolicyUri;
     const UA_String none = UA_STRING("http://opcfoundation.org/UA/SecurityPolicy#None");
     if(UA_String_equal(&none, &tokenSecurityPolicyUri)) {
-        if(UA_String_equal(&none, &client->channel.securityPolicy->policyUri) &&
-           request.userIdentityToken.content.decoded.type !=
-           &UA_TYPES[UA_TYPES_ANONYMOUSIDENTITYTOKEN]) {
+        if(UA_String_equal(&none, &client->channel.securityPolicy->policyUri)) {
             UA_LOG_WARNING(client->config.logging, UA_LOGCATEGORY_CLIENT,
                            "!!! Warning !!! AuthenticationToken is transmitted "
                            "without encryption");
@@ -61658,13 +61812,25 @@ findUserTokenPolicy(UA_Client *client, UA_EndpointDescription *endpoint) {
     for(size_t j = 0; j < endpoint->userIdentityTokensSize; ++j) {
         /* Is the SecurityPolicy available? */
         UA_UserTokenPolicy *tokenPolicy = &endpoint->userIdentityTokens[j];
-        if(!getSecurityPolicy(client, tokenPolicy->securityPolicyUri))
-            continue;
+
+        UA_String tokenPolicyUri = tokenPolicy->securityPolicyUri;
+        if(UA_String_isEmpty(&tokenPolicyUri))
+            tokenPolicyUri = endpoint->securityPolicyUri;
+
+        /* Ignore missing auth security policy for anonymous tokens */
+        if(client->config.userIdentityToken.content.decoded.type &&
+           client->config.userIdentityToken.content.decoded.type !=
+               &UA_TYPES[UA_TYPES_ANONYMOUSIDENTITYTOKEN]) {
+            const UA_String none = UA_STRING_STATIC("http://opcfoundation.org/UA/SecurityPolicy#None");
+            /* activateSessionAsync() handles the None case separately without accessing authSecurityPolicies */
+            if(!UA_String_equal(&none, &tokenPolicyUri) && !getAuthSecurityPolicy(client, tokenPolicyUri))
+                continue;
+        }
 
         /* Required SecurityPolicyUri in the configuration? */
         if(!UA_String_isEmpty(&client->config.authSecurityPolicyUri) &&
            !UA_String_equal(&client->config.authSecurityPolicyUri,
-                            &tokenPolicy->securityPolicyUri))
+                            &tokenPolicyUri))
             continue;
 
         /* Match (entire) UserTokenPolicy if defined in the configuration? */
@@ -62246,7 +62412,7 @@ __Client_networkCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
                          UA_ByteString msg) {
     /* Take the client lock */
     UA_Client *client = (UA_Client*)application;
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
 
     UA_LOG_TRACE(client->config.logging, UA_LOGCATEGORY_CLIENT, "Client network callback");
 
@@ -62260,7 +62426,7 @@ __Client_networkCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
                          "Cannot open a connection, the SecureChannel is already used");
             client->connectStatus = UA_STATUSCODE_BADINTERNALERROR;
             notifyClientState(client);
-            UA_UNLOCK(&client->clientMutex);
+            unlockClient(client);
             return;
         }
 
@@ -62369,7 +62535,7 @@ __Client_networkCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
          * If the connectStatus is still good (the SecureChannel was fully
          * opened before), then a reconnect is attempted. */
         closeSecureChannel(client);
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return;
     }
 
@@ -62378,14 +62544,14 @@ __Client_networkCallback(UA_ConnectionManager *cm, uintptr_t connectionId,
     if(!isFullyConnected(client))
         connectActivity(client);
     notifyClientState(client);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
 }
 
 static void
 delayedNetworkCallback(void *application, void *context) {
     UA_Client *client = (UA_Client*)application;
     client->channel.unprocessedDelayed.callback = NULL;
-    if(client->channel.state == UA_SECURECHANNELSTATE_CONNECTED)
+    if(client->channel.state >= UA_SECURECHANNELSTATE_CONNECTING)
         __Client_networkCallback(client->channel.connectionManager,
                                  client->channel.connectionId,
                                  client, &context,
@@ -62492,14 +62658,14 @@ void
 connectSync(UA_Client *client) {
     UA_LOCK_ASSERT(&client->clientMutex, 1);
 
-    UA_DateTime now = UA_DateTime_nowMonotonic();
-    UA_DateTime maxDate = now + ((UA_DateTime)client->config.timeout * UA_DATETIME_MSEC);
-
     /* Initialize the connection */
     initConnect(client);
     notifyClientState(client);
     if(client->connectStatus != UA_STATUSCODE_GOOD)
         return;
+
+    UA_DateTime now = UA_DateTime_nowMonotonic();
+    UA_DateTime maxDate = now + ((UA_DateTime)client->config.timeout * UA_DATETIME_MSEC);
 
     /* EventLoop is started. Otherwise initConnect would have failed. */
     UA_EventLoop *el = client->config.eventLoop;
@@ -62562,9 +62728,9 @@ connectSecureChannel(UA_Client *client, const char *endpointUrl) {
 
 UA_StatusCode
 __UA_Client_connect(UA_Client *client, UA_Boolean async) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     connectInternal(client, async);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return client->connectStatus;
 }
 
@@ -62612,37 +62778,37 @@ activateSessionSync(UA_Client *client) {
 
 UA_StatusCode
 UA_Client_activateCurrentSession(UA_Client *client) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_StatusCode res = activateSessionSync(client);
     notifyClientState(client);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res != UA_STATUSCODE_GOOD ? res : client->connectStatus;
 }
 
 UA_StatusCode
 UA_Client_activateCurrentSessionAsync(UA_Client *client) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_StatusCode res = activateSessionAsync(client);
     notifyClientState(client);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res != UA_STATUSCODE_GOOD ? res : client->connectStatus;
 }
 
 UA_StatusCode
 UA_Client_getSessionAuthenticationToken(UA_Client *client, UA_NodeId *authenticationToken,
                                         UA_ByteString *serverNonce) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     if(client->sessionState != UA_SESSIONSTATE_CREATED &&
        client->sessionState != UA_SESSIONSTATE_ACTIVATED) {
         UA_LOG_ERROR(client->config.logging, UA_LOGCATEGORY_CLIENT,
                      "There is no current session");
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return UA_STATUSCODE_BADSESSIONCLOSED;
     }
 
     UA_StatusCode res = UA_NodeId_copy(&client->authenticationToken, authenticationToken);
     res |= UA_ByteString_copy(&client->serverSessionNonce, serverNonce);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res;
 }
 
@@ -62677,15 +62843,15 @@ UA_StatusCode
 UA_Client_activateSession(UA_Client *client,
                           const UA_NodeId authenticationToken,
                           const UA_ByteString serverNonce) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_StatusCode res = switchSession(client, authenticationToken, serverNonce);
     if(res != UA_STATUSCODE_GOOD) {
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return res;
     }
     res = activateSessionSync(client);
     notifyClientState(client);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res != UA_STATUSCODE_GOOD ? res : client->connectStatus;
 }
 
@@ -62693,15 +62859,15 @@ UA_StatusCode
 UA_Client_activateSessionAsync(UA_Client *client,
                                const UA_NodeId authenticationToken,
                                const UA_ByteString serverNonce) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_StatusCode res = switchSession(client, authenticationToken, serverNonce);
     if(res != UA_STATUSCODE_GOOD) {
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return res;
     }
     res = activateSessionAsync(client);
     notifyClientState(client);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res != UA_STATUSCODE_GOOD ? res : client->connectStatus;
 }
 
@@ -62726,7 +62892,7 @@ __Client_reverseConnectCallback(UA_ConnectionManager *cm, uintptr_t connectionId
                                 UA_ConnectionState state, const UA_KeyValueMap *params,
                                 UA_ByteString msg) {
     UA_Client *client = (UA_Client*)application;
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
 
     if(!*connectionContext) {
         /* Store the new listen connection */
@@ -62744,7 +62910,7 @@ __Client_reverseConnectCallback(UA_ConnectionManager *cm, uintptr_t connectionId
         /* All slots are full, close */
         if(i == 16) {
             cm->closeConnection(cm, connectionId);
-            UA_UNLOCK(&client->clientMutex);
+            unlockClient(client);
             return;
         }
     } else if(*connectionContext == &client->channel ||
@@ -62756,7 +62922,7 @@ __Client_reverseConnectCallback(UA_ConnectionManager *cm, uintptr_t connectionId
             /* The client already has an active connection */
             if(client->channel.connectionId) {
                 cm->closeConnection(cm, connectionId);
-                UA_UNLOCK(&client->clientMutex);
+                unlockClient(client);
                 return;
             }
 
@@ -62775,7 +62941,7 @@ __Client_reverseConnectCallback(UA_ConnectionManager *cm, uintptr_t connectionId
         }
 
         /* Handle the active connection in the normal network callback */
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         __Client_networkCallback(cm, connectionId, application,
                                  connectionContext, state, params, msg);
         return;
@@ -62796,7 +62962,7 @@ __Client_reverseConnectCallback(UA_ConnectionManager *cm, uintptr_t connectionId
     }
 
     notifyClientState(client);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
 }
 
 UA_StatusCode
@@ -62804,13 +62970,13 @@ UA_Client_startListeningForReverseConnect(UA_Client *client,
                                           const UA_String *listenHostnames,
                                           size_t listenHostnamesLength,
                                           UA_UInt16 port) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
 
     if(client->channel.state != UA_SECURECHANNELSTATE_CLOSED) {
         UA_LOG_WARNING(client->config.logging, UA_LOGCATEGORY_CLIENT,
                        "Unable to listen for reverse connect while the client "
                        "is connected or already listening");
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return UA_STATUSCODE_BADINVALIDSTATE;
     }
 
@@ -62835,13 +63001,13 @@ UA_Client_startListeningForReverseConnect(UA_Client *client,
     if(!el) {
         UA_LOG_WARNING(client->config.logging, UA_LOGCATEGORY_CLIENT,
                        "No EventLoop configured");
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return UA_STATUSCODE_BADINTERNALERROR;
     }
 
     if(el->state != UA_EVENTLOOPSTATE_STARTED) {
         res = el->start(el);
-        UA_CHECK_STATUS(res, UA_UNLOCK(&client->clientMutex); return res);
+        UA_CHECK_STATUS(res, unlockClient(client); return res);
     }
 
     UA_ConnectionManager *cm = NULL;
@@ -62858,7 +63024,7 @@ UA_Client_startListeningForReverseConnect(UA_Client *client,
         UA_LOG_WARNING(client->config.logging, UA_LOGCATEGORY_CLIENT,
                        "Could not find a TCP connection manager, unable to "
                        "listen for reverse connect");
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return UA_STATUSCODE_BADINTERNALERROR;
     }
 
@@ -62889,7 +63055,7 @@ UA_Client_startListeningForReverseConnect(UA_Client *client,
         res = UA_STATUSCODE_BADCONNECTIONCLOSED;
     }
 
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res;
 }
 
@@ -63003,50 +63169,50 @@ disconnectSecureChannel(UA_Client *client, UA_Boolean sync) {
 
 UA_StatusCode
 UA_Client_disconnectSecureChannel(UA_Client *client) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     disconnectSecureChannel(client, true);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return UA_STATUSCODE_GOOD;
 }
 
 UA_StatusCode
 UA_Client_disconnectSecureChannelAsync(UA_Client *client) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     disconnectSecureChannel(client, false);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return UA_STATUSCODE_GOOD;
 }
 
 UA_StatusCode
 UA_Client_disconnect(UA_Client *client) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     if(client->sessionState == UA_SESSIONSTATE_ACTIVATED)
         sendCloseSession(client);
     cleanupSession(client);
     disconnectSecureChannel(client, true);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return UA_STATUSCODE_GOOD;
 }
 
 static void
 closeSessionCallback(UA_Client *client, void *userdata,
                      UA_UInt32 requestId, void *response) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     cleanupSession(client);
     disconnectSecureChannel(client, false);
     notifyClientState(client);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
 }
 
 UA_StatusCode
 UA_Client_disconnectAsync(UA_Client *client) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
 
     if(client->sessionState == UA_SESSIONSTATE_CLOSED ||
        client->sessionState == UA_SESSIONSTATE_CLOSING) {
         disconnectSecureChannel(client, false);
         notifyClientState(client);
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return UA_STATUSCODE_GOOD;
     }
 
@@ -63068,7 +63234,7 @@ UA_Client_disconnectAsync(UA_Client *client) {
     }
 
     notifyClientState(client);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res;
 }
 
@@ -63151,13 +63317,13 @@ UA_StatusCode
 UA_Client_getEndpoints(UA_Client *client, const char *serverUrl,
                        size_t *endpointDescriptionsSize,
                        UA_EndpointDescription** endpointDescriptions) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
 
     UA_Boolean connected = (client->channel.state == UA_SECURECHANNELSTATE_OPEN);
     /* Client is already connected to a different server */
     if(connected && strncmp((const char*)client->config.endpoint.endpointUrl.data, serverUrl,
                             client->config.endpoint.endpointUrl.length) != 0) {
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return UA_STATUSCODE_BADINVALIDARGUMENT;
     }
 
@@ -63166,13 +63332,13 @@ UA_Client_getEndpoints(UA_Client *client, const char *serverUrl,
     if(!connected) {
         retval = connectSecureChannel(client, serverUrl);
         if(retval != UA_STATUSCODE_GOOD) {
-            UA_UNLOCK(&client->clientMutex);
+            unlockClient(client);
             return retval;
         }
     }
     retval = getEndpointsInternal(client, url, endpointDescriptionsSize,
                                   endpointDescriptions);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
 
     if(!connected)
         UA_Client_disconnect(client);
@@ -63185,12 +63351,12 @@ UA_Client_findServers(UA_Client *client, const char *serverUrl,
                       size_t localeIdsSize, UA_String *localeIds,
                       size_t *registeredServersSize,
                       UA_ApplicationDescription **registeredServers) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_Boolean connected = (client->channel.state == UA_SECURECHANNELSTATE_OPEN);
     /* Client is already connected to a different server */
     if(connected && strncmp((const char*)client->config.endpoint.endpointUrl.data, serverUrl,
                             client->config.endpoint.endpointUrl.length) != 0) {
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return UA_STATUSCODE_BADINVALIDARGUMENT;
     }
 
@@ -63198,7 +63364,7 @@ UA_Client_findServers(UA_Client *client, const char *serverUrl,
     if(!connected) {
         retval = connectSecureChannel(client, serverUrl);
         if(retval != UA_STATUSCODE_GOOD) {
-            UA_UNLOCK(&client->clientMutex);
+            unlockClient(client);
             return retval;
         }
     }
@@ -63216,7 +63382,7 @@ UA_Client_findServers(UA_Client *client, const char *serverUrl,
     __Client_Service(client, &request, &UA_TYPES[UA_TYPES_FINDSERVERSREQUEST],
                      &response, &UA_TYPES[UA_TYPES_FINDSERVERSRESPONSE]);
 
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
 
     /* Process the response */
     retval = response.responseHeader.serviceResult;
@@ -63242,13 +63408,13 @@ UA_Client_findServersOnNetwork(UA_Client *client, const char *serverUrl,
                                UA_UInt32 startingRecordId, UA_UInt32 maxRecordsToReturn,
                                size_t serverCapabilityFilterSize, UA_String *serverCapabilityFilter,
                                size_t *serverOnNetworkSize, UA_ServerOnNetwork **serverOnNetwork) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
 
     UA_Boolean connected = (client->channel.state == UA_SECURECHANNELSTATE_OPEN);
     /* Client is already connected to a different server */
     if(connected && strncmp((const char*)client->config.endpoint.endpointUrl.data, serverUrl,
                             client->config.endpoint.endpointUrl.length) != 0) {
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return UA_STATUSCODE_BADINVALIDARGUMENT;
     }
 
@@ -63256,7 +63422,7 @@ UA_Client_findServersOnNetwork(UA_Client *client, const char *serverUrl,
     if(!connected) {
         retval = connectSecureChannel(client, serverUrl);
         if(retval != UA_STATUSCODE_GOOD) {
-            UA_LOCK(&client->clientMutex);
+            lockClient(client);
             return retval;
         }
     }
@@ -63274,7 +63440,7 @@ UA_Client_findServersOnNetwork(UA_Client *client, const char *serverUrl,
     __Client_Service(client, &request, &UA_TYPES[UA_TYPES_FINDSERVERSONNETWORKREQUEST],
                      &response, &UA_TYPES[UA_TYPES_FINDSERVERSONNETWORKRESPONSE]);
 
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
 
     /* Process the response */
     retval = response.responseHeader.serviceResult;
@@ -64570,7 +64736,7 @@ UA_Client_Subscriptions_create(UA_Client *client,
                                void *subscriptionContext,
                                UA_Client_StatusChangeNotificationCallback statusChangeCallback,
                                UA_Client_DeleteSubscriptionCallback deleteCallback) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
 
     UA_CreateSubscriptionResponse response;
     UA_Client_Subscription *sub = (UA_Client_Subscription *)
@@ -64578,7 +64744,7 @@ UA_Client_Subscriptions_create(UA_Client *client,
     if(!sub) {
         UA_CreateSubscriptionResponse_init(&response);
         response.responseHeader.serviceResult = UA_STATUSCODE_BADOUTOFMEMORY;
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return response;
     }
     sub->context = subscriptionContext;
@@ -64590,13 +64756,13 @@ UA_Client_Subscriptions_create(UA_Client *client,
                      &response, &UA_TYPES[UA_TYPES_CREATESUBSCRIPTIONRESPONSE]);
     if(response.responseHeader.serviceResult != UA_STATUSCODE_GOOD) {
         UA_free(sub);
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return response;
     }
 
     ua_Subscriptions_create(client, sub, &response);
 
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return response;
 }
 
@@ -64678,10 +64844,10 @@ UA_Client_Subscriptions_modify(UA_Client *client,
     UA_ModifySubscriptionResponse_init(&response);
 
     /* Find the internal representation */
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_Client_Subscription *sub = findSubscription(client, request.subscriptionId);
     if(!sub) {
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         response.responseHeader.serviceResult = UA_STATUSCODE_BADSUBSCRIPTIONIDINVALID;
         return response;
     }
@@ -64695,11 +64861,11 @@ UA_Client_Subscriptions_modify(UA_Client *client,
     sub = findSubscription(client, request.subscriptionId);
     if(!sub) {
         response.responseHeader.serviceResult = UA_STATUSCODE_BADSUBSCRIPTIONIDINVALID;
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return response;
     }
     ua_Subscriptions_modify(client, sub, &response);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return response;
 }
 
@@ -64708,18 +64874,18 @@ UA_Client_Subscriptions_modify_async(UA_Client *client,
                                      const UA_ModifySubscriptionRequest request,
                                      UA_ClientAsyncServiceCallback callback,
                                      void *userdata, UA_UInt32 *requestId) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
 
     /* Find the internal representation */
     UA_Client_Subscription *sub = findSubscription(client, request.subscriptionId);
     if(!sub) {
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return UA_STATUSCODE_BADSUBSCRIPTIONIDINVALID;
     }
 
     CustomCallback *cc = (CustomCallback *)UA_calloc(1, sizeof(CustomCallback));
     if(!cc) {
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return UA_STATUSCODE_BADOUTOFMEMORY;
     }
 
@@ -64732,7 +64898,7 @@ UA_Client_Subscriptions_modify_async(UA_Client *client,
                               ua_Subscriptions_modify_handler, &UA_TYPES[UA_TYPES_MODIFYSUBSCRIPTIONRESPONSE],
                               cc, requestId);
 
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res;
 }
 
@@ -64818,7 +64984,7 @@ ua_Subscriptions_delete_handler(UA_Client *client, void *data,
     DeleteSubscriptionCallback *dsc =
         (DeleteSubscriptionCallback*)data;
 
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
 
     /* Delete */
     __Client_Subscription_processDelete(client, &dsc->request, response);
@@ -64830,7 +64996,7 @@ ua_Subscriptions_delete_handler(UA_Client *client, void *data,
     UA_DeleteSubscriptionsRequest_clear(&dsc->request);
     UA_free(dsc);
 
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
 }
 
 UA_StatusCode
@@ -64860,7 +65026,7 @@ UA_Client_Subscriptions_delete_async(UA_Client *client,
 UA_DeleteSubscriptionsResponse
 UA_Client_Subscriptions_delete(UA_Client *client,
                                const UA_DeleteSubscriptionsRequest request) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
 
     /* Send the request */
     UA_DeleteSubscriptionsResponse response;
@@ -64870,7 +65036,7 @@ UA_Client_Subscriptions_delete(UA_Client *client,
     /* Process */
     __Client_Subscription_processDelete(client, &request, &response);
 
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return response;
 }
 
@@ -65010,7 +65176,7 @@ ua_MonitoredItems_create_async_handler(UA_Client *client, void *d, UA_UInt32 req
     UA_CreateMonitoredItemsResponse *response = (UA_CreateMonitoredItemsResponse *)r;
     MonitoredItems_CreateData *data = (MonitoredItems_CreateData *)d;
 
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
 
     ua_MonitoredItems_create(client, data, response);
     MonitoredItems_CreateData_clear(client, data);
@@ -65020,7 +65186,7 @@ ua_MonitoredItems_create_async_handler(UA_Client *client, void *d, UA_UInt32 req
 
     UA_free(data);
 
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
 }
 
 static UA_StatusCode
@@ -65154,10 +65320,10 @@ UA_Client_MonitoredItems_createDataChanges(UA_Client *client,
                                            UA_Client_DataChangeNotificationCallback *callbacks,
                                            UA_Client_DeleteMonitoredItemCallback *deleteCallbacks) {
     UA_CreateMonitoredItemsResponse response;
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     ua_Client_MonitoredItems_create(client, &request, contexts, (void **)callbacks,
                                     deleteCallbacks, &response);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return response;
 }
 
@@ -65169,11 +65335,11 @@ UA_Client_MonitoredItems_createDataChanges_async(UA_Client *client,
                                                  UA_Client_DeleteMonitoredItemCallback *deleteCallbacks,
                                                  UA_ClientAsyncServiceCallback createCallback,
                                                  void *userdata, UA_UInt32 *requestId) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_StatusCode res =
         createDataChanges_async(client, request, contexts, (void **)callbacks,
                                 deleteCallbacks, createCallback, userdata, requestId);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res;
 }
 
@@ -65215,10 +65381,10 @@ UA_Client_MonitoredItems_createEvents(UA_Client *client,
                                       UA_Client_EventNotificationCallback *callback,
                                       UA_Client_DeleteMonitoredItemCallback *deleteCallback) {
     UA_CreateMonitoredItemsResponse response;
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     ua_Client_MonitoredItems_create(client, &request, contexts, (void **)callback,
                                     deleteCallback, &response);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return response;
 }
 
@@ -65231,11 +65397,11 @@ UA_Client_MonitoredItems_createEvents_async(UA_Client *client,
                                             UA_Client_DeleteMonitoredItemCallback *deleteCallbacks,
                                             UA_ClientAsyncServiceCallback createCallback,
                                             void *userdata, UA_UInt32 *requestId) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_StatusCode res =
         createDataChanges_async(client, request, contexts, (void **)callbacks, deleteCallbacks,
                                 createCallback, userdata, requestId);
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     return res;
 }
 
@@ -65301,7 +65467,7 @@ ua_MonitoredItems_delete_handler(UA_Client *client, void *d, UA_UInt32 requestId
     UA_DeleteMonitoredItemsRequest *request =
         (UA_DeleteMonitoredItemsRequest *)cc->clientData;
 
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
 
     if(response->responseHeader.serviceResult != UA_STATUSCODE_GOOD)
         goto cleanup;
@@ -65323,7 +65489,7 @@ cleanup:
     UA_DeleteMonitoredItemsRequest_delete(request);
     UA_free(cc);
 
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
 }
 
 UA_DeleteMonitoredItemsResponse
@@ -65338,7 +65504,7 @@ UA_Client_MonitoredItems_delete(UA_Client *client,
     if(response.responseHeader.serviceResult != UA_STATUSCODE_GOOD)
         return response;
 
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
 
     /* Find the internal subscription representation */
     UA_Client_Subscription *sub = findSubscription(client, request.subscriptionId);
@@ -65346,14 +65512,14 @@ UA_Client_MonitoredItems_delete(UA_Client *client,
         UA_LOG_INFO(client->config.logging, UA_LOGCATEGORY_CLIENT,
                     "No internal representation of subscription %" PRIu32,
                     request.subscriptionId);
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return response;
     }
 
     /* Remove MonitoredItems in the internal representation */
     ua_MonitoredItems_delete(client, sub, &request, &response);
 
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
 
     return response;
 }
@@ -65438,10 +65604,10 @@ UA_Client_MonitoredItems_modify(UA_Client *client,
     UA_ModifyMonitoredItemsResponse response;
     UA_ModifyMonitoredItemsResponse_init(&response);
 
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_Client_Subscription *sub = findSubscription(client, request.subscriptionId);
     if(!sub) {
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         response.responseHeader.serviceResult = UA_STATUSCODE_BADSUBSCRIPTIONIDINVALID;
         return response;
     }
@@ -65454,7 +65620,7 @@ UA_Client_MonitoredItems_modify(UA_Client *client,
                      &UA_TYPES[UA_TYPES_MODIFYMONITOREDITEMSREQUEST], &response,
                      &UA_TYPES[UA_TYPES_MODIFYMONITOREDITEMSRESPONSE]);
 
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     UA_ModifyMonitoredItemsRequest_clear(&modifiedRequest);
     return response;
 }
@@ -65464,10 +65630,10 @@ UA_Client_MonitoredItems_modify_async(UA_Client *client,
                                       const UA_ModifyMonitoredItemsRequest request,
                                       UA_ClientAsyncServiceCallback callback,
                                       void *userdata, UA_UInt32 *requestId) {
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
     UA_Client_Subscription *sub = findSubscription(client, request.subscriptionId);
     if(!sub) {
-        UA_UNLOCK(&client->clientMutex);
+        unlockClient(client);
         return UA_STATUSCODE_BADSUBSCRIPTIONIDINVALID;
     }
 
@@ -65479,7 +65645,7 @@ UA_Client_MonitoredItems_modify_async(UA_Client *client,
         client, &modifiedRequest, &UA_TYPES[UA_TYPES_MODIFYMONITOREDITEMSREQUEST],
         callback, &UA_TYPES[UA_TYPES_MODIFYMONITOREDITEMSRESPONSE], userdata, requestId);
 
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
     UA_ModifyMonitoredItemsRequest_clear(&modifiedRequest);
     return statusCode;
 }
@@ -65776,7 +65942,7 @@ processPublishResponseAsync(UA_Client *client, void *userdata,
     UA_PublishRequest *req = (UA_PublishRequest*)userdata;
     UA_PublishResponse *res = (UA_PublishResponse*)response;
 
-    UA_LOCK(&client->clientMutex);
+    lockClient(client);
 
     /* Process the response */
     __Client_Subscriptions_processPublishResponse(client, req, res);
@@ -65787,7 +65953,7 @@ processPublishResponseAsync(UA_Client *client, void *userdata,
     /* Fill up the outstanding publish requests */
     __Client_Subscriptions_backgroundPublish(client);
 
-    UA_UNLOCK(&client->clientMutex);
+    unlockClient(client);
 }
 
 void
@@ -65891,11 +66057,13 @@ __Client_Subscriptions_backgroundPublish(UA_Client *client) {
 #define DAYS_PER_100Y (365*100 + 24)
 #define DAYS_PER_4Y   (365*4   + 1)
 
-int __secs_to_tm(long long t, struct mytm *tm) {
+int
+musl_secs_to_tm(long long t, struct musl_tm *tm) {
     long long days, secs, years;
     int remdays, remsecs, remyears;
     int qc_cycles, c_cycles, q_cycles;
     int months;
+    int wday, yday, leap;
     static const char days_in_month[] = {31,30,31,30,31,31,30,31,30,31,31,29};
 
     /* Reject time_t values whose year would overflow int */
@@ -65909,6 +66077,9 @@ int __secs_to_tm(long long t, struct mytm *tm) {
         remsecs += 86400;
         --days;
     }
+
+    wday = (3+days)%7;
+    if (wday < 0) wday += 7;
 
     qc_cycles = (int)(days / DAYS_PER_400Y);
     remdays = (int)(days % DAYS_PER_400Y);
@@ -65929,21 +66100,29 @@ int __secs_to_tm(long long t, struct mytm *tm) {
     if (remyears == 4) --remyears;
     remdays -= remyears * 365;
 
+    leap = !remyears && (q_cycles || !c_cycles);
+    yday = remdays + 31 + 28 + leap;
+    if (yday >= 365+leap) yday -= 365+leap;
+
     years = remyears + 4*q_cycles + 100*c_cycles + 400LL*qc_cycles;
 
-    for (months=0; days_in_month[months] <= remdays; ++months)
+    for (months=0; days_in_month[months] <= remdays; months++)
         remdays -= days_in_month[months];
+
+    if (months >= 10) {
+        months -= 12;
+        years++;
+    }
 
     if (years+100 > INT_MAX || years+100 < INT_MIN)
         return -1;
 
     tm->tm_year = (int)(years + 100);
     tm->tm_mon = months + 2;
-    if (tm->tm_mon >= 12) {
-        tm->tm_mon -=12;
-        ++tm->tm_year;
-    }
     tm->tm_mday = remdays + 1;
+    tm->tm_wday = wday;
+    tm->tm_yday = yday;
+
     tm->tm_hour = remsecs / 3600;
     tm->tm_min = remsecs / 60 % 60;
     tm->tm_sec = remsecs % 60;
@@ -65957,7 +66136,7 @@ static const int secs_through_month[] =
      243*86400, 273*86400, 304*86400, 334*86400 };
 
 static int
-__month_to_secs(int month, int is_leap) {
+musl_month_to_secs(int month, int is_leap) {
     int t = secs_through_month[month];
     if (is_leap && month >= 2)
         t+=86400;
@@ -65965,14 +66144,22 @@ __month_to_secs(int month, int is_leap) {
 }
 
 static long long
-__year_to_secs(const long long year, int *is_leap) {
-    int cycles, centuries, leaps, rem;
-    int is_leap_val = 0;
-    if (!is_leap) {
-        is_leap = &is_leap_val;
+musl_year_to_secs(const long long year, int *is_leap) {
+    if (year-2ULL <= 136) {
+        int y = (int)year;
+        int leaps = (y-68)>>2;
+        if (!((y-68)&3)) {
+            leaps--;
+            if (is_leap) *is_leap = 1;
+        } else if (is_leap) *is_leap = 0;
+        return 31536000*(y-70) + 86400*leaps;
     }
+
+    int cycles, centuries, leaps, rem, dummy;
+
+    if (!is_leap) is_leap = &dummy;
     cycles = (int)((year-100) / 400);
-    rem = (int)((year-100) % 400);
+    rem = (year-100) % 400;
     if (rem < 0) {
         cycles--;
         rem += 400;
@@ -65993,8 +66180,8 @@ __year_to_secs(const long long year, int *is_leap) {
             *is_leap = 0;
             leaps = 0;
         } else {
-            leaps = (rem / (int)4U);
-            rem %= (int)4U;
+            leaps = rem / 4U;
+            rem %= 4U;
             *is_leap = !rem;
         }
     }
@@ -66004,7 +66191,8 @@ __year_to_secs(const long long year, int *is_leap) {
     return (year-100) * 31536000LL + leaps * 86400LL + 946684800 + 86400;
 }
 
-long long __tm_to_secs(const struct mytm *tm) {
+long long
+musl_tm_to_secs(const struct musl_tm *tm) {
     int is_leap;
     long long year = tm->tm_year;
     int month = tm->tm_mon;
@@ -66017,8 +66205,8 @@ long long __tm_to_secs(const struct mytm *tm) {
         }
         year += adj;
     }
-    long long t = __year_to_secs(year, &is_leap);
-    t += __month_to_secs(month, is_leap);
+    long long t = musl_year_to_secs(year, &is_leap);
+    t += musl_month_to_secs(month, is_leap);
     t += 86400LL * (tm->tm_mday-1);
     t += 3600LL * tm->tm_hour;
     t += 60LL * tm->tm_min;
@@ -69025,12 +69213,12 @@ arrayDimensions[0] = 0;
 attr.arrayDimensions = &arrayDimensions[0];
 attr.dataType = UA_NODEID_NUMERIC(ns[0], 21LU);
 UA_LocalizedText variablenode_ns_0_i_7611_variant_DataContents[6];
-variablenode_ns_0_i_7611_variant_DataContents[0] = UA_LOCALIZEDTEXT("", "None");
-variablenode_ns_0_i_7611_variant_DataContents[1] = UA_LOCALIZEDTEXT("", "Cold");
-variablenode_ns_0_i_7611_variant_DataContents[2] = UA_LOCALIZEDTEXT("", "Warm");
-variablenode_ns_0_i_7611_variant_DataContents[3] = UA_LOCALIZEDTEXT("", "Hot");
-variablenode_ns_0_i_7611_variant_DataContents[4] = UA_LOCALIZEDTEXT("", "Transparent");
-variablenode_ns_0_i_7611_variant_DataContents[5] = UA_LOCALIZEDTEXT("", "HotAndMirrored");
+variablenode_ns_0_i_7611_variant_DataContents[0] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_7611_variant_DataContents[1] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_7611_variant_DataContents[2] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_7611_variant_DataContents[3] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_7611_variant_DataContents[4] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_7611_variant_DataContents[5] = UA_LOCALIZEDTEXT("", "");
 UA_Variant_setArray(&attr.value, &variablenode_ns_0_i_7611_variant_DataContents, (UA_Int32) 6, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
 attr.displayName = UA_LOCALIZEDTEXT("", "EnumStrings");
 retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
@@ -69088,10 +69276,10 @@ arrayDimensions[0] = 0;
 attr.arrayDimensions = &arrayDimensions[0];
 attr.dataType = UA_NODEID_NUMERIC(ns[0], 21LU);
 UA_LocalizedText variablenode_ns_0_i_7597_variant_DataContents[4];
-variablenode_ns_0_i_7597_variant_DataContents[0] = UA_LOCALIZEDTEXT("", "Server");
-variablenode_ns_0_i_7597_variant_DataContents[1] = UA_LOCALIZEDTEXT("", "Client");
-variablenode_ns_0_i_7597_variant_DataContents[2] = UA_LOCALIZEDTEXT("", "ClientAndServer");
-variablenode_ns_0_i_7597_variant_DataContents[3] = UA_LOCALIZEDTEXT("", "DiscoveryServer");
+variablenode_ns_0_i_7597_variant_DataContents[0] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_7597_variant_DataContents[1] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_7597_variant_DataContents[2] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_7597_variant_DataContents[3] = UA_LOCALIZEDTEXT("", "");
 UA_Variant_setArray(&attr.value, &variablenode_ns_0_i_7597_variant_DataContents, (UA_Int32) 4, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
 attr.displayName = UA_LOCALIZEDTEXT("", "EnumStrings");
 retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
@@ -69149,10 +69337,10 @@ arrayDimensions[0] = 0;
 attr.arrayDimensions = &arrayDimensions[0];
 attr.dataType = UA_NODEID_NUMERIC(ns[0], 21LU);
 UA_LocalizedText variablenode_ns_0_i_7595_variant_DataContents[4];
-variablenode_ns_0_i_7595_variant_DataContents[0] = UA_LOCALIZEDTEXT("", "Invalid");
-variablenode_ns_0_i_7595_variant_DataContents[1] = UA_LOCALIZEDTEXT("", "None");
-variablenode_ns_0_i_7595_variant_DataContents[2] = UA_LOCALIZEDTEXT("", "Sign");
-variablenode_ns_0_i_7595_variant_DataContents[3] = UA_LOCALIZEDTEXT("", "SignAndEncrypt");
+variablenode_ns_0_i_7595_variant_DataContents[0] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_7595_variant_DataContents[1] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_7595_variant_DataContents[2] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_7595_variant_DataContents[3] = UA_LOCALIZEDTEXT("", "");
 UA_Variant_setArray(&attr.value, &variablenode_ns_0_i_7595_variant_DataContents, (UA_Int32) 4, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
 attr.displayName = UA_LOCALIZEDTEXT("", "EnumStrings");
 retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
@@ -69210,10 +69398,10 @@ arrayDimensions[0] = 0;
 attr.arrayDimensions = &arrayDimensions[0];
 attr.dataType = UA_NODEID_NUMERIC(ns[0], 21LU);
 UA_LocalizedText variablenode_ns_0_i_14648_variant_DataContents[4];
-variablenode_ns_0_i_14648_variant_DataContents[0] = UA_LOCALIZEDTEXT("", "Disabled");
-variablenode_ns_0_i_14648_variant_DataContents[1] = UA_LOCALIZEDTEXT("", "Paused");
-variablenode_ns_0_i_14648_variant_DataContents[2] = UA_LOCALIZEDTEXT("", "Operational");
-variablenode_ns_0_i_14648_variant_DataContents[3] = UA_LOCALIZEDTEXT("", "Error");
+variablenode_ns_0_i_14648_variant_DataContents[0] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_14648_variant_DataContents[1] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_14648_variant_DataContents[2] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_14648_variant_DataContents[3] = UA_LOCALIZEDTEXT("", "");
 UA_Variant_setArray(&attr.value, &variablenode_ns_0_i_14648_variant_DataContents, (UA_Int32) 4, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
 attr.displayName = UA_LOCALIZEDTEXT("", "EnumStrings");
 retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
@@ -69271,9 +69459,9 @@ arrayDimensions[0] = 0;
 attr.arrayDimensions = &arrayDimensions[0];
 attr.dataType = UA_NODEID_NUMERIC(ns[0], 21LU);
 UA_LocalizedText variablenode_ns_0_i_12078_variant_DataContents[3];
-variablenode_ns_0_i_12078_variant_DataContents[0] = UA_LOCALIZEDTEXT("", "Linear");
-variablenode_ns_0_i_12078_variant_DataContents[1] = UA_LOCALIZEDTEXT("", "Log");
-variablenode_ns_0_i_12078_variant_DataContents[2] = UA_LOCALIZEDTEXT("", "Ln");
+variablenode_ns_0_i_12078_variant_DataContents[0] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_12078_variant_DataContents[1] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_12078_variant_DataContents[2] = UA_LOCALIZEDTEXT("", "");
 UA_Variant_setArray(&attr.value, &variablenode_ns_0_i_12078_variant_DataContents, (UA_Int32) 3, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
 attr.displayName = UA_LOCALIZEDTEXT("", "EnumStrings");
 retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
@@ -69334,18 +69522,18 @@ UA_EnumValueType variablenode_ns_0_i_12169_variant_DataContents[3];
 
 UA_init(&variablenode_ns_0_i_12169_variant_DataContents[0], &UA_TYPES[UA_TYPES_ENUMVALUETYPE]);
 variablenode_ns_0_i_12169_variant_DataContents[0].value = (UA_Int64) 1;
-variablenode_ns_0_i_12169_variant_DataContents[0].displayName = UA_LOCALIZEDTEXT("", "Mandatory");
-variablenode_ns_0_i_12169_variant_DataContents[0].description = UA_LOCALIZEDTEXT("", "The BrowseName must appear in all instances of the type.");
+variablenode_ns_0_i_12169_variant_DataContents[0].displayName = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_12169_variant_DataContents[0].description = UA_LOCALIZEDTEXT("", "");
 
 UA_init(&variablenode_ns_0_i_12169_variant_DataContents[1], &UA_TYPES[UA_TYPES_ENUMVALUETYPE]);
 variablenode_ns_0_i_12169_variant_DataContents[1].value = (UA_Int64) 2;
-variablenode_ns_0_i_12169_variant_DataContents[1].displayName = UA_LOCALIZEDTEXT("", "Optional");
-variablenode_ns_0_i_12169_variant_DataContents[1].description = UA_LOCALIZEDTEXT("", "The BrowseName may appear in an instance of the type.");
+variablenode_ns_0_i_12169_variant_DataContents[1].displayName = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_12169_variant_DataContents[1].description = UA_LOCALIZEDTEXT("", "");
 
 UA_init(&variablenode_ns_0_i_12169_variant_DataContents[2], &UA_TYPES[UA_TYPES_ENUMVALUETYPE]);
 variablenode_ns_0_i_12169_variant_DataContents[2].value = (UA_Int64) 3;
-variablenode_ns_0_i_12169_variant_DataContents[2].displayName = UA_LOCALIZEDTEXT("", "Constraint");
-variablenode_ns_0_i_12169_variant_DataContents[2].description = UA_LOCALIZEDTEXT("", "The modelling rule defines a constraint and the BrowseName is not used in an instance of the type.");
+variablenode_ns_0_i_12169_variant_DataContents[2].displayName = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_12169_variant_DataContents[2].description = UA_LOCALIZEDTEXT("", "");
 UA_Variant_setArray(&attr.value, &variablenode_ns_0_i_12169_variant_DataContents, (UA_Int32) 3, &UA_TYPES[UA_TYPES_ENUMVALUETYPE]);
 attr.displayName = UA_LOCALIZEDTEXT("", "EnumValues");
 retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
@@ -69546,12 +69734,12 @@ arrayDimensions[0] = 0;
 attr.arrayDimensions = &arrayDimensions[0];
 attr.dataType = UA_NODEID_NUMERIC(ns[0], 21LU);
 UA_LocalizedText variablenode_ns_0_i_15584_variant_DataContents[6];
-variablenode_ns_0_i_15584_variant_DataContents[0] = UA_LOCALIZEDTEXT("", "StatusCode");
-variablenode_ns_0_i_15584_variant_DataContents[1] = UA_LOCALIZEDTEXT("", "SourceTimestamp");
-variablenode_ns_0_i_15584_variant_DataContents[2] = UA_LOCALIZEDTEXT("", "ServerTimestamp");
-variablenode_ns_0_i_15584_variant_DataContents[3] = UA_LOCALIZEDTEXT("", "SourcePicoSeconds");
-variablenode_ns_0_i_15584_variant_DataContents[4] = UA_LOCALIZEDTEXT("", "ServerPicoSeconds");
-variablenode_ns_0_i_15584_variant_DataContents[5] = UA_LOCALIZEDTEXT("", "RawDataEncoding");
+variablenode_ns_0_i_15584_variant_DataContents[0] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_15584_variant_DataContents[1] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_15584_variant_DataContents[2] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_15584_variant_DataContents[3] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_15584_variant_DataContents[4] = UA_LOCALIZEDTEXT("", "");
+variablenode_ns_0_i_15584_variant_DataContents[5] = UA_LOCALIZEDTEXT("", "");
 UA_Variant_setArray(&attr.value, &variablenode_ns_0_i_15584_variant_DataContents, (UA_Int32) 6, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
 attr.displayName = UA_LOCALIZEDTEXT("", "OptionSetValues");
 retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
@@ -75923,13 +76111,13 @@ UA_init(&variablenode_ns_0_i_9030_variant_DataContents[0], &UA_TYPES[UA_TYPES_AR
 variablenode_ns_0_i_9030_variant_DataContents[0].name = UA_STRING("EventId");
 variablenode_ns_0_i_9030_variant_DataContents[0].dataType = UA_NODEID_NUMERIC(ns[0], 15LU);
 variablenode_ns_0_i_9030_variant_DataContents[0].valueRank = (UA_Int32) -1;
-variablenode_ns_0_i_9030_variant_DataContents[0].description = UA_LOCALIZEDTEXT("", "The identifier for the event to comment.");
+variablenode_ns_0_i_9030_variant_DataContents[0].description = UA_LOCALIZEDTEXT("", "");
 
 UA_init(&variablenode_ns_0_i_9030_variant_DataContents[1], &UA_TYPES[UA_TYPES_ARGUMENT]);
 variablenode_ns_0_i_9030_variant_DataContents[1].name = UA_STRING("Comment");
 variablenode_ns_0_i_9030_variant_DataContents[1].dataType = UA_NODEID_NUMERIC(ns[0], 21LU);
 variablenode_ns_0_i_9030_variant_DataContents[1].valueRank = (UA_Int32) -1;
-variablenode_ns_0_i_9030_variant_DataContents[1].description = UA_LOCALIZEDTEXT("", "The comment to add to the condition.");
+variablenode_ns_0_i_9030_variant_DataContents[1].description = UA_LOCALIZEDTEXT("", "");
 UA_Variant_setArray(&attr.value, &variablenode_ns_0_i_9030_variant_DataContents, (UA_Int32) 2, &UA_TYPES[UA_TYPES_ARGUMENT]);
 attr.displayName = UA_LOCALIZEDTEXT("", "InputArguments");
 retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
@@ -76165,7 +76353,7 @@ UA_init(&variablenode_ns_0_i_3876_variant_DataContents[0], &UA_TYPES[UA_TYPES_AR
 variablenode_ns_0_i_3876_variant_DataContents[0].name = UA_STRING("SubscriptionId");
 variablenode_ns_0_i_3876_variant_DataContents[0].dataType = UA_NODEID_NUMERIC(ns[0], 288LU);
 variablenode_ns_0_i_3876_variant_DataContents[0].valueRank = (UA_Int32) -1;
-variablenode_ns_0_i_3876_variant_DataContents[0].description = UA_LOCALIZEDTEXT("", "The identifier for the subscription to refresh.");
+variablenode_ns_0_i_3876_variant_DataContents[0].description = UA_LOCALIZEDTEXT("", "");
 UA_Variant_setArray(&attr.value, &variablenode_ns_0_i_3876_variant_DataContents, (UA_Int32) 1, &UA_TYPES[UA_TYPES_ARGUMENT]);
 attr.displayName = UA_LOCALIZEDTEXT("", "InputArguments");
 retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
@@ -76305,13 +76493,13 @@ UA_init(&variablenode_ns_0_i_12913_variant_DataContents[0], &UA_TYPES[UA_TYPES_A
 variablenode_ns_0_i_12913_variant_DataContents[0].name = UA_STRING("SubscriptionId");
 variablenode_ns_0_i_12913_variant_DataContents[0].dataType = UA_NODEID_NUMERIC(ns[0], 288LU);
 variablenode_ns_0_i_12913_variant_DataContents[0].valueRank = (UA_Int32) -1;
-variablenode_ns_0_i_12913_variant_DataContents[0].description = UA_LOCALIZEDTEXT("", "The identifier for the subscription to refresh.");
+variablenode_ns_0_i_12913_variant_DataContents[0].description = UA_LOCALIZEDTEXT("", "");
 
 UA_init(&variablenode_ns_0_i_12913_variant_DataContents[1], &UA_TYPES[UA_TYPES_ARGUMENT]);
 variablenode_ns_0_i_12913_variant_DataContents[1].name = UA_STRING("MonitoredItemId");
 variablenode_ns_0_i_12913_variant_DataContents[1].dataType = UA_NODEID_NUMERIC(ns[0], 288LU);
 variablenode_ns_0_i_12913_variant_DataContents[1].valueRank = (UA_Int32) -1;
-variablenode_ns_0_i_12913_variant_DataContents[1].description = UA_LOCALIZEDTEXT("", "The identifier for the monitored item to refresh.");
+variablenode_ns_0_i_12913_variant_DataContents[1].description = UA_LOCALIZEDTEXT("", "");
 UA_Variant_setArray(&attr.value, &variablenode_ns_0_i_12913_variant_DataContents, (UA_Int32) 2, &UA_TYPES[UA_TYPES_ARGUMENT]);
 attr.displayName = UA_LOCALIZEDTEXT("", "InputArguments");
 retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
@@ -76493,7 +76681,7 @@ attr.dataType = UA_NODEID_NUMERIC(ns[0], 21LU);
 UA_LocalizedText *variablenode_ns_0_i_9019_variant_DataContents =  UA_LocalizedText_new();
 if (!variablenode_ns_0_i_9019_variant_DataContents) return UA_STATUSCODE_BADOUTOFMEMORY;
 UA_LocalizedText_init(variablenode_ns_0_i_9019_variant_DataContents);
-*variablenode_ns_0_i_9019_variant_DataContents = UA_LOCALIZEDTEXT_ALLOC("en", "Disabled");
+*variablenode_ns_0_i_9019_variant_DataContents = UA_LOCALIZEDTEXT_ALLOC("en", "");
 UA_Variant_setScalar(&attr.value, variablenode_ns_0_i_9019_variant_DataContents, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
 attr.displayName = UA_LOCALIZEDTEXT("", "FalseState");
 retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
@@ -76528,7 +76716,7 @@ attr.dataType = UA_NODEID_NUMERIC(ns[0], 21LU);
 UA_LocalizedText *variablenode_ns_0_i_9018_variant_DataContents =  UA_LocalizedText_new();
 if (!variablenode_ns_0_i_9018_variant_DataContents) return UA_STATUSCODE_BADOUTOFMEMORY;
 UA_LocalizedText_init(variablenode_ns_0_i_9018_variant_DataContents);
-*variablenode_ns_0_i_9018_variant_DataContents = UA_LOCALIZEDTEXT_ALLOC("en", "Enabled");
+*variablenode_ns_0_i_9018_variant_DataContents = UA_LOCALIZEDTEXT_ALLOC("en", "");
 UA_Variant_setScalar(&attr.value, variablenode_ns_0_i_9018_variant_DataContents, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
 attr.displayName = UA_LOCALIZEDTEXT("", "TrueState");
 retVal |= UA_Server_addNode_begin(server, UA_NODECLASS_VARIABLE,
@@ -98048,9 +98236,7 @@ ENCODE_JSON(ExtensionObject) {
         return writeChars(ctx, "null", 4);
 
     /* Must have a type set if data is decoded */
-    if(src->encoding != UA_EXTENSIONOBJECT_ENCODED_BYTESTRING &&
-       src->encoding != UA_EXTENSIONOBJECT_ENCODED_XML &&
-       !src->content.decoded.type)
+    if(src->encoding >= UA_EXTENSIONOBJECT_DECODED && !src->content.decoded.type)
         return UA_STATUSCODE_BADENCODINGERROR;
 
     status ret = writeJsonObjStart(ctx);
@@ -98211,7 +98397,7 @@ ENCODE_JSON(Variant) {
             if(hasDimensions) {
                 ret |= writeJsonKey(ctx, UA_JSONKEY_DIMENSION);
                 ret |= encodeJsonArray(ctx, src->arrayDimensions, src->arrayDimensionsSize,
-                                       &UA_TYPES[UA_TYPES_INT32]);
+                                       &UA_TYPES[UA_TYPES_UINT32]);
             }
         } else {
             /* Special case of non-reversible array with dimensions */
@@ -99118,7 +99304,7 @@ DECODE_JSON(DateTime) {
     if(tokenSize == 0 || tokenData[tokenSize-1] != 'Z')
         return UA_STATUSCODE_BADDECODINGERROR;
 
-    struct mytm dts;
+    struct musl_tm dts;
     memset(&dts, 0, sizeof(dts));
 
     size_t pos = 0;
@@ -99186,7 +99372,7 @@ DECODE_JSON(DateTime) {
     dts.tm_sec = (UA_UInt16)sec;
 
     /* Compute the seconds since the Unix epoch */
-    long long sinceunix = __tm_to_secs(&dts);
+    long long sinceunix = musl_tm_to_secs(&dts);
 
     /* Are we within the range that can be represented? */
     long long sinceunix_min =
@@ -99266,7 +99452,7 @@ getExtensionObjectType(ParseCtx *ctx) {
         return NULL;
 
     size_t oldIndex = ctx->index;
-    ctx->index = (UA_UInt16)typeIdIndex;
+    ctx->index = typeIdIndex;
 
     /* Decode the type NodeId */
     UA_NodeId typeId;
@@ -100418,10 +100604,10 @@ sendStatusChangeDelete(UA_Server *server, UA_Subscription *sub,
 
 static void
 delayedPublishNotifications(UA_Server *server, UA_Subscription *sub) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     sub->delayedCallbackRegistered = false;
     UA_Subscription_publish(server, sub);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 }
 
 /* Try to publish now. Enqueue a "next publish" as a delayed callback if not
@@ -100709,8 +100895,9 @@ UA_Session_ensurePublishQueueSpace(UA_Server* server, UA_Session* session) {
 
 static void
 sampleAndPublishCallback(UA_Server *server, UA_Subscription *sub) {
-    UA_LOCK(&server->serviceMutex);
     UA_assert(sub);
+
+    lockServer(server);
 
     UA_LOG_DEBUG_SUBSCRIPTION(server->config.logging, sub,
                               "Sample and Publish Callback");
@@ -100725,7 +100912,7 @@ sampleAndPublishCallback(UA_Server *server, UA_Subscription *sub) {
     /* Publish the queued notifications */
     UA_Subscription_publish(server, sub);
 
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 }
 
 UA_StatusCode
@@ -101805,9 +101992,9 @@ UA_MonitoredItem_processSampledValue(UA_Server *server, UA_MonitoredItem *mon,
 
 void
 UA_MonitoredItem_sampleCallback(UA_Server *server, UA_MonitoredItem *mon) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     monitoredItem_sampleCallback(server, mon);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
 }
 
 void
@@ -101930,9 +102117,9 @@ createEvent(UA_Server *server, const UA_NodeId eventType, UA_NodeId *outNodeId) 
 UA_StatusCode
 UA_Server_createEvent(UA_Server *server, const UA_NodeId eventType,
                       UA_NodeId *outNodeId) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res = createEvent(server, eventType, outNodeId);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -102265,10 +102452,10 @@ UA_StatusCode
 UA_Server_triggerEvent(UA_Server *server, const UA_NodeId eventNodeId,
                        const UA_NodeId origin, UA_ByteString *outEventId,
                        const UA_Boolean deleteEventNode) {
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res =
         triggerEvent(server, eventNodeId, origin, outEventId, deleteEventNode);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 #endif /* UA_ENABLE_SUBSCRIPTIONS_EVENTS */
@@ -102561,7 +102748,9 @@ static UA_INLINE UA_Byte uppercase(UA_Byte in) { return in | 32; }
 
 static UA_StatusCode
 castImplicitFromString(const UA_Variant *in, const UA_DataType *outType, UA_Variant *out) {
+#if defined(UA_ENABLE_PARSING) || defined(UA_ENABLE_JSON_ENCODING)
     UA_StatusCode res = UA_STATUSCODE_GOOD;
+#endif
     if(outType == &UA_TYPES[UA_TYPES_BOOLEAN]) {
         /* String -> Boolean
          *
@@ -104107,10 +104296,10 @@ UA_Server_registerDiscovery(UA_Server *server, UA_ClientConfig *cc,
     UA_LOG_INFO(server->config.logging, UA_LOGCATEGORY_SERVER,
                 "Registering at the DiscoveryServer: %.*s",
                 (int)discoveryServerUrl.length, discoveryServerUrl.data);
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res =
         UA_Server_register(server, cc, false, discoveryServerUrl, semaphoreFilePath);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -104120,10 +104309,10 @@ UA_Server_deregisterDiscovery(UA_Server *server, UA_ClientConfig *cc,
     UA_LOG_INFO(server->config.logging, UA_LOGCATEGORY_SERVER,
                 "Deregistering at the DiscoveryServer: %.*s",
                 (int)discoveryServerUrl.length, discoveryServerUrl.data);
-    UA_LOCK(&server->serviceMutex);
+    lockServer(server);
     UA_StatusCode res =
         UA_Server_register(server, cc, true, discoveryServerUrl, UA_STRING_NULL);
-    UA_UNLOCK(&server->serviceMutex);
+    unlockServer(server);
     return res;
 }
 
@@ -104580,12 +104769,9 @@ logCategoryNames[UA_LOGCATEGORIES] =
     {"network", "channel", "session", "server", "client",
      "userland", "securitypolicy", "eventloop", "pubsub", "discovery"};
 
-/* Protect crosstalk during logging via global lock.
- * Use a spinlock on non-POSIX as we cannot statically initialize a global lock. */
+/* Protect crosstalk during logging via global lock. Use a spinlock as we cannot
+ * statically initialize a global lock across all platforms. */
 #if UA_MULTITHREADING >= 100
-# ifdef UA_ARCHITECTURE_POSIX
-UA_Lock logLock = UA_LOCK_STATIC_INIT;
-# else
 void * volatile logSpinLock = NULL;
 static UA_INLINE void spinLock(void) {
     while(UA_atomic_cmpxchg(&logSpinLock, NULL, (void*)0x1) != NULL) {}
@@ -104593,7 +104779,6 @@ static UA_INLINE void spinLock(void) {
 static UA_INLINE void spinUnLock(void) {
     UA_atomic_xchg(&logSpinLock, NULL);
 }
-# endif
 #endif
 
 #ifdef __clang__
@@ -104616,11 +104801,7 @@ UA_Log_Stdout_log(void *context, UA_LogLevel level, UA_LogCategory category,
 
     /* Lock */
 #if UA_MULTITHREADING >= 100
-# ifdef UA_ARCHITECTURE_POSIX
-    UA_LOCK(&logLock);
-# else
     spinLock();
-# endif
 #endif
 
     /* Log */
@@ -104634,11 +104815,7 @@ UA_Log_Stdout_log(void *context, UA_LogLevel level, UA_LogCategory category,
 
     /* Unlock */
 #if UA_MULTITHREADING >= 100
-# ifdef UA_ARCHITECTURE_POSIX
-    UA_UNLOCK(&logLock);
-# else
     spinUnLock();
-# endif
 #endif
 }
 
@@ -106279,7 +106456,11 @@ const UA_ConnectionConfig UA_ConnectionConfig_default = {
 #define APPLICATION_URI "urn:unconfigured:application"
 #define APPLICATION_URI_SERVER "urn:open62541.server.application"
 
-#define SECURITY_POLICY_SIZE 6
+#ifdef UA_INCLUDE_INSECURE_POLICIES
+# define SECURITY_POLICY_SIZE 5
+#else
+# define SECURITY_POLICY_SIZE 3
+#endif
 
 #define STRINGIFY(arg) #arg
 #define VERSION(MAJOR, MINOR, PATCH, LABEL) \
@@ -106508,12 +106689,8 @@ setDefaultConfig(UA_ServerConfig *conf, UA_UInt16 portNumber) {
 
     /* Certificate Verification that accepts every certificate. Can be
      * overwritten when the policy is specialized. */
-    if(conf->secureChannelPKI.clear)
-        conf->secureChannelPKI.clear(&conf->secureChannelPKI);
     UA_CertificateVerification_AcceptAll(&conf->secureChannelPKI);
 
-    if(conf->sessionPKI.clear)
-        conf->sessionPKI.clear(&conf->sessionPKI);
     UA_CertificateVerification_AcceptAll(&conf->sessionPKI);
 
     /* * Global Node Lifecycle * */
@@ -107005,23 +107182,25 @@ addAllSecurityPolicies(UA_ServerConfig *config, const UA_ByteString *certificate
                        UA_StatusCode_name(retval));
     }
 
+#ifdef UA_INCLUDE_INSECURE_POLICIES
     /* Basic128Rsa15 should no longer be used */
-    /* retval = UA_ServerConfig_addSecurityPolicyBasic128Rsa15(config, &localCertificate, */
-    /*                                                         &decryptedPrivateKey); */
-    /* if(retval != UA_STATUSCODE_GOOD) { */
-    /*     UA_LOG_WARNING(config->logging, UA_LOGCATEGORY_USERLAND, */
-    /*                    "Could not add SecurityPolicy#Basic128Rsa15 with error code %s", */
-    /*                    UA_StatusCode_name(retval)); */
-    /* } */
+    retval = UA_ServerConfig_addSecurityPolicyBasic128Rsa15(config, &localCertificate,
+                                                            &decryptedPrivateKey);
+    if(retval != UA_STATUSCODE_GOOD) {
+        UA_LOG_WARNING(config->logging, UA_LOGCATEGORY_USERLAND,
+                       "Could not add SecurityPolicy#Basic128Rsa15 with error code %s",
+                       UA_StatusCode_name(retval));
+    }
 
     /* Basic256 should no longer be used */
-    /* retval = UA_ServerConfig_addSecurityPolicyBasic256(config, &localCertificate, */
-    /*                                                    &decryptedPrivateKey); */
-    /* if(retval != UA_STATUSCODE_GOOD) { */
-    /*     UA_LOG_WARNING(config->logging, UA_LOGCATEGORY_USERLAND, */
-    /*                    "Could not add SecurityPolicy#Basic256 with error code %s", */
-    /*                    UA_StatusCode_name(retval)); */
-    /* } */
+    retval = UA_ServerConfig_addSecurityPolicyBasic256(config, &localCertificate,
+                                                       &decryptedPrivateKey);
+    if(retval != UA_STATUSCODE_GOOD) {
+        UA_LOG_WARNING(config->logging, UA_LOGCATEGORY_USERLAND,
+                       "Could not add SecurityPolicy#Basic256 with error code %s",
+                       UA_StatusCode_name(retval));
+    }
+#endif
 
     UA_ByteString_memZero(&decryptedPrivateKey);
     UA_ByteString_clear(&decryptedPrivateKey);
@@ -107061,8 +107240,6 @@ UA_ServerConfig_setDefaultWithSecurityPolicies(UA_ServerConfig *conf,
         return retval;
     }
 
-    if(conf->sessionPKI.clear)
-        conf->sessionPKI.clear(&conf->sessionPKI);
     retval = UA_CertificateVerification_Trustlist(&conf->sessionPKI,
                                                   trustList, trustListSize,
                                                   issuerList, issuerListSize,
@@ -107253,11 +107430,68 @@ UA_ClientConfig_setDefault(UA_ClientConfig *config) {
 #ifdef UA_ENABLE_ENCRYPTION
 
 static UA_StatusCode
+securityPolicies_addAll(UA_SecurityPolicy *sp, size_t *length,
+                        UA_ByteString certificate, UA_ByteString privateKey, UA_Logger *logging) {
+    UA_StatusCode retval;
+    size_t size = *length;
+
+#ifdef UA_INCLUDE_INSECURE_POLICIES
+    /* Basic128Rsa15 is unsecure and should not be used */
+    retval = UA_SecurityPolicy_Basic128Rsa15(&sp[size], certificate, privateKey, logging);
+    if(retval == UA_STATUSCODE_GOOD) {
+        size++;
+    } else {
+        UA_LOG_WARNING(logging, UA_LOGCATEGORY_USERLAND,
+            "Could not add SecurityPolicy#Basic128Rsa15 with error code %s",
+            UA_StatusCode_name(retval));
+    }
+
+    /* Basic256 is unsecure and should not be used */
+    retval = UA_SecurityPolicy_Basic256(&sp[size], certificate, privateKey, logging);
+    if(retval == UA_STATUSCODE_GOOD) {
+        size++;
+    } else {
+        UA_LOG_WARNING(logging, UA_LOGCATEGORY_USERLAND,
+            "Could not add SecurityPolicy#Basic256 with error code %s",
+            UA_StatusCode_name(retval));
+    }
+#endif
+    retval = UA_SecurityPolicy_Aes256Sha256RsaPss(&sp[size], certificate, privateKey, logging);
+    if(retval == UA_STATUSCODE_GOOD) {
+        size++;
+    } else {
+        UA_LOG_WARNING(logging, UA_LOGCATEGORY_USERLAND,
+            "Could not add SecurityPolicy#Aes256Sha256RsaPss with error code %s",
+            UA_StatusCode_name(retval));
+    }
+
+    retval = UA_SecurityPolicy_Basic256Sha256(&sp[size], certificate, privateKey, logging);
+    if(retval == UA_STATUSCODE_GOOD) {
+        size++;
+    } else {
+        UA_LOG_WARNING(logging, UA_LOGCATEGORY_USERLAND,
+            "Could not add SecurityPolicy#Basic256Sha256 with error code %s",
+            UA_StatusCode_name(retval));
+    }
+
+    retval = UA_SecurityPolicy_Aes128Sha256RsaOaep(&sp[size], certificate, privateKey, logging);
+    if(retval == UA_STATUSCODE_GOOD) {
+        size++;
+    } else {
+        UA_LOG_WARNING(logging, UA_LOGCATEGORY_USERLAND,
+            "Could not add SecurityPolicy#Aes128Sha256RsaOaep with error code %s",
+            UA_StatusCode_name(retval));
+    }
+    *length = size;
+    return retval;
+}
+
+static UA_StatusCode
 clientConfig_setAuthenticationSecurityPolicies(UA_ClientConfig *config,
                                                UA_ByteString certificateAuth,
                                                UA_ByteString privateKeyAuth) {
     UA_SecurityPolicy *sp = (UA_SecurityPolicy*)
-        UA_realloc(config->authSecurityPolicies, sizeof(UA_SecurityPolicy) * 3);
+        UA_realloc(config->authSecurityPolicies, sizeof(UA_SecurityPolicy) * SECURITY_POLICY_SIZE);
     if(!sp)
         return UA_STATUSCODE_BADOUTOFMEMORY;
     config->authSecurityPolicies = sp;
@@ -107268,58 +107502,8 @@ clientConfig_setAuthenticationSecurityPolicies(UA_ClientConfig *config,
     }
     config->authSecurityPoliciesSize = 0;
 
-    /* Basic128Rsa15 is unsecure and should not be used */
-    /* sp = &config->authSecurityPolicies[config->authSecurityPoliciesSize]; */
-    /* retval = UA_SecurityPolicy_Basic128Rsa15(sp, certificateAuth, privateKeyAuth, config->logging); */
-    /* if(retval == UA_STATUSCODE_GOOD) { */
-    /*     ++config->authSecurityPoliciesSize; */
-    /* } else { */
-    /*     UA_LOG_WARNING(config->logging, UA_LOGCATEGORY_USERLAND, */
-    /*                    "Could not add SecurityPolicy#Basic128Rsa15 with error code %s", */
-    /*                    UA_StatusCode_name(retval)); */
-    /* } */
-
-    /* Basic256 is unsecure and should not be used */
-    /* sp = &config->authSecurityPolicies[config->authSecurityPoliciesSize]; */
-    /* retval = UA_SecurityPolicy_Basic256(sp, certificateAuth, privateKeyAuth, config->logging); */
-    /* if(retval == UA_STATUSCODE_GOOD) { */
-    /*     ++config->authSecurityPoliciesSize; */
-    /* } else { */
-    /*     UA_LOG_WARNING(config->logging, UA_LOGCATEGORY_USERLAND, */
-    /*                    "Could not add SecurityPolicy#Basic256 with error code %s", */
-    /*                    UA_StatusCode_name(retval)); */
-    /* } */
-
-    UA_StatusCode retval;
-    sp = &config->authSecurityPolicies[config->authSecurityPoliciesSize];
-    retval = UA_SecurityPolicy_Aes256Sha256RsaPss(sp, certificateAuth, privateKeyAuth, config->logging);
-    if(retval == UA_STATUSCODE_GOOD) {
-        ++config->authSecurityPoliciesSize;
-    } else {
-        UA_LOG_WARNING(config->logging, UA_LOGCATEGORY_USERLAND,
-                       "Could not add SecurityPolicy#Aes256Sha256RsaPss with error code %s",
-                       UA_StatusCode_name(retval));
-    }
-
-    sp = &config->authSecurityPolicies[config->authSecurityPoliciesSize];
-    retval = UA_SecurityPolicy_Basic256Sha256(sp, certificateAuth, privateKeyAuth, config->logging);
-    if(retval == UA_STATUSCODE_GOOD) {
-        ++config->authSecurityPoliciesSize;
-    } else {
-        UA_LOG_WARNING(config->logging, UA_LOGCATEGORY_USERLAND,
-                       "Could not add SecurityPolicy#Basic256Sha256 with error code %s",
-                       UA_StatusCode_name(retval));
-    }
-
-    sp = &config->authSecurityPolicies[config->authSecurityPoliciesSize];
-    retval = UA_SecurityPolicy_Aes128Sha256RsaOaep(sp, certificateAuth, privateKeyAuth, config->logging);
-    if(retval == UA_STATUSCODE_GOOD) {
-        ++config->authSecurityPoliciesSize;
-    } else {
-        UA_LOG_WARNING(config->logging, UA_LOGCATEGORY_USERLAND,
-                       "Could not add SecurityPolicy#Aes128Sha256RsaOaep with error code %s",
-                       UA_StatusCode_name(retval));
-    }
+    UA_StatusCode retval = securityPolicies_addAll(sp, &config->authSecurityPoliciesSize,
+                                                   certificateAuth, privateKeyAuth, config->logging);
 
     if(config->authSecurityPoliciesSize == 0) {
         UA_free(config->authSecurityPolicies);
@@ -107338,18 +107522,21 @@ UA_ClientConfig_setDefaultEncryption(UA_ClientConfig *config,
     if(retval != UA_STATUSCODE_GOOD)
         return retval;
 
-    if(config->certificateVerification.clear)
-        config->certificateVerification.clear(&config->certificateVerification);
-    retval = UA_CertificateVerification_Trustlist(&config->certificateVerification,
-                                                  trustList, trustListSize,
-                                                  NULL, 0,
-                                                  revocationList, revocationListSize);
-    if(retval != UA_STATUSCODE_GOOD)
-        return retval;
+    if(trustListSize || revocationListSize) {
+        retval = UA_CertificateVerification_Trustlist(&config->certificateVerification,
+                                                      trustList, trustListSize,
+                                                      NULL, 0,
+                                                      revocationList, revocationListSize);
+        if(retval != UA_STATUSCODE_GOOD)
+            return retval;
+    } else {
+        UA_LOG_WARNING(config->logging, UA_LOGCATEGORY_SECURITYPOLICY,
+            "Empty trustlist and revocationlist passed, leaving the previously configured certificate verification in place");
+    }
 
-    /* Populate SecurityPolicies */
+    /* Populate SecurityPolicies, append to pre existing and don't overwrite */
     UA_SecurityPolicy *sp = (UA_SecurityPolicy*)
-        UA_realloc(config->securityPolicies, sizeof(UA_SecurityPolicy) * SECURITY_POLICY_SIZE);
+        UA_realloc(config->securityPolicies, sizeof(UA_SecurityPolicy) * (config->securityPoliciesSize + SECURITY_POLICY_SIZE));
     if(!sp)
         return UA_STATUSCODE_BADOUTOFMEMORY;
     config->securityPolicies = sp;
@@ -107380,58 +107567,8 @@ UA_ClientConfig_setDefaultEncryption(UA_ClientConfig *config,
     if(keySuccess != UA_STATUSCODE_GOOD)
         return keySuccess;
 
-    /* Basic128Rsa15 should no longer be used */
-    /* retval = UA_SecurityPolicy_Basic128Rsa15(&config->securityPolicies[config->securityPoliciesSize], */
-    /*                                          localCertificate, decryptedPrivateKey, config->logging); */
-    /* if(retval == UA_STATUSCODE_GOOD) { */
-    /*     ++config->securityPoliciesSize; */
-    /* } else { */
-    /*     UA_LOG_WARNING(config->logging, UA_LOGCATEGORY_USERLAND, */
-    /*                    "Could not add SecurityPolicy#Basic128Rsa15 with error code %s", */
-    /*                    UA_StatusCode_name(retval)); */
-    /* } */
-
-    /* Basic256 should no longer be used */
-    /* retval = UA_SecurityPolicy_Basic256(&config->securityPolicies[config->securityPoliciesSize], */
-    /*                                     localCertificate, decryptedPrivateKey, config->logging); */
-
-    /* if(retval == UA_STATUSCODE_GOOD) { */
-    /*     ++config->securityPoliciesSize; */
-    /* } else { */
-    /*     UA_LOG_WARNING(config->logging, UA_LOGCATEGORY_USERLAND, */
-    /*                    "Could not add SecurityPolicy#Basic256 with error code %s", */
-    /*                    UA_StatusCode_name(retval)); */
-    /* } */
-                  
-    retval = UA_SecurityPolicy_Aes256Sha256RsaPss(&config->securityPolicies[config->securityPoliciesSize],
-                                                  localCertificate, decryptedPrivateKey, config->logging);
-    if(retval == UA_STATUSCODE_GOOD) {
-        ++config->securityPoliciesSize;
-    } else {
-        UA_LOG_WARNING(config->logging, UA_LOGCATEGORY_USERLAND,
-                       "Could not add SecurityPolicy#Aes256Sha256RsaPss with error code %s",
-                       UA_StatusCode_name(retval));
-    }
-
-    retval = UA_SecurityPolicy_Basic256Sha256(&config->securityPolicies[config->securityPoliciesSize],
-                                              localCertificate, decryptedPrivateKey, config->logging);
-    if(retval == UA_STATUSCODE_GOOD) {
-        ++config->securityPoliciesSize;
-    } else {
-        UA_LOG_WARNING(config->logging, UA_LOGCATEGORY_USERLAND,
-                       "Could not add SecurityPolicy#Basic256Sha256 with error code %s",
-                       UA_StatusCode_name(retval));
-    }
-
-    retval = UA_SecurityPolicy_Aes128Sha256RsaOaep(&config->securityPolicies[config->securityPoliciesSize],
-                                                   localCertificate, decryptedPrivateKey, config->logging);
-    if(retval == UA_STATUSCODE_GOOD) {
-        ++config->securityPoliciesSize;
-    } else {
-        UA_LOG_WARNING(config->logging, UA_LOGCATEGORY_USERLAND,
-                       "Could not add SecurityPolicy#Aes128Sha256RsaOaep with error code %s",
-                       UA_StatusCode_name(retval));
-    }
+    securityPolicies_addAll(sp, &config->securityPoliciesSize,
+                            localCertificate, decryptedPrivateKey, config->logging);
 
     /* Set the same certificate also for authentication.
      * Can be overridden with a different certificate. */
@@ -114900,7 +115037,7 @@ UA_CreateCertificate(const UA_Logger *logger, const UA_String *subject,
         /* split into SAN type and value */
         sanType = strtok(subAlt, ":");
         sanValue = (char *)subjectAltName[i].data + strlen(sanType) + 1;
-        sanValueLength = strlen(sanValue);
+        sanValueLength = subjectAltName[i].length - strlen(sanType) - 1;
 
         if(sanType) {
             cur_tmp = (mbedtls_write_san_list*)mbedtls_calloc(1, sizeof(mbedtls_write_san_list));
@@ -121522,6 +121659,10 @@ UA_ReloadCertFromFolder (CertContext * ctx) {
             }
             UA_ByteString_clear (&strCert);
         }
+        for (i = 0; i < numCertificates; i++) {
+            free(dirlist[i]);
+        }
+        free(dirlist);
     }
 
     if (ctx->issuerListFolder.length > 0) {
@@ -121557,6 +121698,10 @@ UA_ReloadCertFromFolder (CertContext * ctx) {
             }
             UA_ByteString_clear (&strCert);
         }
+        for (i = 0; i < numCertificates; i++) {
+            free(dirlist[i]);
+        }
+        free(dirlist);
     }
 
     if (ctx->revocationListFolder.length > 0) {
@@ -121592,6 +121737,10 @@ UA_ReloadCertFromFolder (CertContext * ctx) {
             }
             UA_ByteString_clear (&strCert);
         }
+        for (i = 0; i < numCertificates; i++) {
+            free(dirlist[i]);
+        }
+        free(dirlist);
     }
 
     ret = UA_STATUSCODE_GOOD;
@@ -122006,8 +122155,8 @@ UA_GetCertificate_ExpirationDate(UA_DateTime *expiryDateTime,
     ASN1_TIME_to_tm(not_after, &dtTime);
     X509_free(x509);
 
-    struct mytm dateTime;
-    memset(&dateTime, 0, sizeof(struct mytm));
+    struct musl_tm dateTime;
+    memset(&dateTime, 0, sizeof(struct musl_tm));
     dateTime.tm_year = dtTime.tm_year;
     dateTime.tm_mon = dtTime.tm_mon;
     dateTime.tm_mday = dtTime.tm_mday;
@@ -122015,7 +122164,7 @@ UA_GetCertificate_ExpirationDate(UA_DateTime *expiryDateTime,
     dateTime.tm_min = dtTime.tm_min;
     dateTime.tm_sec = dtTime.tm_sec;
 
-    long long sec_epoch = __tm_to_secs(&dateTime);
+    long long sec_epoch = musl_tm_to_secs(&dateTime);
     *expiryDateTime = UA_DATETIME_UNIX_EPOCH;
     *expiryDateTime += sec_epoch * UA_DATETIME_SEC;
     return UA_STATUSCODE_GOOD;
@@ -122592,6 +122741,9 @@ _UA_END_DECLS
 #endif
 
 
+#if !defined(__QNX__)
+#endif
+
 /* epoll_pwait returns bogus data with the tc compiler */
 #if defined(__linux__) && !defined(__TINYC__)
 # define UA_HAVE_EPOLL
@@ -122925,6 +123077,29 @@ UA_Timer_init(UA_Timer *t) {
     UA_LOCK_INIT(&t->timerMutex);
 }
 
+/* Global variables, only used behind the mutex */
+static UA_DateTime earliest, latest, adjustedNextTime;
+
+static void *
+findTimer2Batch(void *context, UA_TimerEntry *compare) {
+    UA_TimerEntry *te = (UA_TimerEntry*)context;
+
+    /* NextTime deviation within interval? */
+    if(compare->nextTime < earliest || compare->nextTime > latest)
+        return NULL;
+
+    /* Check if one interval is a multiple of the other */
+    if(te->interval < compare->interval && compare->interval % te->interval != 0)
+        return NULL;
+    if(te->interval > compare->interval && te->interval % compare->interval != 0)
+        return NULL;
+
+    adjustedNextTime = compare->nextTime; /* Candidate found */
+
+    /* Abort when a perfect match is found */
+    return (te->interval == compare->interval) ? te : NULL;
+}
+
 static UA_StatusCode
 addCallback(UA_Timer *t, UA_ApplicationCallback callback, void *application,
             void *data, UA_DateTime nextTime, UA_UInt64 interval,
@@ -122939,13 +123114,27 @@ addCallback(UA_Timer *t, UA_ApplicationCallback callback, void *application,
         return UA_STATUSCODE_BADOUTOFMEMORY;
 
     /* Set the repeated callback */
-    te->interval = (UA_UInt64)interval;
+    te->interval = interval;
     te->id = ++t->idCounter;
     te->callback = callback;
     te->application = application;
     te->data = data;
     te->nextTime = nextTime;
     te->timerPolicy = timerPolicy;
+
+    /* Adjust the nextTime to batch cyclic callbacks. Look in an interval around
+     * the original nextTime. Deviate from the original nextTime by at most 1/4
+     * of the interval and at most by 1s. */
+    if(timerPolicy == UA_TIMER_HANDLE_CYCLEMISS_WITH_CURRENTTIME && interval != 0) {
+        UA_UInt64 deviate = te->interval / 4;
+        if(deviate > UA_DATETIME_SEC)
+            deviate = UA_DATETIME_SEC;
+        earliest = te->nextTime - deviate;
+        latest = te->nextTime + deviate;
+        adjustedNextTime = te->nextTime;
+        ZIP_ITER(UA_TimerIdTree, &t->idTree, findTimer2Batch, te);
+        te->nextTime = adjustedNextTime;
+    }
 
     /* Set the output identifier */
     if(callbackId)
@@ -123252,9 +123441,12 @@ UA_KeyValueRestriction_validate(const UA_Logger *logger, const char *logprefix,
 /* Timer */
 /*********/
 
+/* Process delayed callbacks immediately */
 static UA_DateTime
 UA_EventLoopPOSIX_nextCyclicTime(UA_EventLoop *public_el) {
     UA_EventLoopPOSIX *el = (UA_EventLoopPOSIX*)public_el;
+    if(el->delayedCallbacks)
+        el->eventLoop.dateTime_nowMonotonic(&el->eventLoop);
     return UA_Timer_nextRepeatedTime(&el->timer);
 }
 
@@ -123656,6 +123848,18 @@ UA_EventLoopPOSIX_free(UA_EventLoopPOSIX *el) {
     return UA_STATUSCODE_GOOD;
 }
 
+static void
+UA_EventLoopPOSIX_lock(UA_EventLoop *public_el) {
+    UA_EventLoopPOSIX *el = (UA_EventLoopPOSIX*)public_el;
+    UA_LOCK(&el->elMutex);
+}
+
+static void
+UA_EventLoopPOSIX_unlock(UA_EventLoop *public_el) {
+    UA_EventLoopPOSIX *el = (UA_EventLoopPOSIX*)public_el;
+    UA_UNLOCK(&el->elMutex);
+}
+
 UA_EventLoop *
 UA_EventLoop_new_POSIX(const UA_Logger *logger) {
     UA_EventLoopPOSIX *el = (UA_EventLoopPOSIX*)
@@ -123700,6 +123904,9 @@ UA_EventLoop_new_POSIX(const UA_Logger *logger) {
     el->eventLoop.deregisterEventSource =
         (UA_StatusCode (*)(UA_EventLoop*, UA_EventSource*))
         UA_EventLoopPOSIX_deregisterEventSource;
+
+    el->eventLoop.lock = UA_EventLoopPOSIX_lock;
+    el->eventLoop.unlock = UA_EventLoopPOSIX_unlock;
 
     return &el->eventLoop;
 }
@@ -124033,12 +124240,20 @@ UA_StatusCode
 UA_EventLoopPOSIX_pollFDs(UA_EventLoopPOSIX *el, UA_DateTime listenTimeout) {
     UA_assert(listenTimeout >= 0);
 
+    /* If there is a positive timeout, wait at least one millisecond, the
+     * minimum for blocking epoll_wait. This prevents a busy-loop, as the
+     * open62541 library allows even smaller timeouts, which can result in a
+     * zero timeout due to rounding to an integer here. */
+    int timeout = (int)(listenTimeout / UA_DATETIME_MSEC);
+    if(timeout == 0 && listenTimeout > 0)
+        timeout = 1;
+
     /* Poll the registered sockets */
     struct epoll_event epoll_events[64];
-    int epollfd = el->epollfd;
     UA_UNLOCK(&el->elMutex);
-    int events = epoll_wait(epollfd, epoll_events, 64,
-                            (int)(listenTimeout / UA_DATETIME_MSEC));
+    int events = epoll_wait(el->epollfd, epoll_events, 64, timeout);
+    UA_LOCK(&el->elMutex);
+
     /* TODO: Replace with pwait2 for higher-precision timeouts once this is
      * available in the standard library.
      *
@@ -124048,7 +124263,6 @@ UA_EventLoopPOSIX_pollFDs(UA_EventLoopPOSIX *el, UA_DateTime listenTimeout) {
      * };
      * int events = epoll_pwait2(epollfd, epoll_events, 64,
      *                        precisionTimeout, NULL); */
-    UA_LOCK(&el->elMutex);
 
     /* Handle error conditions */
     if(events == -1) {
@@ -125228,7 +125442,7 @@ typedef enum {
 } MultiCastType;
 
 typedef union {
-#ifdef UA_ARCHITECTURE_WIN32
+#if !defined(ip_mreqn)
     struct ip_mreq ipv4;
 #else
     struct ip_mreqn ipv4;
@@ -125384,12 +125598,15 @@ setMulticastInterface(const char *netif, struct addrinfo *info,
         return UA_STATUSCODE_BADINTERNALERROR;
 
     /* Write the interface index */
-    if(info->ai_family == AF_INET)
+    if(info->ai_family == AF_INET) {
+#if defined(ip_mreqn)
         req->ipv4.imr_ifindex = idx;
+#endif
 #if UA_IPV6
-    else /* if(info->ai_family == AF_INET6) */
+    } else { /* if(info->ai_family == AF_INET6) */
         req->ipv6.ipv6mr_interface = idx;
 #endif
+    }
     return UA_STATUSCODE_GOOD;
 }
 
@@ -125402,7 +125619,7 @@ setupMulticastRequest(UA_FD socket, MulticastRequest *req, const UA_KeyValueMap 
     if(info->ai_family == AF_INET) {
         struct sockaddr_in *sin = (struct sockaddr_in *)info->ai_addr;
         req->ipv4.imr_multiaddr = sin->sin_addr;
-#ifdef UA_ARCHITECTURE_WIN32
+#if !defined(ip_mreqn)
         req->ipv4.imr_interface.s_addr = htonl(INADDR_ANY); /* default ANY */
 #else
         req->ipv4.imr_address.s_addr = htonl(INADDR_ANY); /* default ANY */
@@ -127758,7 +127975,9 @@ ETH_openConnection(UA_ConnectionManager *cm, const UA_KeyValueMap *params,
         UA_UNLOCK(&el->elMutex);
         return UA_STATUSCODE_BADINTERNALERROR;
     }
-    res |= UA_EventLoopPOSIX_setReusable(sockfd);
+
+    /* SO_REUSEADDR is unnecessary (and unsupported on some Linux systems):
+     * res |= UA_EventLoopPOSIX_setReusable(sockfd); */
     res |= UA_EventLoopPOSIX_setNonBlocking(sockfd);
     res |= UA_EventLoopPOSIX_setNoSigPipe(sockfd);
     if(res != UA_STATUSCODE_GOOD)
