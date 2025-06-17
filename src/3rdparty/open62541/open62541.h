@@ -1,6 +1,6 @@
 /* THIS IS A SINGLE-FILE DISTRIBUTION CONCATENATED FROM THE OPEN62541 SOURCES
  * visit http://open62541.org/ for information about this software
- * Git-Revision: v1.4.9
+ * Git-Revision: v1.4.13
  */
 
 /*
@@ -30,10 +30,10 @@
  * ----------------- */
 #define UA_OPEN62541_VER_MAJOR 1
 #define UA_OPEN62541_VER_MINOR 4
-#define UA_OPEN62541_VER_PATCH 9
+#define UA_OPEN62541_VER_PATCH 13
 #define UA_OPEN62541_VER_LABEL "" /* Release candidate label, etc. */
-#define UA_OPEN62541_VER_COMMIT "v1.4.9"
-#define UA_OPEN62541_VERSION "v1.4.9"
+#define UA_OPEN62541_VER_COMMIT "v1.4.13"
+#define UA_OPEN62541_VERSION "v1.4.13"
 
 /**
  * Architecture
@@ -139,6 +139,16 @@
 # else
 #  define _UA_END_DECLS
 # endif
+#endif
+
+
+/**
+ * QNX Flags
+ * -------------------
+ * Defining _QNX_SOURCE will ensure proper qnx types and other features 
+ * are available. */
+#if defined(__QNX__)
+# define _QNX_SOURCE 1
 #endif
 
 /**
@@ -421,14 +431,13 @@ typedef struct {
     int mutexCounter;
 } UA_Lock;
 
-#define UA_LOCK_STATIC_INIT {PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP, 0}
-
 static UA_INLINE void
 UA_LOCK_INIT(UA_Lock *lock) {
     pthread_mutexattr_t mattr;
     pthread_mutexattr_init(&mattr);
     pthread_mutexattr_settype(&mattr, PTHREAD_MUTEX_RECURSIVE);
     pthread_mutex_init(&lock->mutex, &mattr);
+    pthread_mutexattr_destroy(&mattr);
     lock->mutexCounter = 0;
 }
 
@@ -42519,6 +42528,8 @@ _UA_BEGIN_DECLS
  *
  * Usually, implementations of the certificate verification plugin provide an
  * initialization method that takes a trust-list and a revocation-list as input.
+ * This initialization method should call the ``clear`` method if valid, before
+ * attempting to initialize it with new values.
  * The lifecycle of the plugin is attached to a server or client config. The
  * ``clear`` method is called automatically when the config is destroyed. */
 
@@ -43082,11 +43093,13 @@ struct UA_EventLoop {
 
     /* Timed Callbacks
      * ~~~~~~~~~~~~~~~
-     * Cyclic callbacks are executed regularly with an interval.
-     * A timed callback is executed only once. */
+     * Cyclic callbacks are executed regularly with an interval. A timed
+     * callback is executed only once. The timer subsystem always uses the
+     * monotonic clock. */
 
     /* Time of the next cyclic callback. Returns the max DateTime if no cyclic
-     * callback is registered. */
+     * callback is registered. Returns the current monotonic time if a delayed
+     * callback is registered for immediate execution. */
     UA_DateTime (*nextCyclicTime)(UA_EventLoop *el);
 
     /* The execution interval is in ms. Returns the callbackId if the pointer is
@@ -43141,6 +43154,18 @@ struct UA_EventLoop {
     /* Stops the EventSource before deregistrering it */
     UA_StatusCode
     (*deregisterEventSource)(UA_EventLoop *el, UA_EventSource *es);
+
+    /* Locking
+     * ~~~~~~~
+     *
+     * For multi-threading the EventLoop is protected by a mutex. The mutex is
+     * expected to be recursive (can be taken more than once from the same
+     * thread). A common approach to avoid deadlocks is to establish an absolute
+     * ordering between the locks. Where the "lower" locks needs to be taken
+     * before the "upper" lock. The EventLoop-mutex is exposed here to allow it
+     * to be taken from the outside. */
+    void (*lock)(UA_EventLoop *el);
+    void (*unlock)(UA_EventLoop *el);
 };
 
 /**
@@ -45326,7 +45351,7 @@ typedef struct {
     /* If realtime-handling is required, set this pointer non-NULL and it will be used
      * to memcpy the value instead of using the Write service.
      * If the beforeWrite method pointer is set, it will be called before a memcpy update
-     * to the value. But param externalDataValue already contains the new value.
+     * to the value.
      * If the afterWrite method pointer is set, it will be called after a memcpy update
      * to the value. */
     UA_DataValue **externalDataValue;
@@ -48516,7 +48541,7 @@ typedef struct {
    UA_SessionStatistics ss;
 } UA_ServerStatistics;
 
-UA_ServerStatistics UA_EXPORT
+UA_ServerStatistics UA_EXPORT UA_THREADSAFE
 UA_Server_getStatistics(UA_Server *server);
 
 /**
@@ -50382,14 +50407,20 @@ _UA_END_DECLS
 
 _UA_BEGIN_DECLS
 
-/* Default implementation that accepts all certificates */
+/* Default implementation that accepts all certificates
+ * Any plugin implementation should invalidate an existing certificate verification
+ * by first calling the internal clear() method if it is not NULL.
+ * Refer to the default implementation in src/plugins/crypto/ua_pki_none.c */
 UA_EXPORT void
 UA_CertificateVerification_AcceptAll(UA_CertificateVerification *cv);
 
 #ifdef UA_ENABLE_ENCRYPTION
 
-/* Accept certificates based on a trust-list and a revocation-list. Based on
- * mbedTLS. */
+/* Accept certificates based on a trust-list and a revocation-list. Based on mbedTLS.
+ * Any plugin implementation should invalidate an existing certificate verification
+ * by first calling the internal clear() method if it is not NULL.
+ * Refer to the default implementation in src/plugins/crypto/mbedtls/ua_pki_mbedtls.c
+ * or src/plugins/crypto/openssl/ua_pki_openssl.c */
 UA_EXPORT UA_StatusCode
 UA_CertificateVerification_Trustlist(UA_CertificateVerification *cv,
                                      const UA_ByteString *certificateTrustList,
