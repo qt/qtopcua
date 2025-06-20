@@ -1176,20 +1176,21 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
             return;
         }
 
-        result = setSecurityPolicyInClientConfig(conf, localCertificate, privateKey, endpoint);
+        QString usedAuthSecurityPolicy;
+        result = setAuthSecurityPolicyInClientConfig(conf, localCertificate, privateKey, endpoint, authInfo.authenticationType(), &usedAuthSecurityPolicy);
 
         if (result != UA_STATUSCODE_GOOD) {
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set up security policies:" << static_cast<QOpcUa::UaStatusCode>(result);
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set up auth security policies:" << static_cast<QOpcUa::UaStatusCode>(result);
             emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
             UA_Client_delete(m_uaclient);
             m_uaclient = nullptr;
             return;
         }
 
-        result = setAuthSecurityPolicyInClientConfig(conf, localCertificate, privateKey, endpoint, authInfo.authenticationType());
+        result = setSecurityPolicyInClientConfig(conf, localCertificate, privateKey, endpoint, usedAuthSecurityPolicy);
 
         if (result != UA_STATUSCODE_GOOD) {
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set up auth security policies:" << static_cast<QOpcUa::UaStatusCode>(result);
+            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set up security policies:" << static_cast<QOpcUa::UaStatusCode>(result);
             emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::AccessDenied);
             UA_Client_delete(m_uaclient);
             m_uaclient = nullptr;
@@ -1324,7 +1325,7 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
             conf->userIdentityToken.content.decoded.data = token;
 
             if (result == UA_STATUSCODE_GOOD)
-                result = setAuthSecurityPolicyInClientConfig(conf, cert, key, endpoint, authInfo.authenticationType());
+                result = setAuthSecurityPolicyInClientConfig(conf, cert, key, endpoint, authInfo.authenticationType(), nullptr);
 
             if (result != UA_STATUSCODE_GOOD) {
                 qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to initialize certificate auth:" << UA_StatusCode_name(result);
@@ -2239,32 +2240,43 @@ bool Open62541AsyncBackend::loadPrivateKeyWithPotentialPassword(const QString &p
 
 // Only add the security policy the requested endpoint requires
 UA_StatusCode Open62541AsyncBackend::setSecurityPolicyInClientConfig(UA_ClientConfig *conf, const UA_ByteString &cert, const UA_ByteString &key,
-                                                                     const QOpcUaEndpointDescription &desc)
+                                                                     const QOpcUaEndpointDescription &desc, const QString &additionalAuthSecurityPolicy)
 {
-    // None is already present
-    if (desc.securityPolicy() == NonePolicy)
+    QStringList policiesToAdd;
+    if (desc.securityPolicy() != NonePolicy)
+        policiesToAdd.push_back(desc.securityPolicy());
+
+    if (!policiesToAdd.contains(additionalAuthSecurityPolicy))
+        policiesToAdd.append(additionalAuthSecurityPolicy);
+
+    if (policiesToAdd.isEmpty())
         return UA_STATUSCODE_GOOD;
 
-    const size_t numPolicies = conf->securityPoliciesSize + 1;
+    const size_t numPolicies = conf->securityPoliciesSize + policiesToAdd.size();
     conf->securityPolicies = static_cast<UA_SecurityPolicy *>(UA_realloc(conf->securityPolicies, sizeof(UA_SecurityPolicy) * numPolicies));
 
-    UA_StatusCode result = UA_STATUSCODE_BADINVALIDARGUMENT;
+    UA_StatusCode result = UA_STATUSCODE_GOOD;
 
-    if (desc.securityPolicy() == Basic128Rsa15Policy)
-        result = UA_SecurityPolicy_Basic128Rsa15(&conf->securityPolicies[conf->securityPoliciesSize++],
-                                                 cert, key, conf->logging);
-    else if (desc.securityPolicy() == Basic256Policy)
-        result = UA_SecurityPolicy_Basic256(&conf->securityPolicies[conf->securityPoliciesSize++],
-                                            cert, key, conf->logging);
-    else if (desc.securityPolicy() == Aes256Sha256RsaPssPolicy)
-        result = UA_SecurityPolicy_Aes256Sha256RsaPss(&conf->securityPolicies[conf->securityPoliciesSize++],
+    for (const auto &policy : policiesToAdd) {
+        if (policy == Basic128Rsa15Policy)
+            result = UA_SecurityPolicy_Basic128Rsa15(&conf->securityPolicies[conf->securityPoliciesSize++],
+                                                     cert, key, conf->logging);
+        else if (policy == Basic256Policy)
+            result = UA_SecurityPolicy_Basic256(&conf->securityPolicies[conf->securityPoliciesSize++],
+                                                cert, key, conf->logging);
+        else if (policy == Aes256Sha256RsaPssPolicy)
+            result = UA_SecurityPolicy_Aes256Sha256RsaPss(&conf->securityPolicies[conf->securityPoliciesSize++],
+                                                          cert, key, conf->logging);
+        else if (policy == Basic256Sha256Policy)
+            result = UA_SecurityPolicy_Basic256Sha256(&conf->securityPolicies[conf->securityPoliciesSize++],
                                                       cert, key, conf->logging);
-    else if (desc.securityPolicy() == Basic256Sha256Policy)
-        result = UA_SecurityPolicy_Basic256Sha256(&conf->securityPolicies[conf->securityPoliciesSize++],
-                                                  cert, key, conf->logging);
-    else if (desc.securityPolicy() == Aes128Sha256RsaOaepPolicy)
-        result = UA_SecurityPolicy_Aes128Sha256RsaOaep(&conf->securityPolicies[conf->securityPoliciesSize++],
-                                                       cert, key, conf->logging);
+        else if (policy == Aes128Sha256RsaOaepPolicy)
+            result = UA_SecurityPolicy_Aes128Sha256RsaOaep(&conf->securityPolicies[conf->securityPoliciesSize++],
+                                                           cert, key, conf->logging);
+
+        if (result != UA_STATUSCODE_GOOD)
+            return result;
+    }
 
     return result;
 }
@@ -2273,20 +2285,30 @@ UA_StatusCode Open62541AsyncBackend::setSecurityPolicyInClientConfig(UA_ClientCo
 UA_StatusCode Open62541AsyncBackend::setAuthSecurityPolicyInClientConfig(UA_ClientConfig *conf, const UA_ByteString &cert,
                                                                          const UA_ByteString &key,
                                                                          const QOpcUaEndpointDescription &desc,
-                                                                         QOpcUaUserTokenPolicy::TokenType tokenType)
+                                                                         QOpcUaUserTokenPolicy::TokenType tokenType,
+                                                                         QString *addedSecurityPolicyUri)
 {
     // Open62541 now also demands the endpoint's security policy for anonymous tokens
     // if the policy uri in the token is empty.
 
+    // Due to a bug in open62541 1.4, config->securityPolicies must also contain the
+    // policy used for authentication, even if the token is encrypted using the policy
+    // from config->authSecurityPolicies.
+    // Until this is fixed, the addedSecurityPolicyUri parameter provides the used
+    // policy to setSecurityPolicyInClientConfig().
+
     // No None policy for auth, but all encrypting policies
     const size_t numPolicies = 1;
+
+    if (addedSecurityPolicyUri)
+        addedSecurityPolicyUri->clear();
 
     for (size_t i = 0; i < conf->authSecurityPoliciesSize; i++) {
         conf->authSecurityPolicies[i].clear(&conf->authSecurityPolicies[i]);
     }
-
-    conf->authSecurityPolicies = static_cast<UA_SecurityPolicy*>(UA_realloc(conf->authSecurityPolicies, sizeof(UA_SecurityPolicy) * numPolicies));
-    conf->authSecurityPoliciesSize = numPolicies;
+    UA_free(conf->authSecurityPolicies);
+    conf->authSecurityPolicies = nullptr;
+    conf->authSecurityPoliciesSize = 0;
 
     UA_StatusCode result = UA_STATUSCODE_BADINVALIDARGUMENT;
 
@@ -2300,9 +2322,6 @@ UA_StatusCode Open62541AsyncBackend::setAuthSecurityPolicyInClientConfig(UA_Clie
         if (currentPolicy.isEmpty())
             currentPolicy = desc.securityPolicy();
 
-        if (currentPolicy == NonePolicy)
-            continue;
-
         // Assumes that supportedSecurityPolicies() is sorted by strength
         // The supportedSecurityPolicies() has been modified accordingly.
         const auto index = m_clientImpl->supportedSecurityPolicies().indexOf(currentPolicy);
@@ -2313,6 +2332,13 @@ UA_StatusCode Open62541AsyncBackend::setAuthSecurityPolicyInClientConfig(UA_Clie
     }
 
     if (!selectedPolicy.isEmpty()) {
+        if (selectedPolicy == NonePolicy)
+            return UA_STATUSCODE_GOOD;
+
+        conf->authSecurityPolicies = static_cast<UA_SecurityPolicy*>(UA_realloc(conf->authSecurityPolicies,
+                                                                                sizeof(UA_SecurityPolicy) * numPolicies));
+        conf->authSecurityPoliciesSize = numPolicies;
+
         if (selectedPolicy == Basic128Rsa15Policy)
             result = UA_SecurityPolicy_Basic128Rsa15(&conf->authSecurityPolicies[0],
                                                      cert, key, conf->logging);
@@ -2328,6 +2354,9 @@ UA_StatusCode Open62541AsyncBackend::setAuthSecurityPolicyInClientConfig(UA_Clie
         else if (selectedPolicy == Aes128Sha256RsaOaepPolicy)
             result = UA_SecurityPolicy_Aes128Sha256RsaOaep(&conf->authSecurityPolicies[0],
                                                            cert, key, conf->logging);
+
+        if (addedSecurityPolicyUri)
+            *addedSecurityPolicyUri = selectedPolicy;
     }
 
     return result;

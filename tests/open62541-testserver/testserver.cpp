@@ -237,13 +237,11 @@ bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
         return false;
     }
 
-    config->allowNonePolicyPassword = true;
-
     return true;
 }
 #endif
 
-bool TestServer::init()
+bool TestServer::init(bool noNonePolicyPassword)
 {
     bool success;
 
@@ -257,6 +255,7 @@ bool TestServer::init()
 
 #if defined UA_ENABLE_ENCRYPTION
     success = createSecureServerConfig(m_config);
+    m_config->allowNonePolicyPassword = !noNonePolicyPassword;
 #else
     success = createInsecureServerConfig(m_config);
 #endif

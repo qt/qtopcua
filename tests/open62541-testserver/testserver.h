@@ -60,7 +60,7 @@ class TestServer : public QObject
 public:
     explicit TestServer(QObject *parent = nullptr);
     ~TestServer();
-    bool init();
+    bool init(bool noNonePolicyPassword);
     bool createInsecureServerConfig(UA_ServerConfig *config);
 #if defined UA_ENABLE_ENCRYPTION
     bool createSecureServerConfig(UA_ServerConfig *config);
