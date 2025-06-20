@@ -5,6 +5,7 @@
 #include "qopen62541utils.h"
 #include "generated/namespace_qtopcuatestmodel_generated.h"
 
+#include <QtCore/QCommandLineParser>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
 #include <QtCore/QThread>
@@ -38,7 +39,7 @@ static void signalHandler(int sig) {
     running = false;
 }
 
-int main()
+int main(int argc, char **argv)
 {
     signal(SIGINT, signalHandler);
     signal(SIGTERM, signalHandler);
@@ -48,8 +49,17 @@ int main()
     signal(SIGPIPE, SIG_IGN);
 #endif
 
+    QCommandLineParser parser;
+    const QCommandLineOption noNonePasswordOption(QStringLiteral("noNonePolicyPassword"));
+    parser.addOption(noNonePasswordOption);
+
+    QStringList args;
+    for (int i = 0; i < argc; ++i)
+        args.push_back(QString::fromUtf8(argv[i]));
+    parser.parse(args);
+
     TestServer server;
-    if (!server.init()) {
+    if (!server.init(parser.isSet(noNonePasswordOption))) {
         qCritical() << "Could not initialize server.";
         return -1;
     }
