@@ -225,7 +225,7 @@ QByteArray QOpcUaX509CertificateSigningRequestPrivate::createRequest(const QOpcU
     if (m_extensions.size() > 0) {
         auto exts = q_sk_X509_EXTENSION_new_null();
 
-        for (auto extension : m_extensions) {
+        for (auto extension : std::as_const(m_extensions)) {
             auto ex = createExtension(extension);
             if (ex)
                 q_sk_X509_EXTENSION_push(exts, ex); // returns void
@@ -331,7 +331,7 @@ QByteArray QOpcUaX509CertificateSigningRequestPrivate::createSelfSignedCertifica
         return QByteArray();
     }
 
-    for (auto extension : m_extensions) {
+    for (auto extension : std::as_const(m_extensions)) {
         auto ex = createExtension(extension);
         if (ex) {
             if (!q_X509_add_ext(x509, ex, -1)) {

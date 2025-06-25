@@ -35,8 +35,8 @@ static QString messageSecurityModeToString(QOpcUaEndpointDescription::MessageSec
 {\
     QTest::addColumn<QString>("backend");\
     QTest::addColumn<QOpcUaEndpointDescription>("endpoint");\
-    for (const auto &backend : m_backends)\
-        for (const auto &endpoint : m_endpoints) { \
+    for (const auto &backend : std::as_const(m_backends))\
+        for (const auto &endpoint : std::as_const(m_endpoints)) { \
             const QString rowName = QStringLiteral("%1 using %2 %3") \
                     .arg(backend, endpoint.securityPolicy(), \
                          messageSecurityModeToString(endpoint.securityMode())); \

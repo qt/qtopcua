@@ -214,7 +214,8 @@ RecursiveDescentParser::ParsingError RecursiveDescentParser::parseStructuredType
         if (xmlStreamReader.isEndElement()) {
             xmlStreamReader.readNext();
 
-            for (const auto &field : structuredType->fields()) {
+            const auto tempFields = structuredType->fields();
+            for (const auto &field : tempFields) {
                 if (field->recursive()) {
                     structuredType->setRecursive(true);
                     break;

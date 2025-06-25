@@ -110,14 +110,15 @@ void QOpcUaHistoryReadResponseImpl::handleDataAvailable(const QList<QOpcUaHistor
         for (const auto &result : data) {
             auto &target = m_data[m_dataMapping.at(index++)];
             target.setStatusCode(result.statusCode());
-            for (const auto &value : result.result()) {
+            const auto tempResult = result.result();
+            for (const auto &value : tempResult) {
                 target.addValue(value);
             }
         }
     }
 
     bool found = false;
-    for (const auto &continuationPoint : m_continuationPoints) {
+    for (const auto &continuationPoint : std::as_const(m_continuationPoints)) {
         if (!continuationPoint.isEmpty()) {
             setState(QOpcUaHistoryReadResponse::State::MoreDataAvailable);
             found = true;
@@ -147,14 +148,15 @@ void QOpcUaHistoryReadResponseImpl::handleEventsAvailable(const QList<QOpcUaHist
         for (const auto &result : data) {
             auto &target = m_events[m_dataMapping.at(index++)];
             target.setStatusCode(result.statusCode());
-            for (const auto &event : result.events()) {
+            const auto tempEvents = result.events();
+            for (const auto &event : tempEvents) {
                 target.addEvent(event);
             }
         }
     }
 
     bool found = false;
-    for (const auto &continuationPoint : m_continuationPoints) {
+    for (const auto &continuationPoint : std::as_const(m_continuationPoints)) {
         if (!continuationPoint.isEmpty()) {
             setState(QOpcUaHistoryReadResponse::State::MoreDataAvailable);
             found = true;
@@ -200,7 +202,7 @@ QOpcUaHistoryReadRawRequest QOpcUaHistoryReadResponseImpl::createReadRawRequestW
     QList<int> newDataMapping;
     QList<QByteArray> newContinuationPoints;
 
-    for (const auto &continuationPoint : m_continuationPoints) {
+    for (const auto &continuationPoint : std::as_const(m_continuationPoints)) {
         int mappingIndex = 0;
         if (m_dataMapping.empty())
             mappingIndex = arrayIndex;
@@ -234,7 +236,7 @@ QOpcUaHistoryReadEventRequest QOpcUaHistoryReadResponseImpl::createEventRequestW
     QList<int> newDataMapping;
     QList<QByteArray> newContinuationPoints;
 
-    for (const auto &continuationPoint : m_continuationPoints) {
+    for (const auto &continuationPoint : std::as_const(m_continuationPoints)) {
         int mappingIndex = 0;
         if (m_dataMapping.empty())
             mappingIndex = arrayIndex;

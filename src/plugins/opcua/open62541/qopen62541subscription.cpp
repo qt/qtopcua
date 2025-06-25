@@ -252,7 +252,7 @@ void QOpen62541Subscription::modifyMonitoring(quint64 handle, QOpcUa::NodeAttrib
             qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Modifying TriggeredItemIds failed with"
                                                   << UA_StatusCode_name(triggeringRes.responseHeader.serviceResult);
 
-            for (const auto &entry : itemsToAdd)
+            for (const auto &entry : std::as_const(itemsToAdd))
                 failedItems[entry] = QOpcUa::UaStatusCode(triggeringRes.responseHeader.serviceResult);
             p.setFailedTriggeredItemsStatus(failedItems);
             p.setStatusCode(QOpcUa::UaStatusCode(triggeringRes.responseHeader.serviceResult));
@@ -364,7 +364,7 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::N
             deleteRequest.monitoredItemIds = &res.monitoredItemId;
             UA_Client_MonitoredItems_delete(m_backend->m_uaclient, deleteRequest);
 
-            for (const auto &entry : triggeredItems)
+            for (const auto &entry : std::as_const(triggeredItems))
                 failedTriggerLinks.insert(entry, QOpcUa::UaStatusCode(triggeringRes.responseHeader.serviceResult));
 
             QOpcUaMonitoringParameters s;

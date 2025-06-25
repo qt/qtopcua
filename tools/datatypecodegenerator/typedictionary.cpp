@@ -111,6 +111,6 @@ void TypeDictionary::print() const
 void TypeDictionary::accept(Visitor *visitor)
 {
     visitor->visit(this);
-    for (const auto &element : m_types)
+    for (const auto &element : std::as_const(m_types))
         element->accept(visitor);
 }
