@@ -18,7 +18,7 @@
 #define defineDataMethod(name) void name()\
 {\
     QTest::addColumn<QString>("backend");\
-    for (const auto &backend : m_backends) {\
+    for (const auto &backend : std::as_const(m_backends)) {\
         const QString rowName = QStringLiteral("%1").arg(backend); \
         QTest::newRow(rowName.toLatin1().constData()) << backend ; \
     }\

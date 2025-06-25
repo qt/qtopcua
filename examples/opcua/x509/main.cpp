@@ -95,5 +95,8 @@ int main(int argc, char **argv)
     QByteArray selfSignedCertificateData = csr.createSelfSignedCertificate(key);
     //! [4]
 
+    Q_UNUSED(certificateSigningRequestData)
+    Q_UNUSED(selfSignedCertificateData)
+
     return 0;
 }

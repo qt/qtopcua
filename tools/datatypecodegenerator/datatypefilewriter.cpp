@@ -92,14 +92,16 @@ void DataTypeFileWriter::writeStructuredTypeCpp(const StructuredType *structured
     output << "#include \"" << m_prefix.toLower() << structuredType->name().toLower() << ".h\"";
 
     QList<QString> mutualIncludes;
-    for (const auto field : structuredType->fields()) {
+    const auto typeFields = structuredType->fields();
+    for (const auto field : typeFields) {
         const auto typeName = field->typeNameSecondPart();
-        for (const auto &type : m_generateMapping) {
+        for (const auto &type : std::as_const(m_generateMapping)) {
             StructuredType *tempStructuredType = dynamic_cast<StructuredType *>(type);
             if (tempStructuredType) {
                 if (tempStructuredType == structuredType)
                     continue;
-                for (const auto &tempField : tempStructuredType->fields()) {
+                const auto tempFields = tempStructuredType->fields();
+                for (const auto &tempField : tempFields) {
                     if (typeName == tempStructuredType->name()
                         && tempField->typeNameSecondPart() == structuredType->name()) {
                         if (!mutualIncludes.contains(
@@ -169,10 +171,11 @@ void DataTypeFileWriter::writeStructuredTypeCppDataClass(const StructuredType *s
 void DataTypeFileWriter::writeStructuredTypeCppDataClassMember(const StructuredType *structuredType,
                                                                QTextStream &output)
 {
+    const auto typeFields = structuredType->fields();
     QList<Field *> unionMember;
     if (structuredType->hasUnion()) {
-        for (const auto &possibleUnionMember : structuredType->fields()) {
-            for (const auto &field : structuredType->fields()) {
+        for (const auto &possibleUnionMember : typeFields) {
+            for (const auto &field : typeFields) {
                 if (field->isUnion()) {
                     if (field->switchField() == possibleUnionMember->name()
                         && !unionMember.contains(possibleUnionMember))
@@ -182,8 +185,8 @@ void DataTypeFileWriter::writeStructuredTypeCppDataClassMember(const StructuredT
         }
     }
     QList<Field *> arrayLengthfields;
-    for (const auto &possibleArrayLengthField : structuredType->fields()) {
-        for (const auto &field : structuredType->fields()) {
+    for (const auto &possibleArrayLengthField : typeFields) {
+        for (const auto &field : typeFields) {
             if (possibleArrayLengthField->name() == field->lengthField()
                 && !arrayLengthfields.contains(possibleArrayLengthField))
                 arrayLengthfields.push_back(possibleArrayLengthField);
@@ -192,20 +195,20 @@ void DataTypeFileWriter::writeStructuredTypeCppDataClassMember(const StructuredT
 
     QList<Field *> switchFields;
     if (structuredType->hasSwitchfield()) {
-        for (const auto &possibleOptionalMember : structuredType->fields()) {
-            for (const auto &field : structuredType->fields()) {
+        for (const auto &possibleOptionalMember : typeFields) {
+            for (const auto &field : typeFields) {
                 if (!possibleOptionalMember->switchField().isEmpty() && possibleOptionalMember->switchField() == field->name())
                     switchFields.push_back(field);
             }
         }
     }
 
-    for (const auto &field : structuredType->fields()) {
+    for (const auto &field : typeFields) {
         if (field->isInStructuredTypeBitMask() && !switchFields.contains(field))
             continue;
 
         bool isEnumeration = false;
-        for (const auto &enumeratedType : m_enumeratedTypes) {
+        for (const auto &enumeratedType : std::as_const(m_enumeratedTypes)) {
             if (enumeratedType->name() == field->typeName().split(":").at(1)) {
                 isEnumeration = true;
                 field->setIsEnum(true);
@@ -369,8 +372,11 @@ void DataTypeFileWriter::writeStructuredTypeCppOperatorEquality(const Structured
            << Util::lineBreak();
     QList<Field *> unionSwitchfield;
     QList<Field *> arrayLengthfields;
-    for (const auto &possibleMember : structuredType->fields()) {
-        for (const auto &field : structuredType->fields()) {
+
+    const auto typeFields = structuredType->fields();
+
+    for (const auto &possibleMember : typeFields) {
+        for (const auto &field : typeFields) {
             if (possibleMember->name() == field->lengthField()
                 && !arrayLengthfields.contains(possibleMember))
                 arrayLengthfields.push_back(possibleMember);
@@ -387,7 +393,7 @@ void DataTypeFileWriter::writeStructuredTypeCppOperatorEquality(const Structured
     }
 
     if (structuredType->containsBitMask()) {
-        for (const auto &field : structuredType->fields()) {
+        for (const auto &field : typeFields) {
             if (!field->switchField().isEmpty() && !arrayLengthfields.contains(field)) {
                 const auto switchField = Util::lowerFirstLetter(field->switchField());
                 output << Util::indent(1) << "if (data->" << switchField << " != rhs.data->" << switchField << " || (data->" << switchField << " && ";
@@ -401,7 +407,7 @@ void DataTypeFileWriter::writeStructuredTypeCppOperatorEquality(const Structured
 
     auto counterGeneratedTypes = 0;
     if (structuredType->hasUnion()) {
-        for (const auto &field : structuredType->fields()) {
+        for (const auto &field : typeFields) {
             if (!arrayLengthfields.contains(field) && !unionSwitchfield.contains(field) && !field->isInStructuredTypeBitMask()) {
                 if (structuredType->containsBitMask() && !field->switchField().isEmpty())
                     continue;
@@ -418,7 +424,7 @@ void DataTypeFileWriter::writeStructuredTypeCppOperatorEquality(const Structured
     } else {
         output << Util::indent(1) << "return ";
 
-        for (const auto &field : structuredType->fields()) {
+        for (const auto &field : typeFields) {
             if (!arrayLengthfields.contains(field) && !unionSwitchfield.contains(field) && !field->isInStructuredTypeBitMask()) {
                 if (structuredType->containsBitMask() && !field->switchField().isEmpty())
                     continue;
@@ -480,9 +486,12 @@ void DataTypeFileWriter::writeStructuredTypeCppGetter(const StructuredType *stru
                                                       QTextStream &output)
 {
     QList<Field *> unionMember;
+
+    const auto typeFields = structuredType->fields();
+
     if (structuredType->hasUnion()) {
-        for (const auto &possibleUnionMember : structuredType->fields()) {
-            for (const auto &field : structuredType->fields()) {
+        for (const auto &possibleUnionMember : typeFields) {
+            for (const auto &field : typeFields) {
                 if (field->isUnion()) {
                     if (field->switchField() == possibleUnionMember->name()
                         && !unionMember.contains(possibleUnionMember))
@@ -492,8 +501,8 @@ void DataTypeFileWriter::writeStructuredTypeCppGetter(const StructuredType *stru
         }
     }
     QList<Field *> arrayLengthfields;
-    for (const auto &possibleArrayLengthField : structuredType->fields()) {
-        for (const auto &field : structuredType->fields()) {
+    for (const auto &possibleArrayLengthField : typeFields) {
+        for (const auto &field : typeFields) {
             if (possibleArrayLengthField->name() == field->lengthField()
                 && !arrayLengthfields.contains(possibleArrayLengthField))
                 arrayLengthfields.push_back(possibleArrayLengthField);
@@ -502,15 +511,15 @@ void DataTypeFileWriter::writeStructuredTypeCppGetter(const StructuredType *stru
 
     QList<Field *> switchFields;
     if (structuredType->hasSwitchfield()) {
-        for (const auto &possibleOptionalMember : structuredType->fields()) {
-            for (const auto &field : structuredType->fields()) {
+        for (const auto &possibleOptionalMember : typeFields) {
+            for (const auto &field : typeFields) {
                 if (!possibleOptionalMember->switchField().isEmpty() && possibleOptionalMember->switchField() == field->name())
                     switchFields.push_back(field);
             }
         }
     }
 
-    for (const auto &field : structuredType->fields()) {
+    for (const auto &field : typeFields) {
         if (!arrayLengthfields.contains(field) && !(field->isInStructuredTypeBitMask() && !switchFields.contains(field))) {
             const auto tmpFunctionName = field->lowerFirstName();
 
@@ -539,7 +548,7 @@ void DataTypeFileWriter::writeStructuredTypeCppGetter(const StructuredType *stru
                     }
                     if (!isPreCoded) {
                         bool isEnum = false;
-                        for (const auto &enumeratedType : m_enumeratedTypes) {
+                        for (const auto &enumeratedType : std::as_const(m_enumeratedTypes)) {
                             if (enumeratedType->name() == field->typeName().split(":").at(1))
                                 isEnum = true;
                         }
@@ -652,7 +661,7 @@ void DataTypeFileWriter::writeStructuredTypeCppSetter(const Field *field,
 
         if (!isPreCoded) {
             bool isEnum = false;
-            for (const auto &enumeratedType : m_enumeratedTypes) {
+            for (const auto &enumeratedType : std::as_const(m_enumeratedTypes)) {
                 if (enumeratedType->name() == field->typeName().split(":").at(1))
                     isEnum = true;
             }
@@ -739,7 +748,9 @@ void DataTypeFileWriter::writeStructuredTypeHeaderIncludes(const StructuredType 
     QList<QString> qtClassIncludes;
     QList<QString> qtPredifinedClasses;
 
-    for (const auto &field : structuredType->fields()) {
+    const auto typeFields = structuredType->fields();
+
+    for (const auto &field : typeFields) {
         const auto typeName = field->typeNameSecondPart();
         QString include;
         if (field->typeName().startsWith(QStringLiteral("%1:").arg(StringIdentifier::binaryTypeIdentifier))) {
@@ -771,7 +782,7 @@ void DataTypeFileWriter::writeStructuredTypeHeaderIncludes(const StructuredType 
             if (typeName != structuredType->name()) {
                 if (!isPrecoded) {
                     bool isEnum = false;
-                    for (const auto &enumeratedType : m_enumeratedTypes) {
+                    for (const auto &enumeratedType : std::as_const(m_enumeratedTypes)) {
                         if (enumeratedType->name() == typeName)
                             isEnum = true;
                     }
@@ -785,13 +796,14 @@ void DataTypeFileWriter::writeStructuredTypeHeaderIncludes(const StructuredType 
 
                     } else {
                         bool isMutualInclude = false;
-                        for (const auto &type : m_generateMapping) {
+                        for (const auto &type : std::as_const(m_generateMapping)) {
                             StructuredType *tempStructuredType = dynamic_cast<StructuredType *>(
                                 type);
                             if (tempStructuredType) {
                                 if (tempStructuredType == structuredType)
                                     continue;
-                                for (const auto &tempField : tempStructuredType->fields()) {
+                                const auto tempFields = tempStructuredType->fields();
+                                for (const auto &tempField : tempFields) {
                                     const auto tempTypeName = tempField->typeNameSecondPart();
                                     if (typeName == tempStructuredType->name()
                                         && tempTypeName == structuredType->name()) {
@@ -866,12 +878,15 @@ void DataTypeFileWriter::writeStructuredTypeHeaderUnion(const StructuredType *st
     if (structuredType->hasUnion()) {
         QList<Field *> unions;
         QList<Field *> switchFields;
-        for (const auto &field : structuredType->fields()) {
+
+        const auto typeFields = structuredType->fields();
+
+        for (const auto &field : typeFields) {
             if (field->isUnion())
                 switchFields.push_back(field);
         }
         for (const auto &switchField : switchFields) {
-            for (const auto &structuredTypeField : structuredType->fields()) {
+            for (const auto &structuredTypeField : typeFields) {
                 if (switchField->switchField() == structuredTypeField->name()) {
                     if (!unions.contains(structuredTypeField))
                         unions.push_back(structuredTypeField);
@@ -879,8 +894,8 @@ void DataTypeFileWriter::writeStructuredTypeHeaderUnion(const StructuredType *st
             }
         }
         QList<Field *> arrayLengthfields;
-        for (const auto &possibleArrayLengthField : structuredType->fields()) {
-            for (const auto &field : structuredType->fields()) {
+        for (const auto &possibleArrayLengthField : typeFields) {
+            for (const auto &field : typeFields) {
                 if (possibleArrayLengthField->name() == field->lengthField()
                     && !arrayLengthfields.contains(possibleArrayLengthField))
                     arrayLengthfields.push_back(possibleArrayLengthField);
@@ -924,8 +939,11 @@ void DataTypeFileWriter::writeStructuredTypeHeaderGetterSetter(const StructuredT
     QList<Field *> unionMember;
     QList<Field *> arrayLengthfields;
     QList<Field *> switchFields;
-    for (const auto &possibleMember : structuredType->fields()) {
-        for (const auto &field : structuredType->fields()) {
+
+    const auto typeFields = structuredType->fields();
+
+    for (const auto &possibleMember : typeFields) {
+        for (const auto &field : typeFields) {
             if (possibleMember->name() == field->lengthField()
                 && !arrayLengthfields.contains(possibleMember))
                 arrayLengthfields.push_back(possibleMember);
@@ -936,7 +954,7 @@ void DataTypeFileWriter::writeStructuredTypeHeaderGetterSetter(const StructuredT
                 switchFields.push_back(field);
         }
     }
-    for (const auto &field : structuredType->fields()) {
+    for (const auto &field : typeFields) {
         if (!arrayLengthfields.contains(field) && !(field->isInStructuredTypeBitMask() && !switchFields.contains(field))) {
             const auto typeName = field->typeNameSecondPart();
             const auto tmpFunctionName = field->lowerFirstName();
@@ -1049,7 +1067,7 @@ void DataTypeFileWriter::writeStructuredTypeHeaderGetterSetter(const StructuredT
                                    << Util::lineBreak(2);
                         } else {
                             bool isEnum = false;
-                            for (const auto &enumeratedType : m_enumeratedTypes) {
+                            for (const auto &enumeratedType : std::as_const(m_enumeratedTypes)) {
                                 if (enumeratedType->name() == field->typeName().split(":").at(1))
                                     isEnum = true;
                             }
@@ -1106,8 +1124,9 @@ void DataTypeFileWriter::writeStructuredTypeCppDebug(const StructuredType *struc
 
     QSet<Field *> lengthFields;
 
-    for (const auto &field : structuredType->fields()) {
-        for (const auto &innerField : structuredType->fields()) {
+    const auto typeFields = structuredType->fields();
+    for (const auto &field : typeFields) {
+        for (const auto &innerField : typeFields) {
             if (!field->lengthField().isEmpty() && field->lengthField() == innerField->name())
                 lengthFields.insert(innerField);
         }
@@ -1115,8 +1134,8 @@ void DataTypeFileWriter::writeStructuredTypeCppDebug(const StructuredType *struc
 
     bool parameterUsed = false;
 
-    for (const auto &field : structuredType->fields()) {
-        if (structuredType->hasUnion() && field == structuredType->fields().constFirst())
+    for (const auto &field : typeFields) {
+        if (structuredType->hasUnion() && field == typeFields.constFirst())
             continue;
 
         if (field->isInStructuredTypeBitMask())
@@ -1163,7 +1182,7 @@ void DataTypeFileWriter::writeStructuredTypeCppDebug(const StructuredType *struc
             output << Util::lineBreak();
         }
 
-        if (!structuredType->hasUnion() && structuredType->hasSwitchfield() && field != structuredType->fields().constLast())
+        if (!structuredType->hasUnion() && structuredType->hasSwitchfield() && field != typeFields.constLast())
             output << Util::indent(1 + indentOffset) << "firstFieldPrinted = true;" << Util::lineBreak();
 
         if (structuredType->hasUnion() || !field->switchField().isEmpty())
@@ -1208,11 +1227,12 @@ DataTypeFileWriter::GeneratingError DataTypeFileWriter::writeEnumeratedTypes()
            << Util::lineBreak();
     output << "Q_NAMESPACE"
            << Util::lineBreak(2);
-    for (const auto &enumeratedType : m_enumeratedTypes) {
+    for (const auto &enumeratedType : std::as_const(m_enumeratedTypes)) {
         output << "enum class " << enumeratedType->name() << " {" << Util::lineBreak(1);
-        for (const auto &enumeratedValue : enumeratedType->values()) {
+        const auto tempValues = enumeratedType->values();
+        for (const auto &enumeratedValue : tempValues) {
             output << Util::indent(1) << enumeratedValue->name() << " = " << enumeratedValue->value();
-            if (!enumeratedType->values().endsWith(enumeratedValue))
+            if (!tempValues.endsWith(enumeratedValue))
                 output << ",";
             output << Util::lineBreak();
         }
@@ -1270,7 +1290,7 @@ DataTypeFileWriter::GeneratingError DataTypeFileWriter::generateTypes(
     const QList<XmlElement *> &types)
 {
     m_generateMapping.append(types);
-    for (const auto &type : m_generateMapping) {
+    for (const auto &type : std::as_const(m_generateMapping)) {
         const auto enumeratedType = dynamic_cast<EnumeratedType *>(type);
         if (enumeratedType)
             if (!m_enumeratedTypes.contains(enumeratedType))
@@ -1280,7 +1300,7 @@ DataTypeFileWriter::GeneratingError DataTypeFileWriter::generateTypes(
         return GeneratingError::UnableToWrite;
     }
 
-    for (const auto &type : m_generateMapping) {
+    for (const auto &type : std::as_const(m_generateMapping)) {
         const auto structuredType = dynamic_cast<StructuredType *>(type);
         if (structuredType) {
             if (generateFile(type, StringIdentifier::headerIdentifier) != GeneratingError::NoError)
@@ -1320,7 +1340,7 @@ bool DataTypeFileWriter::writeBundleFiles()
 
         out << "#pragma once" << Util::lineBreak(2);
 
-        for (const auto &header : m_generatedHeaderFileNames)
+        for (const auto &header : std::as_const(m_generatedHeaderFileNames))
             out << "#include \"" << header << "\"" << Util::lineBreak();
     }
 
@@ -1339,7 +1359,7 @@ bool DataTypeFileWriter::writeBundleFiles()
         if (hasEnums)
             out << "#include \"" << QStringLiteral("moc_%1enumerations.cpp").arg(m_prefix.toLower()) << "\"" << Util::lineBreak();
 
-        for (const auto &source : m_generatedSourceFileNames)
+        for (const auto &source : std::as_const(m_generatedSourceFileNames))
             out << "#include \"" << source << "\"" << Util::lineBreak();
     }
 

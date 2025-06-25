@@ -2364,7 +2364,8 @@ UA_StatusCode Open62541AsyncBackend::setAuthSecurityPolicyInClientConfig(UA_Clie
 
     QString selectedPolicy;
     int lastIndex = -1;
-    for (const auto &token : desc.userIdentityTokens()) {
+    const auto tempTokens = desc.userIdentityTokens();
+    for (const auto &token : tempTokens) {
         if (token.tokenType() != tokenType)
             continue;
 

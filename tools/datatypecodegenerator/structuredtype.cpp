@@ -43,7 +43,7 @@ void StructuredType::print() const
 void StructuredType::accept(Visitor *visitor)
 {
     visitor->visit(this);
-    for (const auto &field : m_fields)
+    for (const auto &field : std::as_const(m_fields))
         field->accept(visitor);
 }
 

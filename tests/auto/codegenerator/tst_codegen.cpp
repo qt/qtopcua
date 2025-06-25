@@ -101,7 +101,7 @@ public:
 #define defineDataMethod(name) void name()\
 {\
     QTest::addColumn<QOpcUaClient *>("opcuaClient");\
-    for (auto *client: m_clients)\
+    for (auto *client : std::as_const(m_clients))\
         QTest::newRow(client->backend().toLatin1().constData()) << client;\
 }
 
@@ -173,7 +173,7 @@ void Tst_GeneratedDataTypes::initTestCase()
     const quint16 defaultPort = 43344;
     const QHostAddress defaultHost(QHostAddress::LocalHost);
 
-    for (const auto &backend: m_backends) {
+    for (const auto &backend: std::as_const(m_backends)) {
         QVariantMap backendOptions;
 
         QOpcUaClient *client = m_opcUa.createClient(backend, backendOptions);

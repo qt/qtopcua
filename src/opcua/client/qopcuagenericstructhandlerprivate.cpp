@@ -90,7 +90,8 @@ QOpcUaGenericStructValue QOpcUaGenericStructHandlerPrivate::createGenericStructV
         QOpcUaGenericStructValue value(entry.value().name, typeId, entry.value().structureDefinition);
 
         if (entry.value().structureDefinition.structureType() != QOpcUaStructureDefinition::StructureType::Union) {
-            for (const auto &field : entry.value().structureDefinition.fields()) {
+            const auto tempFields = entry.value().structureDefinition.fields();
+            for (const auto &field : tempFields) {
                 if (field.isOptional())
                     continue;
 
@@ -192,8 +193,10 @@ QOpcUaGenericStructValue QOpcUaGenericStructHandlerPrivate::decodeStructInternal
     QOpcUaGenericStructValue result(entry->name, entry->nodeId, entry->structureDefinition);
     auto &fields = result.fieldsRef();
 
+    const auto definitionFields = entry->structureDefinition.fields();
+
     if (entry->structureDefinition.structureType() == QOpcUaStructureDefinition::StructureType::Structure) {
-        for (const auto &field : entry->structureDefinition.fields()) {
+        for (const auto &field : definitionFields) {
             fields[field.name()] = decodeKnownTypesInternal(decoder, field.dataType(), field.valueRank(), success, currentDepth + 1);
             if (!success) {
                 qCWarning(lcGenericStructHandler) << "Failed to decode struct field";
@@ -210,7 +213,7 @@ QOpcUaGenericStructValue QOpcUaGenericStructHandlerPrivate::decodeStructInternal
         if (!switchField)
             return result; // Empty union, no need to continue processing
 
-        if (switchField > static_cast<quint32>(entry->structureDefinition.fields().size())) {
+        if (switchField > static_cast<quint32>(definitionFields.size())) {
             qCWarning(lcGenericStructHandler) << "Union switch field out of bounds";
             success = false;
             return QOpcUaGenericStructValue();
@@ -218,7 +221,7 @@ QOpcUaGenericStructValue QOpcUaGenericStructHandlerPrivate::decodeStructInternal
 
         qCDebug(lcGenericStructHandler) << "Decode union field with switch value" << switchField;
 
-        auto field = entry->structureDefinition.fields().at(switchField - 1);
+        auto field = definitionFields.at(switchField - 1);
 
         fields[field.name()] = decodeKnownTypesInternal(decoder, field.dataType(), field.valueRank() > 0, success, currentDepth + 1);
         if (!success) {
@@ -233,7 +236,7 @@ QOpcUaGenericStructValue QOpcUaGenericStructHandlerPrivate::decodeStructInternal
         }
 
         int optionalFieldIndex = 0;
-        for (const auto &field : entry->structureDefinition.fields()) {
+        for (const auto &field : definitionFields) {
             if (field.isOptional() && !(mask & (1 << optionalFieldIndex++)))
                 continue;
 
@@ -445,8 +448,10 @@ bool QOpcUaGenericStructHandlerPrivate::encodeStructInternal(QOpcUaBinaryDataEnc
         return false;
     }
 
+    const auto definitionFields = value.structureDefinition().fields();
+
     if (value.structureDefinition().structureType() == QOpcUaStructureDefinition::StructureType::Structure) {
-        for (const auto &field : value.structureDefinition().fields()) {
+        for (const auto &field : definitionFields) {
             if (!value.fields().contains(field.name())) {
                 qCWarning(lcGenericStructHandler) << "Field" << field.name() << "is missing, unable to encode struct";
                 return false;
@@ -462,7 +467,7 @@ bool QOpcUaGenericStructHandlerPrivate::encodeStructInternal(QOpcUaBinaryDataEnc
     } else if (value.structureDefinition().structureType() == QOpcUaStructureDefinition::StructureType::StructureWithOptionalFields) {
         quint32 mask = 0;
         quint32 index = 0;
-        for (const auto &field : value.structureDefinition().fields()) {
+        for (const auto &field : definitionFields) {
             if (!field.isOptional())
                 continue;
 
@@ -479,7 +484,7 @@ bool QOpcUaGenericStructHandlerPrivate::encodeStructInternal(QOpcUaBinaryDataEnc
             return false;
         }
 
-        for (const auto &field : value.structureDefinition().fields()) {
+        for (const auto &field : definitionFields) {
             if (!field.isOptional() && !value.fields().contains(field.name())) {
                 qCWarning(lcGenericStructHandler) << "Field" << field.name() << "is missing, unable to encode struct";
                 return false;
@@ -502,8 +507,8 @@ bool QOpcUaGenericStructHandlerPrivate::encodeStructInternal(QOpcUaBinaryDataEnc
         }
 
         if (value.fields().size() > 0) {
-            for (int i = 0; i < value.structureDefinition().fields().size(); ++i) {
-                if (value.structureDefinition().fields().at(i).name() == value.fields().keys().first()) {
+            for (int i = 0; i < definitionFields.size(); ++i) {
+                if (definitionFields.at(i).name() == value.fields().keys().first()) {
                     const auto success = encoder.encode<quint32>(1 << i);
 
                     if (!success) {
@@ -512,8 +517,8 @@ bool QOpcUaGenericStructHandlerPrivate::encodeStructInternal(QOpcUaBinaryDataEnc
                     }
 
                     return encodeKnownTypesInternal(encoder, value.fields().constKeyValueBegin()->second,
-                                                    value.structureDefinition().fields().at(i).valueRank(),
-                                                    value.structureDefinition().fields().at(i).dataType());
+                                                    definitionFields.at(i).valueRank(),
+                                                    definitionFields.at(i).dataType());
                 }
             }
 
@@ -698,7 +703,9 @@ bool QOpcUaGenericStructHandlerPrivate::encodeKnownTypesInternal(QOpcUaBinaryDat
 
             const auto array = value.value<QOpcUaMultiDimensionalArray>();
 
-            for (const auto &entry : array.valueArray()) {
+            const auto valueArray = array.valueArray();
+
+            for (const auto &entry : valueArray) {
                 if (!entry.canConvert<QOpcUaGenericStructValue>()) {
                     qCWarning(lcGenericStructHandler) << "QOpcUaMultiDimensionalArray value is expected to contain"
                                                          << "a generic struct, unable to encode";
@@ -713,14 +720,14 @@ bool QOpcUaGenericStructHandlerPrivate::encodeKnownTypesInternal(QOpcUaBinaryDat
                 return false;
             }
 
-            success = encoder.encode<qint32>(array.valueArray().size());
+            success = encoder.encode<qint32>(valueArray.size());
 
             if (!success) {
                 qCWarning(lcGenericStructHandler) << "Failed to encode array length";
                 return false;
             }
 
-            for (const auto &entry : array.valueArray()) {
+            for (const auto &entry : valueArray) {
                 success = encodeStructInternal(encoder, entry.value<QOpcUaGenericStructValue>());
 
                 if (!success) {

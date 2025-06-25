@@ -115,7 +115,8 @@ protected:
 
             auto array = value.value<QOpcUaMultiDimensionalArray>();
             QList<T> data;
-            for (const auto &entry : array.valueArray()) {
+            const auto valueArray = array.valueArray();
+            for (const auto &entry : valueArray) {
                 if (!entry.canConvert<T>()) {
                     qCWarning(lcGenericStructHandler) << "Invalid type in multi dimensional array";
                 }

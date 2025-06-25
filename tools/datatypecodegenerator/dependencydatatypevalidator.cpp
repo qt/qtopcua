@@ -52,7 +52,8 @@ void DependencyDataTypeValidator::visit(StructuredType *structuredType)
         if (m_unresolvedDependencyStringList.contains(structuredType->name())) {
             m_unresolvedDependencyStringList.removeAll(structuredType->name());
             m_resolvedDependencyElementList.push_back(structuredType);
-            for (const auto &field : structuredType->fields()) {
+            const auto tempFields = structuredType->fields();
+            for (const auto &field : tempFields) {
                 const auto typeName = field->typeNameSecondPart();
 
                 if (!StringIdentifier::typeNameDataTypeConverter.contains(field->typeName())) {
@@ -65,7 +66,7 @@ void DependencyDataTypeValidator::visit(StructuredType *structuredType)
                     }
                     if (!isPrecoded && !m_unresolvedDependencyStringList.contains(typeName)) {
                         bool isResolved = false;
-                        for (const auto &type : m_resolvedDependencyElementList) {
+                        for (const auto &type : std::as_const(m_resolvedDependencyElementList)) {
                             if (type->name() == typeName) {
                                 isResolved = true;
                                 break;
