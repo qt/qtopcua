@@ -146,6 +146,7 @@ quint16 QOpcUaDataValue::sourcePicoseconds() const
 */
 void QOpcUaDataValue::setSourcePicoseconds(quint16 sourcePicoseconds)
 {
+    data.detach();
     data->sourcePicoseconds = sourcePicoseconds;
 }
 
@@ -183,6 +184,7 @@ quint16 QOpcUaDataValue::serverPicoseconds() const
 */
 void QOpcUaDataValue::setServerPicoseconds(quint16 serverPicoseconds)
 {
+    data.detach();
     data->serverPicoseconds = serverPicoseconds;
 }
 
