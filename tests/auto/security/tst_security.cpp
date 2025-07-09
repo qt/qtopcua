@@ -16,6 +16,8 @@
 #include <QTcpSocket>
 #include <QTcpServer>
 
+using namespace Qt::Literals::StringLiterals;
+
 const int signalSpyTimeout = 10000;
 
 static QString messageSecurityModeToString(QOpcUaEndpointDescription::MessageSecurityMode msm)
@@ -85,6 +87,9 @@ private slots:
 
     defineDataMethod(connectAndDisconnectSecureWithCertAuthOtherCert_data)
     void connectAndDisconnectSecureWithCertAuthOtherCert();
+
+    defineDataMethod(initializeWithBrokenCert_data)
+    void initializeWithBrokenCert();
 
 private:
     QString envOrDefault(const char *env, QString def)
@@ -648,6 +653,52 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureWithCertAuthOtherCert()
     connectSpy.wait(signalSpyTimeout);
     QCOMPARE(connectSpy.size(), 2);
     QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Closing);
+    QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Disconnected);
+}
+
+void Tst_QOpcUaSecurity::initializeWithBrokenCert()
+{
+    if (m_endpoints.size() == 0)
+        QSKIP("No secure endpoints available");
+
+    QFETCH(QString, backend);
+    QFETCH(QOpcUaEndpointDescription, endpoint);
+
+    QScopedPointer<QOpcUaClient> client(m_opcUa.createClient(backend));
+    QVERIFY2(client, u"Loading backend failed: %1"_s.arg(backend).toUtf8().data());
+
+    if (!client->supportedSecurityPolicies().contains(endpoint.securityPolicy())) {
+        QSKIP(u"This test is skipped because backend %1 "
+              "does not support security policy %2"_s
+                  .arg(client->backend(), endpoint.securityPolicy()).toUtf8().constData());
+    }
+
+    const QString pkidir = m_pkiData->path();
+    QOpcUaPkiConfiguration pkiConfig;
+    pkiConfig.setClientCertificateFile(pkidir + "/own/certs/invalid_cert.der");
+    pkiConfig.setPrivateKeyFile(pkidir + "/own/private/privateKeyWithoutPassword.pem");
+    pkiConfig.setTrustListDirectory(pkidir + "/trusted/certs");
+    pkiConfig.setRevocationListDirectory(pkidir + "/trusted/crl");
+    pkiConfig.setIssuerListDirectory(pkidir + "/issuers/certs");
+    pkiConfig.setIssuerRevocationListDirectory(pkidir + "/issuers/crl");
+
+    const auto identity = pkiConfig.applicationIdentity();
+    QOpcUaAuthenticationInformation authInfo;
+    authInfo.setUsernameAuthentication("user1", "password");
+    client->setAuthenticationInformation(authInfo);
+    client->setApplicationIdentity(identity);
+    client->setPkiConfiguration(pkiConfig);
+
+    qDebug() << "Testing invalid certificate load with security policy" << endpoint.securityPolicy();
+    QSignalSpy connectSpy(client.data(), &QOpcUaClient::stateChanged);
+
+    client->connectToEndpoint(endpoint);
+    connectSpy.wait(signalSpyTimeout);
+    if (client->state() == QOpcUaClient::Connecting)
+        connectSpy.wait(signalSpyTimeout);
+
+    QCOMPARE(connectSpy.size(), 2);
+    QCOMPARE(connectSpy.at(0).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Connecting);
     QCOMPARE(connectSpy.at(1).at(0).value<QOpcUaClient::ClientState>(), QOpcUaClient::Disconnected);
 }
 

@@ -2274,8 +2274,11 @@ UA_StatusCode Open62541AsyncBackend::setSecurityPolicyInClientConfig(UA_ClientCo
             result = UA_SecurityPolicy_Aes128Sha256RsaOaep(&conf->securityPolicies[conf->securityPoliciesSize++],
                                                            cert, key, conf->logging);
 
-        if (result != UA_STATUSCODE_GOOD)
+        if (result != UA_STATUSCODE_GOOD) {
+            // UA_ClientConfig_clear() doesn't check for a valid clear() pointer on the policy
+            --conf->securityPoliciesSize;
             return result;
+        }
     }
 
     return result;
@@ -2354,6 +2357,13 @@ UA_StatusCode Open62541AsyncBackend::setAuthSecurityPolicyInClientConfig(UA_Clie
         else if (selectedPolicy == Aes128Sha256RsaOaepPolicy)
             result = UA_SecurityPolicy_Aes128Sha256RsaOaep(&conf->authSecurityPolicies[0],
                                                            cert, key, conf->logging);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            // UA_ClientConfig_clear() doesn't check for a valid clear() pointer on the policy
+            conf->authSecurityPoliciesSize = 0;
+            UA_free(conf->authSecurityPolicies);
+            conf->authSecurityPolicies = nullptr;
+        }
 
         if (addedSecurityPolicyUri)
             *addedSecurityPolicyUri = selectedPolicy;
