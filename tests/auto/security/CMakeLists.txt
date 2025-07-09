@@ -16,6 +16,7 @@ qt_internal_add_test(tst_security
 # Resources:
 set(certs_resource_files
     "pki/own/certs/tst_security.der"
+    "pki/own/certs/invalid_cert.der"
     "pki/own/private/privateKeyWithPassword_secret.pem"
     "pki/own/private/privateKeyWithoutPassword.pem"
     "pki/trusted/certs/ca.der"
