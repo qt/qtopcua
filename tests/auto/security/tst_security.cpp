@@ -623,9 +623,6 @@ void Tst_QOpcUaSecurity::connectAndDisconnectSecureWithCertAuthOtherCert()
     QFETCH(QString, backend);
     QFETCH(QOpcUaEndpointDescription, endpoint);
 
-    if (!endpoint.securityPolicy().contains("Basic256Sha256"_L1))
-        return;
-
     QScopedPointer<QOpcUaClient> client(m_opcUa.createClient(backend));
     QVERIFY2(client, u"Loading backend failed: %1"_s.arg(backend).toLatin1().data());
 
