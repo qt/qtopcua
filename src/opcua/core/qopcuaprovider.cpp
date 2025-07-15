@@ -34,6 +34,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 Q_LOGGING_CATEGORY(QT_OPCUA, "qt.opcua")
 Q_LOGGING_CATEGORY(QT_OPCUA_SECURITY, "qt.opcua.security")
 
@@ -60,7 +62,7 @@ Q_LOGGING_CATEGORY(QT_OPCUA_SECURITY, "qt.opcua.security")
 */
 
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, qOpcualoader,
-        (QOpcUaProviderFactory_iid, QLatin1String("/opcua")))
+        (QOpcUaProviderFactory_iid, u"/opcua"_s))
 
 /*!
     \fn static QHash<QString, QCborMap> loadPluginMetadata()
@@ -74,8 +76,8 @@ static QHash<QString, QCborMap> loadPluginMetadata()
     QList<QPluginParsedMetaData> const meta = l->metaData();
     for (int i = 0; i < meta.size(); ++i) {
         QCborMap map = meta.at(i).value(QtPluginMetaDataKeys::MetaData).toMap();
-        map.insert(QLatin1String("index"), i);
-        plugins.insert(map.value(QLatin1String("Provider")).toString(), map);
+        map.insert("index"_L1, i);
+        plugins.insert(map.value("Provider"_L1).toString(), map);
     }
     return plugins;
 }

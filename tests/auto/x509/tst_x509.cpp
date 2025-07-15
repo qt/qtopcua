@@ -15,11 +15,13 @@
 #include <QtTest/QSignalSpy>
 #include <QtTest/QtTest>
 
+using namespace Qt::Literals::StringLiterals;
+
 #define defineDataMethod(name) void name()\
 {\
     QTest::addColumn<QString>("backend");\
     for (const auto &backend : std::as_const(m_backends)) {\
-        const QString rowName = QStringLiteral("%1").arg(backend); \
+        const QString rowName = u"%1"_s.arg(backend); \
         QTest::newRow(rowName.toLatin1().constData()) << backend ; \
     }\
 }
@@ -49,7 +51,7 @@ private:
 QByteArray textifyCertificateRequest(const QByteArray &data)
 {
     QProcess p;
-    p.start("openssl", QStringList {"req", "-text", "-noout"});
+    p.start(u"openssl"_s, QStringList {u"req"_s, u"-text"_s, u"-noout"_s});
     p.waitForStarted();
     p.write(data);
     p.closeWriteChannel();
@@ -60,7 +62,7 @@ QByteArray textifyCertificateRequest(const QByteArray &data)
 QByteArray textifyCertificate(const QByteArray &data)
 {
     QProcess p;
-    p.start("openssl", QStringList {"x509", "-text", "-noout"});
+    p.start(u"openssl"_s, QStringList {u"x509"_s, u"-text"_s, u"-noout"_s});
     p.waitForStarted();
     p.write(data);
     p.closeWriteChannel();
@@ -71,7 +73,7 @@ QByteArray textifyCertificate(const QByteArray &data)
 QByteArray asn1dump(const QByteArray &data)
 {
     QProcess p;
-    p.start("openssl", QStringList {"asn1parse", "-inform","PEM"});
+    p.start(u"openssl"_s, QStringList {u"asn1parse"_s, u"-inform"_s, u"PEM"_s});
     p.waitForStarted();
     p.write(data);
     p.closeWriteChannel();
@@ -124,7 +126,7 @@ void Tst_QOpcUaSecurity::keyPairs()
 
     // Check encrypted PEM export
     byteArray = key.privateKeyToByteArray(QOpcUaKeyPair::Cipher::Aes128Cbc,
-                                          QStringLiteral("password"));
+                                          u"password"_s);
     QVERIFY(byteArray.startsWith("-----BEGIN ENCRYPTED PRIVATE KEY-----\n"));
     QVERIFY(byteArray.endsWith("-----END ENCRYPTED PRIVATE KEY-----\n"));
     QCOMPARE(passwordSpy.size(), 0);
@@ -139,14 +141,14 @@ void Tst_QOpcUaSecurity::keyPairs()
 
     // Load key with wrong password
     qDebug() << "Trying to decrypt with wrong password; will cause an error";
-    passphraseToReturn = "WrongPassword";
+    passphraseToReturn = u"WrongPassword"_s;
     QVERIFY(!loadedKey.loadFromPemData(byteArray));
     QCOMPARE(passwordSpy.size(), 1);
     QVERIFY(loadedKey.hasPrivateKey() == false);
 
     // Load key with right password
     qDebug() << "Trying to decrypt with right password; will cause no error";
-    passphraseToReturn = "password";
+    passphraseToReturn = u"password"_s;
     QVERIFY(loadedKey.loadFromPemData(byteArray));
     QCOMPARE(passwordSpy.size(), 2);
     QCOMPARE(loadedKey.privateKeyToByteArray(QOpcUaKeyPair::Cipher::Unencrypted, QString()),
@@ -165,17 +167,17 @@ void Tst_QOpcUaSecurity::certificateSigningRequest()
     QOpcUaX509CertificateSigningRequest csr;
 
     QOpcUaX509DistinguishedName dn;
-    dn.setEntry(QOpcUaX509DistinguishedName::Type::CommonName, "QtOpcUaViewer");
-    dn.setEntry(QOpcUaX509DistinguishedName::Type::CountryName, "DE");
-    dn.setEntry(QOpcUaX509DistinguishedName::Type::LocalityName, "Berlin");
-    dn.setEntry(QOpcUaX509DistinguishedName::Type::StateOrProvinceName, "Berlin");
-    dn.setEntry(QOpcUaX509DistinguishedName::Type::OrganizationName, "The Qt Company");
+    dn.setEntry(QOpcUaX509DistinguishedName::Type::CommonName, u"QtOpcUaViewer"_s);
+    dn.setEntry(QOpcUaX509DistinguishedName::Type::CountryName, u"DE"_s);
+    dn.setEntry(QOpcUaX509DistinguishedName::Type::LocalityName, u"Berlin"_s);
+    dn.setEntry(QOpcUaX509DistinguishedName::Type::StateOrProvinceName, u"Berlin"_s);
+    dn.setEntry(QOpcUaX509DistinguishedName::Type::OrganizationName, u"The Qt Company"_s);
     csr.setSubject(dn);
 
     QOpcUaX509ExtensionSubjectAlternativeName *san = new QOpcUaX509ExtensionSubjectAlternativeName;
-    san->addEntry(QOpcUaX509ExtensionSubjectAlternativeName::Type::DNS, "foo.com");
-    san->addEntry(QOpcUaX509ExtensionSubjectAlternativeName::Type::DNS, "bla.com");
-    san->addEntry(QOpcUaX509ExtensionSubjectAlternativeName::Type::URI, "urn:foo.com:The%20Qt%20Company:QtOpcUaViewer");
+    san->addEntry(QOpcUaX509ExtensionSubjectAlternativeName::Type::DNS, u"foo.com"_s);
+    san->addEntry(QOpcUaX509ExtensionSubjectAlternativeName::Type::DNS, u"bla.com"_s);
+    san->addEntry(QOpcUaX509ExtensionSubjectAlternativeName::Type::URI, u"urn:foo.com:The%20Qt%20Company:QtOpcUaViewer"_s);
     san->setCritical(true);
     csr.addExtension(san);
 
@@ -221,8 +223,8 @@ void Tst_QOpcUaSecurity::certificateSigningRequest()
     qDebug().noquote() << asn1dump(certData);
     if (textCert.isEmpty())
         QEXPECT_FAIL("", "Textified cert is empty, is the openssl executable in your PATH?", Abort);
-    QVERIFY(textCert.contains(QStringLiteral("Digital Signature, Non Repudiation, Key Encipherment, Data Encipherment, Key Agreement, Certificate Sign, CRL Sign, Encipher Only, Decipher Only")));
-    QVERIFY(textCert.contains(QStringLiteral("TLS Web Server Authentication, TLS Web Client Authentication, Code Signing, E-mail Protection")));
+    QVERIFY(textCert.contains(u"Digital Signature, Non Repudiation, Key Encipherment, Data Encipherment, Key Agreement, Certificate Sign, CRL Sign, Encipher Only, Decipher Only"_s));
+    QVERIFY(textCert.contains(u"TLS Web Server Authentication, TLS Web Client Authentication, Code Signing, E-mail Protection"_s));
 }
 
 void Tst_QOpcUaSecurity::cleanupTestCase()

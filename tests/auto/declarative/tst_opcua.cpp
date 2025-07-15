@@ -9,9 +9,11 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 
+using namespace Qt::Literals::StringLiterals;
+
 static QString envOrDefault(const char *env, QString def)
 {
-    return qEnvironmentVariableIsSet(env) ? qgetenv(env).constData() : def;
+    return qEnvironmentVariableIsSet(env) ? QString::fromUtf8(qgetenv(env).constData()) : def;
 }
 
 class SetupClass : public QObject
@@ -31,21 +33,21 @@ public slots:
 
         const QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
         const QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-        m_opcuaDiscoveryUrl = QString::fromLatin1("opc.tcp://%1:%2").arg(host, port);
+        m_opcuaDiscoveryUrl = u"opc.tcp://%1:%2"_s.arg(host, port);
 
         if (qEnvironmentVariableIsEmpty("OPCUA_HOST") && qEnvironmentVariableIsEmpty("OPCUA_PORT")) {
             m_testServerPath = qApp->applicationDirPath()
 
 #if defined(Q_OS_MACOS)
-                                         + QLatin1String("/../../open62541-testserver/open62541-testserver.app/Contents/MacOS/open62541-testserver")
+                                         + "/../../open62541-testserver/open62541-testserver.app/Contents/MacOS/open62541-testserver"_L1
 #else
 
 #if defined(Q_OS_WIN) && !defined(TESTS_CMAKE_SPECIFIC_PATH)
-                                         + QLatin1String("/..")
+                                         + "/.."_L1
 #endif
-                                         + QLatin1String("/../../open62541-testserver/open62541-testserver")
+                                         + "/../../open62541-testserver/open62541-testserver"_L1
 #ifdef Q_OS_WIN
-                                         + QLatin1String(".exe")
+                                         + ".exe"_L1
 #endif
 
 #endif
@@ -101,8 +103,8 @@ public slots:
 #ifdef SERVER_SUPPORTS_SECURITY
         value = true;
 #endif
-        engine->rootContext()->setContextProperty("SERVER_SUPPORTS_SECURITY", value);
-        engine->rootContext()->setContextProperty("OPCUA_DISCOVERY_URL", m_opcuaDiscoveryUrl);
+        engine->rootContext()->setContextProperty(u"SERVER_SUPPORTS_SECURITY"_s, value);
+        engine->rootContext()->setContextProperty(u"OPCUA_DISCOVERY_URL"_s, m_opcuaDiscoveryUrl);
     }
     void cleanupTestCase() {
         if (m_serverProcess.state() == QProcess::Running) {

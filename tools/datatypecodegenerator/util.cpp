@@ -5,19 +5,21 @@
 
 #include <QtCore/qstringlist.h>
 
+using namespace Qt::Literals::StringLiterals;
+
 QString Util::indent(int level)
 {
-    return QStringLiteral("%1").arg(" ", level * 4, ' ');
+    return u"%1"_s.arg(' '_L1, level * 4, ' '_L1);
 }
 
 QString Util::lineBreak(int n)
 {
-    return QStringLiteral("%1").arg("\n", n, '\n');
+    return u"%1"_s.arg('\n'_L1, n, '\n'_L1);
 }
 
 QString Util::removeNamespace(const QString &typeName)
 {
-    return typeName.split(":").value(1, QString());
+    return typeName.split(':'_L1).value(1, QString());
 }
 
 QString Util::lowerFirstLetter(const QString &temp)

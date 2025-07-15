@@ -67,26 +67,26 @@ QOpcUaClient::ClientError QOpcUaBackend::verifyEndpointDescription(const QOpcUaE
 {
     if (endpoint.endpointUrl().isEmpty()) {
         if (message)
-            *message = QLatin1String("Endpoint description is invalid because endpoint URL is empty");
+            *message = u"Endpoint description is invalid because endpoint URL is empty"_s;
         return QOpcUaClient::ClientError::InvalidUrl;
     }
 
     const QUrl url(endpoint.endpointUrl());
     if (!url.isValid() || url.scheme() != "opc.tcp"_L1) {
         if (message)
-            *message = QLatin1String("Endpoint description is invalid because the URL is invalid or malformed");
+            *message = u"Endpoint description is invalid because the URL is invalid or malformed"_s;
         return QOpcUaClient::ClientError::InvalidUrl;
     }
 
     if (endpoint.securityPolicy().isEmpty()) {
         if (message)
-            *message = QLatin1String("Endpoint description is invalid because security policy is empty");
+            *message = u"Endpoint description is invalid because security policy is empty"_s;
         return QOpcUaClient::ClientError::InvalidEndpointDescription;
     }
 
     if (endpoint.userIdentityTokens().isEmpty()) {
         if (message)
-            *message = QLatin1String("Endpoint description is invalid because there are no user identity tokens");
+            *message = u"Endpoint description is invalid because there are no user identity tokens"_s;
         return QOpcUaClient::ClientError::NoMatchingUserIdentityTokenFound;
     }
 
@@ -95,7 +95,7 @@ QOpcUaClient::ClientError QOpcUaBackend::verifyEndpointDescription(const QOpcUaE
               endpoint.securityMode() != QOpcUaEndpointDescription::MessageSecurityMode::SignAndEncrypt)
     {
         if (message)
-            *message = QLatin1String("Endpoint description contains an invalid message security mode");
+            *message = u"Endpoint description contains an invalid message security mode"_s;
         return QOpcUaClient::ClientError::InvalidEndpointDescription;
     }
 

@@ -27,6 +27,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 static const size_t usernamePasswordsSize = 2;
 static UA_UsernamePasswordLogin usernamePasswords[2] = {
     {UA_STRING_STATIC("user1"), UA_STRING_STATIC("password")},
@@ -101,8 +103,8 @@ static UA_ByteString loadFile(const QString &filePath) {
 
 bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
 {
-    const QString certificateFilePath = QLatin1String(":/pki/own/certs/open62541-testserver.der");
-    const QString privateKeyFilePath = QLatin1String(":/pki/own/private/open62541-testserver.der");
+    const QString certificateFilePath = u":/pki/own/certs/open62541-testserver.der"_s;
+    const QString privateKeyFilePath = u":/pki/own/private/open62541-testserver.der"_s;
 
     UA_ByteString certificate = loadFile(certificateFilePath);
     UaDeleter<UA_ByteString> certificateDeleter(&certificate, UA_ByteString_clear);
@@ -121,7 +123,7 @@ bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
     }
 
     // Load the trustlist
-    QDir trustDir(":/pki/trusted/certs");
+    QDir trustDir(u":/pki/trusted/certs"_s);
     if (!trustDir.exists()) {
         UA_LOG_WARNING(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND, "Trust directory does not exist");
         return false;
@@ -346,7 +348,7 @@ ManagedUaNodeId TestServer::addVariableWithWriteMask(const UA_NodeId &folder, co
 {
     UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
-    const QString description = QStringLiteral("Description for %1").arg(variableNode);
+    const QString description = u"Description for %1"_s.arg(variableNode);
 
     UA_VariableAttributes attr = UA_VariableAttributes_default;
     attr.value = QOpen62541ValueConverter::toOpen62541Variant(value, type);
@@ -388,7 +390,7 @@ ManagedUaNodeId TestServer::addVariable(const UA_NodeId &folder, const QString &
 {
     UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
 
-    const QString description = QStringLiteral("Description for %1").arg(variableNode);
+    const QString description = u"Description for %1"_s.arg(variableNode);
 
     UA_VariableAttributes attr = UA_VariableAttributes_default;
     attr.value = QOpen62541ValueConverter::toOpen62541Variant(value, type);
@@ -802,7 +804,7 @@ UA_StatusCode TestServer::addServerStatusTypeTestNodes(const UA_NodeId &parent)
     };
 
     {
-        UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString("ns=3;s=ServerStatusScalar");
+        UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(u"ns=3;s=ServerStatusScalar"_s);
 
         auto value = UA_ServerStatusDataType_new();
         *value = createTestValue(0);
@@ -841,7 +843,7 @@ UA_StatusCode TestServer::addServerStatusTypeTestNodes(const UA_NodeId &parent)
     }
 
     {
-        UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString("ns=3;s=ServerStatusArray");
+        UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(u"ns=3;s=ServerStatusArray"_s);
 
         auto value = static_cast<UA_ServerStatusDataType *>(UA_Array_new(2, &UA_TYPES[UA_TYPES_SERVERSTATUSDATATYPE]));
         for (int i = 0; i < 2; ++i)
@@ -887,7 +889,7 @@ UA_StatusCode TestServer::addServerStatusTypeTestNodes(const UA_NodeId &parent)
     }
 
     {
-        UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString("ns=3;s=ServerStatusMultiDimensionalArray");
+        UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(u"ns=3;s=ServerStatusMultiDimensionalArray"_s);
 
         auto value = static_cast<UA_ServerStatusDataType *>(UA_Array_new(4, &UA_TYPES[UA_TYPES_SERVERSTATUSDATATYPE]));
         for (int i = 0; i < 4; ++i)
@@ -1061,8 +1063,8 @@ void TestServer::readHistoryEventCallback(UA_Server *server, void *hdbContext, c
         { UA_DateTime_fromUnixTime(1694153836), UA_LocalizedText{UA_STRING_STATIC("en"), UA_STRING_STATIC("Message 3")}}
     };
 
-    const auto historian1Id = QStringLiteral("ns=2;s=EventHistorian");
-    const auto historian2Id = QStringLiteral("ns=2;s=EventHistorian2");
+    const auto historian1Id = u"ns=2;s=EventHistorian"_s;
+    const auto historian2Id = u"ns=2;s=EventHistorian2"_s;
 
     for (size_t i = 0; i < nodesToReadSize; ++i) {
         const auto idToRead = QOpen62541ValueConverter::scalarToQt<QString, UA_NodeId>(&nodesToRead[i].nodeId);
@@ -1173,9 +1175,9 @@ UA_StatusCode TestServer::readLocalizedTextCallback(UA_Server *server, const UA_
 
     for (size_t i = 0; i < localeIdsVar.arrayLength; ++i) {
         const auto currentLocaleId = QOpen62541ValueConverter::scalarToQt<QString, UA_String>(&localeIds[i]);
-        if (currentLocaleId.startsWith(QStringLiteral("de")))
+        if (currentLocaleId.startsWith(u"de"_s))
             resultValue = &german;
-        if (currentLocaleId.startsWith(QStringLiteral("fr")))
+        if (currentLocaleId.startsWith(u"fr"_s))
             resultValue = &french;
     }
 
@@ -1531,7 +1533,7 @@ UA_StatusCode TestServer::addByteStringNodeIdWithNullIdVariableNode(const UA_Nod
     UA_NodeId nodeId = UA_NODEID_NULL;
     nodeId.namespaceIndex = 1;
     nodeId.identifierType = UA_NODEIDTYPE_BYTESTRING;
-    const auto bytes = QByteArray::fromBase64(QStringLiteral("AAABAAIADoo=").toLatin1());
+    const auto bytes = QByteArray::fromBase64(u"AAABAAIADoo="_s.toLatin1());
     UA_ByteString_allocBuffer(&nodeId.identifier.byteString, bytes.length());
     memcpy(nodeId.identifier.byteString.data, bytes.constData(), bytes.length());
 

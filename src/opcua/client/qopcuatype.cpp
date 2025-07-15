@@ -13,6 +13,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 /*!
     \namespace QOpcUa
     \inmodule QtOpcua
@@ -718,7 +720,7 @@ QOpcUa::ErrorCategory QOpcUa::errorCategory(QOpcUa::UaStatusCode statusCode)
 */
 QString QOpcUa::nodeIdFromString(quint16 ns, const QString &identifier)
 {
-    return QStringLiteral("ns=%1;s=%2").arg(ns).arg(identifier);
+    return u"ns=%1;s=%2"_s.arg(ns).arg(identifier);
 }
 
 /*!
@@ -727,7 +729,7 @@ QString QOpcUa::nodeIdFromString(quint16 ns, const QString &identifier)
 */
 QString QOpcUa::nodeIdFromByteString(quint16 ns, const QByteArray &identifier)
 {
-    return QStringLiteral("ns=%1;b=%2").arg(ns).arg(QString::fromUtf8(identifier.toBase64()));
+    return u"ns=%1;b=%2"_s.arg(ns).arg(QString::fromUtf8(identifier.toBase64()));
 }
 
 /*!
@@ -736,7 +738,7 @@ QString QOpcUa::nodeIdFromByteString(quint16 ns, const QByteArray &identifier)
 */
 QString QOpcUa::nodeIdFromGuid(quint16 ns, const QUuid &identifier)
 {
-    return QStringLiteral("ns=%1;g=").arg(ns).append(QStringView(identifier.toString()).mid(1, 36)); // Remove enclosing {...};
+    return u"ns=%1;g="_s.arg(ns).append(QStringView(identifier.toString()).mid(1, 36)); // Remove enclosing {...};
 }
 
 /*!
@@ -745,7 +747,7 @@ QString QOpcUa::nodeIdFromGuid(quint16 ns, const QUuid &identifier)
 */
 QString QOpcUa::nodeIdFromInteger(quint16 ns, quint32 identifier)
 {
-    return QStringLiteral("ns=%1;i=%2").arg(ns).arg(identifier);
+    return u"ns=%1;i=%2"_s.arg(ns).arg(identifier);
 }
 
 /*!
@@ -753,7 +755,7 @@ QString QOpcUa::nodeIdFromInteger(quint16 ns, quint32 identifier)
 */
 QString QOpcUa::nodeIdFromReferenceType(QOpcUa::ReferenceTypeId referenceType)
 {
-    return QStringLiteral("ns=0;i=%1").arg(static_cast<quint32>(referenceType));
+    return u"ns=0;i=%1"_s.arg(static_cast<quint32>(referenceType));
 }
 
 /*!
@@ -771,12 +773,12 @@ bool QOpcUa::nodeIdStringSplit(const QString &nodeIdString, quint16 *nsIndex, QS
 {
     quint16 namespaceIndex = 0;
 
-    QStringList components = nodeIdString.split(QLatin1String(";"));
+    QStringList components = nodeIdString.split(';'_L1);
 
     if (components.size() > 2)
         return false;
 
-    static const QRegularExpression namespaceRegex(QLatin1String("^ns=[0-9]+"));
+    static const QRegularExpression namespaceRegex(u"^ns=[0-9]+"_s);
     if (components.size() == 2 && components.at(0).contains(namespaceRegex)) {
         bool success = false;
         uint ns = QStringView(components.at(0)).mid(3).toUInt(&success);
@@ -788,7 +790,7 @@ bool QOpcUa::nodeIdStringSplit(const QString &nodeIdString, quint16 *nsIndex, QS
     if (components.last().size() < 3)
         return false;
 
-    static const QRegularExpression identifierRegex(QLatin1String("^[isgb]="));
+    static const QRegularExpression identifierRegex(u"^[isgb]="_s);
     if (!components.last().contains(identifierRegex))
         return false;
 
@@ -810,9 +812,9 @@ bool QOpcUa::nodeIdEquals(const QString &first, const QString &second)
 {
     const QStringView fView(first);
     const QStringView sView(second);
-    if (first.startsWith(QLatin1String("ns=0;")) && !second.startsWith(QLatin1String("ns=")))
+    if (first.startsWith("ns=0;"_L1) && !second.startsWith("ns="_L1))
         return fView.mid(5) == sView;
-    else if (second.startsWith(QLatin1String("ns=0;")) && !first.startsWith(QLatin1String("ns=")))
+    else if (second.startsWith("ns=0;"_L1) && !first.startsWith("ns="_L1))
         return sView.mid(5) == fView;
     else
         return first == second;
@@ -823,7 +825,7 @@ bool QOpcUa::nodeIdEquals(const QString &first, const QString &second)
 */
 QString QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0 id)
 {
-    return QStringLiteral("ns=0;i=%1").arg(quint32(id));
+    return u"ns=0;i=%1"_s.arg(quint32(id));
 }
 
 /*!
@@ -841,7 +843,7 @@ QString QOpcUa::namespace0Id(QOpcUa::NodeIds::Namespace0 id)
 */
 QOpcUa::NodeIds::Namespace0 QOpcUa::namespace0IdFromNodeId(const QString &nodeId)
 {
-    if (!nodeId.startsWith(QLatin1String("ns=0;i=")))
+    if (!nodeId.startsWith("ns=0;i="_L1))
         return QOpcUa::NodeIds::Namespace0::Unknown;
 
     const QStringView sv = QStringView{nodeId}.mid(7);
@@ -900,7 +902,7 @@ QString QOpcUa::statusToString(QOpcUa::UaStatusCode statusCode)
     if (key)
         return QString::fromLatin1(key);
     else
-        return QLatin1String("Invalid enum value for UaStatusCode");
+        return u"Invalid enum value for UaStatusCode"_s;
 }
 
 /*!
@@ -949,35 +951,35 @@ QOpcUa::Types QOpcUa::metaTypeToQOpcUaType(QMetaType::Type type) {
 
 QOpcUa::Types QOpcUa::opcUaDataTypeToQOpcUaType(const QString &type)
 {
-    if (type == QStringLiteral("ns=0;i=1"))
+    if (type == "ns=0;i=1"_L1)
         return QOpcUa::Boolean;
-    else if (type == QStringLiteral("ns=0;i=3"))
+    else if (type == "ns=0;i=3"_L1)
         return QOpcUa::Byte;
-    else if (type == QStringLiteral("ns=0;i=2"))
+    else if (type == "ns=0;i=2"_L1)
         return QOpcUa::SByte;
-    else if (type == QStringLiteral("ns=0;i=5"))
+    else if (type == "ns=0;i=5"_L1)
         return QOpcUa::UInt16;
-    else if (type == QStringLiteral("ns=0;i=4"))
+    else if (type == "ns=0;i=4"_L1)
         return QOpcUa::Int16;
-    else if (type == QStringLiteral("ns=0;i=6"))
+    else if (type == "ns=0;i=6"_L1)
         return QOpcUa::Int32;
-    else if (type == QStringLiteral("ns=0;i=7"))
+    else if (type == "ns=0;i=7"_L1)
         return QOpcUa::UInt32;
-    else if (type == QStringLiteral("ns=0;i=9"))
+    else if (type == "ns=0;i=9"_L1)
         return QOpcUa::UInt64;
-    else if (type == QStringLiteral("ns=0;i=8"))
+    else if (type == "ns=0;i=8"_L1)
         return QOpcUa::Int64;
-    else if (type == QStringLiteral("ns=0;i=11"))
+    else if (type == "ns=0;i=11"_L1)
         return QOpcUa::Double;
-    else if (type == QStringLiteral("ns=0;i=10"))
+    else if (type == "ns=0;i=10"_L1)
         return QOpcUa::Float;
-    else if (type == QStringLiteral("ns=0;i=12"))
+    else if (type == "ns=0;i=12"_L1)
         return QOpcUa::String;
-    else if (type == QStringLiteral("ns=0;i=13"))
+    else if (type == "ns=0;i=13"_L1)
         return QOpcUa::DateTime;
-    else if (type == QStringLiteral("ns=0;i=15"))
+    else if (type == "ns=0;i=15"_L1)
         return QOpcUa::ByteString;
-    else if (type == QStringLiteral("ns=0;i=14"))
+    else if (type == "ns=0;i=14"_L1)
         return QOpcUa::Guid;
     else
         return QOpcUa::Undefined;

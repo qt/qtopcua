@@ -29,6 +29,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 /*!
     \class QOpcUaBinaryDataEncoding
     \inmodule QtOpcUa
@@ -550,37 +552,37 @@ QString QOpcUaBinaryDataEncoding::decode<QString, QOpcUa::Types::NodeId>(bool &s
         quint8 identifier = decode<quint8>(success);
         if (!success)
             return QString();
-        return QStringLiteral("ns=%1;i=%2").arg(namespaceIndex).arg(identifier);
+        return u"ns=%1;i=%2"_s.arg(namespaceIndex).arg(identifier);
     }
     case 0x01: {
         quint16 identifier = decode<quint16>(success);
         if (!success)
             return QString();
-        return QStringLiteral("ns=%1;i=%2").arg(namespaceIndex).arg(identifier);
+        return u"ns=%1;i=%2"_s.arg(namespaceIndex).arg(identifier);
     }
     case 0x02: {
         quint32 identifier = decode<quint32>(success);
         if (!success)
             return QString();
-        return QStringLiteral("ns=%1;i=%2").arg(namespaceIndex).arg(identifier);
+        return u"ns=%1;i=%2"_s.arg(namespaceIndex).arg(identifier);
     }
     case 0x03: {
         QString identifier = decode<QString>(success);
         if (!success)
             return QString();
-        return QStringLiteral("ns=%1;s=%2").arg(namespaceIndex).arg(identifier);
+        return u"ns=%1;s=%2"_s.arg(namespaceIndex).arg(identifier);
     }
     case 0x04: {
         QUuid identifier = decode<QUuid>(success);
         if (!success)
             return QString();
-        return QStringLiteral("ns=%1;g=%2").arg(namespaceIndex).arg(QStringView(identifier.toString()).mid(1, 36)); // Remove enclosing {...}
+        return u"ns=%1;g=%2"_s.arg(namespaceIndex).arg(QStringView(identifier.toString()).mid(1, 36)); // Remove enclosing {...}
     }
     case 0x05: {
         QByteArray identifier = decode<QByteArray>(success);
         if (!success)
             return QString();
-        return QStringLiteral("ns=%1;b=%2").arg(namespaceIndex).arg(QString::fromLatin1(identifier.toBase64().constData()));
+        return u"ns=%1;b=%2"_s.arg(namespaceIndex).arg(QString::fromLatin1(identifier.toBase64().constData()));
     }
     }
 
@@ -1197,7 +1199,7 @@ bool QOpcUaBinaryDataEncoding::encode<QString, QOpcUa::Types::NodeId>(const QStr
     quint16 index;
     QString identifier;
     char type;
-    if (!QOpcUa::nodeIdStringSplit(src.isEmpty() ? QStringLiteral("ns=0;i=0") : src, &index, &identifier, &type))
+    if (!QOpcUa::nodeIdStringSplit(src.isEmpty() ? u"ns=0;i=0"_s : src, &index, &identifier, &type))
         return false;
 
     qint32 identifierType;

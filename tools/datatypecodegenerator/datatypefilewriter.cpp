@@ -13,6 +13,8 @@
 #include <QtCore/qfile.h>
 #include <QtCore/qset.h>
 
+using namespace Qt::Literals::StringLiterals;
+
 DataTypeFileWriter::DataTypeFileWriter(const QString &path,
                                        const QString &prefix,
                                        const QString &header)
@@ -86,9 +88,9 @@ void DataTypeFileWriter::writeStructuredTypeCpp(const StructuredType *structured
                                                 QTextStream &output)
 {
     if (!m_generatedStructuredTypeFilenames.contains(
-            QStringLiteral("%1%2").arg(m_prefix, structuredType->name())))
+            u"%1%2"_s.arg(m_prefix, structuredType->name())))
         m_generatedStructuredTypeFilenames.push_back(
-            QStringLiteral("%1%2").arg(m_prefix, structuredType->name()));
+            u"%1%2"_s.arg(m_prefix, structuredType->name()));
     output << "#include \"" << m_prefix.toLower() << structuredType->name().toLower() << ".h\"";
 
     QList<QString> mutualIncludes;
@@ -105,10 +107,10 @@ void DataTypeFileWriter::writeStructuredTypeCpp(const StructuredType *structured
                     if (typeName == tempStructuredType->name()
                         && tempField->typeNameSecondPart() == structuredType->name()) {
                         if (!mutualIncludes.contains(
-                                QStringLiteral("#include \"%1%2.h\"\n")
+                                u"#include \"%1%2.h\"\n"_s
                                     .arg(m_prefix.toLower(), tempStructuredType->name().toLower())))
                             mutualIncludes.push_back(
-                                QStringLiteral("#include \"%1%2.h\"\n")
+                                u"#include \"%1%2.h\"\n"_s
                                     .arg(m_prefix.toLower(), tempStructuredType->name().toLower()));
                     }
                 }
@@ -209,7 +211,7 @@ void DataTypeFileWriter::writeStructuredTypeCppDataClassMember(const StructuredT
 
         bool isEnumeration = false;
         for (const auto &enumeratedType : std::as_const(m_enumeratedTypes)) {
-            if (enumeratedType->name() == field->typeName().split(":").at(1)) {
+            if (enumeratedType->name() == field->typeName().split(':'_L1).at(1)) {
                 isEnumeration = true;
                 field->setIsEnum(true);
             }
@@ -276,7 +278,7 @@ void DataTypeFileWriter::writeStructuredTypeCppDataClassMember(const StructuredT
                         const auto enumType = std::find_if(m_enumeratedTypes.constBegin(), m_enumeratedTypes.constEnd(),
                                                            [field](EnumeratedType *e) { return e->name() == field->typeNameSecondPart(); });
                         const auto firstValueName = enumType != m_enumeratedTypes.constEnd() && !(*enumType)->values().empty()
-                                                        ? (*enumType)->values().first()->name() : "Unknown";
+                                                        ? (*enumType)->values().first()->name() : u"Unknown"_s;
                         if (!firstValueName.isEmpty())
                             output << " {" << m_prefix << "::" << field->typeNameSecondPart() << "::" << firstValueName << "}";
                         else
@@ -549,11 +551,11 @@ void DataTypeFileWriter::writeStructuredTypeCppGetter(const StructuredType *stru
                     if (!isPreCoded) {
                         bool isEnum = false;
                         for (const auto &enumeratedType : std::as_const(m_enumeratedTypes)) {
-                            if (enumeratedType->name() == field->typeName().split(":").at(1))
+                            if (enumeratedType->name() == field->typeName().split(':'_L1).at(1))
                                 isEnum = true;
                         }
                         if (isEnum)
-                            output << m_prefix << "::" << field->typeName().split(":").at(1);
+                            output << m_prefix << "::" << field->typeName().split(':'_L1).at(1);
                         else
                             output << m_prefix << typeName;
                     }
@@ -662,14 +664,14 @@ void DataTypeFileWriter::writeStructuredTypeCppSetter(const Field *field,
         if (!isPreCoded) {
             bool isEnum = false;
             for (const auto &enumeratedType : std::as_const(m_enumeratedTypes)) {
-                if (enumeratedType->name() == field->typeName().split(":").at(1))
+                if (enumeratedType->name() == field->typeName().split(':'_L1).at(1))
                     isEnum = true;
             }
             output << "const ";
             if (field->needContainer())
                 output << "QList <" << m_prefix << typeName << "> &";
             else if (isEnum)
-                output << m_prefix << "::" << field->typeName().split(":").at(1) << " &";
+                output << m_prefix << "::" << field->typeName().split(':'_L1).at(1) << " &";
             else
                 output << m_prefix << typeName << " &";
         }
@@ -742,8 +744,8 @@ void DataTypeFileWriter::writeStructuredTypeHeader(const StructuredType *structu
 void DataTypeFileWriter::writeStructuredTypeHeaderIncludes(const StructuredType *structuredType,
                                                            QTextStream &output)
 {
-    QList<QString> qtCoreIncludes{"#include <QSharedData>\n",
-                                  "#include <QVariant>\n"};
+    QList<QString> qtCoreIncludes{u"#include <QSharedData>\n"_s,
+                                  u"#include <QVariant>\n"_s};
     QList<QString> qtOpcUaIncludes{};
     QList<QString> qtClassIncludes;
     QList<QString> qtPredifinedClasses;
@@ -753,15 +755,15 @@ void DataTypeFileWriter::writeStructuredTypeHeaderIncludes(const StructuredType 
     for (const auto &field : typeFields) {
         const auto typeName = field->typeNameSecondPart();
         QString include;
-        if (field->typeName().startsWith(QStringLiteral("%1:").arg(StringIdentifier::binaryTypeIdentifier))) {
+        if (field->typeName().startsWith(u"%1:"_s.arg(StringIdentifier::binaryTypeIdentifier))) {
             if (typeName == StringIdentifier::datetimeIdentifier) {
-                include = "#include <QDateTime>\n";
+                include = u"#include <QDateTime>\n"_s;
             } else if (typeName == StringIdentifier::byteStringIdentifier) {
-                include = "#include <QByteArray>\n";
+                include = u"#include <QByteArray>\n"_s;
             } else if (typeName == StringIdentifier::charArrayIdentifier) {
-                include = "#include <QString>\n";
+                include = u"#include <QString>\n"_s;
             } else if (typeName == StringIdentifier::guidIdentifier) {
-                include = "#include <QUuid>\n";
+                include = u"#include <QUuid>\n"_s;
             }
 
             if (!qtCoreIncludes.contains(include)) {
@@ -773,7 +775,7 @@ void DataTypeFileWriter::writeStructuredTypeHeaderIncludes(const StructuredType 
                 if (precodedType.contains(typeName)) {
                     isPrecoded = true;
                     if (!precodedType.filename().isEmpty()) {
-                        include = QStringLiteral("#include <QtOpcUa/%1>\n")
+                        include = u"#include <QtOpcUa/%1>\n"_s
                                       .arg(precodedType.filename());
                         break;
                     }
@@ -788,10 +790,10 @@ void DataTypeFileWriter::writeStructuredTypeHeaderIncludes(const StructuredType 
                     }
                     if (isEnum) {
                         if (!qtClassIncludes.contains(
-                                QStringLiteral("#include \"%1enumerations.h\"\n")
+                                u"#include \"%1enumerations.h\"\n"_s
                                     .arg(m_prefix.toLower())))
                             qtClassIncludes.push_back(
-                                QStringLiteral("#include \"%1enumerations.h\"\n")
+                                u"#include \"%1enumerations.h\"\n"_s
                                     .arg(m_prefix.toLower()));
 
                     } else {
@@ -809,23 +811,21 @@ void DataTypeFileWriter::writeStructuredTypeHeaderIncludes(const StructuredType 
                                         && tempTypeName == structuredType->name()) {
                                         isMutualInclude = true;
                                         if (!qtPredifinedClasses.contains(
-                                                QStringLiteral("%1%2")
-                                                    .arg(m_prefix, tempStructuredType->name())))
+                                                u"%1%2"_s.arg(m_prefix, tempStructuredType->name())))
                                             qtPredifinedClasses.push_back(
-                                                QStringLiteral("%1%2")
-                                                    .arg(m_prefix, tempStructuredType->name()));
+                                                u"%1%2"_s.arg(m_prefix, tempStructuredType->name()));
                                     }
                                 }
                             }
                         }
 
                         if (!qtClassIncludes.contains(
-                                QStringLiteral("#include \"%1%2.h\"\n")
+                                u"#include \"%1%2.h\"\n"_s
                                     .arg(m_prefix.toLower(), typeName.toLower()))
                             && !isMutualInclude
                             && typeName != StringIdentifier::xmlElementIdentifier)
                             qtClassIncludes.push_back(
-                                QStringLiteral("#include \"%1%2.h\"\n")
+                                u"#include \"%1%2.h\"\n"_s
                                     .arg(m_prefix.toLower(), typeName.toLower()));
                     }
                 } else {
@@ -836,7 +836,7 @@ void DataTypeFileWriter::writeStructuredTypeHeaderIncludes(const StructuredType 
             }
         }
         if (field->needContainer()) {
-            include = "#include <QList>\n";
+            include = u"#include <QList>\n"_s;
             if (!qtCoreIncludes.contains(include)) {
                 qtCoreIncludes.push_back(include);
             }
@@ -1068,7 +1068,7 @@ void DataTypeFileWriter::writeStructuredTypeHeaderGetterSetter(const StructuredT
                         } else {
                             bool isEnum = false;
                             for (const auto &enumeratedType : std::as_const(m_enumeratedTypes)) {
-                                if (enumeratedType->name() == field->typeName().split(":").at(1))
+                                if (enumeratedType->name() == field->typeName().split(':'_L1).at(1))
                                     isEnum = true;
                             }
                             if (isEnum) {
@@ -1106,7 +1106,7 @@ void DataTypeFileWriter::writeStructuredTypeHeaderDebug(const StructuredType *st
 
 void DataTypeFileWriter::writeStructuredTypeCppDebug(const StructuredType *structuredType, QTextStream &output)
 {
-    const auto typeName = QStringLiteral("%1%2").arg(m_prefix, structuredType->name());
+    const auto typeName = u"%1%2"_s.arg(m_prefix, structuredType->name());
 
     output << "/*!" << Util::lineBreak();
     output << Util::indent(1) << "Prints the field values of object \\a v to \\a debug" << Util::lineBreak();
@@ -1170,11 +1170,12 @@ void DataTypeFileWriter::writeStructuredTypeCppDebug(const StructuredType *struc
             parameterUsed = true;
         } else {
             if (field->needContainer()) {
-                const auto tempListName = QStringLiteral("%1%2").arg(field->lowerFirstName(), "Strings");
+                const auto tempListName = u"%1%2"_s.arg(field->lowerFirstName(), u"Strings"_s);
                 output << Util::indent(1 + indentOffset) << "QStringList " << tempListName << ";" << Util::lineBreak();
+                output << Util::indent(1 + indentOffset) << "using namespace Qt::Literals::StringLiterals;" << Util::lineBreak();
                 output << Util::indent(1 + indentOffset) << "for (int i = 0; i < v." << field->lowerFirstName() << "().size(); ++i)" << Util::lineBreak();
-                output << Util::indent(2 + indentOffset) << tempListName << ".push_back(\"" << isPrecoded->className() << "(...)\"" << ");" << Util::lineBreak();
-                output << Util::indent(1 + indentOffset) << "debug << \"QList(\" << " << tempListName << ".join(\", \") << \")\";";
+                output << Util::indent(2 + indentOffset) << tempListName << ".push_back(u\"" << isPrecoded->className() << "(...)\"_s" << ");" << Util::lineBreak();
+                output << Util::indent(1 + indentOffset) << "debug << \"QList(\" << " << tempListName << ".join(u\", \"_s) << \")\";";
                 parameterUsed = true;
             } else {
                 output << Util::indent(1 + indentOffset) << "debug << \"" << isPrecoded->className() << "(...)\";";
@@ -1204,7 +1205,7 @@ void DataTypeFileWriter::writeStructuredTypeCppDebug(const StructuredType *struc
 DataTypeFileWriter::GeneratingError DataTypeFileWriter::writeEnumeratedTypes()
 {
     QFile file;
-    const auto fileName = QStringLiteral("%1enumerations.h").arg(m_prefix.toLower());
+    const auto fileName = u"%1enumerations.h"_s.arg(m_prefix.toLower());
     QDir dir(m_path);
     if (!dir.exists(m_path))
         if (!dir.mkpath(m_path))
@@ -1216,9 +1217,9 @@ DataTypeFileWriter::GeneratingError DataTypeFileWriter::writeEnumeratedTypes()
     writeLicenseHeader(output);
 
     if (!m_generatedEnumeratedTypeFilenames.contains(
-            QStringLiteral("%1enumerations").arg(m_prefix.toLower())))
+            u"%1enumerations"_s.arg(m_prefix.toLower())))
         m_generatedEnumeratedTypeFilenames.push_back(
-            QStringLiteral("%1enumerations").arg(m_prefix.toLower()));
+            u"%1enumerations"_s.arg(m_prefix.toLower()));
     output << "#pragma once"
            << Util::lineBreak();
     output << "#include <QMetaType>"
@@ -1255,9 +1256,9 @@ DataTypeFileWriter::GeneratingError DataTypeFileWriter::generateFile(const XmlEl
                                                                      const QString &fileExtension)
 {
     QFile file;
-    const auto fileName = QStringLiteral("%1%2%3").arg(m_prefix.toLower(),
-                                                       type->name().toLower(),
-                                                       fileExtension);
+    const auto fileName = u"%1%2%3"_s.arg(m_prefix.toLower(),
+                                          type->name().toLower(),
+                                          fileExtension);
     QDir dir(m_path);
     if (!dir.exists(m_path))
         if (!dir.mkpath(m_path))
@@ -1324,9 +1325,9 @@ void DataTypeFileWriter::setGenerateMapping(const QList<XmlElement *> &generateM
 
 bool DataTypeFileWriter::writeBundleFiles()
 {
-    const auto collectionHeaderName = QStringLiteral("%1datatypes%2")
+    const auto collectionHeaderName = u"%1datatypes%2"_s
     .arg(m_prefix.toLower(), StringIdentifier::headerIdentifier);
-    const auto collectionSourceName = QStringLiteral("%1datatypes%2")
+    const auto collectionSourceName = u"%1datatypes%2"_s
                                           .arg(m_prefix.toLower(), StringIdentifier::cppIdentifier);
 
     if (!m_generatedHeaderFileNames.isEmpty()) {
@@ -1344,7 +1345,7 @@ bool DataTypeFileWriter::writeBundleFiles()
             out << "#include \"" << header << "\"" << Util::lineBreak();
     }
 
-    const auto enumHeaderCandidate = QStringLiteral("%1enumerations.h").arg(m_prefix.toLower());
+    const auto enumHeaderCandidate = u"%1enumerations.h"_s.arg(m_prefix.toLower());
     const bool hasEnums = m_generatedHeaderFileNames.contains(enumHeaderCandidate);
 
     if (!m_generatedSourceFileNames.isEmpty() || hasEnums) {
@@ -1357,7 +1358,7 @@ bool DataTypeFileWriter::writeBundleFiles()
         writeLicenseHeader(out);
 
         if (hasEnums)
-            out << "#include \"" << QStringLiteral("moc_%1enumerations.cpp").arg(m_prefix.toLower()) << "\"" << Util::lineBreak();
+            out << "#include \"" << u"moc_%1enumerations.cpp"_s.arg(m_prefix.toLower()) << "\"" << Util::lineBreak();
 
         for (const auto &source : std::as_const(m_generatedSourceFileNames))
             out << "#include \"" << source << "\"" << Util::lineBreak();

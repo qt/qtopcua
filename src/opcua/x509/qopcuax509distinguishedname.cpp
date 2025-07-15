@@ -6,6 +6,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 /*!
     \class QOpcUaX509DistinguishedName
     \inmodule QtOpcUa
@@ -109,15 +111,15 @@ QString QOpcUaX509DistinguishedName::typeToOid(QOpcUaX509DistinguishedName::Type
 {
     switch (type) {
     case Type::CommonName:
-        return QLatin1String("2.5.4.3");
+        return u"2.5.4.3"_s;
     case Type::CountryName:
-        return QLatin1String("2.5.4.6");
+        return u"2.5.4.6"_s;
     case Type::LocalityName:
-        return QLatin1String("2.5.4.7");
+        return u"2.5.4.7"_s;
     case Type::StateOrProvinceName:
-        return QLatin1String("2.5.4.8");
+        return u"2.5.4.8"_s;
     case Type::OrganizationName:
-        return QLatin1String("2.5.4.10");
+        return u"2.5.4.10"_s;
     default:
         return QString();
     }

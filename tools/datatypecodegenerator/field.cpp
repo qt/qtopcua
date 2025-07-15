@@ -7,6 +7,8 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
 
+using namespace Qt::Literals::StringLiterals;
+
 Field::Field(const QString &name, const QString &typeName, const QString &lengthField)
     : XmlElement(name)
     , m_lengthField(lengthField)
@@ -20,7 +22,7 @@ QString Field::typeName() const
 
 QString Field::typeNameSecondPart() const
 {
-    return m_typeName.split(':').value(1, QString());
+    return m_typeName.split(':'_L1).value(1, QString());
 }
 
 void Field::setTypeName(const QString &typeName)

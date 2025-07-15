@@ -27,6 +27,8 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541)
 
+using namespace Qt::Literals::StringLiterals;
+
 QOpen62541Client::QOpen62541Client(const QVariantMap &backendProperties)
     : QOpcUaClientImpl()
     , m_backend(new Open62541AsyncBackend(this))
@@ -40,13 +42,13 @@ QOpen62541Client::QOpen62541Client(const QVariantMap &backendProperties)
 #endif
 
     bool ok = false;
-    const quint32 clientIterateInterval = backendProperties.value(QStringLiteral("clientIterateIntervalMs"), 50)
+    const quint32 clientIterateInterval = backendProperties.value(u"clientIterateIntervalMs"_s, 50)
             .toUInt(&ok);
 
     if (ok)
         m_backend->m_clientIterateInterval = clientIterateInterval;
 
-    const quint32 asyncRequestTimeout = backendProperties.value(QStringLiteral("asyncRequestTimeoutMs"), 15000)
+    const quint32 asyncRequestTimeout = backendProperties.value(u"asyncRequestTimeoutMs"_s, 15000)
             .toUInt(&ok);
 
     if (ok)
@@ -102,7 +104,7 @@ QOpcUaNode *QOpen62541Client::node(const QString &nodeId)
 
 QString QOpen62541Client::backend() const
 {
-    return QStringLiteral("open62541");
+    return u"open62541"_s;
 }
 
 bool QOpen62541Client::requestEndpoints(const QUrl &url)
