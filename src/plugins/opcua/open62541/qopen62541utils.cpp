@@ -18,6 +18,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541)
 
 UA_NodeId Open62541Utils::nodeIdFromQString(const QString &name)
@@ -85,14 +87,14 @@ UA_NodeId Open62541Utils::nodeIdFromQString(const QString &name)
 
 QString Open62541Utils::nodeIdToQString(UA_NodeId id)
 {
-    QString result = QString::fromLatin1("ns=%1;").arg(id.namespaceIndex);
+    QString result = u"ns=%1;"_s.arg(id.namespaceIndex);
 
     switch (id.identifierType) {
     case UA_NODEIDTYPE_NUMERIC:
-        result.append(QString::fromLatin1("i=%1").arg(id.identifier.numeric));
+        result.append(u"i=%1"_s.arg(id.identifier.numeric));
         break;
     case UA_NODEIDTYPE_STRING:
-        result.append(QLatin1String("s="));
+        result.append("s="_L1);
         result.append(QString::fromUtf8(reinterpret_cast<char *>(id.identifier.string.data),
                                              id.identifier.string.length));
         break;
@@ -100,12 +102,12 @@ QString Open62541Utils::nodeIdToQString(UA_NodeId id)
         const UA_Guid &src = id.identifier.guid;
         const QUuid uuid(src.data1, src.data2, src.data3, src.data4[0], src.data4[1], src.data4[2],
                 src.data4[3], src.data4[4], src.data4[5], src.data4[6], src.data4[7]);
-        result.append(QStringLiteral("g=")).append(QStringView(uuid.toString()).mid(1, 36)); // Remove enclosing {...}
+        result.append("g="_L1).append(QStringView(uuid.toString()).mid(1, 36)); // Remove enclosing {...}
         break;
     }
     case UA_NODEIDTYPE_BYTESTRING: {
         const QByteArray temp(reinterpret_cast<char *>(id.identifier.byteString.data), id.identifier.byteString.length);
-        result.append(QStringLiteral("b=")).append(temp.toBase64());
+        result.append("b="_L1).append(QString::fromUtf8(temp.toBase64()));
         break;
     }
     default:

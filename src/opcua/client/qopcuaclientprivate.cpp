@@ -10,6 +10,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 QOpcUaClientPrivate::QOpcUaClientPrivate(QOpcUaClientImpl *impl)
     : QObjectPrivate()
     , m_impl(impl)
@@ -84,7 +86,7 @@ bool QOpcUaClientPrivate::updateNamespaceArray()
         return false;
 
     if (!m_namespaceArrayNode) {
-        m_namespaceArrayNode.reset(m_impl->node(QStringLiteral("ns=0;i=2255")));
+        m_namespaceArrayNode.reset(m_impl->node(u"ns=0;i=2255"_s));
         if (!m_namespaceArrayNode)
             return false;
         QObjectPrivate::connect(m_namespaceArrayNode.data(), &QOpcUaNode::attributeRead, this, &QOpcUaClientPrivate::namespaceArrayUpdated);

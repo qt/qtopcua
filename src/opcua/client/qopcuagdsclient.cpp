@@ -19,18 +19,20 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 Q_STATIC_LOGGING_CATEGORY(QT_OPCUA_GDSCLIENT, "qt.opcua.gdsclient")
 
 static const QStringList elementsToResolve {
-    QLatin1String("GetApplication"),
-    QLatin1String("FindApplications"),
-    QLatin1String("RegisterApplication"),
-    QLatin1String("UnregisterApplication"),
-    QLatin1String("GetCertificateGroups"),
-    QLatin1String("GetCertificateStatus"),
-    QLatin1String("StartSigningRequest"),
-    QLatin1String("FinishRequest"),
-    QLatin1String("GetTrustList"),
+    u"GetApplication"_s,
+    u"FindApplications"_s,
+    u"RegisterApplication"_s,
+    u"UnregisterApplication"_s,
+    u"GetCertificateGroups"_s,
+    u"GetCertificateStatus"_s,
+    u"StartSigningRequest"_s,
+    u"FinishRequest"_s,
+    u"GetTrustList"_s,
 };
 
 /*!
@@ -788,7 +790,7 @@ void QOpcUaGdsClientPrivate::start()
     // Load persistent data
     QSettings settings;
     qCDebug(QT_OPCUA_GDSCLIENT) << "Using settings from" << settings.fileName();
-    const auto applicationId = settings.value(QLatin1String("gds/applicationId"), QString()).toString();
+    const auto applicationId = settings.value(u"gds/applicationId"_s, QString()).toString();
     if (applicationId.isEmpty())
         qCInfo(QT_OPCUA_GDSCLIENT) << "No application ID in persistent storage";
     else
@@ -816,7 +818,7 @@ void QOpcUaGdsClientPrivate::resolveDirectoryNode()
         return;
     }
 
-    m_gdsNamespaceIndex = m_client->namespaceArray().indexOf(QLatin1String("http://opcfoundation.org/UA/GDS/"));
+    m_gdsNamespaceIndex = m_client->namespaceArray().indexOf(u"http://opcfoundation.org/UA/GDS/"_s);
     if (m_gdsNamespaceIndex < 0) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Namespace not found";
         setError(QOpcUaGdsClient::Error::DirectoryNodeNotFound);
@@ -836,7 +838,7 @@ void QOpcUaGdsClientPrivate::resolveDirectoryNode()
             return;
         }
 
-        if (path[0].targetName().name() != QLatin1String("Directory")) {
+        if (path[0].targetName().name() != "Directory"_L1) {
             qCWarning(QT_OPCUA_GDSCLIENT) << "Invalid resolve name" << path[0].targetName().name();
             setError(QOpcUaGdsClient::Error::DirectoryNodeNotFound);
             return;
@@ -886,7 +888,7 @@ void QOpcUaGdsClientPrivate::resolveDirectoryNode()
         this->resolveMethodNodes();
     });
 
-    QOpcUaRelativePathElement pathElement(QOpcUaQualifiedName(m_gdsNamespaceIndex, QLatin1String("Directory")),
+    QOpcUaRelativePathElement pathElement(QOpcUaQualifiedName(m_gdsNamespaceIndex, u"Directory"_s),
                                            QOpcUa::ReferenceTypeId::Organizes);
     QList<QOpcUaRelativePathElement> browsePath { pathElement };
 
@@ -903,7 +905,7 @@ void QOpcUaGdsClientPrivate::resolveMethodNodes()
 {
     // See OPC UA Specification 1.05 part 12 6.6.2 "Directory"
 
-    QOpcUaRelativePathElement pathElement(QOpcUaQualifiedName(m_gdsNamespaceIndex, QLatin1String()),
+    QOpcUaRelativePathElement pathElement(QOpcUaQualifiedName(m_gdsNamespaceIndex, {}),
                                            QOpcUa::ReferenceTypeId::HasComponent);
     QList<QOpcUaRelativePathElement> browsePath { pathElement };
 
@@ -961,7 +963,7 @@ void QOpcUaGdsClientPrivate::_q_handleResolveBrowsePathFinished(QList<QOpcUaBrow
     if (elementsToResolve.size() == m_directoryNodes.size()) {
         qCDebug(QT_OPCUA_GDSCLIENT) << "All symbols resolved";
 
-        if (m_appRecord.applicationId().isEmpty() || m_appRecord.applicationId() == QLatin1String("ns=0;i=0"))
+        if (m_appRecord.applicationId().isEmpty() || m_appRecord.applicationId() == "ns=0;i=0"_L1)
             this->findRegisteredApplication();
         else
             this->getApplication();
@@ -983,7 +985,7 @@ void QOpcUaGdsClientPrivate::getApplication()
         return;
     }
 
-    if (!m_directoryNode->callMethod(m_directoryNodes[QLatin1String("GetApplication")],
+    if (!m_directoryNode->callMethod(m_directoryNodes[u"GetApplication"_s],
                                      QList<QPair<QVariant, QOpcUa::Types>> { qMakePair(QVariant(m_appRecord.applicationId()), QOpcUa::Types::NodeId) })) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Failed to call method GetApplication";
         setError(QOpcUaGdsClient::Error::FailedToRegisterApplication);
@@ -1000,7 +1002,7 @@ void QOpcUaGdsClientPrivate::handleGetApplicationFinished(const QVariant &result
 
         // Remove invalid id from settings
         QSettings settings;
-        settings.remove(QLatin1String("gds/applicationId"));
+        settings.remove("gds/applicationId"_L1);
         settings.sync();
 
         restartWithCredentials();
@@ -1057,7 +1059,7 @@ void QOpcUaGdsClientPrivate::findRegisteredApplication()
         return;
     }
 
-    if (!m_directoryNode->callMethod(m_directoryNodes[QLatin1String("FindApplications")],
+    if (!m_directoryNode->callMethod(m_directoryNodes[u"FindApplications"_s],
                                      QList<QPair<QVariant, QOpcUa::Types>> { qMakePair(QVariant(m_appRecord.applicationUri()), QOpcUa::Types::String) })) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Failed to call method";
         setError(QOpcUaGdsClient::Error::FailedToRegisterApplication);
@@ -1105,7 +1107,7 @@ void QOpcUaGdsClientPrivate::handleFindApplicationsFinished(const QVariant &resu
 
 void QOpcUaGdsClientPrivate::registerApplication()
 {
-    if (!m_appRecord.applicationId().isEmpty() && m_appRecord.applicationId() != QLatin1String("ns=0;i=0"))
+    if (!m_appRecord.applicationId().isEmpty() && m_appRecord.applicationId() != "ns=0;i=0"_L1)
         return;
 
     if (!m_client || m_client->state() != QOpcUaClient::Connected) {
@@ -1130,7 +1132,7 @@ void QOpcUaGdsClientPrivate::registerApplication()
     QOpcUaExtensionObject parameter;
     parameter.setBinaryEncodedBody(buffer, QOpcUa::nodeIdFromInteger(m_gdsNamespaceIndex, ApplicationRecordDataType_Encoding_DefaultBinary));
 
-    if (!m_directoryNode->callMethod(m_directoryNodes[QLatin1String("RegisterApplication")],
+    if (!m_directoryNode->callMethod(m_directoryNodes[u"RegisterApplication"_s],
                                      QList<QOpcUa::TypedVariant> { QOpcUa::TypedVariant(parameter, QOpcUa::ExtensionObject) })) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Failed to call method RegisterApplication";
         setError(QOpcUaGdsClient::Error::FailedToRegisterApplication);
@@ -1153,7 +1155,7 @@ void QOpcUaGdsClientPrivate::handleRegisterApplicationFinished(const QVariant &r
     m_appRecord.setApplicationId(result.toString());
 
     QSettings settings;
-    settings.setValue(QLatin1String("gds/applicationId"), m_appRecord.applicationId());
+    settings.setValue(u"gds/applicationId"_s, m_appRecord.applicationId());
     settings.sync();
 
     qCInfo(QT_OPCUA_GDSCLIENT) << "Registered application with id" << m_appRecord.applicationId();
@@ -1178,7 +1180,7 @@ void QOpcUaGdsClientPrivate::getCertificateGroups()
     QList<QOpcUa::TypedVariant> arguments;
     arguments.push_back(QOpcUa::TypedVariant(m_appRecord.applicationId(), QOpcUa::NodeId));
 
-    if (!m_directoryNode->callMethod(m_directoryNodes[QLatin1String("GetCertificateGroups")], arguments)) {
+    if (!m_directoryNode->callMethod(m_directoryNodes[u"GetCertificateGroups"_s], arguments)) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Failed to call GetCertificateGroups";
         setError(QOpcUaGdsClient::Error::FailedToGetCertificateStatus);
     }
@@ -1236,7 +1238,7 @@ void QOpcUaGdsClientPrivate::resolveCertificateTypes()
             return;
         }
 
-        if (path[0].targetName().name() != QLatin1String("CertificateTypes")) {
+        if (path[0].targetName().name() != "CertificateTypes"_L1) {
             qCWarning(QT_OPCUA_GDSCLIENT) << "Invalid resolve name" << path[0].targetName().name();
             setError(QOpcUaGdsClient::Error::FailedToGetCertificateStatus);
             return;
@@ -1264,7 +1266,7 @@ void QOpcUaGdsClientPrivate::resolveCertificateTypes()
         this->getCertificateTypes();
     });
 
-    QOpcUaRelativePathElement pathElement(QOpcUaQualifiedName(0, QLatin1String("CertificateTypes")),
+    QOpcUaRelativePathElement pathElement(QOpcUaQualifiedName(0, u"CertificateTypes"_s),
                                            QOpcUa::ReferenceTypeId::Unspecified);
     QList<QOpcUaRelativePathElement> browsePath { pathElement };
 
@@ -1350,7 +1352,7 @@ void QOpcUaGdsClientPrivate::getCertificateStatus()
         return;
     }
 
-    QString certificateType = QLatin1String("ns=0;i=0"); // null node
+    QString certificateType = u"ns=0;i=0"_s; // null node
 
     QList<QOpcUa::TypedVariant> arguments;
     arguments.push_back(QOpcUa::TypedVariant(m_appRecord.applicationId(), QOpcUa::NodeId));
@@ -1359,7 +1361,7 @@ void QOpcUaGdsClientPrivate::getCertificateStatus()
     // Let the server choose the certificate type id
     arguments.push_back(QOpcUa::TypedVariant(certificateType, QOpcUa::NodeId));
 
-    if (!m_directoryNode->callMethod(m_directoryNodes[QLatin1String("GetCertificateStatus")], arguments)) {
+    if (!m_directoryNode->callMethod(m_directoryNodes[u"GetCertificateStatus"_s], arguments)) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Failed to call GetCertificateStatus";
         setError(QOpcUaGdsClient::Error::FailedToGetCertificateStatus);
     }
@@ -1431,13 +1433,13 @@ void QOpcUaGdsClientPrivate::startCertificateRequest()
     QList<QOpcUa::TypedVariant> arguments;
     arguments.push_back(QOpcUa::TypedVariant(m_appRecord.applicationId(), QOpcUa::NodeId));
     // Let the server choose the certificate group id
-    arguments.push_back(QOpcUa::TypedVariant(QLatin1String("ns=0;i=0"), QOpcUa::NodeId));
+    arguments.push_back(QOpcUa::TypedVariant(u"ns=0;i=0"_s, QOpcUa::NodeId));
     // Let the server choose the certificate type id
-    arguments.push_back(QOpcUa::TypedVariant(QLatin1String("ns=0;i=0"), QOpcUa::NodeId));
+    arguments.push_back(QOpcUa::TypedVariant(u"ns=0;i=0"_s, QOpcUa::NodeId));
 
     arguments.push_back(QOpcUa::TypedVariant(csrData, QOpcUa::ByteString));
 
-    if (!m_directoryNode->callMethod(m_directoryNodes[QLatin1String("StartSigningRequest")], arguments)) {
+    if (!m_directoryNode->callMethod(m_directoryNodes[u"StartSigningRequest"_s], arguments)) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Failed to call StartSigningRequest";
         setError(QOpcUaGdsClient::Error::FailedToGetCertificate);
     }
@@ -1486,7 +1488,7 @@ void QOpcUaGdsClientPrivate::finishCertificateRequest()
     arguments.push_back(QOpcUa::TypedVariant(m_appRecord.applicationId(), QOpcUa::NodeId));
     arguments.push_back(QOpcUa::TypedVariant(m_certificateRequestId, QOpcUa::NodeId));
 
-    if (!m_directoryNode->callMethod(m_directoryNodes[QLatin1String("FinishRequest")], arguments)) {
+    if (!m_directoryNode->callMethod(m_directoryNodes[u"FinishRequest"_s], arguments)) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Failed to call FinishRequest";
         setError(QOpcUaGdsClient::Error::FailedToGetCertificate);
     }
@@ -1546,7 +1548,7 @@ void QOpcUaGdsClientPrivate::handleFinishRequestFinished(const QVariant &result,
     certificateFile.close();
 
     // FIMXE: How to store this?
-    QTemporaryFile issuerFile(m_pkiConfig.issuerListDirectory() + QLatin1String("/XXXXXX.der"));
+    QTemporaryFile issuerFile(m_pkiConfig.issuerListDirectory() + "/XXXXXX.der"_L1);
     if (!issuerFile.open()) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Could not store issuer certificates to" << m_pkiConfig.issuerListDirectory();
         setError(QOpcUaGdsClient::Error::FailedToGetCertificate);
@@ -1570,7 +1572,7 @@ void QOpcUaGdsClientPrivate::unregisterApplication()
 {
     Q_Q(QOpcUaGdsClient);
 
-    if (m_appRecord.applicationId().isEmpty() || m_appRecord.applicationId() == QLatin1String("ns=0;i=0")) {
+    if (m_appRecord.applicationId().isEmpty() || m_appRecord.applicationId() == "ns=0;i=0"_L1) {
         emit q->unregistered();
         return;
     }
@@ -1587,7 +1589,7 @@ void QOpcUaGdsClientPrivate::unregisterApplication()
         return;
     }
 
-    if (!m_directoryNode->callMethod(m_directoryNodes[QLatin1String("UnregisterApplication")],
+    if (!m_directoryNode->callMethod(m_directoryNodes["UnregisterApplication"_L1],
                                      QList<QOpcUa::TypedVariant> { QOpcUa::TypedVariant(m_appRecord.applicationId(), QOpcUa::NodeId) })) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Failed to call method UnregisterApplication";
         setError(QOpcUaGdsClient::Error::FailedToUnregisterApplication);
@@ -1719,23 +1721,23 @@ QOpcUaX509CertificateSigningRequest QOpcUaGdsClientPrivate::createSigningRequest
 
 void QOpcUaGdsClientPrivate::_q_handleDirectoryNodeMethodCallFinished(QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode)
 {
-    if (methodNodeId == m_directoryNodes[QLatin1String("UnregisterApplication")]) {
+    if (methodNodeId == m_directoryNodes[u"UnregisterApplication"_s]) {
         this->handleUnregisterApplicationFinished(result, statusCode);
-    } else if ( methodNodeId == m_directoryNodes[QLatin1String("FinishRequest")]) {
+    } else if ( methodNodeId == m_directoryNodes[u"FinishRequest"_s]) {
         this->handleFinishRequestFinished(result, statusCode);
-    } else if (methodNodeId == m_directoryNodes[QLatin1String("StartSigningRequest")]) {
+    } else if (methodNodeId == m_directoryNodes[u"StartSigningRequest"_s]) {
         this->handleStartSigningRequestFinished(result, statusCode);
-    } else if (methodNodeId == m_directoryNodes[QLatin1String("GetCertificateStatus")]) {
+    } else if (methodNodeId == m_directoryNodes[u"GetCertificateStatus"_s]) {
         this->handleGetCertificateStatusFinished(result, statusCode);
-    } else if (methodNodeId == m_directoryNodes[QLatin1String("GetCertificateGroups")]) {
+    } else if (methodNodeId == m_directoryNodes[u"GetCertificateGroups"_s]) {
         this->handleGetCertificateGroupsFinished(result, statusCode);
-    } else if (methodNodeId == m_directoryNodes[QLatin1String("RegisterApplication")]) {
+    } else if (methodNodeId == m_directoryNodes[u"RegisterApplication"_s]) {
         this->handleRegisterApplicationFinished(result, statusCode);
-    } else if (methodNodeId == m_directoryNodes[QLatin1String("FindApplications")]) {
+    } else if (methodNodeId == m_directoryNodes[u"FindApplications"_s]) {
         this->handleFindApplicationsFinished(result, statusCode);
-    } else if (methodNodeId == m_directoryNodes[QLatin1String("GetApplication")]) {
+    } else if (methodNodeId == m_directoryNodes[u"GetApplication"_s]) {
         this->handleGetApplicationFinished(result, statusCode);
-    } else if (methodNodeId == m_directoryNodes[QLatin1String("GetTrustList")]) {
+    } else if (methodNodeId == m_directoryNodes[u"GetTrustList"_s]) {
         this->handleGetTrustListFinished(result, statusCode);
     } else {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Result unexpeced method call received" << methodNodeId;
@@ -1796,7 +1798,7 @@ void QOpcUaGdsClientPrivate::_q_updateTrustList()
     arguments.push_back(QOpcUa::TypedVariant(m_appRecord.applicationId(), QOpcUa::NodeId));
     arguments.push_back(QOpcUa::TypedVariant(m_certificateGroupNode->nodeId(), QOpcUa::NodeId));
 
-    if (!m_directoryNode->callMethod(m_directoryNodes[QLatin1String("GetTrustList")], arguments)) {
+    if (!m_directoryNode->callMethod(m_directoryNodes[u"GetTrustList"_s], arguments)) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Failed to call GetTrustList";
         setError(QOpcUaGdsClient::Error::FailedToGetCertificate);
     }

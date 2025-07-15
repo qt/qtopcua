@@ -15,6 +15,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 QOpcUaX509CertificateSigningRequestPrivate::QOpcUaX509CertificateSigningRequestPrivate()
 {
 
@@ -70,13 +72,13 @@ static X509_EXTENSION *createExtension(QOpcUaX509Extension *extension)
         for (const auto &pair : std::as_const(san->entries())) {
             QString prefix;
             if (pair.first == QOpcUaX509ExtensionSubjectAlternativeName::Type::DNS)
-                prefix = QLatin1String("DNS:");
+                prefix = u"DNS:"_s;
             else if (pair.first == QOpcUaX509ExtensionSubjectAlternativeName::Type::Email)
-                    prefix = QLatin1String("EMAIL:");
+                    prefix = u"EMAIL:"_s;
             else if (pair.first == QOpcUaX509ExtensionSubjectAlternativeName::Type::IP)
-                    prefix = QLatin1String("IP:");
+                    prefix = u"IP:"_s;
             else if (pair.first == QOpcUaX509ExtensionSubjectAlternativeName::Type::URI)
-                    prefix = QLatin1String("URI:");
+                    prefix = u"URI:"_s;
             else {
                 qCWarning(lcSsl()) << "Invalid SubjectAlternativeName type";
                 return nullptr;
@@ -97,9 +99,9 @@ static X509_EXTENSION *createExtension(QOpcUaX509Extension *extension)
         }
         q_X509_EXTENSION_set_critical(ex, san->critical() ? 1 : 0);
     } else if (const auto *bc = dynamic_cast<const QOpcUaX509ExtensionBasicConstraints *>(extension)) {
-        QString data = QLatin1String("CA:") + QLatin1String(bc->ca() ? "true" : "false");
+        QString data = u"CA:"_s + (bc->ca() ? u"true"_s : u"false"_s);
         if (bc->ca() && bc->pathLength() >= 0)
-            data.append(QLatin1String(",pathlen:") + QString::number(bc->pathLength()));
+            data.append(u",pathlen:"_s + QString::number(bc->pathLength()));
 
         ex = q_X509V3_EXT_conf_nid(NULL, NULL, NID_basic_constraints, data.toUtf8().data());
         if (!ex) {
@@ -111,23 +113,23 @@ static X509_EXTENSION *createExtension(QOpcUaX509Extension *extension)
         QStringList data;
 
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::DigitalSignature))
-            data.append(QLatin1String("digitalSignature"));
+            data.append(u"digitalSignature"_s);
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::NonRepudiation))
-            data.append(QLatin1String("nonRepudiation"));
+            data.append(u"nonRepudiation"_s);
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::KeyEncipherment))
-            data.append(QLatin1String("keyEncipherment"));
+            data.append(u"keyEncipherment"_s);
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::DataEncipherment))
-            data.append(QLatin1String("dataEncipherment"));
+            data.append(u"dataEncipherment"_s);
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::KeyAgreement))
-            data.append(QLatin1String("keyAgreement"));
+            data.append(u"keyAgreement"_s);
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::CertificateSigning))
-            data.append(QLatin1String("keyCertSign"));
+            data.append(u"keyCertSign"_s);
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::CrlSigning))
-            data.append(QLatin1String("cRLSign"));
+            data.append(u"cRLSign"_s);
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::EnciptherOnly))
-            data.append(QLatin1String("encipherOnly"));
+            data.append(u"encipherOnly"_s);
         if (ku->keyUsage(QOpcUaX509ExtensionKeyUsage::KeyUsage::DecipherOnly))
-            data.append(QLatin1String("decipherOnly"));
+            data.append(u"decipherOnly"_s);
 
         ex = q_X509V3_EXT_conf_nid(NULL, NULL, NID_key_usage, data.join(QLatin1Char(',')).toUtf8().data());
         if (!ex) {
@@ -139,13 +141,13 @@ static X509_EXTENSION *createExtension(QOpcUaX509Extension *extension)
         QStringList data;
 
         if (eku->keyUsage(QOpcUaX509ExtensionExtendedKeyUsage::KeyUsage::TlsWebServerAuthentication))
-            data.append(QLatin1String("serverAuth"));
+            data.append(u"serverAuth"_s);
         if (eku->keyUsage(QOpcUaX509ExtensionExtendedKeyUsage::KeyUsage::TlsWebClientAuthentication))
-            data.append(QLatin1String("clientAuth"));
+            data.append(u"clientAuth"_s);
         if (eku->keyUsage(QOpcUaX509ExtensionExtendedKeyUsage::KeyUsage::SignExecutableCode))
-            data.append(QLatin1String("codeSigning"));
+            data.append(u"codeSigning"_s);
         if (eku->keyUsage(QOpcUaX509ExtensionExtendedKeyUsage::KeyUsage::EmailProtection))
-            data.append(QLatin1String("emailProtection"));
+            data.append(u"emailProtection"_s);
 
        // NID_ext_key_usage
         ex = q_X509V3_EXT_conf_nid(NULL, NULL, NID_ext_key_usage, data.join(QLatin1Char(',')).toUtf8().data());

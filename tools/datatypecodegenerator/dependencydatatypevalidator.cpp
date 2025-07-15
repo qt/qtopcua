@@ -7,6 +7,8 @@
 #include "stringidentifier.h"
 #include "structuredtype.h"
 
+using namespace Qt::Literals::StringLiterals;
+
 DependencyDataTypeValidator::DependencyDataTypeValidator()
     : m_readResolveDependencies(ReadDependencies)
 {}
@@ -29,7 +31,7 @@ void DependencyDataTypeValidator::visit(EnumeratedValue *enumeratedValue)
 void DependencyDataTypeValidator::visit(Field *field)
 {
     if (m_readResolveDependencies == DependencyDataTypeValidator::ReadDependencies) {
-        if (!field->typeName().contains("opc:")) {
+        if (!field->typeName().contains("opc:"_L1)) {
             const auto typeName = field->typeNameSecondPart();
             for (const auto &precoded : StringIdentifier::opcUaPrecodedTypes) {
                 if (precoded.contains(typeName)) {

@@ -5,6 +5,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 /*!
     \class QOpcUaApplicationRecordDataType
     \inmodule QtOpcUa
@@ -37,7 +39,7 @@ public:
 QOpcUaApplicationRecordDataType::QOpcUaApplicationRecordDataType()
     : data(new QOpcUaApplicationRecordDataTypeData)
 {
-    data->applicationId = QLatin1String("ns=0;i=0"); // empty node id
+    data->applicationId = u"ns=0;i=0"_s; // empty node id
 }
 
 /*!

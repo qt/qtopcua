@@ -9,6 +9,8 @@
 #include <QDir>
 #include <QFile>
 
+using namespace Qt::Literals::StringLiterals;
+
 bool NodeIdGenerator::parseNodeIds(const QString &name, const QString &path)
 {
     if (m_nodeIds.contains(name)) {
@@ -60,10 +62,10 @@ bool NodeIdGenerator::generateNodeIdsHeader(const QString &prefix, const QString
         return false;
     }
 
-    const auto name = QStringLiteral("%1nodeids.h").arg(prefix.toLower());
+    const auto name = u"%1nodeids.h"_s.arg(prefix.toLower());
 
     QDir dir(path);
-    if (!dir.mkpath(QStringLiteral("."))) {
+    if (!dir.mkpath(u"."_s)) {
         qWarning() << "Failed to create directory" << path << "for writing";
         return false;
     }
@@ -82,7 +84,7 @@ bool NodeIdGenerator::generateNodeIdsHeader(const QString &prefix, const QString
     out << "#pragma once" << Util::lineBreak(2);
 
     for (auto it = m_nodeIds.constBegin(); it != m_nodeIds.constEnd();) {
-        const auto enumName = QStringLiteral("%1NodeId").arg(it.key());
+        const auto enumName = u"%1NodeId"_s.arg(it.key());
         out << "enum class " << enumName << " {" << Util::lineBreak();
 
         out << Util::indent(1) << "Unknown = 0," << Util::lineBreak();

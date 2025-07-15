@@ -11,6 +11,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 /*!
     \class QOpcUaClient
     \inmodule QtOpcUa
@@ -570,7 +572,7 @@ QString QOpcUaClient::resolveExpandedNodeId(const QOpcUaExpandedNodeId &expanded
             return QString();
         }
 
-        QStringList splitId = expandedNodeId.nodeId().split(QLatin1String(";"));
+        QStringList splitId = expandedNodeId.nodeId().split(';'_L1);
         if (splitId.size() != 2) {
             qCWarning(QT_OPCUA) << "Failed to split node id" << expandedNodeId.nodeId();
             if (ok)
@@ -580,7 +582,7 @@ QString QOpcUaClient::resolveExpandedNodeId(const QOpcUaExpandedNodeId &expanded
 
         if (ok)
             *ok = true;
-        return QStringLiteral("ns=%1;").arg(index).append(splitId.at(1));
+        return u"ns=%1;"_s.arg(index).append(splitId.at(1));
     }
 }
 

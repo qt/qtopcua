@@ -6,6 +6,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 /*!
     \class QOpcUaSimpleAttributeOperand
     \inmodule QtOpcUa
@@ -23,7 +25,7 @@ QT_BEGIN_NAMESPACE
 class QOpcUaSimpleAttributeOperandData : public QSharedData
 {
 public:
-    QString typeId{QStringLiteral("ns=0;i=2041")}; // BaseEventType
+    QString typeId{u"ns=0;i=2041"_s}; // BaseEventType
     QList<QOpcUaQualifiedName> browsePath;
     QOpcUa::NodeAttribute attributeId {QOpcUa::NodeAttribute::Value};
     QString indexRange;

@@ -14,6 +14,8 @@
 #include <QTcpSocket>
 #include <QTcpServer>
 
+using namespace Qt::Literals::StringLiterals;
+
 #define defineDataMethod(name) void name()\
 {\
     QTest::addColumn<QOpcUaClient *>("opcuaClient");\
@@ -42,7 +44,7 @@ private slots:
 private:
     QString envOrDefault(const char *env, QString def)
     {
-        return qEnvironmentVariableIsSet(env) ? qgetenv(env).constData() : def;
+        return qEnvironmentVariableIsSet(env) ? QString::fromUtf8(qgetenv(env).constData()) : def;
     }
 
     QString m_discoveryEndpoint;
@@ -74,7 +76,7 @@ void Tst_Connection::initTestCase()
 
         QOpcUaClient *client = m_opcUa.createClient(backend, backendOptions);
         QVERIFY2(client != nullptr,
-                 QStringLiteral("Loading backend failed: %1").arg(backend).toLatin1().data());
+                 u"Loading backend failed: %1"_s.arg(backend).toLatin1().data());
         client->setParent(this);
         qDebug() << "Using SDK plugin:" << client->backend();
         m_clients.append(client);
@@ -84,15 +86,15 @@ void Tst_Connection::initTestCase()
         m_testServerPath = qApp->applicationDirPath()
 
 #if defined(Q_OS_MACOS)
-                                     + QLatin1String("/../../open62541-testserver/open62541-testserver.app/Contents/MacOS/open62541-testserver")
+                                     + "/../../open62541-testserver/open62541-testserver.app/Contents/MacOS/open62541-testserver"_L1
 #else
 
 #if defined(Q_OS_WIN) && !defined(TESTS_CMAKE_SPECIFIC_PATH)
-                                     + QLatin1String("/..")
+                                     + "/.."_L1
 #endif
-                                     + QLatin1String("/../../open62541-testserver/open62541-testserver")
+                                     + "/../../open62541-testserver/open62541-testserver"_L1
 #ifdef Q_OS_WIN
-                                     + QLatin1String(".exe")
+                                     + ".exe"_L1
 #endif
 
 #endif
@@ -142,7 +144,7 @@ void Tst_Connection::initTestCase()
     }
     QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
     QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-    m_discoveryEndpoint = QStringLiteral("opc.tcp://%1:%2").arg(host, port);
+    m_discoveryEndpoint = u"opc.tcp://%1:%2"_s.arg(host, port);
     qDebug() << "Using endpoint:" << m_discoveryEndpoint;
 
     QOpcUaClient *client = m_clients.first();

@@ -11,6 +11,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 /*!
     \class QOpcUaGenericStructValue
     \inmodule QtOpcUa
@@ -285,11 +287,11 @@ QDebug operator<<(QDebug debug, const QOpcUaGenericStructValue &s)
 {
     QDebugStateSaver saver(debug);
 
-    QString structType = QStringLiteral("Struct");
+    QString structType = u"Struct"_s;
     if (s.structureDefinition().structureType() == QOpcUaStructureDefinition::StructureType::StructureWithOptionalFields)
-        structType = QStringLiteral("StructWithOptionalFields");
+        structType = u"StructWithOptionalFields"_s;
     else if (s.structureDefinition().structureType() == QOpcUaStructureDefinition::StructureType::Union)
-        structType = QStringLiteral("Union");
+        structType = u"Union"_s;
 
     debug.noquote().nospace();
     debug << structType << " " << s.typeName() << " (";

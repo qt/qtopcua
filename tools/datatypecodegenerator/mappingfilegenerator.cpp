@@ -13,6 +13,8 @@
 #include <QtCore/qmap.h>
 #include <QtCore/qset.h>
 
+using namespace Qt::Literals::StringLiterals;
+
 MappingFileGenerator::MappingFileGenerator(const QList<XmlElement *> &generateMapping,
                                            const QString &path,
                                            const QString &prefix,
@@ -83,7 +85,7 @@ MappingFileGenerator::MappingError MappingFileGenerator::generateMapping()
 MappingFileGenerator::MappingError MappingFileGenerator::generateMappingHeader()
 {
     QFile file;
-    const auto fileName = QStringLiteral("%1binarydeencoder%2")
+    const auto fileName = u"%1binarydeencoder%2"_s
                               .arg(m_prefix.toLower(), StringIdentifier::headerIdentifier);
     QDir dir(m_path);
     if (!dir.exists(m_path))
@@ -105,17 +107,17 @@ MappingFileGenerator::MappingError MappingFileGenerator::generateMappingHeader()
         const auto enumeratedType = dynamic_cast<EnumeratedType *>(mapping);
         if (enumeratedType) {
             if (!includes.contains(
-                    QLatin1String("#include \"%1enumerations.h\"%2").arg(m_prefix.toLower(), Util::lineBreak())))
+                    u"#include \"%1enumerations.h\"%2"_s.arg(m_prefix.toLower(), Util::lineBreak())))
                 includes.push_back(
-                    QLatin1String("#include \"%1enumerations.h\"%2").arg(m_prefix.toLower(), Util::lineBreak()));
+                    u"#include \"%1enumerations.h\"%2"_s.arg(m_prefix.toLower(), Util::lineBreak()));
         } else {
             const auto structuredType = dynamic_cast<StructuredType *>(mapping);
             if (structuredType)
                 if (!includes.contains(
-                        QLatin1String("#include \"%1%2.h\"%3")
+                        u"#include \"%1%2.h\"%3"_s
                             .arg(m_prefix.toLower(), structuredType->name().toLower(), Util::lineBreak())))
                     includes.push_back(
-                        QLatin1String("#include \"%1%2.h\"%3")
+                        u"#include \"%1%2.h\"%3"_s
                             .arg(m_prefix.toLower(), structuredType->name().toLower(), Util::lineBreak()));
         }
     }
@@ -183,7 +185,7 @@ MappingFileGenerator::MappingError MappingFileGenerator::generateMappingCpp()
 {
     QFile file;
     QDir dir(m_path);
-    const auto fileName = QStringLiteral("%1binarydeencoder%2")
+    const auto fileName = u"%1binarydeencoder%2"_s
                               .arg(m_prefix.toLower(), StringIdentifier::cppIdentifier);
     if (!dir.exists(m_path))
         if (!dir.mkpath(m_path))
@@ -288,7 +290,7 @@ void MappingFileGenerator::generateOptionalFieldDecoding(QTextStream &output, co
             break;
     }
 
-    output << Util::indent(level) << "if (decodingMask & " << QStringLiteral("(1 << %1)").arg(index) << ") {" << Util::lineBreak();
+    output << Util::indent(level) << "if (decodingMask & " << u"(1 << %1)"_s.arg(index) << ") {" << Util::lineBreak();
     generateFieldDecoding(output, structuredType, field, level + 1);
     output << Util::indent(level + 1) << "temp.set" << field->switchField() << "(true);" << Util::lineBreak();
     output << Util::indent(level) << "}" << Util::lineBreak();
@@ -296,7 +298,7 @@ void MappingFileGenerator::generateOptionalFieldDecoding(QTextStream &output, co
 
 void MappingFileGenerator::generateUnionFieldDecoding(QTextStream &output, const StructuredType *structuredType, const Field *field, int level)
 {
-    output << Util::indent(level) << QStringLiteral("if (switchField == %1) {").arg(field->switchValue()) << Util::lineBreak();
+    output << Util::indent(level) << u"if (switchField == %1) {"_s.arg(field->switchValue()) << Util::lineBreak();
     generateFieldDecoding(output, structuredType, field, level + 1);
     output << Util::indent(level) << "}" << Util::lineBreak();
 }

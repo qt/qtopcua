@@ -16,6 +16,8 @@
 
 #include <QtCore/qfile.h>
 
+using namespace Qt::Literals::StringLiterals;
+
 RecursiveDescentParser::~RecursiveDescentParser()
 {
     qDeleteAll(m_mapTypeDictionary);
@@ -99,7 +101,7 @@ RecursiveDescentParser::ParsingError RecursiveDescentParser::parseField(
     if (!field->lengthField().isEmpty())
         field->setNeedContainer(true);
 
-    if (field->typeName().endsWith(QStringLiteral(":%1").arg(structuredType->name())))
+    if (field->typeName().endsWith(u":%1"_s.arg(structuredType->name())))
         field->setRecursive(true);
 
     if (!xmlStreamReader.attributes().value(StringIdentifier::lengthIdentifier).toString().isEmpty()) {
@@ -382,13 +384,13 @@ QString RecursiveDescentParser::permittedName(const QString &name) const
 
     if (StringIdentifier::illegalNames.contains(name)) {
         result = Util::lowerFirstLetter(name);
-        result = QStringLiteral("_%1").arg(name);
+        result = u"_%1"_s.arg(name);
     }
 
-    if (result.contains(QStringLiteral(" ")))
-        result.replace(QStringLiteral(" "), QStringLiteral("_"));
-    if (name.contains(QStringLiteral("-")))
-        result.replace(QStringLiteral("-"), QStringLiteral("_"));
+    if (result.contains(' '_L1))
+        result.replace(' '_L1, '_'_L1);
+    if (name.contains('-'_L1))
+        result.replace('-'_L1, '_'_L1);
 
     return result;
 }

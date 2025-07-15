@@ -10,6 +10,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_SECURITY);
 
 /*!
@@ -200,10 +202,10 @@ QOpcUaApplicationIdentity QOpcUaPkiConfiguration::applicationIdentity() const
 
     auto extensions = certList[0].extensions();
     for (const auto &extension : std::as_const(extensions)) {
-        if (extension.name() == QLatin1String("subjectAltName")) { // OID: 2.5.29.17
+        if (extension.name() == "subjectAltName"_L1) { // OID: 2.5.29.17
             const auto value = extension.value().toMap();
-            // const QString dns = value[QLatin1String("DNS")].toString();
-            const QString uri = value[QLatin1String("URI")].toString();
+            // const QString dns = value[u"DNS"_s].toString();
+            const QString uri = value[u"URI"_s].toString();
 
             const auto token = uri.split(QChar::fromLatin1(':'), Qt::SkipEmptyParts);
 
@@ -215,7 +217,7 @@ QOpcUaApplicationIdentity QOpcUaPkiConfiguration::applicationIdentity() const
 
             identity.setApplicationUri(uri);
             identity.setApplicationName(token.at(3));
-            identity.setProductUri(QStringLiteral("%1:%2").arg(token.at(2), token.at(3)));
+            identity.setProductUri(u"%1:%2"_s.arg(token.at(2), token.at(3)));
         }
     }
     return identity;

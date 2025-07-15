@@ -18,6 +18,8 @@
 #include <QtTest/QSignalSpy>
 #include <QtTest/QtTest>
 
+using namespace Qt::Literals::StringLiterals;
+
 const auto signalSpyTimeout = std::chrono::milliseconds(10000);
 
 class OpcuaConnector
@@ -126,7 +128,7 @@ private slots:
 private:
     QString envOrDefault(const char *env, QString def)
     {
-        return qEnvironmentVariableIsSet(env) ? qgetenv(env).constData() : def;
+        return qEnvironmentVariableIsSet(env) ? QString::fromUtf8(qgetenv(env).constData()) : def;
     }
 
     QString makeTestModelId(TestModelNodeId id)
@@ -178,7 +180,7 @@ void Tst_GeneratedDataTypes::initTestCase()
 
         QOpcUaClient *client = m_opcUa.createClient(backend, backendOptions);
         QVERIFY2(client != nullptr,
-                 QStringLiteral("Loading backend failed: %1").arg(backend).toLatin1().data());
+                 u"Loading backend failed: %1"_s.arg(backend).toLatin1().data());
         client->setParent(this);
         qDebug() << "Using SDK plugin:" << client->backend();
         m_clients.append(client);
@@ -188,15 +190,15 @@ void Tst_GeneratedDataTypes::initTestCase()
         m_testServerPath = qApp->applicationDirPath()
 
 #if defined(Q_OS_MACOS)
-                                     + QLatin1String("/../../open62541-testserver/open62541-testserver.app/Contents/MacOS/open62541-testserver")
+                                     + "/../../open62541-testserver/open62541-testserver.app/Contents/MacOS/open62541-testserver"_L1
 #else
 
 #if defined(Q_OS_WIN) && !defined(TESTS_CMAKE_SPECIFIC_PATH)
-                                     + QLatin1String("/..")
+                                     + "/.."_L1
 #endif
-                                     + QLatin1String("/../../open62541-testserver/open62541-testserver")
+                                     + "/../../open62541-testserver/open62541-testserver"_L1
 #ifdef Q_OS_WIN
-                                     + QLatin1String(".exe")
+                                     + ".exe"_L1
 #endif
 
 #endif
@@ -249,7 +251,7 @@ void Tst_GeneratedDataTypes::initTestCase()
     }
     QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
     QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-    m_discoveryEndpoint = QStringLiteral("opc.tcp://%1:%2").arg(host, port);
+    m_discoveryEndpoint = u"opc.tcp://%1:%2"_s.arg(host, port);
     qDebug() << "Using endpoint:" << m_discoveryEndpoint;
 
     QOpcUaClient *client = m_clients.first();
@@ -289,9 +291,9 @@ void Tst_GeneratedDataTypes::checkGeneratedDecoding()
         const auto decoded = codec.decode<CodegenTestQtTestStructType>(success);
         QVERIFY(success);
 
-        QCOMPARE(decoded.stringMember(), QStringLiteral("TestString"));
-        QCOMPARE(decoded.localizedTextMember(), QOpcUaLocalizedText(QStringLiteral("en"), QStringLiteral("TestText")));
-        QCOMPARE(decoded.qualifiedNameMember(), QOpcUaQualifiedName(1, QStringLiteral("TestName")));
+        QCOMPARE(decoded.stringMember(), u"TestString"_s);
+        QCOMPARE(decoded.localizedTextMember(), QOpcUaLocalizedText(u"en"_s, u"TestText"_s));
+        QCOMPARE(decoded.qualifiedNameMember(), QOpcUaQualifiedName(1, u"TestName"_s));
         QCOMPARE(decoded.int64ArrayMember(), QList<qint64>({ std::numeric_limits<qint64>::max(),
                                                             std::numeric_limits<qint64>::max() - 1,
                                                             std::numeric_limits<qint64>::min() }));
@@ -388,13 +390,13 @@ void Tst_GeneratedDataTypes::checkGeneratedDecoding()
         QCOMPARE(decoded.diagnosticInfoMember().hasLocale(), true);
         QCOMPARE(decoded.diagnosticInfoMember().locale(), 3); // FIXME Swapped with localizedText due to a bug in open62541
         QCOMPARE(decoded.diagnosticInfoMember().hasAdditionalInfo(), true);
-        QCOMPARE(decoded.diagnosticInfoMember().additionalInfo(), QStringLiteral("My additional info"));
+        QCOMPARE(decoded.diagnosticInfoMember().additionalInfo(), u"My additional info"_s);
         QCOMPARE(decoded.diagnosticInfoMember().hasInnerStatusCode(), true);
         QCOMPARE(decoded.diagnosticInfoMember().innerStatusCode(), QOpcUa::UaStatusCode::BadInternalError);
         QCOMPARE(decoded.diagnosticInfoMember().hasInnerDiagnosticInfo(), true);
 
         QCOMPARE(decoded.diagnosticInfoMember().innerDiagnosticInfo().hasAdditionalInfo(), true);
-        QCOMPARE(decoded.diagnosticInfoMember().innerDiagnosticInfo().additionalInfo(), QStringLiteral("My inner additional info"));
+        QCOMPARE(decoded.diagnosticInfoMember().innerDiagnosticInfo().additionalInfo(), u"My inner additional info"_s);
 
         QCOMPARE(decoded.diagnosticInfoArrayMember().size(), 2);
         QCOMPARE(decoded.diagnosticInfoArrayMember().at(0), decoded.diagnosticInfoMember());
@@ -418,8 +420,8 @@ void Tst_GeneratedDataTypes::checkGeneratedDecoding()
         QVERIFY(success);
 
         const QStringList expectedValue = {
-            QStringLiteral("TestString 1"), QStringLiteral("TestString 2"),
-            QStringLiteral("TestString 3"), QStringLiteral("TestString 4")
+            u"TestString 1"_s, u"TestString 2"_s,
+            u"TestString 3"_s, u"TestString 4"_s
         };
 
         const auto variant = decoded.dataValueMember().value().value<QOpcUaVariant>();
@@ -454,13 +456,13 @@ void Tst_GeneratedDataTypes::checkGeneratedDecoding()
         const auto decoded = codec.decode<CodegenTestQtRecursiveTestStruct>(success);
         QVERIFY(success);
 
-        QCOMPARE(decoded.stringMember(), QStringLiteral("Outer string"));
+        QCOMPARE(decoded.stringMember(), u"Outer string"_s);
         QCOMPARE(decoded.recursiveArrayMember().size(), 2);
-        QCOMPARE(decoded.recursiveArrayMember().at(0).stringMember(), QStringLiteral("Nested string 1"));
+        QCOMPARE(decoded.recursiveArrayMember().at(0).stringMember(), u"Nested string 1"_s);
         QCOMPARE(decoded.recursiveArrayMember().at(0).recursiveArrayMember().size(), 1);
-        QCOMPARE(decoded.recursiveArrayMember().at(0).recursiveArrayMember().at(0).stringMember(), QStringLiteral("Innermost string"));
+        QCOMPARE(decoded.recursiveArrayMember().at(0).recursiveArrayMember().at(0).stringMember(), u"Innermost string"_s);
         QCOMPARE(decoded.recursiveArrayMember().at(0).recursiveArrayMember().at(0).recursiveArrayMember().size(), 0);
-        QCOMPARE(decoded.recursiveArrayMember().at(1).stringMember(), QStringLiteral("Nested string 2"));
+        QCOMPARE(decoded.recursiveArrayMember().at(1).stringMember(), u"Nested string 2"_s);
         QCOMPARE(decoded.recursiveArrayMember().at(1).recursiveArrayMember().size(), 0);
     }
 }
@@ -476,9 +478,9 @@ void Tst_GeneratedDataTypes::checkGeneratedEncoding()
         QVERIFY(node != nullptr);
 
         CodegenTestQtTestStructType data;
-        data.setStringMember(QStringLiteral("TestString"));
-        data.setLocalizedTextMember(QOpcUaLocalizedText(QStringLiteral("en"), QStringLiteral("TestText")));
-        data.setQualifiedNameMember(QOpcUaQualifiedName(1, QStringLiteral("TestName")));
+        data.setStringMember(u"TestString"_s);
+        data.setLocalizedTextMember(QOpcUaLocalizedText(u"en"_s, u"TestText"_s));
+        data.setQualifiedNameMember(QOpcUaQualifiedName(1, u"TestName"_s));
         data.setInt64ArrayMember({ std::numeric_limits<qint64>::max(),
                                                             std::numeric_limits<qint64>::max() - 1,
                                                             std::numeric_limits<qint64>::min() });
@@ -633,14 +635,14 @@ void Tst_GeneratedDataTypes::checkGeneratedEncoding()
         di1.setHasLocale(true);
         di1.setLocale(5);
         di1.setHasAdditionalInfo(true);
-        di1.setAdditionalInfo(QStringLiteral("My additional info"));
+        di1.setAdditionalInfo(u"My additional info"_s);
         di1.setHasInnerStatusCode(true);
         di1.setInnerStatusCode(QOpcUa::UaStatusCode::BadInternalError);
         di1.setHasInnerDiagnosticInfo(true);
 
         QOpcUaDiagnosticInfo inner;
         inner.setHasAdditionalInfo(true);
-        inner.setAdditionalInfo(QStringLiteral("My inner additional info"));
+        inner.setAdditionalInfo(u"My inner additional info"_s);
         di1.setInnerDiagnosticInfo(inner);
 
         QOpcUaDiagnosticInfo di2;
@@ -720,10 +722,10 @@ void Tst_GeneratedDataTypes::checkGeneratedEncoding()
         CodegenTestQtRecursiveTestStruct innermost;
         CodegenTestQtRecursiveTestStruct nested2;
 
-        data.setStringMember(QStringLiteral("My outer string"));
-        nested1.setStringMember(QStringLiteral("My nested string 1"));
-        nested2.setStringMember(QStringLiteral("My nested string 2"));
-        innermost.setStringMember(QStringLiteral("My innermost string"));
+        data.setStringMember(u"My outer string"_s);
+        nested1.setStringMember(u"My nested string 1"_s);
+        nested2.setStringMember(u"My nested string 2"_s);
+        innermost.setStringMember(u"My innermost string"_s);
         nested2.setRecursiveArrayMember({ innermost });
         data.setRecursiveArrayMember({ nested1, nested2 });
 

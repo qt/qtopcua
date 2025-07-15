@@ -12,13 +12,15 @@
 #include <QOpcUaProvider>
 #include <QSignalSpy>
 
+using namespace Qt::Literals::StringLiterals;
+
 const int signalSpyTimeout = 10000;
 const quint16 defaultPort = 43344;
 const QHostAddress defaultHost(QHostAddress::LocalHost);
 
 static QString envOrDefault(const char *env, QString def)
 {
-    return qEnvironmentVariableIsSet(env) ? qgetenv(env).constData() : def;
+    return qEnvironmentVariableIsSet(env) ? QString::fromUtf8(qgetenv(env).constData()) : def;
 }
 
 class MyClass : public QObject
@@ -45,7 +47,7 @@ signals:
 public slots:
     void startConnection() {
         QOpcUaProvider p;
-        QOpcUaClient *client = p.createClient("open62541");
+        QOpcUaClient *client = p.createClient(u"open62541"_s);
 
         if (!client)
             qFatal("Failed to instantiate backend");
@@ -54,7 +56,7 @@ public slots:
 
         QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
         QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-        const auto discoveryEndpoint = QStringLiteral("opc.tcp://%1:%2").arg(host, port);
+        const auto discoveryEndpoint = u"opc.tcp://%1:%2"_s.arg(host, port);
 
         QSignalSpy endpointSpy(client, &QOpcUaClient::endpointsRequestFinished);
         client->requestEndpoints(discoveryEndpoint);
@@ -92,15 +94,15 @@ public slots:
             m_testServerPath = qApp->applicationDirPath()
 
 #if defined(Q_OS_MACOS)
-                                         + QLatin1String("/../../open62541-testserver/open62541-testserver.app/Contents/MacOS/open62541-testserver")
+                                         + "/../../open62541-testserver/open62541-testserver.app/Contents/MacOS/open62541-testserver"_L1
 #else
 
 #if defined(Q_OS_WIN) && !defined(TESTS_CMAKE_SPECIFIC_PATH)
-                                         + QLatin1String("/..")
+                                         + "/.."_L1
 #endif
-                                         + QLatin1String("/../../open62541-testserver/open62541-testserver")
+                                         + "/../../open62541-testserver/open62541-testserver"_L1
 #ifdef Q_OS_WIN
-                                         + QLatin1String(".exe")
+                                         + ".exe"_L1
 #endif
 
 #endif
@@ -152,15 +154,15 @@ public slots:
         }
         const QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
         const QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-        m_opcuaDiscoveryUrl = QString::fromLatin1("opc.tcp://%1:%2").arg(host, port);
+        m_opcuaDiscoveryUrl = u"opc.tcp://%1:%2"_s.arg(host, port);
     }
     void qmlEngineAvailable(QQmlEngine *engine) {
         bool value = false;
 #ifdef SERVER_SUPPORTS_SECURITY
         value = true;
 #endif
-        engine->rootContext()->setContextProperty("SERVER_SUPPORTS_SECURITY", value);
-        engine->rootContext()->setContextProperty("OPCUA_DISCOVERY_URL", m_opcuaDiscoveryUrl);
+        engine->rootContext()->setContextProperty(u"SERVER_SUPPORTS_SECURITY"_s, value);
+        engine->rootContext()->setContextProperty(u"OPCUA_DISCOVERY_URL"_s, m_opcuaDiscoveryUrl);
         qmlRegisterType<MyClass>("App", 1, 0, "MyClass");
     }
     void cleanupTestCase() {
