@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_WIN
     #ifdef EXAMPLES_CMAKE_SPECIFIC_PATH
         serverExePath = app.applicationDirPath().append("/../simulationserver/simulationserver.exe");
-    #elif QT_DEBUG
+    #elif defined(QT_DEBUG)
         serverExePath = app.applicationDirPath().append("/../../simulationserver/debug/simulationserver.exe");
     #else
         serverExePath = app.applicationDirPath().append("/../../simulationserver/release/simulationserver.exe");
