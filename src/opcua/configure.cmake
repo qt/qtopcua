@@ -57,9 +57,9 @@ qt_feature("internalgenerator" PRIVATE
     AUTODETECT false
 )
 qt_feature("gds" PUBLIC PRIVATE
-    LABEL "Support for global discovery server"
+    LABEL "Support for global discovery server (requires OpenSSL 3.x)"
     PURPOSE "Enables QOpcUaClient to interact with a global discovery server"
-    CONDITION WrapOpenSSL_FOUND # special case
+    CONDITION WrapOpenSSL_FOUND AND QT_FEATURE_opensslv30
 )
 # special case begin
 qt_feature("open62541-security" PUBLIC PRIVATE
