@@ -12,11 +12,12 @@ set_property(CACHE INPUT_open62541 PROPERTY STRINGS undefined qt system)
 
 
 #### Libraries
-# special case begin
-if (INPUT_open62541 STREQUAL "system")
-    qt_find_package(open62541 PROVIDED_TARGETS open62541)
+if(INPUT_open62541 STREQUAL "system" OR QT_FIND_ALL_PACKAGES_ALWAYS)
+    qt_find_package(open62541 PROVIDED_TARGETS open62541
+        VCPKG_PORT open62541
+        VCPKG_ADD_TO_FEATURE open62541
+    )
 endif()
-# special case end
 
 # Find out if the system open62541 is built with encryption support
 include(CheckSymbolExists)
