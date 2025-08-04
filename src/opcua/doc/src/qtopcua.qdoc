@@ -367,7 +367,7 @@
     Qt OPC UA in Qt \QtVersion may contain third party modules under following
     permissive licenses:
 
-    \generatelist{groupsbymodule attributions-qtopcua}
+    \annotatedlist attributions-qtopcua
 
     Linking to external libraries involves licenses from the backend providers.
 
