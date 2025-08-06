@@ -127,10 +127,9 @@ private:
 #ifdef UA_ENABLE_ENCRYPTION
     bool loadPrivateKeyWithPotentialPassword(const QString &privateKeyPath, UA_ByteString &privateKey);
     UA_StatusCode setSecurityPolicyInClientConfig(UA_ClientConfig *conf, const UA_ByteString &cert, const UA_ByteString &key,
-                                                  const QOpcUaEndpointDescription &desc, const QString &additionalAuthSecurityPolicy);
+                                                  const QOpcUaEndpointDescription &desc);
     UA_StatusCode setAuthSecurityPolicyInClientConfig(UA_ClientConfig *conf, const UA_ByteString &cert, const UA_ByteString &key,
-                                                      const QOpcUaEndpointDescription &desc, QOpcUaUserTokenPolicy::TokenType tokenType,
-                                                      QString *addedSecurityPolicyUri);
+                                                      const QOpcUaEndpointDescription &desc, QOpcUaUserTokenPolicy::TokenType tokenType);
 #endif
 
     QTimer m_clientIterateTimer;
