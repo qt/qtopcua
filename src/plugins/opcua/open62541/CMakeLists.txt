@@ -87,7 +87,7 @@ if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541)
     if (NOT (WINRT OR WIN32 AND MSVC))
         set_source_files_properties(../../../3rdparty/open62541/open62541.c PROPERTIES
         COMPILE_OPTIONS
-            "-Wno-unused-parameter;-Wno-incompatible-pointer-types;-Wno-maybe-uninitialized;-Wno-format-overflow;-std=c99")
+            "-Wno-unused-parameter;-Wno-incompatible-pointer-types;-Wno-maybe-uninitialized;-Wno-format-overflow;-Wno-unused-variable;-std=c99")
     elseif(WIN32 AND MSVC)
         set_source_files_properties(../../../3rdparty/open62541/open62541.c PROPERTIES
             COMPILE_OPTIONS "/wd4133")
