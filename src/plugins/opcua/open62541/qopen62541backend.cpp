@@ -30,6 +30,8 @@
 
 QT_BEGIN_NAMESPACE
 
+using namespace Qt::Literals::StringLiterals;
+
 Q_DECLARE_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541)
 
 Open62541AsyncBackend::Open62541AsyncBackend(QOpen62541Client *parent)
@@ -1243,7 +1245,7 @@ void Open62541AsyncBackend::handleConnectionSettingsChanged(const QOpcUaConnecti
             if (result != UA_STATUSCODE_GOOD) {
                 qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Changing the session locale Ids failed with" << UA_StatusCode_name(result);
             } else {
-                qCInfo(QT_OPCUA_PLUGINS_OPEN62541) << "The session locale ids were updated to" << settings.sessionLocaleIds().join(QChar::fromLatin1(' '));
+                qCInfo(QT_OPCUA_PLUGINS_OPEN62541) << "The session locale ids were updated to" << settings.sessionLocaleIds().join(' '_L1);
             }
         }
 

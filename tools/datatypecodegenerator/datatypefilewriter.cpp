@@ -579,7 +579,7 @@ void DataTypeFileWriter::writeStructuredTypeCppGetter(const StructuredType *stru
                                << Util::lineBreak();
                     } else {
                         output << Util::indent(1) << "return data->" << tmpFunctionName << ".value_or(" << m_prefix
-                               << field->typeName().split(QChar::fromLatin1(':')).at(1) << "()"
+                               << field->typeName().split(':'_L1).at(1) << "()"
                                << ");"
                                << Util::lineBreak();
                     }

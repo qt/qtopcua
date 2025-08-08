@@ -105,7 +105,7 @@ int main(int argc, char **argv)
                                      QVariant::fromValue(QOpcUaLocalizedText(u"en-US"_s, u"Value 2"_s))}),
                        QOpcUa::Types::LocalizedText);
     server.addVariable(testFolder, u"ns=2;s=Demo.Static.Arrays.ByteString"_s, u"ByteStringArrayTest"_s,
-                       QVariantList({QByteArray("Value 1"), QByteArray("Value 2")}), QOpcUa::Types::ByteString);
+                       QVariantList({"Value 1"_ba, "Value 2"_ba}), QOpcUa::Types::ByteString);
     server.addVariable(testFolder, u"ns=2;s=Demo.Static.Arrays.DateTime"_s, u"DateTimeArrayTest"_s,
                        QVariantList({QDateTime::currentDateTime(), QDateTime::currentDateTime().addDays(1), QDateTime::currentDateTime().addDays(2)}),
                        QOpcUa::Types::DateTime);
@@ -172,7 +172,7 @@ int main(int argc, char **argv)
     server.addVariable(testFolder, u"ns=2;s=Demo.Static.Scalar.LocalizedText"_s, u"LocalizedTextScalarTest"_s,
                                                   QVariant::fromValue(QOpcUaLocalizedText(u"en-US"_s, u"Value"_s)),
                        QOpcUa::Types::LocalizedText);
-    server.addVariable(testFolder, u"ns=2;s=Demo.Static.Scalar.ByteString"_s, u"ByteStringScalarTest"_s, QByteArray("Value 1"), QOpcUa::Types::ByteString);
+    server.addVariable(testFolder, u"ns=2;s=Demo.Static.Scalar.ByteString"_s, u"ByteStringScalarTest"_s, "Value 1"_ba, QOpcUa::Types::ByteString);
     server.addVariable(testFolder, u"ns=2;s=Demo.Static.Scalar.DateTime"_s, u"DateTimeScalarTest"_s, QDateTime::currentDateTime(), QOpcUa::Types::DateTime);
     server.addVariable(testFolder, u"ns=2;s=Demo.Static.Scalar.NodeId"_s, u"NodeIdScalarTest"_s, u"ns=0;i=84"_s, QOpcUa::Types::NodeId);
     server.addVariable(testFolder, u"ns=2;s=Demo.Static.Scalar.Guid"_s, u"GuidScalarTest"_s, QUuid::createUuid(), QOpcUa::Types::Guid);

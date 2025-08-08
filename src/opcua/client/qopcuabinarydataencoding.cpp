@@ -517,7 +517,7 @@ QByteArray QOpcUaBinaryDataEncoding::decode<QByteArray>(bool &success)
         m_offset += size;
         return temp;
     } else if (size == 0) {
-        return QByteArray("");
+        return ""_ba;
     } else if (size == -1) {
         return QByteArray();
     }
