@@ -12,12 +12,13 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QOperatingSystemVersion>
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QProcess>
 #include <QtCore/QScopedPointer>
 #include <QtNetwork/QTcpServer>
 #include <QtNetwork//QTcpSocket>
 #include <QtTest/QSignalSpy>
-#include <QtTest/QtTest>
+#include <QTest>
 
 using namespace Qt::Literals::StringLiterals;
 

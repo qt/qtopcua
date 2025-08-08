@@ -16,7 +16,9 @@
 // We mean it.
 //
 
-#include "qopcuatype.h"
+#include <QtOpcUa/qopcualocalizedtext.h>
+#include <QtOpcUa/qopcuaqualifiedname.h>
+#include "QtOpcUa/qopcuatype.h"
 
 #include <QSharedData>
 #include <private/qglobal_p.h>

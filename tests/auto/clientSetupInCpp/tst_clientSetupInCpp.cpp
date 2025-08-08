@@ -17,7 +17,7 @@ using namespace Qt::Literals::StringLiterals;
 
 const int signalSpyTimeout = 10000;
 const quint16 defaultPort = 43344;
-const QHostAddress defaultHost(QHostAddress::LocalHost);
+const QHostAddress defaultHost(QHostAddress::LocalHost); // clazy:exclude=non-pod-global-static
 
 static QString envOrDefault(const char *env, QString def)
 {

@@ -11,7 +11,7 @@
 #include <QtCore/QScopedPointer>
 
 #include <QtTest/QSignalSpy>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QTcpSocket>
 #include <QTcpServer>
 
