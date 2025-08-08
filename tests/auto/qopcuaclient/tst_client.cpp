@@ -33,13 +33,14 @@
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QOperatingSystemVersion>
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QProcess>
 #include <QtCore/QScopedPointer>
 #include <QtCore/QThread>
 #include <QtCore/QTimer>
 
 #include <QtTest/QSignalSpy>
-#include <QtTest/QtTest>
+#include <QTest>
 #include <QTcpSocket>
 #include <QTcpServer>
 #include <QVariantMap>
@@ -125,6 +126,8 @@ public:
 
     QOpcUaClient *opcuaClient;
 };
+
+// clazy:excludeall=non-pod-global-static
 
 const QString readWriteNode = u"ns=3;s=TestNode.ReadWrite"_s;
 const QList<QString> xmlElements = {

@@ -71,49 +71,49 @@ void QOpcUaClientImpl::handleAttributesRead(quint64 handle, QList<QOpcUaReadResu
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
-        emit (*it)->attributesRead(attr, serviceResult);
+        emit it.value()->attributesRead(attr, serviceResult);
 }
 
 void QOpcUaClientImpl::handleAttributeWritten(quint64 handle, QOpcUa::NodeAttribute attr, const QVariant &value, QOpcUa::UaStatusCode statusCode)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
-        emit (*it)->attributeWritten(attr, value, statusCode);
+        emit it.value()->attributeWritten(attr, value, statusCode);
 }
 
 void QOpcUaClientImpl::handleDataChangeOccurred(quint64 handle, const QOpcUaReadResult &value)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
-        emit (*it)->dataChangeOccurred(value.attribute(), value);
+        emit it.value()->dataChangeOccurred(value.attribute(), value);
 }
 
 void QOpcUaClientImpl::handleMonitoringEnableDisable(quint64 handle, QOpcUa::NodeAttribute attr, bool subscribe, QOpcUaMonitoringParameters status)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
-        emit (*it)->monitoringEnableDisable(attr, subscribe, status);
+        emit it.value()->monitoringEnableDisable(attr, subscribe, status);
 }
 
 void QOpcUaClientImpl::handleMonitoringStatusChanged(quint64 handle, QOpcUa::NodeAttribute attr, QOpcUaMonitoringParameters::Parameters items, QOpcUaMonitoringParameters param)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
-        emit (*it)->monitoringStatusChanged(attr, items, param);
+        emit it.value()->monitoringStatusChanged(attr, items, param);
 }
 
 void QOpcUaClientImpl::handleMethodCallFinished(quint64 handle, QString methodNodeId, QVariant result, QOpcUa::UaStatusCode statusCode)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
-        emit (*it)->methodCallFinished(methodNodeId, result, statusCode);
+        emit it.value()->methodCallFinished(methodNodeId, result, statusCode);
 }
 
 void QOpcUaClientImpl::handleBrowseFinished(quint64 handle, const QList<QOpcUaReferenceDescription> &children, QOpcUa::UaStatusCode statusCode)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
-        emit (*it)->browseFinished(children, statusCode);
+        emit it.value()->browseFinished(children, statusCode);
 }
 
 void QOpcUaClientImpl::handleResolveBrowsePathFinished(quint64 handle, QList<QOpcUaBrowsePathTarget> targets,
@@ -121,14 +121,14 @@ void QOpcUaClientImpl::handleResolveBrowsePathFinished(quint64 handle, QList<QOp
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
-        emit (*it)->resolveBrowsePathFinished(targets, path, status);
+        emit it.value()->resolveBrowsePathFinished(targets, path, status);
 }
 
 void QOpcUaClientImpl::handleNewEvent(quint64 handle, QVariantList eventFields)
 {
     auto it = m_handles.constFind(handle);
     if (it != m_handles.constEnd() && !it->isNull())
-        emit (*it)->eventOccurred(eventFields);
+        emit it.value()->eventOccurred(eventFields);
 }
 
 QT_END_NAMESPACE

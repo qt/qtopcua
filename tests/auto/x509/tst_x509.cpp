@@ -5,6 +5,7 @@
 #include <QtOpcUa/QOpcUaKeyPair>
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QProcess>
 #include <QtCore/QScopedPointer>
 #include <QOpcUaX509CertificateSigningRequest>
 #include <QOpcUaX509ExtensionSubjectAlternativeName>
@@ -13,7 +14,7 @@
 #include <QOpcUaX509ExtensionExtendedKeyUsage>
 
 #include <QtTest/QSignalSpy>
-#include <QtTest/QtTest>
+#include <QTest>
 
 using namespace Qt::Literals::StringLiterals;
 
