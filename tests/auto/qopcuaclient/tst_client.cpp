@@ -207,6 +207,8 @@ const QList<QOpcUaArgument> testArguments = {
                       {3, 3, 3}, QOpcUaLocalizedText(u"en"_s, u"Description3"_s))
 };
 
+const QByteArray withNull("gh\0i", 4);
+
 // Test data for DataTypeDefinition types
 
 QList<QOpcUaStructureField> testStructureFields = {};
@@ -3514,9 +3516,6 @@ void Tst_QOpcUaClient::writeReadArray()
     list.clear();
     list.append(u"abc"_s);
     list.append(u"def"_s);
-    QByteArray withNull("gh");
-    withNull.append('\0');
-    withNull.append("i");
     list.append(withNull);
     node.reset(opcuaClient->node(u"ns=2;s=Demo.Static.Arrays.ByteString"_s));
     QVERIFY(node != nullptr);
@@ -4105,10 +4104,6 @@ void Tst_QOpcUaClient::writeReadScalar()
     node.reset(opcuaClient->node(u"ns=2;s=Demo.Static.Scalar.LocalizedText"_s));
     QVERIFY(node != nullptr);
     WRITE_VALUE_ATTRIBUTE(node, localizedTexts[0], QOpcUa::LocalizedText);
-
-    QByteArray withNull("gh");
-    withNull.append('\0');
-    withNull.append("i");
 
     QVariant data = withNull;
 

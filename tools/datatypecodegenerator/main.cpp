@@ -179,7 +179,7 @@ int main(int argc, char *argv[])
         const auto nodeIdEntries = parser.values(nodeIdFileOption);
 
         for (const auto &entry : nodeIdEntries) {
-            const auto index = entry.indexOf(QChar::fromLatin1(':'));
+            const auto index = entry.indexOf(':'_L1);
             if (index == -1 || index == 0 || entry.size() <= index + 1) {
                 qWarning() << "Invalid value:" << entry << "- NodeId entries must be given as name:filepath";
                 return EXIT_FAILURE;
