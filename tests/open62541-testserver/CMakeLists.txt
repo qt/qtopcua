@@ -139,9 +139,18 @@ endif()
 if (QT_FEATURE_system_open62541)
     find_package(open62541 REQUIRED)
     target_compile_definitions(open62541-testserver PRIVATE USE_SYSTEM_OPEN62541)
+
+    if (OPEN62541_SYSTEM_ENCRYPTION)
+        find_package(WrapOpenSSL 3.0 REQUIRED)
+    endif()
 endif()
 
 qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_system_open62541 OR NOT QT_FEATURE_open62541
     LIBRARIES
         open62541::open62541
+)
+
+qt_internal_extend_target(open62541-testserver CONDITION QT_FEATURE_open62541_security AND WrapOpenSSL_FOUND AND QT_FEATURE_system_open62541 AND OPEN62541_SYSTEM_ENCRYPTION
+    LIBRARIES
+        WrapOpenSSL::WrapOpenSSL
 )
