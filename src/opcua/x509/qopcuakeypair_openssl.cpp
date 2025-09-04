@@ -1,5 +1,6 @@
 // Copyright (C) 2019 The Qt Company Ltd.
 // SPDX-License-Identifier: LicenseRef-Qt-Commercial
+// Qt-Security score:critical reason:cryptography
 
 #include "qopcuakeypair_p.h"
 #include "openssl_symbols_p.h"
