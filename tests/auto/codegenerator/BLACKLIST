@@ -1,2 +1,0 @@
-# Fails to run open62541-testserver on CI
-macos-26 ci arm

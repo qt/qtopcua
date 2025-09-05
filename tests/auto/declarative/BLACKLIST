@@ -1,6 +1,3 @@
-# Fails to run open62541-testserver on CI
-macos-26 ci arm
-
 # QTBUG-100007
 [SubscriptionsTest: open62541: Create String Node Id::test_nodeTest]
 macos
