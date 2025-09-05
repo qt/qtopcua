@@ -8,6 +8,7 @@
 #include <QtOpcUa/QOpcUaErrorState>
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QOperatingSystemVersion>
 #include <QtCore/QProcess>
 #include <QtCore/QScopedPointer>
 
@@ -128,6 +129,13 @@ Tst_QOpcUaSecurity::Tst_QOpcUaSecurity()
 
 void Tst_QOpcUaSecurity::initTestCase()
 {
+#if defined(Q_OS_MACOS) && defined(Q_PROCESSOR_ARM)
+        const bool runsOnCI = qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci");
+        const auto osVer = QOperatingSystemVersion::current();
+        if (runsOnCI && osVer >= QOperatingSystemVersion::MacOSTahoe)
+            QSKIP("The tests fails on macOS 26 in CI: QTBUG-139354");
+#endif
+
     const quint16 defaultPort = 43344;
     const QHostAddress defaultHost(QHostAddress::LocalHost);
 

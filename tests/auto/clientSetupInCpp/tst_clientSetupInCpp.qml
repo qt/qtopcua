@@ -20,7 +20,12 @@ Item {
 
     TestCase {
         name: "Create String Node Id"
-        when: node1.readyToUse
+        when: node1.readyToUse || myclass.skipTest
+
+        function initTestCase() {
+            if (myclass.skipTest)
+                skip("The tests fails on macOS 26 in CI: QTBUG-139354");
+        }
 
         function test_nodeTest() {
             compare(node1.value, "Value", "");

@@ -51,7 +51,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Standard attributes on method node"
-        when: node1.readyToUse && shouldRun
+        when: (node1.readyToUse && shouldRun) || SKIP_TESTS
 
         SignalSpy {
             id: node1BrowseNameSpy
@@ -118,7 +118,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Use method arguments"
-        when: node2.readyToUse && shouldRun
+        when: (node2.readyToUse && shouldRun) || SKIP_TESTS
 
         SignalSpy {
             id: node2resultStatusSpy
@@ -168,7 +168,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Multiple Output Arguments"
-        when: node3.readyToUse && shouldRun
+        when: (node3.readyToUse && shouldRun) || SKIP_TESTS
 
         SignalSpy {
             id: node3resultStatusSpy

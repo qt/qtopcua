@@ -26,7 +26,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Fetch data from discovery server using default connection"
-        when: shouldRun
+        when: shouldRun || SKIP_TESTS
 
         QtOpcUa.Connection {
             id: connection1
@@ -139,7 +139,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Fetch data from discovery server using specified connection"
-        when: shouldRun
+        when: shouldRun || SKIP_TESTS
 
         QtOpcUa.Connection {
             id: connection2

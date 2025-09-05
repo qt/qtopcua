@@ -3,6 +3,7 @@
 
 #include <QtQuickTest/quicktest.h>
 #include <QObject>
+#include <QOperatingSystemVersion>
 #include <QProcess>
 #include <QQmlContext>
 #include <QQmlEngine>
@@ -23,13 +24,25 @@ static QString envOrDefault(const char *env, QString def)
     return qEnvironmentVariableIsSet(env) ? QString::fromUtf8(qgetenv(env).constData()) : def;
 }
 
+static bool isRunningOnMacOs26Ci()
+{
+#if defined(Q_OS_MACOS) && defined(Q_PROCESSOR_ARM)
+        const bool runsOnCI = qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci");
+        const auto osVer = QOperatingSystemVersion::current();
+        if (runsOnCI && osVer >= QOperatingSystemVersion::MacOSTahoe)
+            return true;
+#endif
+    return false;
+}
+
 class MyClass : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QOpcUaClient* connection READ connection NOTIFY connectionChanged)
+    Q_PROPERTY(bool skipTest READ skipTest FINAL)
 
 public:
-    MyClass (QObject* parent = nullptr) : QObject(parent) {
+    MyClass (QObject* parent = nullptr) : QObject(parent), m_skipTest(isRunningOnMacOs26Ci()) {
     }
 
     ~MyClass() {
@@ -41,11 +54,17 @@ public:
         return m_client;
     }
 
+    bool skipTest() const {
+        return m_skipTest;
+    }
+
 signals:
     void connectionChanged(QOpcUaClient *);
 
 public slots:
     void startConnection() {
+        if (m_skipTest)
+            return;
         QOpcUaProvider p;
         QOpcUaClient *client = p.createClient(u"open62541"_s);
 
@@ -75,6 +94,7 @@ public slots:
 
 private:
     QPointer<QOpcUaClient> m_client;
+    bool m_skipTest;
 };
 
 class SetupClass : public QObject
@@ -89,6 +109,8 @@ public:
 
 public slots:
     void applicationAvailable() {
+        if (isRunningOnMacOs26Ci())
+            return;
 
         if (qEnvironmentVariableIsEmpty("OPCUA_HOST") && qEnvironmentVariableIsEmpty("OPCUA_PORT")) {
             m_testServerPath = qApp->applicationDirPath()

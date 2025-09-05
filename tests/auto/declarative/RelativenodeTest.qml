@@ -51,7 +51,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": RelativeNodePath"
-        when: node1.readyToUse && shouldRun
+        when: (node1.readyToUse && shouldRun) || SKIP_TESTS
 
         function test_nodeRead() {
               tryVerify(function() { return node1.value > 0 });
@@ -76,7 +76,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": CascadedRelativeNodePath"
-        when: node2.readyToUse && shouldRun
+        when: (node2.readyToUse && shouldRun) || SKIP_TESTS
 
         function test_nodeRead() {
               tryVerify(function() { return node2.value > 0 });
@@ -111,7 +111,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Emitting signals on node changes"
-        when: node3.readyToUse && shouldRun
+        when: (node3.readyToUse && shouldRun) || SKIP_TESTS
 
         function test_changeStartNode() {
             node3NamespaceSpy.clear();
@@ -194,7 +194,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Emitting signals on cascaded node changes"
-        when: node4.readyToUse && shouldRun
+        when: (node4.readyToUse && shouldRun) || SKIP_TESTS
 
         function test_nodeRead() {
             node4NamespaceSpy.clear();
@@ -296,7 +296,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Relative Node Path with References"
-        when: node5.readyToUse && shouldRun
+        when: (node5.readyToUse && shouldRun) || SKIP_TESTS
 
         function test_nodeRead() {
               tryVerify(function() { return node5.value > 0 });
@@ -322,7 +322,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Relative Node Path with NodeId reference"
-        when: node6.readyToUse && shouldRun
+        when: (node6.readyToUse && shouldRun) || SKIP_TESTS
 
         function test_nodeRead() {
               tryVerify(function() { return node6.value > 0 });

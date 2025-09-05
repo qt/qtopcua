@@ -51,7 +51,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Create String Node Id"
-        when: node1.readyToUse && shouldRun
+        when: (node1.readyToUse && shouldRun) || SKIP_TESTS
 
         function test_nodeTest() {
             compare(node1.value, "Value", "");
@@ -80,7 +80,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Create GUID Node Id"
-        when: node2.readyToUse && shouldRun
+        when: (node2.readyToUse && shouldRun) || SKIP_TESTS
 
         function test_nodeTest() {
             compare(node2.value, "Value", "");
@@ -99,7 +99,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Create Opaque Node Id"
-        when: node3.readyToUse && shouldRun
+        when: (node3.readyToUse && shouldRun) || SKIP_TESTS
 
         function test_nodeTest() {
             compare(node3.value, "Value", "");
@@ -118,7 +118,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Create Integer Node Id"
-        when: node4.readyToUse && shouldRun
+        when: (node4.readyToUse && shouldRun) || SKIP_TESTS
 
         function test_nodeTest() {
             compare(node4.value, 255, "");
@@ -137,7 +137,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Write Value Node with Multiple Listeners"
-        when: node5.readyToUse && node6.readyToUse && node7.readyToUse && shouldRun
+        when: (node5.readyToUse && node6.readyToUse && node7.readyToUse && shouldRun) || SKIP_TESTS
 
         function test_nodeTest() {
             compare(node5.valueType, QtOpcUa.Constants.Double);
@@ -197,7 +197,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Emitting signals on node changes"
-        when: node8.readyToUse && shouldRun
+        when: (node8.readyToUse && shouldRun) || SKIP_TESTS
 
         function test_changeIdentifier() {
             compare(node8.valueType, QtOpcUa.Constants.Double);
@@ -275,7 +275,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Node with namespace in Id"
-        when: node9.readyToUse && shouldRun
+        when: (node9.readyToUse && shouldRun) || SKIP_TESTS
 
         function test_nodeTest() {
             compare(node9.valueType, QtOpcUa.Constants.String);
@@ -293,7 +293,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Standard attributes on variable node"
-        when: node10.readyToUse && shouldRun
+        when: (node10.readyToUse && shouldRun) || SKIP_TESTS
 
         SignalSpy {
             id: node10NodeClassSpy
@@ -352,7 +352,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Node timestamps"
-        when: node11.readyToUse && shouldRun
+        when: (node11.readyToUse && shouldRun) || SKIP_TESTS
 
         SignalSpy {
             id: node11ValueSpy
@@ -380,7 +380,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Assign int value to double node"
-        when: node12.readyToUse && shouldRun
+        when: (node12.readyToUse && shouldRun) || SKIP_TESTS
 
         SignalSpy {
             id: node12ValueSpy

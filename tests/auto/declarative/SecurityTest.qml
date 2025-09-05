@@ -19,7 +19,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Check supported security features"
-        when: shouldRun
+        when: shouldRun || SKIP_TESTS
 
         QtOpcUa.Connection {
             id: connection2

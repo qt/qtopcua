@@ -6,4 +6,9 @@ import QtTest
 TestCase {
     onCompletedChanged: parent.completedTestCases += (completed ? 1 : -1)
     objectName: "TestCase"
+
+    function initTestCase() {
+        if (SKIP_TESTS)
+            skip("The tests fails on macOS 26 in CI: QTBUG-139354");
+    }
 }

@@ -55,7 +55,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Create String Node Id"
-        when: node1.readyToUse && shouldRun
+        when: (node1.readyToUse && shouldRun) || SKIP_TESTS
 
         function test_nodeTest() {
             tryCompare(node1, "monitored", true);

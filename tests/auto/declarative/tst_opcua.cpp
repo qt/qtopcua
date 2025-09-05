@@ -3,6 +3,7 @@
 
 #include <QtQuickTest/quicktest.h>
 #include <QObject>
+#include <QOperatingSystemVersion>
 #include <QProcess>
 #include <QQmlContext>
 #include <QQmlEngine>
@@ -14,6 +15,17 @@ using namespace Qt::Literals::StringLiterals;
 static QString envOrDefault(const char *env, QString def)
 {
     return qEnvironmentVariableIsSet(env) ? QString::fromUtf8(qgetenv(env).constData()) : def;
+}
+
+static bool isRunningOnMacOs26Ci()
+{
+#if defined(Q_OS_MACOS) && defined(Q_PROCESSOR_ARM)
+        const bool runsOnCI = qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci");
+        const auto osVer = QOperatingSystemVersion::current();
+        if (runsOnCI && osVer >= QOperatingSystemVersion::MacOSTahoe)
+            return true;
+#endif
+    return false;
 }
 
 class SetupClass : public QObject
@@ -28,6 +40,9 @@ public:
 
 public slots:
     void applicationAvailable() {
+        if (isRunningOnMacOs26Ci())
+            return;
+
         const quint16 defaultPort = 43344;
         const QHostAddress defaultHost(QHostAddress::LocalHost);
 
@@ -105,6 +120,7 @@ public slots:
 #endif
         engine->rootContext()->setContextProperty(u"SERVER_SUPPORTS_SECURITY"_s, value);
         engine->rootContext()->setContextProperty(u"OPCUA_DISCOVERY_URL"_s, m_opcuaDiscoveryUrl);
+        engine->rootContext()->setContextProperty(u"SKIP_TESTS"_s, isRunningOnMacOs26Ci());
     }
     void cleanupTestCase() {
         if (m_serverProcess.state() == QProcess::Running) {

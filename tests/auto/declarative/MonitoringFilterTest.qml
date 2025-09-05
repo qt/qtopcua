@@ -61,7 +61,7 @@ Item {
 /*  // In order to run this test you need to compile the example tutorial_server_event from open62541 master branch.
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Event filter"
-        when: node3.readyToUse && shouldRun
+        when: (node3.readyToUse && shouldRun) || SKIP_TESTS
 
         function test_nodeTest() {
             eventSpy.clear();

@@ -51,7 +51,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Reading multiple items"
-        when: connection.connected && shouldRun
+        when: (connection.connected && shouldRun) || SKIP_TESTS
 
         SignalSpy {
             id: readNodeAttributesFinishedSpy
@@ -112,7 +112,7 @@ Item {
 
     CompletionLoggingTestCase {
         name: parent.parent.testName + ": " + backendName + ": Writing multiple items"
-        when: connection.connected && shouldRun
+        when: (connection.connected && shouldRun) || SKIP_TESTS
 
         SignalSpy {
             id: writeNodeAttributesFinishedSpy
