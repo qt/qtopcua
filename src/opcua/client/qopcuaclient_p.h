@@ -1,5 +1,5 @@
 // Copyright (C) 2016 basysKom GmbH, opensource@basyskom.com
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial
+// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
 
 #ifndef QOPCUACLIENT_P_H
 #define QOPCUACLIENT_P_H
