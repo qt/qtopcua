@@ -184,7 +184,7 @@ void OpcUaServerDiscovery::connectSignals()
 
 void OpcUaServerDiscovery::handleServers(const QList<QOpcUaApplicationDescription> &servers, QOpcUa::UaStatusCode statusCode, const QUrl &requestUrl)
 {
-    if (requestUrl != m_discoveryUrl)
+    if (requestUrl != QUrl{m_discoveryUrl})
         return; // response is not for last request
 
     m_status = OpcUaStatus(statusCode);
@@ -227,7 +227,7 @@ void OpcUaServerDiscovery::startFindServers()
         m_status = OpcUaStatus(QOpcUa::BadInvalidArgument);
     } else {
         m_status = OpcUaStatus(QOpcUa::GoodCompletesAsynchronously);
-        conn->m_client->findServers(m_discoveryUrl);
+        conn->m_client->findServers(QUrl{m_discoveryUrl});
     }
 
     emit serversChanged();

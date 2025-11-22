@@ -75,7 +75,7 @@ public slots:
 
         QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
         QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-        const auto discoveryEndpoint = u"opc.tcp://%1:%2"_s.arg(host, port);
+        const auto discoveryEndpoint = QUrl{u"opc.tcp://%1:%2"_s.arg(host, port)};
 
         QSignalSpy endpointSpy(client, &QOpcUaClient::endpointsRequestFinished);
         client->requestEndpoints(discoveryEndpoint);
