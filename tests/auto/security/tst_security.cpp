@@ -117,7 +117,7 @@ private:
     QProcess m_serverProcess;
     QList<QOpcUaEndpointDescription> m_endpoints;
     QOpcUaEndpointDescription m_noneEndpoint;
-    QString m_discoveryEndpoint;
+    QUrl m_discoveryEndpoint;
     QOpcUaProvider m_opcUa;
     QSharedPointer<QTemporaryDir> m_pkiData;
 };
@@ -205,7 +205,7 @@ void Tst_QOpcUaSecurity::initTestCase()
     }
     QString host = envOrDefault("OPCUA_HOST", defaultHost.toString());
     QString port = envOrDefault("OPCUA_PORT", QString::number(defaultPort));
-    m_discoveryEndpoint = u"opc.tcp://%1:%2"_s.arg(host, port);
+    m_discoveryEndpoint.setUrl("opc.tcp://%1:%2"_L1.arg(host, port));
     qDebug() << "Using endpoint:" << m_discoveryEndpoint;
 
     QScopedPointer<QOpcUaClient> client(m_opcUa.createClient(m_backends.first()));

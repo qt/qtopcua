@@ -173,7 +173,7 @@ void OpcUaEndpointDiscovery::connectSignals()
 
 void OpcUaEndpointDiscovery::handleEndpoints(const QList<QOpcUaEndpointDescription> &endpoints, QOpcUa::UaStatusCode statusCode, const QUrl &requestUrl)
 {
-    if (requestUrl != m_serverUrl)
+    if (requestUrl != QUrl{m_serverUrl})
         return; // response is not for last request
 
     m_status = OpcUaStatus(statusCode);
@@ -214,7 +214,7 @@ void OpcUaEndpointDiscovery::startRequestEndpoints()
         m_status = OpcUaStatus(QOpcUa::BadInvalidArgument);
     } else {
         m_status = OpcUaStatus(QOpcUa::GoodCompletesAsynchronously);
-        conn->m_client->requestEndpoints(m_serverUrl);
+        conn->m_client->requestEndpoints(QUrl{m_serverUrl});
     }
 
     emit endpointsChanged();
