@@ -28,7 +28,7 @@ public:
         Certificate = 2,
         IssuedToken = 3,
     };
-    Q_ENUMS(TokenType)
+    Q_ENUM(TokenType)
 
     QString policyId() const;
     void setPolicyId(const QString &policyId);
