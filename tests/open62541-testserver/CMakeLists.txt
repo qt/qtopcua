@@ -59,12 +59,6 @@ qt_internal_add_resource(open62541-testserver "certs"
         ${certs_resource_files}
 )
 
-# We need to disable optimizations on MSVC, to circumvent buggy code in the open62541.c file.
-# Otherwise the test server fails to launch on Windows MSVC with UA_STATUSCODE_BADOUTOFMEMORY.
-# We also disable them on Unixy platforms, to mimic the qmake fix done in QTBUG-75020.
-# See QTBUG-85939 for details.
-qt_opcua_disable_optimizations_in_current_dir()
-
 ## Scopes:
 #####################################################################
 
