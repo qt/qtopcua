@@ -28,4 +28,8 @@ if(WASM)
     message(NOTICE "Skipping the build as the condition \"NOT WASM\" is not met.")
     return()
 endif()
+
+# Ensure macros are available when configuring tests in-tree with the Qt build
+include(src/opcua/Qt6OpcUaMacros.cmake)
+
 qt_build_repo()
