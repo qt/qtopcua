@@ -1,6 +1,6 @@
 /* THIS IS A SINGLE-FILE DISTRIBUTION CONCATENATED FROM THE OPEN62541 SOURCES
  * visit http://open62541.org/ for information about this software
- * Git-Revision: v1.4.13
+ * Git-Revision: v1.4.14
  */
 
 /*
@@ -30,10 +30,10 @@
  * ----------------- */
 #define UA_OPEN62541_VER_MAJOR 1
 #define UA_OPEN62541_VER_MINOR 4
-#define UA_OPEN62541_VER_PATCH 13
+#define UA_OPEN62541_VER_PATCH 14
 #define UA_OPEN62541_VER_LABEL "" /* Release candidate label, etc. */
-#define UA_OPEN62541_VER_COMMIT "v1.4.13"
-#define UA_OPEN62541_VERSION "v1.4.13"
+#define UA_OPEN62541_VER_COMMIT "v1.4.14"
+#define UA_OPEN62541_VERSION "v1.4.14"
 
 /**
  * Architecture
