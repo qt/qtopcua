@@ -10,10 +10,9 @@ path = ["tests/auto/codegenerator/testids.csv",
         "tests/open62541-testserver/TestModel/qtopcuatestmodel.xsd",
         "tests/open62541-testserver/generated/namespace_qtopcuatestmodel_generated.c",
         "tests/open62541-testserver/generated/namespace_qtopcuatestmodel_generated.h",
-        "tests/open62541-testserver/generated/qtopcuatestmodel_nodeids.h",
+        "tests/open62541-testserver/generated/nodeids_qtopcuatestmodel.h",
         "tests/open62541-testserver/generated/types_qtopcuatestmodel_generated.c",
         "tests/open62541-testserver/generated/types_qtopcuatestmodel_generated.h",
-        "tests/open62541-testserver/generated/types_qtopcuatestmodel_generated_handling.h",
         "tests/open62541-testserver/pki/**.der",
         "tests/open62541-testserver/TestModel/qtopcuatestmodel.tt2pro"]
 precedence = "closest"

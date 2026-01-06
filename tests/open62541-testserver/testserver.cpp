@@ -5,13 +5,12 @@
 
 #ifdef USE_SYSTEM_OPEN62541
 #include <open62541/plugin/log_stdout.h>
-#include <open62541/plugin/pki_default.h>
+#include <open62541/plugin/certificategroup_default.h>
 #endif
 
 #include "generated/namespace_qtopcuatestmodel_generated.h"
 #include "generated/types_qtopcuatestmodel_generated.h"
-#include "generated/types_qtopcuatestmodel_generated_handling.h"
-#include "generated/qtopcuatestmodel_nodeids.h"
+#include "generated/nodeids_qtopcuatestmodel.h"
 
 #include "qopen62541utils.h"
 #include "qopen62541valueconverter.h"
@@ -60,6 +59,9 @@ bool TestServer::createInsecureServerConfig(UA_ServerConfig *config)
         qWarning() << "Failed to create server config without encryption";
         return false;
     }
+
+    UA_String_clear(&config->applicationDescription.applicationUri);
+    config->applicationDescription.applicationUri = UA_STRING_ALLOC("urn:open62541.server.application");
 
     result = UA_AccessControl_default(config, true, nullptr, usernamePasswordsSize, usernamePasswords);
 
@@ -158,6 +160,9 @@ bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
 
     UA_ServerConfig_setBasics_withPort(config, 43344);
 
+    UA_String_clear(&config->applicationDescription.applicationUri);
+    config->applicationDescription.applicationUri = UA_STRING_ALLOC("urn:open62541.server.application");
+
     // This is needed for COIN because the hostname returned by gethostname() is not resolvable.
     UA_Array_delete(config->serverUrls, config->serverUrlsSize, &UA_TYPES[UA_TYPES_STRING]);
     config->serverUrls = UA_String_new();
@@ -166,26 +171,52 @@ bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
 
     config->tcpReuseAddr = true;
 
-    UA_StatusCode result = UA_CertificateVerification_Trustlist(&config->sessionPKI,
-                                                                trustList, trustListSize,
-                                                                nullptr, 0,
-                                                                revocationList, revocationListSize);
-    if (result != UA_STATUSCODE_GOOD) {
-        qWarning() << "Failed to initialize certificate verification";
-        return false;
+    {
+        UA_TrustListDataType list {};
+        list.specifiedLists = UA_TRUSTLISTMASKS_TRUSTEDCRLS | UA_TRUSTLISTMASKS_TRUSTEDCERTIFICATES;
+        list.trustedCertificates = trustList;
+        list.trustedCertificatesSize = trustListSize;
+        list.trustedCrlsSize = revocationListSize;
+        list.trustedCrls = revocationList;
+
+        auto defaultApplicationGroup = UA_NS0ID(SERVERCONFIGURATION_CERTIFICATEGROUPS_DEFAULTAPPLICATIONGROUP);
+        UA_StatusCode result = UA_CertificateGroup_Memorystore(&config->sessionPKI, &defaultApplicationGroup, &list, config->logging, nullptr);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qWarning() << "Failed to initialize certificate verification";
+            return false;
+        }
     }
 
-    result = UA_CertificateVerification_Trustlist(&config->secureChannelPKI,
-                                                  trustList, trustListSize,
-                                                  nullptr, 0,
-                                                  revocationList, revocationListSize);
-    if (result != UA_STATUSCODE_GOOD) {
-        qWarning() << "Failed to initialize certificate verification";
-        return false;
+    {
+        UA_TrustListDataType list {};
+        list.specifiedLists = UA_TRUSTLISTMASKS_TRUSTEDCRLS | UA_TRUSTLISTMASKS_TRUSTEDCERTIFICATES;
+        list.trustedCertificates = trustList;
+        list.trustedCertificatesSize = trustListSize;
+        list.trustedCrlsSize = revocationListSize;
+        list.trustedCrls = revocationList;
+
+        auto defaultApplicationGroup = UA_NS0ID(SERVERCONFIGURATION_CERTIFICATEGROUPS_DEFAULTAPPLICATIONGROUP);
+        UA_StatusCode result = UA_CertificateGroup_Memorystore(&config->secureChannelPKI, &defaultApplicationGroup, &list, config->logging, nullptr);
+
+        if (result != UA_STATUSCODE_GOOD) {
+            qWarning() << "Failed to initialize certificate verification";
+            return false;
+        }
     }
 
     // Add the security policies manually because we need to skip Basic128Rsa15 and Basic256
     // if OpenSSL doesn't support SHA-1 signatures (e.g. RHEL 9).
+
+    // The None security policy is already present, but without a certificate
+    for (size_t i = 0; i < config->securityPoliciesSize; ++i) {
+        if (config->securityPolicies[i].clear)
+            config->securityPolicies[i].clear(&config->securityPolicies[i]);
+    }
+
+    UA_free(config->securityPolicies);
+    config->securityPoliciesSize = 0;
+    config->securityPolicies = nullptr;
 
     UA_StatusCode retval = UA_ServerConfig_addSecurityPolicyNone(config, &certificate);
     if(retval != UA_STATUSCODE_GOOD) {
@@ -225,7 +256,7 @@ bool TestServer::createSecureServerConfig(UA_ServerConfig *config)
         return false;
     }
 
-    result = UA_AccessControl_default(config, true, nullptr, usernamePasswordsSize, usernamePasswords);
+    UA_StatusCode result = UA_AccessControl_default(config, true, nullptr, usernamePasswordsSize, usernamePasswords);
 
     if (result != UA_STATUSCODE_GOOD) {
         qWarning() << "Failed to create access control";
@@ -260,6 +291,7 @@ bool TestServer::init(bool noNonePolicyPassword)
     m_config->allowNonePolicyPassword = !noNonePolicyPassword;
 #else
     success = createInsecureServerConfig(m_config);
+    m_config->allowNonePolicyPassword = true;
 #endif
 
     m_config->maxReferencesPerNode = 10;
@@ -398,9 +430,9 @@ ManagedUaNodeId TestServer::addVariable(const UA_NodeId &folder, const QString &
     attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", name.toUtf8().constData());
     attr.dataType = attr.value.type ? attr.value.type->typeId : UA_TYPES[UA_TYPES_BOOLEAN].typeId;
     if (enableHistorizing) {
-        attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE | UA_ACCESSLEVELMASK_HISTORYREAD;
+        attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE | UA_ACCESSLEVELMASK_HISTORYREAD | UA_ACCESSLEVELMASK_STATUSWRITE | UA_ACCESSLEVELMASK_TIMESTAMPWRITE;
     } else {
-        attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+        attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE  | UA_ACCESSLEVELMASK_STATUSWRITE | UA_ACCESSLEVELMASK_TIMESTAMPWRITE;
     }
     attr.description = UA_LOCALIZEDTEXT_ALLOC("en-US", description.toUtf8().constData());
     attr.historizing = enableHistorizing;
@@ -954,11 +986,11 @@ UA_StatusCode TestServer::addLocalizedTextNodeWithCallback(const UA_NodeId &pare
 
     auto variableNodeId = UA_NODEID_STRING_ALLOC(2, "LocalizedTextWithCallback");
 
-    const auto result = UA_Server_addDataSourceVariableNode(m_server, variableNodeId, parent,
-                                                            UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
-                                                            variableName, UA_NODEID_NULL, attr,
-                                                            { readLocalizedTextCallback, nullptr },
-                                                            this, nullptr);
+    const auto result = UA_Server_addCallbackValueSourceVariableNode(m_server, variableNodeId, parent,
+                                                                     UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES),
+                                                                     variableName, UA_NODEID_NULL, attr,
+                                                                     { readLocalizedTextCallback, nullptr },
+                                                                     this, nullptr);
 
     UA_NodeId_clear(&variableNodeId);
 
@@ -987,14 +1019,6 @@ UA_StatusCode TestServer::generateEventCallback(UA_Server *server,
     Q_UNUSED(output)
 
     // Setup event
-    UA_NodeId eventNodeId;
-
-    UA_StatusCode ret = UA_Server_createEvent(server, UA_NODEID_NUMERIC(2, 12345), &eventNodeId);
-    if (ret != UA_STATUSCODE_GOOD) {
-        qWarning() << "Could not create event:" << UA_StatusCode_name(ret);
-        return ret;
-    }
-
     quint16 eventSeverity = 100;
 
     if (inputSize && input[0].type == &UA_TYPES[UA_TYPES_UINT16] && input[0].data) {
@@ -1003,42 +1027,16 @@ UA_StatusCode TestServer::generateEventCallback(UA_Server *server,
 
     qDebug() << "Creating event with severity" << eventSeverity;
 
-    auto timePropertyName = UA_QUALIFIEDNAME_ALLOC(0, "Time");
-    auto severityPropertyName = UA_QUALIFIEDNAME_ALLOC(0, "Severity");
-    auto messagePropertyName = UA_QUALIFIEDNAME_ALLOC(0, "Message");
-    auto sourceNamePropertyName = UA_QUALIFIEDNAME_ALLOC(0, "SourceName");
-    auto eventMessage = UA_LOCALIZEDTEXT_ALLOC("en", "An event has been generated");
-    auto eventSourceName = UA_STRING_ALLOC("Server");
+    UA_KeyValueMap eventFields{};
+    UA_StatusCode ret = UA_Server_createEvent(server, UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER), UA_NODEID_NUMERIC(2, 12345),
+                                              eventSeverity, UA_LocalizedText{ UA_STRING_STATIC("en"),
+                                                                               UA_STRING_STATIC("An event has been generated")},
+                                              &eventFields, nullptr, nullptr);
 
-    // Setting the Time is required or else the event will not show up in UAExpert! */
-    UA_DateTime eventTime = UA_DateTime_now();
-    UA_Server_writeObjectProperty_scalar(server, eventNodeId, timePropertyName,
-                                         &eventTime, &UA_TYPES[UA_TYPES_DATETIME]);
-
-    UA_Server_writeObjectProperty_scalar(server, eventNodeId, severityPropertyName,
-                                         &eventSeverity, &UA_TYPES[UA_TYPES_UINT16]);
-
-    UA_Server_writeObjectProperty_scalar(server, eventNodeId, messagePropertyName,
-                                         &eventMessage, &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]);
-
-    UA_Server_writeObjectProperty_scalar(server, eventNodeId, sourceNamePropertyName,
-                                         &eventSourceName, &UA_TYPES[UA_TYPES_STRING]);
-
-    UA_QualifiedName_clear(&timePropertyName);
-    UA_QualifiedName_clear(&severityPropertyName);
-    UA_QualifiedName_clear(&messagePropertyName);
-    UA_QualifiedName_clear(&sourceNamePropertyName);
-    UA_LocalizedText_clear(&eventMessage);
-    UA_String_clear(&eventSourceName);
-
-    // End setup event
-
-    ret = UA_Server_triggerEvent(server, eventNodeId,
-                                 UA_NODEID_NUMERIC(0, UA_NS0ID_SERVER),
-                                 nullptr, true);
-
-    if (ret != UA_STATUSCODE_GOOD)
-        qWarning() << "Failed to trigger event:" << UA_StatusCode_name(ret);
+    if (ret != UA_STATUSCODE_GOOD) {
+        qWarning() << "Could not create event:" << UA_StatusCode_name(ret);
+        return ret;
+    }
 
     return ret;
 }

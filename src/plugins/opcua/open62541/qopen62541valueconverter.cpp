@@ -1449,7 +1449,7 @@ QOpcUaExtensionObject encodeAsBinaryExtensionObject(const void *data, const UA_D
 
     UA_ByteString encodedData;
     UA_ByteString_init(&encodedData);
-    const auto encodeResult = UA_encodeBinary(data, type, &encodedData);
+    const auto encodeResult = UA_encodeBinary(data, type, &encodedData, nullptr);
 
     if (encodeResult != UA_STATUSCODE_GOOD) {
         if (success)
