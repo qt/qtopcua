@@ -25,8 +25,7 @@ qt_internal_add_executable(open62541-testserver
         main.cpp
         testserver.cpp testserver.h
         generated/namespace_qtopcuatestmodel_generated.c
-        generated/qtopcuatestmodel_nodeids.h
-        generated/types_qtopcuatestmodel_generated_handling.h
+        generated/nodeids_qtopcuatestmodel.h
         generated/namespace_qtopcuatestmodel_generated.h
         generated/types_qtopcuatestmodel_generated.c
         generated/types_qtopcuatestmodel_generated.h

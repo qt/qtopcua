@@ -41,7 +41,7 @@ static void stateChangeHandler(UA_Client *client, UA_UInt32 subId, void *subCont
 }
 
 static void eventHandler(UA_Client *client, UA_UInt32 subId, void *subContext, UA_UInt32 monId, void *monContext,
-                         size_t numFields, UA_Variant *eventFields)
+                         UA_KeyValueMap eventFields)
 {
     Q_UNUSED(client);
     Q_UNUSED(subId);
@@ -50,8 +50,8 @@ static void eventHandler(UA_Client *client, UA_UInt32 subId, void *subContext, U
     QOpen62541Subscription *subscription = static_cast<QOpen62541Subscription *>(monContext);
 
     QVariantList list;
-    for (size_t i = 0; i < numFields; ++i)
-        list.append(QOpen62541ValueConverter::toQVariant(eventFields[i]));
+    for (size_t i = 0; i < eventFields.mapSize; ++i)
+        list.append(QOpen62541ValueConverter::toQVariant(eventFields.map[i].value));
     subscription->eventReceived(monId, list);
 }
 

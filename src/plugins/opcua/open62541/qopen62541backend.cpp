@@ -5,7 +5,7 @@
 #ifdef USE_SYSTEM_OPEN62541
 #include <open62541/client_config_default.h>
 #include <open62541/plugin/securitypolicy_default.h>
-#include <open62541/plugin/pki_default.h>
+#include <open62541/plugin/certificategroup_default.h>
 #endif
 
 #include "qopen62541backend.h"
@@ -27,6 +27,8 @@
 
 #include <algorithm>
 #include <limits>
+
+using namespace Qt::Literals::StringLiterals;
 
 QT_BEGIN_NAMESPACE
 
@@ -464,7 +466,14 @@ void Open62541AsyncBackend::open62541LogHandler (void *logContext, UA_LogLevel l
 
     Q_ASSERT(category <= UA_LOGCATEGORY_DISCOVERY);
 
-    const auto logMessage = QString::vasprintf(msg, args);
+    // The size used by the open62541 default logger
+    const size_t bufferSize = 512;
+    char buffer[bufferSize]{};
+    UA_String bufferStr { bufferSize, reinterpret_cast<quint8 *>(buffer) };
+    const auto res = UA_String_vformat(&bufferStr, msg, args);
+
+    const auto logMessage = res == UA_STATUSCODE_GOOD ? QString::fromUtf8(buffer)
+                                                      : u"Failed to format log message: %1"_s.arg(msg);
 
     static const QLoggingCategory loggingCategories[] {
         QLoggingCategory("qt.opcua.plugins.open62541.sdk.network"),
@@ -1157,6 +1166,8 @@ void Open62541AsyncBackend::connectToEndpoint(const QOpcUaEndpointDescription &e
 
     conf->securityPolicyUri = UA_STRING_ALLOC(endpoint.securityPolicy().toUtf8().constData());
     conf->securityMode = static_cast<UA_MessageSecurityMode>(endpoint.securityMode());
+
+    conf->allowNonePolicyPassword = true;
 
     establishConnectionInternal(authInfo,
 #ifdef UA_ENABLE_ENCRYPTION
@@ -1935,6 +1946,10 @@ bool Open62541AsyncBackend::setupClientConfigSecurity(const QOpcUaAuthentication
         qsizetype trustListSize = 0;
         UA_ByteString *revocationList = nullptr;
         qsizetype revocationListSize = 0;
+        UA_ByteString *issuerList = nullptr;
+        qsizetype issuerListSize = 0;
+        UA_ByteString *issuerRevocationList = nullptr;
+        qsizetype issuerRevocationListSize = 0;
 
         bool success = loadFileToByteString(pkiConfig.clientCertificateFile(), &localCertificate);
 
@@ -1986,6 +2001,34 @@ bool Open62541AsyncBackend::setupClientConfigSecurity(const QOpcUaAuthentication
 
         UaArrayDeleter<UA_TYPES_BYTESTRING> revocationListDeleter(revocationList, revocationListSize);
 
+        if (!pkiConfig.issuerListDirectory().isEmpty()) {
+            success = loadAllFilesInDirectory(pkiConfig.issuerListDirectory(), &issuerList, &issuerListSize);
+
+            if (!success) {
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load issuer list";
+                emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::InvalidPki);
+                UA_Client_delete(m_uaclient);
+                m_uaclient = nullptr;
+                return false;
+            }
+        }
+
+        UaArrayDeleter<UA_TYPES_BYTESTRING> issuerListDeleter(issuerList, issuerListSize);
+
+        if (!pkiConfig.issuerRevocationListDirectory().isEmpty()) {
+            success = loadAllFilesInDirectory(pkiConfig.issuerRevocationListDirectory(), &issuerRevocationList, &issuerRevocationListSize);
+
+            if (!success) {
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to load issuer revocation list";
+                emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::InvalidPki);
+                UA_Client_delete(m_uaclient);
+                m_uaclient = nullptr;
+                return false;
+            }
+        }
+
+        UaArrayDeleter<UA_TYPES_BYTESTRING> issuerRevocationListDeleter(issuerRevocationList, issuerRevocationListSize);
+
         // UA_ClientConfig_setDefaultEncryption() no longer adds Basic128Rsa15 and Basic256 to the security policies in v1.4.7
         // This must be done manually (for now).
         UA_StatusCode result = UA_ClientConfig_setDefault(conf);
@@ -2000,17 +2043,30 @@ bool Open62541AsyncBackend::setupClientConfigSecurity(const QOpcUaAuthentication
 
         if (conf->certificateVerification.clear)
             conf->certificateVerification.clear(&conf->certificateVerification);
-        result = UA_CertificateVerification_Trustlist(&conf->certificateVerification,
-                                                      trustList, trustListSize,
-                                                      nullptr, 0,
-                                                      revocationList, revocationListSize);
 
-        if (result != UA_STATUSCODE_GOOD) {
-            qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set up certificate verification:" << static_cast<QOpcUa::UaStatusCode>(result);
-            emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::InvalidPki);
-            UA_Client_delete(m_uaclient);
-            m_uaclient = nullptr;
-            return false;
+        {
+            UA_TrustListDataType list {};
+            list.specifiedLists = UA_TRUSTLISTMASKS_TRUSTEDCRLS | UA_TRUSTLISTMASKS_TRUSTEDCERTIFICATES |
+                                  UA_TRUSTLISTMASKS_ISSUERCERTIFICATES | UA_TRUSTLISTMASKS_ISSUERCRLS;
+            list.trustedCertificates = trustList;
+            list.trustedCertificatesSize = trustListSize;
+            list.trustedCrlsSize = revocationListSize;
+            list.trustedCrls = revocationList;
+            list.issuerCertificatesSize = issuerListSize;
+            list.issuerCertificates = issuerList;
+            list.issuerCrlsSize = issuerRevocationListSize;
+            list.issuerCrls = issuerRevocationList;
+
+            auto defaultApplicationGroup = UA_NS0ID(SERVERCONFIGURATION_CERTIFICATEGROUPS_DEFAULTAPPLICATIONGROUP);
+            UA_StatusCode result = UA_CertificateGroup_Memorystore(&conf->certificateVerification, &defaultApplicationGroup, &list, conf->logging, nullptr);
+
+            if (result != UA_STATUSCODE_GOOD) {
+                qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Failed to set up certificate verification:" << static_cast<QOpcUa::UaStatusCode>(result);
+                emit stateAndOrErrorChanged(QOpcUaClient::Disconnected, QOpcUaClient::InvalidPki);
+                UA_Client_delete(m_uaclient);
+                m_uaclient = nullptr;
+                return false;
+            }
         }
 
         result = setAuthSecurityPolicyInClientConfig(conf, localCertificate, privateKey, endpoint, authInfo.authenticationType());
@@ -2148,7 +2204,7 @@ void Open62541AsyncBackend::establishConnectionInternal(const QOpcUaAuthenticati
 
             if (errorState.ignoreError()) {
                 // Use the AcceptAll certificate verification
-                UA_CertificateVerification_AcceptAll(&conf->certificateVerification);
+                UA_CertificateGroup_AcceptAll(&conf->certificateVerification);
                 retry = true;
             }
         }
@@ -2215,7 +2271,7 @@ bool Open62541AsyncBackend::loadPrivateKeyWithPotentialPassword(const QString &p
     bool previousTryWasInvalid = false;
     do {
         auto uaPassword = UA_STRING_ALLOC(password.toUtf8().constData());
-        decryptResult = UA_PKI_decryptPrivateKey(privateKeyData, uaPassword, &privateKey);
+        decryptResult = UA_CertificateUtils_decryptPrivateKey(privateKeyData, uaPassword, &privateKey);
         UA_String_clear(&uaPassword);
 
         // The key was already DER or had no password
@@ -2284,16 +2340,6 @@ UA_StatusCode Open62541AsyncBackend::setAuthSecurityPolicyInClientConfig(UA_Clie
                                                                          const QOpcUaEndpointDescription &desc,
                                                                          QOpcUaUserTokenPolicy::TokenType tokenType)
 {
-    // No None policy for auth, but all encrypting policies
-    const size_t numPolicies = 1;
-
-    for (size_t i = 0; i < conf->authSecurityPoliciesSize; i++) {
-        conf->authSecurityPolicies[i].clear(&conf->authSecurityPolicies[i]);
-    }
-    UA_free(conf->authSecurityPolicies);
-    conf->authSecurityPolicies = nullptr;
-    conf->authSecurityPoliciesSize = 0;
-
     UA_StatusCode result = UA_STATUSCODE_BADINVALIDARGUMENT;
 
     QString selectedPolicy;
@@ -2320,8 +2366,14 @@ UA_StatusCode Open62541AsyncBackend::setAuthSecurityPolicyInClientConfig(UA_Clie
         if (selectedPolicy == QOpcUa::NonePolicy)
             return UA_STATUSCODE_GOOD;
 
-        conf->authSecurityPolicies = static_cast<UA_SecurityPolicy*>(UA_realloc(conf->authSecurityPolicies,
-                                                                                sizeof(UA_SecurityPolicy) * numPolicies));
+        const size_t numPolicies = 1;
+
+        for (size_t i = 0; i < conf->authSecurityPoliciesSize; i++) {
+            conf->authSecurityPolicies[i].clear(&conf->authSecurityPolicies[i]);
+        }
+
+        UA_free(conf->authSecurityPolicies);
+        conf->authSecurityPolicies = static_cast<UA_SecurityPolicy*>(UA_calloc(numPolicies, sizeof(UA_SecurityPolicy)));
         conf->authSecurityPoliciesSize = numPolicies;
 
         if (selectedPolicy == QOpcUa::Basic128Rsa15Policy)

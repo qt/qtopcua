@@ -1394,7 +1394,7 @@ void Tst_QOpcUaClient::requestEndpoints()
 #ifdef SERVER_SUPPORTS_SECURITY
     const int numTokensExpected = opcuaClient->supportedSecurityPolicies()
             .contains(u"http://opcfoundation.org/UA/SecurityPolicy#Basic128Rsa15"_s)
-            ?  21 : 15;
+            ?  18 : 12;
     QCOMPARE(desc[0].userIdentityTokens().size(), numTokensExpected);
 #else
     QCOMPARE(desc[0].userIdentityTokens().size(), 6);
@@ -1795,7 +1795,7 @@ void Tst_QOpcUaClient::readAccessLevelEx()
     QCOMPARE(spy.at(0).at(0).value<QOpcUa::NodeAttributes>().testFlag(QOpcUa::NodeAttribute::AccessLevelEx), true);
 
     QCOMPARE(node->attributeError(QOpcUa::NodeAttribute::AccessLevelEx), QOpcUa::UaStatusCode::Good);
-    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::AccessLevelEx).value<quint32>(), 3);
+    QCOMPARE(node->attribute(QOpcUa::NodeAttribute::AccessLevelEx).value<quint32>(), 99);
     QOpcUa::AccessLevelEx ex(node->attribute(QOpcUa::NodeAttribute::AccessLevelEx).value<quint32>());
     QVERIFY(ex.testFlag(QOpcUa::AccessLevelExBit::CurrentRead));
     QVERIFY(ex.testFlag(QOpcUa::AccessLevelExBit::CurrentWrite));
@@ -2696,7 +2696,7 @@ void Tst_QOpcUaClient::addAndRemoveReference()
     refInfo.setReferenceTypeId(referenceType);
     refInfo.setIsForwardReference(true);
     refInfo.setTargetNodeId(target);
-    refInfo.setTargetNodeClass(QOpcUa::NodeClass::Variable);
+    refInfo.setTargetNodeClass(QOpcUa::NodeClass::Object);
 
     opcuaClient->addReference(refInfo);
     addReferenceSpy.wait(signalSpyTimeout);
@@ -4122,7 +4122,7 @@ void Tst_QOpcUaClient::writeReadScalar()
 
     node.reset(opcuaClient->node(u"ns=2;s=Demo.Static.Scalar.NodeId"_s));
     QVERIFY(node != nullptr);
-    WRITE_VALUE_ATTRIBUTE(node, u"ns=42;s=Test"_s, QOpcUa::NodeId);
+    WRITE_VALUE_ATTRIBUTE(node, u"ns=1;s=Test"_s, QOpcUa::NodeId);
 
     node.reset(opcuaClient->node(u"ns=2;s=Demo.Static.Scalar.QualifiedName"_s));
     QVERIFY(node != nullptr);
@@ -4334,7 +4334,7 @@ void Tst_QOpcUaClient::writeReadScalar()
     QVariant nodeIdScalar = node->attribute(QOpcUa::NodeAttribute::Value);
     QVERIFY(nodeIdScalar.isValid());
     QCOMPARE(nodeIdScalar.metaType().id(), QMetaType::QString);
-    QCOMPARE(nodeIdScalar.toString(), u"ns=42;s=Test"_s);
+    QCOMPARE(nodeIdScalar.toString(), u"ns=1;s=Test"_s);
 
     node.reset(opcuaClient->node(u"ns=2;s=Demo.Static.Scalar.QualifiedName"_s));
     QVERIFY(node != nullptr);
@@ -5028,7 +5028,7 @@ void Tst_QOpcUaClient::subscriptionUnreadableNode()
     QCOMPARE(dataChangeSpy.at(0).at(0).value<QOpcUa::NodeAttribute>(), QOpcUa::NodeAttribute::Value);
     QCOMPARE(dataChangeSpy.at(0).at(1), QVariant());
     QCOMPARE(unreadableNode->valueAttribute(), QVariant());
-    QCOMPARE(unreadableNode->valueAttributeError(), QOpcUa::UaStatusCode::BadNotReadable);
+    QCOMPARE(unreadableNode->valueAttributeError(), QOpcUa::UaStatusCode::BadUserAccessDenied);
 
     unreadableNode->disableMonitoring(QOpcUa::NodeAttribute::Value);
     monitoringDisabledSpy.wait(signalSpyTimeout);
