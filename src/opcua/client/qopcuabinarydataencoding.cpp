@@ -156,7 +156,8 @@ using namespace Qt::Literals::StringLiterals;
 /*!
     \fn template<typename T, QOpcUa::Types OVERLAY> T QOpcUaBinaryDataEncoding::decode(bool &success)
 
-    Decodes a scalar value of type T from the data buffer.
+    Decodes a scalar value of type T from the data buffer using the OPC UA
+    built-in type specified by \a OVERLAY.
     \a success is set to \c true if the decoding was successful, \c false if not.
 
     The decoded value is returned. If \a success is false, the returned value is invalid.
@@ -167,8 +168,9 @@ using namespace Qt::Literals::StringLiterals;
 /*!
     \fn template<typename T, QOpcUa::Types OVERLAY> bool QOpcUaBinaryDataEncoding::encode(const T &src)
 
-    Encodes \a src of type T and appends the encoded value to the data buffer.
-    Returns \c true if the value has been successfully encoded.
+    Encodes \a src of type T using the OPC UA built-in type specified by
+    \a OVERLAY and appends the encoded value to the data buffer. Returns
+    \c true if the value has been successfully encoded.
 
     \sa encodeArray()
 */
@@ -176,7 +178,8 @@ using namespace Qt::Literals::StringLiterals;
 /*!
     \fn template<typename T, QOpcUa::Types OVERLAY> QList<T> QOpcUaBinaryDataEncoding::decodeArray(bool &success)
 
-    Decodes an array of type T from the data buffer.
+    Decodes an array of type T from the data buffer using the OPC UA built-in
+    type specified by \a OVERLAY.
     \a success is set to \c true if the decoding was successful, \c false if not.
 
     The decoded value is returned. If \a success is false, the returned value is invalid.
@@ -187,7 +190,8 @@ using namespace Qt::Literals::StringLiterals;
 /*!
     \fn template<typename T, QOpcUa::Types OVERLAY> bool QOpcUaBinaryDataEncoding::encodeArray(const QList<T> &src)
 
-    Encodes all elements of type T in \a src and appends the encoded values to the data buffer.
+    Encodes all elements of type T in \a src using the OPC UA built-in type
+    specified by \a OVERLAY and appends the encoded values to the data buffer.
 
     Returns \c true if the value has been successfully encoded.
 
