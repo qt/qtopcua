@@ -33,7 +33,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlproperty string Writetem::nodeId
+    \qmlproperty string WriteItem::nodeId
 
     Determines the node id of the node to be written.
 */

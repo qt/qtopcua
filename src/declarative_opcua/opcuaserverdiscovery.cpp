@@ -75,7 +75,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlsignal SeverDiscovery::serversChanged()
+    \qmlsignal ServerDiscovery::serversChanged()
 
     Emitted when a retrieval request started, finished or failed.
     In a called function, you should first the the \l status of the object.
