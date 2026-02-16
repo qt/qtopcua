@@ -109,7 +109,7 @@ QOpcUaAuthenticationInformation::~QOpcUaAuthenticationInformation()
 }
 
 /*!
-    \qmlmethod AuthenticationInformation::setAnonymousAuthentication()
+    \qmlmethod void AuthenticationInformation::setAnonymousAuthentication()
 
     Sets the authentication method to anonymous.
 */
@@ -124,7 +124,7 @@ void QOpcUaAuthenticationInformation::setAnonymousAuthentication()
 }
 
 /*!
-    \qmlmethod AuthenticationInformation::setUsernameAuthentication(string username, string password)
+    \qmlmethod void AuthenticationInformation::setUsernameAuthentication(string username, string password)
 
     Sets the authentication method to username, using the given \a username and \a password.
 */
