@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlmethod MethodNode::callMethod
+    \qmlmethod void MethodNode::callMethod()
 
     Calls the method on the connected server.
 */

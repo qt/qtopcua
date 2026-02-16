@@ -297,7 +297,7 @@ bool OpcUaConnection::isDefaultConnection() const
 }
 
 /*!
-    \qmlmethod Connection::connectToEndpoint(endpointDescription)
+    \qmlmethod void Connection::connectToEndpoint(endpointDescription)
 
     Connects to the endpoint specified with \a endpointDescription.
 
@@ -313,7 +313,7 @@ void OpcUaConnection::connectToEndpoint(const QOpcUaEndpointDescription &endpoin
 }
 
 /*!
-    \qmlmethod Connection::disconnectFromEndpoint()
+    \qmlmethod void Connection::disconnectFromEndpoint()
 
     Disconnects an established connection.
 */
@@ -389,7 +389,7 @@ QOpcUaAuthenticationInformation OpcUaConnection::authenticationInformation() con
 }
 
 /*!
-    \qmlmethod Connection::readNodeAttributes(valuesToBeRead)
+    \qmlmethod bool Connection::readNodeAttributes(valuesToBeRead)
 
     This function is used to read multiple values from a server in one go.
     Returns \c true if the read request was dispatched successfully.
@@ -472,7 +472,7 @@ bool OpcUaConnection::readNodeAttributes(const QJSValue &value)
 }
 
 /*!
-    \qmlmethod Connection::writeNodeAttributes(valuesToBeWritten)
+    \qmlmethod bool Connection::writeNodeAttributes(valuesToBeWritten)
 
     This function is used to write multiple values to a server in one go.
     Returns \c true if the write request was dispatched successfully.
