@@ -48,20 +48,20 @@ bool QOpcUaKeyPairPrivate::loadFromPemData(const QByteArray &data) {
 
     BIO *bio = q_BIO_new_mem_buf((void *)data.constData(), data.size());
     if (!bio) {
-        qCWarning(lcSsl) << "Failed to allocate a buffer:" << getOpenSslError();
+        qCWarning(lcOpcUaSsl) << "Failed to allocate a buffer:" << getOpenSslError();
         return false;
     }
     Deleter<BIO> bioDeleter(bio, q_BIO_free_all);
 
     if (data.startsWith("-----BEGIN PRIVATE KEY-----") || data.startsWith("-----BEGIN ENCRYPTED PRIVATE KEY-----")) {
         if (!q_PEM_read_bio_PrivateKey(bio, &m_keyData, &passwordCallback, q /* userData */)) {
-            qCWarning(lcSsl) << "Failed to load private key:" << getOpenSslError();
+            qCWarning(lcOpcUaSsl) << "Failed to load private key:" << getOpenSslError();
             return false;
         }
         m_hasPrivateKey = true;
     } else {
         if (!q_PEM_read_bio_PUBKEY(bio, &m_keyData, NULL, NULL)) {
-            qCWarning(lcSsl) << "Failed to load public key:" << getOpenSslError();
+            qCWarning(lcOpcUaSsl) << "Failed to load public key:" << getOpenSslError();
             return false;
         }
     }
@@ -72,19 +72,19 @@ bool QOpcUaKeyPairPrivate::loadFromPemData(const QByteArray &data) {
 QByteArray QOpcUaKeyPairPrivate::publicKeyToByteArray() const
 {
     if (!m_keyData) {
-        qCWarning(lcSsl) << "No public key to write";
+        qCWarning(lcOpcUaSsl) << "No public key to write";
         return QByteArray();
     }
 
     BIO *bio = q_BIO_new(q_BIO_s_mem());
     if (!bio) {
-        qCWarning(lcSsl) << "Failed to allocate a buffer:" << getOpenSslError();
+        qCWarning(lcOpcUaSsl) << "Failed to allocate a buffer:" << getOpenSslError();
         return QByteArray();
     }
     Deleter<BIO> bioDeleter(bio, q_BIO_free_all);
 
     if (0 == q_PEM_write_bio_PUBKEY(bio, m_keyData)) {
-        qCWarning(lcSsl) << "Failed to write public key:" << getOpenSslError();
+        qCWarning(lcOpcUaSsl) << "Failed to write public key:" << getOpenSslError();
         return QByteArray();
     }
 
@@ -103,23 +103,23 @@ bool QOpcUaKeyPairPrivate::generateRsaKey(QOpcUaKeyPair::RsaKeyStrength strength
 
     EVP_PKEY_CTX *ctx = q_EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, nullptr);
     if (!ctx) {
-        qCWarning(lcSsl) << "Failed to allocate context:" << getOpenSslError();
+        qCWarning(lcOpcUaSsl) << "Failed to allocate context:" << getOpenSslError();
         return false;
     }
     Deleter<EVP_PKEY_CTX> ctxDeleter(ctx, q_EVP_PKEY_CTX_free);
 
     if (q_EVP_PKEY_keygen_init(ctx) <= 0) {
-        qCWarning(lcSsl) << "Failed to initialize context:" << getOpenSslError();
+        qCWarning(lcOpcUaSsl) << "Failed to initialize context:" << getOpenSslError();
         return false;
     }
 
     if (q_EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, static_cast<int>(strength)) <= 0) {
-        qCWarning(lcSsl) << "Failed to set context property:" << getOpenSslError();
+        qCWarning(lcOpcUaSsl) << "Failed to set context property:" << getOpenSslError();
         return false;
     }
 
     if (q_EVP_PKEY_keygen(ctx, &m_keyData) <= 0) {
-        qCWarning(lcSsl) << "Failed to generate key:" << getOpenSslError();
+        qCWarning(lcOpcUaSsl) << "Failed to generate key:" << getOpenSslError();
         return false;
     }
 
@@ -142,13 +142,13 @@ QOpcUaKeyPair::KeyType QOpcUaKeyPairPrivate::keyType() const
 QByteArray QOpcUaKeyPairPrivate::privateKeyToByteArray(QOpcUaKeyPair::Cipher cipher, const QString &password) const
 {
     if (!m_keyData) {
-        qCWarning(lcSsl) << "No private key to write";
+        qCWarning(lcOpcUaSsl) << "No private key to write";
         return QByteArray();
     }
 
     BIO *bio = q_BIO_new(q_BIO_s_mem());
     if (!bio) {
-        qCWarning(lcSsl) << "Failed to allocate a buffer:" << getOpenSslError();
+        qCWarning(lcOpcUaSsl) << "Failed to allocate a buffer:" << getOpenSslError();
         return QByteArray();
     }
     Deleter<BIO> bioDeleter(bio, q_BIO_free_all);
@@ -159,7 +159,7 @@ QByteArray QOpcUaKeyPairPrivate::privateKeyToByteArray(QOpcUaKeyPair::Cipher cip
     else if (cipher == QOpcUaKeyPair::Cipher::Aes128Cbc)
         enc = q_EVP_aes_128_cbc();
     else {
-        qCWarning(lcSsl) << "Unknown cipher given";
+        qCWarning(lcOpcUaSsl) << "Unknown cipher given";
         return QByteArray();
     }
 
@@ -167,7 +167,7 @@ QByteArray QOpcUaKeyPairPrivate::privateKeyToByteArray(QOpcUaKeyPair::Cipher cip
                                          enc ? password.toUtf8().data() : NULL,
                                          enc ? password.size() : 0,
                                          NULL /* callback */, NULL /* userdata */)) {
-        qCWarning(lcSsl) << "Failed to write private key:" << getOpenSslError();
+        qCWarning(lcOpcUaSsl) << "Failed to write private key:" << getOpenSslError();
         return QByteArray();
     }
 
