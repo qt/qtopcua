@@ -81,12 +81,12 @@ static X509_EXTENSION *createExtension(QOpcUaX509Extension *extension)
             else if (pair.first == QOpcUaX509ExtensionSubjectAlternativeName::Type::URI)
                     prefix = u"URI:"_s;
             else {
-                qCWarning(lcSsl()) << "Invalid SubjectAlternativeName type";
+                qCWarning(lcSsl) << "Invalid SubjectAlternativeName type";
                 return nullptr;
             }
 
             if (pair.second.isEmpty() || pair.second.contains(QChar::fromLatin1(','))) {
-                qCWarning(lcSsl()) << "Invalid SubjectAlternativeName value";
+                qCWarning(lcSsl) << "Invalid SubjectAlternativeName value";
                 return nullptr;
             }
 
@@ -95,7 +95,7 @@ static X509_EXTENSION *createExtension(QOpcUaX509Extension *extension)
 
         ex = q_X509V3_EXT_conf_nid(NULL, NULL, NID_subject_alt_name, data.join(QLatin1Char(',')).toUtf8().data());
         if (!ex) {
-            qCWarning(lcSsl()) << "Failed to create X509 extension" << data;
+            qCWarning(lcSsl) << "Failed to create X509 extension" << data;
             return nullptr;
         }
         q_X509_EXTENSION_set_critical(ex, san->critical() ? 1 : 0);
@@ -106,7 +106,7 @@ static X509_EXTENSION *createExtension(QOpcUaX509Extension *extension)
 
         ex = q_X509V3_EXT_conf_nid(NULL, NULL, NID_basic_constraints, data.toUtf8().data());
         if (!ex) {
-            qCWarning(lcSsl()) << "Failed to create X509 extension" << data;
+            qCWarning(lcSsl) << "Failed to create X509 extension" << data;
             return nullptr;
         }
         q_X509_EXTENSION_set_critical(ex, bc->critical() ? 1 : 0);
@@ -134,7 +134,7 @@ static X509_EXTENSION *createExtension(QOpcUaX509Extension *extension)
 
         ex = q_X509V3_EXT_conf_nid(NULL, NULL, NID_key_usage, data.join(QLatin1Char(',')).toUtf8().data());
         if (!ex) {
-            qCWarning(lcSsl()) << "Failed to create X509 extension" << data;
+            qCWarning(lcSsl) << "Failed to create X509 extension" << data;
             return nullptr;
         }
         q_X509_EXTENSION_set_critical(ex, ku->critical() ? 1 : 0);
@@ -153,7 +153,7 @@ static X509_EXTENSION *createExtension(QOpcUaX509Extension *extension)
        // NID_ext_key_usage
         ex = q_X509V3_EXT_conf_nid(NULL, NULL, NID_ext_key_usage, data.join(QLatin1Char(',')).toUtf8().data());
         if (!ex) {
-            qCWarning(lcSsl()) << "Failed to create X509 extension" << data;
+            qCWarning(lcSsl) << "Failed to create X509 extension" << data;
             return nullptr;
         }
         q_X509_EXTENSION_set_critical(ex, eku->critical() ? 1 : 0);
@@ -180,7 +180,7 @@ static bool setSubjectName(X509_NAME *subject, const QOpcUaX509DistinguishedName
 
         ASN1_OBJECT *obj = q_OBJ_txt2obj(QOpcUaX509DistinguishedName::typeToOid(type).toLatin1().constData(), 1 /* no names allowed */);
         if (!obj) {
-            qCWarning(lcSsl()) << "Invalid distinguishedName type";
+            qCWarning(lcSsl) << "Invalid distinguishedName type";
             return false;
         }
 
