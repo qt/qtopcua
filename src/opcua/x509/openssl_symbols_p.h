@@ -208,11 +208,13 @@ Q_DECLARE_LOGGING_CATEGORY(lcOpcUaSsl)
 
 #endif // !defined QT_LINKED_OPENSSL
 
+namespace QtOpcUaSsl {
+
 BIO *q_BIO_new(const BIO_METHOD *a);
 const BIO_METHOD *q_BIO_s_mem();
 
 int q_EVP_PKEY_get_base_id(const EVP_PKEY *pkey);
-#define q_EVP_PKEY_base_id q_EVP_PKEY_get_base_id
+constexpr const auto q_EVP_PKEY_base_id = q_EVP_PKEY_get_base_id;
 
 void q_OPENSSL_sk_pop_free(OPENSSL_STACK *a, void (*b)(void *));
 void q_OPENSSL_sk_push(OPENSSL_STACK *st, void *data);
@@ -223,12 +225,9 @@ ASN1_TIME *q_X509_getm_notAfter(X509 *a);
 // the amount of #ifdefs and for confusing developers.
 OPENSSL_STACK *q_sk_new_null();
 #define q_OPENSSL_sk_new_null() q_sk_new_null()
-#define q_sk_X509_EXTENSION_new_null() \
-    ((OPENSSL_STACK *)q_sk_new_null())
- #define q_sk_X509_EXTENSION_push(st, val) \
-         q_OPENSSL_sk_push((st), (val))
- #define q_sk_X509_EXTENSION_pop_free(st, free_func) \
-            q_OPENSSL_sk_pop_free((st), (free_func))
+constexpr const auto q_sk_X509_EXTENSION_new_null = q_sk_new_null;
+constexpr const auto q_sk_X509_EXTENSION_push = q_OPENSSL_sk_push;
+constexpr const auto q_sk_X509_EXTENSION_pop_free = q_OPENSSL_sk_pop_free;
 
 int q_OPENSSL_init_crypto(uint64_t opts, const OPENSSL_INIT_SETTINGS *settings);
 EVP_PKEY_CTX* q_EVP_PKEY_CTX_new_id(int id, ENGINE *e);
@@ -236,9 +235,7 @@ void q_EVP_PKEY_CTX_free(EVP_PKEY_CTX *ctx);
 int q_EVP_PKEY_keygen_init(EVP_PKEY_CTX *ctx);
 
 int q_RSA_pkey_ctx_ctrl(EVP_PKEY_CTX *ctx, int optype, int cmd, int p1, void *p2);
-#define q_EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, bits) \
-    q_RSA_pkey_ctx_ctrl(ctx, EVP_PKEY_OP_KEYGEN, \
-    EVP_PKEY_CTRL_RSA_KEYGEN_BITS, bits, NULL)
+int q_EVP_PKEY_CTX_set_rsa_keygen_bits(EVP_PKEY_CTX *ctx, int bits);
 
 int q_EVP_PKEY_keygen(EVP_PKEY_CTX *ctx, EVP_PKEY **pkey);
 bool q_resolveOpenSslSymbols();
@@ -257,8 +254,7 @@ int q_X509_EXTENSION_set_critical(X509_EXTENSION *ex, int crit);
 ASN1_INTEGER *q_ASN1_INTEGER_dup(const ASN1_INTEGER *x);
 
 X509_NAME *q_X509_REQ_get_subject_name(X509_REQ *req);
-#define q_ERR_load_crypto_strings() \
-    q_OPENSSL_init_crypto(OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NULL)
+int q_ERR_load_crypto_strings();
 
 int q_X509_NAME_add_entry_by_OBJ(X509_NAME *name, const ASN1_OBJECT *obj, int type, const unsigned char *bytes, int len, int loc, int set);
 ASN1_OBJECT *q_OBJ_txt2obj(const char *s, int no_name);
@@ -306,8 +302,10 @@ void q_ASN1_INTEGER_free(ASN1_INTEGER *a);
 int q_i2d_X509_REQ_bio(BIO *bp, X509_REQ *req);
 int q_i2d_X509_bio(BIO *bp, X509 *x509);
 
-#define q_BIO_get_mem_data(b, pp) (int)q_BIO_ctrl(b,BIO_CTRL_INFO,0,(char *)pp)
-#define q_sk_GENERAL_NAME_push(st, val) q_OPENSSL_sk_push((st), (val))
+int q_BIO_get_mem_data(BIO *b, void *pp);
+constexpr const auto q_sk_GENERAL_NAME_push = q_OPENSSL_sk_push;
+
+} // namespace QtOpcUaSsl
 
 QT_END_NAMESPACE
 
