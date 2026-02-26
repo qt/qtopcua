@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 
 Q_LOGGING_CATEGORY(lcOpcUaSsl, "qt.opcua.ssl");
 
+namespace QtOpcUaSsl {
 
 /*
     Note to maintainer:
@@ -175,6 +176,21 @@ DEFINEFUNC4(int, X509_NAME_digest, const X509_NAME *data, data, const EVP_MD *ty
 DEFINEFUNC(void, ASN1_INTEGER_free, ASN1_INTEGER *a, a, return, return)
 DEFINEFUNC2(int, i2d_X509_REQ_bio, BIO *bp, bp, X509_REQ *req, req, return 0, return)
 DEFINEFUNC2(int, i2d_X509_bio, BIO *bp, bp, X509 *x509, x509, return 0, return)
+
+int q_EVP_PKEY_CTX_set_rsa_keygen_bits(EVP_PKEY_CTX *ctx, int bits)
+{
+    return q_RSA_pkey_ctx_ctrl(ctx, EVP_PKEY_OP_KEYGEN,
+                               EVP_PKEY_CTRL_RSA_KEYGEN_BITS,
+                               bits, NULL);
+}
+
+int q_ERR_load_crypto_strings()
+{ return q_OPENSSL_init_crypto(OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NULL); }
+
+int q_BIO_get_mem_data(BIO *b, void *pp)
+{
+    return (int)q_BIO_ctrl(b, BIO_CTRL_INFO, 0, (char *)pp);
+}
 
 #define RESOLVEFUNC(func) \
     if (!(_q_##func = _q_PTR_##func(libs.ssl->resolve(#func)))     \
@@ -711,5 +727,7 @@ QDateTime q_getTimeFromASN1(const ASN1_TIME *aTime)
     }
 
 }
+
+} // namespace QtOpcUaSsl
 
 QT_END_NAMESPACE

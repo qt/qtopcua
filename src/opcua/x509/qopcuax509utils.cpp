@@ -21,7 +21,7 @@ QString getOpenSslError()
 {
     char errorBuf[1024];
     errorBuf[0] = 0;
-    q_ERR_error_string_n(q_ERR_get_error(), errorBuf, sizeof(errorBuf));
+    QtOpcUaSsl::q_ERR_error_string_n(QtOpcUaSsl::q_ERR_get_error(), errorBuf, sizeof(errorBuf));
     return QString::fromLatin1(errorBuf);
 }
 
