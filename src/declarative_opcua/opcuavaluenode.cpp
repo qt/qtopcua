@@ -281,7 +281,7 @@ void OpcUaValueNode::setPublishingInterval(double publishingInterval)
 {
     if (!m_connection || !m_node)
         return;
-    if (qFuzzyCompare(m_publishingInterval, publishingInterval))
+    if (QtPrivate::fuzzyCompare(m_publishingInterval, publishingInterval))
         return;
 
      m_node->modifyMonitoring(QOpcUa::NodeAttribute::Value, QOpcUaMonitoringParameters::Parameter::PublishingInterval, publishingInterval);
