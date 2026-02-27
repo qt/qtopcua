@@ -303,7 +303,7 @@ bool QOpen62541Subscription::addAttributeMonitoredItem(quint64 handle, QOpcUa::N
     if (settings.indexRange().size())
         QOpen62541ValueConverter::scalarFromQt<UA_String, QString>(settings.indexRange(), &req.itemToMonitor.indexRange);
     req.monitoringMode = static_cast<UA_MonitoringMode>(settings.monitoringMode());
-    req.requestedParameters.samplingInterval = qFuzzyCompare(settings.samplingInterval(), 0.0) ? m_interval : settings.samplingInterval();
+    req.requestedParameters.samplingInterval = qFuzzyIsNull(settings.samplingInterval()) ? m_interval : settings.samplingInterval();
     req.requestedParameters.queueSize = settings.queueSize() == 0 ? 1 : settings.queueSize();
     req.requestedParameters.discardOldest = settings.discardOldest();
     req.requestedParameters.clientHandle = ++m_clientHandle;
@@ -673,7 +673,7 @@ bool QOpen62541Subscription::modifySubscriptionParameters(quint64 nodeHandle, QO
             emit m_backend->monitoringStatusChanged(nodeHandle, attr, item, p);
         } else {
             QOpcUaMonitoringParameters::Parameters changed = item;
-            if (!qFuzzyCompare(res.revisedPublishingInterval, m_interval))
+            if (!QtPrivate::fuzzyCompare(res.revisedPublishingInterval, m_interval))
                 changed |= QOpcUaMonitoringParameters::Parameter::PublishingInterval;
             if (res.revisedLifetimeCount != m_lifetimeCount)
                 changed |= QOpcUaMonitoringParameters::Parameter::LifetimeCount;
@@ -797,7 +797,7 @@ bool QOpen62541Subscription::modifyMonitoredItemParameters(quint64 nodeHandle, Q
         } else {
             p.setStatusCode(QOpcUa::UaStatusCode::Good);
             QOpcUaMonitoringParameters::Parameters changed = item;
-            if (!qFuzzyCompare(p.samplingInterval(), res.results[0].revisedSamplingInterval)) {
+            if (!QtPrivate::fuzzyCompare(p.samplingInterval(), res.results[0].revisedSamplingInterval)) {
                 p.setSamplingInterval(res.results[0].revisedSamplingInterval);
                 changed |= QOpcUaMonitoringParameters::Parameter::SamplingInterval;
             }
