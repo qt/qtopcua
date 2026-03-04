@@ -11,6 +11,7 @@
 //
 // We mean it.
 //
+// Qt-Security score:significant reason:default
 
 #ifndef QOPCUAPUBLICKEYPRIVATE_H
 #define QOPCUAPUBLICKEYPRIVATE_H

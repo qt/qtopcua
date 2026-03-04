@@ -11,6 +11,7 @@
 //
 // We mean it.
 //
+// Qt-Security score:significant reason:default
 
 #ifndef QOPCUASECURITYPOLICYURIS_P_H
 #define QOPCUASECURITYPOLICYURIS_P_H

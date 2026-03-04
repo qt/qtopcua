@@ -11,6 +11,7 @@
 //
 // We mean it.
 //
+// Qt-Security score:significant reason:default
 
 #ifndef QOPCUAX509UTILS_H
 #define QOPCUAX509UTILS_H

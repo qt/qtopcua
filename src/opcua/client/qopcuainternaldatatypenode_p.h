@@ -11,6 +11,7 @@
 //
 // We mean it.
 //
+// Qt-Security score:significant reason:default
 
 #ifndef QOPCUAINTERNALDATATYPENODE_H
 #define QOPCUAINTERNALDATATYPENODE_H

@@ -11,6 +11,7 @@
 //
 // We mean it.
 //
+// Qt-Security score:significant reason:default
 
 #include "qopcuax509utils_p.h"
 #include "openssl_symbols_p.h"

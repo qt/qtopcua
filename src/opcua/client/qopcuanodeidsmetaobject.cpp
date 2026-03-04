@@ -3,6 +3,7 @@
 
 // This file works around MSVC not being capable of building the MOC output for the huge Namespace0 enum.
 // It can be updated manually using the internalgenerator tool.
+// Qt-Security score:significant reason:default
 
 #include <QtCore/qtmochelpers.h>
 

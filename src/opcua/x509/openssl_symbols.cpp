@@ -17,6 +17,7 @@
 ** this exception statement from your version of this file.
 **
 ****************************************************************************/
+// Qt-Security score:significant reason:default
 
 #include "openssl_symbols_p.h"
 #include <QtCore/qurl.h>

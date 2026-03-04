@@ -11,6 +11,7 @@
 //
 // We mean it.
 //
+// Qt-Security score:significant reason:default
 
 #ifndef QOPCUAHISTORYREADRESPONSEIMPL_H
 #define QOPCUAHISTORYREADRESPONSEIMPL_H

@@ -16,6 +16,7 @@
 ** this exception statement from your version of this file.
 **
 ****************************************************************************/
+// Qt-Security score:significant reason:default
 
 #ifndef OPENSSL_SYMBOLS_P_H
 #define OPENSSL_SYMBOLS_P_H
