@@ -13,4 +13,5 @@
     OPC UA server in a \l QTreeView.
 
     \image opcuaviewer.png
+           {OPC UA server tree with Root, Objects, and Types nodes}
 */
