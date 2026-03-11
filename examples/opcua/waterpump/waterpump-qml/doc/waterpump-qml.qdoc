@@ -16,6 +16,7 @@
     with an OPC UA server to build a QML based HMI for a simple machine.
 
     \image tankexample.png
+           {Water pump application with two tanks, pump controls, and status panel}
 
     \section1 Building the Server
     Before you can use the Water Pump examples, you need to build the \l {Water Pump Simulation Server}.
