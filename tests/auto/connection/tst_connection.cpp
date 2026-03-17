@@ -69,7 +69,7 @@ Tst_Connection::~Tst_Connection()
 
 void Tst_Connection::initTestCase()
 {
-#if defined(Q_OS_MACOS) && defined(Q_PROCESSOR_ARM)
+#if defined(Q_OS_MACOS)
         const bool runsOnCI = qgetenv("QTEST_ENVIRONMENT").split(' ').contains("ci");
         const auto osVer = QOperatingSystemVersion::current();
         if (runsOnCI && osVer >= QOperatingSystemVersion::MacOSTahoe)
