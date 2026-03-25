@@ -26,12 +26,12 @@ using namespace Qt::Literals::StringLiterals;
     }\
 }
 
-class Tst_QOpcUaSecurity: public QObject
+class Tst_QOpcUaX509: public QObject
 {
     Q_OBJECT
 
 public:
-    Tst_QOpcUaSecurity();
+    Tst_QOpcUaX509();
 
 private slots:
     void initTestCase();
@@ -81,16 +81,16 @@ QByteArray asn1dump(const QByteArray &data)
     return p.readAllStandardOutput();
 }
 
-Tst_QOpcUaSecurity::Tst_QOpcUaSecurity()
+Tst_QOpcUaX509::Tst_QOpcUaX509()
 {
     m_backends = QOpcUaProvider::availableBackends();
 }
 
-void Tst_QOpcUaSecurity::initTestCase()
+void Tst_QOpcUaX509::initTestCase()
 {
 }
 
-void Tst_QOpcUaSecurity::keyPairs()
+void Tst_QOpcUaX509::keyPairs()
 {
     QOpcUaKeyPair key;
     QOpcUaKeyPair loadedKey;
@@ -156,7 +156,7 @@ void Tst_QOpcUaSecurity::keyPairs()
     QVERIFY(loadedKey.hasPrivateKey() == true);
 }
 
-void Tst_QOpcUaSecurity::certificateSigningRequest()
+void Tst_QOpcUaX509::certificateSigningRequest()
 {
     QOpcUaKeyPair key;
 
@@ -227,7 +227,7 @@ void Tst_QOpcUaSecurity::certificateSigningRequest()
     QVERIFY(textCert.contains(u"TLS Web Server Authentication, TLS Web Client Authentication, Code Signing, E-mail Protection"_s));
 }
 
-void Tst_QOpcUaSecurity::cleanupTestCase()
+void Tst_QOpcUaX509::cleanupTestCase()
 {
 }
 
@@ -244,7 +244,7 @@ int main(int argc, char *argv[])
         return EXIT_SUCCESS;
     }
 
-    Tst_QOpcUaSecurity tc;
+    Tst_QOpcUaX509 tc;
     return QTest::qExec(&tc, argc, argv);
 }
 
