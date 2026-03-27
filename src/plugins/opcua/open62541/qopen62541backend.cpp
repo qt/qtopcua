@@ -1324,7 +1324,7 @@ void Open62541AsyncBackend::triggerIterateClient()
     }
 }
 
-void Open62541AsyncBackend::handleSubscriptionTimeout(QOpen62541Subscription *sub, QList<QPair<quint64, QOpcUa::NodeAttribute>> items)
+void Open62541AsyncBackend::handleSubscriptionTimeout(QOpen62541Subscription *sub, QList<std::pair<quint64, QOpcUa::NodeAttribute>> items)
 {
     for (auto it : std::as_const(items)) {
         auto item = m_attributeMapping.find(it.first);
@@ -2126,7 +2126,7 @@ void Open62541AsyncBackend::establishConnectionInternal(const QOpcUaAuthenticati
         if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Anonymous) {
             // Nothing to do, Anonymous is default
         } else if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Username) {
-            const auto credentials = authInfo.authenticationData().value<QPair<QString, QString>>();
+            const auto credentials = authInfo.authenticationData().value<std::pair<QString, QString>>();
             UA_ClientConfig_setAuthenticationUsername(conf, credentials.first.toUtf8().constData(),
                                                       credentials.second.toUtf8().constData());
         } else if (authInfo.authenticationType() == QOpcUaUserTokenPolicy::TokenType::Certificate) {
@@ -2134,8 +2134,8 @@ void Open62541AsyncBackend::establishConnectionInternal(const QOpcUaAuthenticati
             QString certPath;
             QString keyPath;
 
-            if (authInfo.authenticationData().canConvert<QPair<QString, QString>>()) {
-                const auto authPaths = authInfo.authenticationData().value<QPair<QString, QString>>();
+            if (authInfo.authenticationData().canConvert<std::pair<QString, QString>>()) {
+                const auto authPaths = authInfo.authenticationData().value<std::pair<QString, QString>>();
 
                 if (authPaths.first.isEmpty() || authPaths.second.isEmpty()) {
                     qCWarning(QT_OPCUA_PLUGINS_OPEN62541) << "Certificate and private key path must be set for certificate auth";

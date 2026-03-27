@@ -986,7 +986,7 @@ void QOpcUaGdsClientPrivate::getApplication()
     }
 
     if (!m_directoryNode->callMethod(m_directoryNodes[u"GetApplication"_s],
-                                     QList<QPair<QVariant, QOpcUa::Types>> { qMakePair(QVariant(m_appRecord.applicationId()), QOpcUa::Types::NodeId) })) {
+                                     QList<std::pair<QVariant, QOpcUa::Types>> { std::make_pair(QVariant(m_appRecord.applicationId()), QOpcUa::Types::NodeId) })) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Failed to call method GetApplication";
         setError(QOpcUaGdsClient::Error::FailedToRegisterApplication);
         return;
@@ -1060,7 +1060,7 @@ void QOpcUaGdsClientPrivate::findRegisteredApplication()
     }
 
     if (!m_directoryNode->callMethod(m_directoryNodes[u"FindApplications"_s],
-                                     QList<QPair<QVariant, QOpcUa::Types>> { qMakePair(QVariant(m_appRecord.applicationUri()), QOpcUa::Types::String) })) {
+                                     QList<std::pair<QVariant, QOpcUa::Types>> { std::make_pair(QVariant(m_appRecord.applicationUri()), QOpcUa::Types::String) })) {
         qCWarning(QT_OPCUA_GDSCLIENT) << "Failed to call method";
         setError(QOpcUaGdsClient::Error::FailedToRegisterApplication);
         return;

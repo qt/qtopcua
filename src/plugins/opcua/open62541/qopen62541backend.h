@@ -59,7 +59,7 @@ public Q_SLOTS:
     bool removeSubscription(UA_UInt32 subscriptionId);
     void iterateClient();
     void triggerIterateClient();
-    void handleSubscriptionTimeout(QOpen62541Subscription *sub, QList<QPair<quint64, QOpcUa::NodeAttribute>> items);
+    void handleSubscriptionTimeout(QOpen62541Subscription *sub, QList<std::pair<quint64, QOpcUa::NodeAttribute>> items);
     void cleanupSubscriptions();
 
     // Register and unregister nodes

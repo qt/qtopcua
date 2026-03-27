@@ -39,7 +39,7 @@ class QOpcUaX509ExtensionSubjectAlternativeNameData : public QOpcUaX509Extension
 {
 public:
     ~QOpcUaX509ExtensionSubjectAlternativeNameData() override = default;
-    QList <QPair<QOpcUaX509ExtensionSubjectAlternativeName::Type, QString>> entries;
+    QList <std::pair<QOpcUaX509ExtensionSubjectAlternativeName::Type, QString>> entries;
 };
 
 /*!
@@ -89,13 +89,13 @@ QOpcUaX509ExtensionSubjectAlternativeName &QOpcUaX509ExtensionSubjectAlternative
 void QOpcUaX509ExtensionSubjectAlternativeName::addEntry(QOpcUaX509ExtensionSubjectAlternativeName::Type type, const QString &value)
 {
     QOpcUaX509ExtensionSubjectAlternativeNameData *d = static_cast<QOpcUaX509ExtensionSubjectAlternativeNameData*>(data.data());
-    d->entries.append(qMakePair(type, value));
+    d->entries.append(std::make_pair(type, value));
 }
 
 /*!
     Returns the vector of entries.
 */
-const QList<QPair<QOpcUaX509ExtensionSubjectAlternativeName::Type, QString>> &QOpcUaX509ExtensionSubjectAlternativeName::entries() const
+const QList<std::pair<QOpcUaX509ExtensionSubjectAlternativeName::Type, QString>> &QOpcUaX509ExtensionSubjectAlternativeName::entries() const
 {
     const QOpcUaX509ExtensionSubjectAlternativeNameData *d = static_cast<const QOpcUaX509ExtensionSubjectAlternativeNameData*>(data.data());
     return d->entries;

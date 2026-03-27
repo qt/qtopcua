@@ -135,7 +135,7 @@ void QOpcUaAuthenticationInformation::setAnonymousAuthentication()
 void QOpcUaAuthenticationInformation::setUsernameAuthentication(const QString &username, const QString &password)
 {
     data->authenticationType = QOpcUaUserTokenPolicy::TokenType::Username;
-    data->authenticationData = QVariant::fromValue(qMakePair(username, password));
+    data->authenticationData = QVariant::fromValue(std::make_pair(username, password));
 }
 
 /*!
@@ -162,7 +162,7 @@ void QOpcUaAuthenticationInformation::setCertificateAuthentication(const QString
                                                                    const QString &privateKeyPath)
 {
     data->authenticationType = QOpcUaUserTokenPolicy::TokenType::Certificate;
-    data->authenticationData = QVariant::fromValue(QPair<QString, QString>(certificatePath, privateKeyPath));
+    data->authenticationData = QVariant::fromValue(std::make_pair(certificatePath, privateKeyPath));
 }
 
 /*!
