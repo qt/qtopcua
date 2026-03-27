@@ -28,7 +28,7 @@ public:
     ~QOpcUaX509ExtensionSubjectAlternativeName();
 
     void addEntry(Type type, const QString &value);
-    const QList<QPair<Type, QString>> &entries() const;
+    const QList<std::pair<Type, QString>> &entries() const;
 };
 
 QT_END_NAMESPACE

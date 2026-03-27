@@ -608,7 +608,7 @@ bool QOpcUa::isSuccessStatus(QOpcUa::UaStatusCode statusCode)
 /*!
     \typedef QOpcUa::TypedVariant
 
-    This is QPair<QVariant, QOpcUa::Types>.
+    This is std::pair<QVariant, QOpcUa::Types>.
 */
 
 static bool isNodeError(QOpcUa::UaStatusCode statusCode)

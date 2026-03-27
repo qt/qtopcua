@@ -9,7 +9,6 @@
 #include <QtOpcUa/qopcuanodeids.h>
 
 #include <QtCore/qmetatype.h>
-#include <QtCore/qpair.h>
 #include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
@@ -589,7 +588,7 @@ Q_OPCUA_EXPORT QString namespace0Id(QOpcUa::NodeIds::Namespace0 id);
 Q_OPCUA_EXPORT QOpcUa::NodeIds::Namespace0 namespace0IdFromNodeId(const QString &nodeId);
 Q_OPCUA_EXPORT QString namespace0IdName(QOpcUa::NodeIds::Namespace0 id);
 
-typedef QPair<QVariant, QOpcUa::Types> TypedVariant;
+typedef std::pair<QVariant, QOpcUa::Types> TypedVariant;
 
 enum class AxisScale : quint32 {
     Linear = 0,
