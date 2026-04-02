@@ -231,7 +231,10 @@ QList<QOpcUaUserTokenPolicy::TokenType> QOpen62541Client::supportedUserTokenType
 {
     return QList<QOpcUaUserTokenPolicy::TokenType> {
         QOpcUaUserTokenPolicy::TokenType::Anonymous,
-        QOpcUaUserTokenPolicy::TokenType::Username
+        QOpcUaUserTokenPolicy::TokenType::Username,
+#ifdef UA_ENABLE_ENCRYPTION
+        QOpcUaUserTokenPolicy::Certificate
+#endif
     };
 }
 
