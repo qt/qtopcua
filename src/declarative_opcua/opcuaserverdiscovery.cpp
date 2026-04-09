@@ -79,8 +79,8 @@ QT_BEGIN_NAMESPACE
 
     Emitted when a retrieval request started, finished or failed.
     In a called function, you should first the the \l status of the object.
-    In case the status is \l Status.GoodCompletesAsynchronously, the request is still running.
-    In case the status is \l Status.Good, the request has finished and the application descriptions
+    In case the status is \l {Status::Status}{Status.GoodCompletesAsynchronously}, the request is still running.
+    In case the status is \l {Status::Status}{Status.Good}, the request has finished and the application descriptions
     can be read. In case the status is not good, an error happened and \l status contains the
     returned error code.
 
@@ -99,7 +99,7 @@ QT_BEGIN_NAMESPACE
     }
     \endcode
 
-    \sa status count at QtOpcUa.Status ApplicationDescription
+    \sa status count at Status ApplicationDescription
 */
 
 OpcUaServerDiscovery::OpcUaServerDiscovery(QObject *parent)

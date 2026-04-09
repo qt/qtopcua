@@ -7,6 +7,17 @@
 QT_BEGIN_NAMESPACE
 
 /*!
+    \qmltype Constants
+    \inqmlmodule QtOpcUa
+    \brief Provides access to OPC UA enumerations.
+    \since QtOpcUa 5.12
+    \deprecated [6.9]
+
+    This type provides access to enumerations from the \l QOpcUa namespace
+    for use in QML.
+*/
+
+/*!
    \qmlproperty enumeration Constants::NodeAttribute
    \deprecated [6.9]
 

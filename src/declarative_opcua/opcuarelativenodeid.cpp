@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlsignal Relative::nodeChanged()
+    \qmlsignal RelativeNodeId::nodeChanged()
 
     Emitted when the underlying node has changed.
     This happens when the namespace or identifier has changed.
