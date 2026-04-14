@@ -8,13 +8,13 @@ sourcedirs += .. \
               ../../declarative_opcua
 headerdirs += .. \
               ../../declarative_opcua
+
 exampledirs += ../../../examples/opcua
+url.examples = "https://code.qt.io/cgit/qt/qtopcua.git/tree/examples/\1?h=$QT_VER"
+
 imagedirs += images
 
 tagfile = ../../doc/qtopcua/qtopcua.tags
-
-outputdir = doc
-outputformats = HTML
 
 qhp.projects = QtOpcUa
 
