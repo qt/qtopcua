@@ -68,7 +68,10 @@ if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541)
 endif()
 
 if (QT_FEATURE_open62541 AND NOT QT_FEATURE_system_open62541)
-    if(WIN32 AND (GCC OR CLANG))
+    if(WIN32 AND
+            (CMAKE_CXX_COMPILER_ID MATCHES "GNU"
+            OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        )
         target_link_libraries(simulationserver PRIVATE
             iphlpapi
         )
