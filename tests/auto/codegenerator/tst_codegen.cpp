@@ -124,6 +124,8 @@ private slots:
     defineDataMethod(checkGeneratedEncoding_data)
     void checkGeneratedEncoding();
     defineDataMethod(testNodeIdsOnly_data)
+    defineDataMethod(checkRecursionLimit_data)
+    void checkRecursionLimit();
     void testNodeIdsOnly();
 
 private:
@@ -754,6 +756,44 @@ void Tst_GeneratedDataTypes::checkGeneratedEncoding()
         const auto decoded = decoder.decode<CodegenTestQtRecursiveTestStruct>(success);
         QVERIFY(success);
         QCOMPARE(decoded, data);
+    }
+}
+
+void Tst_GeneratedDataTypes::checkRecursionLimit()
+{
+    CodegenTestQtRecursiveTestStruct outer;
+    for (int i = 0; i < 499; ++i) {
+        CodegenTestQtRecursiveTestStruct next;
+        next.setRecursiveArrayMember({ outer });
+        outer = next;
+    }
+
+    // 500 levels, should be ok
+    {
+        QByteArray data;
+        CodegenTestBinaryDeEncoder decoder(&data);
+        bool success = decoder.encode(outer);
+        QVERIFY(success);
+
+        const auto decoded = decoder.decode<CodegenTestQtRecursiveTestStruct>(success);
+        QVERIFY(success);
+        QCOMPARE(decoded, outer);
+    }
+
+    // 501 levels, failure expected
+    {
+        CodegenTestQtRecursiveTestStruct next;
+        next.setRecursiveArrayMember({ outer });
+        outer = next;
+
+        QByteArray data;
+        CodegenTestBinaryDeEncoder decoder(&data);
+        bool success = decoder.encode(outer);
+        QVERIFY(success);
+
+        const auto decoded = decoder.decode<CodegenTestQtRecursiveTestStruct>(success);
+        QVERIFY(!success);
+        QCOMPARE(decoded, {});
     }
 }
 

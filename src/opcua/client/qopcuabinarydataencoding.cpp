@@ -25,12 +25,52 @@
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qdatetime.h>
+#include <QtCore/qhash.h>
+#include <QtCore/qmutex.h>
 #include <QtCore/qtimezone.h>
 #include <QtCore/quuid.h>
 
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::Literals::StringLiterals;
+
+// TODO: Remove the depth check workaround for Qt 7 and make QOpcUaBinaryDataEncoding
+// easier to keep binary compatible.
+using DepthMap = QHash<QOpcUaBinaryDataEncoding *, quint32>;
+Q_GLOBAL_STATIC(DepthMap, decodingDepth);
+Q_GLOBAL_STATIC(QRecursiveMutex, decodingDepthMutex);
+
+class DepthCheck {
+public:
+    DepthCheck(QOpcUaBinaryDataEncoding *ctx)
+        : m_ctx(ctx)
+    {
+        decodingDepthMutex->lock();
+        m_isValid = ++decodingDepth()->operator[](ctx) <= m_maxDepth;
+        decodingDepthMutex->unlock();
+    }
+
+    ~DepthCheck()
+    {
+        decodingDepthMutex->lock();
+        --decodingDepth()->operator[](m_ctx);
+        if (decodingDepth()->value(m_ctx) == 0)
+            decodingDepth()->remove(m_ctx);
+        decodingDepthMutex->unlock();
+    }
+
+    bool valid() const
+    {
+        if (Q_UNLIKELY(!m_isValid))
+            qWarning() << "Recursion depth of" << m_maxDepth << "has been reached, abort decoding";
+
+        return m_isValid;
+    }
+
+    const quint32 m_maxDepth = 500;
+    QOpcUaBinaryDataEncoding *m_ctx = nullptr;
+    bool m_isValid = false;
+};
 
 /*!
     \class QOpcUaBinaryDataEncoding
@@ -161,6 +201,9 @@ using namespace Qt::Literals::StringLiterals;
 
     The decoded value is returned. If \a success is false, the returned value is invalid.
 
+    The maximum recursion depth for decoding is limited to \c 500. If the limit is reached, \a success
+    is set to false and an invalid value is returned.
+
     \sa decodeArray()
 */
 
@@ -180,6 +223,9 @@ using namespace Qt::Literals::StringLiterals;
     \a success is set to \c true if the decoding was successful, \c false if not.
 
     The decoded value is returned. If \a success is false, the returned value is invalid.
+
+    The maximum recursion depth for decoding is limited to \c 500. If the limit is reached, \a success
+    is set to false and an invalid value is returned.
 
     \sa decode()
 */
@@ -806,6 +852,12 @@ QOpcUaEnumDefinition QOpcUaBinaryDataEncoding::decode<QOpcUaEnumDefinition>(bool
 
 template <>
 QOpcUaDiagnosticInfo QOpcUaBinaryDataEncoding::decode<QOpcUaDiagnosticInfo>(bool &success) {
+    const DepthCheck depthCheck(this);
+    if (!depthCheck.valid()) {
+        success = false;
+        return {};
+    }
+
     QOpcUaDiagnosticInfo temp;
 
     const auto encodingMask = decode<quint8>(success);
@@ -870,6 +922,12 @@ QOpcUaVariant QOpcUaBinaryDataEncoding::decode<QOpcUaVariant>(bool &success);
 
 template <>
 QOpcUaDataValue QOpcUaBinaryDataEncoding::decode<QOpcUaDataValue>(bool &success) {
+    const DepthCheck depthCheck(this);
+    if (!depthCheck.valid()) {
+        success = false;
+        return {};
+    }
+
     QOpcUaDataValue temp;
 
     const auto encodingMask = decode<quint8>(success);
@@ -917,6 +975,12 @@ QOpcUaDataValue QOpcUaBinaryDataEncoding::decode<QOpcUaDataValue>(bool &success)
 
 template <>
 QOpcUaVariant QOpcUaBinaryDataEncoding::decode<QOpcUaVariant>(bool &success) {
+    const DepthCheck depthCheck(this);
+    if (!depthCheck.valid()) {
+        success = false;
+        return {};
+    }
+
     QOpcUaVariant temp;
 
     const auto encodingMask = decode<quint8>(success);
