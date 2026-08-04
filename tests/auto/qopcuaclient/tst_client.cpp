@@ -641,6 +641,8 @@ private slots:
     void writeReadScalar();
     defineDataMethod(readReencodedExtensionObject_data)
     void readReencodedExtensionObject();
+    defineDataMethod(binaryDataEncodingRecursionDepth_data)
+    void binaryDataEncodingRecursionDepth();
     defineDataMethod(indexRange_data)
     void indexRange();
     defineDataMethod(invalidIndexRange_data)
@@ -4513,6 +4515,90 @@ void Tst_QOpcUaClient::readReencodedExtensionObject()
     checkAndDecodeFirstMember(multiArray.value({0, 1}).value<QOpcUaExtensionObject>(), 1);
     checkAndDecodeFirstMember(multiArray.value({1, 0}).value<QOpcUaExtensionObject>(), 2);
     checkAndDecodeFirstMember(multiArray.value({1, 1}).value<QOpcUaExtensionObject>(), 3);
+}
+
+void Tst_QOpcUaClient::binaryDataEncodingRecursionDepth()
+{
+    // DiagnosticInfo with InnerDiagnosticInfo
+    {
+        QOpcUaDiagnosticInfo outerInfo;
+
+        // Recursion depth of 500, decoding should work
+        for (int i = 0; i < 499; ++i) {
+            QOpcUaDiagnosticInfo info;
+            info.setInnerDiagnosticInfo(outerInfo);
+            info.setHasInnerDiagnosticInfo(true);
+            outerInfo = info;
+        }
+
+        {
+            QByteArray data;
+            QOpcUaBinaryDataEncoding codec(&data);
+            bool success = codec.encode(outerInfo);
+            QVERIFY(success);
+
+            const auto decoded = codec.decode<QOpcUaDiagnosticInfo>(success);
+            QVERIFY(success);
+            QCOMPARE(outerInfo, decoded);
+        }
+
+        // New recursion depth of 501, decoding should fail
+        QOpcUaDiagnosticInfo info;
+        info.setInnerDiagnosticInfo(outerInfo);
+        info.setHasInnerDiagnosticInfo(true);
+        outerInfo = info;
+
+        {
+            QByteArray data;
+            QOpcUaBinaryDataEncoding codec(&data);
+            bool success = codec.encode(outerInfo);
+            QVERIFY(success);
+
+            const auto decoded = codec.decode<QOpcUaDiagnosticInfo>(success);
+            QVERIFY(!success);
+            QCOMPARE(decoded, QOpcUaDiagnosticInfo());
+        }
+    }
+
+    // Variant of DataValue of Variant
+    {
+        QOpcUaVariant outerVariant;
+        outerVariant.setValue(QOpcUaVariant::ValueType::Boolean, true);
+
+        // Recursion depth of 500, decoding should work
+        for (int i = 0; i < 249; ++i) {
+            QOpcUaDataValue dv;
+            dv.setValue(outerVariant);
+            outerVariant.setValue(QOpcUaVariant::ValueType::DataValue, dv);
+        }
+
+        {
+            QByteArray data;
+            QOpcUaBinaryDataEncoding codec(&data);
+            bool success = codec.encode(outerVariant);
+            QVERIFY(success);
+
+            const auto decoded = codec.decode<QOpcUaVariant>(success);
+            QVERIFY(success);
+            QCOMPARE(outerVariant, decoded);
+        }
+
+        // New recursion depth of 502, decoding should fail
+        QOpcUaDataValue dv;
+        dv.setValue(outerVariant);
+        outerVariant.setValue(QOpcUaVariant::ValueType::DataValue, dv);
+
+        {
+            QByteArray data;
+            QOpcUaBinaryDataEncoding codec(&data);
+            bool success = codec.encode(outerVariant);
+            QVERIFY(success);
+
+            const auto decoded = codec.decode<QOpcUaVariant>(success);
+            QVERIFY(!success);
+            QCOMPARE(decoded, QOpcUaVariant());
+        }
+    }
 }
 
 void Tst_QOpcUaClient::indexRange()

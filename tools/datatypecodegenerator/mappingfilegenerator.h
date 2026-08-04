@@ -60,5 +60,7 @@ private:
     void generateDecodingStructuredType(QTextStream &output, const StructuredType *structuredType);
     void generateEncodingStructuredType(QTextStream &output, const StructuredType *structuredType);
 
+    void addRecursionDepthCheck(QTextStream &output);
+
     MappingFileGenerator::MappingError sortMappings();
 };
