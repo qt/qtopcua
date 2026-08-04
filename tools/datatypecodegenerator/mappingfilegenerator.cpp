@@ -173,6 +173,8 @@ MappingFileGenerator::MappingError MappingFileGenerator::generateMappingHeader()
            << Util::lineBreak();
     output << Util::indent(1) << "QScopedPointer<QOpcUaBinaryDataEncoding> m_binaryDataEncoding;"
            << Util::lineBreak();
+    output << Util::indent(1) << "quint32 m_recursionDepth = 0;"
+           << Util::lineBreak();
 
     output << "};"
            << "\n\n";
@@ -475,6 +477,7 @@ void MappingFileGenerator::generateDecodingStructuredType(QTextStream &output,
     output << "inline " << m_prefix << structuredType->name() << " " << m_prefix
            << "BinaryDeEncoder::decode<" << m_prefix << structuredType->name() << ">(bool &success)" << Util::lineBreak()
            << "{" << Util::lineBreak();
+    addRecursionDepthCheck(output);
     output << Util::indent(1) << m_prefix << structuredType->name() << " temp;"
            << Util::lineBreak(2);
 
@@ -570,6 +573,20 @@ void MappingFileGenerator::generateEncodingStructuredType(QTextStream &output,
 
     output << Util::indent(1) << "return true;" << Util::lineBreak();
     output << "}" << Util::lineBreak(2);
+}
+
+void MappingFileGenerator::addRecursionDepthCheck(QTextStream &output)
+{
+    const int limit = 500;
+    output << Util::indent(1) << "if (++m_recursionDepth > " << limit << ") {" << Util::lineBreak();
+    output << Util::indent(2) << "qWarning() << \"Recursion depth limit of " << limit << " was reached, abort decoding\";" << Util::lineBreak();
+    output << Util::indent(2) << "success = false;" << Util::lineBreak();
+    output << Util::indent(2) << "return {};" << Util::lineBreak();
+    output << Util::indent(1) << "}" << Util::lineBreak();
+    output << Util::indent(1) << "const auto recursionGuard = qScopeGuard([this]() {" << Util::lineBreak();
+    output << Util::indent(2) << "--m_recursionDepth;" << Util::lineBreak();
+    output << Util::indent(1) << "});"  << Util::lineBreak();
+    output << Util::lineBreak();
 }
 
 MappingFileGenerator::MappingError MappingFileGenerator::sortMappings()
