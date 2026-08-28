@@ -1,6 +1,6 @@
 /* THIS IS A SINGLE-FILE DISTRIBUTION CONCATENATED FROM THE OPEN62541 SOURCES
  * visit http://open62541.org/ for information about this software
- * Git-Revision: v1.5.6-7-g777b09cde
+ * Git-Revision: v1.5.7
  */
 
 /*
@@ -4012,6 +4012,8 @@ typedef struct {
     /* Callback to close all SecureChannels after calling applyChanges
      * and freeing the transaction. */
     UA_DelayedCallback dc;
+    /* Prevent duplicate enqueue of the embedded dc (use-after-free). */
+    UA_Boolean applyChangesQueued;
 } UA_GDSTransaction;
 
 UA_StatusCode
@@ -4162,6 +4164,9 @@ struct UA_Server {
     /* For bootstrapping, omit some consistency checks, creating a reference to
      * the parent and member instantiation */
     UA_Boolean bootstrapNS0;
+
+    /* Current depth while recursively instantiating node children */
+    size_t nodeInstantiationDepth;
 
     /* Subscriptions */
 #ifdef UA_ENABLE_SUBSCRIPTIONS
@@ -11625,6 +11630,13 @@ UA_DataType_fromStructureDescription(UA_DataType *type,
     res = UA_NodeId_copy(&sd->defaultEncodingId, &type->binaryEncodingId);
     UA_CHECK_STATUS(res, UA_DataType_clear(type); return res);
 
+    /* Reject definitions whose field count cannot be represented by the
+     * 8-bit membersSize field instead of silently truncating it */
+    if(sd->fieldsSize > UA_BYTE_MAX) {
+        UA_DataType_clear(type);
+        return UA_STATUSCODE_BADENCODINGLIMITSEXCEEDED;
+    }
+
     /* Allocate the members array */
     type->members = (UA_DataTypeMember *)
         UA_calloc(sd->fieldsSize, sizeof(UA_DataTypeMember));
@@ -11642,6 +11654,12 @@ UA_DataType_fromStructureDescription(UA_DataType *type,
     } else if(sd->structureType == UA_STRUCTURETYPE_UNION) {
         type->pointerFree = true;
     }
+
+    /* Accumulate the total size in a wide temporary. type->memSize is only a
+     * 16-bit bitfield -- accumulating directly into it would silently wrap
+     * on oversized definitions and desynchronize it from the true member
+     * layout computed below. */
+    size_t accSize = type->memSize;
 
     /* Populate the members array */
     for(size_t i = 0; i < sd->fieldsSize; i++) {
@@ -11671,7 +11689,7 @@ UA_DataType_fromStructureDescription(UA_DataType *type,
         /* Memory size and padding for the scalar case */
         UA_Byte talignment = type_alignment(dtm->memberType);
         size_t memSize = dtm->memberType->memSize;
-        dtm->padding = PADDING(type->memSize, talignment);
+        dtm->padding = PADDING(accSize, talignment);
 
         /* Handle valuerank and array dimensions */
         if(sf->valueRank == 1) {
@@ -11683,7 +11701,7 @@ UA_DataType_fromStructureDescription(UA_DataType *type,
             }
             dtm->isArray = true;
             memSize = sizeof(void*) + sizeof(size_t);
-            dtm->padding = PADDING(type->memSize, offsetof(struct _pad_size_t, x));
+            dtm->padding = PADDING(accSize, offsetof(struct _pad_size_t, x));
             type->pointerFree = false; /* array is not pointer-free */
         } else if(sf->valueRank != UA_VALUERANK_SCALAR) {
             /* Only 1D-arrays or scalars are allowed */
@@ -11700,7 +11718,7 @@ UA_DataType_fromStructureDescription(UA_DataType *type,
             dtm->isOptional = true;
             if(!dtm->isArray) {
                 memSize = sizeof(void*);
-                dtm->padding = PADDING(type->memSize, offsetof(struct _pad_uintptr_t, x));
+                dtm->padding = PADDING(accSize, offsetof(struct _pad_uintptr_t, x));
             }
             UA_assert(!type->pointerFree); /* Set above */
         }
@@ -11716,11 +11734,18 @@ UA_DataType_fromStructureDescription(UA_DataType *type,
         /* Adjust the type size for the latest member */
         if(type->typeKind == UA_DATATYPEKIND_UNION) {
             /* Increase the memSize if the current member is the largest */
-            if(memSize + dtm->padding > type->memSize)
-                type->memSize = (UA_UInt16)(memSize + dtm->padding);
+            if(memSize + dtm->padding > accSize)
+                accSize = memSize + dtm->padding;
         } else {
             /* Increase the memSize for the current member */
-            type->memSize += (UA_UInt16)(memSize + dtm->padding);
+            accSize += memSize + dtm->padding;
+        }
+
+        /* Reject definitions whose cumulative size does not fit into the
+         * 16-bit memSize bitfield instead of silently wrapping it */
+        if(accSize > UA_UINT16_MAX) {
+            UA_DataType_clear(type);
+            return UA_STATUSCODE_BADENCODINGLIMITSEXCEEDED;
         }
 
         /* Overlayable types cannot have padding */
@@ -11732,8 +11757,13 @@ UA_DataType_fromStructureDescription(UA_DataType *type,
 
     /* Add final padding according to the member alignment requirements */
     UA_Byte self_alignment = type_alignment(type);
-    UA_Byte end_padding = (UA_Byte)(PADDING(type->memSize, self_alignment));
-    type->memSize += end_padding;
+    UA_Byte end_padding = (UA_Byte)(PADDING(accSize, self_alignment));
+    accSize += end_padding;
+    if(accSize > UA_UINT16_MAX) {
+        UA_DataType_clear(type);
+        return UA_STATUSCODE_BADENCODINGLIMITSEXCEEDED;
+    }
+    type->memSize = (UA_UInt16)accSize;
 
     /* Finalize handling shortcuts. Types with pointer are never overlayable.  */
     if(end_padding > 0)
@@ -11832,6 +11862,13 @@ UA_DataType_fromEnumDescription(UA_DataType *type,
     type->memSize = sizeof(UA_Int32);
     type->pointerFree = true;
     type->overlayable = true;
+
+    /* Reject definitions whose field count cannot be represented by the
+     * 8-bit membersSize field instead of silently truncating it */
+    if(descr->enumDefinition.fieldsSize > UA_BYTE_MAX) {
+        UA_DataType_clear(type);
+        return UA_STATUSCODE_BADENCODINGLIMITSEXCEEDED;
+    }
 
     /* Allocate the members array */
     type->members = (UA_DataTypeMember *)
@@ -12977,13 +13014,25 @@ ExtensionObject_decodeBinaryContent(Ctx *ctx, UA_ExtensionObject *dst,
     dst->content.decoded.data = ctxCalloc(ctx, 1, type->memSize);
     UA_CHECK_MEM(dst->content.decoded.data, return UA_STATUSCODE_BADOUTOFMEMORY);
 
-    /* Jump over the length field (TODO: check if the decoded length matches) */
-    ctx->pos += 4;
-
-    /* Decode */
+    /* Set the decoded state before any further operation can fail so the
+     * caller's error cleanup releases the allocated content. */
     dst->encoding = UA_EXTENSIONOBJECT_DECODED;
     dst->content.decoded.type = type;
-    return decodeBinaryJumpTable[type->typeKind](ctx, dst->content.decoded.data, type);
+
+    /* Read the length field and validate that the inner decoder consumes exactly
+     * that many bytes, closing a decoder-vs-IDS split-view channel. */
+    u32 member_length = 0;
+    status ret = DECODE_DIRECT(&member_length, UInt32);
+    UA_CHECK_STATUS(ret, return ret);
+    UA_CHECK(member_length <= (size_t)(ctx->end - ctx->pos),
+             return UA_STATUSCODE_BADDECODINGERROR);
+    const u8 *expected_end = ctx->pos + member_length;
+
+    /* Decode */
+    ret = decodeBinaryJumpTable[type->typeKind](ctx, dst->content.decoded.data, type);
+    if(ret == UA_STATUSCODE_GOOD && ctx->pos != expected_end)
+        return UA_STATUSCODE_BADDECODINGERROR;
+    return ret;
 }
 
 FUNC_DECODE_BINARY(ExtensionObject) {
@@ -13145,10 +13194,17 @@ Variant_decodeBinaryUnwrapExtensionObject(Ctx *ctx, UA_Variant *dst) {
     UA_CHECK_STATUS(ret, ctxClearNodeId(ctx, &typeId); return ret);
 
     /* Search for the datatype. Default to ExtensionObject. */
+    const u8 *expected_end = NULL;
     if(encoding == UA_EXTENSIONOBJECT_ENCODED_BYTESTRING &&
        (dst->type = UA_findDataTypeByBinaryInternal(ctx, &typeId)) != NULL) {
-        /* Jump over the length field (TODO: check if length matches) */
-        ctx->pos += 4;
+        /* Read the length field and validate that the inner decoder consumes
+         * exactly that many bytes, closing a decoder-vs-IDS split-view channel. */
+        u32 member_length = 0;
+        ret = DECODE_DIRECT(&member_length, UInt32);
+        UA_CHECK_STATUS(ret, ctxClearNodeId(ctx, &typeId); return ret);
+        UA_CHECK(member_length <= (size_t)(ctx->end - ctx->pos),
+                 ctxClearNodeId(ctx, &typeId); return UA_STATUSCODE_BADDECODINGERROR);
+        expected_end = ctx->pos + member_length;
     } else {
         /* Reset and decode as ExtensionObject */
         dst->type = &UA_TYPES[UA_TYPES_EXTENSIONOBJECT];
@@ -13161,7 +13217,10 @@ Variant_decodeBinaryUnwrapExtensionObject(Ctx *ctx, UA_Variant *dst) {
     UA_CHECK_MEM(dst->data, return UA_STATUSCODE_BADOUTOFMEMORY);
 
     /* Decode the content */
-    return decodeBinaryJumpTable[dst->type->typeKind](ctx, dst->data, dst->type);
+    ret = decodeBinaryJumpTable[dst->type->typeKind](ctx, dst->data, dst->type);
+    if(ret == UA_STATUSCODE_GOOD && expected_end != NULL && ctx->pos != expected_end)
+        return UA_STATUSCODE_BADDECODINGERROR;
+    return ret;
 }
 
 /* Unwraps all ExtensionObjects in an array if they have the same type.
@@ -13241,6 +13300,8 @@ Variant_decodeBinaryUnwrapExtensionObjectArray(Ctx *ctx, void *UA_RESTRICT *UA_R
         u32 member_length = 0;
         ret = DECODE_DIRECT(&member_length, UInt32);
         UA_CHECK_STATUS(ret, return ret);
+        UA_CHECK(member_length <= (size_t)(ctx->end - ctx->pos),
+                 return UA_STATUSCODE_BADDECODINGERROR);
         ctx->pos += member_length;
     }
 
@@ -13254,9 +13315,20 @@ Variant_decodeBinaryUnwrapExtensionObjectArray(Ctx *ctx, void *UA_RESTRICT *UA_R
     uintptr_t array_pos = (uintptr_t)*dst;
     ctx->pos = &orig_pos[4];
     for(size_t i = 0; i < length && ret == UA_STATUSCODE_GOOD; i++) {
-        ctx->pos += header.length + 4; /* Jump over the header and length field */
+        ctx->pos += header.length; /* Jump over the header */
+        /* Read the per-element length and validate that the inner decoder
+         * consumes exactly that many bytes, closing a decoder-vs-IDS
+         * split-view channel. */
+        u32 member_length = 0;
+        ret = DECODE_DIRECT(&member_length, UInt32);
+        UA_CHECK_STATUS(ret, return ret);
+        UA_CHECK(member_length <= (size_t)(ctx->end - ctx->pos),
+                 return UA_STATUSCODE_BADDECODINGERROR);
+        const u8 *expected_end = ctx->pos + member_length;
         ret = decodeBinaryJumpTable[contentType->typeKind]
             (ctx, (void*)array_pos, contentType);
+        if(ret == UA_STATUSCODE_GOOD && ctx->pos != expected_end)
+            return UA_STATUSCODE_BADDECODINGERROR;
         array_pos += contentType->memSize;
     }
     return ret;
@@ -38081,6 +38153,7 @@ UA_GDSTransaction_init(UA_GDSTransaction *transaction, UA_Server *server, const 
     UA_NodeId_copy(&sessionId, &transaction->sessionId);
     transaction->server = server;
     transaction->localCsrCertificate = csr;
+    transaction->applyChangesQueued = false;
 
     return UA_STATUSCODE_GOOD;
 }
@@ -42547,7 +42620,13 @@ secureChannel_delayedClose(void *application, void *context) {
 
 cleanup:
     UA_free(changes);
-    UA_GDSTransaction_clear(&server->gdsManager.transaction);
+    UA_GDSTransaction *transaction = &server->gdsManager.transaction;
+    transaction->applyChangesQueued = false;
+    transaction->dc.next = NULL;
+    transaction->dc.callback = NULL;
+    transaction->dc.application = NULL;
+    transaction->dc.context = NULL;
+    UA_GDSTransaction_clear(transaction);
 }
 
 static UA_StatusCode
@@ -42555,9 +42634,12 @@ applyChangesToServer(UA_Server *server) {
     if(!server)
         return UA_STATUSCODE_BADINTERNALERROR;
 
-    UA_StatusCode retval = UA_STATUSCODE_GOOD;
     UA_GDSManager *gdsManager = &server->gdsManager;
     UA_GDSTransaction *transaction = &gdsManager->transaction;
+    if(transaction->applyChangesQueued)
+        return UA_STATUSCODE_BADINVALIDSTATE;
+
+    UA_StatusCode retval = UA_STATUSCODE_GOOD;
     UA_GDSTransactionChanges *changes = (UA_GDSTransactionChanges*)UA_calloc(1, sizeof(UA_GDSTransactionChanges));
 
     /* Apply Trust list changes */
@@ -42630,6 +42712,7 @@ applyChangesToServer(UA_Server *server) {
     dc->callback = secureChannel_delayedClose;
     dc->application = changes;
     dc->context = server;
+    transaction->applyChangesQueued = true;
 
     UA_EventLoop *el = server->config.eventLoop;
     el->addDelayedCallback(el, dc);
@@ -51515,6 +51598,22 @@ enableMethodCallback(UA_Server *server, const UA_NodeId *sessionId,
     return UA_STATUSCODE_GOOD;
 }
 
+/* The InputArguments metadata that the Call service validates against is
+ * resolved from the (mutable) node graph. Namespace-0 methods can have their
+ * InputArguments property re-bound to a forged VariableNode, so the actual
+ * runtime types of the EventId/Comment arguments must be checked here before
+ * they are reinterpreted as UA_ByteString / UA_LocalizedText. */
+static UA_StatusCode
+checkEventIdCommentArguments(size_t inputSize, const UA_Variant *input) {
+    if(inputSize != 2)
+        return UA_STATUSCODE_BADINVALIDARGUMENT;
+    if(!UA_Variant_hasScalarType(&input[0], &UA_TYPES[UA_TYPES_BYTESTRING]))
+        return UA_STATUSCODE_BADINVALIDARGUMENT;
+    if(!UA_Variant_hasScalarType(&input[1], &UA_TYPES[UA_TYPES_LOCALIZEDTEXT]))
+        return UA_STATUSCODE_BADINVALIDARGUMENT;
+    return UA_STATUSCODE_GOOD;
+}
+
 static UA_StatusCode
 addCommentMethodCallback(UA_Server *server, const UA_NodeId *sessionId,
                          void *sessionContext, const UA_NodeId *methodId,
@@ -51522,6 +51621,10 @@ addCommentMethodCallback(UA_Server *server, const UA_NodeId *sessionId,
                          void *objectContext, size_t inputSize,
                          const UA_Variant *input, size_t outputSize,
                          UA_Variant *output) {
+    UA_StatusCode retval = checkEventIdCommentArguments(inputSize, input);
+    if(retval != UA_STATUSCODE_GOOD)
+        return retval;
+
     UA_EventLoop *el = server->config.eventLoop;
 
     UA_QualifiedName fieldComment = UA_QUALIFIEDNAME(0, CONDITION_FIELD_COMMENT);
@@ -51546,9 +51649,8 @@ addCommentMethodCallback(UA_Server *server, const UA_NodeId *sessionId,
      * in current implementation, methods are only being referenced from their ObjectType Node.
      * Because of that, the correct instance (Condition) will be found through
      * its last EventId */
-    UA_StatusCode retval =
-        UA_Server_getConditionBranchNodeId(server, (UA_ByteString *)input[0].data,
-                                           &triggerEvent);
+    retval = UA_Server_getConditionBranchNodeId(server, (UA_ByteString *)input[0].data,
+                                                &triggerEvent);
     CONDITION_ASSERT_RETURN_RETVAL(retval, "ConditionId based on EventId not found",);
 
     /* Check if enabled */
@@ -51610,6 +51712,10 @@ acknowledgeMethodCallback(UA_Server *server, const UA_NodeId *sessionId,
                           void *objectContext, size_t inputSize,
                           const UA_Variant *input, size_t outputSize,
                           UA_Variant *output) {
+    UA_StatusCode retval = checkEventIdCommentArguments(inputSize, input);
+    if(retval != UA_STATUSCODE_GOOD)
+        return retval;
+
     UA_QualifiedName fieldComment = UA_QUALIFIEDNAME(0, CONDITION_FIELD_COMMENT);
     UA_Variant value;
 
@@ -51623,9 +51729,8 @@ acknowledgeMethodCallback(UA_Server *server, const UA_NodeId *sessionId,
 
     /* Get condition branch to trigger the correct event */
     UA_NodeId conditionNode;
-    UA_StatusCode retval =
-        UA_Server_getConditionBranchNodeId(server, (UA_ByteString *)input[0].data,
-                                           &conditionNode);
+    retval = UA_Server_getConditionBranchNodeId(server, (UA_ByteString *)input[0].data,
+                                                &conditionNode);
     CONDITION_ASSERT_RETURN_RETVAL(retval, "ConditionId based on EventId not found",);
 
     /* Check if retained */
@@ -51690,6 +51795,10 @@ confirmMethodCallback(UA_Server *server, const UA_NodeId *sessionId,
                       void *objectContext, size_t inputSize,
                       const UA_Variant *input, size_t outputSize,
                       UA_Variant *output) {
+    UA_StatusCode retval = checkEventIdCommentArguments(inputSize, input);
+    if(retval != UA_STATUSCODE_GOOD)
+        return retval;
+
     UA_QualifiedName fieldComment = UA_QUALIFIEDNAME(0, CONDITION_FIELD_COMMENT);
     UA_Variant value;
 
@@ -51703,9 +51812,8 @@ confirmMethodCallback(UA_Server *server, const UA_NodeId *sessionId,
 
     /* Get condition branch to trigger the correct event */
     UA_NodeId conditionNode;
-    UA_StatusCode retval =
-        UA_Server_getConditionBranchNodeId(server, (UA_ByteString *)input[0].data,
-                                           &conditionNode);
+    retval = UA_Server_getConditionBranchNodeId(server, (UA_ByteString *)input[0].data,
+                                                &conditionNode);
     CONDITION_ASSERT_RETURN_RETVAL(retval, "ConditionId based on EventId not found",);
 
     /* Check if retained */
@@ -62820,6 +62928,31 @@ isMandatoryChild(UA_Server *server, UA_Session *session,
     return found;
 }
 
+#define UA_MAX_NODE_INSTANTIATION_DEPTH 64
+
+static UA_StatusCode
+beginChildInstantiation(UA_Server *server, UA_Session *session,
+                        const UA_NodeId *destinationNodeId,
+                        const UA_NodeId *sourceNodeId) {
+    if(server->nodeInstantiationDepth >= UA_MAX_NODE_INSTANTIATION_DEPTH) {
+        UA_LOG_WARNING_SESSION(server->config.logging, session,
+                               "AddNode (%N): Recursive child instantiation "
+                               "exceeded the maximum depth %u while copying %N",
+                               *destinationNodeId,
+                               UA_MAX_NODE_INSTANTIATION_DEPTH, *sourceNodeId);
+        return UA_STATUSCODE_BADTYPEDEFINITIONINVALID;
+    }
+
+    server->nodeInstantiationDepth++;
+    return UA_STATUSCODE_GOOD;
+}
+
+static void
+endChildInstantiation(UA_Server *server) {
+    UA_assert(server->nodeInstantiationDepth > 0);
+    server->nodeInstantiationDepth--;
+}
+
 static UA_StatusCode
 copyAllChildren(UA_Server *server, UA_Session *session,
                 const UA_NodeId *source, const UA_NodeId *destination);
@@ -63018,8 +63151,15 @@ copyChild(UA_Server *server, UA_Session *session,
     /* Existing child with that browseName. Deep-copy missing members. */
     if(retval == UA_STATUSCODE_GOOD) {
         if(rd->nodeClass == UA_NODECLASS_VARIABLE ||
-           rd->nodeClass == UA_NODECLASS_OBJECT)
-            retval = copyAllChildren(server, session, &rd->nodeId.nodeId, &existingChild);
+           rd->nodeClass == UA_NODECLASS_OBJECT) {
+            retval = beginChildInstantiation(server, session, destinationNodeId,
+                                             &rd->nodeId.nodeId);
+            if(retval == UA_STATUSCODE_GOOD) {
+                retval = copyAllChildren(server, session, &rd->nodeId.nodeId,
+                                         &existingChild);
+                endChildInstantiation(server);
+            }
+        }
         UA_NodeId_clear(&existingChild);
         return retval;
     }
@@ -63057,7 +63197,12 @@ copyChild(UA_Server *server, UA_Session *session,
     /* Child is a variable or object */
     if(rd->nodeClass == UA_NODECLASS_VARIABLE ||
        rd->nodeClass == UA_NODECLASS_OBJECT) {
+        retval = beginChildInstantiation(server, session, destinationNodeId,
+                                         &rd->nodeId.nodeId);
+        if(retval != UA_STATUSCODE_GOOD)
+            return retval;
         retval = copyObjectVariableChild(server, session, destinationNodeId, rd);
+        endChildInstantiation(server);
     }
 
     return retval;
@@ -64561,8 +64706,10 @@ Operation_addReference(UA_Server *server, UA_Session *session, void *context,
         return;
     }
 
-    /* Add the first direction */
-    UA_UInt32 targetNameHash = UA_QualifiedName_hash(&targetNode->head.browseName);
+    /* Add the first direction. Use hash 0 for non-local targets where
+     * targetNode is NULL (their browse name is not available locally). */
+    UA_UInt32 targetNameHash = targetNode ?
+        UA_QualifiedName_hash(&targetNode->head.browseName) : 0;
     *retval = UA_Node_addReference(sourceNode, refTypeIndex, item->isForward,
                                    &item->targetNodeId, targetNameHash);
     UA_Boolean firstExisted = false;
@@ -94474,14 +94621,31 @@ responseReadNamespacesArray(UA_Client *client, void *userdata,
 
     UA_ReadResponse *resp = (UA_ReadResponse *)response;
 
-    /* Add received namespaces to the local array. */
-    if(!resp->results || !resp->results[0].value.data) {
+    /* Validate the response before dereferencing results[0]. An
+     * empty-array encoding yields UA_EMPTY_ARRAY_SENTINEL (0x1, non-NULL),
+     * bypassing a bare "!resp->results" check. */
+    if(resp->responseHeader.serviceResult != UA_STATUSCODE_GOOD ||
+       resp->resultsSize < 1 ||
+       !resp->results ||
+       !resp->results[0].hasValue ||
+       !resp->results[0].value.data ||
+       resp->results[0].value.data == UA_EMPTY_ARRAY_SENTINEL) {
         UA_LOG_ERROR(client->config.logging, UA_LOGCATEGORY_CLIENT,
                      "No result in the read namespace array response");
         return;
     }
+    if(!UA_Variant_hasArrayType(&resp->results[0].value, &UA_TYPES[UA_TYPES_STRING])) {
+        UA_LOG_ERROR(client->config.logging, UA_LOGCATEGORY_CLIENT,
+                     "Read NamespaceArray returned an unexpected type");
+        return;
+    }
     UA_String *ns = (UA_String *)resp->results[0].value.data;
     size_t nsSize = resp->results[0].value.arrayLength;
+    if(nsSize < 2) {
+        UA_LOG_ERROR(client->config.logging, UA_LOGCATEGORY_CLIENT,
+                     "Read NamespaceArray returned too few entries");
+        return;
+    }
     UA_String_copy(&ns[1], &client->namespaces[1]);
     for(size_t i = 2; i < nsSize; ++i) {
         UA_UInt16 nsIndex = 0;
@@ -97698,14 +97862,23 @@ __Client_readAttribute(UA_Client *client, const UA_NodeId *nodeId,
         memcpy(out, &res->value, sizeof(UA_Variant));
         UA_Variant_init(&res->value);
     } else if(attributeId == UA_ATTRIBUTEID_NODECLASS) {
-        memcpy(out, (UA_NodeClass*)res->value.data, sizeof(UA_NodeClass));
+        /* NodeClass is an enum and is encoded as Int32 on the wire, so the
+         * generic branch below does not match it. */
+        if(!UA_Variant_isScalar(&res->value) || !res->value.data ||
+           !res->value.type ||
+           res->value.type->memSize != sizeof(UA_NodeClass)) {
+            retval = UA_STATUSCODE_BADTYPEMISMATCH;
+        } else {
+            memcpy(out, res->value.data, sizeof(UA_NodeClass));
+        }
     } else if(UA_Variant_isScalar(&res->value) &&
-              res->value.type == outDataType) {
+              res->value.type == outDataType &&
+              res->value.data) {
         memcpy(out, res->value.data, res->value.type->memSize);
         UA_free(res->value.data);
         res->value.data = NULL;
     } else {
-        retval = UA_STATUSCODE_BADUNEXPECTEDERROR;
+        retval = UA_STATUSCODE_BADTYPEMISMATCH;
     }
 
     UA_ReadResponse_clear(&response);
@@ -100694,9 +100867,22 @@ deleteNodeIdEntry(void *context, NodeIdTreeEntry *elm) {
     return NULL;
 }
 
+/* Hard limits on the depth and size of the remote DataType subtype
+ * tree traversed below. */
+#define UA_MAX_REMOTE_DATATYPE_DEPTH 64u
+#define UA_MAX_REMOTE_DATATYPE_NODES 4096u
+
 static UA_StatusCode
 browseDataTypesRecursive(UA_Client *client, NodeIdTree *tree,
-                         size_t *treeSize, UA_NodeId typeNode) {
+                         size_t *treeSize, UA_NodeId typeNode, size_t depth) {
+    /* Abort once the traversal exceeds the depth or node count limit */
+    if(depth > UA_MAX_REMOTE_DATATYPE_DEPTH ||
+       *treeSize > UA_MAX_REMOTE_DATATYPE_NODES) {
+        UA_LOG_WARNING(client->config.logging, UA_LOGCATEGORY_CLIENT,
+                       "Remote DataType tree exceeds traversal limits");
+        return UA_STATUSCODE_BADENCODINGLIMITSEXCEEDED;
+    }
+
     /* Set up the browse request */
     UA_BrowseDescription bd;
     UA_BrowseDescription_init(&bd);
@@ -100741,7 +100927,8 @@ browseDataTypesRecursive(UA_Client *client, NodeIdTree *tree,
         (*treeSize)++;
 
         /* Recurse */
-        res = browseDataTypesRecursive(client, tree, treeSize, rd->nodeId.nodeId);
+        res = browseDataTypesRecursive(client, tree, treeSize,
+                                       rd->nodeId.nodeId, depth + 1);
 
         /* Don't double-free */
         UA_NodeId_init(&rd->nodeId.nodeId);
@@ -100865,7 +101052,7 @@ UA_Client_getRemoteDataTypes(UA_Client *client,
         NodeIdTree tree;
         ZIP_INIT(&tree);
         size_t treeSize = 0;
-        res = browseDataTypesRecursive(client, &tree, &treeSize, UA_NS0ID(STRUCTURE));
+        res = browseDataTypesRecursive(client, &tree, &treeSize, UA_NS0ID(STRUCTURE), 0);
         if(res != UA_STATUSCODE_GOOD) {
             ZIP_ITER(NodeIdTree, &tree, deleteNodeIdEntry, NULL);
             return res;
@@ -118036,7 +118223,7 @@ getFieldMetaData(const UA_DataSetMessage_EncodingMetaData *emd,
                  size_t index) {
     if(!emd)
         return NULL;
-    if(index > emd->fieldsSize)
+    if(index >= emd->fieldsSize)
         return NULL;
     return &emd->fields[index];
 }
@@ -131668,8 +131855,8 @@ createReaderGroup(UA_PubSubManager *psm,
 
 /* Creates TargetVariables or SubscribedDataSetMirror for a given DataSetReader */
 static UA_StatusCode
-addSubscribedDataSet(UA_PubSubManager *psm, const UA_NodeId dsReaderIdent,
-                     const UA_ExtensionObject *subscribedDataSet) {
+createSubscribedDataSet(UA_PubSubManager *psm, const UA_NodeId dsReaderIdent,
+                        const UA_ExtensionObject *subscribedDataSet) {
     UA_LOCK_ASSERT(&psm->sc.server->serviceMutex);
 
     if(subscribedDataSet->content.decoded.type ==
@@ -131684,7 +131871,7 @@ addSubscribedDataSet(UA_PubSubManager *psm, const UA_NodeId dsReaderIdent,
                                                       targetVars->targetVariables);
         if(res != UA_STATUSCODE_GOOD) {
             UA_LOG_ERROR(psm->logging, UA_LOGCATEGORY_PUBSUB,
-                         "[UA_PubSubManager_addSubscribedDataSet] "
+                         "[UA_PubSubManager_createSubscribedDataSet] "
                          "create TargetVariables failed");
         }
         return res;
@@ -131693,13 +131880,13 @@ addSubscribedDataSet(UA_PubSubManager *psm, const UA_NodeId dsReaderIdent,
     if(subscribedDataSet->content.decoded.type ==
        &UA_TYPES[UA_TYPES_SUBSCRIBEDDATASETMIRRORDATATYPE]) {
         UA_LOG_ERROR(psm->logging, UA_LOGCATEGORY_PUBSUB,
-                     "[UA_PubSubManager_addSubscribedDataSet] "
+                     "[UA_PubSubManager_createSubscribedDataSet] "
                      "DataSetMirror is currently not supported");
         return UA_STATUSCODE_BADINVALIDARGUMENT;
     }
 
     UA_LOG_ERROR(psm->logging, UA_LOGCATEGORY_PUBSUB,
-                 "[UA_PubSubManager_addSubscribedDataSet] "
+                 "[UA_PubSubManager_createSubscribedDataSet] "
                  "Invalid Type of SubscribedDataSet");
     return UA_STATUSCODE_BADINTERNALERROR;
 }
@@ -131736,7 +131923,7 @@ createDataSetReader(UA_PubSubManager *psm, const UA_DataSetReaderDataType *dsrPa
     }
 
     /* Create the SubscribedDataSet */
-    res = addSubscribedDataSet(psm, dsReaderIdent, &dsrParams->subscribedDataSet);
+    res = createSubscribedDataSet(psm, dsReaderIdent, &dsrParams->subscribedDataSet);
     if(res != UA_STATUSCODE_GOOD) {
         UA_LOG_ERROR(psm->logging, UA_LOGCATEGORY_PUBSUB,
                      "[UA_PubSubManager_createDataSetReader] "
@@ -149003,6 +149190,12 @@ getHistoryData_service_default(const UA_HistoryDataBackend* backend,
                                                        &addFirst,
                                                        &addLast,
                                                        &reverse);
+    /* Reject a forged continuation-point skip value that would underflow the
+     * subtraction below. */
+    if(skip > _resultSize) {
+        *resultSize = 0;
+        return UA_STATUSCODE_BADCONTINUATIONPOINTINVALID;
+    }
     *resultSize = _resultSize - skip;
     if (*resultSize > maxSize) {
         *resultSize = maxSize;
@@ -149042,6 +149235,11 @@ getHistoryData_service_default(const UA_HistoryDataBackend* backend,
             }
 
         }
+        /* Never instruct the backend to copy more values than the result buffer
+         * was allocated to hold. */
+        size_t remainingCapacity = *resultSize - counter;
+        if(valueSize > remainingCapacity)
+            valueSize = remainingCapacity;
 
         UA_StatusCode ret = UA_STATUSCODE_GOOD;
         if (valueSize > 0)
@@ -150539,6 +150737,19 @@ createCertName(const UA_ByteString *certificate, char *fileNameBuf, size_t fileN
         subName = ptr + 3;
     } else {
         subName = subjectNameBuffer;
+    }
+
+    /* The subject name is fully attacker-controlled (it comes from the
+     * certificate presented to ServerConfiguration.UpdateCertificate) and
+     * is used verbatim as part of a filename below. Replace path
+     * separators and control characters so the subject cannot break out
+     * of the certificate / private-key directories the filename is
+     * written into. This is independent of how a given crypto backend
+     * renders the subject string, e.g. mbedTLS preserves '/' in the CN
+     * while OpenSSL escapes it. */
+    for(char *p = subName; *p != '\0'; p++) {
+        if(*p == '/' || *p == '\\' || (unsigned char)*p < 0x20)
+            *p = '_';
     }
 
     if(mp_snprintf(fileNameBuf, fileNameLen, "%s[%s]", subName, thumbprintBuffer) < 0)
@@ -161853,20 +162064,79 @@ cleanup:
 
 #if MBEDTLS_VERSION_NUMBER < 0x03040000
 
-static const unsigned char *
-UA_Bstrstr(const unsigned char *s1, size_t l1, const unsigned char *s2, size_t l2) {
-    if(l2 == 0)
-        return s1;
-    if(l1 < l2)
-        return NULL;
-    size_t limit = l1 - l2 + 1;
-    for(size_t i = 0; i < limit; ++i) {
-        if(s1[i] == s2[0]) {
-            if(memcmp(s1 + i, s2, l2) == 0)
-                return s1 + i;
+/* Walks the raw v3_ext DER blob and performs an exact match of each URI entry
+ * in the Subject Alternative Name extension against applicationURI.
+ * Used only for mbedTLS < 3.4.0, which does not expose a parsed SAN URI. */
+static UA_StatusCode
+verifySanUri(const mbedtls_x509_buf *v3_ext, const UA_String *applicationURI) {
+    unsigned char *p = v3_ext->p;
+    const unsigned char *end = p + v3_ext->len;
+    size_t len;
+
+    /* Extensions ::= SEQUENCE OF Extension */
+    if(mbedtls_asn1_get_tag(&p, end, &len,
+                             MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE) != 0)
+        return UA_STATUSCODE_BADCERTIFICATEURIINVALID;
+    const unsigned char *ext_end = p + len;
+
+    while(p < ext_end) {
+        /* Extension ::= SEQUENCE { extnID OID, critical BOOLEAN OPTIONAL,
+         *                          extnValue OCTET STRING } */
+        if(mbedtls_asn1_get_tag(&p, ext_end, &len,
+                                 MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE) != 0)
+            break;
+        unsigned char *entry_end = p + len;
+
+        /* Read OID */
+        if(mbedtls_asn1_get_tag(&p, entry_end, &len, MBEDTLS_ASN1_OID) != 0)
+            break;
+        const unsigned char *oid_p = p;
+        p += len;
+
+        /* Skip anything that is not the SAN extension OID (2.5.29.17) */
+        if(len != MBEDTLS_OID_SIZE(MBEDTLS_OID_SUBJECT_ALT_NAME) ||
+           memcmp(oid_p, MBEDTLS_OID_SUBJECT_ALT_NAME, len) != 0) {
+            p = entry_end;
+            continue;
         }
+
+        /* Skip optional critical BOOLEAN */
+        if(p < entry_end && *p == MBEDTLS_ASN1_BOOLEAN) {
+            if(mbedtls_asn1_get_tag(&p, entry_end, &len, MBEDTLS_ASN1_BOOLEAN) != 0)
+                break;
+            p += len;
+        }
+
+        /* extnValue ::= OCTET STRING containing the encoded GeneralNames */
+        if(mbedtls_asn1_get_tag(&p, entry_end, &len, MBEDTLS_ASN1_OCTET_STRING) != 0)
+            break;
+        const unsigned char *val_end = p + len;
+
+        /* GeneralNames ::= SEQUENCE OF GeneralName */
+        if(mbedtls_asn1_get_tag(&p, val_end, &len,
+                                 MBEDTLS_ASN1_CONSTRUCTED | MBEDTLS_ASN1_SEQUENCE) != 0)
+            break;
+        const unsigned char *san_end = p + len;
+
+        /* GeneralName ::= CHOICE { ..., uniformResourceIdentifier [6] IA5String, ... } */
+        const unsigned char uriTag =
+            MBEDTLS_ASN1_CONTEXT_SPECIFIC | MBEDTLS_X509_SAN_UNIFORM_RESOURCE_IDENTIFIER;
+        while(p < san_end) {
+            unsigned char tag = *p;
+            if(mbedtls_asn1_get_tag(&p, san_end, &len, tag) != 0)
+                break;
+            if(tag == uriTag &&
+               len == applicationURI->length &&
+               memcmp(p, applicationURI->data, len) == 0)
+                return UA_STATUSCODE_GOOD;
+            p += len;
+        }
+
+        /* SAN extension found but no URI matched — do not fall through to other extensions */
+        return UA_STATUSCODE_BADCERTIFICATEURIINVALID;
     }
-    return NULL;
+
+    return UA_STATUSCODE_BADCERTIFICATEURIINVALID;
 }
 
 #endif
@@ -161905,12 +162175,7 @@ UA_CertificateUtils_verifyApplicationUri(const UA_ByteString *certificate,
         }
     }
 #else
-    /* Poor man's ApplicationUri verification. mbedTLS does not parse all fields
-     * of the Alternative Subject Name. Instead test whether the URI-string is
-     * present in the v3_ext field in general. */
-    if(UA_Bstrstr(remoteCertificate.v3_ext.p, remoteCertificate.v3_ext.len,
-                  applicationURI->data, applicationURI->length) == NULL)
-        retval = UA_STATUSCODE_BADCERTIFICATEURIINVALID;
+    retval = verifySanUri(&remoteCertificate.v3_ext, applicationURI);
 #endif
 
     mbedtls_x509_crt_free(&remoteCertificate);
@@ -175306,8 +175571,8 @@ UA_CertificateUtils_verifyApplicationUri(const UA_ByteString *certificate,
     }
 
     UA_StatusCode ret = UA_STATUSCODE_GOOD;
-    if(UA_Bstrstr(subjectURI.data, subjectURI.length,
-                  applicationURI->data, applicationURI->length) == NULL)
+    if(subjectURI.length != applicationURI->length ||
+       memcmp(subjectURI.data, applicationURI->data, applicationURI->length) != 0)
         ret = UA_STATUSCODE_BADCERTIFICATEURIINVALID;
 
     X509_free(certificateX509);

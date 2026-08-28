@@ -1,6 +1,6 @@
 /* THIS IS A SINGLE-FILE DISTRIBUTION CONCATENATED FROM THE OPEN62541 SOURCES
  * visit http://open62541.org/ for information about this software
- * Git-Revision: v1.5.6-7-g777b09cde
+ * Git-Revision: v1.5.7
  */
 
 /*
@@ -30,10 +30,10 @@
  * ----------------- */
 #define UA_OPEN62541_VER_MAJOR 1
 #define UA_OPEN62541_VER_MINOR 5
-#define UA_OPEN62541_VER_PATCH 6
-#define UA_OPEN62541_VER_LABEL "-7-g777b09cde" /* Release candidate label, etc. */
-#define UA_OPEN62541_VER_COMMIT "v1.5.6-7-g777b09cde"
-#define UA_OPEN62541_VERSION "v1.5.6-7-g777b09cde"
+#define UA_OPEN62541_VER_PATCH 7
+#define UA_OPEN62541_VER_LABEL "" /* Release candidate label, etc. */
+#define UA_OPEN62541_VER_COMMIT "v1.5.7"
+#define UA_OPEN62541_VERSION "v1.5.7"
 
 /**
  * Architecture
