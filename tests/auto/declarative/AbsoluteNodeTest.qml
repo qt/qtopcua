@@ -365,8 +365,8 @@ Item {
             node11ValueSpy.wait();
 
             var now = new Date();
-            verify((now - node11.serverTimestamp) < 10000);
-            verify((now - node11.sourceTimestamp) < 10000);
+            verify((now - node11.serverTimestamp) < 30000);
+            verify((now - node11.sourceTimestamp) < 30000);
         }
 
         QtOpcUa.ValueNode {

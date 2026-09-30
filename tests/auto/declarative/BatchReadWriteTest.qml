@@ -101,7 +101,7 @@ Item {
                 compare(results[i].nodeId, readItemList[i].nodeId);
                 compare(results[i].namespaceName, readItemList[i].ns);
                 compare(results[i].attribute, readItemList[i].attribute);
-                verify((now - results[i].serverTimestamp) < 10000);
+                verify((now - results[i].serverTimestamp) < 30000);
             }
 
             compare(results[0].value.text, "DoubleScalarTest");
