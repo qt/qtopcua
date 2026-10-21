@@ -8,10 +8,10 @@
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
 #else
-#include <qopen62541.h>
+#include <open62541.h>
 #endif
 
-#include <qopcuatype.h>
+#include <QtOpcUa/qopcuatype.h>
 
 #include <QtCore/QObject>
 #include <QtCore/QTimer>

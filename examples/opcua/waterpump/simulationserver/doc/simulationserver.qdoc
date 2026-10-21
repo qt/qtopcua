@@ -62,5 +62,21 @@
     \l {QOpcUa::UaStatusCode} {BadUserAccessDenied} if the operation is illegal
     (for example, trying to start the pump if the first tank is empty).
 
+    \section1 Building a Copy of the Server
+
+    The server is a standalone open62541 application and needs the open62541
+    library. When building with CMake, the example uses a system open62541
+    library if CMake finds one. Otherwise, it compiles \c open62541.c from the
+    Qt OPC UA sources, which it finds automatically when built from the Qt OPC
+    UA source tree or from the sources installed next to Qt. If you build a
+    copy of the example somewhere else, either install the open62541 system
+    library or set the variable \c QTOPCUA_OPEN62541_SOURCE_DIR to the
+    directory that contains \c open62541.c (\c{src/3rdparty/open62541} in the
+    Qt OPC UA sources). Setting the variable takes precedence over a system
+    library.
+
+    When building with qmake, the example always compiles \c open62541.c, and
+    \c QTOPCUA_OPEN62541_SOURCE_DIR is the qmake variable to set.
+
     \sa {Qt Quick Water Pump}, {Water Pump}
 */

@@ -3,11 +3,7 @@
 
 #include "simulationserver.h"
 
-#include <qopen62541utils.h>
-#include <qopen62541valueconverter.h>
-
 #include <QtCore/QDebug>
-#include <QtCore/QLoggingCategory>
 
 #include <cstring>
 
@@ -15,9 +11,66 @@ using namespace Qt::Literals::StringLiterals;
 
 QT_BEGIN_NAMESPACE
 
-// Node ID conversion is included from the open62541 plugin but warnings from there should be logged
-// using qt.opcua.testserver instead of qt.opcua.plugins.open62541 for usage in the test server
-Q_LOGGING_CATEGORY(QT_OPCUA_PLUGINS_OPEN62541, "qt.opcua.demoserver")
+namespace {
+
+UA_NodeId nodeIdFromQString(const QString &name)
+{
+    quint16 namespaceIndex;
+    QString identifier;
+    char identifierType;
+    if (!QOpcUa::nodeIdStringSplit(name, &namespaceIndex, &identifier, &identifierType)) {
+        qWarning() << "Failed to split node id string:" << name;
+        return UA_NODEID_NULL;
+    }
+
+    if (identifierType == 'i') {
+        bool ok;
+        const quint32 number = identifier.toUInt(&ok);
+        if (ok)
+            return UA_NODEID_NUMERIC(namespaceIndex, number);
+    } else if (identifierType == 's' && !identifier.isEmpty()) {
+        return UA_NODEID_STRING_ALLOC(namespaceIndex, identifier.toUtf8().constData());
+    }
+
+    qWarning() << "Unsupported node id:" << name;
+    return UA_NODEID_NULL;
+}
+
+template <typename T>
+UA_Variant scalarVariant(T value, int typeIndex)
+{
+    UA_Variant result;
+    UA_Variant_init(&result);
+    UA_Variant_setScalarCopy(&result, &value, &UA_TYPES[typeIndex]);
+    return result;
+}
+
+UA_Variant toVariant(const QVariant &value, QOpcUa::Types type)
+{
+    switch (type) {
+    case QOpcUa::Boolean:
+        return scalarVariant<UA_Boolean>(value.toBool(), UA_TYPES_BOOLEAN);
+    case QOpcUa::UInt32:
+        return scalarVariant<UA_UInt32>(value.toUInt(), UA_TYPES_UINT32);
+    case QOpcUa::Double:
+        return scalarVariant<UA_Double>(value.toDouble(), UA_TYPES_DOUBLE);
+    case QOpcUa::String: {
+        UA_String string = UA_STRING_ALLOC(value.toString().toUtf8().constData());
+        UA_Variant result = scalarVariant<UA_String>(string, UA_TYPES_STRING);
+        UA_String_clear(&string);
+        return result;
+    }
+    default:
+        qWarning() << "Unsupported type:" << type;
+        break;
+    }
+
+    UA_Variant empty;
+    UA_Variant_init(&empty);
+    return empty;
+}
+
+} // namespace
 
 DemoServer::DemoServer(QObject *parent)
     : QObject(parent)
@@ -86,8 +139,8 @@ UA_NodeId DemoServer::addObject(const QString &parent, const QString &nodeString
         oAttr.description = UA_LOCALIZEDTEXT_ALLOC("en-US", description.toUtf8().constData());
 
     UA_StatusCode result;
-    UA_NodeId requestedNodeId = Open62541Utils::nodeIdFromQString(nodeString);
-    UA_NodeId parentNodeId = Open62541Utils::nodeIdFromQString(parent);
+    UA_NodeId requestedNodeId = nodeIdFromQString(nodeString);
+    UA_NodeId parentNodeId = nodeIdFromQString(parent);
 
     UA_QualifiedName nodeBrowseName = UA_QUALIFIEDNAME_ALLOC(requestedNodeId.namespaceIndex,
                                                              browseName.toUtf8().constData());
@@ -118,10 +171,10 @@ UA_NodeId DemoServer::addVariable(const UA_NodeId &folder, const QString &variab
                                   const QString &browseName, const QString &displayName,
                                   const QVariant &value, QOpcUa::Types type, quint32 referenceType)
 {
-    UA_NodeId variableNodeId = Open62541Utils::nodeIdFromQString(variableNode);
+    UA_NodeId variableNodeId = nodeIdFromQString(variableNode);
 
     UA_VariableAttributes attr = UA_VariableAttributes_default;
-    attr.value = QOpen62541ValueConverter::toOpen62541Variant(value, type);
+    attr.value = toVariant(value, type);
     attr.displayName = UA_LOCALIZEDTEXT_ALLOC("en-US", displayName.toUtf8().constData());
     attr.dataType = attr.value.type ? attr.value.type->typeId : UA_TYPES[UA_TYPES_BOOLEAN].typeId;
     attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
@@ -326,7 +379,7 @@ UA_NodeId DemoServer::addMethod(const UA_NodeId &folder, const QString &variable
                                 const QString &displayName, UA_MethodCallback cb,
                                 quint32 referenceType)
 {
-    UA_NodeId methodNodeId = Open62541Utils::nodeIdFromQString(variableNode);
+    UA_NodeId methodNodeId = nodeIdFromQString(variableNode);
 
     UA_MethodAttributes attr = UA_MethodAttributes_default;
 

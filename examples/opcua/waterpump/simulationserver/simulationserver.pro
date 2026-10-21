@@ -1,43 +1,32 @@
 TEMPLATE = app
 CONFIG += c++11 console
-QT += opcua opcua-private
+QT += opcua
 QT -= gui
 
-# Installed example package
-
-MODULE_SOURCES=../../../../../$$QT_VERSION/Src/qtopcua/
-
-!exists($$MODULE_SOURCES/src/plugins/opcua/open62541/qopen62541utils.cpp):{
-  # Build from source tree
-  MODULE_SOURCES=$$PWD/../../../../
+isEmpty(QTOPCUA_OPEN62541_SOURCE_DIR) {
+  # Defaults for builds from the source tree or next to an installed Qt
+  QTOPCUA_OPEN62541_SOURCE_DIR=$$PWD/../../../../src/3rdparty/open62541
+  !exists($$QTOPCUA_OPEN62541_SOURCE_DIR/open62541.c): QTOPCUA_OPEN62541_SOURCE_DIR=$$PWD/../../../../../$$QT_VERSION/Src/qtopcua/src/3rdparty/open62541
 }
 
-!exists($$MODULE_SOURCES/src/plugins/opcua/open62541/qopen62541utils.cpp):{
-  # Build from source tree
-  MODULE_SOURCES=$$QTOPCUA_SOURCE_DIR
+!exists($$QTOPCUA_OPEN62541_SOURCE_DIR/open62541.c) {
+  error("Unable to build the server, open62541.c was not found. Set QTOPCUA_OPEN62541_SOURCE_DIR to the directory containing open62541.c (src/3rdparty/open62541 in the Qt OPC UA sources).")
 }
 
-!exists($$MODULE_SOURCES/src/plugins/opcua/open62541/qopen62541utils.cpp):{
-  error("Unable to build the server, the Qt OPC UA module source is not available. Set QTOPCUA_SOURCE_DIR to the location of the Qt OPC UA sources.")
-}
+INCLUDEPATH += $$QTOPCUA_OPEN62541_SOURCE_DIR
+DEPENDPATH += $$QTOPCUA_OPEN62541_SOURCE_DIR
+HEADERS += $$QTOPCUA_OPEN62541_SOURCE_DIR/open62541.h
+SOURCES += $$QTOPCUA_OPEN62541_SOURCE_DIR/open62541.c
 
-INCLUDEPATH += $$MODULE_SOURCES/src/plugins/opcua/open62541
-DEPENDPATH += INCLUDEPATH
+win32-msvc: LIBS += ws2_32.lib iphlpapi.lib
+win32-g++: LIBS += -lws2_32 -liphlpapi
 
-qtConfig(open62541):!qtConfig(system-open62541) {
-    include($$MODULE_SOURCES/src/3rdparty/open62541.pri)
-} else {
-    DEFINES += USE_SYSTEM_OPEN62541
-    QMAKE_LIBS_PRIVATE += -lopen62541
+macos|ios: DEFINES += _DARWIN_C_SOURCE
 
-    # The system open62541 library might require OpenSSL
-    qtConfig(open62541-security): QMAKE_LIBS_PRIVATE += -lcrypto
-}
+!win32-msvc: QMAKE_CFLAGS += -Wno-unused-parameter
 
 SOURCES += main.cpp \
-    simulationserver.cpp \
-    $$MODULE_SOURCES/src/plugins/opcua/open62541/qopen62541utils.cpp \
-    $$MODULE_SOURCES/src/plugins/opcua/open62541/qopen62541valueconverter.cpp
+    simulationserver.cpp
 
 HEADERS += \
     simulationserver.h
