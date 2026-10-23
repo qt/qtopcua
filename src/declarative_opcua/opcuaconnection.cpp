@@ -108,6 +108,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlproperty stringlist Connection::supportedSecurityPolicies
+    \readonly
     \since 5.13
 
     A list of strings containing the supported security policies
@@ -119,6 +120,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlproperty array[tokenTypes] Connection::supportedUserTokenTypes
+    \readonly
     \since 5.13
 
     An array of user token policy types of all supported user token types.
@@ -130,6 +132,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlproperty QOpcUaEndpointDescription Connection::currentEndpoint
+    \readonly
     \since 5.13
 
     An endpoint description of the server to which the connection is connected to.

@@ -17,6 +17,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype EndpointDescription
+    \nativetype QOpcUaEndpointDescription
     \inqmlmodule QtOpcUa
     \brief The OPC UA EndpointDescription.
     \since QtOpcUa 5.13

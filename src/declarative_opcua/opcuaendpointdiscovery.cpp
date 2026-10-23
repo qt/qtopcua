@@ -36,6 +36,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlproperty int EndpointDiscovery::count
+    \readonly
 
     Current number of endpoints in this element.
     Before using any data from an endpoint discovery, you should check \l status if the information
@@ -46,6 +47,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmlproperty Status EndpointDiscovery::status
+    \readonly
 
     The current status of this element.
     In case the last retrieval of endpoints was successful, the status

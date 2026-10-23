@@ -17,6 +17,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \qmltype ApplicationDescription
+    \nativetype QOpcUaApplicationDescription
     \inqmlmodule QtOpcUa
     \brief The OPC UA ApplicationDescription.
     \since QtOpcUa 5.13
