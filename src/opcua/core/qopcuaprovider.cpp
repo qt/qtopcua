@@ -65,9 +65,7 @@ Q_LOGGING_CATEGORY(QT_OPCUA_SECURITY, "qt.opcua.security")
 Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, qOpcualoader,
         (QOpcUaProviderFactory_iid, u"/opcua"_s))
 
-/*!
-    \fn static QHash<QString, QCborMap> loadPluginMetadata()
-
+/*
     Reads the meta data from the plugins known by the loader.
 */
 static QHash<QString, QCborMap> loadPluginMetadata()
@@ -83,10 +81,8 @@ static QHash<QString, QCborMap> loadPluginMetadata()
     return plugins;
 }
 
-/*!
-    \fn static QHash<QString, QCborMap> plugins()
-
-    Returns a \l QHash mapping names to JSON objects containing the meta data of
+/*
+    Returns a QHash mapping names to JSON objects containing the meta data of
     available plugins.
 */
 static QHash<QString, QCborMap> plugins()
